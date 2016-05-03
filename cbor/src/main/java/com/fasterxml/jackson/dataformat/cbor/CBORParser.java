@@ -823,19 +823,6 @@ public final class CBORParser extends ParserMinimalBase
         return String.valueOf(1);
     }
 
-    // @since 2.7.2 -- will be added in `JsonParser` in 2.8
-    // see [dataformat-cbor#20]
-    /**
-     * Method for forcing full read of current token, even if it might otherwise
-     * only be read if data is accessed via {@link #getText} and similar methods.
-     */
-    public void finishToken() throws IOException
-    {
-        if (_tokenIncomplete) {
-            _finishToken();
-        }
-    }
-    
     // base impl is fine:
     //public String getCurrentName() throws IOException
 
@@ -846,7 +833,19 @@ public final class CBORParser extends ParserMinimalBase
         }
         throw _constructError("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
     }
-    
+
+    /**
+     * Method for forcing full read of current token, even if it might otherwise
+     * only be read if data is accessed via {@link #getText} and similar methods.
+     */
+    @Override
+    public void finishToken() throws IOException
+    {
+        if (_tokenIncomplete) {
+            _finishToken();
+        }
+    }
+
     /*
     /**********************************************************
     /* Public API, traversal, nextXxxValue/nextFieldName

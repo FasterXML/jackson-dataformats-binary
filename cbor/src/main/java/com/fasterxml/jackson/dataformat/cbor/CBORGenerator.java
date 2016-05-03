@@ -536,6 +536,18 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_OBJECT_INDEFINITE);
     }
 
+    @Override // since 2.8
+    public final void writeStartObject(Object forValue) throws IOException
+    {
+        _verifyValueWrite("start an object");
+        JsonWriteContext ctxt = _writeContext.createChildObjectContext();
+        _writeContext = ctxt;
+        if (forValue != null) {
+            ctxt.setCurrentValue(forValue);
+        }
+        _writeByte(BYTE_OBJECT_INDEFINITE);
+    }
+
     @Override
     public final void writeEndObject() throws IOException
     {
