@@ -1,0 +1,27 @@
+Here are people who have contributed to Smile decoded plug-in development
+(version 2.0 onwards)
+(version numbers in brackets indicate release in which the problem was fixed)
+
+Tatu Saloranta, tatu.saloranta@iki.fi: author
+
+Steven Schlansker:
+  * Reported [Issue-2]: SmileParser failed to properly decoded surrogate-pair
+    characters for long strings
+   (2.0.2)
+
+brharrington@github:
+  * Reported #17: Boundary error with `float`/`double` values, large content
+   (2.4.1)
+
+Lee Yun-young (lseeker@github)
+  * Report #25: Buffer overrun when writing unencoded binary content
+   (2.4.7 / 2.5.5)
+
+mcmahon356@github:
+  * Reported #24: Current location does not always updated properly
+   (2.5.1)
+
+georgewfraser@githubL
+  * Reported #34: Deserialize error "Invalid type marker byte" for 'long' field names
+    (57 characters or longer)
+   (2.6.6 / 2.7.2)

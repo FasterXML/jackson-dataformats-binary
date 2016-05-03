@@ -7,6 +7,7 @@ Currently included are:
 
 * [CBOR](cbor/)
 * [Protobuf](protobuf/)
+* [Smile](smile/)
 
 ## License
 
