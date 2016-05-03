@@ -7,7 +7,7 @@ Module extends standard Jackson streaming API (`JsonFactory`, `JsonParser`, `Jso
 
 ## Status
 
-As of version 2.4.0, this module is considered stable and production quality. Similar to JSON- and other JSON-like
+This module is considered stable and production quality (since 2.4). Similar to JSON- and other JSON-like
 backends, it implementsfull support for all levels (streaming, data-binding, tree model).
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/)
@@ -27,7 +27,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-cbor</artifactId>
-  <version>2.4.0</version>
+  <version>2.7.4</version>
 </dependency>
 ```
 
@@ -56,4 +56,4 @@ and all the usual data-binding use cases exactly like when using `JSON` or `Smil
 
 # Documentation
 
-* [Wiki](../../wiki) (includes Javadocs)
+* [Wiki](../../../wiki) (includes Javadocs)
