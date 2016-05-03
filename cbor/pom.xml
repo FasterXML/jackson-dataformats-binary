@@ -25,13 +25,6 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
   </properties>
 
   <dependencies>
-    <!-- Extends Jackson core -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${version.jackson.core}</version>
-    </dependency>
-
     <!-- and for testing we need databind -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

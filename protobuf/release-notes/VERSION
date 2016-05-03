@@ -1,0 +1,41 @@
+Project: jackson-dataformat-protobuf
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.7.4 (29-Apr-2016)
+
+No changes since 2.7.3
+
+2.7.3 (16-Mar-2016)
+
+#14: Problem with larger datasets - error releasing buffers
+ (reported by Charles S)
+
+2.7.2 (27-Feb-2016)
+
+No changes since 2.7.1
+
+2.7.1 (02-Feb-2016)
+
+- Fix handling of "current value" for ProtobufGenerator
+
+2.7.0 (10-Jan-2016)
+
+#11: Add Support for Generating Protobuf Schema From POJO Definition
+ (contributed by Damiaan K)
+
+2.6.6 (06-Apr-2016)
+2.6.5 (19-Jan-2016)
+2.6.4 (07-Dec-2015)
+2.6.3 (12-Oct-2015)
+2.6.2 (15-Sep-2015)
+2.6.1 (09-Aug-2015)
+
+No changes since 2.6.0.
+
+2.6.0 (20-Jul-2015)
+
+First public version!
+

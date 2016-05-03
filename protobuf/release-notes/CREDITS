@@ -1,0 +1,14 @@
+Project: jackson-dataformat-protobuf
+
+Here are people who have contributed to development of this project:
+(version numbers in parenthesis indicate release in which the problem was fixed)
+
+Tatu Saloranta, tatu.saloranta@iki.fi: author
+
+Damiaan van der Kruk (dvdkruk@github)
+  * Contributed #11: Add Support for Generating Protobuf Schema From POJO Definition
+   (2.7.0)
+
+Charles Swanberg (afterthought@github)
+  * Reported #14: Problem with larger datasets - error releasing buffers
+   (2.7.2)

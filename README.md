@@ -6,6 +6,7 @@ standard binary dataformat backends.
 Currently included are:
 
 * [CBOR](cbor/)
+* [Protobuf](protobuf/)
 
 ## License
 
