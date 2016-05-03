@@ -14,7 +14,7 @@ All modules are licensed under [Apache License 2.0](http://www.apache.org/licens
 
 ## Status
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-base-modules.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
+[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
 
 ## More
 

@@ -1,6 +1,6 @@
 ## Overview
 
-Project contains [Jackson](http://http://wiki.fasterxml.com/JacksonHome) extension component
+Project contains [Jackson](../../../jackson) extension component
 for reading and writing [Protobuf](http://code.google.com/p/protobuf/) encoded data (see
 [protobuf encoding spec](https://developers.google.com/protocol-buffers/docs/encoding)).
 This project adds necessary abstractions on top to make things work with other Jackson functionality;
@@ -16,11 +16,10 @@ Protoc (protobuf IDL) parsing is done using [square/protoparser](https://github.
 Project does NOT depend on the official [Google Java protobuf](https://github.com/google/protobuf) library, although
 it may be used for conformance testing purposes in future.
 
-Protobuf module requires Java 7, due to `protoparser` requiring Java 7.
+Protobuf module requires Java 7.
 
 # Status
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformat-protobuf.svg)](https://travis-ci.org/FasterXML/jackson-dataformat-protobuf)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/)
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf)
 
