@@ -1,0 +1,104 @@
+Project: jackson-dataformat-cbor
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.8.0 (not yet released)
+
+No changes since 2.7
+
+2.7.4 (29-Apr-2016)
+2.7.3 (16-Mar-2016)
+
+No changes since 2.7.2
+
+2.7.2 (27-Feb-2016)
+
+#20: Add a public `finishToken()`
+ (requested by philipa@github)
+#22: CBORGenerator.copyCurrentStructure() and copyCurrentEvent() do not copy tags
+ (requested by philipa@github)
+- Change build to produce JDK6-compatible jar, to allow use on JDK6 runtime
+
+2.7.1 (02-Feb-2016)
+
+#19: Fix reported location after non-stream input has been parsed.
+ (contributed by philipa@github)
+
+2.7.0 (10-Jan-2016)
+
+#14: Add support for dynamically changing `CBORGenerator.Feature`s
+
+2.6.6 (not yet released)
+
+#18: Correct parsing of zero length byte strings
+ (reported, fix suggested by philipa@github)
+
+2.6.5 (19-Jan-2016)
+
+#15: CBORParser.getNumberType returns DOUBLE even if the generator has been fed with a float
+ (reported by Adrien G)
+
+2.6.4 (07-Dec-2015)
+2.6.3 (12-Oct-2015)
+
+No changes since 2.6.2
+
+2.6.2 (15-Sep-2015)
+
+#13: Bug in boundary checking in the CBORParser
+ (reported by Steve G)
+
+2.6.1 (09-Aug-2015)
+2.6.0 (19-Jul-2015)
+
+No changes since 2.5
+
+2.5.5 (07-Dec-2015)
+2.5.4 (09-Jun-2015)
+2.5.3 (24-Apr-2015)
+2.5.2 (29-Mar-2015)
+
+No changes since 2.5.1.
+
+2.5.1 (06-Feb-2015)
+
+#9: Infinite loop when trying to write binary data using CBORGenerator 
+ (reported by mbaril@github)
+
+2.5.0 (01-Jan-2015)
+
+#4: Implement `nextFieldName()` efficiently
+
+2.4.6 (not yet released)
+
+2.4.5 (13-Jan-2015)
+2.4.4 (24-Nov-2014)
+2.4.3 (04-Oct-2014)
+
+No changes.
+
+2.4.2 (15-Aug-2014)
+
+#5: Support binary (byte[]) Object keys (assuming UTF-8 encoding)
+  (suggested by Clinton G, clintongormley@github)
+#6: Support 'self-describe' CBOR tag
+  (suggested by Clinton G, clintongormley@github)
+
+2.4.1 (17-Jun-2014)
+
+- Minor performance improvement wrt `writeFieldName(SerializableString)`
+
+2.4.0 (02-Jun-2014)
+
+No functional changes since 2.3.x.
+
+2.3.3 (10-Apr-2014)
+
+#2: Negative Long values written as zero
+ (reported by gjesse@github)
+
+2.3.2 (01-Mar-2014)
+
+The very first public version!
