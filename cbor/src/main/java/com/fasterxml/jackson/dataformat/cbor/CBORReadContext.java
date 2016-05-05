@@ -160,10 +160,12 @@ public final class CBORReadContext
     private void _checkDup(DupDetector dd, String name) throws JsonProcessingException
     {
         if (dd.isDup(name)) {
-            throw new JsonParseException("Duplicate field '"+name+"'", dd.findLocation());
+            // 04-MAy-2016, tatu: Would be great to pass JsonParser, alas, not available so:
+            throw new JsonParseException(null,
+                    "Duplicate field '"+name+"'", dd.findLocation());
         }
     }
-    
+
     /*
     /**********************************************************
     /* Overridden standard methods
