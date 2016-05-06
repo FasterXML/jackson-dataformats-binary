@@ -16,6 +16,7 @@
   <modules>
     <module>cbor</module>
     <module>smile</module>
+    <module>avro</module>
     <module>protobuf</module>
   </modules>
 

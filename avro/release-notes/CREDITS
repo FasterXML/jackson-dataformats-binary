@@ -1,0 +1,33 @@
+Here are people who have contributed to the development of Jackson JSON processor
+Avro data format module
+(version numbers in brackets indicate release in which the problem was fixed)
+
+Tatu Saloranta, tatu.saloranta@iki.fi: author
+
+Josh Gruenberg (joshng@github)
+
+- Contributed #14: Co Support serializing "fixed" fields
+ (2.5.0)
+
+Sterling Hoeree (shoeree@github)
+
+- Reported #19: "Current context not an object but ARRAY" when encountering nested object and using
+  JsonGenerator.Feature.IGNORE_UNKNOWN = true
+ (2.5.5)
+
+Alex Dubov (oakad@github)
+
+- Contributed #21: Add AVRO_BUFFERING feature (enabled by default/existing behavior)
+ (2.6.1)
+
+Peter Royal (osi@github)
+
+- Reported #26: Should indicate type that was requested when complaining about Any not being supported
+ (2.6.4)
+- Contributed #27: Support serialization of `BigDecimal` values
+ (2.6.4)
+
+Anand Shah (anandshah123@github)
+
+- Reported #35: Not able to serialize avro generated object having schema$ object
+ (2.7.3)

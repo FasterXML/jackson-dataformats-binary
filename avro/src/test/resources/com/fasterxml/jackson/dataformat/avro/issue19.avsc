@@ -1,0 +1,96 @@
+{
+    "fields": [
+        {
+            "default": null,
+            "name": "version",
+            "type": [
+                "null",
+                "int"
+            ]
+        },
+        {
+            "default": null,
+            "name": "MAX_EVENTS",
+            "type": [
+                "null",
+                "int"
+            ]
+        },
+        {
+            "default": null,
+            "name": "eventCount",
+            "type": [
+                "null",
+                {
+                    "java-class": "java.lang.Byte",
+                    "type": "int"
+                }
+            ]
+        },
+        {
+            "default": null,
+            "name": "events",
+            "type": [
+                "null",
+                {
+                    "items": {
+                        "fields": [
+                            {
+                                "name": "playerCount",
+                                "type": [
+                                    "null",
+                                    "int"
+                                ]
+                            },  
+                            {
+                                "name": "eventID",
+                                "type": [
+                                    "null",
+                                    {
+                                        "fields": [
+                                            {
+                                                "default": null,
+                                                "name": "description",
+                                                "type": [
+                                                    "null",
+                                                    "string"
+                                                ]
+                                            },
+                                            {
+                                                "default": null,
+                                                "name": "first",
+                                                "type": [
+                                                    "null",
+                                                    "int"
+                                                ]
+                                            },
+                                            {
+                                                "default": null,
+                                                "name": "second",
+                                                "type": [
+                                                    "null",
+                                                    "int"
+                                                ]
+                                            }
+                                        ],
+                                        "name": "EventID",
+                                        "namespace": "com.demonstration",
+                                        "type": "record"
+                                    }
+                                ]
+                            }
+                        ],
+                        "name": "Event",
+                        "namespace": "com.demonstration",
+                        "type": "record"
+                    },
+                    "java-class": "java.util.List",
+                    "type": "array"
+                }
+            ]
+        }
+    ],
+    "name": "EventLog",
+    "namespace": "com.demonstration",
+    "type": "record"
+}

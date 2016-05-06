@@ -1,0 +1,134 @@
+Project: jackson-dataformat-avro
+
+------------------------------------------------------------------------
+= Releases
+------------------------------------------------------------------------
+
+2.8.0 (not yet released)
+
+No changes since 2.7
+
+2.7.4 (29-Apr-2016)
+
+#39: Byte arrays are represented as strings in generated avro schema
+ (reported by asmaier@github)
+
+2.7.3 (16-Mar-2016)
+
+#35: Not able to serialize avro generated object having schema$ object
+ (reported by Anand S)
+#38: Problems serializing `OffsetDateTime` (Java8 date/time)
+ (reported by asmaier@github)
+#41: Problems with type `Number`, with schema
+
+2.7.2 (27-Feb-2016)
+
+- Change build to produce JDK6-compatible jar, to allow use on JDK6 runtime
+
+2.7.1 (02-Feb-2016)
+
+No changes since 2.7.0
+
+2.7.0 (10-Jan-2016)
+
+#21: Add AVRO_BUFFERING feature (enabled by default/existing behavior)
+ (contributed by Alex D)
+
+2.6.5 (19-Jan-2016)
+
+No changes since 2.6.4
+
+2.6.4 (07-Dec-2015)
+
+#23: MapWriteContext.createChildObjectContext() should call _schema.getValueType()
+ (reported by shoeree@github, cresny@github)
+#26: Should indicate type that was requested when complaining about Any not being supported
+ (reported by Peter R)
+#27: Support serialization of `BigDecimal` values
+ (contributed by Peter R)
+
+2.6.3 (12-Oct-2015)
+2.6.2 (15-Sep-2015)
+2.6.1 (09-Aug-2015)
+2.6.0 (19-Jul-2015)
+
+No changes since 2.5.
+
+2.5.5 (not yet released)
+
+#19: "Current context not an object but ARRAY" when encountering nested object and using
+  JsonGenerator.Feature.IGNORE_UNKNOWN = true
+ (reported by Sterling Hm shoeree@github)
+
+2.5.4 (09-Jun-2015)
+2.5.3 (24-Apr-2015)
+2.5.2 (29-Mar-2015)
+2.5.1 (06-Feb-2015)
+
+No changes since 2.5.0
+
+2.5.0 (01-Jan-2015)
+
+#11: Add convenience methods in `AvroMapper` for Schema-generation from POJO
+#12: Problem serializing optional Enum (in union)
+#14: Support serializing "fixed" fields
+ (contributed by Josh G)
+#15: AvroSchemaGenerator should support generation of "fixed" field-types
+ (contributed by Josh G)
+- Upgrade to Avro 1.7.7
+- Deprecate `AvroGenerator.Feature.IGNORE_UNKWNOWN` (mis-spellt, but more
+  importantly obsoleted by addition of `JsonGenerator.Feature.IGNORE_UNKNOWN`)
+
+2.4.3 (04-Oct-2014)
+2.4.2 (15-Aug-2014)
+
+No changes since 2.4.1
+
+2.4.1 (17-Jun-2014)
+
+#8: Error in creating Avro Schema for `java.util.Date` (and related) type.
+ (reported by aufZone@github)
+
+2.4.0 (02-Jun-2014)
+
+No functional changes since 2.3.x.
+
+2.3.3 (10-Apr-2014)
+
+#6: Nested Map type fields do not work
+ (reported by cresny@github)
+#7: Add `AvroGenerator.Feature.IGNORE_UNKWNOWN` to allow filtering of
+  properties that are not defined in Schema, during output
+ (suggested by cresny@github)
+
+
+2.3.2 (01-Mar-2014)
+
+#5: Support byte[] fields
+ (reported by clarkbreyman@github)
+
+2.3.1 (28-Dec-2013)
+
+#1: Add `AvroMapper` for convenience
+
+2.3.0 (14-Nov-2013)
+
+- Add 'requiresPropertyOrdering()'
+
+2.2.3 (23-Aug-2013)
+2.2.2 (27-May-2013)
+2.2.1 (03-May-2013)
+
+- Fixed issue with AvroFactory.copy()
+
+2.2.0 (22-Apr-2013)
+
+* Uses new Bean property introspection for better mapping of data types.
+
+2.1.1 (12-Nov-2012)
+
+Minor update with performance improvements
+
+2.1.0 (05-Nov-2012)
+
+The very first public release!
