@@ -383,7 +383,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         _pbContext = _pbContext.createChildArrayContext();
         _writeTag = !_currField.packed;
-        /* Unpacked vs package: if unpacked, nothing special is needed, since it
+        /* Unpacked vs packed: if unpacked, nothing special is needed, since it
          * is equivalent to just replicating same field N times.
          * With packed, need length prefix, all that stuff, so need accumulator
          */
@@ -475,6 +475,95 @@ public class ProtobufGenerator extends GeneratorBase
         _writeTag = inObj || !_pbContext.inArray() || !_currField.packed;
         if (_buffered != null) { // null for root
             _finishBuffering();
+        }
+    }
+
+    @Override
+    public void writeArray(int[] array, int offset, int length) throws IOException
+    {
+        if (array == null) {
+            throw new IllegalArgumentException("null array");
+        }
+        _verifyOffsets(array.length, offset, length);
+        if (!_inObject) {
+            _reportError("Current context not an OBJECT, can not write arrays");
+        }
+        if (_currField == null) { // inlined _verifyValueWrite
+            _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
+        }
+        if (!_currField.isArray()) {
+            _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");
+        }
+
+        // one minor optimization: empty arrays do not produce anything
+        if (length == 0) {
+            return;
+        }
+        
+        // NOTE: as a short-cut, leave out construction of intermediate ARRAY
+
+        final int end = offset+length;
+        if (_currField.packed) {
+            _writePackedArray(array, offset, end);
+        } else {
+            _writeNonPackedArray(array, offset, end);
+        }
+        // and then pieces of END_ARRAY
+        _writeTag = true; 
+    }
+
+    private void _writePackedArray(int[] array, int i, int end) throws IOException
+    {
+        _startBuffering(_currField.typedTag);
+        final int type = _currField.wireType;
+
+        if (type == WireType.VINT) {
+            final boolean zigzag = _currField.usesZigZag;
+            for (; i < end; ++i) {
+                int v = array[i];
+                if (zigzag) {
+                    v = ProtobufUtil.zigzagEncode(v);
+                }
+                _writeVIntNoTag(v);
+            }
+        } else if (type == WireType.FIXED_32BIT) {
+            for (; i < end; ++i) {
+                _writeInt32NoTag(array[i]);
+            }
+        } else if (type == WireType.FIXED_64BIT) {
+            for (; i < end; ++i) {
+                _writeInt64NoTag(array[i]);
+            }
+        } else {
+            _reportWrongWireType("int");
+        }
+        
+        _finishBuffering();
+    }
+
+    private void _writeNonPackedArray(int[] array, int i, int end) throws IOException
+    {
+        final int type = _currField.wireType;
+
+        if (type == WireType.VINT) {
+            final boolean zigzag = _currField.usesZigZag;
+            for (; i < end; ++i) {
+                int v = array[i];
+                if (zigzag) {
+                    v = ProtobufUtil.zigzagEncode(v);
+                }
+                _writeVInt(v);
+            }
+        } else if (type == WireType.FIXED_32BIT) {
+            for (; i < end; ++i) {
+                _writeInt32(array[i]);
+            }
+        } else if (type == WireType.FIXED_64BIT) {
+            for (; i < end; ++i) {
+                _writeInt64(array[i]);
+            }
+        } else {
+            _reportWrongWireType("int");
         }
     }
 
@@ -1108,7 +1197,7 @@ public class ProtobufGenerator extends GeneratorBase
     /* Internal scalar value writes
     /**********************************************************
      */
-    
+
     private final void _writeVInt(int v) throws IOException
     {
         // Max tag length 5 bytes, then at most 5 bytes
@@ -1149,6 +1238,47 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr = ptr;
     }
 
+    // @since 2.8
+    private final void _writeVIntNoTag(int v) throws IOException
+    {
+        // Max at most 5 bytes
+        _ensureRoom(5);
+        int ptr = _currPtr;
+        if (v < 0) {
+            _currPtr = _writeVIntMax(v, ptr);
+            return;
+        }
+
+        final byte[] buf = _currBuffer;
+        if (v <= 0x7F) {
+            buf[ptr++] = (byte) v;
+        } else {
+            buf[ptr++] = (byte) (0x80 + (v & 0x7F));
+            v >>= 7;
+            if (v <= 0x7F) {
+                buf[ptr++] = (byte) v;
+            } else {
+                buf[ptr++] = (byte) ((v & 0x7F) + 0x80);
+                v >>= 7;
+                if (v <= 0x7F) {
+                    buf[ptr++] = (byte) v;
+                } else {
+                    buf[ptr++] = (byte) ((v & 0x7F) + 0x80);
+                    v >>= 7;
+                    if (v <= 0x7F) {
+                        buf[ptr++] = (byte) v;
+                    } else {
+                        buf[ptr++] = (byte) ((v & 0x7F) + 0x80);
+                        v >>= 7;
+                        // and now must have at most 3 bits (since negatives were offlined)
+                        buf[ptr++] = (byte) (v & 0x7F);
+                    }
+                }
+            }
+        }
+        _currPtr = ptr;
+    }
+    
     // off-lined version for 5-byte VInts
     private final int _writeVIntMax(int v, int ptr) throws IOException
     {
@@ -1164,7 +1294,7 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) v;
         return ptr;
     }
-    
+
     private final void _writeVLong(long v) throws IOException
     {
         // Max tag length 5 bytes, then at most 10 bytes
@@ -1222,6 +1352,64 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr = ptr;
     }
 
+    // @since 2.8
+    private final void _writeVLongNoTag(long v) throws IOException
+    {
+        // Max: 10 bytes
+        _ensureRoom(10);
+        int ptr = _currPtr;
+        if (v < 0L) {
+            _currPtr = _writeVLongMax(v, ptr);
+            return;
+        }
+
+        // first, 4 bytes or less?
+        if (v <= 0x0FFFFFFF) {
+            int i = (int) v;
+            final byte[] buf = _currBuffer;
+
+            if (v <= 0x7F) {
+                buf[ptr++] = (byte) v;
+            } else {
+                do {
+                    buf[ptr++] = (byte) ((i & 0x7F) + 0x80);
+                    i >>= 7;
+                } while (i > 0x7F);
+                buf[ptr++] = (byte) i;
+            }
+            _currPtr = ptr;
+            return;
+        }
+        // nope, so we know 28 LSBs are to be written first
+        int i = (int) v;
+        final byte[] buf = _currBuffer;
+
+        buf[ptr++] = (byte) ((i & 0x7F) + 0x80);
+        i >>>= 7;
+        buf[ptr++] = (byte) ((i & 0x7F) + 0x80);
+        i >>= 7;
+        buf[ptr++] = (byte) ((i & 0x7F) + 0x80);
+        i >>= 7;
+        buf[ptr++] = (byte) ((i & 0x7F) + 0x80);
+
+        v >>>= 28;
+
+        // still got 36 bits, chop of LSB
+        if (v <= 0x7F) {
+            buf[ptr++] = (byte) v;
+        } else {
+            buf[ptr++] = (byte) ((v & 0x7F) + 0x80);
+            // but then can switch to int for remaining max 28 bits
+            i = (int) (v >> 7);
+            do {
+                buf[ptr++] = (byte) ((i & 0x7F) + 0x80);
+                i >>= 7;
+            } while (i > 0x7F);
+            buf[ptr++] = (byte) i;
+        }
+        _currPtr = ptr;
+    }
+    
     // off-lined version for 10-byte VLongs
     private final int _writeVLongMax(long v, int ptr) throws IOException
     {
@@ -1253,7 +1441,7 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) i;
         return ptr;
     }
-    
+
     private final void _writeInt32(int v) throws IOException
     {
         _ensureRoom(9); // max tag 5 bytes
@@ -1268,7 +1456,22 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) v;
         _currPtr =  ptr;
     }
-    
+
+    private final void _writeInt32NoTag(int v) throws IOException
+    {
+        _ensureRoom(4);
+        int ptr = _currPtr;
+        final byte[] buf = _currBuffer;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        _currPtr =  ptr;
+    }
+
     private final void _writeInt64(long v64) throws IOException
     {
         _ensureRoom(13); // max tag 5 bytes
@@ -1298,6 +1501,35 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr =  ptr;
     }
 
+    private final void _writeInt64NoTag(long v64) throws IOException
+    {
+        _ensureRoom(8);
+        int ptr = _currPtr;
+        final byte[] buf = _currBuffer;
+
+        int v = (int) v64;
+        
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+
+        v = (int) (v64 >> 32);
+        
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        v >>= 8;
+        buf[ptr++] = (byte) v;
+        
+        _currPtr =  ptr;
+    }
+    
     /*
     /**********************************************************
     /* Helper methods, buffering
@@ -1392,10 +1624,14 @@ public class ProtobufGenerator extends GeneratorBase
     protected final void _ensureRoom(int needed) throws IOException
     {
         // common case: we got it already
-        if ((_currPtr + needed) <= _currBuffer.length) {
-            return;
+        if ((_currPtr + needed) > _currBuffer.length) {
+            _ensureMore();
         }
-        // if not, either simple (flush), or 
+    }
+
+    protected final void _ensureMore() throws IOException
+    {
+    // if not, either simple (flush), or 
         final int start = _currStart;
         final int currLen = _currPtr - start;
         

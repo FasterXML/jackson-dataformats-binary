@@ -19,6 +19,16 @@ public class WriteArrayTest extends ProtobufTestBase
             +"}\n"
     ;
 
+    final protected static String PROTOC_INT32_ARRAY_SPARSE = "message Ints {\n"
+            +" repeated fixed32 values = 1;\n"
+            +"}\n"
+    ;
+
+    final protected static String PROTOC_INT32_ARRAY_PACKED = "message Ints {\n"
+            +" repeated fixed32 values = 1 [packed=true];\n"
+            +"}\n"
+    ;
+    
     final protected static String PROTOC_STRING_ARRAY_SPARSE = "message Ints {\n"
             +" repeated string values = 1;\n"
             +"}\n"
@@ -81,7 +91,7 @@ public class WriteArrayTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    public void testIntArraySparse() throws Exception
+    public void testVIntArraySparse() throws Exception
     {
         /*
         final protected static String PROTOC_INT_ARRAY = "message Ints {\n"
@@ -99,7 +109,7 @@ public class WriteArrayTest extends ProtobufTestBase
         assertEquals(0x4, bytes[5]); // zig-zagged value for 2
     }
 
-    public void testIntArrayPacked() throws Exception
+    public void testVIntArrayPacked() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse(PROTOC_INT_ARRAY_PACKED));
         byte[] bytes = w.writeValueAsBytes(new IntArray(3, -1, 2));
@@ -112,6 +122,24 @@ public class WriteArrayTest extends ProtobufTestBase
         assertEquals(0x4, bytes[4]); // zig-zagged value for 2
     }
 
+    public void testInt32ArraySparse() throws Exception
+    {
+        final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse
+                (PROTOC_INT32_ARRAY_SPARSE));
+        byte[] bytes = w.writeValueAsBytes(new IntArray(3, -1, 2));
+        // 3 x 5 bytes per value (typed tag, value) -> 18
+        assertEquals(15, bytes.length);
+    }
+
+    public void testInt32ArrayPacked() throws Exception
+    {
+        final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse
+                (PROTOC_INT32_ARRAY_PACKED));
+        byte[] bytes = w.writeValueAsBytes(new IntArray(3, -1, 2));
+        // 1 byte for typed tag, 1 byte for length, 3 x 4 byte per value -> 14
+        assertEquals(14, bytes.length);
+    }
+    
     /*
     /**********************************************************
     /* Test methods, String arrays

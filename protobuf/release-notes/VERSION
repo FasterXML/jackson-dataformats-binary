@@ -4,6 +4,10 @@ Project: jackson-dataformat-protobuf
 === Releases ===
 ------------------------------------------------------------------------
 
+2.8.0 (not yet released)
+
+- Support `writeStartArray(int[])`
+
 2.7.4 (29-Apr-2016)
 
 No changes since 2.7.3
