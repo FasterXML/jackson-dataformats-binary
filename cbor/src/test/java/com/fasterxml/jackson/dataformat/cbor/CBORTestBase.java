@@ -11,7 +11,7 @@ import org.junit.Assert;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-abstract class CBORTestBase
+public abstract class CBORTestBase
     extends junit.framework.TestCase
 {
 

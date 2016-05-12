@@ -314,6 +314,41 @@ public class CBORGenerator extends GeneratorBase
 
     /*
     /**********************************************************
+    /* Extended API, configuration
+    /**********************************************************
+     */
+
+    public CBORGenerator enable(Feature f) {
+        _formatFeatures |= f.getMask();
+        if (f == Feature.WRITE_MINIMAL_INTS) {
+            _cfgMinimalInts = true;
+        }
+        return this;
+    }
+
+    public CBORGenerator disable(Feature f) {
+        _formatFeatures &= ~f.getMask();
+        if (f == Feature.WRITE_MINIMAL_INTS) {
+            _cfgMinimalInts = false;
+        }
+        return this;
+    }
+
+    public final boolean isEnabled(Feature f) {
+        return (_formatFeatures & f.getMask()) != 0;
+    }
+
+    public CBORGenerator configure(Feature f, boolean state) {
+        if (state) {
+            enable(f);
+        } else {
+            disable(f);
+        }
+        return this;
+    }
+
+    /*
+    /**********************************************************
     /* Overridden methods, write methods
     /**********************************************************
      */
@@ -403,88 +438,6 @@ public class CBORGenerator extends GeneratorBase
 
     /*
     /**********************************************************
-    /* Extended API, configuration
-    /**********************************************************
-     */
-
-    public CBORGenerator enable(Feature f) {
-        _formatFeatures |= f.getMask();
-        if (f == Feature.WRITE_MINIMAL_INTS) {
-            _cfgMinimalInts = true;
-        }
-        return this;
-    }
-
-    public CBORGenerator disable(Feature f) {
-        _formatFeatures &= ~f.getMask();
-        if (f == Feature.WRITE_MINIMAL_INTS) {
-            _cfgMinimalInts = false;
-        }
-        return this;
-    }
-
-    public final boolean isEnabled(Feature f) {
-        return (_formatFeatures & f.getMask()) != 0;
-    }
-
-    public CBORGenerator configure(Feature f, boolean state) {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-    /*
-    /**********************************************************
-    /* Extended API, CBOR-specific encoded output
-    /**********************************************************
-     */
-
-    /**
-     * Method for writing out an explicit CBOR Tag.
-     * 
-     * @param tagId Positive integer (0 or higher)
-     * 
-     * @since 2.5
-     */
-    public void writeTag(int tagId) throws IOException
-    {
-        if (tagId < 0) {
-            throw new IllegalArgumentException("Can not write negative tag ids ("+tagId+")");
-        }
-        _writeLengthMarker(PREFIX_TYPE_TAG, tagId);
-    }
-    
-    /*
-    /**********************************************************
-    /* Extended API, raw bytes (by-passing encoder)
-    /**********************************************************
-     */
-
-    /**
-     * Method for directly inserting specified byte in output at
-     * current position.
-     *<p>
-     * NOTE: only use this method if you really know what you are doing.
-     */
-    public void writeRaw(byte b) throws IOException {
-        _writeByte(b);
-    }
-
-    /**
-     * Method for directly inserting specified bytes in output at
-     * current position.
-     *<p>
-     * NOTE: only use this method if you really know what you are doing.
-     */
-    public void writeBytes(byte[] data, int offset, int len) throws IOException {
-        _writeBytes(data, offset, len);
-    }
-
-    /*
-    /**********************************************************
     /* Output method implementations, structural
     /**********************************************************
      */
@@ -499,7 +452,7 @@ public class CBORGenerator extends GeneratorBase
 
     // TODO: implement this for CBOR
     /*
-     * Unlike with JSON, this method can use slightly optimized version
+     * Unlike with JSON, this method could use slightly optimized version
      * since CBOR has a variant that allows embedding length in array
      * start marker. But it mostly (or only?) makes sense for small
      * arrays, cases where length marker fits within type marker byte;
@@ -557,6 +510,17 @@ public class CBORGenerator extends GeneratorBase
         _writeContext = _writeContext.getParent();
         _writeByte(BYTE_BREAK);
     }
+
+    /*
+    @Override // since 2.8
+    public void writeArray(int[] array, int offset, int length) throws IOException
+    {
+        // short-cut, do not create child array context etc
+        _verifyValueWrite("start an object");
+
+        // !!! TODO
+    }
+    */
 
     /*
     /**********************************************************
@@ -987,7 +951,52 @@ public class CBORGenerator extends GeneratorBase
         // Internal buffer(s) generator has can now be released as well
         _releaseBuffers();
     }
-    
+    /*
+    /**********************************************************
+    /* Extended API, CBOR-specific encoded output
+    /**********************************************************
+     */
+
+    /**
+     * Method for writing out an explicit CBOR Tag.
+     * 
+     * @param tagId Positive integer (0 or higher)
+     * 
+     * @since 2.5
+     */
+    public void writeTag(int tagId) throws IOException
+    {
+        if (tagId < 0) {
+            throw new IllegalArgumentException("Can not write negative tag ids ("+tagId+")");
+        }
+        _writeLengthMarker(PREFIX_TYPE_TAG, tagId);
+    }
+
+    /*
+    /**********************************************************
+    /* Extended API, raw bytes (by-passing encoder)
+    /**********************************************************
+     */
+
+    /**
+     * Method for directly inserting specified byte in output at
+     * current position.
+     *<p>
+     * NOTE: only use this method if you really know what you are doing.
+     */
+    public void writeRaw(byte b) throws IOException {
+        _writeByte(b);
+    }
+
+    /**
+     * Method for directly inserting specified bytes in output at
+     * current position.
+     *<p>
+     * NOTE: only use this method if you really know what you are doing.
+     */
+    public void writeBytes(byte[] data, int offset, int len) throws IOException {
+        _writeBytes(data, offset, len);
+    }
 
     /*
     /**********************************************************

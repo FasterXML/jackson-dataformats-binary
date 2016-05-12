@@ -378,6 +378,7 @@ public class GeneratorSimpleTest extends CBORTestBase
             gen.copyCurrentEvent(cborParser);
         }
         gen.close();
+        cborParser.close();
 
         // copyCurrentEvent doesn't preserve fixed arrays, so we can't
         // compare with the source bytes.
@@ -403,6 +404,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         cborParser.nextToken();
         gen.copyCurrentStructure(cborParser);
         gen.close();
+        cborParser.close();
 
         // copyCurrentEvent doesn't preserve fixed arrays, so we can't
         // compare with the source bytes.

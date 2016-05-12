@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.io.SerializedString;
 
 public class GeneratorLongStringTest extends CBORTestBase
 {
@@ -20,10 +21,16 @@ public class GeneratorLongStringTest extends CBORTestBase
         gen.writeStartArray();
         
         // Let's create 1M doc, first using Strings
+        int fuzz = 0;
         while (out.size() < (DOC_LEN - 10000)) {
             String str = generateUnicodeString(5000, rnd);
             strings.add(str);
-            gen.writeString(str);
+            // let's mix in alternative representaton as well
+            if ((++fuzz % 7) == 1) {
+                gen.writeString(new SerializedString(str));
+            } else {
+                gen.writeString(str);
+            }
         }
         gen.writeEndArray();
         gen.close();
@@ -35,10 +42,16 @@ public class GeneratorLongStringTest extends CBORTestBase
         gen = f.createGenerator(out);
         gen.writeStartArray();
         
-        // Let's create 1M doc, first using Strings
         for (int i = 0, len = strings.size(); i < len; ++i) {
-            char[] ch = strings.get(i).toCharArray();
-            gen.writeString(ch, 0, ch.length);
+            String str = strings.get(i);
+            // let's mix in alternative representaton as well
+            if ((++fuzz % 7) == 1) {
+                byte[] b = str.getBytes("UTF-8");
+                gen.writeRawUTF8String(b, 0, b.length);
+            } else {
+                char[] ch = str.toCharArray();
+                gen.writeString(ch, 0, ch.length);
+            }
         }
         gen.writeEndArray();
         gen.close();
@@ -54,15 +67,13 @@ public class GeneratorLongStringTest extends CBORTestBase
     private void _verifyStrings(JsonFactory f, byte[] input, List<String> strings)
         throws IOException
     {
-        /*
-        JsonParser jp = f.createParser(input);
-        assertToken(JsonToken.START_ARRAY, jp.nextToken());
+        JsonParser p = f.createParser(input);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
-            assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-            assertEquals(strings.get(i), jp.getText());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            assertEquals(strings.get(i), p.getText());
         }
-        assertToken(JsonToken.END_ARRAY, jp.nextToken());
-        jp.close();
-        */
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
     }
 }
