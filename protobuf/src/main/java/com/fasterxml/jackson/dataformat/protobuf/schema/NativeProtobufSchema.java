@@ -90,13 +90,13 @@ public class NativeProtobufSchema
     
     @Override
     public String toString() {
-    	return toString(_name);
+        return toString(_name);
     }
     
     public String toString(String name) {
-    	ProtoFile.Builder builder = ProtoFile.builder(name);
-    	builder.addTypes(_nativeTypes);
-    	return builder.build().toSchema();
+        ProtoFile.Builder builder = ProtoFile.builder(name);
+        builder.addTypes(_nativeTypes);
+        return builder.build().toSchema();
     }
 
     /*

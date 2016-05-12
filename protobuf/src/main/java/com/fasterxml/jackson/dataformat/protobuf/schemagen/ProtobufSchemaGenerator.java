@@ -1,8 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -45,11 +43,12 @@ public class ProtobufSchemaGenerator extends ProtoBufSchemaVisitor
 		if (appendDependencies) {
 			types = this.buildWithDependencies();
 		} else {
-			types = new ArrayList<>();
-			types.add(this.build());
+			types = new LinkedList<>();
+			types.add(build());
 		}
 
-		return NativeProtobufSchema.construct(_rootType.getRawClass().getName(), types).forFirstType();
+		return NativeProtobufSchema.construct(_rootType.getRawClass().getName(),
+		        types).forFirstType();
 	}
 
 	@Override

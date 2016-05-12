@@ -28,6 +28,16 @@ public class WriteArrayTest extends ProtobufTestBase
             +" repeated fixed32 values = 1 [packed=true];\n"
             +"}\n"
     ;
+
+    final protected static String PROTOC_INT64_ARRAY_SPARSE = "message Ints {\n"
+            +" repeated fixed64 values = 1;\n"
+            +"}\n"
+    ;
+
+    final protected static String PROTOC_INT64_ARRAY_PACKED = "message Ints {\n"
+            +" repeated fixed64 values = 1 [packed=true];\n"
+            +"}\n"
+    ;
     
     final protected static String PROTOC_STRING_ARRAY_SPARSE = "message Ints {\n"
             +" repeated string values = 1;\n"
@@ -139,7 +149,31 @@ public class WriteArrayTest extends ProtobufTestBase
         // 1 byte for typed tag, 1 byte for length, 3 x 4 byte per value -> 14
         assertEquals(14, bytes.length);
     }
-    
+
+    /*
+    /**********************************************************
+    /* Test methods, long arrays
+    /**********************************************************
+     */
+
+    public void testIntAsLongArraySparse() throws Exception
+    {
+        final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse
+                (PROTOC_INT64_ARRAY_SPARSE));
+        byte[] bytes = w.writeValueAsBytes(new IntArray(3, -1, 2));
+        // 3 x 9 bytes per value (typed tag, value) -> 30
+        assertEquals(27, bytes.length);
+    }
+
+    public void testIntAsLongArrayPacked() throws Exception
+    {
+        final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse
+                (PROTOC_INT64_ARRAY_PACKED));
+        byte[] bytes = w.writeValueAsBytes(new IntArray(3, -1, 2));
+        // 1 byte for typed tag, 1 byte for length, 3 x 8 byte per value -> 26
+        assertEquals(26, bytes.length);
+    }
+
     /*
     /**********************************************************
     /* Test methods, String arrays
