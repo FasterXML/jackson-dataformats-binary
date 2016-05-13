@@ -82,11 +82,16 @@ public final class CBORConstants
     public final static byte BYTE_FLOAT16 = (byte) (PREFIX_TYPE_MISC + 25);
     public final static byte BYTE_FLOAT32 = (byte) (PREFIX_TYPE_MISC + 26);
     public final static byte BYTE_FLOAT64 = (byte) (PREFIX_TYPE_MISC + 27);
+
+    public final static int TAG_BIGNUM_POS = 2;
+    public final static int TAG_BIGNUM_NEG = 3;
+    public final static int TAG_DECIMAL_FRACTION = 4;
+    public final static int TAG_BIGFLOAT = 5;
     
-    public final static byte BYTE_TAG_BIGNUM_POS = (byte) (PREFIX_TYPE_TAG + 2);
-    public final static byte BYTE_TAG_BIGNUM_NEG = (byte) (PREFIX_TYPE_TAG + 3);
-    public final static byte BYTE_TAG_DECIMAL_FRACTION = (byte) (PREFIX_TYPE_TAG + 4);
-    public final static byte BYTE_TAG_BIGFLOAT = (byte) (PREFIX_TYPE_TAG + 5);
+    public final static byte BYTE_TAG_BIGNUM_POS = (byte) (PREFIX_TYPE_TAG + TAG_BIGNUM_POS);
+    public final static byte BYTE_TAG_BIGNUM_NEG = (byte) (PREFIX_TYPE_TAG + TAG_BIGNUM_NEG);
+    public final static byte BYTE_TAG_DECIMAL_FRACTION = (byte) (PREFIX_TYPE_TAG + TAG_DECIMAL_FRACTION);
+    public final static byte BYTE_TAG_BIGFLOAT = (byte) (PREFIX_TYPE_TAG + TAG_BIGFLOAT);
     
     public final static byte BYTE_BREAK = (byte) 0xFF;
 

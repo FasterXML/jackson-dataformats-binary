@@ -511,16 +511,18 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_BREAK);
     }
 
-    /*
     @Override // since 2.8
     public void writeArray(int[] array, int offset, int length) throws IOException
     {
+        /*
         // short-cut, do not create child array context etc
         _verifyValueWrite("start an object");
 
         // !!! TODO
+         */
+
+        super.writeArray(array, offset, length);
     }
-    */
 
     /*
     /**********************************************************
@@ -529,7 +531,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeString(String text) throws IOException,JsonGenerationException
+    public void writeString(String text) throws IOException
     {
         if (text == null) {
             writeNull();

@@ -712,6 +712,9 @@ public final class CBORParser extends ParserMinimalBase
         case 2: // byte[]
             _typeByte = ch;
             _tokenIncomplete = true;
+            if (_tagValue >= 0) {
+                return _nextBinaryWithTag(_tagValue);
+            }
             return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
 
         case 3: // String
@@ -777,16 +780,6 @@ public final class CBORParser extends ParserMinimalBase
         }
         return null;
     }
-
-    protected JsonToken _handleCBOREOF() throws IOException {
-        /* NOTE: here we can and should close input, release buffers,
-         * since this is "hard" EOF, not a boundary imposed by
-         * header token.
-         */
-        _tagValue = -1;
-        close();
-        return (_currToken = null);
-    }
     
     protected String _numberToName(int ch, boolean neg) throws IOException
     {
@@ -823,16 +816,32 @@ public final class CBORParser extends ParserMinimalBase
         return String.valueOf(1);
     }
 
+    protected JsonToken _nextBinaryWithTag(int tag) throws IOException
+    {
+        // For now all we should get is BigInteger
+        
+        boolean neg;
+        if (tag == CBORConstants.TAG_BIGNUM_POS) {
+            neg = false;
+        } else  if (tag == CBORConstants.TAG_BIGNUM_NEG) {
+            neg = true;
+        } else {
+            // 12-May-2016, tatu: Since that's all we know, let's otherwise
+            //   just return default Binary data marker
+            return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
+        }
+
+        // First: get the data
+        _finishToken();
+
+        _numberBigInt = new BigInteger(_binaryValue);
+        _numTypesValid |= NR_BIGINT;
+        
+        return (_currToken = JsonToken.VALUE_NUMBER_INT);
+    }
+
     // base impl is fine:
     //public String getCurrentName() throws IOException
-
-    protected void _invalidToken(int ch) throws JsonParseException {
-        ch &= 0xFF;
-        if (ch == 0xFF) {
-            throw _constructError("Mismatched BREAK byte (0xFF): encountered where value expected");
-        }
-        throw _constructError("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
-    }
 
     /**
      * Method for forcing full read of current token, even if it might otherwise
@@ -2939,9 +2948,27 @@ public final class CBORParser extends ParserMinimalBase
 
     /*
     /**********************************************************
-    /* Internal methods, error reporting
+    /* Internal methods, error handling, reporting
     /**********************************************************
      */
+
+    protected JsonToken _handleCBOREOF() throws IOException {
+        /* NOTE: here we can and should close input, release buffers,
+         * since this is "hard" EOF, not a boundary imposed by
+         * header token.
+         */
+        _tagValue = -1;
+        close();
+        return (_currToken = null);
+    }
+
+    protected void _invalidToken(int ch) throws JsonParseException {
+        ch &= 0xFF;
+        if (ch == 0xFF) {
+            throw _constructError("Mismatched BREAK byte (0xFF): encountered where value expected");
+        }
+        throw _constructError("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
+    }
 
     protected void _reportUnexpectedBreak() throws IOException {
         if (_parsingContext.inRoot()) {

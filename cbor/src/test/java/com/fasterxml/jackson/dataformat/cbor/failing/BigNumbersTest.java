@@ -33,7 +33,7 @@ public class BigNumbersTest extends CBORTestBase
 
         // but verify that the original content can be parsed
         CBORParser parser = cborParser(sourceBytes.toByteArray());
-        assertToken(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(BigInteger.TEN, parser.getBigIntegerValue());
         parser.close();
     }
