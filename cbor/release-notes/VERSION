@@ -6,6 +6,8 @@ Project: jackson-dataformat-cbor
 
 2.8.0 (not yet released)
 
+#18: Fail to report error for trying to write field name outside Object (root level)
+
 2.7.3 (16-Mar-2016)
 
 No changes since 2.7.2
