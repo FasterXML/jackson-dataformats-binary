@@ -5,7 +5,7 @@ standard binary dataformat backends.
 
 Currently included are:
 
-* [Avor](avro/)
+* [Avro](avro/)
 * [CBOR](cbor/)
 * [Protobuf](protobuf/)
 * [Smile](smile/)
