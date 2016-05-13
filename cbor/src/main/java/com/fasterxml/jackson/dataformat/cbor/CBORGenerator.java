@@ -780,7 +780,13 @@ public class CBORGenerator extends GeneratorBase
             return;
         }
         _verifyValueWrite("write number");
-        
+        _write(v);
+    }
+
+    // Main write method isolated so that it can be called directly
+    // in cases where that is needed (to encode BigDecimal)
+    protected void _write(BigInteger v) throws IOException
+    {
         /* Supported by using type tags, as per spec: major type for tag '6';
          * 5 LSB either 2 for positive bignum or 3 for negative bignum.
          * And then byte sequence that encode variable length integer.
@@ -796,7 +802,7 @@ public class CBORGenerator extends GeneratorBase
         _writeLengthMarker(PREFIX_TYPE_BYTES, len);
         _writeBytes(data, 0, len);
     }
-    
+
     @Override
     public void writeNumber(double d) throws IOException
     {
@@ -852,36 +858,25 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write number");
         /* Supported by using type tags, as per spec: major type for tag '6';
          * 5 LSB 4.
-         * And then a two-int array, with mantissa and exponent
+         * And then a two-element array; integer exponent, and int/bigint mantissa
          */
-        _writeByte(BYTE_TAG_BIGFLOAT);
+        // 12-May-2016, tatu: Before 2.8, used "bigfloat", but that was incorrect...
+        _writeByte(BYTE_TAG_DECIMAL_FRACTION);
         _writeByte(BYTE_ARRAY_2_ELEMENTS);
 
         int scale = dec.scale();
         _writeIntValue(scale);
-
         /* Hmmmh. Specification suggest use of regular integer for mantissa.
-         * But... it may or may not fit. Let's try to do that, if it works;
-         * if not, use byte array.
+         * But if it doesn't fit, use "bignum" 
          */
         BigInteger unscaled = dec.unscaledValue();
-        byte[] data = unscaled.toByteArray();
-        if (data.length <= 4) {
-            int v = data[0]; // let it be sign extended on purpose
-            for (int i = 1; i < data.length; ++i) {
-                v = (v << 8) + (data[i] & 0xFF);
-            }
-            _writeIntValue(v);
-        } else if (data.length <= 8) {
-            long v = data[0]; // let it be sign extended on purpose
-            for (int i = 1; i < data.length; ++i) {
-                v = (v << 8) + (data[i] & 0xFF);
-            }
-            _writeLongValue(v);
+        int bitLength = unscaled.bitLength();
+        if (bitLength <= 31) {
+            _writeIntValue(unscaled.intValue());
+        } else if (bitLength <= 63) {
+            _writeLongValue(unscaled.longValue());
         } else {
-            final int len = data.length;
-            _writeLengthMarker(PREFIX_TYPE_BYTES, len);
-            _writeBytes(data, 0, len);
+            _write(unscaled);
         }
     }
 
@@ -1307,8 +1302,7 @@ public class CBORGenerator extends GeneratorBase
     {
         int marker;
         if (i < 0) {
-            i += 1;
-            i = -1;
+            i = -i - 1;
             marker = PREFIX_TYPE_INT_NEG;
         } else {
             marker = PREFIX_TYPE_INT_POS;
@@ -1321,7 +1315,7 @@ public class CBORGenerator extends GeneratorBase
         _ensureRoomForOutput(9);
         if (l < 0) {
             l += 1;
-            l = -1;
+            l = -l;
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + 27);
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + 27);

@@ -383,11 +383,10 @@ public class GeneratorSimpleTest extends CBORTestBase
         // copyCurrentEvent doesn't preserve fixed arrays, so we can't
         // compare with the source bytes.
         Assert.assertArrayEquals(new byte[] {
-                CBORConstants.BYTE_TAG_BIGFLOAT,
-                CBORConstants.BYTE_ARRAY_INDEFINITE,
+                CBORConstants.BYTE_TAG_DECIMAL_FRACTION,
+                CBORConstants.BYTE_ARRAY_2_ELEMENTS,
                 0,
                 1,
-                CBORConstants.BYTE_BREAK
             },
             targetBytes.toByteArray());
     }
@@ -409,11 +408,10 @@ public class GeneratorSimpleTest extends CBORTestBase
         // copyCurrentEvent doesn't preserve fixed arrays, so we can't
         // compare with the source bytes.
         Assert.assertArrayEquals(new byte[] {
-                CBORConstants.BYTE_TAG_BIGFLOAT,
-                CBORConstants.BYTE_ARRAY_INDEFINITE,
+                CBORConstants.BYTE_TAG_DECIMAL_FRACTION,
+                CBORConstants.BYTE_ARRAY_2_ELEMENTS,
                 0,
                 1,
-                CBORConstants.BYTE_BREAK
             },
             targetBytes.toByteArray());
     }

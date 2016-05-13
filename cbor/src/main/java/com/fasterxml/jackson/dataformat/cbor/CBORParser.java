@@ -15,6 +15,8 @@ import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
+import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
+
 public final class CBORParser extends ParserMinimalBase
 {
     private final static byte[] NO_BYTES = new byte[0];
@@ -713,7 +715,7 @@ public final class CBORParser extends ParserMinimalBase
             _typeByte = ch;
             _tokenIncomplete = true;
             if (_tagValue >= 0) {
-                return _nextBinaryWithTag(_tagValue);
+                return _handleTaggedBinary(_tagValue);
             }
             return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
 
@@ -723,12 +725,14 @@ public final class CBORParser extends ParserMinimalBase
             return (_currToken = JsonToken.VALUE_STRING);
 
         case 4: // Array
-            _currToken = JsonToken.START_ARRAY;
             {
                 int len = _decodeExplicitLength(lowBits);
+                if (_tagValue >= 0) {
+                    return _handleTaggedArray(_tagValue, len);
+                }
                 _parsingContext = _parsingContext.createChildArrayContext(len);
             }
-            return _currToken;
+            return (_currToken = JsonToken.START_ARRAY);
 
         case 5: // Object
             _currToken = JsonToken.START_OBJECT;
@@ -816,14 +820,13 @@ public final class CBORParser extends ParserMinimalBase
         return String.valueOf(1);
     }
 
-    protected JsonToken _nextBinaryWithTag(int tag) throws IOException
+    protected JsonToken _handleTaggedBinary(int tag) throws IOException
     {
         // For now all we should get is BigInteger
-        
         boolean neg;
-        if (tag == CBORConstants.TAG_BIGNUM_POS) {
+        if (tag == TAG_BIGNUM_POS) {
             neg = false;
-        } else  if (tag == CBORConstants.TAG_BIGNUM_NEG) {
+        } else  if (tag == TAG_BIGNUM_NEG) {
             neg = true;
         } else {
             // 12-May-2016, tatu: Since that's all we know, let's otherwise
@@ -834,12 +837,68 @@ public final class CBORParser extends ParserMinimalBase
         // First: get the data
         _finishToken();
 
-        _numberBigInt = new BigInteger(_binaryValue);
-        _numTypesValid |= NR_BIGINT;
-        
+        BigInteger nr = new BigInteger(_binaryValue);
+        if (neg) {
+            nr = nr.negate();
+        }
+        _numberBigInt = nr;
+        _numTypesValid = NR_BIGINT;
         return (_currToken = JsonToken.VALUE_NUMBER_INT);
     }
 
+    protected JsonToken _handleTaggedArray(int tag, int len) throws IOException
+    {
+        // For simplicity, let's create matching array context -- in perfect
+        // world that wouldn't be necessarily, but in this one there are
+        // some constraints that make it necessary
+        _parsingContext = _parsingContext.createChildArrayContext(len);
+
+        // BigDecimal is the only thing we know for sure
+        if (tag != CBORConstants.TAG_DECIMAL_FRACTION) {
+            return (_currToken = JsonToken.START_ARRAY);
+        }
+        _currToken = JsonToken.START_ARRAY;
+
+        // but has to have length of 2; otherwise we have a problem...
+        if (len != 2) {
+            _reportError("Unexpected array size ("+len+") for tagged 'bigfloat' value; should have exactly 2 number elements");
+        }
+        // and then use recursion to get values
+        JsonToken t = nextToken();
+        // First: exponent, which MUST be a simple integer value
+        if (t != JsonToken.VALUE_NUMBER_INT) {
+            _reportError("Unexpected token ("+t+") as the first part of 'bigfloat' value: should get VALUE_NUMBER_INT");
+        }
+        int exp = getIntValue();
+
+        t = nextToken();
+        // Should get an integer value; int/long/BigInteger
+        if (t != JsonToken.VALUE_NUMBER_INT) {
+            _reportError("Unexpected token ("+t+") as the second part of 'bigfloat' value: should get VALUE_NUMBER_INT");
+        }
+        
+        BigDecimal dec;
+
+        switch (getNumberType()) {
+        case INT:
+        case LONG:
+            dec = BigDecimal.valueOf(getLongValue(), exp);
+            break;
+        case BIG_INTEGER:
+        default:
+            dec = new BigDecimal(getBigIntegerValue(), exp);
+            break;
+        }
+
+        t = nextToken();
+        if (t != JsonToken.END_ARRAY) {
+            _reportError("Unexpected token ("+t+") after 2 elements of 'bigfloat' value");
+        }
+        _numberBigDecimal = dec;
+        _numTypesValid = NR_BIGDECIMAL;
+        return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+    }
+    
     // base impl is fine:
     //public String getCurrentName() throws IOException
 
