@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.gen;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
-
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
 
 /**
  * Test to verify handling of "raw String value" write methods that by-pass

@@ -1,11 +1,11 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
-
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
 
 public class TestGeneratorWithSerializedString extends SmileTestBase
 {

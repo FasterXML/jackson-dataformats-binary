@@ -1,11 +1,11 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
-
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
 
 /* Test based on kimchy's issue (see https://gist.github.com/853232);
  * exhibits an issue with buffer recycling.

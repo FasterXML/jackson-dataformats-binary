@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
 import java.util.HashMap;
@@ -11,7 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 
