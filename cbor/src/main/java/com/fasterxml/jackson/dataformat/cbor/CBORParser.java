@@ -1252,14 +1252,14 @@ public final class CBORParser extends ParserMinimalBase
     @Override
     public Boolean nextBooleanValue() throws IOException
     {
-        switch (nextToken()) {
-        case VALUE_TRUE:
+        JsonToken t = nextToken();
+        if (t == JsonToken.VALUE_TRUE) {
             return Boolean.TRUE;
-        case VALUE_FALSE:
-            return Boolean.FALSE;
-        default:
-            return null;
         }
+        if (t == JsonToken.VALUE_FALSE) {
+            return Boolean.FALSE;
+        }
+        return null;
     }
 
     /*

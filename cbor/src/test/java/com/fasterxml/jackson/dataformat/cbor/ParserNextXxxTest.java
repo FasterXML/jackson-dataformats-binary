@@ -52,7 +52,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
-	public void testIssue38() throws Exception
+    public void testIssue38() throws Exception
     {
         final CBORFactory f = new CBORFactory();
         byte[] DOC = cborDoc(f, "{\"field\" :\"value\"}");
@@ -103,6 +103,36 @@ public class ParserNextXxxTest extends CBORTestBase
             assertEquals(exp % 1000, parser.getIntValue());
         }
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
+        parser.close();
+    }
+
+    public void testNextTextValue() throws Exception
+    {
+        final CBORFactory f = new CBORFactory();
+        byte[] DOC = cborDoc(f, "{\"field\" :\"value\", \"array\" : [ \"foo\", true ] }");
+
+        SerializableString fieldName = new SerializedString("field");
+        JsonParser parser = f.createParser(DOC);
+        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+        assertTrue(parser.nextFieldName(fieldName));
+
+        assertEquals("value", parser.nextTextValue());
+        assertEquals("value", parser.getText());
+
+        assertEquals("array", parser.nextFieldName());
+        assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+        assertEquals("foo", parser.nextTextValue());
+        assertEquals(Boolean.TRUE, parser.nextBooleanValue());
+        assertEquals(JsonToken.END_ARRAY, parser.nextToken());
+
+        assertNull(parser.nextFieldName());
+        assertEquals(JsonToken.END_OBJECT, parser.getCurrentToken());
+        assertNull(parser.nextToken());
+
+        assertNull(parser.nextBooleanValue());
+        assertNull(parser.nextTextValue());
+        assertNull(parser.nextFieldName());
+        
         parser.close();
     }
     
