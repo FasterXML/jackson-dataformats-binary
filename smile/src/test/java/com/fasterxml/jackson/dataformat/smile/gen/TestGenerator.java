@@ -8,18 +8,11 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.smile.SmileConstants;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
-import com.fasterxml.jackson.dataformat.smile.SmileUtil;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
+import com.fasterxml.jackson.dataformat.smile.*;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 
-public class TestGenerator
-    extends SmileTestBase
+public class TestGenerator extends SmileTestBase
 {
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals

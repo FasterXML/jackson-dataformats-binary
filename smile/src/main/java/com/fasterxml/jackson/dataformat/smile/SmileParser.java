@@ -261,7 +261,7 @@ public class SmileParser extends ParserBase
             ++_inputPtr;
         }
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         if (_inputBuffer[_inputPtr] != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
@@ -271,7 +271,7 @@ public class SmileParser extends ParserBase
             return false;
         }
         if (++_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();        	
+            _loadMoreGuaranteed();        	
         }
         if (_inputBuffer[_inputPtr] != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
@@ -282,7 +282,7 @@ public class SmileParser extends ParserBase
         }
     	// Good enough; just need version info from 4th byte...
         if (++_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();        	
+            _loadMoreGuaranteed();        	
         }
         int ch = _inputBuffer[_inputPtr++];
         int versionBits = (ch >> 4) & 0x0F;
@@ -402,9 +402,12 @@ public class SmileParser extends ParserBase
     /* Low-level reading, other
     /**********************************************************
      */
-    
-    @Override
-    protected final boolean loadMore() throws IOException
+
+    protected final void _loadMoreGuaranteed() throws IOException {
+        if (!_loadMore()) { _reportInvalidEOF(); }
+    }
+
+    protected final boolean _loadMore() throws IOException
     {
         //_currInputRowStart -= _inputEnd;
         
@@ -480,12 +483,6 @@ public class SmileParser extends ParserBase
     /* Overridden methods
     /**********************************************************
      */
-
-    @Override
-    protected void _finishString() throws IOException {
-        // should never be called; but must be defined for superclass
-        _throwInternal();
-    }
 
     @Override
     public void close() throws IOException {
@@ -587,7 +584,7 @@ public class SmileParser extends ParserBase
             return (_currToken = _handleFieldName());
         }
         if (_inputPtr >= _inputEnd) {
-            if (!loadMore()) {
+            if (!_loadMore()) {
             	return _eofAsNextToken();
             }
         }
@@ -678,7 +675,7 @@ public class SmileParser extends ParserBase
             case 0x0E:
             case 0x0F:
                 if (_inputPtr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    _loadMoreGuaranteed();
                 }
                 return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
             case 0x18: // START_ARRAY
@@ -939,7 +936,7 @@ public class SmileParser extends ParserBase
             _binaryValue = null;
 
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             int ch = _inputBuffer[_inputPtr++] & 0xFF;
             // is this needed?
@@ -956,7 +953,7 @@ public class SmileParser extends ParserBase
                 case 0x32:
                 case 0x33:
                     if (_inputPtr >= _inputEnd) {
-                        loadMoreGuaranteed();
+                        _loadMoreGuaranteed();
                     }
                     {
                         int index = ((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
@@ -1059,7 +1056,7 @@ public class SmileParser extends ParserBase
             }
             int ptr = _inputPtr;
             if (ptr >= _inputEnd) {
-                if (!loadMore()) {
+                if (!_loadMore()) {
                 	_eofAsNextToken();
                     return null;
                 }
@@ -1152,7 +1149,7 @@ public class SmileParser extends ParserBase
                 case 0x0E:
                 case 0x0F:
                     if (_inputPtr >= _inputEnd) {
-                        loadMoreGuaranteed();
+                        _loadMoreGuaranteed();
                     }
                     return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
                 }
@@ -1397,7 +1394,7 @@ public class SmileParser extends ParserBase
             while (left > 0) {
                 int avail = _inputEnd - _inputPtr;
                 if (_inputPtr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    _loadMoreGuaranteed();
                     avail = _inputEnd - _inputPtr;
                 }
                 int count = Math.min(avail, left);
@@ -1489,7 +1486,7 @@ public class SmileParser extends ParserBase
     protected final JsonToken _handleFieldName() throws IOException
     {    	
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
         // is this needed?
@@ -1505,7 +1502,7 @@ public class SmileParser extends ParserBase
             case 0x32:
             case 0x33:
                 if (_inputPtr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    _loadMoreGuaranteed();
                 }
                 {
                     int index = ((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
@@ -1826,7 +1823,7 @@ public class SmileParser extends ParserBase
 
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             byte b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1835,7 +1832,7 @@ public class SmileParser extends ParserBase
             }
             q = ((int) b) & 0xFF;
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1844,7 +1841,7 @@ public class SmileParser extends ParserBase
             }
             q = (q << 8) | (b & 0xFF);
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1853,7 +1850,7 @@ public class SmileParser extends ParserBase
             }
             q = (q << 8) | (b & 0xFF);
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -2171,7 +2168,7 @@ public class SmileParser extends ParserBase
     private final void _finishIntSlow() throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int value = _inputBuffer[_inputPtr++];
         int i;
@@ -2179,26 +2176,26 @@ public class SmileParser extends ParserBase
     	        value &= 0x3F;
     	    } else {
     	        if (_inputPtr >= _inputEnd) {
-    	            loadMoreGuaranteed();
+    	            _loadMoreGuaranteed();
     	        }
     	        i = _inputBuffer[_inputPtr++];
     	        if (i >= 0) { // 13 bits
     	            value = (value << 7) + i;
     	            if (_inputPtr >= _inputEnd) {
-    	                loadMoreGuaranteed();
+    	                _loadMoreGuaranteed();
     	            }
     	            i = _inputBuffer[_inputPtr++];
     	            if (i >= 0) {
     	                value = (value << 7) + i;
     	                if (_inputPtr >= _inputEnd) {
-    	                    loadMoreGuaranteed();
+    	                    _loadMoreGuaranteed();
     	                }
     	                i = _inputBuffer[_inputPtr++];
     	                if (i >= 0) {
     	                    value = (value << 7) + i;
     	                    // and then we must get negative
     	                    if (_inputPtr >= _inputEnd) {
-    	                        loadMoreGuaranteed();
+    	                        _loadMoreGuaranteed();
     	                    }
     	                    i = _inputBuffer[_inputPtr++];
     	                    if (i >= 0) {
@@ -2249,7 +2246,7 @@ public class SmileParser extends ParserBase
         // and loop for the rest
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             int value = _inputBuffer[_inputPtr++];
             if (value < 0) {
@@ -2279,19 +2276,19 @@ public class SmileParser extends ParserBase
     private final int _fourBytesToIntSlow()  throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int i = _inputBuffer[_inputPtr++]; // first 7 bits
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         i = (i << 7) + _inputBuffer[_inputPtr++]; // 14 bits
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         i = (i << 7) + _inputBuffer[_inputPtr++]; // 21
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         return (i << 7) + _inputBuffer[_inputPtr++];
     }
@@ -2308,7 +2305,7 @@ public class SmileParser extends ParserBase
         // just need 5 bytes to get int32 first; all are unsigned
         int i = _fourBytesToInt();
     	    if (_inputPtr >= _inputEnd) {
-    	        loadMoreGuaranteed();
+    	        _loadMoreGuaranteed();
     	    }
     	    i = (i << 7) + _inputBuffer[_inputPtr++];
     	    float f = Float.intBitsToFloat(i);
@@ -2323,11 +2320,11 @@ public class SmileParser extends ParserBase
         long value = (hi << 28) + (long) _fourBytesToInt();
         // and then remaining 2 bytes
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         value = (value << 7) + _inputBuffer[_inputPtr++];
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         value = (value << 7) + _inputBuffer[_inputPtr++];
         _numberDouble = Double.longBitsToDouble(value);
@@ -2348,7 +2345,7 @@ public class SmileParser extends ParserBase
         int value = 0;
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             int i = _inputBuffer[_inputPtr++];
             if (i < 0) { // last byte
@@ -2485,7 +2482,7 @@ public class SmileParser extends ParserBase
         main_loop:
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             int inPtr = _inputPtr;
             int left = _inputEnd - inPtr;
@@ -2522,7 +2519,7 @@ public class SmileParser extends ParserBase
             while (true) {
                 int ptr = _inputPtr;
                 if (ptr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    _loadMoreGuaranteed();
                     ptr = _inputPtr;
                 }
                 if (outPtr >= outBuf.length) {
@@ -2593,7 +2590,7 @@ public class SmileParser extends ParserBase
         int byteLen = _readUnsignedVInt();
         _binaryValue = new byte[byteLen];
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int ptr = 0;
         while (true) {
@@ -2605,7 +2602,7 @@ public class SmileParser extends ParserBase
             if (byteLen <= 0) {
                 return;
             }
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
     }
     
@@ -2643,7 +2640,7 @@ public class SmileParser extends ParserBase
                                         return;
                                 }
                         }
-                        loadMoreGuaranteed();                           
+                        _loadMoreGuaranteed();                           
                     }
                 case 2: // big-int
                     // just has binary data
@@ -2696,7 +2693,7 @@ public class SmileParser extends ParserBase
             	            return;
             	        }
             	    }
-            	    loadMoreGuaranteed();
+            	    _loadMoreGuaranteed();
             	}
             	// never gets here
             case 2: // binary, 7-bit
@@ -2719,7 +2716,7 @@ public class SmileParser extends ParserBase
             if (len <= 0) {
                 return;
             }
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
     }
 
@@ -2750,7 +2747,7 @@ public class SmileParser extends ParserBase
     private final int _decodeUtf8_2(int c) throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2762,7 +2759,7 @@ public class SmileParser extends ParserBase
     private final int _decodeUtf8_3(int c1) throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         c1 &= 0x0F;
         int d = (int) _inputBuffer[_inputPtr++];
@@ -2771,7 +2768,7 @@ public class SmileParser extends ParserBase
         }
         int c = (c1 << 6) | (d & 0x3F);
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2804,7 +2801,7 @@ public class SmileParser extends ParserBase
     private final int _decodeUtf8_4(int c) throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2813,7 +2810,7 @@ public class SmileParser extends ParserBase
         c = ((c & 0x07) << 6) | (d & 0x3F);
 
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2821,7 +2818,7 @@ public class SmileParser extends ParserBase
         }
         c = (c << 6) | (d & 0x3F);
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {

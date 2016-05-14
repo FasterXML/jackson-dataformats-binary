@@ -161,7 +161,10 @@ public class SmileFactory extends JsonFactory
 
     // Defaults work fine for this:
     // public boolean canUseSchema(FormatSchema schema) { }
-    
+
+    @Override
+    public boolean canUseCharArrays() { return false; }
+
     /**
      * Sub-classes need to override this method (as of 1.8)
      */

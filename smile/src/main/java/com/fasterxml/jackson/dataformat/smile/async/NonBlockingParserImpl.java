@@ -273,13 +273,13 @@ public class NonBlockingParserImpl
      * @return True if valid signature was found and handled; false if not
      */
     protected boolean handleSignature(boolean consumeFirstByte, boolean throwException)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (consumeFirstByte) {
             ++_inputPtr;
         }
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         if (_inputBuffer[_inputPtr] != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
@@ -289,7 +289,7 @@ public class NonBlockingParserImpl
             return false;
         }
         if (++_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();        	
+            _loadMoreGuaranteed();        	
         }
         if (_inputBuffer[_inputPtr] != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
@@ -300,7 +300,7 @@ public class NonBlockingParserImpl
         }
     	// Good enough; just need version info from 4th byte...
         if (++_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();        	
+            _loadMoreGuaranteed();        	
         }
         int ch = _inputBuffer[_inputPtr++];
         int versionBits = (ch >> 4) & 0x0F;
@@ -402,13 +402,7 @@ public class NonBlockingParserImpl
     /* Low-level reading, other
     /**********************************************************************
      */
-    
-    @Override
-    protected final boolean loadMore() throws IOException {
-        _throwInternal();
-        return false;
-    }
-    
+
     /**
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary
@@ -429,12 +423,6 @@ public class NonBlockingParserImpl
     /* Overridden methods
     /**********************************************************************
      */
-
-    @Override
-    protected void _finishString() throws IOException, JsonParseException {
-        // should never be called; but must be defined for superclass
-        _throwInternal();
-    }
 
     @Override
     public void close() throws IOException
@@ -514,7 +502,7 @@ public class NonBlockingParserImpl
      */
 
     @Override
-    public JsonToken nextToken() throws IOException, JsonParseException
+    public JsonToken nextToken() throws IOException
     {
         _numTypesValid = NR_UNKNOWN;
         // have we already decoded part of event? If so, continue...
@@ -662,7 +650,7 @@ public class NonBlockingParserImpl
     }
 
     private final JsonToken _handleSharedString(int index)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (index >= _seenStringValueCount) {
             _reportInvalidSharedStringValue(index);
@@ -672,7 +660,7 @@ public class NonBlockingParserImpl
     }
 
     private final void _addSeenStringValue()
-        throws IOException, JsonParseException
+        throws IOException
     {
         _finishToken();
         if (_seenStringValueCount < _seenStringValues.length) {
@@ -706,14 +694,14 @@ public class NonBlockingParserImpl
     }
 
     @Override
-    public String getCurrentName() throws IOException, JsonParseException
+    public String getCurrentName() throws IOException
     {
         return _parsingContext.getCurrentName();
     }
 
     @Override
     public NumberType getNumberType()
-        throws IOException, JsonParseException
+        throws IOException
     {
     	if (_got32BitFloat) {
     	    return NumberType.FLOAT;
@@ -767,7 +755,7 @@ public class NonBlockingParserImpl
      */
 
     @Override
-    public JsonToken peekNextToken() throws IOException, JsonParseException
+    public JsonToken peekNextToken() throws IOException
     {
         if (!_tokenIncomplete) {
             return JsonToken.NOT_AVAILABLE;
@@ -795,7 +783,7 @@ public class NonBlockingParserImpl
      */
 
     private final JsonToken _nextInt(int substate, int value)
-        throws IOException, JsonParseException
+        throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -820,7 +808,7 @@ public class NonBlockingParserImpl
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _nextLong(int substate, long value) throws IOException, JsonParseException
+    private final JsonToken _nextLong(int substate, long value) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -845,7 +833,7 @@ public class NonBlockingParserImpl
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _nextBigInt(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextBigInt(int substate) throws IOException
     {
         // !!! TBI
         _tokenIncomplete = true;
@@ -857,7 +845,7 @@ public class NonBlockingParserImpl
 
     /*
     private final boolean _finishBigInteger()
-        throws IOException, JsonParseException
+        throws IOException
     {
         byte[] raw = _read7BitBinaryWithLength();
         if (raw == null) {
@@ -869,7 +857,7 @@ public class NonBlockingParserImpl
     }
 */
     
-    private final JsonToken _nextFloat(int substate, int value) throws IOException, JsonParseException
+    private final JsonToken _nextFloat(int substate, int value) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -888,7 +876,7 @@ public class NonBlockingParserImpl
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _nextDouble(int substate, long value) throws IOException, JsonParseException
+    private final JsonToken _nextDouble(int substate, long value) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -907,7 +895,7 @@ public class NonBlockingParserImpl
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _nextBigDecimal(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextBigDecimal(int substate) throws IOException
     {
         // !!! TBI
         _tokenIncomplete = true;
@@ -918,7 +906,7 @@ public class NonBlockingParserImpl
     }
 /*
     private final void _finishBigDecimal()
-        throws IOException, JsonParseException
+        throws IOException
     {
         int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         byte[] raw = _read7BitBinaryWithLength();
@@ -930,12 +918,12 @@ public class NonBlockingParserImpl
 
     /*
     private final int _readUnsignedVInt()
-        throws IOException, JsonParseException
+        throws IOException
     {
         int value = 0;
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             int i = _inputBuffer[_inputPtr++];
             if (i < 0) { // last byte
@@ -947,7 +935,7 @@ public class NonBlockingParserImpl
     }
     */
     
-    private final boolean _handleHeader(int substate) throws IOException, JsonParseException
+    private final boolean _handleHeader(int substate) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             byte b = _inputBuffer[_inputPtr++];
@@ -992,7 +980,7 @@ public class NonBlockingParserImpl
         return false;
     }
 
-    private final JsonToken _nextShortAscii(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextShortAscii(int substate) throws IOException
     {
         _state = STATE_SHORT_ASCII;
         _tokenIncomplete = true;
@@ -1000,7 +988,7 @@ public class NonBlockingParserImpl
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _nextShortUnicode(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextShortUnicode(int substate) throws IOException
     {
         _state = STATE_SHORT_UNICODE;
         _tokenIncomplete = true;
@@ -1010,7 +998,7 @@ public class NonBlockingParserImpl
     
     /*
     protected final void _decodeShortAsciiValue(int len)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -1031,7 +1019,7 @@ public class NonBlockingParserImpl
     }
 
     protected final void _decodeShortUnicodeValue(int len)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -1076,7 +1064,7 @@ public class NonBlockingParserImpl
     }
      */
     
-    private final JsonToken _nextLongAscii(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextLongAscii(int substate) throws IOException
     {
         // did not get it all; mark the state so we know where to return:
         _state = STATE_LONG_ASCII;
@@ -1087,14 +1075,14 @@ public class NonBlockingParserImpl
 
     /*
     private final void _decodeLongAscii()
-        throws IOException, JsonParseException
+        throws IOException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         main_loop:
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             int inPtr = _inputPtr;
             int left = _inputEnd - inPtr;
@@ -1117,7 +1105,7 @@ public class NonBlockingParserImpl
     }
     */
 
-    private final JsonToken _nextLongUnicode(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextLongUnicode(int substate) throws IOException
     {
         // did not get it all; mark the state so we know where to return:
         _state = STATE_LONG_UNICODE;
@@ -1129,7 +1117,7 @@ public class NonBlockingParserImpl
     
 /*
     private final void _decodeLongUnicode()
-        throws IOException, JsonParseException
+        throws IOException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -1144,7 +1132,7 @@ public class NonBlockingParserImpl
             while (true) {
                 int ptr = _inputPtr;
                 if (ptr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    _loadMoreGuaranteed();
                     ptr = _inputPtr;
                 }
                 if (outPtr >= outBuf.length) {
@@ -1211,7 +1199,7 @@ public class NonBlockingParserImpl
     }
      */
     
-    private final JsonToken _nextLongSharedString(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextLongSharedString(int substate) throws IOException
     {
         // did not get it all; mark the state so we know where to return:
         _tokenIncomplete = true;
@@ -1220,7 +1208,7 @@ public class NonBlockingParserImpl
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _nextRawBinary(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextRawBinary(int substate) throws IOException
     {
         // did not get it all; mark the state so we know where to return:
         _tokenIncomplete = true;
@@ -1232,12 +1220,12 @@ public class NonBlockingParserImpl
 /*
 
     private final void _finishRawBinary()
-        throws IOException, JsonParseException
+        throws IOException
     {
         int byteLen = _readUnsignedVInt();
         _binaryValue = new byte[byteLen];
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int ptr = 0;
         while (true) {
@@ -1249,12 +1237,12 @@ public class NonBlockingParserImpl
             if (byteLen <= 0) {
                 return;
             }
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
     }
  */
     
-    private final JsonToken _nextQuotedBinary(int substate) throws IOException, JsonParseException
+    private final JsonToken _nextQuotedBinary(int substate) throws IOException
     {
         // did not get it all; mark the state so we know where to return:
         _tokenIncomplete = true;
@@ -1265,7 +1253,7 @@ public class NonBlockingParserImpl
     
     /*
     private final byte[] _read7BitBinaryWithLength()
-        throws IOException, JsonParseException
+        throws IOException
     {
         int byteLen = _readUnsignedVInt();
         byte[] result = new byte[byteLen];
@@ -1326,11 +1314,11 @@ public class NonBlockingParserImpl
      * implementation
      */
     
-//    public boolean nextFieldName(SerializableString str) throws IOException, JsonParseException
-//    public String nextTextValue() throws IOException, JsonParseException
-//    public int nextIntValue(int defaultValue) throws IOException, JsonParseException
-//    public long nextLongValue(long defaultValue) throws IOException, JsonParseException
-//    public Boolean nextBooleanValue() throws IOException, JsonParseException
+//    public boolean nextFieldName(SerializableString str) throws IOException
+//    public String nextTextValue() throws IOException
+//    public int nextIntValue(int defaultValue) throws IOException
+//    public long nextLongValue(long defaultValue) throws IOException
+//    public Boolean nextBooleanValue() throws IOException
     
     /*
     /**********************************************************************
@@ -1346,7 +1334,7 @@ public class NonBlockingParserImpl
      */
     @Override    
     public String getText()
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
@@ -1370,7 +1358,7 @@ public class NonBlockingParserImpl
 
     @Override
     public char[] getTextCharacters()
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_currToken != null) { // null only before/after document
             switch (_currToken) {                
@@ -1407,7 +1395,7 @@ public class NonBlockingParserImpl
 
     @Override    
     public int getTextLength()
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1432,7 +1420,7 @@ public class NonBlockingParserImpl
     }
 
     @Override
-    public int getTextOffset() throws IOException, JsonParseException
+    public int getTextOffset() throws IOException
     {
         return 0;
     }
@@ -1445,7 +1433,7 @@ public class NonBlockingParserImpl
 
     @Override
     public byte[] getBinaryValue(Base64Variant b64variant)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // Todo, maybe: support base64 for text?
@@ -1456,7 +1444,7 @@ public class NonBlockingParserImpl
 
     @Override
     public Object getEmbeddedObject()
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
             return _binaryValue;
@@ -1467,7 +1455,7 @@ public class NonBlockingParserImpl
     // could possibly implement this... or maybe not.
     @Override
     public int readBinaryValue(Base64Variant b64variant, OutputStream out)
-            throws IOException, JsonParseException {
+            throws IOException {
         throw new UnsupportedOperationException();
     }
 
@@ -1481,10 +1469,10 @@ public class NonBlockingParserImpl
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
      */
-    protected final JsonToken _handleFieldName() throws IOException, JsonParseException
+    protected final JsonToken _handleFieldName() throws IOException
     {    	
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int ch = _inputBuffer[_inputPtr++];
         switch ((ch >> 6) & 3) {
@@ -1499,7 +1487,7 @@ public class NonBlockingParserImpl
             case 0x33:
                 {
                     if (_inputPtr >= _inputEnd) {
-                        loadMoreGuaranteed();
+                        _loadMoreGuaranteed();
 	            }
 	            int index = ((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
                     if (index >= _seenNameCount) {
@@ -1621,7 +1609,7 @@ public class NonBlockingParserImpl
     }
 
     private final String _decodeShortAsciiName(int len)
-        throws IOException, JsonParseException
+        throws IOException
     {
         // note: caller ensures we have enough bytes available
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -1803,7 +1791,7 @@ public class NonBlockingParserImpl
         return _symbols.addName(baseName, quads, quadLen);
     }
 
-    private final void _handleLongFieldName() throws IOException, JsonParseException
+    private final void _handleLongFieldName() throws IOException
     {
         // First: gather quads we need, looking for end marker
         final byte[] inBuf = _inputBuffer;
@@ -1813,7 +1801,7 @@ public class NonBlockingParserImpl
 
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             byte b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1822,7 +1810,7 @@ public class NonBlockingParserImpl
             }
             q = ((int) b) & 0xFF;
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1831,7 +1819,7 @@ public class NonBlockingParserImpl
             }
             q = (q << 8) | (b & 0xFF);
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1840,7 +1828,7 @@ public class NonBlockingParserImpl
             }
             q = (q << 8) | (b & 0xFF);
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                _loadMoreGuaranteed();
             }
             b = inBuf[_inputPtr++];
             if (BYTE_MARKER_END_OF_STRING == b) {
@@ -1935,7 +1923,7 @@ public class NonBlockingParserImpl
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
     private final String _findDecodedMedium(int len)
-        throws IOException, JsonParseException
+        throws IOException
     {
     	// first, need enough buffer to store bytes as ints:
         {
@@ -1998,7 +1986,7 @@ public class NonBlockingParserImpl
      * state.
      */
     protected final JsonToken _finishToken()
-    	throws IOException, JsonParseException
+    	throws IOException
     {
         if (_inputPtr >= _inputEnd) {
             return JsonToken.NOT_AVAILABLE;
@@ -2072,10 +2060,10 @@ public class NonBlockingParserImpl
 
     /*
     private final int _decodeUtf8_2(int c)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2085,10 +2073,10 @@ public class NonBlockingParserImpl
     }
 
     private final int _decodeUtf8_3(int c1)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         c1 &= 0x0F;
         int d = (int) _inputBuffer[_inputPtr++];
@@ -2097,7 +2085,7 @@ public class NonBlockingParserImpl
         }
         int c = (c1 << 6) | (d & 0x3F);
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2108,7 +2096,7 @@ public class NonBlockingParserImpl
     }
 
     private final int _decodeUtf8_3fast(int c1)
-        throws IOException, JsonParseException
+        throws IOException
     {
         c1 &= 0x0F;
         int d = (int) _inputBuffer[_inputPtr++];
@@ -2127,10 +2115,10 @@ public class NonBlockingParserImpl
     // @return Character value <b>minus 0x10000</c>; this so that caller
     //    can readily expand it to actual surrogates
     private final int _decodeUtf8_4(int c)
-        throws IOException, JsonParseException
+        throws IOException
     {
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         int d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2139,7 +2127,7 @@ public class NonBlockingParserImpl
         c = ((c & 0x07) << 6) | (d & 0x3F);
 
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2147,7 +2135,7 @@ public class NonBlockingParserImpl
         }
         c = (c << 6) | (d & 0x3F);
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            _loadMoreGuaranteed();
         }
         d = (int) _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
@@ -2165,6 +2153,11 @@ public class NonBlockingParserImpl
     /* Internal methods, error reporting
     /**********************************************************************
      */
+
+    // !!! TODO: remove
+    protected final void _loadMoreGuaranteed() throws IOException {
+        _throwInternal();
+    }
 
     protected void _reportInvalidSharedName(int index) throws IOException
     {

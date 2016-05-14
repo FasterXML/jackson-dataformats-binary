@@ -7,11 +7,10 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 
 public class TestGeneratorLongSharedRefs extends SmileTestBase
 {
-    // [Issue#18]: problems encoding long shared-string references
+    // [smile#18]: problems encoding long shared-string references
     public void testIssue18EndOfDocByteViaFields() throws Exception
     {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
