@@ -147,6 +147,9 @@ public class CBORFactory extends JsonFactory
     // public boolean canUseSchema(FormatSchema schema) { }
 
     @Override
+    public boolean canUseCharArrays() { return false; }
+    
+    @Override
     public MatchStrength hasFormat(InputAccessor acc) throws IOException {
         return CBORParserBootstrapper.hasCBORFormat(acc);
     }
