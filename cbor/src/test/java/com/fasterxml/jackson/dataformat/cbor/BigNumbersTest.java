@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.cbor.*;
 
 // tests for [cbor#17]
 public class BigNumbersTest extends CBORTestBase

@@ -23,6 +23,7 @@ public class ParserSimpleTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = cborGenerator(out);
         gen.writeBoolean(true);
+        assertEquals("/", gen.getOutputContext().toString());
         gen.close();
         JsonParser p = cborParser(out);
         assertEquals(JsonToken.VALUE_TRUE, p.nextToken());
@@ -35,6 +36,8 @@ public class ParserSimpleTest extends CBORTestBase
         gen.close();
         p = cborParser(out);
         assertEquals(JsonToken.VALUE_FALSE, p.nextToken());
+        assertEquals("/", p.getParsingContext().toString());
+        
         assertNull(p.nextToken());
         p.close();
 
@@ -180,6 +183,8 @@ public class ParserSimpleTest extends CBORTestBase
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("a", p.getCurrentName());
+        assertEquals("{\"a\"}", p.getParsingContext().toString());
+
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(1, p.getIntValue());
 

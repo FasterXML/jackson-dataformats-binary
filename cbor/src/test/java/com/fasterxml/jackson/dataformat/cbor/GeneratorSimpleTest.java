@@ -232,8 +232,8 @@ public class GeneratorSimpleTest extends CBORTestBase
         gen.writeNumber(3);
         gen.writeEndArray();
         gen.close();
-        
-        final byte[] EXP = new byte[] {
+
+        byte[] EXP = new byte[] {
                 CBORConstants.BYTE_ARRAY_INDEFINITE,
                 (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 1),
                 (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 2),
@@ -243,7 +243,14 @@ public class GeneratorSimpleTest extends CBORTestBase
         
         _verifyBytes(out.toByteArray(), EXP);
 
-        // Also, data-binding should produce identical
+        // Data-binding should actually use fixed-length
+        EXP = new byte[] {
+                (byte) (CBORConstants.PREFIX_TYPE_ARRAY + 3),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 1),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 2),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 3),
+        };
+
         byte[] b = MAPPER.writeValueAsBytes(new int[] { 1, 2, 3 });
         _verifyBytes(b, EXP);
     }
