@@ -15,7 +15,7 @@ public interface NonBlockingParser
 {
     /**
      * Method that can be called when current token is not yet
-     * available via {@link com.fasterxml.jackson.core.JsonParser#getCurrentToken},
+     * available via {@link com.fasterxml.jackson.core.JsonParser#currentToken},
      * to try to figure out what kind of token will be eventually returned
      * once the whole token is decoded, if known.
      * Note that this may return {@link com.fasterxml.jackson.core.JsonToken#NOT_AVAILABLE}:

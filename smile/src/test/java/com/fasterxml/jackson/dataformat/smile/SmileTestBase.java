@@ -220,4 +220,8 @@ public abstract class SmileTestBase
     public String quote(String str) {
         return '"'+str+'"';
     }
+
+    protected static String aposToQuotes(String str) {
+        return str.replace("'", "\"");
+    }
 }

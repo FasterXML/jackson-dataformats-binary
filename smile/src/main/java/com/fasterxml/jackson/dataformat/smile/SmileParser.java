@@ -784,9 +784,9 @@ public class SmileParser extends ParserBase
     }
     */
 
-    //public boolean isExpectedStartArrayToken() { return getCurrentToken() == JsonToken.START_ARRAY; }
+    //public boolean isExpectedStartArrayToken() { return currentToken() == JsonToken.START_ARRAY; }
 
-    //public boolean isExpectedStartObjectToken() { return getCurrentToken() == JsonToken.START_OBJECT; }
+    //public boolean isExpectedStartObjectToken() { return currentToken() == JsonToken.START_OBJECT; }
     
     @Override
     public boolean nextFieldName(SerializableString str) throws IOException
@@ -1181,17 +1181,16 @@ public class SmileParser extends ParserBase
     }
 
     @Override
-    public Boolean nextBooleanValue()
-        throws IOException
+    public Boolean nextBooleanValue() throws IOException
     {
-        switch (nextToken()) {
-        case VALUE_TRUE:
+        JsonToken t = nextToken();
+        if (t == JsonToken.VALUE_TRUE) {
             return Boolean.TRUE;
-        case VALUE_FALSE:
-            return Boolean.FALSE;
-        default:
-            return null;
         }
+        if (t == JsonToken.VALUE_FALSE) {
+            return Boolean.FALSE;
+        }
+        return null;
     }
 
     /*
@@ -1281,18 +1280,15 @@ public class SmileParser extends ParserBase
             if (_currToken == JsonToken.VALUE_STRING) {
                 return _textBuffer.size();                
             }
-            switch (_currToken) {
-            case FIELD_NAME:
+            if (_currToken == JsonToken.FIELD_NAME) {
                 return _parsingContext.getCurrentName().length();
-                // fall through
-            case VALUE_NUMBER_INT:
-            case VALUE_NUMBER_FLOAT:
+            }
+            if ((_currToken == JsonToken.VALUE_NUMBER_INT)
+                    || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
                 // TODO: optimize
                 return getNumberValue().toString().length();
-                
-            default:
-                return _currToken.asCharArray().length;
             }
+            return _currToken.asCharArray().length;
         }
         return 0;
     }
