@@ -14,7 +14,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
-public abstract class SmileTestBase
+public abstract class BaseTestForSmile
     extends junit.framework.TestCase
 {
     // From JSON specification, sample doc...

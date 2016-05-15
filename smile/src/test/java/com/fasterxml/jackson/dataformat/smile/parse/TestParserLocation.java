@@ -1,11 +1,15 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 
 public class TestParserLocation
-    extends SmileTestBase
+    extends BaseTestForSmile
 {
     /**
      * Basic unit test to verify that [JACKSON-] has been resolved.

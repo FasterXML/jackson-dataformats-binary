@@ -1,9 +1,9 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
 import com.fasterxml.jackson.core.JsonToken;
-
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
@@ -12,8 +12,8 @@ import com.fasterxml.jackson.dataformat.smile.SmileParser;
  * Unit tests for verifying that multiple document output and document
  * boundaries and/or header mark handling works as expected
  */
-public class TestDocBoundary
-    extends SmileTestBase
+public class DocBoundaryTest
+    extends BaseTestForSmile
 {
     public void testNoHeadersNoEndMarker() throws Exception
     {

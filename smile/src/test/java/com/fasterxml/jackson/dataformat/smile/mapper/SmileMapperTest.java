@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -9,8 +9,10 @@ import org.junit.Assert;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class TestMapper extends SmileTestBase
+public class SmileMapperTest extends BaseTestForSmile
 {
     static class BytesBean {
         public byte[] bytes;
@@ -26,8 +28,7 @@ public class TestMapper extends SmileTestBase
      */
     
     private final ObjectMapper MAPPER = smileMapper();
-    
-    // [JACKSON-733]
+
     public void testBinary() throws IOException
     {
         byte[] input = new byte[] { 1, 2, 3, -1, 8, 0, 42 };
@@ -38,7 +39,6 @@ public class TestMapper extends SmileTestBase
         Assert.assertArrayEquals(input, result.bytes);
     }
 
-    // @since 2.1
     public void testCopy() throws IOException
     {
         ObjectMapper mapper1 = smileMapper();

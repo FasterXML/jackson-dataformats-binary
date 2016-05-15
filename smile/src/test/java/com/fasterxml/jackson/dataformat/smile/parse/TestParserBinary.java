@@ -1,16 +1,17 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
 import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonToken;
-
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 
-public class TestParserBinary extends SmileTestBase
+public class TestParserBinary extends BaseTestForSmile
 {
     final static int[] SIZES = new int[] {
         1, 2, 3, 4, 5, 6,

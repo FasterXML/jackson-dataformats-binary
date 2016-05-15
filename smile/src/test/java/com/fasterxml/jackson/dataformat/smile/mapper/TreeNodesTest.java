@@ -1,13 +1,14 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import org.junit.Assert;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class TestTreeHandling extends SmileTestBase
+public class TreeNodesTest extends BaseTestForSmile
 {
     public void testSimple() throws Exception
     {

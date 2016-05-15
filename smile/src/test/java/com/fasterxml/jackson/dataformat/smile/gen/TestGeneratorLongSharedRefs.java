@@ -6,9 +6,9 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class TestGeneratorLongSharedRefs extends SmileTestBase
+public class TestGeneratorLongSharedRefs extends BaseTestForSmile
 {
     // [smile#18]: problems encoding long shared-string references
     public void testIssue18EndOfDocByteViaFields() throws Exception

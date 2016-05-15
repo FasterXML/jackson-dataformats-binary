@@ -5,12 +5,12 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /* Test based on kimchy's issue (see https://gist.github.com/853232);
  * exhibits an issue with buffer recycling.
  */
-public class TestGeneratorBufferRecycle extends SmileTestBase
+public class TestGeneratorBufferRecycle extends BaseTestForSmile
 {
     public void testMaps() throws Exception
     {

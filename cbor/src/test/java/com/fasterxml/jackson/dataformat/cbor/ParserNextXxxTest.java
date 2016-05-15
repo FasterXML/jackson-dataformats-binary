@@ -9,13 +9,13 @@ import com.fasterxml.jackson.core.io.SerializedString;
 // note: copied from test of same name from jackson-dataformat-smile
 public class ParserNextXxxTest extends CBORTestBase
 {
-	public void testIsNextTokenName() throws Exception
+    public void testIsNextTokenName() throws Exception
     {
         _testIsNextTokenName1();
         _testIsNextTokenName2();
     }
 
-	public void testIssue34() throws Exception
+    public void testIssue34() throws Exception
     {
         final int TESTROUNDS = 223;
 
@@ -106,7 +106,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
-    public void testNextTextValue() throws Exception
+    public void testNextValuesMisc() throws Exception
     {
         final CBORFactory f = new CBORFactory();
         byte[] DOC = cborDoc(f, "{\"field\" :\"value\", \"array\" : [ \"foo\", true ] }");
@@ -135,7 +135,52 @@ public class ParserNextXxxTest extends CBORTestBase
         
         parser.close();
     }
-    
+
+    public void testNextTextValue() throws Exception
+    {
+        final CBORFactory f = new CBORFactory();
+
+        _testNextTextValue(f, "ascii");
+        _testNextTextValue(f, "Something much longer to ensure short-text handling is not invoked 12345677890");
+        _testNextTextValue(f, "Short but with UTF-8: \u00A9 & \u00E8...");
+        _testNextTextValue(f, "Longer .................................................................. \u30D5...");
+    }
+
+    private void _testNextTextValue(CBORFactory f, String textValue) throws Exception
+    {
+        String doc = aposToQuotes(String.format(
+                "['%s',true,{'a':'%s'},123, 0.5]",
+                textValue, textValue));
+        byte[] docBytes = cborDoc(f, doc);
+        JsonParser p = cborParser(docBytes);
+
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+ 
+        assertEquals(textValue, p.nextTextValue());
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.VALUE_TRUE, p.currentToken());
+
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.START_OBJECT, p.currentToken());
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
+        assertEquals("a", p.getCurrentName());
+        assertEquals(textValue, p.nextTextValue());
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.END_OBJECT, p.currentToken());
+
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
+        assertEquals(123, p.getIntValue());
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.currentToken());
+        assertEquals(0.5, p.getDoubleValue());
+        
+        assertNull(p.nextTextValue());
+        assertToken(JsonToken.END_ARRAY, p.currentToken());
+        p.close();
+    }
+
     /*
     /********************************************************
     /* Actual test code

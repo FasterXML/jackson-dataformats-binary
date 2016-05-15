@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.Versioned;
 /**
  * Tests to verify [JACKSON-278]
  */
-public class TestVersions extends SmileTestBase
+public class VersionsTest extends BaseTestForSmile
 {
     public void testMapperVersions() throws IOException
     {

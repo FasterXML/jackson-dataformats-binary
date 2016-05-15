@@ -1,16 +1,17 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**
  * Bigger test to try to do smoke-testing of overall functionality,
  * using more sizable (500k of JSON, 200k of Smile) dataset.
  * Should tease out at least some of boundary conditions.
  */
-public class ParserBiggerDataTest extends SmileTestBase
+public class ParserBiggerDataTest extends BaseTestForSmile
 {
 	static class Citm
 	{

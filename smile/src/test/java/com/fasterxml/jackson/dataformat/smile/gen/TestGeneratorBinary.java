@@ -7,9 +7,9 @@ import org.junit.Assert;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class TestGeneratorBinary extends SmileTestBase
+public class TestGeneratorBinary extends BaseTestForSmile
 {
     static class ThrottledInputStream extends FilterInputStream
     {

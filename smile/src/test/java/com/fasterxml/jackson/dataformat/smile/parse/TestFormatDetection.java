@@ -1,8 +1,10 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class TestFormatDetection extends SmileTestBase
+public class TestFormatDetection extends BaseTestForSmile
 {
     static class POJO {
         public int id;

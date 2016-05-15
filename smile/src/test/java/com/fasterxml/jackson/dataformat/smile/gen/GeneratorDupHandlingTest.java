@@ -3,9 +3,9 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class GeneratorDupHandlingTest extends SmileTestBase
+public class GeneratorDupHandlingTest extends BaseTestForSmile
 {
     public void testSimpleDupsEagerlyBytes() throws Exception {
         _testSimpleDups(false, new JsonFactory());

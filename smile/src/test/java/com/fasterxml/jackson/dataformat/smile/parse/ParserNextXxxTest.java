@@ -1,12 +1,14 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class ParserNextXxxTest extends SmileTestBase
+public class ParserNextXxxTest extends BaseTestForSmile
 {
     public void testIsNextTokenName() throws Exception
     {

@@ -1,11 +1,11 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import com.fasterxml.jackson.databind.*;
-
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class TestFeatures
-    extends SmileTestBase
+public class MapperFeaturesTest
+    extends BaseTestForSmile
 {
     /*
     /**********************************************************

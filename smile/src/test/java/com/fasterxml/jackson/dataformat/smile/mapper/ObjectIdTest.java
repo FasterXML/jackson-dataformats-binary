@@ -1,16 +1,17 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class ObjectIdTest extends SmileTestBase
+public class ObjectIdTest extends BaseTestForSmile
 {
     @JsonIdentityInfo(generator = ObjectIdGenerators.UUIDGenerator.class, property = "@id")
     public static class D {
         public D next;
     }
 
-    // [Issue#19]
+    // [smile#19]
     public void testObjectIdAsUUID() throws Exception
     {
         ObjectMapper mapper = smileMapper();

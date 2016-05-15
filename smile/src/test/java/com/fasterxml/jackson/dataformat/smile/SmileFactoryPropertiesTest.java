@@ -10,7 +10,7 @@ import static org.junit.Assert.assertArrayEquals;
  * Miscellaneous tests for {@link SmileFactory}, and for some aspects
  * of generators and parsers it creates.
  */
-public class SmileFactoryPropertiesTest extends SmileTestBase
+public class SmileFactoryPropertiesTest extends BaseTestForSmile
 {
     private final static String SIMPLE_DOC_AS_JSON = "{\"simple\":[1,true,{}]}";
 

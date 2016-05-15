@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
 
-public class TestSmileUtil extends SmileTestBase
+public class SmileUtilTest extends BaseTestForSmile
 {
     /**
      * Verification of helper methods used to handle with zigzag encoding

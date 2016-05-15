@@ -3,11 +3,11 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
 
 public class TestGeneratorNumbers
-    extends SmileTestBase
+    extends BaseTestForSmile
 {
     public void testSmallInts() throws Exception
     {

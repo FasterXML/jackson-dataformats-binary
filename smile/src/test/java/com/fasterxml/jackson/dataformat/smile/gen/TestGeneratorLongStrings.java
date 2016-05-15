@@ -6,9 +6,9 @@ import java.util.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class TestGeneratorLongStrings extends SmileTestBase
+public class TestGeneratorLongStrings extends BaseTestForSmile
 {
     final static int DOC_LEN = 2000000; // 2 meg test doc
     

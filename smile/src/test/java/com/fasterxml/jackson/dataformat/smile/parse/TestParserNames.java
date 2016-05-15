@@ -1,11 +1,13 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
-public class TestParserNames extends SmileTestBase
+public class TestParserNames extends BaseTestForSmile
 {
     public void testLongNames() throws IOException
     {

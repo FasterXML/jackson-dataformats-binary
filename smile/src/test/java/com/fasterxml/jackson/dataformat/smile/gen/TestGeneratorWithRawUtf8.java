@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**
  * Test to verify handling of "raw String value" write methods that by-pass
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
  *
  * @since 1.7
  */
-public class TestGeneratorWithRawUtf8 extends SmileTestBase
+public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 {
     public void testUtf8RawStrings() throws Exception
     {

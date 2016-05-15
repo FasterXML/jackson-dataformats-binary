@@ -5,9 +5,9 @@ import java.io.ByteArrayOutputStream;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class TestGeneratorWithSerializedString extends SmileTestBase
+public class TestGeneratorWithSerializedString extends BaseTestForSmile
 {
     final static String NAME_WITH_QUOTES = "\"name\"";
     final static String NAME_WITH_LATIN1 = "P\u00f6ll\u00f6";

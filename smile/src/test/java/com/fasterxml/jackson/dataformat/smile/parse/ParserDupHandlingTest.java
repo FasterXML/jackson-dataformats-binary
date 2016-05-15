@@ -1,8 +1,10 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class ParserDupHandlingTest extends SmileTestBase
+public class ParserDupHandlingTest extends BaseTestForSmile
 {
     public void testSimpleDups() throws Exception
     {

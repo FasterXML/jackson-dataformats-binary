@@ -879,17 +879,12 @@ public final class CBORParser extends ParserMinimalBase
         
         BigDecimal dec;
 
-        switch (getNumberType()) {
-        case INT:
-        case LONG:
-            dec = BigDecimal.valueOf(getLongValue(), exp);
-            break;
-        case BIG_INTEGER:
-        default:
+        NumberType numberType = getNumberType();
+        if (numberType == NumberType.BIG_INTEGER) {
             dec = new BigDecimal(getBigIntegerValue(), exp);
-            break;
+        } else  {
+            dec = BigDecimal.valueOf(getLongValue(), exp);
         }
-
         t = nextToken();
         if (t != JsonToken.END_ARRAY) {
             _reportError("Unexpected token ("+t+") after 2 elements of 'bigfloat' value");
@@ -1305,19 +1300,17 @@ public final class CBORParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 _finishToken();
             }
-            switch (_currToken) {                
-            case VALUE_STRING:
+            if (_currToken == JsonToken.VALUE_STRING) {
                 return _textBuffer.getTextBuffer();
-            case FIELD_NAME:
-                return _parsingContext.getCurrentName().toCharArray();
-                // fall through
-            case VALUE_NUMBER_INT:
-            case VALUE_NUMBER_FLOAT:
-                return getNumberValue().toString().toCharArray();
-                
-            default:
-                return _currToken.asCharArray();
             }
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return _parsingContext.getCurrentName().toCharArray();
+            }
+            if ((_currToken == JsonToken.VALUE_NUMBER_INT)
+                    || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
+                return getNumberValue().toString().toCharArray();
+            }
+            return _currToken.asCharArray();
         }
         return null;
     }
@@ -1329,19 +1322,17 @@ public final class CBORParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 _finishToken();
             }
-            switch (_currToken) {
-            case VALUE_STRING:
+            if (_currToken == JsonToken.VALUE_STRING) {
                 return _textBuffer.size();                
-            case FIELD_NAME:
-                return _parsingContext.getCurrentName().length();
-                // fall through
-            case VALUE_NUMBER_INT:
-            case VALUE_NUMBER_FLOAT:
-                return getNumberValue().toString().length();
-                
-            default:
-                return _currToken.asCharArray().length;
             }
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return _parsingContext.getCurrentName().length();
+            }
+            if ((_currToken == JsonToken.VALUE_NUMBER_INT)
+                    || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
+                return getNumberValue().toString().length();
+            }
+            return _currToken.asCharArray().length;
         }
         return 0;
     }

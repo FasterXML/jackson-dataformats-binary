@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
@@ -6,11 +6,12 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.DataFormatDetector;
 import com.fasterxml.jackson.core.format.DataFormatMatcher;
 import com.fasterxml.jackson.core.format.MatchStrength;
-
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.SmileParser.Feature;
 
-public class TestSmileDetection extends SmileTestBase
+public class SmileDetectionTest extends BaseTestForSmile
 {
     
     public void testSimpleObjectWithHeader() throws IOException

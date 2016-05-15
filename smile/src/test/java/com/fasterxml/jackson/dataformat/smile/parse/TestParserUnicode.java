@@ -1,10 +1,12 @@
-package com.fasterxml.jackson.dataformat.smile;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
-public class TestParserUnicode extends SmileTestBase
+public class TestParserUnicode extends BaseTestForSmile
 {
     // [Issue-2]: probs with Surrogate handling
     public void testLongUnicodeWithSurrogates() throws IOException

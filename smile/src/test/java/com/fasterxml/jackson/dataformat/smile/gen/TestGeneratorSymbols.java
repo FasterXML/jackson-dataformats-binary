@@ -5,9 +5,9 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class TestGeneratorSymbols extends SmileTestBase
+public class TestGeneratorSymbols extends BaseTestForSmile
 {
     /**
      * Simple test to verify that second reference will not output new String, but
