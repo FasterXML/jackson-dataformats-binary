@@ -16,8 +16,6 @@ import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 /**
  * {@link JsonGenerator} implementation for Smile-encoded content
  * (see <a href="http://wiki.fasterxml.com/SmileFormatSpec">Smile Format Specification</a>)
- * 
- * @author tatu
  */
 public class SmileGenerator
     extends GeneratorBase
@@ -611,6 +609,29 @@ public class SmileGenerator
         }
         _writeContext = _writeContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);
+    }
+
+    @Override // since 2.8
+    public void writeArray(int[] array, int offset, int length)
+        throws IOException
+    {
+        _verifyOffsets(array.length, offset, length);
+        // short-cut, do not create child array context etc
+        _verifyValueWrite("write int array");
+
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+        int ptr = _outputTail;
+        final int outputEnd = _outputEnd;
+        for (int i = offset, end = offset+length; i < end; ++i) {
+            // TODO: optimize boundary checks for common case
+            if ((ptr + 6) >= outputEnd) { // at most 6 bytes per element
+                _flushBuffer();
+                ptr = _outputTail;
+            }
+            ptr = _writeNumberNoChecks(ptr, array[i]);
+        }
+        _outputTail = ptr;
+        _writeByte(TOKEN_LITERAL_END_ARRAY);
     }
 
     private final void _writeFieldName(String name) throws IOException
@@ -1235,7 +1256,7 @@ public class SmileGenerator
     public void writeNumber(int i) throws IOException
     {
         _verifyValueWrite("write number");
-    	// First things first: let's zigzag encode number
+        // First things first: let's zigzag encode number
         i = SmileUtil.zigzagEncode(i);
         // tiny (single byte) or small (type + 6-bit value) number?
         if (i <= 0x3F && i >= 0) {
@@ -1271,6 +1292,59 @@ public class SmileGenerator
         _writeBytes(TOKEN_BYTE_INT_32, (byte) (i >> 7), b3, b2, b1, b0);
     }
 
+    // since 2.8: same as `writeNumber(int)` minus validity checks for
+    // value write AND boundary checks
+    private final int _writeNumberNoChecks(int ptr, int i) throws IOException
+    {
+        final byte[] output = _outputBuffer;
+        i = SmileUtil.zigzagEncode(i);
+        // tiny (single byte) or small (type + 6-bit value) number?
+        if (i <= 0x3F && i >= 0) {
+            if (i <= 0x1F) { // tiny 
+                output[ptr++] = (byte) (TOKEN_PREFIX_SMALL_INT + i);
+                return ptr;
+            }
+            // nope, just small, 2 bytes (type, 1-byte zigzag value) for 6 bit value
+            output[ptr++] = TOKEN_BYTE_INT_32;
+            output[ptr++] = (byte) (0x80 + i);
+            return ptr;
+        }
+        output[ptr++] = TOKEN_BYTE_INT_32;
+        // Ok: let's find minimal representation then
+        byte b0 = (byte) (0x80 + (i & 0x3F));
+        i >>>= 6;
+        if (i <= 0x7F) { // 13 bits is enough (== 3 byte total encoding)
+            output[ptr++] = (byte) i;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        byte b1 = (byte) (i & 0x7F);
+        i >>= 7;
+        if (i <= 0x7F) {
+            output[ptr++] = (byte) i;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        byte b2 = (byte) (i & 0x7F);
+        i >>= 7;
+        if (i <= 0x7F) {
+            output[ptr++] = (byte) i;
+            output[ptr++] = b2;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        // no, need all 5 bytes
+        byte b3 = (byte) (i & 0x7F);
+        output[ptr++] = (byte) (i >> 7);
+        output[ptr++] = b3;
+        output[ptr++] = b2;
+        output[ptr++] = b1;
+        output[ptr++] = b0;
+        return ptr;
+    }
+    
     @Override
     public void writeNumber(long l) throws IOException
     {
