@@ -1,20 +1,15 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for simple value types.
  */
 public class ParserSimpleTest extends CBORTestBase
 {
-    private final ObjectMapper MAPPER = cborMapper();
-    
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
@@ -155,64 +150,6 @@ public class ParserSimpleTest extends CBORTestBase
         assertEquals(value, p.getDoubleValue());
         assertNull(p.nextToken());
         p.close();
-    }
-    
-    public void testSimpleArray() throws Exception
-    {
-        byte[] b = MAPPER.writeValueAsBytes(new int[] { 1, 2, 3, 4});
-        int[] output = MAPPER.readValue(b, int[].class);
-        assertEquals(4, output.length);
-        for (int i = 1; i <= output.length; ++i) {
-            assertEquals(i, output[i-1]);
-        }
-    }
-
-    public void testSimpleObject() throws Exception
-    {
-        Map<String,Object> input = new LinkedHashMap<String,Object>();
-        input.put("a", 1);
-        input.put("bar", "foo");
-        final String NON_ASCII_NAME = "Y\\u00F6";
-        input.put(NON_ASCII_NAME, -3.25);
-        input.put("", "");
-        byte[] b = MAPPER.writeValueAsBytes(input);
-
-        // First, using streaming API
-        JsonParser p = cborParser(b);
-        assertToken(JsonToken.START_OBJECT, p.nextToken());
-
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("a", p.getCurrentName());
-        assertEquals("{\"a\"}", p.getParsingContext().toString());
-
-        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(1, p.getIntValue());
-
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("bar", p.getCurrentName());
-        assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("foo", p.getText());
-
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals(NON_ASCII_NAME, p.getCurrentName());
-        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-        assertEquals(-3.25, p.getDoubleValue());
-
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("", p.getCurrentName());
-        assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("", p.getText());
-        
-        assertToken(JsonToken.END_OBJECT, p.nextToken());
-
-        p.close();
-        
-        Map<?,?> output = MAPPER.readValue(b, Map.class);
-        assertEquals(4, output.size());
-        assertEquals(Integer.valueOf(1), output.get("a"));
-        assertEquals("foo", output.get("bar"));
-        assertEquals(Double.valueOf(-3.25), output.get(NON_ASCII_NAME));
-        assertEquals("", output.get(""));
     }
 
     public void testMediumText() throws Exception
@@ -415,6 +352,37 @@ public class ParserSimpleTest extends CBORTestBase
         assertEquals("b", parser.getText());
         assertEquals(1, parser.getTextLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+        parser.close();
+    }
+
+    public void testBufferRelease() throws IOException
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator generator = cborGenerator(out);
+        generator.writeStartObject();
+        generator.writeStringField("a", "1");
+        generator.writeEndObject();
+        generator.flush();
+        // add stuff that is NOT part of the Object
+        out.write(new byte[] { 1, 2, 3 });
+        generator.close();
+
+        CBORParser parser = cborParser(out.toByteArray());
+        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
+        assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+
+        // Fine; but now should be able to retrieve 3 bytes that are (likely)
+        // to have been  buffered
+
+        ByteArrayOutputStream extra = new ByteArrayOutputStream();
+        assertEquals(3, parser.releaseBuffered(extra));
+        byte[] extraBytes = extra.toByteArray();
+        assertEquals((byte) 1, extraBytes[0]);
+        assertEquals((byte) 2, extraBytes[1]);
+        assertEquals((byte) 3, extraBytes[2]);
+        
         parser.close();
     }
 }

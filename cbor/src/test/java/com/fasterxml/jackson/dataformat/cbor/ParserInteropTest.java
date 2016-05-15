@@ -18,7 +18,7 @@ public class ParserInteropTest extends CBORTestBase
         CBORConstants.BYTE_TRUE
     };
 
-    // for [Issue#5]; Perl CBOR::XS module uses binary encoding for
+    // for [cbor#5]; Perl CBOR::XS module uses binary encoding for
     // Map/Object keys; presumably in UTF-8.
     public void testBinaryEncodedKeys() throws Exception
     {
