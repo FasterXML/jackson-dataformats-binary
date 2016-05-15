@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
 // note: copied from test of same name from jackson-dataformat-smile
 public class ParserNextXxxTest extends CBORTestBase
@@ -148,11 +149,23 @@ public class ParserNextXxxTest extends CBORTestBase
 
     private void _testNextTextValue(CBORFactory f, String textValue) throws Exception
     {
+        _testNextTextValue(f, textValue, false);
+        _testNextTextValue(f, textValue, true);
+    }
+
+    @SuppressWarnings("resource")
+    private void _testNextTextValue(CBORFactory f, String textValue, boolean slow)
+            throws Exception
+    {
         String doc = aposToQuotes(String.format(
                 "['%s',true,{'a':'%s'},123, 0.5]",
                 textValue, textValue));
-        byte[] docBytes = cborDoc(f, doc);
-        JsonParser p = cborParser(docBytes);
+        InputStream in = new ByteArrayInputStream(cborDoc(f, doc));
+        if (slow) {
+            // let's force read for every single byte
+            in = new ThrottledInputStream(in, 1);
+        }
+        JsonParser p = cborParser(in);
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
  
