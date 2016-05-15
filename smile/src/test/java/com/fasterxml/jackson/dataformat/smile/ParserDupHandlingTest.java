@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import com.fasterxml.jackson.core.*;
 
-public class TestParserDupHandling extends SmileTestBase
+public class ParserDupHandlingTest extends SmileTestBase
 {
     public void testSimpleDups() throws Exception
     {
@@ -34,17 +34,17 @@ public class TestParserDupHandling extends SmileTestBase
 
     private void _testSimpleDupsFail(final byte[] doc, JsonFactory f, String name) throws Exception
     {
-        JsonParser jp = f.createParser(doc);
-        JsonToken t = jp.nextToken();
+        JsonParser p = f.createParser(doc);
+        JsonToken t = p.nextToken();
         assertNotNull(t);
         assertTrue(t.isStructStart());
         try {
-            while (jp.nextToken() != null) { }
+            while (p.nextToken() != null) { }
             fail("Should have caught dups in document: "+doc);
         } catch (JsonParseException e) {
             verifyException(e, "duplicate field '"+name+"'");
         }
-        jp.close();
+        p.close();
     }
     
 }

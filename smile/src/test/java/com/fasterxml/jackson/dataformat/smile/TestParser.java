@@ -479,6 +479,36 @@ public class TestParser extends SmileTestBase
         return b.toByteArray();
     }
 
+    public void testBufferRelease() throws IOException
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        SmileGenerator generator = smileGenerator(out, true);
+        generator.writeStartObject();
+        generator.writeStringField("a", "1");
+        generator.writeEndObject();
+        generator.flush();
+        // add stuff that is NOT part of the Object
+        out.write(new byte[] { 1, 2, 3 });
+        generator.close();
+
+        SmileParser parser = _smileParser(out.toByteArray());
+        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
+        assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+
+        // Fine; but now should be able to retrieve 3 bytes that are (likely)
+        // to have been  buffered
+
+        ByteArrayOutputStream extra = new ByteArrayOutputStream();
+        assertEquals(3, parser.releaseBuffered(extra));
+        byte[] extraBytes = extra.toByteArray();
+        assertEquals((byte) 1, extraBytes[0]);
+        assertEquals((byte) 2, extraBytes[1]);
+        assertEquals((byte) 3, extraBytes[2]);
+        
+        parser.close();
+    }    
     /*
     /**********************************************************
     /* Helper methods for use with json spec sample doc
