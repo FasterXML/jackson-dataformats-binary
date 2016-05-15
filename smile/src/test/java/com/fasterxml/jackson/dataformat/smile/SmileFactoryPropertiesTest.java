@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.io.IOContext;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -15,8 +16,21 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     private final static String SIMPLE_DOC_AS_JSON = "{\"simple\":[1,true,{}]}";
 
     private final static SmileFactory SMILE_F = new SmileFactory();
-    
-    public void testCBORFactorySerializable() throws Exception
+    public void testFactoryDefaults() {
+        SmileFactory f = new SmileFactory();
+
+        assertEquals(SmileParser.Feature.REQUIRE_HEADER.enabledByDefault(),
+                f.isEnabled(SmileParser.Feature.REQUIRE_HEADER));
+
+        assertEquals(SmileGenerator.Feature.WRITE_HEADER.enabledByDefault(),
+                f.isEnabled(SmileGenerator.Feature.WRITE_HEADER));
+        assertEquals(SmileGenerator.Feature.CHECK_SHARED_NAMES.enabledByDefault(),
+                f.isEnabled(SmileGenerator.Feature.CHECK_SHARED_NAMES));
+        assertEquals(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES.enabledByDefault(),
+                f.isEnabled(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES));
+    }
+
+    public void testFactorySerializable() throws Exception
     {
         SmileFactory f = new SmileFactory();
         byte[] doc = _smileDoc(f, SIMPLE_DOC_AS_JSON, true);
@@ -30,7 +44,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertArrayEquals(doc, docOut);
     }
 
-    public void testCBORFactoryCopy() throws Exception
+    public void testFactoryCopy() throws Exception
     {
         SmileFactory f2 = SMILE_F.copy();
         assertNotNull(f2);
@@ -96,7 +110,46 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         }
         
     }
-    
+
+    // One lesser known feature is the ability to fall back to using JSON...
+    public void testFallbackReadFromJson() throws Exception
+    {
+        SmileFactory f = new SmileFactory();
+        f.delegateToTextual(true);
+        JsonParser p = f.createParser("[ ]");
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        p.close();
+    }
+
+    // One lesser known feature is the ability to fall back to using JSON...
+    public void testFallbackWriteAsJson() throws Exception
+    {
+        SmileFactory f = new SmileFactory();
+        f.delegateToTextual(true);
+        StringWriter w = new StringWriter();
+        JsonGenerator g = f.createGenerator(w);
+        g.writeStartArray();
+        g.writeEndArray();
+        g.close();
+
+        assertEquals("[]", w.toString());
+    }
+
+    // There is one constructor designed for direct generator instantiation,
+    // not used by factory; need to ensure it does not fail spectacularly
+    public void testGeneratorConstruction() throws Exception
+    {
+        SmileFactory f = new SmileFactory();
+        IOContext ctxt = new IOContext(f._getBufferRecycler(), "doc", false);
+        OutputStream bytes = new ByteArrayOutputStream();
+        byte[] buf = new byte[1000];
+        SmileGenerator g = new SmileGenerator(ctxt, 0, 0,
+                null, bytes, buf, 0, false);
+        g.writeStartArray();
+        g.writeEndArray();
+        g.close();
+    }
+
     /*
     /**********************************************************
     /* Helper methods

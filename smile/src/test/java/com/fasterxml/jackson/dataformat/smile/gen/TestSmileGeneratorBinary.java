@@ -9,35 +9,11 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
+import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 public class TestSmileGeneratorBinary extends BaseTestForSmile
 {
-    static class ThrottledInputStream extends FilterInputStream
-    {
-        protected final int _maxBytes;
-
-        public ThrottledInputStream(byte[] data, int maxBytes)
-        {
-            this(new ByteArrayInputStream(data), maxBytes);
-        }
-        
-        public ThrottledInputStream(InputStream in, int maxBytes)
-        {
-            super(in);
-            _maxBytes = maxBytes;
-        }
-
-        @Override
-        public int read(byte[] buf) throws IOException {
-            return read(buf, 0, buf.length);
-        }
-        
-        @Override
-        public int read(byte[] buf, int offset, int len) throws IOException {
-            return in.read(buf, offset, Math.min(_maxBytes, len));
-        }
-        
-    }
+    
     
     /*
     /**********************************************************

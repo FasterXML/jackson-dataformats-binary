@@ -278,10 +278,11 @@ public class SmileGenerator
         _outputEnd = _outputBuffer.length;
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
-            throw new IllegalStateException("Internal encoding buffer length ("+_outputEnd
-                    +") too short, must be at least "+MIN_BUFFER_LENGTH);
+            throw new IllegalStateException(String.format(
+                    "Internal encoding buffer length (%d) too short, must be at least %d", 
+                    _outputEnd, MIN_BUFFER_LENGTH));
         }
-        if ((smileFeatures & Feature.CHECK_SHARED_NAMES.getMask()) == 0) {
+        if (!Feature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
             _seenNames = null;
             _seenNameCount = -1;
         } else {
@@ -292,7 +293,7 @@ public class SmileGenerator
             _seenNameCount = 0;
         }
 
-        if ((smileFeatures & Feature.CHECK_SHARED_STRING_VALUES.getMask()) == 0) {
+        if (!Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
             _seenStringValues = null;
             _seenStringValueCount = -1;
         } else {
@@ -302,10 +303,11 @@ public class SmileGenerator
             }
             _seenStringValueCount = 0;
         }
-}
+    }
 
     public SmileGenerator(IOContext ctxt, int jsonFeatures, int smileFeatures,
-            ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset, boolean bufferRecyclable)
+            ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset,
+            boolean bufferRecyclable)
     {
         super(jsonFeatures, codec);
         _formatFeatures = smileFeatures;
@@ -318,10 +320,11 @@ public class SmileGenerator
         _outputEnd = _outputBuffer.length;
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
-            throw new IllegalStateException("Internal encoding buffer length ("+_outputEnd
-                    +") too short, must be at least "+MIN_BUFFER_LENGTH);
+            throw new IllegalStateException(String.format(
+                    "Internal encoding buffer length (%d) too short, must be at least %d", 
+                    _outputEnd, MIN_BUFFER_LENGTH));
         }
-        if ((smileFeatures & Feature.CHECK_SHARED_NAMES.getMask()) == 0) {
+        if (!Feature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
             _seenNames = null;
             _seenNameCount = -1;
         } else {
@@ -332,7 +335,7 @@ public class SmileGenerator
             _seenNameCount = 0;
         }
 
-        if ((smileFeatures & Feature.CHECK_SHARED_STRING_VALUES.getMask()) == 0) {
+        if (!Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
             _seenStringValues = null;
             _seenStringValueCount = -1;
         } else {

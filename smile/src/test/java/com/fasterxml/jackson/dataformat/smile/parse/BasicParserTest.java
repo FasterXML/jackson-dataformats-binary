@@ -3,12 +3,12 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 public class BasicParserTest extends BaseTestForSmile
 {
@@ -39,8 +39,20 @@ public class BasicParserTest extends BaseTestForSmile
 
     public void testSimple() throws IOException
     {
-        byte[] data = _smileDoc("[ true, null, false ]");
-        SmileParser p = _smileParser(data);
+        byte[] data = _smileDoc("[ true, null, false ]", true);
+        _testSimple(false, data);
+        _testSimple(true, data);
+    }
+    
+    @SuppressWarnings("resource")
+    private void _testSimple(boolean throttle, byte[] data) throws IOException
+    {
+        InputStream in = new ByteArrayInputStream(data);
+        if (throttle) {
+            in = new ThrottledInputStream(in, 1);
+        }
+        SmileParser p = _smileParser(in, true);
+        
         assertNull(p.getCurrentToken());
         assertNull(p.getCurrentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());

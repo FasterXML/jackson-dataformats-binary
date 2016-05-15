@@ -23,7 +23,7 @@ public class SmileParser extends ParserBase
         /**
          * Feature that determines whether 4-byte Smile header is mandatory in input,
          * or optional. If enabled, it means that only input that starts with the header
-         * is accepted as valid; if disabled, header is optional. In latter case,r 
+         * is accepted as valid; if disabled, header is optional. In latter case,
          * settings for content are assumed to be defaults.
          */
         REQUIRE_HEADER(true)
@@ -260,31 +260,22 @@ public class SmileParser extends ParserBase
         if (consumeFirstByte) {
             ++_inputPtr;
         }
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        if (_inputBuffer[_inputPtr] != SmileConstants.HEADER_BYTE_2) {
+        if (_nextByteGuaranteed() != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
             	_reportError("Malformed content: signature not valid, starts with 0x3a but followed by 0x"
             			+Integer.toHexString(_inputBuffer[_inputPtr])+", not 0x29");
             }
             return false;
         }
-        if (++_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();        	
-        }
-        if (_inputBuffer[_inputPtr] != SmileConstants.HEADER_BYTE_3) {
+        if (_nextByteGuaranteed() != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
             	_reportError("Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x"
             			+Integer.toHexString(_inputBuffer[_inputPtr])+", not 0xA");
             }
             return false;
         }
-    	// Good enough; just need version info from 4th byte...
-        if (++_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();        	
-        }
-        int ch = _inputBuffer[_inputPtr++];
+        // Good enough; just need version info from 4th byte...
+        int ch = _nextByteGuaranteed();
         int versionBits = (ch >> 4) & 0x0F;
         // but failure with version number is fatal, can not ignore
         if (versionBits != SmileConstants.HEADER_VERSION_0) {
@@ -403,10 +394,23 @@ public class SmileParser extends ParserBase
     /**********************************************************
      */
 
+    // @since 2.8
+    private final byte _nextByteGuaranteed() throws IOException
+    {
+        int ptr = _inputPtr;
+        if (ptr < _inputEnd) {
+            byte b = _inputBuffer[ptr];
+            _inputPtr = ptr+1;
+            return b;
+        }
+        _loadMoreGuaranteed();
+        return _inputBuffer[_inputPtr++];
+    }
+
     protected final void _loadMoreGuaranteed() throws IOException {
         if (!_loadMore()) { _reportInvalidEOF(); }
     }
-
+    
     protected final boolean _loadMore() throws IOException
     {
         //_currInputRowStart -= _inputEnd;
