@@ -1,7 +1,9 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.SequenceInputStream;
 import java.util.*;
 
 import org.junit.Assert;
@@ -9,6 +11,7 @@ import org.junit.Assert;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
@@ -37,16 +40,6 @@ public class SmileMapperTest extends BaseTestForSmile
         
         assertNotNull(result.bytes);
         Assert.assertArrayEquals(input, result.bytes);
-    }
-
-    public void testCopy() throws IOException
-    {
-        ObjectMapper mapper1 = smileMapper();
-        ObjectMapper mapper2 = mapper1.copy();
-        
-        assertNotSame(mapper1, mapper2);
-        assertNotSame(mapper1.getFactory(), mapper2.getFactory());
-        assertEquals(SmileFactory.class, mapper2.getFactory().getClass());
     }
 
     // UUIDs should be written as binary (starting with 2.3)
@@ -83,5 +76,50 @@ public class SmileMapperTest extends BaseTestForSmile
         assertNotNull(n3);
         assertTrue(n3.isTextual());
     }
-}
 
+    // for [dataformat-smile#26]
+    public void testIssue26ArrayOutOfBounds() throws Exception
+    {
+        SmileFactory f = new SmileFactory();
+        ObjectMapper mapper = new ObjectMapper(new SmileFactory());
+        byte[] buffer = _generateHugeDoc(f);
+
+        // split the buffer in two smaller buffers
+        int len = 160;
+        byte[] buf1 = new byte[len];
+        byte[] buf2 = new byte[buffer.length - len];
+        System.arraycopy(buffer, 0, buf1, 0, len);
+        System.arraycopy(buffer, len, buf2, 0, buffer.length - len);
+
+        // aggregate the two buffers via a SequenceInputStream
+        ByteArrayInputStream in1 = new ByteArrayInputStream(buf1);
+        ByteArrayInputStream in2 = new ByteArrayInputStream(buf2);
+        SequenceInputStream inputStream = new SequenceInputStream(in1, in2);
+
+        JsonNode jsonNode = mapper.readTree(inputStream);
+        assertNotNull(jsonNode);
+
+        // let's actually verify
+        ArrayNode arr = (ArrayNode) jsonNode;
+        assertEquals(26, arr.size());
+    }
+
+    private byte[] _generateHugeDoc(SmileFactory f) throws IOException
+    {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        JsonGenerator g = f.createGenerator(b);
+        g.writeStartArray();
+
+        for (int c = 'a'; c <= 'z'; ++c) {
+            g.writeStartObject();
+            for (int ix = 0; ix < 1000; ++ix) {
+                String name = "" + ((char) c) + ix;
+                g.writeNumberField(name, ix);
+            }
+            g.writeEndObject();
+        }
+        g.writeEndArray();
+        g.close();
+        return b.toByteArray();
+    }
+}

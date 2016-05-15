@@ -11,7 +11,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
  * using more sizable (500k of JSON, 200k of Smile) dataset.
  * Should tease out at least some of boundary conditions.
  */
-public class ParserBiggerDataTest extends BaseTestForSmile
+public class BiggerDataParseTest extends BaseTestForSmile
 {
 	static class Citm
 	{

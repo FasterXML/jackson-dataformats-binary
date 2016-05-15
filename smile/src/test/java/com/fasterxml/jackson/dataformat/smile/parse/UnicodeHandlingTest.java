@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
-public class TestParserUnicode extends BaseTestForSmile
+public class UnicodeHandlingTest extends BaseTestForSmile
 {
     // [Issue-2]: probs with Surrogate handling
     public void testLongUnicodeWithSurrogates() throws IOException

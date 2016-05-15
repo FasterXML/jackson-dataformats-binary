@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 
-public class TestParserLocation
+public class ParserLocationTest
     extends BaseTestForSmile
 {
     /**

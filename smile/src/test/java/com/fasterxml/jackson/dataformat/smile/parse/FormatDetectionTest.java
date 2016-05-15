@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-public class TestFormatDetection extends BaseTestForSmile
+public class FormatDetectionTest extends BaseTestForSmile
 {
     static class POJO {
         public int id;
