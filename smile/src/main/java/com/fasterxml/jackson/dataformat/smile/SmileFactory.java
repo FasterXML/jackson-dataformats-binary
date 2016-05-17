@@ -441,7 +441,7 @@ public class SmileFactory extends JsonFactory
      */
 
     protected <T> T _nonByteSource() throws IOException {
-        throw new UnsupportedOperationException("Can not create generator for character-based (not byte-based) source");
+        throw new UnsupportedOperationException("Can not create parser for character-based (not byte-based) source");
     }
 
     protected <T> T _nonByteTarget() throws IOException {

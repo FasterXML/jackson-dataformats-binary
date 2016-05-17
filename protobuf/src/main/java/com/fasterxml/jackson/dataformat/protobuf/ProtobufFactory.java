@@ -233,11 +233,11 @@ public class ProtobufFactory extends JsonFactory
         return new ProtobufGenerator(ctxt, stdFeat, _objectCodec, out);
     }
     
-    protected <T> T _nonByteTarget() {
-        throw new UnsupportedOperationException("Can not create generator for non-byte-based target");
+    protected <T> T _nonByteSource() {
+        throw new UnsupportedOperationException("Can not create parser for non-byte-based source");
     }
 
-    protected <T> T _nonByteSource() {
-        throw new UnsupportedOperationException("Can not create generator for non-byte-based source");
+    protected <T> T _nonByteTarget() {
+        throw new UnsupportedOperationException("Can not create generator for non-byte-based target");
     }
 }
