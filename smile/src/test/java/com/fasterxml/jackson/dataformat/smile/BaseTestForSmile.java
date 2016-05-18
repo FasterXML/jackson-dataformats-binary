@@ -116,14 +116,14 @@ public abstract class BaseTestForSmile
     protected byte[] _smileDoc(SmileFactory smileFactory, String json, boolean writeHeader) throws IOException
     {
         JsonFactory jf = new JsonFactory();
-        JsonParser jp = jf.createParser(json);
+        JsonParser p = jf.createParser(json);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator jg = smileGenerator(out, writeHeader);
     	
-        while (jp.nextToken() != null) {
-        	jg.copyCurrentEvent(jp);
+        while (p.nextToken() != null) {
+        	jg.copyCurrentEvent(p);
         }
-        jp.close();
+        p.close();
         jg.close();
         return out.toByteArray();
     }
@@ -155,9 +155,9 @@ public abstract class BaseTestForSmile
         }
     }
 
-    protected void assertToken(JsonToken expToken, JsonParser jp)
+    protected void assertToken(JsonToken expToken, JsonParser p)
     {
-        assertToken(expToken, jp.getCurrentToken());
+        assertToken(expToken, p.getCurrentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)
@@ -194,17 +194,16 @@ public abstract class BaseTestForSmile
      * available methods, and ensures results are consistent, before
      * returning them
      */
-    protected String getAndVerifyText(JsonParser jp)
-        throws IOException, JsonParseException
+    protected String getAndVerifyText(JsonParser p) throws IOException
     {
         // Ok, let's verify other accessors
-        int actLen = jp.getTextLength();
-        char[] ch = jp.getTextCharacters();
-        String str2 = new String(ch, jp.getTextOffset(), actLen);
-        String str = jp.getText();
+        int actLen = p.getTextLength();
+        char[] ch = p.getTextCharacters();
+        String str2 = new String(ch, p.getTextOffset(), actLen);
+        String str = p.getText();
 
         if (str.length() !=  actLen) {
-            fail("Internal problem (jp.token == "+jp.getCurrentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
+            fail("Internal problem (p.token == "+p.getCurrentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
         }
         assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
 

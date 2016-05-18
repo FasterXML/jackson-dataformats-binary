@@ -1371,6 +1371,32 @@ public final class CBORParser extends ParserMinimalBase
         return getText();
     }
 
+    @Override // since 2.8
+    public int getText(Writer writer) throws IOException
+    {
+        if (_tokenIncomplete) {
+            _finishToken();
+        }
+        JsonToken t = _currToken;
+        if (t == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsToWriter(writer);
+        }
+        if (t == JsonToken.FIELD_NAME) {
+            String n = _parsingContext.getCurrentName();
+            writer.write(n);
+            return n.length();
+        }
+        if (t != null) {
+            if (t.isNumeric()) {
+                return _textBuffer.contentsToWriter(writer);
+            }
+            char[] ch = t.asCharArray();
+            writer.write(ch);
+            return ch.length;
+        }
+        return 0;
+    }
+
     /*
     /**********************************************************
     /* Public API, access to token information, binary

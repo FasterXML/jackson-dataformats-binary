@@ -1332,9 +1332,8 @@ public class NonBlockingParserImpl
      * after encountering end-of-input), returns null.
      * Method can be called for any event.
      */
-    @Override    
-    public String getText()
-        throws IOException
+    @Override
+    public String getText() throws IOException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
@@ -1357,8 +1356,7 @@ public class NonBlockingParserImpl
     }
 
     @Override
-    public char[] getTextCharacters()
-        throws IOException
+    public char[] getTextCharacters() throws IOException
     {
         if (_currToken != null) { // null only before/after document
             switch (_currToken) {                
@@ -1423,6 +1421,13 @@ public class NonBlockingParserImpl
     public int getTextOffset() throws IOException
     {
         return 0;
+    }
+
+    // !!! TODO: can this be supported reliably?
+    @Override
+    public int getText(Writer w) throws IOException
+    {
+        throw new UnsupportedOperationException();
     }
 
     /*

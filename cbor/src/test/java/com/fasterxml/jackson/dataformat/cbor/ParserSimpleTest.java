@@ -202,16 +202,34 @@ public class ParserSimpleTest extends CBORTestBase
         assertNull(p.nextToken());
         assertEquals(input.length(), actual.length());
         if (!input.equals(actual)) {
-            i = 0;
-            while (i < input.length() && input.charAt(i) == actual.charAt(i)) { ++i; }
-            fail("Strings differ at #"+i+" (length "+input.length()+"); expected 0x"
-                    +Integer.toHexString(input.charAt(i))+", got 0x"
-                    +Integer.toHexString(actual.charAt(i)));
+            _debugDiff(input, actual);
         }
         assertEquals(input, actual);
         p.close();
+
+        // one more thing: with 2.8 we have new `getText()` variant
+        p = cborParser(new ByteArrayInputStream(b));
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        StringWriter w = new StringWriter();
+        int len = p.getText(w);
+        actual = w.toString();
+        assertEquals(len, actual.length());
+        assertEquals(input.length(), actual.length());
+        if (!input.equals(actual)) {
+            _debugDiff(input, actual);
+        }
+        p.close();
     }
 
+    private void _debugDiff(String expected, String actual)
+    {
+        int i = 0;
+        while (i < expected.length() && expected.charAt(i) == actual.charAt(i)) { ++i; }
+        fail("Strings differ at #"+i+" (length "+expected.length()+"); expected 0x"
+                +Integer.toHexString(expected.charAt(i))+", got 0x"
+                +Integer.toHexString(actual.charAt(i)));
+    }
+    
     public void testStringField() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);

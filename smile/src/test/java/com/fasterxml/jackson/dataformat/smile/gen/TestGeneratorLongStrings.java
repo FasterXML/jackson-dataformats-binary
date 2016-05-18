@@ -79,16 +79,31 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         return sw.toString();
     }
 
-    private void _verifyStrings(JsonFactory f, byte[] input, List<String> strings)
-        throws IOException
+    private void _verifyStrings(JsonFactory f, byte[] input, List<String> strings) throws IOException
     {
-        JsonParser jp = f.createParser(input);
-        assertToken(JsonToken.START_ARRAY, jp.nextToken());
+        JsonParser p = f.createParser(input);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
-            assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-            assertEquals(strings.get(i), jp.getText());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            assertEquals(strings.get(i), p.getText());
         }
-        assertToken(JsonToken.END_ARRAY, jp.nextToken());
-        jp.close();
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
+
+        // Second round, using different accessor
+        p = f.createParser(input);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        for (int i = 0, len = strings.size(); i < len; ++i) {
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            String exp = strings.get(i);
+            StringWriter w = new StringWriter();
+            int strlen = p.getText(w);
+            assertEquals(exp.length(), strlen);
+            String str = w.toString();
+            assertEquals(exp.length(), str.length());
+            assertEquals(exp,str);
+        }
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
     }
 }
