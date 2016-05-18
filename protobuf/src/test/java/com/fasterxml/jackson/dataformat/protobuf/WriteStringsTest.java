@@ -112,10 +112,19 @@ public class WriteStringsTest extends ProtobufTestBase
 
         // Note: nulls are never explicitly written, but simple lead to omission of the field...
         assertEquals("last", p.getText());
+        StringWriter w = new StringWriter();
+        assertEquals(4, p.getText(w));
+        assertEquals("last", w.toString());
+        
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         ch = p.getTextCharacters();
         String str = new String(ch, p.getTextOffset(), p.getTextLength());
         assertEquals(longName, str);
+
+        w = new StringWriter();
+        assertEquals(longName.length(), p.getText(w));
+        assertEquals(longName, w.toString());
+        
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }

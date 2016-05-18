@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import java.io.StringWriter;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -195,6 +197,10 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(input.values[2], p.getText());
 
+        StringWriter strw = new StringWriter();
+        assertEquals(input.values[2].length(), p.getText(strw));
+        assertEquals(input.values[2], strw.toString());
+        
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
