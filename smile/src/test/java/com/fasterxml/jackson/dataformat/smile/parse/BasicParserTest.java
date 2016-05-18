@@ -104,52 +104,52 @@ public class BasicParserTest extends BaseTestForSmile
 
     public void testEmptyStrings() throws IOException
     {
-    	// first, empty key
-    	byte[] data = _smileDoc("{ \"\":true }");
-    	SmileParser p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
-    	assertToken(JsonToken.START_OBJECT, p.nextToken());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("", p.getCurrentName());
+        // first, empty key
+        byte[] data = _smileDoc("{ \"\":true }");
+        SmileParser p = _smileParser(data);
+        assertNull(p.getCurrentToken());
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("", p.getCurrentName());
 
-    	StringWriter w = new StringWriter();
-     assertEquals(0, p.getText(w));
-     assertEquals("", w.toString());
-    	
-    	assertToken(JsonToken.VALUE_TRUE, p.nextToken());
-    	assertToken(JsonToken.END_OBJECT, p.nextToken());
-    	assertNull(p.nextToken());
-    	p.close();
+        StringWriter w = new StringWriter();
+        assertEquals(0, p.getText(w));
+        assertEquals("", w.toString());
 
-    	// then empty value
-    	data = _smileDoc("{ \"abc\":\"\" }");
-    	p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
-    	assertToken(JsonToken.START_OBJECT, p.nextToken());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("abc", p.getCurrentName());
-    	assertToken(JsonToken.VALUE_STRING, p.nextToken());
-    	assertEquals("", p.getText());
-    	assertToken(JsonToken.END_OBJECT, p.nextToken());
-    	assertNull(p.nextToken());
-    	p.close();
-    	
-    	// and combinations
-    	data = _smileDoc("{ \"\":\"\", \"\":\"\" }");
-    	p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
-    	assertToken(JsonToken.START_OBJECT, p.nextToken());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("", p.getCurrentName());
-    	assertToken(JsonToken.VALUE_STRING, p.nextToken());
-    	assertEquals("", p.getText());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("", p.getCurrentName());
-    	assertToken(JsonToken.VALUE_STRING, p.nextToken());
-    	assertEquals("", p.getText());
-    	assertToken(JsonToken.END_OBJECT, p.nextToken());
-    	assertNull(p.nextToken());
-    	p.close();
+        assertToken(JsonToken.VALUE_TRUE, p.nextToken());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
+
+        // then empty value
+        data = _smileDoc("{ \"abc\":\"\" }");
+        p = _smileParser(data);
+        assertNull(p.getCurrentToken());
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("abc", p.getCurrentName());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("", p.getText());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
+
+        // and combinations
+        data = _smileDoc("{ \"\":\"\", \"\":\"\" }");
+        p = _smileParser(data);
+        assertNull(p.getCurrentToken());
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("", p.getCurrentName());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("", p.getText());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("", p.getCurrentName());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("", p.getText());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
     }
     
     // Test for ASCII String values longer than 64 bytes; separate
@@ -173,24 +173,23 @@ public class BasicParserTest extends BaseTestForSmile
     // since handling differs
     public void testLongUnicodeString() throws IOException
     {
-    	final String DIGITS = "1234567890";
-    	final String UNIC = "\u00F06"; // o with umlauts
-    	String LONG = DIGITS + UNIC + DIGITS + UNIC + UNIC + DIGITS + DIGITS;
-    	LONG = LONG + LONG + LONG;
-    	byte[] data = _smileDoc(quote(LONG));
+        final String DIGITS = "1234567890";
+        final String UNIC = "\u00F06"; // o with umlauts
+        String LONG = DIGITS + UNIC + DIGITS + UNIC + UNIC + DIGITS + DIGITS;
+        LONG = LONG + LONG + LONG;
+        byte[] data = _smileDoc(quote(LONG));
 
-    	SmileParser p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
-    	assertToken(JsonToken.VALUE_STRING, p.nextToken());
-    	assertEquals(LONG, p.getText());
+        SmileParser p = _smileParser(data);
+        assertNull(p.getCurrentToken());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals(LONG, p.getText());
 
-    	StringWriter w = new StringWriter();
-     assertEquals(LONG.length(), p.getText(w));
-     assertEquals(LONG, w.toString());
+        StringWriter w = new StringWriter();
+        assertEquals(LONG.length(), p.getText(w));
+        assertEquals(LONG, w.toString());
 
-    	
-    	assertNull(p.nextToken());
-     p.close();
+        assertNull(p.nextToken());
+        p.close();
     }
     
     public void testTrivialObject() throws IOException
