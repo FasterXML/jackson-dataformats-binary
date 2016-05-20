@@ -1,6 +1,8 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class ParserDupHandlingTest extends CBORTestBase
 {

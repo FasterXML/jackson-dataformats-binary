@@ -1,13 +1,18 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.testsupport.ThrottledInputStream;
+import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORParser;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 /**
  * Unit tests for simple value types.
  */
-public class ParserSimpleTest extends CBORTestBase
+public class BasicParserTest extends CBORTestBase
 {
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
@@ -154,6 +159,7 @@ public class ParserSimpleTest extends CBORTestBase
         _testLongChunkedText(generateUnicodeString(21000));
     }
         
+    @SuppressWarnings("resource")
     public void _testLongChunkedText(String input) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -196,7 +202,7 @@ public class ParserSimpleTest extends CBORTestBase
         p.close();
         
         // and then with actual full parsing/access
-        p = cborParser(new ByteArrayInputStream(b));
+        p = cborParser(new ThrottledInputStream(new ByteArrayInputStream(b), 3));
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         String actual = p.getText();
         assertNull(p.nextToken());

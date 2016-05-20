@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 
 import org.junit.Assert;
 
@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
 public class BinaryReadTest extends CBORTestBase
 {
@@ -88,15 +89,27 @@ public class BinaryReadTest extends CBORTestBase
         assertNotNull(bytes.bytes);
         Assert.assertArrayEquals(input, bytes.bytes);
 
-        // and finally using incremental access method
+        // then using incremental access method
         raw = MAPPER.writeValueAsBytes(input);
-        JsonParser p = MAPPER.getFactory().createParser(raw);
+
+        InputStream in = new ThrottledInputStream(raw, 3);
+        JsonParser p = MAPPER.getFactory().createParser(in);
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         ByteArrayOutputStream bout = new ByteArrayOutputStream(input.length / 3);
         assertEquals(input.length, p.readBinaryValue(bout));
         assertEquals(input.length, bout.size());
         b2 = bout.toByteArray();
         Assert.assertArrayEquals(input, b2);
+        assertNull(p.nextToken());
         p.close();
+        in.close();
+
+        // and finally streaming but skipping
+        in = new ThrottledInputStream(raw, 3);
+        p = MAPPER.getFactory().createParser(in);
+        assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
+        in.close();
     }
 }

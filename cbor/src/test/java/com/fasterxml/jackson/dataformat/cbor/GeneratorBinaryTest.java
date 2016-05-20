@@ -55,7 +55,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
 	    os.close();
 	}
 
-	private void testEncodeAndDecodeBytes(int length) throws NoSuchAlgorithmException, IOException
+	private void testEncodeAndDecodeBytes(int length) throws Exception
 	{
 		generateInputFile(binaryInputFile, length);
 		encodeInCBOR(binaryInputFile, cborFile);
@@ -77,7 +77,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
 		os.close();
 	}
 
-	private void decodeFromCborInFile(File input, File output) throws NoSuchAlgorithmException, IOException
+	private void decodeFromCborInFile(File input, File output) throws Exception
 	{
 		CBORFactory f = new CBORFactory();
 		OutputStream os = new FileOutputStream(output);

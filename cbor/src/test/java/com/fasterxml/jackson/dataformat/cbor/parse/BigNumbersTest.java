@@ -1,10 +1,13 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORParser;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 // tests for [cbor#17]
 public class BigNumbersTest extends CBORTestBase
@@ -62,6 +65,10 @@ public class BigNumbersTest extends CBORTestBase
     {
         _testBigInteger(BigInteger.TEN);
         _testBigInteger(BigInteger.TEN.negate());
+        _testBigInteger(BigInteger.valueOf(Integer.MAX_VALUE));
+        _testBigInteger(BigInteger.valueOf(Integer.MIN_VALUE));
+        _testBigInteger(BigInteger.valueOf(Long.MAX_VALUE));
+        _testBigInteger(BigInteger.valueOf(Long.MIN_VALUE));
     }
 
     private void _testBigInteger(BigInteger expValue) throws Exception
@@ -75,9 +82,18 @@ public class BigNumbersTest extends CBORTestBase
         CBORParser parser = cborParser(sourceBytes.toByteArray());
         assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(expValue, parser.getBigIntegerValue());
+
+        // also, coercion to long at least
+        long expL = expValue.longValue();
+        assertEquals(expL, parser.getLongValue());
+
+        // and int, if feasible
+        if (expL >= Integer.MIN_VALUE && expL <= Integer.MAX_VALUE) {
+            assertEquals((int) expL, parser.getIntValue());
+        }
+
         assertNull(parser.nextToken());
         parser.close();
 
-        // but wait... there's more. Negative variants
     }
 }

@@ -1,10 +1,12 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.*;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
 // note: copied from test of same name from jackson-dataformat-smile
@@ -149,17 +151,19 @@ public class ParserNextXxxTest extends CBORTestBase
 
     private void _testNextTextValue(CBORFactory f, String textValue) throws Exception
     {
-        _testNextTextValue(f, textValue, false);
-        _testNextTextValue(f, textValue, true);
+        _testNextTextValue(f, textValue, 57, false);
+        _testNextTextValue(f, textValue, -2094, true);
+        _testNextTextValue(f, textValue, 0x10000, false);
+        _testNextTextValue(f, textValue, -0x4900FFFF, true);
     }
 
     @SuppressWarnings("resource")
-    private void _testNextTextValue(CBORFactory f, String textValue, boolean slow)
+    private void _testNextTextValue(CBORFactory f, String textValue, int intValue, boolean slow)
             throws Exception
     {
         String doc = aposToQuotes(String.format(
-                "['%s',true,{'a':'%s'},123, 0.5]",
-                textValue, textValue));
+                "['%s',true,{'a':'%s'},%d, 0.5]",
+                textValue, textValue, intValue));
         InputStream in = new ByteArrayInputStream(cborDoc(f, doc));
         if (slow) {
             // let's force read for every single byte
@@ -184,7 +188,10 @@ public class ParserNextXxxTest extends CBORTestBase
 
         assertNull(p.nextTextValue());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
-        assertEquals(123, p.getIntValue());
+        assertEquals(intValue, p.getIntValue());
+        assertEquals(intValue, p.getLongValue());
+        assertEquals((double) intValue, p.getDoubleValue());
+
         assertNull(p.nextTextValue());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.currentToken());
         assertEquals(0.5, p.getDoubleValue());
