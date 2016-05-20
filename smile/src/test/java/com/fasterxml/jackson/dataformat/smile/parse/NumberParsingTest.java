@@ -80,36 +80,60 @@ public class NumberParsingTest
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
         assertEquals(l, p.getLongValue());
         p.close();
-    	
+
+        // but also skipping...
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
+        
         l = 1L + (long) Integer.MAX_VALUE;
         data = _smileDoc(String.valueOf(l), false);
         assertEquals(6, data.length);
-    	    p = _smileParser(data);
-    	    assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	    assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
-    	    assertEquals(l, p.getLongValue());
-    	    p.close();
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(l, p.getLongValue());
+        p.close();
+
+        // and skip
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
     }
 
     public void testLongs() throws IOException
     {
-    	long l = Long.MAX_VALUE;
-    	byte[] data = _smileDoc(String.valueOf(l));
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
-    	assertEquals(l, p.getLongValue());
-    	assertEquals(String.valueOf(l), p.getText());
-    	p.close();
+        long l = Long.MAX_VALUE;
+        byte[] data = _smileDoc(String.valueOf(l));
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(l, p.getLongValue());
+        assertEquals(String.valueOf(l), p.getText());
+        p.close();
 
-    	l = Long.MIN_VALUE;
-    	data = _smileDoc(String.valueOf(l));
-    	p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
-    	assertEquals(l, p.getLongValue());
-    	assertEquals(String.valueOf(l), p.getText());
-     p.close();
+        // and skipping
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
+        
+        l = Long.MIN_VALUE;
+        data = _smileDoc(String.valueOf(l));
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(l, p.getLongValue());
+        assertEquals(String.valueOf(l), p.getText());
+        p.close();
+
+        // and skipping
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
     }
 
     public void testArrayWithInts() throws IOException
