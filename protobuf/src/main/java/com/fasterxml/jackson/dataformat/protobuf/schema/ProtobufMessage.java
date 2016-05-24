@@ -110,7 +110,10 @@ public class ProtobufMessage
         // Can we just index it?
         int idOffset = _idOffset;
         if (idOffset >= 0) {
-            return _fieldsById[id - idOffset];
+            int index = id - idOffset;
+            if ((index < _fieldsById.length) && (index >= 0)) {
+                return _fieldsById[index];
+            }
         }
         // if not, brute force works
         for (int i = 0, len = _fields.length; i < len; ++i) {

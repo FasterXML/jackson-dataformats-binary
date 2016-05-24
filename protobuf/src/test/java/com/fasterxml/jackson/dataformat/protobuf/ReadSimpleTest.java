@@ -280,7 +280,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
-    
+
     public void testSearchMessage() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_SEARCH_REQUEST);
@@ -303,5 +303,26 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.result_per_page, result.result_per_page);
         assertEquals(input.query, result.query);
         assertEquals(input.corpus, result.corpus);
+    }
+
+    public void testSkipUnknown() throws Exception
+    {
+        // Important: write Point3, read regular Point
+        ProtobufMapper mapper = new ProtobufMapper();
+
+        ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
+        ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);
+
+        mapper.enable(JsonParser.Feature.IGNORE_UNDEFINED);
+        
+        final Point3 input = new Point3(1, 2, 3);
+        byte[] stuff = mapper.writerFor(Point3.class)
+                .with(point3Schema)
+                .writeValueAsBytes(input);
+
+        Point result = mapper.readerFor(Point.class).with(pointSchema).readValue(stuff);
+        assertNotNull(result);
+        assertEquals(input.x, result.x);
+        assertEquals(input.y, result.y);
     }
 }

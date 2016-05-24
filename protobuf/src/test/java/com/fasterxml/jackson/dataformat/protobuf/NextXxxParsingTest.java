@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import java.io.StringWriter;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -27,7 +25,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
     
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
-    public void testNextXxx() throws Exception
+    public void testNextFieldAndText() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
         final ObjectWriter w = MAPPER.writerFor(Strings.class)
@@ -62,6 +60,28 @@ public class NextXxxParsingTest extends ProtobufTestBase
         assertNull(p.nextTextValue());
         assertToken(JsonToken.END_ARRAY, p.getCurrentToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
+    }
+
+    public void testNextInt() throws Exception
+    {
+        ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);
+        final Point3 input = new Point3(Integer.MAX_VALUE, -1, Integer.MIN_VALUE);
+        byte[] bytes = MAPPER.writer(point3Schema).writeValueAsBytes(input);
+
+        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        p.setSchema(point3Schema);
+        assertEquals(-1, p.nextIntValue(-1));
+        assertToken(JsonToken.START_OBJECT, p.getCurrentToken());
+        assertEquals(-1, p.nextIntValue(-1));
+        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertEquals(Integer.MAX_VALUE, p.nextIntValue(0));
+        assertEquals("y", p.nextFieldName());
+        assertEquals(-1L, p.nextLongValue(0L));
+        assertEquals("z", p.nextFieldName());
+        assertEquals(Integer.MIN_VALUE, p.nextIntValue(0));
+        assertNull(p.nextBooleanValue());
+        assertToken(JsonToken.END_OBJECT, p.getCurrentToken());
         p.close();
     }
 }

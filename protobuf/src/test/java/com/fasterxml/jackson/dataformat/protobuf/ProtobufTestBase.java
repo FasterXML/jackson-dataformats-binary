@@ -47,6 +47,13 @@ public abstract class ProtobufTestBase extends TestCase
             +" required sint32 y = 2;\n"
             +"}\n";
 
+    final protected static String PROTOC_POINT3 =
+            "message Point {\n"
+            +" required int32 x = 1;\n"
+            +" required sint32 y = 2;\n"
+            +" optional sint32 z = 3;\n"
+            +"}\n";
+    
     final protected static String PROTOC_POINT_L =
             "message Point {\n"
             +" required int64 x = 1;\n"
@@ -167,6 +174,31 @@ public abstract class ProtobufTestBase extends TestCase
         }
     }
 
+    static class Point3 {
+        public int x, y, z;
+
+        protected Point3() { }
+        
+        public Point3(int x, int y, int z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        @Override
+        public String toString() {
+            return "[x="+x+",y="+y+",z="+z+"]";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (o.getClass() != getClass()) return false;
+            Point3 other = (Point3) o;
+            return (other.x == x) && (other.y == y) && (other.z == z);
+        }
+    }
+    
     static class PointL {
         public long x;
         public long y;

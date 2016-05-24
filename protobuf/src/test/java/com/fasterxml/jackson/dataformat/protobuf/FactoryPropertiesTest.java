@@ -1,10 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.io.*;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
