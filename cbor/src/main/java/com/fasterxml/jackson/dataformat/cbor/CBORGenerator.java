@@ -513,8 +513,31 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     @Override // since 2.8
-    public void writeArray(int[] array, int offset, int length)
-        throws IOException
+    public void writeArray(int[] array, int offset, int length) throws IOException
+    {
+        _verifyOffsets(array.length, offset, length);
+        // short-cut, do not create child array context etc
+        _verifyValueWrite("write int array");
+        _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
+        for (int i = offset, end = offset+length; i < end; ++i) {
+            _writeNumberNoCheck(array[i]);
+        }
+    }
+
+    @Override // since 2.8
+    public void writeArray(long[] array, int offset, int length) throws IOException
+    {
+        _verifyOffsets(array.length, offset, length);
+        // short-cut, do not create child array context etc
+        _verifyValueWrite("write int array");
+        _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
+        for (int i = offset, end = offset+length; i < end; ++i) {
+            _writeNumberNoCheck(array[i]);
+        }
+    }
+
+    @Override // since 2.8
+    public void writeArray(double[] array, int offset, int length) throws IOException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -567,10 +590,59 @@ public class CBORGenerator extends GeneratorBase {
         _outputBuffer[_outputTail++] = b0;
     }
 
+    private final void _writeNumberNoCheck(long l) throws IOException {
+        if (_cfgMinimalInts) {
+            if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
+                _writeNumberNoCheck((int) l);
+                return;
+            }
+        }
+        _ensureRoomForOutput(9);
+        if (l < 0L) {
+            l += 1;
+            l = -l;
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + 27);
+        } else {
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + 27);
+        }
+        int i = (int) (l >> 32);
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+        i = (int) l;
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+    }
+
+    private final void _writeNumberNoCheck(double d) throws IOException {
+        _verifyValueWrite("write number");
+        _ensureRoomForOutput(11);
+        // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
+        // more accurate to use exact representation; and possibly faster.
+        // However, if there are cases where collapsing of NaN was needed (for
+        // non-Java clients), this can be changed
+        long l = Double.doubleToRawLongBits(d);
+        _outputBuffer[_outputTail++] = BYTE_FLOAT64;
+
+        int i = (int) (l >> 32);
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+        i = (int) l;
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+    }
+
     /*
-     * /********************************************************** /* Output
-     * method implementations, textual
-     * /**********************************************************
+    /***********************************************************
+    /* Output method implementations, textual
+    /***********************************************************
      */
 
     @Override
@@ -1094,11 +1166,10 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     protected final void _writeString(char[] text, int offset, int len)
-            throws IOException {
-        if (len <= MAX_SHORT_STRING_CHARS) { // possibly short strings (not
-                                             // necessarily)
-            _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate
-                                                  // length
+            throws IOException
+    {
+        if (len <= MAX_SHORT_STRING_CHARS) { // possibly short strings (not necessarily)
+            _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
             int actual = _encode(_outputTail + 1, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
@@ -1115,8 +1186,7 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         if (len <= MAX_MEDIUM_STRING_CHARS) {
-            _ensureSpace(MAX_MEDIUM_STRING_BYTES); // short enough, can
-                                                   // approximate
+            _ensureSpace(MAX_MEDIUM_STRING_BYTES); // short enough, can approximate
             int actual = _encode(_outputTail + 2, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
@@ -1139,7 +1209,7 @@ public class CBORGenerator extends GeneratorBase {
             _ensureSpace(MAX_LONG_STRING_BYTES); // calculate accurate length to
                                                  // avoid extra flushing
             int ix = _outputTail;
-            int actual = _encode(ix + 3, text, offset, offset + len);
+            int actual = _encode(ix + 3, text, offset, offset+len);
             final byte[] buf = _outputBuffer;
             buf[ix++] = BYTE_STRING_2BYTE_LEN;
             buf[ix++] = (byte) (actual >> 8);
@@ -1151,16 +1221,21 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     protected final void _writeChunkedString(char[] text, int offset, int len)
-            throws IOException {
+            throws IOException
+    {
         // need to use a marker first
         _writeByte(BYTE_STRING_INDEFINITE);
 
         while (len > MAX_LONG_STRING_CHARS) {
-            _ensureSpace(MAX_LONG_STRING_BYTES); // marker and single-byte
-                                                 // length?
+            _ensureSpace(MAX_LONG_STRING_BYTES); // marker and single-byte length?
             int ix = _outputTail;
-            int actual = _encode(_outputTail + 3, text, offset, offset
-                    + MAX_LONG_STRING_CHARS);
+            // 23-May-2016, tatu: Make sure NOT to try to split surrogates in half
+            int end = offset + MAX_LONG_STRING_CHARS;
+            char c = text[end-1];
+            if (c >= SURR1_FIRST && c <= SURR1_LAST) {
+                --end;
+            }
+            int actual = _encode(_outputTail + 3, text, offset, end);
             final byte[] buf = _outputBuffer;
             buf[ix++] = BYTE_STRING_2BYTE_LEN;
             buf[ix++] = (byte) (actual >> 8);
@@ -1223,8 +1298,7 @@ public class CBORGenerator extends GeneratorBase {
             }
             // 3 or 4 bytes (surrogate)
             // Surrogates?
-            if (c < SURR1_FIRST || c > SURR2_LAST) { // nope, regular 3-byte
-                                                     // character
+            if (c < SURR1_FIRST || c > SURR2_LAST) { // nope, regular 3-byte character
                 outBuf[outputPtr++] = (byte) (0xe0 | (c >> 12));
                 outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
                 outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));

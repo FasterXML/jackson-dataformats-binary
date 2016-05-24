@@ -6,6 +6,7 @@ Project: jackson-dataformat-cbor
 
 2.8.0 (not yet released)
 
+#16: Implement `JsonGenerator.writeArray()` methods added in `jackson-core` (2.8)
 #17: Support parsing of `BigInteger`, `BigDecimal`, not just generating
 #18: Fail to report error for trying to write field name outside Object (root level)
 

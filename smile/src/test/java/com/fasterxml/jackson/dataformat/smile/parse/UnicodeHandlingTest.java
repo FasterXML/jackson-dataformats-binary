@@ -22,9 +22,10 @@ public class UnicodeHandlingTest extends BaseTestForSmile
 
     public void testLongUnicodeWithSurrogates() throws IOException
     {
+        _testLongUnicodeWithSurrogates(700, false);
+        _testLongUnicodeWithSurrogates(900, true);
         _testLongUnicodeWithSurrogates(9600, false);
         _testLongUnicodeWithSurrogates(9600, true);
-        _testLongUnicodeWithSurrogates(900, false);
     }
     
     private void _testLongUnicodeWithSurrogates(int length,

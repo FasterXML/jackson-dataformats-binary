@@ -235,7 +235,7 @@ public class BasicParserTest extends CBORTestBase
                 +Integer.toHexString(expected.charAt(i))+", got 0x"
                 +Integer.toHexString(actual.charAt(i)));
     }
-    
+
     public void testStringField() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
@@ -247,7 +247,9 @@ public class BasicParserTest extends CBORTestBase
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("a", parser.getCurrentName());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
+        assertEquals("a", parser.getCurrentName());
         assertEquals("b", parser.getText());
         assertEquals(1, parser.getTextLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
@@ -259,6 +261,41 @@ public class BasicParserTest extends CBORTestBase
         parser.close();
     }
 
+    public void testNestedObject() throws IOException
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator generator = cborGenerator(out);
+        generator.writeStartObject();
+        generator.writeFieldName("ob");
+        generator.writeStartObject();
+        generator.writeNumberField("num", 3);
+        generator.writeEndObject();
+        generator.writeFieldName("arr");
+        generator.writeStartArray();
+        generator.writeEndArray();
+        generator.writeEndObject();
+        generator.close();
+
+        CBORParser parser = cborParser(out.toByteArray());
+        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+
+        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("ob", parser.getCurrentName());
+        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("num", parser.getCurrentName());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
+        assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+
+        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("arr", parser.getCurrentName());
+        assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+        assertEquals(JsonToken.END_ARRAY, parser.nextToken());
+        
+        assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+        parser.close();
+    }
+    
     public void testBufferRelease() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

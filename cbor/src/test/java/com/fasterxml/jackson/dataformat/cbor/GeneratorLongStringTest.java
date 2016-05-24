@@ -71,6 +71,9 @@ public class GeneratorLongStringTest extends CBORTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            if ((i % 3) == 0) { // just for fun, try calling finish every now and then
+                p.finishToken();
+            }
             assertEquals(strings.get(i), p.getText());
         }
         assertToken(JsonToken.END_ARRAY, p.nextToken());
