@@ -108,7 +108,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
         InputStream in = new ByteArrayInputStream(bytes);
 
         if (smallReads) {
-            in = new LimitingInputStream(in, 19);
+            in = new LimitingInputStream(in, 7);
         }
         PojoWithArrays result = r.readValue(in);
 

@@ -537,7 +537,7 @@ public class ProtobufGenerator extends GeneratorBase
             _writeTag = true; 
         }
     }
-    
+
     private void _verifyArrayWrite(Object array) throws IOException
     {
         if (array == null) {
@@ -685,7 +685,6 @@ public class ProtobufGenerator extends GeneratorBase
 
     private void _writeNonPackedArray(double[] array, int i, int end) throws IOException
     {
-        _startBuffering(_currField.typedTag);
         final int type = _currField.wireType;
 
         if (type == WireType.FIXED_64BIT) {
@@ -700,9 +699,8 @@ public class ProtobufGenerator extends GeneratorBase
         } else {
             _reportWrongWireType("double");
         }
-        _finishBuffering();
     }
-    
+
     /*
     /**********************************************************
     /* Output method implementations, textual
