@@ -6,7 +6,7 @@ Project: jackson-dataformat-protobuf
 
 2.8.0 (not yet released)
 
-- Support `writeStartArray(int[])`
+- Support `writeArray()` for `int[]`, `long[]` and `double[]`
 - Add `ProtobufMapper.generateSchemaFor(type)` helper methods
 
 2.7.4 (29-Apr-2016)

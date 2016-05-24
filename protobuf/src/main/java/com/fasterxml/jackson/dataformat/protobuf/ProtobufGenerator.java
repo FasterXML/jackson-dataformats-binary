@@ -481,10 +481,68 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public void writeArray(int[] array, int offset, int length) throws IOException
     {
+        _verifyArrayWrite(array);
+        _verifyOffsets(array.length, offset, length);
+
+        // one minor optimization: empty arrays do not produce anything
+        if (length > 0) {
+            // NOTE: as a short-cut, leave out construction of intermediate ARRAY
+            final int end = offset+length;
+            if (_currField.packed) {
+                _writePackedArray(array, offset, end);
+            } else {
+                _writeNonPackedArray(array, offset, end);
+            }
+            // and then pieces of END_ARRAY
+            _writeTag = true; 
+        }
+    }
+
+    @Override
+    public void writeArray(long[] array, int offset, int length) throws IOException
+    {
+        _verifyArrayWrite(array);
+        _verifyOffsets(array.length, offset, length);
+
+        // one minor optimization: empty arrays do not produce anything
+        if (length > 0) {
+            // NOTE: as a short-cut, leave out construction of intermediate ARRAY
+            final int end = offset+length;
+            if (_currField.packed) {
+                _writePackedArray(array, offset, end);
+            } else {
+                _writeNonPackedArray(array, offset, end);
+            }
+            // and then pieces of END_ARRAY
+            _writeTag = true; 
+        }
+    }
+
+    @Override
+    public void writeArray(double[] array, int offset, int length) throws IOException
+    {
+        _verifyArrayWrite(array);
+        _verifyOffsets(array.length, offset, length);
+
+        // one minor optimization: empty arrays do not produce anything
+        if (length > 0) {
+            // NOTE: as a short-cut, leave out construction of intermediate ARRAY
+            final int end = offset+length;
+            if (_currField.packed) {
+                _writePackedArray(array, offset, end);
+            } else {
+                _writeNonPackedArray(array, offset, end);
+            }
+            // and then pieces of END_ARRAY
+            _writeTag = true; 
+        }
+    }
+    
+    private void _verifyArrayWrite(Object array) throws IOException
+    {
         if (array == null) {
             throw new IllegalArgumentException("null array");
         }
-        _verifyOffsets(array.length, offset, length);
         if (!_inObject) {
             _reportError("Current context not an OBJECT, can not write arrays");
         }
@@ -494,22 +552,6 @@ public class ProtobufGenerator extends GeneratorBase
         if (!_currField.isArray()) {
             _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");
         }
-
-        // one minor optimization: empty arrays do not produce anything
-        if (length == 0) {
-            return;
-        }
-        
-        // NOTE: as a short-cut, leave out construction of intermediate ARRAY
-
-        final int end = offset+length;
-        if (_currField.packed) {
-            _writePackedArray(array, offset, end);
-        } else {
-            _writeNonPackedArray(array, offset, end);
-        }
-        // and then pieces of END_ARRAY
-        _writeTag = true; 
     }
 
     private void _writePackedArray(int[] array, int i, int end) throws IOException
@@ -541,6 +583,54 @@ public class ProtobufGenerator extends GeneratorBase
         _finishBuffering();
     }
 
+    private void _writePackedArray(long[] array, int i, int end) throws IOException
+    {
+        _startBuffering(_currField.typedTag);
+        final int type = _currField.wireType;
+
+        if (type == WireType.VINT) {
+            final boolean zigzag = _currField.usesZigZag;
+            for (; i < end; ++i) {
+                long v = array[i];
+                if (zigzag) {
+                    v = ProtobufUtil.zigzagEncode(v);
+                }
+                _writeVLongNoTag(v);
+            }
+        } else if (type == WireType.FIXED_32BIT) {
+            for (; i < end; ++i) {
+                _writeInt32NoTag((int) array[i]);
+            }
+        } else if (type == WireType.FIXED_64BIT) {
+            for (; i < end; ++i) {
+                _writeInt64NoTag(array[i]);
+            }
+        } else {
+            _reportWrongWireType("int");
+        }
+        _finishBuffering();
+    }
+
+    private void _writePackedArray(double[] array, int i, int end) throws IOException
+    {
+        _startBuffering(_currField.typedTag);
+        final int type = _currField.wireType;
+
+        if (type == WireType.FIXED_64BIT) {
+            for (; i < end; ++i) {
+                _writeInt64NoTag(Double.doubleToLongBits( array[i]));
+            }
+        } else if (type == WireType.FIXED_32BIT) { // should we support such coercion?
+            for (; i < end; ++i) {
+                float f = (float) array[i];
+                _writeInt32NoTag(Float.floatToRawIntBits(f));
+            }
+        } else {
+            _reportWrongWireType("double");
+        }
+        _finishBuffering();
+    }
+
     private void _writeNonPackedArray(int[] array, int i, int end) throws IOException
     {
         final int type = _currField.wireType;
@@ -567,6 +657,52 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
+    private void _writeNonPackedArray(long[] array, int i, int end) throws IOException
+    {
+        final int type = _currField.wireType;
+
+        if (type == WireType.VINT) {
+            final boolean zigzag = _currField.usesZigZag;
+            for (; i < end; ++i) {
+                long v = array[i];
+                if (zigzag) {
+                    v = ProtobufUtil.zigzagEncode(v);
+                }
+                _writeVLong(v);
+            }
+        } else if (type == WireType.FIXED_32BIT) {
+            for (; i < end; ++i) {
+                _writeInt32((int) array[i]);
+            }
+        } else if (type == WireType.FIXED_64BIT) {
+            for (; i < end; ++i) {
+                _writeInt64(array[i]);
+            }
+        } else {
+            _reportWrongWireType("int");
+        }
+    }
+
+    private void _writeNonPackedArray(double[] array, int i, int end) throws IOException
+    {
+        _startBuffering(_currField.typedTag);
+        final int type = _currField.wireType;
+
+        if (type == WireType.FIXED_64BIT) {
+            for (; i < end; ++i) {
+                _writeInt64(Double.doubleToLongBits( array[i]));
+            }
+        } else if (type == WireType.FIXED_32BIT) { // should we support such coercion?
+            for (; i < end; ++i) {
+                float f = (float) array[i];
+                _writeInt32(Float.floatToRawIntBits(f));
+            }
+        } else {
+            _reportWrongWireType("double");
+        }
+        _finishBuffering();
+    }
+    
     /*
     /**********************************************************
     /* Output method implementations, textual
@@ -1036,7 +1172,7 @@ public class ProtobufGenerator extends GeneratorBase
         // !!! TODO: better scheme to detect overflow or something
         writeNumber(v.longValue());
     }
-    
+
     @Override
     public void writeNumber(double d) throws IOException
     {
@@ -1529,7 +1665,7 @@ public class ProtobufGenerator extends GeneratorBase
         
         _currPtr =  ptr;
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods, buffering
