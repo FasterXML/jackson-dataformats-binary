@@ -628,6 +628,7 @@ public class SmileGenerator
         for (int i = offset, end = offset+length; i < end; ++i) {
             // TODO: optimize boundary checks for common case
             if ((ptr + 6) >= outputEnd) { // at most 6 bytes per element
+                _outputTail = ptr;
                 _flushBuffer();
                 ptr = _outputTail;
             }
@@ -637,6 +638,52 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_END_ARRAY);
     }
 
+    @Override // since 2.8
+    public void writeArray(long[] array, int offset, int length)
+        throws IOException
+    {
+        _verifyOffsets(array.length, offset, length);
+        // short-cut, do not create child array context etc
+        _verifyValueWrite("write int array");
+
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+        int ptr = _outputTail;
+        final int outputEnd = _outputEnd;
+        for (int i = offset, end = offset+length; i < end; ++i) {
+            if ((ptr + 11) >= outputEnd) { // at most 11 bytes per element
+                _outputTail = ptr;
+                _flushBuffer();
+                ptr = _outputTail;
+            }
+            ptr = _writeNumberNoChecks(ptr, array[i]);
+        }
+        _outputTail = ptr;
+        _writeByte(TOKEN_LITERAL_END_ARRAY);
+    }
+
+    @Override // since 2.8
+    public void writeArray(double[] array, int offset, int length)
+        throws IOException
+    {
+        _verifyOffsets(array.length, offset, length);
+        // short-cut, do not create child array context etc
+        _verifyValueWrite("write int array");
+
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+        int ptr = _outputTail;
+        final int outputEnd = _outputEnd;
+        for (int i = offset, end = offset+length; i < end; ++i) {
+            if ((ptr + 10) >= outputEnd) { // at most 11 bytes per element
+                _outputTail = ptr;
+                _flushBuffer();
+                ptr = _outputTail;
+            }
+            ptr = _writeNumberNoChecks(ptr, array[i]);
+        }
+        _outputTail = ptr;
+        _writeByte(TOKEN_LITERAL_END_ARRAY);
+    }
+    
     private final void _writeFieldName(String name) throws IOException
     {
         int len = name.length();
@@ -1352,7 +1399,7 @@ public class SmileGenerator
     public void writeNumber(long l) throws IOException
     {
         // First: maybe 32 bits is enough?
-    	if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
+        if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
             writeNumber((int) l);
             return;
         }
@@ -1411,6 +1458,104 @@ public class SmileGenerator
         _writeBytes(b5, b4, b3, b2, b1, b0);
     }
 
+    // since 2.8: same as `writeNumber(int)` minus validity checks for
+    // value write AND boundary checks
+    private final int _writeNumberNoChecks(int ptr, long l) throws IOException
+    {
+        // First: maybe 32 bits is enough?
+        if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
+            return _writeNumberNoChecks(ptr, (int) l);
+        }
+        l = SmileUtil.zigzagEncode(l);
+        // Ok, well, we do know that 5 lowest-significant bytes are needed
+        int i = (int) l;
+        // 4 can be extracted from lower int
+        byte b0 = (byte) (0x80 + (i & 0x3F)); // sign bit set in the last byte
+        byte b1 = (byte) ((i >> 6) & 0x7F);
+        byte b2 = (byte) ((i >> 13) & 0x7F);
+        byte b3 = (byte) ((i >> 20) & 0x7F);
+        // fifth one is split between ints:
+        l >>>= 27;
+        byte b4 = (byte) (((int) l) & 0x7F);
+
+        final byte[] output = _outputBuffer;
+        output[ptr++] = TOKEN_BYTE_INT_64;
+        
+        // which may be enough?
+        i = (int) (l >> 7);
+        if (i == 0) {
+            output[ptr++] = b4;
+            output[ptr++] = b3;
+            output[ptr++] = b2;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+
+        if (i <= 0x7F) {
+            output[ptr++] = (byte) i;
+            output[ptr++] = b4;
+            output[ptr++] = b3;
+            output[ptr++] = b2;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        byte b5 = (byte) (i & 0x7F);
+        i >>= 7;
+        if (i <= 0x7F) {
+            output[ptr++] = (byte) i;
+            output[ptr++] = b5;
+            output[ptr++] = b4;
+            output[ptr++] = b3;
+            output[ptr++] = b2;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        byte b6 = (byte) (i & 0x7F);
+        i >>= 7;
+        if (i <= 0x7F) {
+            output[ptr++] = (byte) i;
+            output[ptr++] = b6;
+            output[ptr++] = b5;
+            output[ptr++] = b4;
+            output[ptr++] = b3;
+            output[ptr++] = b2;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        byte b7 = (byte) (i & 0x7F);
+        i >>= 7;
+        if (i <= 0x7F) {
+            output[ptr++] = (byte) i;
+            output[ptr++] = b7;
+            output[ptr++] = b6;
+            output[ptr++] = b5;
+            output[ptr++] = b4;
+            output[ptr++] = b3;
+            output[ptr++] = b2;
+            output[ptr++] = b1;
+            output[ptr++] = b0;
+            return ptr;
+        }
+        byte b8 = (byte) (i & 0x7F);
+        i >>= 7;
+        // must be done, with 10 bytes! (9 * 7 + 6 == 69 bits; only need 63)
+        output[ptr++] = (byte) i;
+        output[ptr++] = b8;
+        output[ptr++] = b7;
+        output[ptr++] = b6;
+        output[ptr++] = b5;
+        output[ptr++] = b4;
+        output[ptr++] = b3;
+        output[ptr++] = b2;
+        output[ptr++] = b1;
+        output[ptr++] = b0;
+        return ptr;
+    }
+    
     @Override
     public void writeNumber(BigInteger v) throws IOException
     {
@@ -1467,6 +1612,40 @@ public class SmileGenerator
         _outputTail += 4;
     }
 
+    private final int _writeNumberNoChecks(int ptr, double d) throws IOException
+    {
+        long l = Double.doubleToRawLongBits(d);
+        final byte[] output = _outputBuffer;
+        output[ptr++] = TOKEN_BYTE_FLOAT_64;
+        // Handle first 29 bits (single bit first, then 4 x 7 bits)
+        int hi5 = (int) (l >>> 35);
+        output[ptr+4] = (byte) (hi5 & 0x7F);
+        hi5 >>= 7;
+        output[ptr+3] = (byte) (hi5 & 0x7F);
+        hi5 >>= 7;
+        output[ptr+2] = (byte) (hi5 & 0x7F);
+        hi5 >>= 7;
+        output[ptr+1] = (byte) (hi5 & 0x7F);
+        hi5 >>= 7;
+        output[ptr] = (byte) hi5;
+        ptr += 5;
+        // Then split byte (one that crosses lo/hi int boundary), 7 bits
+        {
+            int mid = (int) (l >> 28);
+            output[ptr++] = (byte) (mid & 0x7F);
+        }
+        // and then last 4 bytes (28 bits)
+        int lo4 = (int) l;
+        output[ptr+3] = (byte) (lo4 & 0x7F);
+        lo4 >>= 7;
+        output[ptr+2] = (byte) (lo4 & 0x7F);
+        lo4 >>= 7;
+        output[ptr+1] = (byte) (lo4 & 0x7F);
+        lo4 >>= 7;
+        output[ptr] = (byte) (lo4 & 0x7F);
+        return ptr + 4;
+    }
+        
     @Override
     public void writeNumber(float f) throws IOException
     {

@@ -6,14 +6,10 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 
 public class ParserLocationTest
     extends BaseTestForSmile
 {
-    /**
-     * Basic unit test to verify that [JACKSON-] has been resolved.
-     */
     public void testSimpleOffsets() throws IOException
     {
         byte[] data = _smileDoc("[ true, null, false, 511 ]", true); // true -> write header

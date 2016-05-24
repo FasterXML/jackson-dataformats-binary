@@ -13,24 +13,24 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
  */
 public class BiggerDataParseTest extends BaseTestForSmile
 {
-	static class Citm
-	{
-		public Map<Integer,String> areaNames;
-		public Map<Integer,String> audienceSubCategoryNames;
-		public Map<Integer,String> blockNames;
-		public Map<Integer,String> seatCategoryNames;
-		public Map<Integer,String> subTopicNames;
-		public Map<Integer,String> subjectNames;
-		public Map<Integer,String> topicNames;
-		public Map<Integer,int[]> topicSubTopics;
-		public Map<String,String> venueNames;
+    static class Citm
+    {
+        public Map<Integer,String> areaNames;
+        public Map<Integer,String> audienceSubCategoryNames;
+        public Map<Integer,String> blockNames;
+        public Map<Integer,String> seatCategoryNames;
+        public Map<Integer,String> subTopicNames;
+        public Map<Integer,String> subjectNames;
+        public Map<Integer,String> topicNames;
+        public Map<Integer,int[]> topicSubTopics;
+        public Map<String,String> venueNames;
 
-		public Map<Integer,Event> events;
-		public List<Performance> performances;
-	}
+        public Map<Integer,Event> events;
+        public List<Performance> performances;
+    }
 
-	static class Event
-	{
+    static class Event
+    {
 		public int id;
 		public String name;
 		public String description;
@@ -71,7 +71,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 	static class Area {
 		public int areaId;
 		public int[] blockIds;
-	}
+    }
 
     /*
     /**********************************************************
