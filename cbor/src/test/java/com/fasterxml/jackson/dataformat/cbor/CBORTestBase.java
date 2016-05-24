@@ -62,7 +62,7 @@ public abstract class CBORTestBase
         JsonGenerator dest = cborF.createGenerator(out);
     	
         while (p.nextToken() != null) {
-        	dest.copyCurrentEvent(p);
+            dest.copyCurrentEvent(p);
         }
         p.close();
         dest.close();

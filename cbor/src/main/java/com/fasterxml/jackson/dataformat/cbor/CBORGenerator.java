@@ -1221,7 +1221,7 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     protected final void _writeChunkedString(char[] text, int offset, int len)
-            throws IOException
+        throws IOException
     {
         // need to use a marker first
         _writeByte(BYTE_STRING_INDEFINITE);
@@ -1229,11 +1229,14 @@ public class CBORGenerator extends GeneratorBase {
         while (len > MAX_LONG_STRING_CHARS) {
             _ensureSpace(MAX_LONG_STRING_BYTES); // marker and single-byte length?
             int ix = _outputTail;
+            int amount = MAX_LONG_STRING_CHARS;
+
             // 23-May-2016, tatu: Make sure NOT to try to split surrogates in half
-            int end = offset + MAX_LONG_STRING_CHARS;
+            int end = offset + amount;
             char c = text[end-1];
             if (c >= SURR1_FIRST && c <= SURR1_LAST) {
                 --end;
+                --amount;
             }
             int actual = _encode(_outputTail + 3, text, offset, end);
             final byte[] buf = _outputBuffer;
@@ -1241,8 +1244,8 @@ public class CBORGenerator extends GeneratorBase {
             buf[ix++] = (byte) (actual >> 8);
             buf[ix++] = (byte) actual;
             _outputTail = ix + actual;
-            offset += MAX_LONG_STRING_CHARS;
-            len -= MAX_LONG_STRING_CHARS;
+            offset += amount;
+            len -= amount;
         }
         // and for the last chunk, just use recursion
         if (len > 0) {
