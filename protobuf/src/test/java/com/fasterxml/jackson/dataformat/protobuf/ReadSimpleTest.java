@@ -29,7 +29,7 @@ public class ReadSimpleTest extends ProtobufTestBase
             +" repeated string values = 7;\n"
             +"}\n"
     ;
-    
+
     static class Strings {
         public String[] values;
 
@@ -47,7 +47,7 @@ public class ReadSimpleTest extends ProtobufTestBase
             values = v;
         }
     }
-    
+
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
     
     /*
@@ -186,8 +186,15 @@ public class ReadSimpleTest extends ProtobufTestBase
         JsonParser p = MAPPER.getFactory().createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
+
+        assertEquals("/", p.getParsingContext().toString());
+        
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("values", p.getCurrentName());
+
+        // 23-May-2016, tatu: Not working properly yet:
+//        assertEquals("{values}", p.getParsingContext().toString());
+
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -205,6 +212,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
+
 
     public void testStringArrayPacked() throws Exception
     {

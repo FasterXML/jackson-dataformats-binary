@@ -18,7 +18,7 @@ public class ProtobufFactory extends JsonFactory
     /* Factory construction, configuration
     /**********************************************************
      */
-    
+
     public ProtobufFactory() { }
 
     public ProtobufFactory(ObjectCodec codec) {
@@ -103,6 +103,9 @@ public class ProtobufFactory extends JsonFactory
         return true;
     }
 
+    @Override
+    public boolean canUseCharArrays() { return false; }
+    
     // No format-specific configuration, yet:
 /*    
     @Override
