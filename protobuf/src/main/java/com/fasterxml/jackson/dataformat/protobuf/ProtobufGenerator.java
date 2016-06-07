@@ -243,7 +243,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeFieldName(String name) throws IOException {
         if (!_inObject) {
-            _reportError("Can not write field name: current context not an OBJECT but "+_pbContext.getTypeDesc());
+            _reportError("Can not write field name: current context not Object but "+_pbContext.typeDesc());
         }
         ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
@@ -274,7 +274,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeFieldName(SerializableString sstr) throws IOException {
         if (!_inObject) {
-            _reportError("Can not write field name: current context not an OBJECT but "+_pbContext.getTypeDesc());
+            _reportError("Can not write field name: current context not Object but "+_pbContext.typeDesc());
         }
         ProtobufField f = _currField;
         final String name = sstr.getValue();
@@ -397,7 +397,7 @@ public class ProtobufGenerator extends GeneratorBase
     public final void writeEndArray() throws IOException
     {
         if (!_pbContext.inArray()) {
-            _reportError("Current context not an ARRAY but "+_pbContext.getTypeDesc());
+            _reportError("Current context not Array but "+_pbContext.typeDesc());
         }
         _pbContext = _pbContext.getParent();
         if (_pbContext.inRoot()) {
@@ -458,7 +458,7 @@ public class ProtobufGenerator extends GeneratorBase
     public final void writeEndObject() throws IOException
     {
         if (!_inObject) {
-            _reportError("Current context not an object but "+_pbContext.getTypeDesc());
+            _reportError("Current context not Object but "+_pbContext.typeDesc());
         }
         _pbContext = _pbContext.getParent();
         if (_pbContext.inRoot()) {

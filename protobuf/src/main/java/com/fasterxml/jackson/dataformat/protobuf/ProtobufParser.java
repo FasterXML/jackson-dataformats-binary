@@ -1988,10 +1988,13 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     protected void _handleEOF() throws JsonParseException {
         if (!_parsingContext.inRoot()) {
-            _reportInvalidEOF(String.format(": expected close marker for "
-                    + " %s (from %s)",
-                    _parsingContext.getTypeDesc(), _parsingContext.getStartLocation(
-                           _ioContext.getSourceReference(),  _currInputProcessed)));
+            String marker = _parsingContext.inArray() ? "Array" : "Object";
+            _reportInvalidEOF(String.format(
+                    ": expected close marker for %s (start marker at %s)",
+                    marker,
+                    _parsingContext.getStartLocation(
+                            _ioContext.getSourceReference(),  _currInputProcessed)),
+                    null);
         }
     }
 

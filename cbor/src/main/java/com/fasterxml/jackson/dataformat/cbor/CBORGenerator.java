@@ -476,8 +476,7 @@ public class CBORGenerator extends GeneratorBase {
     @Override
     public final void writeEndArray() throws IOException {
         if (!_writeContext.inArray()) {
-            _reportError("Current context not an ARRAY but "
-                    + _writeContext.getTypeDesc());
+            _reportError("Current context not Array but "+_writeContext.typeDesc());
         }
         _writeByte(BYTE_BREAK);
         _writeContext = _writeContext.getParent();
@@ -505,8 +504,7 @@ public class CBORGenerator extends GeneratorBase {
     @Override
     public final void writeEndObject() throws IOException {
         if (!_writeContext.inObject()) {
-            _reportError("Current context not an object but "
-                    + _writeContext.getTypeDesc());
+            _reportError("Current context not Object but "+ _writeContext.typeDesc());
         }
         _writeContext = _writeContext.getParent();
         _writeByte(BYTE_BREAK);

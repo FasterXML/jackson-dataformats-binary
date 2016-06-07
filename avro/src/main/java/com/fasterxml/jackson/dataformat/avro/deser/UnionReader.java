@@ -44,9 +44,8 @@ final class UnionReader extends AvroStructureReader
         if (_currentReader == null) {
             int index = _decoder.readIndex();
             if (index < 0 || index >= _memberReaders.length) {
-                throw new JsonParseException("Invalid index ("+index+"); union only has "
-                        +_memberReaders.length+" types",
-                        _parser.getCurrentLocation());
+                throw new JsonParseException(_parser, String.format
+                        ("Invalid index (%s); union only has %d types", index, _memberReaders.length));
             }
             // important: remember to create new instance
             // also: must pass our parent (not this instance)

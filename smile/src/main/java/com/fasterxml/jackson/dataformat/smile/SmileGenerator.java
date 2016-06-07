@@ -578,7 +578,7 @@ public class SmileGenerator
     public final void writeEndArray() throws IOException
     {
         if (!_writeContext.inArray()) {
-            _reportError("Current context not an ARRAY but "+_writeContext.getTypeDesc());
+            _reportError("Current context not Array but "+_writeContext.typeDesc());
         }
         _writeByte(TOKEN_LITERAL_END_ARRAY);
         _writeContext = _writeContext.getParent();
@@ -608,7 +608,7 @@ public class SmileGenerator
     public final void writeEndObject() throws IOException
     {
         if (!_writeContext.inObject()) {
-            _reportError("Current context not an object but "+_writeContext.getTypeDesc());
+            _reportError("Current context not Object but "+_writeContext.typeDesc());
         }
         _writeContext = _writeContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);

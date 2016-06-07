@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.avro.Schema;
-import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

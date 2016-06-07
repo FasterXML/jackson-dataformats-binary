@@ -2158,7 +2158,8 @@ public final class CBORParser extends ParserMinimalBase
         int len = _decodeChunkLength(CBORConstants.MAJOR_TYPE_TEXT);
         // not actually acceptable if we got a split character
         if (len < 0) {
-            _reportInvalidEOF(": chunked Text ends with partial UTF-8 character");
+            _reportInvalidEOF(": chunked Text ends with partial UTF-8 character",
+                    JsonToken.VALUE_STRING);
         }
         int end = _inputPtr + len;
         if (end <= _inputEnd) { // all within buffer
@@ -3018,7 +3019,12 @@ public final class CBORParser extends ParserMinimalBase
     @Override
     protected void _handleEOF() throws JsonParseException {
         if (!_parsingContext.inRoot()) {
-            _reportInvalidEOF(": expected close marker for "+_parsingContext.getTypeDesc()+" (from "+_parsingContext.getStartLocation(_ioContext.getSourceReference())+")");
+            String marker = _parsingContext.inArray() ? "Array" : "Object";
+            _reportInvalidEOF(String.format(
+                    ": expected close marker for %s (start marker at %s)",
+                    marker,
+                    _parsingContext.getStartLocation(_ioContext.getSourceReference())),
+                    null);
         }
     }
 

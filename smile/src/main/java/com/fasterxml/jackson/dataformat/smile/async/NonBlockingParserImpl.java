@@ -1738,7 +1738,7 @@ public class NonBlockingParserImpl
                     needed = ch = 1; // never really gets this far
                 }
                 if ((ix + needed) > byteLen) {
-                    _reportInvalidEOF(" in long field name");
+                    _reportInvalidEOF(" in long field name", JsonToken.FIELD_NAME);
                 }
                 
                 // Ok, always need at least one more:

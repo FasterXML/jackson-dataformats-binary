@@ -332,7 +332,7 @@ public class AvroGenerator extends GeneratorBase
                 throw e;
             } catch (Exception e) {
                 throw new JsonGenerationException("Failed to close AvroGenerator: ("
-                        +e.getClass().getName()+"): "+e.getMessage(), e);
+                        +e.getClass().getName()+"): "+e.getMessage(), e, this);
             }
         }
         if (_output != null) {
@@ -362,7 +362,7 @@ public class AvroGenerator extends GeneratorBase
     public final void writeEndArray() throws IOException
     {
         if (!_avroContext.inArray()) {
-            _reportError("Current context not an ARRAY but "+_avroContext.getTypeDesc());
+            _reportError("Current context not Array but "+_avroContext.typeDesc());
         }
         _avroContext = _avroContext.getParent();
         if (_avroContext.inRoot() && !_complete) {
@@ -379,7 +379,7 @@ public class AvroGenerator extends GeneratorBase
     public final void writeEndObject() throws IOException
     {
         if (!_avroContext.inObject()) {
-            _reportError("Current context not an object but "+_avroContext.getTypeDesc());
+            _reportError("Current context not Object but "+_avroContext.typeDesc());
         }
         if (!_avroContext.canClose()) {
             _reportError("Can not write END_OBJECT after writing FIELD_NAME but not value");

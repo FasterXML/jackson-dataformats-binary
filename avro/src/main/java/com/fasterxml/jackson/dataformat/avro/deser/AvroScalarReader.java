@@ -35,9 +35,8 @@ public abstract class AvroScalarReader
         {
             int index = decoder.readIndex();
             if (index < 0 || index >= _readers.length) {
-                throw new JsonParseException("Invalid index ("+index+"); union only has "
-                        +_readers.length+" types",
-                        parser.getCurrentLocation());
+                throw new JsonParseException(parser, String.format
+                        ("Invalid index (%s); union only has %d types", index, _readers.length));
             }
             return _readers[index].readValue(parser, decoder);
         }
