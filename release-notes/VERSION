@@ -1,0 +1,16 @@
+Project: jackson-datatypes-binary
+Modules:
+  jackson-dataformat-avro
+  jackson-dataformat-cbor
+  jackson-dataformat-protobuf
+  jackson-dataformat-smile
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.8.0 (not yet released)
+
+#24: (cbor) Incorrect coercion for int-valued Map keys to String
+
+
