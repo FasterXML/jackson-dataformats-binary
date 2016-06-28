@@ -150,11 +150,12 @@ public class CBORGenerator extends GeneratorBase {
 	private int currentRemainingElementsCount = INDEFINITE_LENGTH;
 
     /*
-     * /********************************************************** /* Output
-     * buffering /**********************************************************
+    /**********************************************************
+    /* Output buffering
+    /**********************************************************
      */
 
-    /**
+	/**
      * Intermediate buffer in which contents are buffered before being written
      * using {@link #_out}.
      */
@@ -187,9 +188,9 @@ public class CBORGenerator extends GeneratorBase {
     protected int _bytesWritten;
 
     /*
-     * /********************************************************** /* Shared
-     * String detection
-     * /**********************************************************
+    /**********************************************************
+    /* Shared String detection
+    /**********************************************************
      */
 
     /**
@@ -199,8 +200,9 @@ public class CBORGenerator extends GeneratorBase {
     protected boolean _bufferRecyclable;
 
     /*
-     * /********************************************************** /* Life-cycle
-     * /**********************************************************
+    /**********************************************************
+    /* Life-cycle
+    /**********************************************************
      */
 
     public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
@@ -257,8 +259,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Versioned
-     * /**********************************************************
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
@@ -267,8 +270,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Capability
-     * introspection /**********************************************************
+    /**********************************************************
+    /* Capability introspection
+    /**********************************************************
      */
 
     @Override
@@ -277,9 +281,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Overridden
-     * methods, configuration
-     * /**********************************************************
+    /**********************************************************
+    /* Overridden methods, configuration
+    /**********************************************************
      */
 
     /**
@@ -339,9 +343,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Extended
-     * API, configuration
-     * /**********************************************************
+    /**********************************************************
+    /* Extended API, configuration
+    /**********************************************************
      */
 
     public CBORGenerator enable(Feature f) {
@@ -374,9 +378,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Overridden
-     * methods, write methods
-     * /**********************************************************
+    /**********************************************************
+    /* Overridden methods, write methods
+    /**********************************************************
      */
 
     /*
@@ -436,11 +440,10 @@ public class CBORGenerator extends GeneratorBase {
         _writeNumberNoCheck(size);
     }
 
-
     /*
-     * /********************************************************** /* Overridden
-     * methods, copying with tag-awareness
-     * /**********************************************************
+    /**********************************************************
+    /* Overridden methods, copying with tag-awareness
+    /**********************************************************
      */
 
     /**
@@ -474,9 +477,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Output
-     * method implementations, structural
-     * /**********************************************************
+    /**********************************************************
+    /* Output method implementations, structural
+    /**********************************************************
      */
 
     @Override
