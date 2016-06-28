@@ -1,13 +1,17 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import java.io.*;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.base.GeneratorBase;
+import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.json.JsonWriteContext;
+import java.util.List;
+import java.util.ArrayList;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.*;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
-import com.fasterxml.jackson.core.base.GeneratorBase;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
@@ -129,6 +133,21 @@ public class CBORGenerator extends GeneratorBase {
     protected int _formatFeatures;
 
     protected boolean _cfgMinimalInts;
+
+    /**
+     * Special value that is use to keep tracks of arrays and maps opened with infinite length
+     */
+    private final int INDEFINITE_LENGTH = Integer.MIN_VALUE -1;
+
+	/**
+	 * List that contains the number of remaining elements for parents arrays and objects.
+	 */
+	protected final List<Integer> remainingElementsList = new ArrayList<Integer>();
+	
+	/**
+	 * Number of elements remaining in the current complex structure (if any). 
+	 */
+	private int currentRemainingElementsCount = INDEFINITE_LENGTH;
 
     /*
      * /********************************************************** /* Output
@@ -369,6 +388,7 @@ public class CBORGenerator extends GeneratorBase {
         if (_writeContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
+        decrementElementsRemainingCount();
         _writeString(name);
     }
 
@@ -385,6 +405,7 @@ public class CBORGenerator extends GeneratorBase {
             _writeByte(BYTE_EMPTY_STRING);
             return;
         }
+        decrementElementsRemainingCount();
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
     }
@@ -402,8 +423,19 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         _verifyValueWrite("write String value");
+        decrementElementsRemainingCount();
         _writeString(value);
     }
+
+	
+    public final void writeFieldLong(long size) throws IOException {
+        if (_writeContext.writeFieldName(String.valueOf(size)) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+            _reportError("Can not write a field name, expecting a value");
+        }
+        decrementElementsRemainingCount();
+        _writeNumberNoCheck(size);
+    }
+
 
     /*
      * /********************************************************** /* Overridden
@@ -452,25 +484,25 @@ public class CBORGenerator extends GeneratorBase {
         _verifyValueWrite("start an array");
         _writeContext = _writeContext.createChildArrayContext();
         _writeByte(BYTE_ARRAY_INDEFINITE);
+
+        decrementElementsRemainingCount();
+        openComplexElement(INDEFINITE_LENGTH); // set an unsized tag in the list for this new array
     }
 
-    // TODO: implement this for CBOR?
     /*
-     * Unlike with JSON, this method could use slightly optimized version since
+     * Unlike with JSON, this method is using slightly optimized version since
      * CBOR has a variant that allows embedding length in array start marker.
-     * But it mostly (or only?) makes sense for small arrays, cases where length
-     * marker fits within type marker byte; otherwise we might as well just use
-     * "indefinite" notation.
      */
+	 
     @Override
     public void writeStartArray(int size) throws IOException {
         _verifyValueWrite("start an array");
         _writeContext = _writeContext.createChildArrayContext();
-        /*
-         * if (size >= 31 || size < 0) { _writeByte(BYTE_ARRAY_INDEFINITE); }
-         * else { }
-         */
-        _writeByte(BYTE_ARRAY_INDEFINITE);
+
+        _writeLengthMarker(PREFIX_TYPE_ARRAY, size);
+
+        decrementElementsRemainingCount();
+        openComplexElement(size);
     }
 
     @Override
@@ -478,7 +510,8 @@ public class CBORGenerator extends GeneratorBase {
         if (!_writeContext.inArray()) {
             _reportError("Current context not Array but "+_writeContext.typeDesc());
         }
-        _writeByte(BYTE_BREAK);
+        closeComplexElement();
+
         _writeContext = _writeContext.getParent();
     }
 
@@ -487,6 +520,8 @@ public class CBORGenerator extends GeneratorBase {
         _verifyValueWrite("start an object");
         _writeContext = _writeContext.createChildObjectContext();
         _writeByte(BYTE_OBJECT_INDEFINITE);
+        decrementElementsRemainingCount();
+        openComplexElement(INDEFINITE_LENGTH); // set an unsized tag in the list for this new map
     }
 
     @Override
@@ -499,6 +534,20 @@ public class CBORGenerator extends GeneratorBase {
             ctxt.setCurrentValue(forValue);
         }
         _writeByte(BYTE_OBJECT_INDEFINITE);
+        decrementElementsRemainingCount();
+        openComplexElement(INDEFINITE_LENGTH); // set an unsized tag in the list for this new map
+    }
+
+    public final void writeStartObject(int size) throws IOException {
+        _verifyValueWrite("start an object");
+
+        JsonWriteContext ctxt = _writeContext.createChildObjectContext();
+        _writeContext = ctxt;
+
+        _writeLengthMarker(PREFIX_TYPE_OBJECT, size);
+
+        decrementElementsRemainingCount();
+        openComplexElement(size * 2); // pair = 2 elements
     }
 
     @Override
@@ -507,7 +556,7 @@ public class CBORGenerator extends GeneratorBase {
             _reportError("Current context not Object but "+ _writeContext.typeDesc());
         }
         _writeContext = _writeContext.getParent();
-        _writeByte(BYTE_BREAK);
+        closeComplexElement();
     }
 
     @Override // since 2.8
@@ -565,14 +614,14 @@ public class CBORGenerator extends GeneratorBase {
                 return;
             }
             if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + 24);
+                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT8_ELEMENTS);
                 _outputBuffer[_outputTail++] = (byte) i;
                 return;
             }
             b0 = (byte) i;
             i >>= 8;
             if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + 25);
+                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT16_ELEMENTS);
                 _outputBuffer[_outputTail++] = (byte) i;
                 _outputBuffer[_outputTail++] = b0;
                 return;
@@ -581,7 +630,7 @@ public class CBORGenerator extends GeneratorBase {
             b0 = (byte) i;
             i >>= 8;
         }
-        _outputBuffer[_outputTail++] = (byte) (marker + 26);
+        _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT32_ELEMENTS);
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
@@ -599,9 +648,9 @@ public class CBORGenerator extends GeneratorBase {
         if (l < 0L) {
             l += 1;
             l = -l;
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + 27);
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + SUFFIX_UINT64_ELEMENTS);
         } else {
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + 27);
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
         int i = (int) (l >> 32);
         _outputBuffer[_outputTail++] = (byte) (i >> 24);
@@ -650,12 +699,14 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         _verifyValueWrite("write String value");
+        decrementElementsRemainingCount();
         _writeString(text);
     }
 
     @Override
     public final void writeString(SerializableString sstr) throws IOException {
         _verifyValueWrite("write String value");
+        decrementElementsRemainingCount();
         byte[] raw = sstr.asUnquotedUTF8();
         final int len = raw.length;
         if (len == 0) {
@@ -670,6 +721,7 @@ public class CBORGenerator extends GeneratorBase {
     public void writeString(char[] text, int offset, int len)
             throws IOException {
         _verifyValueWrite("write String value");
+        decrementElementsRemainingCount();
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
             return;
@@ -681,6 +733,7 @@ public class CBORGenerator extends GeneratorBase {
     public void writeRawUTF8String(byte[] raw, int offset, int len)
             throws IOException {
         _verifyValueWrite("write String value");
+        decrementElementsRemainingCount();
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
             return;
@@ -753,6 +806,7 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         _verifyValueWrite("write Binary value");
+        decrementElementsRemainingCount();
         _writeLengthMarker(PREFIX_TYPE_BYTES, len);
         _writeBytes(data, offset, len);
     }
@@ -770,6 +824,7 @@ public class CBORGenerator extends GeneratorBase {
                     "Must pass actual length for CBOR encoded data");
         }
         _verifyValueWrite("write Binary value");
+        decrementElementsRemainingCount();
         int missing;
 
         _writeLengthMarker(PREFIX_TYPE_BYTES, dataLength);
@@ -796,6 +851,7 @@ public class CBORGenerator extends GeneratorBase {
     @Override
     public void writeBoolean(boolean state) throws IOException {
         _verifyValueWrite("write boolean value");
+        decrementElementsRemainingCount();
         if (state) {
             _writeByte(BYTE_TRUE);
         } else {
@@ -806,12 +862,14 @@ public class CBORGenerator extends GeneratorBase {
     @Override
     public void writeNull() throws IOException {
         _verifyValueWrite("write null value");
+        decrementElementsRemainingCount();
         _writeByte(BYTE_NULL);
     }
 
     @Override
     public void writeNumber(int i) throws IOException {
         _verifyValueWrite("write number");
+        decrementElementsRemainingCount();
         int marker;
         if (i < 0) {
             i = -i - 1;
@@ -819,7 +877,6 @@ public class CBORGenerator extends GeneratorBase {
         } else {
             marker = PREFIX_TYPE_INT_POS;
         }
-
         _ensureRoomForOutput(5);
         byte b0;
         if (_cfgMinimalInts) {
@@ -828,14 +885,14 @@ public class CBORGenerator extends GeneratorBase {
                 return;
             }
             if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + 24);
+                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT8_ELEMENTS);
                 _outputBuffer[_outputTail++] = (byte) i;
                 return;
             }
             b0 = (byte) i;
             i >>= 8;
             if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + 25);
+                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT16_ELEMENTS);
                 _outputBuffer[_outputTail++] = (byte) i;
                 _outputBuffer[_outputTail++] = b0;
                 return;
@@ -844,7 +901,7 @@ public class CBORGenerator extends GeneratorBase {
             b0 = (byte) i;
             i >>= 8;
         }
-        _outputBuffer[_outputTail++] = (byte) (marker + 26);
+        _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT32_ELEMENTS);
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
@@ -861,13 +918,14 @@ public class CBORGenerator extends GeneratorBase {
             }
         }
         _verifyValueWrite("write number");
+        decrementElementsRemainingCount();
         _ensureRoomForOutput(9);
         if (l < 0L) {
             l += 1;
             l = -l;
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + 27);
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + SUFFIX_UINT64_ELEMENTS);
         } else {
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + 27);
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
         int i = (int) (l >> 32);
         _outputBuffer[_outputTail++] = (byte) (i >> 24);
@@ -888,6 +946,7 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         _verifyValueWrite("write number");
+        decrementElementsRemainingCount();
         _write(v);
     }
 
@@ -914,6 +973,7 @@ public class CBORGenerator extends GeneratorBase {
     @Override
     public void writeNumber(double d) throws IOException {
         _verifyValueWrite("write number");
+        decrementElementsRemainingCount();
         _ensureRoomForOutput(11);
         /*
          * 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
@@ -941,6 +1001,7 @@ public class CBORGenerator extends GeneratorBase {
         // Ok, now, we needed token type byte plus 5 data bytes (7 bits each)
         _ensureRoomForOutput(6);
         _verifyValueWrite("write number");
+        decrementElementsRemainingCount();
 
         /*
          * 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more
@@ -963,6 +1024,7 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         _verifyValueWrite("write number");
+        decrementElementsRemainingCount();
         /*
          * Supported by using type tags, as per spec: major type for tag '6'; 5
          * LSB 4. And then a two-element array; integer exponent, and int/bigint
@@ -1450,9 +1512,9 @@ public class CBORGenerator extends GeneratorBase {
         if (l < 0) {
             l += 1;
             l = -l;
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + 27);
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + SUFFIX_UINT64_ELEMENTS);
         } else {
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + 27);
+            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
         int i = (int) (l >> 32);
         _outputBuffer[_outputTail++] = (byte) (i >> 24);
@@ -1474,19 +1536,19 @@ public class CBORGenerator extends GeneratorBase {
             return;
         }
         if (i <= 0xFF) {
-            _outputBuffer[_outputTail++] = (byte) (majorType + 24);
+            _outputBuffer[_outputTail++] = (byte) (majorType + SUFFIX_UINT8_ELEMENTS);
             _outputBuffer[_outputTail++] = (byte) i;
             return;
         }
         final byte b0 = (byte) i;
         i >>= 8;
         if (i <= 0xFF) {
-            _outputBuffer[_outputTail++] = (byte) (majorType + 25);
+            _outputBuffer[_outputTail++] = (byte) (majorType + SUFFIX_UINT16_ELEMENTS);
             _outputBuffer[_outputTail++] = (byte) i;
             _outputBuffer[_outputTail++] = b0;
             return;
         }
-        _outputBuffer[_outputTail++] = (byte) (majorType + 26);
+        _outputBuffer[_outputTail++] = (byte) (majorType + SUFFIX_UINT32_ELEMENTS);
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
@@ -1592,4 +1654,29 @@ public class CBORGenerator extends GeneratorBase {
     protected UnsupportedOperationException _notSupported() {
         return new UnsupportedOperationException();
     }
+
+    /*
+	 * /********************************************************** 
+	 * Internal methods, size control for array and objects
+	 * /**********************************************************
+	 */
+	private final void decrementElementsRemainingCount() throws IOException {
+		if (currentRemainingElementsCount != INDEFINITE_LENGTH) {
+			--currentRemainingElementsCount;
+		}
+	}
+
+	private final void openComplexElement(int size) throws IOException {
+		remainingElementsList.add(currentRemainingElementsCount);
+		currentRemainingElementsCount = size;
+	}
+
+	private final void closeComplexElement() throws IOException {
+		if (currentRemainingElementsCount == INDEFINITE_LENGTH) {
+			_writeByte(BYTE_BREAK);
+		} else if (currentRemainingElementsCount != 0) {
+			_reportError("ARRAY or MAP size mismatch: number of element encoded is not equal to the array/map size.");
+		}
+		currentRemainingElementsCount = remainingElementsList.remove(remainingElementsList.size() - 1);
+	}
 }
