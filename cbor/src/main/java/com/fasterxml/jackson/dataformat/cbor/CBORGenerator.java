@@ -1,17 +1,14 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
+import java.util.Arrays;
+import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
-import java.util.List;
-import java.util.ArrayList;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
@@ -117,9 +114,15 @@ public class CBORGenerator extends GeneratorBase {
     private final static long MIN_INT_AS_LONG = (long) Integer.MIN_VALUE;
     private final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
 
+    /**
+     * Special value that is use to keep tracks of arrays and maps opened with infinite length
+     */
+    private final static int INDEFINITE_LENGTH = -2; // just to allow -1 as marker for "one too many"
+    
     /*
-     * /********************************************************** /*
-     * Configuration /**********************************************************
+    /**********************************************************
+    /* Configuration
+    /**********************************************************
      */
 
     final protected IOContext _ioContext;
@@ -133,21 +136,6 @@ public class CBORGenerator extends GeneratorBase {
     protected int _formatFeatures;
 
     protected boolean _cfgMinimalInts;
-
-    /**
-     * Special value that is use to keep tracks of arrays and maps opened with infinite length
-     */
-    private final int INDEFINITE_LENGTH = Integer.MIN_VALUE -1;
-
-	/**
-	 * List that contains the number of remaining elements for parents arrays and objects.
-	 */
-	protected final List<Integer> remainingElementsList = new ArrayList<Integer>();
-	
-	/**
-	 * Number of elements remaining in the current complex structure (if any). 
-	 */
-	private int currentRemainingElementsCount = INDEFINITE_LENGTH;
 
     /*
     /**********************************************************
@@ -187,6 +175,13 @@ public class CBORGenerator extends GeneratorBase {
      */
     protected int _bytesWritten;
 
+    /**
+     * Number of elements remaining in the current complex structure (if any),
+     * when writing defined-length Arrays, Objects; marker {@link #INDEFINITE_LENGTH}
+     * otherwise.
+     */
+    protected int _currentRemainingElements = INDEFINITE_LENGTH;
+    
     /*
     /**********************************************************
     /* Shared String detection
@@ -489,7 +484,7 @@ public class CBORGenerator extends GeneratorBase {
         _writeByte(BYTE_ARRAY_INDEFINITE);
 
         decrementElementsRemainingCount();
-        openComplexElement(INDEFINITE_LENGTH); // set an unsized tag in the list for this new array
+        openComplexElement();
     }
 
     /*
@@ -514,7 +509,6 @@ public class CBORGenerator extends GeneratorBase {
             _reportError("Current context not Array but "+_writeContext.typeDesc());
         }
         closeComplexElement();
-
         _writeContext = _writeContext.getParent();
     }
 
@@ -524,7 +518,7 @@ public class CBORGenerator extends GeneratorBase {
         _writeContext = _writeContext.createChildObjectContext();
         _writeByte(BYTE_OBJECT_INDEFINITE);
         decrementElementsRemainingCount();
-        openComplexElement(INDEFINITE_LENGTH); // set an unsized tag in the list for this new map
+        openComplexElement();
     }
 
     @Override
@@ -538,7 +532,7 @@ public class CBORGenerator extends GeneratorBase {
         }
         _writeByte(BYTE_OBJECT_INDEFINITE);
         decrementElementsRemainingCount();
-        openComplexElement(INDEFINITE_LENGTH); // set an unsized tag in the list for this new map
+        openComplexElement(); // set an unsized tag in the list for this new map
     }
 
     public final void writeStartObject(int size) throws IOException {
@@ -1488,9 +1482,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Internal
-     * methods, writing bytes
-     * /**********************************************************
+    /**********************************************************
+    /* Internal methods, writing bytes
+    /**********************************************************
      */
 
     private final void _ensureRoomForOutput(int needed) throws IOException {
@@ -1621,9 +1615,9 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Internal
-     * methods, buffer handling
-     * /**********************************************************
+    /**********************************************************
+    /* Internal methods, buffer handling
+    /**********************************************************
      */
 
     @Override
@@ -1649,9 +1643,62 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-     * /********************************************************** /* Internal
-     * methods, error reporting
-     * /**********************************************************
+    /********************************************************** 
+    /* Internal methods, size control for array and objects
+    /**********************************************************
+	*/
+
+    private final ElementCounts _elementCounts = new ElementCounts();
+
+    private final void decrementElementsRemainingCount() throws IOException
+    {
+        int count = _currentRemainingElements;
+        if (count != INDEFINITE_LENGTH) {
+            /*
+            if (--count < 0) {
+                _failSizedArrayOrObject();
+            }
+            */
+            _currentRemainingElements = --count;
+        }
+    }
+
+    /*
+    private void _failSizedArrayOrObject() throws IOException
+    {
+        _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
+                _writeContext.typeDesc()));
+    }
+    */
+    
+    private final void openComplexElement() throws IOException {
+        _elementCounts.startIndefinite(_currentRemainingElements);
+        _currentRemainingElements = INDEFINITE_LENGTH;
+    }
+    
+    private final void openComplexElement(int size) throws IOException {
+        _elementCounts.startDefinite(_currentRemainingElements);
+        _currentRemainingElements = size;
+    }
+
+    private final void closeComplexElement() throws IOException {
+        switch (_currentRemainingElements) {
+        case INDEFINITE_LENGTH:
+            _writeByte(BYTE_BREAK);
+            break;
+        case 0: // expected for sized ones
+            break;
+        default:
+            _reportError(String.format("%s size mismatch: expected %d more elements",
+                    _writeContext.typeDesc(), _currentRemainingElements));
+        }
+        _currentRemainingElements = _elementCounts.closeElement();
+    }
+
+    /*
+    /**********************************************************
+    /* Internal methods, error reporting
+    /**********************************************************
      */
 
     protected UnsupportedOperationException _notSupported() {
@@ -1659,27 +1706,40 @@ public class CBORGenerator extends GeneratorBase {
     }
 
     /*
-	 * /********************************************************** 
-	 * Internal methods, size control for array and objects
-	 * /**********************************************************
-	 */
-	private final void decrementElementsRemainingCount() throws IOException {
-		if (currentRemainingElementsCount != INDEFINITE_LENGTH) {
-			--currentRemainingElementsCount;
-		}
-	}
+    /********************************************************** 
+    /* Helper object(s)
+    /**********************************************************
+     */
 
-	private final void openComplexElement(int size) throws IOException {
-		remainingElementsList.add(currentRemainingElementsCount);
-		currentRemainingElementsCount = size;
-	}
+    /**
+     * Simple container for information about expected remaining element sizes for
+     * Arrays and Objects
+     */
+    private final static class ElementCounts {
+        protected int[] counts;
+        protected int size;
 
-	private final void closeComplexElement() throws IOException {
-		if (currentRemainingElementsCount == INDEFINITE_LENGTH) {
-			_writeByte(BYTE_BREAK);
-		} else if (currentRemainingElementsCount != 0) {
-			_reportError("ARRAY or MAP size mismatch: number of element encoded is not equal to the array/map size.");
-		}
-		currentRemainingElementsCount = remainingElementsList.remove(remainingElementsList.size() - 1);
-	}
+        public void startIndefinite(int parentCount) {
+            // only add if there's definite parent scope already
+            if (size > 0) {
+                counts[size++] = parentCount;
+            }
+        }
+
+        public void startDefinite(int parentCount) {
+            if (counts == null) {
+                counts = new int[10];
+            } else if (counts.length == size) {
+                counts = Arrays.copyOf(counts, counts.length+10);
+            }
+            counts[size++] = parentCount;
+        }
+
+        public int closeElement() {
+            if ((counts == null) || (size == 0)) {
+                return INDEFINITE_LENGTH;
+            }
+            return counts[--size];
+        }
+    }
 }
