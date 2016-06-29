@@ -118,8 +118,8 @@ public abstract class AvroWriteContext
         try {
             return new GenericData.Record(schema);
         } catch (RuntimeException e) {
-            // TODO: update in 2.8
-            throw new JsonMappingException("Failed to create Record type from "+type, e);
+            // alas, generator not passed to us
+            throw new JsonMappingException(null, "Failed to create Record type from "+type, e);
         }
     }
     

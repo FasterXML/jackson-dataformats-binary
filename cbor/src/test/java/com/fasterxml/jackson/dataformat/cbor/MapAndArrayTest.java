@@ -69,11 +69,11 @@ public class MapAndArrayTest extends TestCase {
         gen.writeStartObject();
         gen.writeFieldName("Fun");
         gen.writeBoolean(true);
-        gen.writeFieldLong(1504);
+        gen.writeFieldId(1504);
         gen.writeNumber(-33);
-        gen.writeFieldLong(1505);
+        gen.writeFieldId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldLong(13171233041L);
+        gen.writeFieldId(13171233041L);
         gen.writeNumber(22);
         gen.close();
 
@@ -115,18 +115,18 @@ public class MapAndArrayTest extends TestCase {
         CBORGenerator gen = factory.createGenerator(payloadOut);
 
         gen.writeStartObject(5);
-        gen.writeFieldLong(1504);
+        gen.writeFieldId(1504);
         gen.writeNumber(-33);
-        gen.writeFieldLong(1505);
+        gen.writeFieldId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldLong(1506);
+        gen.writeFieldId(1506);
         gen.writeString("Fun");
         gen.writeFieldName("Amt");
         gen.writeStartArray(2);
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
-        gen.writeFieldLong(1507);
+        gen.writeFieldId(1507);
         gen.writeBoolean(false);
         gen.writeEndObject();
         gen.close();
@@ -167,19 +167,19 @@ public class MapAndArrayTest extends TestCase {
         CBORGenerator gen = factory.createGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeFieldLong(1504);
+        gen.writeFieldId(1504);
         gen.writeNumber(-33);
-        gen.writeFieldLong(1505);
+        gen.writeFieldId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldLong(1506);
+        gen.writeFieldId(1506);
         gen.writeString("Fun");
-        gen.writeFieldLong(1507);
+        gen.writeFieldId(1507);
         gen.writeStartArray();
         gen.writeString("c");
         gen.writeNumber(3);
         gen.writeBoolean(false);
         gen.writeEndArray();
-        gen.writeFieldLong(13171233041L);
+        gen.writeFieldId(13171233041L);
         gen.writeBoolean(false);
         gen.writeEndObject();
         gen.close();
@@ -196,6 +196,7 @@ public class MapAndArrayTest extends TestCase {
         parser.nextToken();
         parser.nextToken();
         assertTrue(parser.getCurrentName().equals("1504"));
+        parser.close();
     }
 
     public void testCborUnsizedMapWithArrayAsKey() throws IOException {
@@ -243,7 +244,7 @@ public class MapAndArrayTest extends TestCase {
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
-        gen.writeFieldLong(1501);
+        gen.writeFieldId(1501);
         gen.writeStartArray(5);
         gen.writeString("Fun");
         gen.writeNumber(44);
@@ -261,20 +262,20 @@ public class MapAndArrayTest extends TestCase {
         gen.writeFieldName("complex");
         gen.writeNumber(50);
         gen.writeEndObject();
-        gen.writeFieldLong(51);
+        gen.writeFieldId(51);
         gen.writeString("52");
         gen.writeEndObject();   //
         gen.writeNumber(53);
         gen.writeEndArray();
-        gen.writeFieldLong(1502);
+        gen.writeFieldId(1502);
         gen.writeStartObject();
-        gen.writeFieldLong(54);
+        gen.writeFieldId(54);
         gen.writeString("value");
-        gen.writeFieldLong(55);
+        gen.writeFieldId(55);
         gen.writeStartObject(2);
-        gen.writeFieldLong(56);
+        gen.writeFieldId(56);
         gen.writeNumber(61);
-        gen.writeFieldLong(57);
+        gen.writeFieldId(57);
         gen.writeNumber(62);
         gen.writeEndObject();
         gen.writeEndObject();
@@ -298,22 +299,22 @@ public class MapAndArrayTest extends TestCase {
         CBORGenerator gen = factory.createGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeFieldLong(1504);
+        gen.writeFieldId(1504);
         gen.writeStartObject(1);
-        gen.writeFieldLong(2504);
+        gen.writeFieldId(2504);
         gen.writeNumber(-33);
         gen.writeEndObject();
-        gen.writeFieldLong(1505);
+        gen.writeFieldId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldLong(1506);
+        gen.writeFieldId(1506);
         gen.writeString("Fun");
-        gen.writeFieldLong(1507);
+        gen.writeFieldId(1507);
         gen.writeStartArray();
         gen.writeString("c");
         gen.writeNumber(3);
         gen.writeBoolean(false);
         gen.writeEndArray();
-        gen.writeFieldLong(13171233041L);
+        gen.writeFieldId(13171233041L);
         gen.writeBoolean(false);
         gen.writeEndObject();
         gen.close();
