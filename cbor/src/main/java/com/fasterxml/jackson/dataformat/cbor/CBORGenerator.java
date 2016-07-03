@@ -1057,9 +1057,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-     * /********************************************************** /*
-     * Implementations for other methods
-     * /**********************************************************
+    /**********************************************************
+    /* Implementations for other methods
+    /**********************************************************
      */
 
     @Override
@@ -1068,13 +1068,32 @@ public class CBORGenerator extends GeneratorBase
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not " + typeMsg + ", expecting field name");
         }
-        decrementElementsRemainingCount();        
+        // decrementElementsRemainingCount()
+        int count = _currentRemainingElements;
+        if (count != INDEFINITE_LENGTH) {
+            --count;
+
+            // 28-Jun-2016, tatu: _Should_ check overrun immediately (instead of waiting
+            //    for end of Object/Array), but has 10% performane penalty for some reason,
+            //    should figure out why and how to avoid
+            if (count < 0) {
+                _failSizedArrayOrObject();
+                return; // never gets here
+            }
+            _currentRemainingElements = count;
+        }
+    }
+
+    private void _failSizedArrayOrObject() throws IOException
+    {
+        _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
+                _writeContext.typeDesc()));
     }
 
     /*
-     * /********************************************************** /* Low-level
-     * output handling
-     * /**********************************************************
+    /**********************************************************
+    /* Low-level output handling
+    /**********************************************************
      */
 
     @Override
@@ -1206,14 +1225,12 @@ public class CBORGenerator extends GeneratorBase
     }
 
     private final static int MAX_SHORT_STRING_CHARS = 23;
-    private final static int MAX_SHORT_STRING_BYTES = 23 * 3 + 2; // in case
-                                                                  // it's > 23
-                                                                  // bytes
+    // in case it's > 23 bytes
+    private final static int MAX_SHORT_STRING_BYTES = 23 * 3 + 2;
 
     private final static int MAX_MEDIUM_STRING_CHARS = 255;
-    private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3; // in case
-                                                                    // it's >
-                                                                    // 255 bytes
+    // in case it's > 255 bytes
+    private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3;
 
     protected final void _ensureSpace(int needed) throws IOException {
         if ((_outputTail + needed + 3) > _outputEnd) {
@@ -1312,9 +1329,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-     * /********************************************************** /* Internal
-     * methods, UTF-8 encoding
-     * /**********************************************************
+    /**********************************************************
+    /* Internal methods, UTF-8 encoding
+    /**********************************************************
      */
 
     /**
@@ -1646,33 +1663,6 @@ public class CBORGenerator extends GeneratorBase
     /* Internal methods, size control for array and objects
     /**********************************************************
 	*/
-
-    private final void decrementElementsRemainingCount() throws IOException
-    {
-        int count = _currentRemainingElements;
-        if (count != INDEFINITE_LENGTH) {
-            --count;
-
-            // 28-Jun-2016, tatu: _Should_ check overrun immediately (instead of waiting
-            //    for end of Object/Array), but has 10% performane penalty for some reason,
-            //    should figure out why and how to avoid
-/*
-            if (count < 0) {
-                _failSizedArrayOrObject();
-                return; // never gets here
-            }
- */
-            _currentRemainingElements = count;
-        }
-    }
-
-    /*
-    private void _failSizedArrayOrObject() throws IOException
-    {
-        _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
-                _writeContext.typeDesc()));
-    }
-    */
 
     private final void closeComplexElement() throws IOException {
         switch (_currentRemainingElements) {
