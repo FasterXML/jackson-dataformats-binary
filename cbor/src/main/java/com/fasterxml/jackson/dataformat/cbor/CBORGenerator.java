@@ -17,7 +17,10 @@ import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
  * 
  * @author Tatu Saloranta
  */
-public class CBORGenerator extends GeneratorBase {
+public class CBORGenerator extends GeneratorBase
+{
+    private final static int[] NO_INTS = new int[0];
+
     /**
      * Let's ensure that we have big enough output buffer because of safety
      * margins we need for UTF-8 encoding.
@@ -175,6 +178,16 @@ public class CBORGenerator extends GeneratorBase {
      */
     protected int _bytesWritten;
 
+    /*
+    /**********************************************************
+    /* Tracking of remaining elements to write
+    /**********************************************************
+     */
+    
+    protected int[] _elementCounts = NO_INTS;
+
+    protected int _elementCountsPtr;
+    
     /**
      * Number of elements remaining in the current complex structure (if any),
      * when writing defined-length Arrays, Objects; marker {@link #INDEFINITE_LENGTH}
@@ -476,7 +489,9 @@ public class CBORGenerator extends GeneratorBase {
     public final void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
         _writeContext = _writeContext.createChildArrayContext();
-        _elementCounts.startIndefinite(_currentRemainingElements);
+        if (_elementCountsPtr > 0) {
+            _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+        }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_ARRAY_INDEFINITE);
     }
@@ -490,7 +505,10 @@ public class CBORGenerator extends GeneratorBase {
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
         _writeContext = _writeContext.createChildArrayContext();
-        _elementCounts.startDefinite(_currentRemainingElements);
+        if (_elementCounts.length == _elementCountsPtr) { // initially, as well as if full
+            _elementCounts = Arrays.copyOf(_elementCounts, _elementCounts.length+10);
+        }
+        _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
     }
@@ -508,7 +526,9 @@ public class CBORGenerator extends GeneratorBase {
     public final void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
         _writeContext = _writeContext.createChildObjectContext();
-        _elementCounts.startIndefinite(_currentRemainingElements);
+        if (_elementCountsPtr > 0) {
+            _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+        }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_OBJECT_INDEFINITE);
     }
@@ -522,7 +542,9 @@ public class CBORGenerator extends GeneratorBase {
         if (forValue != null) {
             ctxt.setCurrentValue(forValue);
         }
-        _elementCounts.startIndefinite(_currentRemainingElements);
+        if (_elementCountsPtr > 0) {
+            _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+        }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_OBJECT_INDEFINITE);
     }
@@ -530,7 +552,10 @@ public class CBORGenerator extends GeneratorBase {
     public final void writeStartObject(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
         _writeContext = _writeContext.createChildObjectContext();
-        _elementCounts.startDefinite(_currentRemainingElements);
+        if (_elementCounts.length == _elementCountsPtr) { // initially, as well as if full
+            _elementCounts = Arrays.copyOf(_elementCounts, _elementCounts.length+10);
+        }
+        _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
     }
@@ -1622,8 +1647,6 @@ public class CBORGenerator extends GeneratorBase {
     /**********************************************************
 	*/
 
-    private final ElementCounts _elementCounts = new ElementCounts();
-
     private final void decrementElementsRemainingCount() throws IOException
     {
         int count = _currentRemainingElements;
@@ -1662,7 +1685,9 @@ public class CBORGenerator extends GeneratorBase {
             _reportError(String.format("%s size mismatch: expected %d more elements",
                     _writeContext.typeDesc(), _currentRemainingElements));
         }
-        _currentRemainingElements = _elementCounts.closeElement();
+        _currentRemainingElements = (_elementCountsPtr == 0) 
+                ? INDEFINITE_LENGTH
+                        : _elementCounts[--_elementCountsPtr];
     }
 
     /*
@@ -1673,43 +1698,5 @@ public class CBORGenerator extends GeneratorBase {
 
     protected UnsupportedOperationException _notSupported() {
         return new UnsupportedOperationException();
-    }
-
-    /*
-    /********************************************************** 
-    /* Helper object(s)
-    /**********************************************************
-     */
-
-    /**
-     * Simple container for information about expected remaining element sizes for
-     * Arrays and Objects
-     */
-    private final static class ElementCounts {
-        private final static int[] NO_INTS = new int[0];
-
-        protected int[] counts = NO_INTS;
-        protected int size;
-
-        public void startIndefinite(int parentCount) {
-            // only add if there's definite parent scope already
-            if (size > 0) {
-                counts[size++] = parentCount;
-            }
-        }
-
-        public void startDefinite(int parentCount) {
-            if (counts.length == size) { // initially, as well as if full
-                counts = Arrays.copyOf(counts, counts.length+10);
-            }
-            counts[size++] = parentCount;
-        }
-
-        public int closeElement() {
-            if (size == 0) {
-                return INDEFINITE_LENGTH;
-            }
-            return counts[--size];
-        }
     }
 }
