@@ -9,8 +9,12 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.8.0 (not yet released)
+2.8.0 (04-Jul-2016)
 
+#16: (cbor) Implement `JsonGenerator.writeArray()` methods added in `jackson-core` (2.8)
+#17: (cbor) Support parsing of `BigInteger`, `BigDecimal`, not just generating
+#18: (cbor) Fail to report error for trying to write field name outside Object (root level)
+#19: (smile) Fail to report error for trying to write field name outside Object (root level)
 #24: (cbor) Incorrect coercion for int-valued Map keys to String
-
-
+- (protobuf) Support `writeArray()` for `int[]`, `long[]` and `double[]`
+- (protobuf) Add `ProtobufMapper.generateSchemaFor(type)` helper methods
