@@ -1172,6 +1172,12 @@ public class ProtobufParser extends ParserMinimalBase
         return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
     }
 
+    @Override
+    public String nextTextValue() throws IOException {
+        // !!! 05-Jul-2016, tatu: TODO: optimize
+        return (nextToken() == JsonToken.VALUE_STRING) ? getText() : null;
+    }
+
     private final ProtobufField _findField(int id)
     {
         ProtobufField f;
