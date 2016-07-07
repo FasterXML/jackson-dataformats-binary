@@ -1038,7 +1038,7 @@ public final class CBORParser extends ParserMinimalBase
         // otherwise just fall back to default handling; should occur rarely
         return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
     }
-    
+
     @Override
     public String nextTextValue() throws IOException
     {
