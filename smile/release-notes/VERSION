@@ -1,13 +1,10 @@
 Project: jackson-dataformat-smile
 
+NOTE: releases notes from 2.8.0 onwards in parent directory.
+
 ------------------------------------------------------------------------
 === Releases ===
 ------------------------------------------------------------------------
-
-2.8.0 (not yet released)
-
-#19: Fail to report error for trying to write field name outside Object (root level)
-- Implement `JsonGenerator.writeArray(int)` more efficiently than base impl
 
 2.7.4 (29-Apr-2016)
 2.7.3 (16-Mar-2015)

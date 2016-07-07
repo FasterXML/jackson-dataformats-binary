@@ -9,6 +9,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.8.1 (not yet released
+
+- (protobuf) Add optimized ProtobufParser.nextTextValue() implementation
+
 2.8.0 (04-Jul-2016)
 
 #16: (cbor) Implement `JsonGenerator.writeArray()` methods added in `jackson-core` (2.8)

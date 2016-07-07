@@ -790,61 +790,52 @@ public class ProtobufParser extends ParserMinimalBase
         _currentField = f;
         return (_currToken = JsonToken.FIELD_NAME);
     }
-    
+
     private JsonToken _readNextValue(FieldType t, int nextState) throws IOException
     {
         JsonToken type;
-        
+
         switch (_currentField.type) {
         case DOUBLE:
             _numberDouble = Double.longBitsToDouble(_decode64Bits());
             _numTypesValid = NR_DOUBLE;
             type = JsonToken.VALUE_NUMBER_FLOAT;
             break;
-                
         case FLOAT:
             _numberDouble = (double) Float.intBitsToFloat(_decode32Bits());
             _numTypesValid = NR_DOUBLE;
             type =  JsonToken.VALUE_NUMBER_FLOAT;
             break;
-
         case VINT32_Z:
             _numberInt = ProtobufUtil.zigzagDecode(_decodeVInt());
             _numTypesValid = NR_INT;
             type =  JsonToken.VALUE_NUMBER_INT;
             break;
-
         case VINT64_Z:
             _numberLong = ProtobufUtil.zigzagDecode(_decodeVLong());
             _numTypesValid = NR_LONG;
             type =  JsonToken.VALUE_NUMBER_INT;
             break;
-
         case VINT32_STD:
             _numberInt = _decodeVInt();
             _numTypesValid = NR_INT;
             type =  JsonToken.VALUE_NUMBER_INT;
             break;
-
         case VINT64_STD:
-
             _numberLong = _decodeVLong();
             _numTypesValid = NR_LONG;
             type =  JsonToken.VALUE_NUMBER_INT;
             break;
-
         case FIXINT32:
             _numberInt = _decode32Bits();
             _numTypesValid = NR_INT;
             type =  JsonToken.VALUE_NUMBER_INT;
             break;
-
         case FIXINT64:
             _numberLong = _decode64Bits();
             _numTypesValid = NR_LONG;
             type =  JsonToken.VALUE_NUMBER_INT;
             break;
-
         case BOOLEAN:
             if (_inputPtr >= _inputEnd) {
                 loadMoreGuaranteed();
@@ -913,7 +904,7 @@ public class ProtobufParser extends ParserMinimalBase
                 }
             }
             break;
-            
+
         case MESSAGE:
             {
                 ProtobufMessage msg = _currentField.getMessageType();
@@ -932,7 +923,7 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentField = msg.firstField();
             }
             return JsonToken.START_OBJECT;
-        
+
         default:
             throw new UnsupportedOperationException("Type "+_currentField.type+" not yet supported");
         }
@@ -947,7 +938,6 @@ public class ProtobufParser extends ParserMinimalBase
             _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `JsonParser.Feature.IGNORE_UNDEFINED` disabled",
                     tag, wireType, _currentMessage.getName());
         }
-        
         while (true) {
             _skipUnknownValue(wireType);
             if (_state == STATE_NESTED_KEY) {
@@ -1173,9 +1163,103 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public String nextTextValue() throws IOException {
-        // !!! 05-Jul-2016, tatu: TODO: optimize
-        return (nextToken() == JsonToken.VALUE_STRING) ? getText() : null;
+    public String nextTextValue() throws IOException
+    {
+        // Copied from `nexdtToken()`, as appropriate
+        _numTypesValid = NR_UNKNOWN;
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            _skipBytes(_decodedLength);
+        }
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _binaryValue = null;
+
+        switch (_state) {
+        case STATE_ROOT_VALUE:
+            {
+                JsonToken t = _readNextValue(_currentField.type, STATE_ROOT_KEY);
+                _currToken = t;
+                return (t == JsonToken.VALUE_STRING) ? getText() : null;
+            }
+        case STATE_NESTED_VALUE:
+            {
+                JsonToken t = _readNextValue(_currentField.type, STATE_NESTED_KEY);
+                _currToken = t;
+                return (t == JsonToken.VALUE_STRING) ? getText() : null;
+            }
+        case STATE_ARRAY_VALUE_FIRST: // unpacked
+            if (_currentField.type == FieldType.STRING) {
+                _state = STATE_ARRAY_VALUE_OTHER;
+                break;
+            }
+            _currToken = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER);
+            return null;
+        case STATE_ARRAY_VALUE_OTHER: // unpacked
+            if (_checkEnd()) { // need to check constraints set by surrounding Message (object)
+                _currToken = JsonToken.END_ARRAY;
+                return null;
+            }
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    ProtobufReadContext parent = _parsingContext.getParent();
+                    // Ok to end if and only if root value
+                    if (!parent.inRoot()) {
+                        _reportInvalidEOF();
+                    }
+                    _parsingContext = parent;
+                    _currentField = parent.getField();
+                    _state = STATE_MESSAGE_END;
+                    _currToken = JsonToken.END_ARRAY;
+                    return null;
+                }
+            }
+            {
+                int tag = _decodeVInt();
+                // expected case: another value in same array
+                if (_currentField.id == (tag >> 3)) {
+                    if (_currentField.type == FieldType.STRING) {
+                        break;
+                    }
+                    _currToken = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER);
+                    return null;
+                }
+                // otherwise, different field, need to end this array
+                _nextTag = tag;
+                ProtobufReadContext parent = _parsingContext.getParent();
+                _parsingContext = parent;
+                _currentField = parent.getField();
+            }
+            _state = STATE_ARRAY_END;
+            _currToken = JsonToken.END_ARRAY;
+            return null;
+
+        case STATE_ARRAY_VALUE_PACKED:
+            if (_checkEnd()) { // need to check constraints of this array itself
+                _currToken = JsonToken.END_ARRAY;
+                return null;
+            }
+            if (_currentField.type != FieldType.STRING) {
+                _currToken = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_PACKED);
+                return null;
+            }
+            break;
+        default:
+            return (nextToken() == JsonToken.VALUE_STRING) ? getText() : null;
+        }
+
+        // At this point we know we have text token so:
+        final int len = _decodeLength();
+        _decodedLength = len;            
+        _currToken = JsonToken.VALUE_STRING;
+        if (len == 0) {
+            _textBuffer.resetWithEmpty();
+            return "";
+        }
+        if ((_inputPtr + len) <= _inputEnd) {
+            return _finishShortText(len);
+        }
+        _finishToken();
+        return _textBuffer.contentsAsString();
     }
 
     private final ProtobufField _findField(int id)
@@ -1209,10 +1293,9 @@ public class ProtobufParser extends ParserMinimalBase
                 final int len = _decodedLength;
                 if ((_inputPtr + len) <= _inputEnd) {
                     _tokenIncomplete = false;
-                    _finishShortText(len);
-                } else {
-                    _finishToken();
+                    return _finishShortText(len);
                 }
+                _finishToken();
             }
             return _textBuffer.contentsAsString();
         }
@@ -1292,10 +1375,9 @@ public class ProtobufParser extends ParserMinimalBase
                 final int len = _decodedLength;
                 if ((_inputPtr + len) <= _inputEnd) {
                     _tokenIncomplete = false;
-                    _finishShortText(len);
-                } else {
-                    _finishToken();
+                    return _finishShortText(len);
                 }
+                _finishToken();
             }
             return _textBuffer.contentsAsString();
         }
