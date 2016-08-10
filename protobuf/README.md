@@ -104,7 +104,15 @@ public class POJO {
 ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
 ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
 mapper.acceptJsonFormatVisitor(POJO.class, gen);
-ProtobufSchema schemaWrapper = gen.getProtobufSchema();
+ProtobufSchema schemaWrapper = gen.getGeneratedSchema();
+NativeProtobufSchema nativeProtobufSchema = schemaWrapper.getSource();
+
+String asProtofile = nativeProtobufSchema.toString();
+```
+Alternatively same can be achieved with less code:
+```java
+ProtobufMapper mapper = new ProtobufMapper()
+ProtobufSchema schemaWrapper = mapper.generateSchemaFor(POJO.class)
 NativeProtobufSchema nativeProtobufSchema = schemaWrapper.getSource();
 
 String asProtofile = nativeProtobufSchema.toString();
