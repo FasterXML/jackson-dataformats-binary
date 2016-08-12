@@ -9,6 +9,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.8.2 (not yet released)
+
+#27: (protobuf) Fixed long deserialization problem for longs of ~13digit length
+ (contributed by Michael Z)
+
 2.8.1 (20-Jul-2016)
 
 - (protobuf) Add optimized ProtobufParser.nextTextValue() implementation
