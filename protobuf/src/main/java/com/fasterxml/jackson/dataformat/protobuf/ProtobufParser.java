@@ -2326,7 +2326,8 @@ public class ProtobufParser extends ParserMinimalBase
         v |= ((ch & 0x7F) << 14);
         ch = buf[_inputPtr++];
         if (ch >= 0) {
-            return v | (ch << 21);
+            long l2 = (v | (ch << 21));
+            return (l2 << 28) | l;
         }
         v |= ((ch & 0x7F) << 21);
 
