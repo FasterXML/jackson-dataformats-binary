@@ -1,16 +1,16 @@
-package com.fasterxml.jackson.dataformat.smile.mapper;
+package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import org.junit.Assert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 
-public class TreeNodesTest extends BaseTestForSmile
+public class TreeNodesTest extends CBORTestBase
 {
-    private final ObjectMapper MAPPER = new ObjectMapper(new SmileFactory());
+    private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
 
     public void testSimple() throws Exception
     {
