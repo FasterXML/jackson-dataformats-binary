@@ -9,6 +9,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.8.3 (not yet released)
+
+#28: Java float deserialized as `DoubleNode` instance
+ (reported by teabot@github)
+
 2.8.2 (30-Aug-2016)
 
 #27: (protobuf) Fixed long deserialization problem for longs of ~13digit length
