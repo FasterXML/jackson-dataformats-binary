@@ -16,7 +16,8 @@ import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_
 
 public class NonBlockingParserImpl
     extends ParserBase
-    implements NonBlockingParser, NonBlockingInputFeeder
+    implements NonBlockingParser<NonBlockingByteArrayFeeder>,
+        NonBlockingByteArrayFeeder
 {
     private final static byte[] NO_BYTES = new byte[0];
     private final static int[] NO_INTS = new int[0];
@@ -35,7 +36,6 @@ public class NonBlockingParserImpl
      * (which may or may not be mandatory).
      */
     protected final static int STATE_INITIAL = 0;
-
 
     /**
      * State for recognized header marker, either in-feed or initial.
@@ -298,7 +298,7 @@ public class NonBlockingParserImpl
             }
             return false;
         }
-    	// Good enough; just need version info from 4th byte...
+        // Good enough; just need version info from 4th byte...
         if (++_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();        	
         }
@@ -461,9 +461,8 @@ public class NonBlockingParserImpl
             String[] nameBuf = _seenNames;
             if (nameBuf != null && nameBuf.length > 0) {
                 _seenNames = null;
-                /* 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-                 *   but we only need to clear up to count as it is not a hash area
-                 */
+                // Need to clear the buffer;
+                // but we only need to clear up to count as it is not a hash area
                 if (_seenNameCount > 0) {
                     Arrays.fill(nameBuf, 0, _seenNameCount, null);
                 }
@@ -474,9 +473,8 @@ public class NonBlockingParserImpl
             String[] valueBuf = _seenStringValues;
             if (valueBuf != null && valueBuf.length > 0) {
                 _seenStringValues = null;
-                /* 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-                 *   but we only need to clear up to count as it is not a hash area
-                 */
+                // Need to clear the buffer;
+                // but we only need to clear up to count as it is not a hash area
                 if (_seenStringValueCount > 0) {
                     Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
                 }
@@ -703,10 +701,10 @@ public class NonBlockingParserImpl
     public NumberType getNumberType()
         throws IOException
     {
-    	if (_got32BitFloat) {
-    	    return NumberType.FLOAT;
-    	}
-    	return super.getNumberType();
+        if (_got32BitFloat) {
+            return NumberType.FLOAT;
+        }
+        return super.getNumberType();
     }
 
     /*
@@ -754,6 +752,11 @@ public class NonBlockingParserImpl
     /**********************************************************************
      */
 
+    @Override
+    public NonBlockingByteArrayFeeder getInputFeeder() {
+        return this;
+    }
+    
     @Override
     public JsonToken peekNextToken() throws IOException
     {

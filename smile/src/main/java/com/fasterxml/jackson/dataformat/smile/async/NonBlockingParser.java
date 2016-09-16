@@ -10,9 +10,13 @@ import com.fasterxml.jackson.core.JsonToken;
  * extending it with features needed to process data in non-blocking
  * ("asynchronous")
  */
-public interface NonBlockingParser
-    extends NonBlockingInputFeeder
+public interface NonBlockingParser<F extends NonBlockingInputFeeder>
 {
+    /**
+     * Accessor for getting handle to the input feeder to use for this parser
+     */
+    public F getInputFeeder();
+
     /**
      * Method that can be called when current token is not yet
      * available via {@link com.fasterxml.jackson.core.JsonParser#currentToken},

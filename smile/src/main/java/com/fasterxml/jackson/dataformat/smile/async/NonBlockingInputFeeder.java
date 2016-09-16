@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import java.io.IOException;
-
 /**
  * Interface used by non-blocking {@link com.fasterxml.jackson.core.JsonParser}
  * to get more input to parse.
@@ -24,23 +22,8 @@ public interface NonBlockingInputFeeder
     public boolean needMoreInput();
 
     /**
-     * Method that can be called to feed more data, if (and only if)
-     * {@link #needMoreInput} returns true.
-     * 
-     * @param data Byte array that contains data to feed: caller must ensure data remains
-     *    stable until it is fully processed (which is true when {@link #needMoreInput}
-     *    returns true)
-     * @param offset Offset within array where input data to process starts
-     * @param len Length of input data within array to process.
-     * 
-     * @throws IOException if the state is such that this method should not be called
-     *   (has not yet consumed existing input data, or has been marked as closed)
-     */
-    public void feedInput(byte[] data, int offset, int len) throws IOException;
-
-    /**
      * Method that should be called after last chunk of data to parse has been fed
-     * (with {@link #feedInput}); can be called regardless of what {@link #needMoreInput}
+     * (with <code>feedInput</code> in sub-class); can be called regardless of what {@link #needMoreInput}
      * returns. After calling this method, no more data can be fed; and parser assumes
      * no more data will be available.
      */
