@@ -9,7 +9,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.8.3 (not yet released)
+2.8.3 (17-Sep-2016)
 
 #28: Java float deserialized as `DoubleNode` instance
  (reported by teabot@github)
