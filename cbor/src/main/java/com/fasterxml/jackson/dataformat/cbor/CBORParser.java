@@ -20,7 +20,7 @@ import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 public final class CBORParser extends ParserMinimalBase
 {
     private final static byte[] NO_BYTES = new byte[0];
-    
+
     /**
      * Enumeration that defines all togglable features for CBOR generators.
      */
@@ -66,13 +66,13 @@ public final class CBORParser extends ParserMinimalBase
     // Constants for handling of 16-bit "mini-floats"
     private final static double MATH_POW_2_10 = Math.pow(2, 10);
     private final static double MATH_POW_2_NEG14 = Math.pow(2, -14);
-    
+
     /*
     /**********************************************************
     /* Configuration
     /**********************************************************
      */
-    
+
     /**
      * Codec used for data binding when (if) requested.
      */
@@ -167,7 +167,7 @@ public final class CBORParser extends ParserMinimalBase
      * in the end it'll be converted to 1-based)
      */
     protected int _tokenInputCol = 0;
-    
+
     /*
     /**********************************************************
     /* Parsing state
@@ -179,6 +179,7 @@ public final class CBORParser extends ParserMinimalBase
      * the next token is to be parsed (root, array, object).
      */
     protected CBORReadContext _parsingContext;
+
     /**
      * Buffer that contains contents of String values, including
      * field names if necessary (name split across boundary,
@@ -199,7 +200,7 @@ public final class CBORParser extends ParserMinimalBase
      * representation  being available via read context)
      */
     protected boolean _nameCopied = false;
-    
+
     /**
      * ByteArrayBuilder is needed if 'getBinaryValue' is called. If so,
      * we better reuse it for remainder of content.
@@ -247,7 +248,7 @@ public final class CBORParser extends ParserMinimalBase
      * buffer.
      */
     protected boolean _bufferRecyclable;
-    
+
     /*
     /**********************************************************
     /* Additional parsing state
@@ -372,7 +373,7 @@ public final class CBORParser extends ParserMinimalBase
     /* Life-cycle
     /**********************************************************
      */
-    
+
     public CBORParser(IOContext ctxt, int parserFeatures, int cborFeatures,
             ObjectCodec codec, ByteQuadsCanonicalizer sym,
             InputStream in, byte[] inputBuffer, int start, int end,
@@ -423,7 +424,7 @@ public final class CBORParser extends ParserMinimalBase
     /* Configuration
     /**********************************************************
      */
-    
+
 //    public JsonParser overrideStdFeatures(int values, int mask)
 
     @Override
@@ -675,11 +676,30 @@ public final class CBORParser extends ParserMinimalBase
                     _numberInt = _decode16Bits();
                     break;
                 case 2:
-                    _numberInt = _decode32Bits();
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        int v = _decode32Bits();
+                        if (v >= 0) {
+                            _numberInt = v;
+                        } else {
+                            long l = (long) v;
+                            _numberLong = l & 0xFFFFFFFFL;
+                            _numTypesValid = NR_LONG;
+                        }
+                    }
                     break;
                 case 3:
-                    _numberLong = _decode64Bits();
-                    _numTypesValid = NR_LONG;
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        long l = _decode64Bits();
+                        if (l >= 0L) {
+                            _numberLong = l;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberBigInt = _bigPositive(l);
+                            _numTypesValid = NR_BIGINT;
+                        }
+                    }
                     break;
                 default:
                     _invalidToken(ch);
@@ -699,11 +719,29 @@ public final class CBORParser extends ParserMinimalBase
                     _numberInt = -_decode16Bits() - 1;
                     break;
                 case 2:
-                    _numberInt = -_decode32Bits() - 1;
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        int v = _decode32Bits();
+                        if (v < 0) {
+                            _numberLong = ((long) v) + -1L;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberInt = -v - 1;
+                        }
+                    }
                     break;
                 case 3:
-                    _numberLong = -_decode64Bits() - 1L;
-                    _numTypesValid = NR_LONG;
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        long l = _decode64Bits();
+                        if (l >= 0L) {
+                            _numberLong = -l - 1L;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberBigInt = _bigNegative(l);
+                            _numTypesValid = NR_BIGINT;
+                        }
+                    }
                     break;
                 default:
                     _invalidToken(ch);
@@ -784,7 +822,7 @@ public final class CBORParser extends ParserMinimalBase
         }
         return null;
     }
-    
+
     protected String _numberToName(int ch, boolean neg) throws IOException
     {
         final int lowBits = ch & 0x1F;
@@ -1109,11 +1147,30 @@ public final class CBORParser extends ParserMinimalBase
                     _numberInt = _decode16Bits();
                     break;
                 case 2:
-                    _numberInt = _decode32Bits();
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        int v = _decode32Bits();
+                        if (v < 0) {
+                            long l = (long) v;
+                            _numberLong = l & 0xFFFFFFFFL;
+                            _numTypesValid = NR_LONG;
+                        } else{
+                            _numberInt = v;
+                        }
+                    }
                     break;
                 case 3:
-                    _numberLong = _decode64Bits();
-                    _numTypesValid = NR_LONG;
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        long l = _decode64Bits();
+                        if (l >= 0L) {
+                            _numberLong = l;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberBigInt = _bigPositive(l);
+                            _numTypesValid = NR_BIGINT;
+                        }
+                    }
                     break;
                 default:
                     _invalidToken(ch);
@@ -1134,11 +1191,29 @@ public final class CBORParser extends ParserMinimalBase
                     _numberInt = -_decode16Bits() - 1;
                     break;
                 case 2:
-                    _numberInt = -_decode32Bits() - 1;
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        int v = _decode32Bits();
+                        if (v < 0) {
+                            _numberLong = ((long) v) + -1L;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberInt = -v - 1;
+                        }
+                    }
                     break;
                 case 3:
-                    _numberLong = -_decode64Bits() - 1L;
-                    _numTypesValid = NR_LONG;
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                {
+                    long l = _decode64Bits();
+                    if (l >= 0L) {
+                        _numberLong = l;
+                        _numTypesValid = NR_LONG;
+                    } else {
+                        _numberBigInt = _bigNegative(l);
+                        _numTypesValid = NR_BIGINT;
+                    }
+                }
                     break;
                 default:
                     _invalidToken(ch);
@@ -3081,5 +3156,21 @@ public final class CBORParser extends ParserMinimalBase
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }
+
+    /*
+    /**********************************************************
+    /* Internal methods, other
+    /**********************************************************
+     */
+
+    private final static BigInteger BIT_63 = BigInteger.ONE.shiftLeft(63);
+
+    private final BigInteger _bigPositive(long l) {
+        BigInteger biggie = BigInteger.valueOf((l << 1) >>> 1);
+        return biggie.or(BIT_63);
+    }
+
+    private final BigInteger _bigNegative(long l) {
+        return BigInteger.valueOf(l).subtract(BigInteger.ONE);
+    }
 }
-    

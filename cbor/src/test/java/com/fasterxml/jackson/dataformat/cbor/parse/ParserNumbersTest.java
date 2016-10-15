@@ -20,6 +20,8 @@ import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 @SuppressWarnings("resource")
 public class ParserNumbersTest extends CBORTestBase
 {
+    private final CBORFactory CBOR_F = cborFactory();
+    
     public void testIntValues() throws Exception
     {
         // first, single-byte
@@ -71,13 +73,42 @@ public class ParserNumbersTest extends CBORTestBase
         p.close();
     }
 
+    // Special tests for "gray area" for uint32 values that do not fit
+    // in Java int; from [dataformats-binary#30]
+    public void testInt32Overflow() throws Exception
+    {
+        // feed in max uint32, which is 2x+1 as big as Integer.MAX_VALUE
+        byte[] input = new byte[] {
+               (byte) CBORConstants.PREFIX_TYPE_INT_POS + 26, // uint32, that is, 4 more bytes
+               -1, -1, -1, -1
+        };
+        CBORParser p = CBOR_F.createParser(input);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        // should be exposed as `long` because these uint32 values do not fit in Java `int`
+        assertEquals(0xFFFFFFFFL, p.getLongValue());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        p.close();
+
+        // and then the reverse; something that ought to be negative
+        input = new byte[] {
+                (byte) CBORConstants.PREFIX_TYPE_INT_NEG + 26, // int32, that is, 4 more bytes
+                (byte) 0x80, 0, 0, 0
+        };
+        p = CBOR_F.createParser(input);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        // should be exposed as `long` because this value won't fit in `int` either
+        long exp = -1L + Integer.MIN_VALUE;
+        assertEquals(exp, p.getLongValue());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        p.close();
+    }
+
     public void testLongValues() throws Exception
     {
-        CBORFactory f = cborFactory();
-        _verifyLong(f, 1L + Integer.MAX_VALUE);
-        _verifyLong(f, Long.MIN_VALUE);
-        _verifyLong(f, Long.MAX_VALUE);
-        _verifyLong(f, -1L + Integer.MIN_VALUE);
+        _verifyLong(CBOR_F, 1L + Integer.MAX_VALUE);
+        _verifyLong(CBOR_F, Long.MIN_VALUE);
+        _verifyLong(CBOR_F, Long.MAX_VALUE);
+        _verifyLong(CBOR_F, -1L + Integer.MIN_VALUE);
     }
 
     private void _verifyLong(CBORFactory f, long value) throws Exception
@@ -107,14 +138,45 @@ public class ParserNumbersTest extends CBORTestBase
         p.close();
     }
 
+
+    // Special tests for "gray area" for uint64 values that do not fit
+    // in Java long; from [dataformats-binary#30]
+    public void testInt64Overflow() throws Exception
+    {
+        // feed in max uint64, which is 2x+1 as big as Long.MAX_VALUE
+        byte[] input = new byte[] {
+               (byte) CBORConstants.PREFIX_TYPE_INT_POS + 27, // uint64, that is, 8 more bytes
+               -1, -1, -1, -1, -1, -1, -1, -1
+        };
+        CBORParser p = CBOR_F.createParser(input);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        // should be exposed as BigInteger
+        assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
+        BigInteger exp = BigInteger.valueOf(Long.MAX_VALUE).shiftLeft(1)
+                .add(BigInteger.ONE);
+        assertEquals(exp, p.getBigIntegerValue());
+        p.close();
+
+        // and then the reverse; something that ought to be negative
+        input = new byte[] {
+                (byte) CBORConstants.PREFIX_TYPE_INT_NEG + 27,
+                (byte) 0x80, 0, 0, 0,
+                0, 0, 0, 0
+        };
+        p = CBOR_F.createParser(input);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        // should be exposed as `long` because this value won't fit in `int` either
+        exp = BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.ONE);
+        assertEquals(exp, p.getBigIntegerValue());
+        assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
+        p.close();
+    }
+
     public void testDoubleValues() throws Exception
     {
-        // first, single-byte
-        CBORFactory f = cborFactory();
-        // single byte
-        _verifyDouble(f, 0.25);
-        _verifyDouble(f, 20.5);
-        _verifyDouble(f, -5000.25);
+        _verifyDouble(CBOR_F, 0.25);
+        _verifyDouble(CBOR_F, 20.5);
+        _verifyDouble(CBOR_F, -5000.25);
     }
 
     private void _verifyDouble(CBORFactory f, double value) throws Exception

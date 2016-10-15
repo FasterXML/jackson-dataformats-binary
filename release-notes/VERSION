@@ -13,6 +13,8 @@ Modules:
 
 2.8.5 (not yet released)
 
+#30 (cbor): Overflow when decoding uint32 for Major type 0
+ (reported by TianlinZhou@github)
 #31 (cbor): Exception serializing double[][]
 
 2.8.4 (14-Oct-2016)
