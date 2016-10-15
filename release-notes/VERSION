@@ -9,18 +9,24 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.0 (not yet released)
+
+2.8.5 (not yet released)
+
+#31 (cbor): Exception serializing double[][]
+
 2.8.4 (14-Oct-2016)
 
 No changes since 2.8.3
 
 2.8.3 (17-Sep-2016)
 
-#28: Java float deserialized as `DoubleNode` instance
+#28 (avro): Java float deserialized as `DoubleNode` instance
  (reported by teabot@github)
 
 2.8.2 (30-Aug-2016)
 
-#27: (protobuf) Fixed long deserialization problem for longs of ~13digit length
+#27 (protobuf): Fixed long deserialization problem for longs of ~13digit length
  (contributed by Michael Z)
 
 2.8.1 (20-Jul-2016)

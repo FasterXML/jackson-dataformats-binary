@@ -675,7 +675,6 @@ public class CBORGenerator extends GeneratorBase
     }
 
     private final void _writeNumberNoCheck(double d) throws IOException {
-        _verifyValueWrite("write number");
         _ensureRoomForOutput(11);
         // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
         // more accurate to use exact representation; and possibly faster.
@@ -1074,7 +1073,7 @@ public class CBORGenerator extends GeneratorBase
             --count;
 
             // 28-Jun-2016, tatu: _Should_ check overrun immediately (instead of waiting
-            //    for end of Object/Array), but has 10% performane penalty for some reason,
+            //    for end of Object/Array), but has 10% performance penalty for some reason,
             //    should figure out why and how to avoid
             if (count < 0) {
                 _failSizedArrayOrObject();
