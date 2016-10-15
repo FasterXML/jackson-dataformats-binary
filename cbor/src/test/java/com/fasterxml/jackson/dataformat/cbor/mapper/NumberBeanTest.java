@@ -5,25 +5,18 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class NumberBeanTest extends CBORTestBase
 {
-    static class IntsWrapper {
-        public int[][] values;
+    static class IntBean {
+        public int value;
 
-        protected IntsWrapper() { }
-        public IntsWrapper(int[][] v) { values = v; }
+        public IntBean(int v) { value = v; }
+        protected IntBean() { }
     }
 
-    static class LongsWrapper {
-        public long[][] values;
+    static class LongBean {
+        public long value;
 
-        protected LongsWrapper() { }
-        public LongsWrapper(long[][] v) { values = v; }
-    }
-    
-    static class DoublesWrapper {
-        public double[][] values;
-
-        protected DoublesWrapper() { }
-        public DoublesWrapper(double[][] v) { values = v; }
+        public LongBean(long v) { value = v; }
+        protected LongBean() { }
     }
 
     /*
@@ -34,43 +27,33 @@ public class NumberBeanTest extends CBORTestBase
 
     private final ObjectMapper MAPPER = cborMapper();
 
-    public void testIntArrayRoundTrip() throws Exception
+    public void testIntRoundTrip() throws Exception
     {
-        int[][] inputArray = new int[][]{ { -5, 3 } };
-        byte[] cbor = MAPPER.writeValueAsBytes(new IntsWrapper(inputArray));
-        IntsWrapper result = MAPPER.readValue(cbor, IntsWrapper.class);
-        assertNotNull(result);
-        assertNotNull(result.values);
-        assertEquals(1, result.values.length);
-        assertEquals(2, result.values[0].length);
-        assertEquals(inputArray[0][0], result.values[0][0]);
-        assertEquals(inputArray[0][1], result.values[0][1]);
+        for (int i : new int[] { 0, 1, -1,
+                99, -120,
+                5500, -9000,
+                Integer.MIN_VALUE, Integer.MAX_VALUE }) {
+            IntBean input = new IntBean(i);
+            byte[] b = MAPPER.writeValueAsBytes(input);
+            IntBean result = MAPPER.readValue(b, IntBean.class);
+            assertEquals(input.value, result.value);
+        }
     }
 
-    public void testLongArrayRoundTrip() throws Exception
+    public void testLongRoundTrip() throws Exception
     {
-        long[][] inputArray = new long[][]{ { 3L + Integer.MAX_VALUE, -3L + Integer.MIN_VALUE } };
-        byte[] cbor = MAPPER.writeValueAsBytes(new LongsWrapper(inputArray));
-        LongsWrapper result = MAPPER.readValue(cbor, LongsWrapper.class);
-        assertNotNull(result);
-        assertNotNull(result.values);
-        assertEquals(1, result.values.length);
-        assertEquals(2, result.values[0].length);
-        assertEquals(inputArray[0][0], result.values[0][0]);
-        assertEquals(inputArray[0][1], result.values[0][1]);
-    }
-    
-    // for [dataformats-binary#31]
-    public void testDoubleArrayRoundTrip() throws Exception
-    {
-        double[][] inputArray = new double[][]{ { 0.25, -1.5 } };
-        byte[] cbor = MAPPER.writeValueAsBytes(new DoublesWrapper(inputArray));
-        DoublesWrapper result = MAPPER.readValue(cbor, DoublesWrapper.class);
-        assertNotNull(result);
-        assertNotNull(result.values);
-        assertEquals(1, result.values.length);
-        assertEquals(2, result.values[0].length);
-        assertEquals(inputArray[0][0], result.values[0][0]);
-        assertEquals(inputArray[0][1], result.values[0][1]);
+        for (long v : new long[] { 0, 1, -1,
+                100L, -200L,
+                5000L, -3600L,
+                Integer.MIN_VALUE, Integer.MAX_VALUE,
+                1L + Integer.MAX_VALUE, -1L + Integer.MIN_VALUE,
+                2330462449L, // from [dataformats-binary#30]
+                Long.MIN_VALUE, Long.MAX_VALUE
+                }) {
+            LongBean input = new LongBean(v);
+            byte[] b = MAPPER.writeValueAsBytes(input);
+            LongBean result = MAPPER.readValue(b, LongBean.class);
+            assertEquals(input.value, result.value);
+        }
     }
 }
