@@ -6,9 +6,8 @@
 This project contains [Jackson](http://http://wiki.fasterxml.com/JacksonHome) extension component for reading and writing data encoded using
 [Apache Avro](http://avro.apache.org/) data format.
 
-Project adds necessary abstractions on top to make things work with other Jackson functionality. It relies on standard Avro library for Avro Schema handling, and some parts of deserialization/serialization.
-
-Project is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
+Project adds necessary abstractions on top to make things work with other Jackson functionality.
+It relies on standard Avro library for Avro Schema handling, and some parts of deserialization/serialization.
 
 # Status
 
@@ -23,9 +22,11 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformat-avro</artifactId>
-    <version>2.7.4</version>
+    <version>2.8.5</version>
 </dependency>
 ```
+
+(or whatever the latest stable version is)
 
 # Usage
 
