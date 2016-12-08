@@ -1,5 +1,8 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
@@ -55,5 +58,16 @@ public class NumberBeanTest extends CBORTestBase
             LongBean result = MAPPER.readValue(b, LongBean.class);
             assertEquals(input.value, result.value);
         }
+    }
+
+    // for [dataformats-binary#32] coercion of Float into Double
+    public void testUntypedWithFloat() throws Exception
+    {
+        Object[] input = new Object[] { Float.valueOf(0.5f) };
+        byte[] b = MAPPER.writeValueAsBytes(input);
+        Object[] result = MAPPER.readValue(b, Object[].class);
+        assertEquals(1, result.length);
+        assertEquals(Float.class, result[0].getClass());
+        assertEquals(input[0], result[0]);
     }
 }
