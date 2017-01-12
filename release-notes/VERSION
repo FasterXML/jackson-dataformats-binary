@@ -11,6 +11,7 @@ Modules:
 
 2.9.0 (not yet released)
 
+2.8.6 (12-Jan-2016)
 2.8.5 (14-Nov-2016)
 
 #30 (cbor): Overflow when decoding uint32 for Major type 0
