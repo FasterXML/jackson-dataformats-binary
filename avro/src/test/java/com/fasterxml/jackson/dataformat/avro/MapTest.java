@@ -36,7 +36,7 @@ public class MapTest extends AvroTestBase
         }
     }
 
-    public void testSimple() throws Exception
+    public void testRecordWithMap() throws Exception
     {
         AvroMapper mapper = getMapper();
         AvroSchema schema = mapper.schemaFrom(MAP_SCHEMA_JSON);
@@ -140,4 +140,21 @@ public class MapTest extends AvroTestBase
         assertEquals(1, output.stuff.size());
         assertEquals("y", output.stuff.get("x"));
     }
+
+    // 18-Jan-2017, tatu: It would seem reasonable to support root-level Maps too,
+    //   since Records and Arrays work, but looks like there are some issues
+    //   regarding them so can't yet test
+
+    /*
+    public void testRootStringMap() throws Exception
+    {
+        AvroMapper mapper = getMapper();
+        AvroSchema schema = getStringMapSchema();
+        Map<String,String> input = new LinkedHashMap<>();
+        input.put("a", "1");
+        input.put("b", "2");
+
+        byte[] b = mapper.writer(schema).writeValueAsBytes(input);
+    }
+    */
 }
