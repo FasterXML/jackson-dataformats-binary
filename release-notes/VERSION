@@ -11,6 +11,12 @@ Modules:
 
 2.9.0 (not yet released)
 
+2.8.7 (not yet released)
+
+#35: Serialization of multiple objects (`SequenceWriter`
+ (reported by tomvandenberge@github)
+#38: Deserialization of multiple (root) values from Avro
+
 2.8.6 (12-Jan-2016)
 2.8.5 (14-Nov-2016)
 

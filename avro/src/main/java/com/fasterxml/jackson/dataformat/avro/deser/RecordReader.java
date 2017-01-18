@@ -19,10 +19,10 @@ final class RecordReader extends AvroStructureReader
     private final AvroParserImpl _parser;
 
     protected String _currentName;
-    
+
     protected int _state;
     protected final int _count;
-    
+
     public RecordReader(AvroFieldWrapper[] fieldReaders) {
         this(null, fieldReaders, null, null);
     }
@@ -37,7 +37,7 @@ final class RecordReader extends AvroStructureReader
         _parser = parser;
         _count = fieldReaders.length;
     }
-    
+
     @Override
     public RecordReader newReader(AvroReadContext parent,
             AvroParserImpl parser, BinaryDecoder decoder) {
@@ -60,26 +60,20 @@ final class RecordReader extends AvroStructureReader
                 return t;
             }
         case STATE_NAME:
-            if (_index < _count) {
-                _currentName = _fieldReaders[_index].getName();
-                _state = STATE_VALUE;
-                {
-                    JsonToken t = JsonToken.FIELD_NAME;
-                    _currToken = t;
-                    return t;
-                }
+            if (_index >= _count) {
+                return _nextAtEndObject();
             }
-            // done; fall through
-        case STATE_END:
-            _state = STATE_DONE;
-            _parser.setAvroContext(getParent());
+            _currentName = _fieldReaders[_index].getName();
+            _state = STATE_VALUE;
             {
-                JsonToken t = JsonToken.END_OBJECT;
+                JsonToken t = JsonToken.FIELD_NAME;
                 _currToken = t;
                 return t;
             }
         case STATE_VALUE:
             break;
+        case STATE_END:
+            return _nextAtEndObject();
         case STATE_DONE:
         default:
             throwIllegalState(_state);
@@ -92,6 +86,22 @@ final class RecordReader extends AvroStructureReader
         return t;
     }        
 
+    private final JsonToken _nextAtEndObject() throws IOException
+    {
+        AvroReadContext parent = getParent();
+        // as per [dataformats-binary#38], may need to reset, instead of bailing out
+        if (parent.inRoot()) {
+            if (!_decoder.isEnd()) {
+                _state = STATE_START;
+                _index = 0;
+                return (_currToken = JsonToken.END_OBJECT);
+            }
+        }
+        _state = STATE_DONE;
+        _parser.setAvroContext(getParent());
+        return (_currToken = JsonToken.END_OBJECT);
+    }
+
     @Override
     public String nextFieldName() throws IOException
     {
@@ -103,13 +113,10 @@ final class RecordReader extends AvroStructureReader
                 _currToken = JsonToken.FIELD_NAME;
                 return name;
             }
-            // falling through to STATE_END handling
-            _state = STATE_DONE;
-            _parser.setAvroContext(getParent());
-            _currToken = JsonToken.END_OBJECT;
-            return null;
+            _nextAtEndObject();
+        } else {
+            nextToken();
         }
-        nextToken();
         return null;
     }
     
