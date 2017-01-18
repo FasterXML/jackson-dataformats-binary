@@ -72,10 +72,18 @@ class RootContext
     public void writeString(String value) {
         _reportError();
     }
-    
+
+    /**
+     * Lazily created instance for encoding: reused in case of root value sequences.
+     */
+    private NonBSGenericDatumWriter<GenericContainer> _writer;
+
     @Override
     public void complete(BinaryEncoder encoder) throws IOException {
-        new NonBSGenericDatumWriter<GenericContainer>(_schema).write(_rootValue, encoder);
+        if (_writer == null) {
+            _writer = new NonBSGenericDatumWriter<GenericContainer>(_schema);
+        }
+        _writer.write(_rootValue, encoder);
     }
 
     @Override

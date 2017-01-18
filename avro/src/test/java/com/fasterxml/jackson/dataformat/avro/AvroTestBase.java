@@ -19,7 +19,7 @@ public abstract class AvroTestBase extends TestCase
     /* Test schemas
     /**********************************************************
      */
-    
+
     protected final String EMPLOYEE_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"
             +"\"name\": \"Employee\",\n"
@@ -30,16 +30,52 @@ public abstract class AvroTestBase extends TestCase
             +" {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
             +"]}";
 
+    protected final String STRING_ARRAY_SCHEMA_JSON = "{\n"
+            +"\"name\": \"StringArray\",\n"
+            +"\"type\": \"array\",\n"
+            +"\"items\": \"string\"\n}";
+
+    protected final String STRING_MAP_SCHEMA_JSON = "{\n"
+            +"\"name\": \"StringMap\",\n"
+            +"\"type\": \"map\",\n"
+            +"\"values\": \"string\"\n}";
+
+    protected final String EMPLOYEE_ARRAY_SCHEMA_JSON = aposToQuotes(
+            "{"
+            +"'name': 'EmployeeArray',\n"
+            +"'type': 'array',\n"
+            +"'items': {\n"
+            +"  'type': 'record',\n"
+            +"  'name': 'Employee',\n"
+            +"   'fields': [\n"
+            +"    {'name': 'name', 'type': 'string'},\n"
+            +"    {'name': 'age', 'type': 'int'},\n"
+            +"    {'name': 'emails', 'type': {'type': 'array', 'items': 'string'}},\n"
+            +"     {'name': 'boss', 'type': ['Employee','null']}\n"
+            +"   ]}\n"
+            +"}\n");
+
     /*
     /**********************************************************
     /* Test classes
     /**********************************************************
      */
-    
+
     protected static class Employee
     {
         public Employee() { }
-        
+
+        public Employee(String n,  int a, String[] e, Employee b) {
+            name = n;
+            age = a;
+            emails = e;
+            boss = b;
+        }
+
+        public static Employee construct() {
+            return new Employee();
+        }
+
         public String name;
         public int age;
         public String[] emails;
@@ -195,6 +231,14 @@ public abstract class AvroTestBase extends TestCase
             _employeeSchema = getMapper().schemaFrom(EMPLOYEE_SCHEMA_JSON);
         }
         return _employeeSchema;
+    }
+
+    protected AvroSchema getStringArraySchema() throws IOException {
+        return getMapper().schemaFrom(STRING_ARRAY_SCHEMA_JSON);
+    }
+
+    protected AvroSchema getStringMapSchema() throws IOException {
+        return getMapper().schemaFrom(STRING_MAP_SCHEMA_JSON);
     }
 
     protected AvroMapper getMapper() {

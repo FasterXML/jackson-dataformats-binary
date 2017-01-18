@@ -90,13 +90,10 @@ abstract class ArrayReader extends AvroStructureReader
             switch (_state) {
             case STATE_START:
                 _parser.setAvroContext(this);
+                _index = 0;
                 _count = _decoder.readArrayStart();
                 _state = (_count > 0) ? STATE_ELEMENTS : STATE_END;
-                {
-                    JsonToken t = JsonToken.START_ARRAY;
-                    _currToken = t;
-                    return t;
-                }
+                return (_currToken = JsonToken.START_ARRAY);
             case STATE_ELEMENTS:
                 if (_index < _count) {
                     break;
@@ -107,13 +104,18 @@ abstract class ArrayReader extends AvroStructureReader
                 }
                 // otherwise, we are done: fall through
             case STATE_END:
-                _state = STATE_DONE;
-                _parser.setAvroContext(getParent());
-                {
-                    JsonToken t = JsonToken.END_ARRAY;
-                    _currToken = t;
-                    return t;
+                final AvroReadContext parent = getParent();
+                // as per [dataformats-binary#38], may need to reset, instead of bailing out
+                if (parent.inRoot()) {
+                    if (!_decoder.isEnd()) {
+                        _index = 0;
+                        _state = STATE_START;
+                        return (_currToken = JsonToken.END_ARRAY);
+                    }
                 }
+                _state = STATE_DONE;
+                _parser.setAvroContext(parent);
+                return (_currToken = JsonToken.END_ARRAY);
             case STATE_DONE:
             default:
                 throwIllegalState(_state);
@@ -157,11 +159,7 @@ abstract class ArrayReader extends AvroStructureReader
                 _parser.setAvroContext(this);
                 _count = _decoder.readArrayStart();
                 _state = (_count > 0) ? STATE_ELEMENTS : STATE_END;
-                {
-                    JsonToken t =  JsonToken.START_ARRAY;
-                    _currToken = t;
-                    return t;
-                }
+                return (_currToken = JsonToken.START_ARRAY);
             case STATE_ELEMENTS:
                 if (_index < _count) {
                     break;
@@ -172,13 +170,18 @@ abstract class ArrayReader extends AvroStructureReader
                 }
                 // otherwise, we are done: fall through
             case STATE_END:
-                _state = STATE_DONE;
-                _parser.setAvroContext(getParent());
-                {
-                    JsonToken t =  JsonToken.END_ARRAY;
-                    _currToken = t;
-                    return t;
+                final AvroReadContext parent = getParent();
+                // as per [dataformats-binary#38], may need to reset, instead of bailing out
+                if (parent.inRoot()) {
+                    if (!_decoder.isEnd()) {
+                        _index = 0;
+                        _state = STATE_START;
+                        return (_currToken = JsonToken.END_ARRAY);
+                    }
                 }
+                _state = STATE_DONE;
+                _parser.setAvroContext(parent);
+                return (_currToken = JsonToken.END_ARRAY);
             case STATE_DONE:
             default:
                 throwIllegalState(_state);
@@ -186,9 +189,7 @@ abstract class ArrayReader extends AvroStructureReader
             ++_index;
             AvroStructureReader r = _elementReader.newReader(this, _parser, _decoder);
             _parser.setAvroContext(r);
-            JsonToken t = r.nextToken();
-            _currToken = t;
-            return t;
+            return (_currToken = r.nextToken());
         }
     }
 }
