@@ -60,12 +60,12 @@ public final class MapReader extends AvroStructureReader
             _parser.setAvroContext(this);
             _count = _decoder.readArrayStart();
             _state = (_count > 0) ? STATE_NAME : STATE_END;
-            return JsonToken.START_OBJECT;
+            return (_currToken = JsonToken.START_OBJECT);
         case STATE_NAME:
             if (_index < _count) {
                 _state = STATE_VALUE;
                 _currentName = _decoder.readString();
-                return JsonToken.FIELD_NAME;
+                return (_currToken = JsonToken.FIELD_NAME);
             }
             // need more data...
             _count = _decoder.arrayNext();
@@ -73,13 +73,23 @@ public final class MapReader extends AvroStructureReader
             if (_count > 0L) {
                 _index = 0;
                 _currentName = _decoder.readString();
-                return JsonToken.FIELD_NAME;
+                return (_currToken = JsonToken.FIELD_NAME);
             }
             // otherwise fall through:
         case STATE_END:
+            final AvroReadContext parent = getParent();
+            // as per [dataformats-binary#38], may need to reset, instead of bailing out
+            // ... note, however, that we can't as of yet test it, alas.
+            if (parent.inRoot()) {
+                if (!_decoder.isEnd()) {
+                    _index = 0;
+                    _state = STATE_START;
+                    return (_currToken = JsonToken.END_OBJECT);
+                }
+            }
             _state = STATE_DONE;
-            _parser.setAvroContext(getParent());
-            return JsonToken.END_OBJECT;
+            _parser.setAvroContext(parent);
+            return (_currToken = JsonToken.END_OBJECT);
         case STATE_VALUE:
             break;
         case STATE_DONE:
@@ -93,7 +103,7 @@ public final class MapReader extends AvroStructureReader
         }
         AvroStructureReader r = _structureReader.newReader(this, _parser, _decoder);
         _parser.setAvroContext(r);
-        return r.nextToken();
+        return (_currToken = r.nextToken());
     }
 
     @Override
