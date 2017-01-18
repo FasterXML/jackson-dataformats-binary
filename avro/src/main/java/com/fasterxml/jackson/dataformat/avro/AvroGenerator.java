@@ -99,7 +99,7 @@ public class AvroGenerator extends GeneratorBase
     protected int _formatFeatures;
 
     protected AvroSchema _rootSchema;
-    
+
     /*
     /**********************************************************
     /* Output state
@@ -107,7 +107,7 @@ public class AvroGenerator extends GeneratorBase
      */
 
     final protected OutputStream _output;
-    
+
     /**
      * Reference to the root context since that is needed for serialization
      */
@@ -119,11 +119,16 @@ public class AvroGenerator extends GeneratorBase
     protected AvroWriteContext _avroContext;
 
     /**
+     * Lazily constructed encoder; reused in case of writing root-value sequences.
+     */
+    protected BinaryEncoder _encoder;
+
+    /**
      * Flag that is set when the whole content is complete, can
      * be output.
      */
     protected boolean _complete;
-    
+
     /*
     /**********************************************************
     /* Life-cycle
@@ -356,6 +361,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _avroContext = _avroContext.createChildArrayContext();
+        _complete = false;
     }
     
     @Override
@@ -373,6 +379,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartObject() throws IOException {
         _avroContext = _avroContext.createChildObjectContext();
+        _complete = false;
     }
 
     @Override
@@ -578,18 +585,18 @@ public class AvroGenerator extends GeneratorBase
     protected void _complete() throws IOException
     {
         _complete = true;
-        
+
         // add defensive coding here but only because this often gets triggered due
         // to forced closure resulting from another exception; so, we typically
         // do not want to hide the original problem...
-    	// First one sanity check, for a (relatively?) common case
+        // First one sanity check, for a (relatively?) common case
         if (_rootContext == null) {
-        	return;
+            return;
         }
-        BinaryEncoder encoder = AvroSchema.encoder(
-            _output, isEnabled(Feature.AVRO_BUFFERING)
-        );
-        _rootContext.complete(encoder);
-        encoder.flush();
+        if (_encoder == null) {
+            _encoder = AvroSchema.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+        }
+        _rootContext.complete(_encoder);
+        _encoder.flush();
     }
 }

@@ -13,7 +13,7 @@ import org.apache.avro.io.Encoder;
  * Need to sub-class to prevent encoder from crapping on writing an optional
  * Enum value (see [dataformat-avro#12])
  * 
- * @since 2.5.0
+ * @since 2.5
  */
 public class NonBSGenericDatumWriter<D>
 	extends GenericDatumWriter<D>

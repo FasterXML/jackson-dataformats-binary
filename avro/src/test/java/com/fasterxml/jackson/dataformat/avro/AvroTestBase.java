@@ -35,11 +35,22 @@ public abstract class AvroTestBase extends TestCase
     /* Test classes
     /**********************************************************
      */
-    
+
     protected static class Employee
     {
         public Employee() { }
-        
+
+        public Employee(String n,  int a, String[] e, Employee b) {
+            name = n;
+            age = a;
+            emails = e;
+            boss = b;
+        }
+
+        public static Employee construct() {
+            return new Employee();
+        }
+
         public String name;
         public int age;
         public String[] emails;
