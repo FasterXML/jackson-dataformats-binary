@@ -21,7 +21,7 @@ public class AvroGenerator extends GeneratorBase
     public enum Feature
         implements FormatFeature // since 2.7
     {
-        // !!! TODO: remove from 2.8
+        // !!! TODO: remove from 2.9
         /**
          * Feature that can be enabled to quietly ignore serialization of properties
          * that can not be mapped to output schema: if enabled, trying to output
@@ -42,6 +42,8 @@ public class AvroGenerator extends GeneratorBase
          * Feature that can be disabled to prevent Avro from buffering any more
          * data then absolutely necessary.
          * This affects buffering by underlying codec.
+         * Note that disabling buffer is likely to reduce performance if the underlying
+         * input/output is unbuffered.
          *<p>
          * Enabled by default to preserve the existing behavior.
          *
@@ -357,13 +359,13 @@ public class AvroGenerator extends GeneratorBase
     /* Public API: structural output
     /**********************************************************
      */
-    
+
     @Override
     public final void writeStartArray() throws IOException {
         _avroContext = _avroContext.createChildArrayContext();
         _complete = false;
     }
-    
+
     @Override
     public final void writeEndArray() throws IOException
     {

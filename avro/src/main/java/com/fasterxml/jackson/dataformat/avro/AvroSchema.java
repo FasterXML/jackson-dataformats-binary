@@ -84,7 +84,7 @@ public class AvroSchema implements FormatSchema
         BinaryEncoder prev = (ref == null) ? null : ref.get();
         /* Factory will check if the encoder has a matching type for reuse.
          * If not, it will drop the instance being reused and will return
-         * a new, proper one.
+         * a new, properly initialized instance
          */
         BinaryEncoder next =
             buffering
