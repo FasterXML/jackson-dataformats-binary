@@ -52,6 +52,11 @@ public class AvroMapper extends ObjectMapper
     }
     
     /**
+     * Factory method for constructing {@link AvroSchema} by introspecting given
+     * POJO type and building schema that contains specified properties.
+     *<p>
+     * Resulting schema object does not use separate reader/writer schemas.
+     *
      * @since 2.5
      */
     public AvroSchema schemaFor(Class<?> type) throws JsonMappingException
@@ -62,6 +67,11 @@ public class AvroMapper extends ObjectMapper
     }
 
     /**
+     * Factory method for constructing {@link AvroSchema} by introspecting given
+     * POJO type and building schema that contains specified properties.
+     *<p>
+     * Resulting schema object does not use separate reader/writer schemas.
+     *
      * @since 2.5
      */
     public AvroSchema schemaFor(JavaType type) throws JsonMappingException
@@ -74,6 +84,8 @@ public class AvroMapper extends ObjectMapper
     /**
      * Method for reading an Avro Schema from given {@link InputStream},
      * and once done (successfully or not), closing the stream.
+     *<p>
+     * Resulting schema object does not use separate reader/writer schemas.
      *
      * @since 2.6
      */
@@ -90,6 +102,8 @@ public class AvroMapper extends ObjectMapper
     /**
      * Convenience method for reading {@link AvroSchema} from given
      * encoded JSON representation.
+     *<p>
+     * Resulting schema object does not use separate reader/writer schemas.
      *
      * @since 2.6
      */
@@ -102,6 +116,8 @@ public class AvroMapper extends ObjectMapper
     /**
      * Convenience method for reading {@link AvroSchema} from given
      * encoded JSON representation.
+     *<p>
+     * Resulting schema object does not use separate reader/writer schemas.
      *
      * @since 2.6
      */
