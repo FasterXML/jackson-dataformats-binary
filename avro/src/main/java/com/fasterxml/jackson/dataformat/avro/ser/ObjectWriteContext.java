@@ -98,7 +98,15 @@ public final class ObjectWriteContext
             _record.put(_nextField.pos(), value);
         }
     }
-    
+
+    @Override
+    public void writeNull() {
+        _verifyValueWrite();
+        if (_nextField != null) {
+            _record.put(_nextField.pos(), null);
+        }
+    }
+
     protected final void _verifyValueWrite() {
         if (!_expectValue) {
             throw new IllegalStateException("Expecting FIELD_NAME, not value");

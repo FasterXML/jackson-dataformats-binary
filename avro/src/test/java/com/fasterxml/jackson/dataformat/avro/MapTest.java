@@ -6,6 +6,8 @@ import java.util.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.SequenceWriter;
 
 public class MapTest extends AvroTestBase
 {
@@ -36,10 +38,11 @@ public class MapTest extends AvroTestBase
         }
     }
 
+    private final AvroMapper MAPPER = getMapper();
+
     public void testRecordWithMap() throws Exception
     {
-        AvroMapper mapper = getMapper();
-        AvroSchema schema = mapper.schemaFrom(MAP_SCHEMA_JSON);
+        AvroSchema schema = MAPPER.schemaFrom(MAP_SCHEMA_JSON);
         Container input = new Container();
         input.stuff.put("foo", "bar");
         input.stuff.put("a", "b");
@@ -48,8 +51,8 @@ public class MapTest extends AvroTestBase
          * get masked due to auto-close. Hence this trickery.
          */
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = mapper.getFactory().createGenerator(out);
-        mapper.writer(schema).writeValue(gen, input);
+        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        MAPPER.writer(schema).writeValue(gen, input);
         gen.close();
         byte[] bytes = out.toByteArray();
         assertNotNull(bytes);
@@ -57,7 +60,7 @@ public class MapTest extends AvroTestBase
         assertEquals(16, bytes.length); // measured to be current exp size
 
         // and then back. Start with streaming
-        JsonParser p = mapper.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.getFactory().createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -86,7 +89,7 @@ public class MapTest extends AvroTestBase
         p.close();
 
         // and then databind
-        Container output = mapper.readerFor(Container.class).with(schema)
+        Container output = MAPPER.readerFor(Container.class).with(schema)
                 .readValue(bytes);
         assertNotNull(output);
         assertNotNull(output.stuff);
@@ -98,8 +101,8 @@ public class MapTest extends AvroTestBase
         input = new Container();
 
         out = new ByteArrayOutputStream();
-        gen = mapper.getFactory().createGenerator(out);
-        mapper.writer(schema).writeValue(gen, input);
+        gen = MAPPER.getFactory().createGenerator(out);
+        MAPPER.writer(schema).writeValue(gen, input);
         gen.close();
         bytes = out.toByteArray();
         assertNotNull(bytes);
@@ -109,17 +112,16 @@ public class MapTest extends AvroTestBase
 
     public void testMapOrNull() throws Exception
     {
-        AvroMapper mapper = getMapper();
-        AvroSchema schema = mapper.schemaFrom(MAP_OR_NULL_SCHEMA_JSON);
+        AvroSchema schema = MAPPER.schemaFrom(MAP_OR_NULL_SCHEMA_JSON);
         Container input = new Container();
         input.stuff = null;
 
-        byte[] bytes =  mapper.writer(schema).writeValueAsBytes(input);
+        byte[] bytes =  MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
         assertEquals(1, bytes.length); // measured to be current exp size
 
         // and then back
-        Container output = mapper.readerFor(Container.class).with(schema)
+        Container output = MAPPER.readerFor(Container.class).with(schema)
                 .readValue(bytes);
         assertNotNull(output);
         assertNull(output.stuff);
@@ -128,12 +130,12 @@ public class MapTest extends AvroTestBase
         input = new Container();
         input.stuff.put("x", "y");
 
-        bytes =  mapper.writer(schema).writeValueAsBytes(input);
+        bytes =  MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
         assertEquals(7, bytes.length); // measured to be current exp size
 
         // and then back
-        output = mapper.readerFor(Container.class).with(schema)
+        output = MAPPER.readerFor(Container.class).with(schema)
                 .readValue(bytes);
         assertNotNull(output);
         assertNotNull(output.stuff);
@@ -145,16 +147,60 @@ public class MapTest extends AvroTestBase
     //   since Records and Arrays work, but looks like there are some issues
     //   regarding them so can't yet test
 
-    /*
     public void testRootStringMap() throws Exception
     {
-        AvroMapper mapper = getMapper();
         AvroSchema schema = getStringMapSchema();
-        Map<String,String> input = new LinkedHashMap<>();
-        input.put("a", "1");
-        input.put("b", "2");
+        Map<String,String> input = _map("a", "1", "b", "2");
 
-        byte[] b = mapper.writer(schema).writeValueAsBytes(input);
+        byte[] b = MAPPER.writer(schema).writeValueAsBytes(input);
+        Map<String,String> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(b);
+        assertEquals(2, result.size());
+        assertEquals("1", result.get("a"));
+        assertEquals("2", result.get("b"));
     }
-    */
+    public void testRootMapSequence() throws Exception
+    {
+        ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
+        AvroSchema schema = getStringMapSchema();
+        Map<String,String> input1 = _map("a", "1", "b", "2");
+        Map<String,String> input2 = _map("c", "3", "d", "4");
+
+        SequenceWriter sw = MAPPER.writerFor(Map.class)
+            .with(schema)
+            .writeValues(b);
+        sw.write(input1);
+        int curr = b.size();
+        sw.write(input2);
+        int diff = b.size() - curr;
+        if (diff == 0) {
+            fail("Should have output more bytes for second entry, did not, total: "+curr);
+        }
+        sw.close();
+
+        byte[] bytes = b.toByteArray();
+
+        assertNotNull(bytes);
+
+        MappingIterator<Map<String,String>> it = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValues(bytes);
+        assertTrue(it.hasNextValue());
+        assertEquals(input1, it.nextValue());
+
+        assertTrue(it.hasNextValue());
+        assertEquals(input2, it.nextValue());
+
+        assertFalse(it.hasNextValue());
+        it.close();
+    }
+
+    private Map<String,String> _map(String... stuff) {
+        Map<String,String> map = new LinkedHashMap<String,String>();
+        for (int i = 0, end = stuff.length; i < end; i += 2) {
+            map.put(stuff[i], stuff[i+1]);
+        }
+        return map;
+    }
 }

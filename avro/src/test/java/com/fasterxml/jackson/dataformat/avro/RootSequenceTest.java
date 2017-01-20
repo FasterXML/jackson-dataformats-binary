@@ -13,9 +13,66 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class RootSequenceTest extends AvroTestBase
 {
-    public void testReadWriteEmployees() throws Exception
+    private final AvroMapper MAPPER = getMapper();
+
+    public void testReadWriteIntSequence() throws Exception
     {
-        AvroMapper mapper = getMapper();
+        AvroSchema schema = MAPPER.schemaFrom(quote("int"));
+        ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
+
+        // First: write a sequence of 3 root-level ints
+        
+        SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
+        sw.write(Integer.valueOf(1));
+        sw.write(Integer.valueOf(123456));
+        sw.write(Integer.valueOf(-999));
+        sw.close();
+
+        byte[] bytes = b.toByteArray();
+        MappingIterator<Integer> it = MAPPER.readerFor(Integer.class)
+                .with(schema)
+                .readValues(bytes);
+        assertTrue(it.hasNextValue());
+        assertEquals(Integer.valueOf(1), it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(Integer.valueOf(123456), it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(Integer.valueOf(-999), it.nextValue());
+        assertFalse(it.hasNextValue());
+        it.close();
+    }
+
+    public void testReadWriteStringSequence() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(quote("string"));
+        ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
+
+        // First: write a sequence of 3 root-level Strings
+        
+        SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
+        sw.write("foo");
+        sw.write("bar");
+        sw.write("abcde");
+        sw.close();
+
+        byte[] bytes = b.toByteArray();
+        // should just be chars and 1-byte length for each
+        assertEquals(14, bytes.length);
+        MappingIterator<String> it = MAPPER.readerFor(String.class)
+                .with(schema)
+                .readValues(bytes);
+        assertTrue(it.hasNextValue());
+        assertEquals("foo", it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals("bar", it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals("abcde", it.nextValue());
+        assertFalse(it.hasNextValue());
+        it.close();
+    }
+
+    public void testReadWriteEmployeeSequence() throws Exception
+    {
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
         Employee boss = new Employee("Bossman", 55, new String[] { "boss@company.com" }, null);
         Employee peon1 = new Employee("Worker#1", 24, new String[] { "worker1@company.com" }, boss);
@@ -23,7 +80,7 @@ public class RootSequenceTest extends AvroTestBase
 
         // First: write a sequence of 3 root-level Employee Objects
         
-        SequenceWriter sw = mapper.writerFor(Employee.class)
+        SequenceWriter sw = MAPPER.writerFor(Employee.class)
                 .with(getEmployeeSchema())
                 .writeValues(b);
         sw.write(boss);
@@ -41,7 +98,7 @@ public class RootSequenceTest extends AvroTestBase
         assertNotNull(bytes);
 
         // So far so good: writing seems to work. How about reading?
-        MappingIterator<Employee> it = mapper.readerFor(Employee.class)
+        MappingIterator<Employee> it = MAPPER.readerFor(Employee.class)
                 .with(getEmployeeSchema())
                 .readValues(bytes);
         assertTrue(it.hasNextValue());

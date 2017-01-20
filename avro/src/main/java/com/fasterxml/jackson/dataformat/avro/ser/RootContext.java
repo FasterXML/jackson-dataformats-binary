@@ -12,16 +12,23 @@ import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 class RootContext
     extends AvroWriteContext
 {
+    protected final BinaryEncoder _encoder;
+
     /**
-     * We need to keep reference to the root value here.
-     *<p>
-     * TODO: What about Map values at root? Avro codec does not seem
-     * able to support it via Generic API.
+     * We need to keep reference to the root value here; either
+     * <code>GenericContainer</code> or <code>Map</code> (yes,
+     * Avro APIs are... odd).
      */
-    protected GenericContainer _rootValue;
-    
-    public RootContext(AvroGenerator generator, Schema schema) {
+    protected Object _rootValue;
+
+    /**
+     * Lazily created instance for encoding: reused in case of root value sequences.
+     */
+    private NonBSGenericDatumWriter<Object> _writer;
+
+    public RootContext(AvroGenerator generator, Schema schema, BinaryEncoder encoder) {
         super(TYPE_ROOT, null, generator, schema);
+        _encoder = encoder;
     }
 
     @Override
@@ -51,39 +58,51 @@ class RootContext
         switch (_schema.getType()) {
         case RECORD:
         case UNION: // maybe
-            break;
-        case MAP:
-            throw new UnsupportedOperationException("Root-level Maps not supported: Avro Codec has no way to create these");
+            {
+                GenericRecord rec = _createRecord(_schema);
+                _rootValue = rec;
+                return new ObjectWriteContext(this, _generator, rec);
+            }
+        case MAP: // used to not be supported
+            {
+                MapWriteContext ctxt = new MapWriteContext(this, _generator, _schema);
+                _rootValue = ctxt.rawValue();
+                return ctxt;
+            }
         default:
-            throw new IllegalStateException("Can not write START_OBJECT; schema type is "
-                    +_schema.getType());
         }
-        GenericRecord rec = _createRecord(_schema);
-        _rootValue = rec;
-        return new ObjectWriteContext(this, _generator, rec);
+        throw new IllegalStateException("Can not write START_OBJECT; schema type is "
+                +_schema.getType());
     }
 
     @Override
-    public void writeValue(Object value) {
-        _reportError();
+    public void writeValue(Object value) throws IOException {
+        // 19-Jan-2017, tatu: Implemented to allow/support root-level scalars, esp.
+        //   for Avro streams
+        _writer().write(value, _encoder);
     }
 
     @Override
-    public void writeString(String value) {
-        _reportError();
+    public void writeString(String value) throws IOException {
+        // 19-Jan-2017, tatu: Implemented to allow/support root-level scalars, esp.
+        //   for Avro streams
+        _writer().write(value, _encoder);
     }
 
-    /**
-     * Lazily created instance for encoding: reused in case of root value sequences.
-     */
-    private NonBSGenericDatumWriter<GenericContainer> _writer;
+    @Override
+    public void writeNull() throws IOException {
+        // 19-Jan-2017, tatu: ... is this even legal?
+        _writer().write(null, _encoder);
+    }
 
     @Override
-    public void complete(BinaryEncoder encoder) throws IOException {
-        if (_writer == null) {
-            _writer = new NonBSGenericDatumWriter<GenericContainer>(_schema);
+    public void complete() throws IOException {
+        // 19-Jan-2017, tatu: Gets also called for root-level scalar, in which
+        //    case nothing (more) to output.
+        if (_rootValue != null) {
+            _writer().write(_rootValue, _encoder);
         }
-        _writer.write(_rootValue, encoder);
+        _rootValue = null;
     }
 
     @Override
@@ -93,5 +112,14 @@ class RootContext
 
     protected void _reportError() {
         throw new IllegalStateException("Can not write values directly in root context, outside of Records/Arrays");
+    }
+
+    private final NonBSGenericDatumWriter<Object> _writer() {
+        NonBSGenericDatumWriter<Object> w = _writer;
+        if (w == null){
+            w = new NonBSGenericDatumWriter<Object>(_schema);
+            _writer = w;
+        }
+        return w;
     }
 }

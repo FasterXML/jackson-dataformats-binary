@@ -155,7 +155,11 @@ public class AvroGenerator extends GeneratorBase
         }
         _rootSchema = schema;
         // start with temporary root...
-        _avroContext = _rootContext = AvroWriteContext.createRootContext(this, schema.getAvroSchema());
+        if (_encoder == null) {
+            _encoder = AvroSchema.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+        }
+        _avroContext = _rootContext = AvroWriteContext.createRootContext(this,
+                schema.getAvroSchema(), _encoder);
     }
 
     /*                                                                                       
@@ -506,7 +510,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public void writeNull() throws IOException {
-        _avroContext.writeValue(null);
+        _avroContext.writeNull();
     }
 
     @Override
@@ -592,13 +596,9 @@ public class AvroGenerator extends GeneratorBase
         // to forced closure resulting from another exception; so, we typically
         // do not want to hide the original problem...
         // First one sanity check, for a (relatively?) common case
-        if (_rootContext == null) {
-            return;
+        if (_rootContext != null) {
+            _rootContext.complete();
+            _encoder.flush();
         }
-        if (_encoder == null) {
-            _encoder = AvroSchema.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
-        }
-        _rootContext.complete(_encoder);
-        _encoder.flush();
     }
 }

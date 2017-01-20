@@ -16,7 +16,7 @@ public final class MapWriteContext
     extends KeyValueContext
 {
     protected final Map<String,Object> _data;
-    
+
     public MapWriteContext(AvroWriteContext parent, AvroGenerator generator, Schema schema)
     {
         super(parent, generator, schema);
@@ -62,7 +62,13 @@ public final class MapWriteContext
         _verifyValueWrite();
         _data.put(_currentName, value);
     }
-    
+
+    @Override
+    public void writeNull() {
+        _verifyValueWrite();
+        _data.put(_currentName, null);
+    }
+
     protected final void _verifyValueWrite() {
         if (!_expectValue) {
             throw new IllegalStateException("Expecting FIELD_NAME, not value");
