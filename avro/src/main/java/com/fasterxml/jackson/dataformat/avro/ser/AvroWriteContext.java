@@ -146,10 +146,12 @@ public abstract class AvroWriteContext
 
     protected AvroWriteContext _createObjectContext(Schema schema) throws JsonMappingException
     {
-        if (schema.getType() == Schema.Type.UNION) {
+        Type type = schema.getType();
+        if (type == Schema.Type.UNION) {
             schema = _recordOrMapFromUnion(schema);
+            type = schema.getType();
         }
-        if (schema.getType() == Schema.Type.MAP) {
+        if (type == Schema.Type.MAP) {
             return new MapWriteContext(this, _generator, schema);
         }
         return new ObjectWriteContext(this, _generator, _createRecord(schema));

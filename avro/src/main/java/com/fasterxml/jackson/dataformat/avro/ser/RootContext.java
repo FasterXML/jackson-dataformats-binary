@@ -13,13 +13,17 @@ class RootContext
     extends AvroWriteContext
 {
     /**
-     * We need to keep reference to the root value here.
-     *<p>
-     * TODO: What about Map values at root? Avro codec does not seem
-     * able to support it via Generic API.
+     * We need to keep reference to the root value here; either
+     * <code>GenericContainer</code> or <code>Map</code> (yes,
+     * Avro APIs are... odd).
      */
-    protected GenericContainer _rootValue;
-    
+    protected Object _rootValue;
+
+    /**
+     * Lazily created instance for encoding: reused in case of root value sequences.
+     */
+    private NonBSGenericDatumWriter<Object> _writer;
+
     public RootContext(AvroGenerator generator, Schema schema) {
         super(TYPE_ROOT, null, generator, schema);
     }
@@ -51,16 +55,21 @@ class RootContext
         switch (_schema.getType()) {
         case RECORD:
         case UNION: // maybe
-            break;
-        case MAP:
-            throw new UnsupportedOperationException("Root-level Maps not supported: Avro Codec has no way to create these");
+            {
+                GenericRecord rec = _createRecord(_schema);
+                _rootValue = rec;
+                return new ObjectWriteContext(this, _generator, rec);
+            }
+        case MAP: // used to not be supported
+            {
+                MapWriteContext ctxt = new MapWriteContext(this, _generator, _schema);
+                _rootValue = ctxt.rawValue();
+                return ctxt;
+            }
         default:
-            throw new IllegalStateException("Can not write START_OBJECT; schema type is "
-                    +_schema.getType());
         }
-        GenericRecord rec = _createRecord(_schema);
-        _rootValue = rec;
-        return new ObjectWriteContext(this, _generator, rec);
+        throw new IllegalStateException("Can not write START_OBJECT; schema type is "
+                +_schema.getType());
     }
 
     @Override
@@ -73,15 +82,10 @@ class RootContext
         _reportError();
     }
 
-    /**
-     * Lazily created instance for encoding: reused in case of root value sequences.
-     */
-    private NonBSGenericDatumWriter<GenericContainer> _writer;
-
     @Override
     public void complete(BinaryEncoder encoder) throws IOException {
         if (_writer == null) {
-            _writer = new NonBSGenericDatumWriter<GenericContainer>(_schema);
+            _writer = new NonBSGenericDatumWriter<Object>(_schema);
         }
         _writer.write(_rootValue, encoder);
     }

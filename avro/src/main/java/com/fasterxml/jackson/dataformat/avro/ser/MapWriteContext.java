@@ -16,7 +16,7 @@ public final class MapWriteContext
     extends KeyValueContext
 {
     protected final Map<String,Object> _data;
-    
+
     public MapWriteContext(AvroWriteContext parent, AvroGenerator generator, Schema schema)
     {
         super(parent, generator, schema);
