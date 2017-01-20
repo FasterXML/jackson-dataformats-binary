@@ -38,8 +38,15 @@ public abstract class AvroWriteContext
     
     // // // Factory methods
     
+    public static AvroWriteContext createRootContext(AvroGenerator generator, Schema schema,
+            BinaryEncoder encoder) {
+        return new RootContext(generator, schema, encoder);
+    }
+
+    // To be removed ASAP (in 2.9)
+    @Deprecated
     public static AvroWriteContext createRootContext(AvroGenerator generator, Schema schema) {
-        return new RootContext(generator, schema);
+        throw new IllegalStateException();
     }
 
     /**
@@ -65,32 +72,40 @@ public abstract class AvroWriteContext
      * @return True if writing succeeded (for {@link ObjectWriteContext},
      *    iff column was recognized)
      */
-    public boolean writeFieldName(String name) throws JsonMappingException {
+    public boolean writeFieldName(String name) throws IOException {
         return false;
     }
 
-    public abstract void writeValue(Object value) throws JsonMappingException;
+    public abstract void writeValue(Object value) throws IOException;
 
     /**
      * @since 2.5
      */
-    public abstract void writeString(String value) throws JsonMappingException;
-    
+    public abstract void writeString(String value) throws IOException;
+
+    /**
+     * @since 2.8
+     */
+    public abstract void writeNull() throws IOException;
+
     /**
      * Accessor called to link data being built with resulting object.
      */
     public abstract Object rawValue();
-    
-    public void complete(BinaryEncoder encoder) throws IOException {
+
+    public void complete() throws IOException {
         throw new IllegalStateException("Can not be called on "+getClass().getName());
     }
-    
+
+    @Deprecated // remove from 2.9
+    public void complete(BinaryEncoder encoder) throws IOException { complete(); }
+
     public boolean canClose() { return true; }
 
     protected abstract void appendDesc(StringBuilder sb);
-    
+
     // // // Overridden standard methods
-    
+
     /**
      * Overridden to provide developer writeable "JsonPath" representation
      * of the context.
@@ -216,10 +231,15 @@ public abstract class AvroWriteContext
         }
 
         @Override
-        public void writeString(String value) throws JsonMappingException {
+        public void writeString(String value) {
             _reportError();
         }
-        
+
+        @Override
+        public void writeNull() {
+            _reportError();
+        }
+
         @Override
         public void appendDesc(StringBuilder sb) {
             sb.append("?");

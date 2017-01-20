@@ -30,7 +30,10 @@ public class NopWriteContext extends AvroWriteContext
 
     @Override
     public void writeString(String value) { }
-    
+
+    @Override
+    public void writeNull() { }
+
     @Override
     public void appendDesc(StringBuilder sb) {
         sb.append("(...)");

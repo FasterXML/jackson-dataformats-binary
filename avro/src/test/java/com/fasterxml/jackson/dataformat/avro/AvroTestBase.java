@@ -284,6 +284,10 @@ public abstract class AvroTestBase extends TestCase
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
     }
 
+    protected static String quote(String str) {
+        return "\""+str+"\"";
+    }
+    
     protected static String aposToQuotes(String json) {
         return json.replace("'", "\"");
     }

@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
@@ -10,7 +8,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase.Employee;
 
 public class MapTest extends AvroTestBase
 {
@@ -45,8 +42,7 @@ public class MapTest extends AvroTestBase
 
     public void testRecordWithMap() throws Exception
     {
-        AvroMapper mapper = getMapper();
-        AvroSchema schema = mapper.schemaFrom(MAP_SCHEMA_JSON);
+        AvroSchema schema = MAPPER.schemaFrom(MAP_SCHEMA_JSON);
         Container input = new Container();
         input.stuff.put("foo", "bar");
         input.stuff.put("a", "b");
@@ -55,8 +51,8 @@ public class MapTest extends AvroTestBase
          * get masked due to auto-close. Hence this trickery.
          */
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = mapper.getFactory().createGenerator(out);
-        mapper.writer(schema).writeValue(gen, input);
+        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        MAPPER.writer(schema).writeValue(gen, input);
         gen.close();
         byte[] bytes = out.toByteArray();
         assertNotNull(bytes);
@@ -64,7 +60,7 @@ public class MapTest extends AvroTestBase
         assertEquals(16, bytes.length); // measured to be current exp size
 
         // and then back. Start with streaming
-        JsonParser p = mapper.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.getFactory().createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -93,7 +89,7 @@ public class MapTest extends AvroTestBase
         p.close();
 
         // and then databind
-        Container output = mapper.readerFor(Container.class).with(schema)
+        Container output = MAPPER.readerFor(Container.class).with(schema)
                 .readValue(bytes);
         assertNotNull(output);
         assertNotNull(output.stuff);
@@ -105,8 +101,8 @@ public class MapTest extends AvroTestBase
         input = new Container();
 
         out = new ByteArrayOutputStream();
-        gen = mapper.getFactory().createGenerator(out);
-        mapper.writer(schema).writeValue(gen, input);
+        gen = MAPPER.getFactory().createGenerator(out);
+        MAPPER.writer(schema).writeValue(gen, input);
         gen.close();
         bytes = out.toByteArray();
         assertNotNull(bytes);
@@ -116,17 +112,16 @@ public class MapTest extends AvroTestBase
 
     public void testMapOrNull() throws Exception
     {
-        AvroMapper mapper = getMapper();
-        AvroSchema schema = mapper.schemaFrom(MAP_OR_NULL_SCHEMA_JSON);
+        AvroSchema schema = MAPPER.schemaFrom(MAP_OR_NULL_SCHEMA_JSON);
         Container input = new Container();
         input.stuff = null;
 
-        byte[] bytes =  mapper.writer(schema).writeValueAsBytes(input);
+        byte[] bytes =  MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
         assertEquals(1, bytes.length); // measured to be current exp size
 
         // and then back
-        Container output = mapper.readerFor(Container.class).with(schema)
+        Container output = MAPPER.readerFor(Container.class).with(schema)
                 .readValue(bytes);
         assertNotNull(output);
         assertNull(output.stuff);
@@ -135,12 +130,12 @@ public class MapTest extends AvroTestBase
         input = new Container();
         input.stuff.put("x", "y");
 
-        bytes =  mapper.writer(schema).writeValueAsBytes(input);
+        bytes =  MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
         assertEquals(7, bytes.length); // measured to be current exp size
 
         // and then back
-        output = mapper.readerFor(Container.class).with(schema)
+        output = MAPPER.readerFor(Container.class).with(schema)
                 .readValue(bytes);
         assertNotNull(output);
         assertNotNull(output.stuff);
@@ -165,7 +160,6 @@ public class MapTest extends AvroTestBase
         assertEquals("1", result.get("a"));
         assertEquals("2", result.get("b"));
     }
-
     public void testRootMapSequence() throws Exception
     {
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);

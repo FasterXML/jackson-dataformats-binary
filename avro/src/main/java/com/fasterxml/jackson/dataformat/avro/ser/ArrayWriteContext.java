@@ -44,7 +44,12 @@ public final class ArrayWriteContext
     public void writeString(String value) {
         _array.add(value);
     }
-    
+
+    @Override
+    public void writeNull() throws JsonMappingException {
+        _array.add(null);
+    }
+
     @Override
     public void appendDesc(StringBuilder sb)
     {
