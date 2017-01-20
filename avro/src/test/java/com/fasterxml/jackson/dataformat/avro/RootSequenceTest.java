@@ -28,7 +28,6 @@ public class RootSequenceTest extends AvroTestBase
         sw.write(Integer.valueOf(-999));
         sw.close();
 
-        /*// comment out for now
         byte[] bytes = b.toByteArray();
         MappingIterator<Integer> it = MAPPER.readerFor(Integer.class)
                 .with(schema)
@@ -37,11 +36,10 @@ public class RootSequenceTest extends AvroTestBase
         assertEquals(Integer.valueOf(1), it.nextValue());
         assertTrue(it.hasNextValue());
         assertEquals(Integer.valueOf(123456), it.nextValue());
-        assertFalse(it.hasNextValue());
+        assertTrue(it.hasNextValue());
         assertEquals(Integer.valueOf(-999), it.nextValue());
         assertFalse(it.hasNextValue());
         it.close();
-        */
     }
 
     public void testReadWriteStringSequence() throws Exception
@@ -57,7 +55,6 @@ public class RootSequenceTest extends AvroTestBase
         sw.write("abcde");
         sw.close();
 
-        /*// comment out for now
         byte[] bytes = b.toByteArray();
         // should just be chars and 1-byte length for each
         assertEquals(14, bytes.length);
@@ -72,7 +69,6 @@ public class RootSequenceTest extends AvroTestBase
         assertEquals("abcde", it.nextValue());
         assertFalse(it.hasNextValue());
         it.close();
-        */
     }
 
     public void testReadWriteEmployeeSequence() throws Exception
