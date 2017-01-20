@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -73,6 +74,14 @@ public class RootSequenceTest extends AvroTestBase
 
     public void testReadWriteEmployeeSequence() throws Exception
     {
+        // Just for fun, use throttled input to force boundary reads...
+        _testReadWriteEmployeeSequence(29);
+        _testReadWriteEmployeeSequence(7);
+        _testReadWriteEmployeeSequence(1);
+    }
+
+    public void _testReadWriteEmployeeSequence(int chunkSize) throws Exception
+    {
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
         Employee boss = new Employee("Bossman", 55, new String[] { "boss@company.com" }, null);
         Employee peon1 = new Employee("Worker#1", 24, new String[] { "worker1@company.com" }, boss);
@@ -95,12 +104,11 @@ public class RootSequenceTest extends AvroTestBase
 
         byte[] bytes = b.toByteArray();
 
-        assertNotNull(bytes);
-
+        ThrottledInputStream in = new ThrottledInputStream(bytes, chunkSize);
         // So far so good: writing seems to work. How about reading?
         MappingIterator<Employee> it = MAPPER.readerFor(Employee.class)
                 .with(getEmployeeSchema())
-                .readValues(bytes);
+                .readValues(in);
         assertTrue(it.hasNextValue());
         Employee boss2 = it.nextValue();
         assertEquals(boss.age, boss2.age);
@@ -121,6 +129,7 @@ public class RootSequenceTest extends AvroTestBase
 
         assertFalse(it.hasNextValue());
         it.close();
+        in.close();
     }
 }
 
