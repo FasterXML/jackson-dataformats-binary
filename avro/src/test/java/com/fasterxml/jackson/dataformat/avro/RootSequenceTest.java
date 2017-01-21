@@ -79,7 +79,7 @@ public class RootSequenceTest extends AvroTestBase
         Employee peon2 = new Employee("Worker#2", 42, new String[] { "worker2@company.com" }, boss);
 
         // First: write a sequence of 3 root-level Employee Objects
-        
+
         SequenceWriter sw = MAPPER.writerFor(Employee.class)
                 .with(getEmployeeSchema())
                 .writeValues(b);
