@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import com.fasterxml.jackson.dataformat.avro.CodecRecycler;
 
 /**
  * Implementation class that exposes additional internal API
@@ -18,8 +19,8 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 public class AvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
-    
-    protected final BinaryDecoder _decoder;
+
+    protected BinaryDecoder _decoder;
 
     protected ByteBuffer _byteBuffer;
 
@@ -27,7 +28,7 @@ public class AvroParserImpl extends AvroParser
             ObjectCodec codec, InputStream in)
     {
         super(ctxt, parserFeatures, avroFeatures, codec, in);
-        _decoder = AvroSchema.decoder(in, isEnabled(Feature.AVRO_BUFFERING));
+        _decoder = CodecRecycler.decoder(in, isEnabled(Feature.AVRO_BUFFERING));
     }
 
     public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
@@ -36,7 +37,17 @@ public class AvroParserImpl extends AvroParser
     {
         super(ctxt, parserFeatures, avroFeatures, codec,
                 data, offset, len);
-        _decoder = AvroSchema.decoder(data, offset, len);
+        _decoder = CodecRecycler.decoder(data, offset, len);
+    }
+
+    @Override
+    protected void _releaseBuffers() throws IOException {
+        super._releaseBuffers();
+        BinaryDecoder d = _decoder;
+        if (d != null) {
+            _decoder = null;
+            CodecRecycler.release(d);
+        }
     }
 
     @Override
@@ -51,7 +62,7 @@ public class AvroParserImpl extends AvroParser
         }
         return this;
     }
-    
+
     /*
     /**********************************************************
     /* Abstract method impls
