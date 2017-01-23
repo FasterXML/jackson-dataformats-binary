@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
+import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.Encoder;
 
@@ -18,6 +19,8 @@ import org.apache.avro.io.Encoder;
 public class NonBSGenericDatumWriter<D>
 	extends GenericDatumWriter<D>
 {
+	private static final GenericData GENERIC_DATA = GenericData.get();
+
 	public NonBSGenericDatumWriter(Schema root) {
 		super(root);
 	}
@@ -58,6 +61,8 @@ public class NonBSGenericDatumWriter<D>
 	protected void write(Schema schema, Object datum, Encoder out) throws IOException {
 	    if ((schema.getType() == Type.DOUBLE) && datum instanceof BigDecimal) {
 	        out.writeDouble(((BigDecimal)datum).doubleValue());
+	    } else if (schema.getType() == Type.ENUM) {
+	        super.write(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
 	    } else {
 	        super.write(schema, datum, out);
 	    }

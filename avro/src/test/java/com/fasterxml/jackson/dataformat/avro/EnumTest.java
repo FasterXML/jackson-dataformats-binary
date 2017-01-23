@@ -17,6 +17,10 @@ public class EnumTest extends AvroTestBase
         public Gender gender;
     }
 
+    protected static class EmployeeStr {
+        public String gender;
+    }
+
     private final AvroMapper MAPPER = new AvroMapper();
     
     public void testSimple() throws Exception
@@ -24,6 +28,23 @@ public class EnumTest extends AvroTestBase
         AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);
         Employee input = new Employee();
         input.gender = Gender.F;
+
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+        assertNotNull(bytes);
+        assertEquals(1, bytes.length); // measured to be current exp size
+
+        // and then back
+        Employee output = MAPPER.readerFor(Employee.class).with(schema)
+                .readValue(bytes);
+        assertNotNull(output);
+        assertEquals(Gender.F, output.gender);
+    }
+
+    public void testEnumValueAsString() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);
+        EmployeeStr input = new EmployeeStr();
+        input.gender = "F";
 
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
