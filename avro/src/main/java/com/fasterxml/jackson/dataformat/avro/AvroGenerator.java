@@ -146,6 +146,7 @@ public class AvroGenerator extends GeneratorBase
         _formatFeatures = avroFeatures;
         _output = output;
         _avroContext = AvroWriteContext.createNullContext();
+        _encoder = CodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
     }
 
     public void setSchema(AvroSchema schema)
@@ -155,9 +156,6 @@ public class AvroGenerator extends GeneratorBase
         }
         _rootSchema = schema;
         // start with temporary root...
-        if (_encoder == null) {
-            _encoder = AvroSchema.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
-        }
         _avroContext = _rootContext = AvroWriteContext.createRootContext(this,
                 schema.getAvroSchema(), _encoder);
     }
@@ -579,7 +577,12 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     protected void _releaseBuffers() {
-        // nothing special to do...
+        // no super implementation to call
+        BinaryEncoder e = _encoder;
+        if (e != null) {
+            _encoder = null;
+            CodecRecycler.release(e);
+        }
     }
 
     /*

@@ -58,7 +58,7 @@ public final class MapReader extends AvroStructureReader
         switch (_state) {
         case STATE_START:
             _parser.setAvroContext(this);
-            _count = _decoder.readArrayStart();
+            _count = _decoder.readMapStart();
             _state = (_count > 0) ? STATE_NAME : STATE_END;
             return (_currToken = JsonToken.START_OBJECT);
         case STATE_NAME:
@@ -68,7 +68,7 @@ public final class MapReader extends AvroStructureReader
                 return (_currToken = JsonToken.FIELD_NAME);
             }
             // need more data...
-            _count = _decoder.arrayNext();
+            _count = _decoder.mapNext();
             // more stuff?
             if (_count > 0L) {
                 _index = 0;

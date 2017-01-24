@@ -14,22 +14,24 @@ final class ScalarReaderWrapper extends AvroStructureReader
     private final boolean _rootReader;
 
     public ScalarReaderWrapper(AvroScalarReader wrappedReader) {
-        this(wrappedReader, null, null, false);
+        this(null, null, null, wrappedReader, false);
     }
 
-    private ScalarReaderWrapper(AvroScalarReader wrappedReader,
-            AvroParserImpl parser, BinaryDecoder decoder, boolean root) {
-        super(null, TYPE_ROOT);
+    private ScalarReaderWrapper(AvroReadContext parent,
+            AvroParserImpl parser, BinaryDecoder decoder,
+            AvroScalarReader wrappedReader, boolean rootReader)
+    {
+        super(parent, TYPE_ROOT);
         _wrappedReader = wrappedReader;
         _parser = parser;
         _decoder = decoder;
-        _rootReader = root;
+        _rootReader = rootReader;
     }
 
     @Override
     public ScalarReaderWrapper newReader(AvroReadContext parent,
             AvroParserImpl parser, BinaryDecoder decoder) {
-        return new ScalarReaderWrapper(_wrappedReader, parser, decoder, parent.inRoot());
+        return new ScalarReaderWrapper(parent, parser, decoder, _wrappedReader, parent.inRoot());
     }
 
     @Override
@@ -38,9 +40,11 @@ final class ScalarReaderWrapper extends AvroStructureReader
         // 19-Jan-2017, tatu: May need to be called multiple times, for root-level
         //    sequences. Because of this need to check for EOF. But only after reading
         //    one token successfully...
-        if (_rootReader && _decoder.isEnd()) {
-            return (_currToken = null);
+        if (_rootReader) {
+            JsonToken t = _decoder.isEnd() ? null : _wrappedReader.readValue(_parser, _decoder);
+            return (_currToken = t);
         }
+        _parser.setAvroContext(getParent());
         return (_currToken = _wrappedReader.readValue(_parser, _decoder));
     }
 
