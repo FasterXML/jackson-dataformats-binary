@@ -1,7 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.SequenceWriter;
 
 public class MapWithUnionTest extends AvroTestBase
 {
@@ -49,9 +53,8 @@ public class MapWithUnionTest extends AvroTestBase
     public void testRootMapWithUnion() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(MAP_WITH_UNION_SCHEMA_JSON);
-        Map<String,Object> input = new LinkedHashMap<String,Object>();
-        input.put("a", "123");
-        input.put("xy", "foobar");
+        Map<String,Object> input = _map("a", "123",
+                "xy", "foobar");
         byte[] avro = MAPPER.writer(schema)
                 .writeValueAsBytes(input);
 
@@ -64,6 +67,36 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals("foobar", result.get("xy"));
     }
 
+    public void testRootMapWithUnionSequence() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(MAP_WITH_UNION_SCHEMA_JSON);
+
+        ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
+        SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
+        
+        Map<String,Object> input1 = _map("a", "123",
+                "mappy", _map("xy", "z35"),
+                "foo", "bar");
+        sw.write(input1);
+        Map<String,Object> input2 = _map("first", _map(),
+                "a", "b");
+        sw.write(input2);
+
+        sw.close();
+        byte[] avro = b.toByteArray();
+
+        MappingIterator<Integer> it = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValues(avro);
+        assertTrue(it.hasNextValue());
+        assertEquals(input1, it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(input2, it.nextValue());
+        assertFalse(it.hasNextValue());
+        
+        it.close();
+    }
+    
     public void testMapContainerWithNested() throws IOException
     {
         Map<String,Object> map = new LinkedHashMap<String,Object>();
@@ -89,5 +122,13 @@ public class MapWithUnionTest extends AvroTestBase
         Map<?,?> m = (Map<?,?>) ob;
         assertEquals("bar", m.get("foo"));
         assertEquals("bing", m.get("zap"));
+    }
+
+    private Map<String,Object> _map(Object... args) {
+        Map<String,Object> m = new LinkedHashMap<String,Object>();
+        for (int i = 0; i < args.length; i += 2) {
+            m.put((String) args[i], args[i+1]);
+        }
+        return m;
     }
 }
