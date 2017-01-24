@@ -40,8 +40,9 @@ final class ScalarReaderWrapper extends AvroStructureReader
         // 19-Jan-2017, tatu: May need to be called multiple times, for root-level
         //    sequences. Because of this need to check for EOF. But only after reading
         //    one token successfully...
-        if (_rootReader && _decoder.isEnd()) {
-            return (_currToken = null);
+        if (_rootReader) {
+            JsonToken t = _decoder.isEnd() ? null : _wrappedReader.readValue(_parser, _decoder);
+            return (_currToken = t);
         }
         _parser.setAvroContext(getParent());
         return (_currToken = _wrappedReader.readValue(_parser, _decoder));
