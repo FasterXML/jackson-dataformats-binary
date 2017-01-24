@@ -10,6 +10,11 @@ import com.fasterxml.jackson.core.JsonToken;
 import org.apache.avro.Schema;
 import org.apache.avro.io.BinaryDecoder;
 
+/**
+ * Helper classes for reading non-structured values, and can thereby usually
+ * be accessed using simpler interface (although sometimes not: if so,
+ * instances are wrapped in <code>ScalarReaderWrapper</code>s).
+ */
 public abstract class AvroScalarReader
 {
     protected abstract JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder)

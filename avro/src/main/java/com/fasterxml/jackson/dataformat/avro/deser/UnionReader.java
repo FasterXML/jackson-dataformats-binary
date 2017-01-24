@@ -51,9 +51,7 @@ final class UnionReader extends AvroStructureReader
             // also: must pass our parent (not this instance)
             _currentReader = _memberReaders[index].newReader(_parent, _parser, _decoder);
         }
-        JsonToken t = _currentReader.nextToken();
-        _currToken = t;
-        return t;
+        return (_currToken = _currentReader.nextToken());
     }
 
     @Override
