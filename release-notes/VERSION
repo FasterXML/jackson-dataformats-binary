@@ -16,6 +16,7 @@ Modules:
 #35: Serialization of multiple objects (`SequenceWriter`
  (reported by tomvandenberge@github)
 #38: Deserialization of multiple (root) values from Avro
+#39: Problem decoding Maps with union values
 
 2.8.6 (12-Jan-2016)
 2.8.5 (14-Nov-2016)
