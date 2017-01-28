@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -31,7 +31,7 @@ public abstract class AvroStructureReader
      * instance constructed is so-called blue print).
      */
     public abstract AvroStructureReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder);
+            AvroParserImpl parser, Decoder decoder);
 
     @Override
     public abstract JsonToken nextToken() throws IOException;

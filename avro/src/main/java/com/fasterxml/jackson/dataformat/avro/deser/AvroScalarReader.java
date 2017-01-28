@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 
 import org.apache.avro.Schema;
-import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.Decoder;
 
 /**
  * Helper classes for reading non-structured values, and can thereby usually
@@ -17,7 +17,7 @@ import org.apache.avro.io.BinaryDecoder;
  */
 public abstract class AvroScalarReader
 {
-    protected abstract JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder)
+    protected abstract JsonToken readValue(AvroParserImpl parser, Decoder decoder)
         throws IOException;
 
     /*
@@ -36,7 +36,7 @@ public abstract class AvroScalarReader
         }
         
         @Override
-        protected JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException
+        protected JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException
         {
             int index = decoder.readIndex();
             if (index < 0 || index >= _readers.length) {
@@ -50,7 +50,7 @@ public abstract class AvroScalarReader
     protected final static class BooleanReader extends AvroScalarReader
     {
         @Override
-        protected JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+        protected JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
         }
     }
@@ -58,7 +58,7 @@ public abstract class AvroScalarReader
     protected final static class BytesReader extends AvroScalarReader
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             ByteBuffer bb = parser.borrowByteBuffer();
             bb = decoder.readBytes(bb);
             return parser.setBytes(bb);
@@ -68,14 +68,14 @@ public abstract class AvroScalarReader
     protected final static class DoubleReader extends AvroScalarReader
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readDouble());
         }
     }
     
     protected final static class FloatReader extends AvroScalarReader {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readFloat());
         }
     }
@@ -83,7 +83,7 @@ public abstract class AvroScalarReader
     protected final static class IntReader extends AvroScalarReader
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readInt());
         }
     }
@@ -91,14 +91,14 @@ public abstract class AvroScalarReader
     protected final static class LongReader extends AvroScalarReader
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readLong());
         }
     }
     
     protected final static class NullReader extends AvroScalarReader
     {
-        @Override public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) {
+        @Override public JsonToken readValue(AvroParserImpl parser, Decoder decoder) {
             return JsonToken.VALUE_NULL;
         }
     }
@@ -106,7 +106,7 @@ public abstract class AvroScalarReader
     protected final static class StringReader extends AvroScalarReader
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder) throws IOException
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException
         {
             return parser.setString(decoder.readString());
         }
@@ -124,7 +124,7 @@ public abstract class AvroScalarReader
         }
         
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder)
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder)
             throws IOException
         {
             int index = decoder.readEnum();
@@ -145,7 +145,7 @@ public abstract class AvroScalarReader
         }
         
         @Override
-        public JsonToken readValue(AvroParserImpl parser, BinaryDecoder decoder)
+        public JsonToken readValue(AvroParserImpl parser, Decoder decoder)
             throws IOException
         {
             byte[] data = new byte[_size];

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -20,7 +21,17 @@ public class AvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
 
-    protected BinaryDecoder _decoder;
+    /**
+     * Actual physical decoder from input, which must use the original writer
+     * schema. 
+     */
+    protected BinaryDecoder _rootDecoder;
+
+    /**
+     * Actual decoder in use, possible same as <code>_rootDecoder</code>, but
+     * not necessarily, in case of different reader/writer schema in use.
+     */
+    protected Decoder _decoder;
 
     protected ByteBuffer _byteBuffer;
 
@@ -28,7 +39,8 @@ public class AvroParserImpl extends AvroParser
             ObjectCodec codec, InputStream in)
     {
         super(ctxt, parserFeatures, avroFeatures, codec, in);
-        _decoder = CodecRecycler.decoder(in, isEnabled(Feature.AVRO_BUFFERING));
+        _rootDecoder = CodecRecycler.decoder(in,
+                Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
     public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
@@ -37,14 +49,15 @@ public class AvroParserImpl extends AvroParser
     {
         super(ctxt, parserFeatures, avroFeatures, codec,
                 data, offset, len);
-        _decoder = CodecRecycler.decoder(data, offset, len);
+        _rootDecoder = CodecRecycler.decoder(data, offset, len);
     }
 
     @Override
     protected void _releaseBuffers() throws IOException {
         super._releaseBuffers();
-        BinaryDecoder d = _decoder;
+        BinaryDecoder d = _rootDecoder;
         if (d != null) {
+            _rootDecoder = null;
             _decoder = null;
             CodecRecycler.release(d);
         }
@@ -117,9 +130,10 @@ public class AvroParserImpl extends AvroParser
     public String nextTextValue() throws IOException {
         return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
     }
-    
+
     @Override
-    protected void _initSchema(AvroSchema schema) {
+    protected void _initSchema(AvroSchema schema) throws JsonProcessingException {
+        _decoder = schema.decoder(_rootDecoder);
         AvroStructureReader reader = schema.getReader();
         RootReader root = new RootReader();
         _avroContext = reader.newReader(root, this, _decoder);

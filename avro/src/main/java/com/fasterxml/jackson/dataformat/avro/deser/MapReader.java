@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -16,7 +16,7 @@ public final class MapReader extends AvroStructureReader
 
     private final AvroScalarReader _scalarReader;
     private final AvroStructureReader _structureReader;
-    protected final BinaryDecoder _decoder;
+    protected final Decoder _decoder;
     protected final AvroParserImpl _parser;
 
     private String _currentName;
@@ -35,7 +35,7 @@ public final class MapReader extends AvroStructureReader
     private MapReader(AvroReadContext parent,
             AvroScalarReader scalarReader,
             AvroStructureReader structReader,
-            BinaryDecoder decoder, AvroParserImpl parser) {
+            Decoder decoder, AvroParserImpl parser) {
         super(parent, TYPE_OBJECT);
         _scalarReader = scalarReader;
         _structureReader = structReader;
@@ -45,7 +45,7 @@ public final class MapReader extends AvroStructureReader
     
     @Override
     public MapReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder) {
+            AvroParserImpl parser, Decoder decoder) {
         return new MapReader(parent, _scalarReader, _structureReader, decoder, parser);
     }
 
@@ -81,7 +81,7 @@ public final class MapReader extends AvroStructureReader
             // as per [dataformats-binary#38], may need to reset, instead of bailing out
             // ... note, however, that we can't as of yet test it, alas.
             if (parent.inRoot()) {
-                if (!_decoder.isEnd()) {
+                if (!DecodeUtil.isEnd(_decoder)) {
                     _index = 0;
                     _state = STATE_START;
                     return (_currToken = JsonToken.END_OBJECT);

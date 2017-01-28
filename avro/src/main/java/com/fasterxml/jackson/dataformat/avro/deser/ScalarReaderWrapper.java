@@ -2,14 +2,14 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
 final class ScalarReaderWrapper extends AvroStructureReader
 {
     private final AvroScalarReader _wrappedReader;
-    private final BinaryDecoder _decoder;
+    private final Decoder _decoder;
     private final AvroParserImpl _parser;
     private final boolean _rootReader;
 
@@ -18,7 +18,7 @@ final class ScalarReaderWrapper extends AvroStructureReader
     }
 
     private ScalarReaderWrapper(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder,
+            AvroParserImpl parser, Decoder decoder,
             AvroScalarReader wrappedReader, boolean rootReader)
     {
         super(parent, TYPE_ROOT);
@@ -30,7 +30,7 @@ final class ScalarReaderWrapper extends AvroStructureReader
 
     @Override
     public ScalarReaderWrapper newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder) {
+            AvroParserImpl parser, Decoder decoder) {
         return new ScalarReaderWrapper(parent, parser, decoder, _wrappedReader, parent.inRoot());
     }
 
@@ -41,7 +41,7 @@ final class ScalarReaderWrapper extends AvroStructureReader
         //    sequences. Because of this need to check for EOF. But only after reading
         //    one token successfully...
         if (_rootReader) {
-            JsonToken t = _decoder.isEnd() ? null : _wrappedReader.readValue(_parser, _decoder);
+            JsonToken t = DecodeUtil.isEnd(_decoder) ? null : _wrappedReader.readValue(_parser, _decoder);
             return (_currToken = t);
         }
         _parser.setAvroContext(getParent());

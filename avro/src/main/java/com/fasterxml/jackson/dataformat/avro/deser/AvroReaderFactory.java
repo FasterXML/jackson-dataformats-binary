@@ -6,16 +6,20 @@ import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.*;
 
+/**
+ * Helper class used for constructing a hierarchic reader for given
+ * (reader-) schema.
+ */
 public class AvroReaderFactory
 {
-    protected final static AvroScalarReader DECODER_BOOLEAN = new BooleanReader();
-    protected final static AvroScalarReader DECODER_BYTES = new BytesReader();
-    protected final static AvroScalarReader DECODER_DOUBLE = new DoubleReader();
-    protected final static AvroScalarReader DECODER_FLOAT = new FloatReader();
-    protected final static AvroScalarReader DECODER_INT = new IntReader();
-    protected final static AvroScalarReader DECODER_LONG = new LongReader();
-    protected final static AvroScalarReader DECODER_NULL = new NullReader();
-    protected final static AvroScalarReader DECODER_STRING = new StringReader();
+    protected final static AvroScalarReader READER_BOOLEAN = new BooleanReader();
+    protected final static AvroScalarReader READER_BYTES = new BytesReader();
+    protected final static AvroScalarReader READER_DOUBLE = new DoubleReader();
+    protected final static AvroScalarReader READER_FLOAT = new FloatReader();
+    protected final static AvroScalarReader READER_INT = new IntReader();
+    protected final static AvroScalarReader READER_LONG = new LongReader();
+    protected final static AvroScalarReader READER_NULL = new NullReader();
+    protected final static AvroScalarReader READER_STRING = new StringReader();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -23,13 +27,13 @@ public class AvroReaderFactory
      */
     protected final TreeMap<String, AvroStructureReader> _knownReaders
         = new TreeMap<String, AvroStructureReader>();
-    
+
     /*
     /**********************************************************************
     /* Public API: factory methods
     /**********************************************************************
      */
-    
+
     /**
      * Method for creating a reader instance for specified type.
      */
@@ -58,25 +62,25 @@ public class AvroReaderFactory
     {
         switch (type.getType()) {
         case BOOLEAN:
-            return DECODER_BOOLEAN;
+            return READER_BOOLEAN;
         case BYTES: 
-            return DECODER_BYTES;
+            return READER_BYTES;
         case DOUBLE: 
-            return DECODER_DOUBLE;
+            return READER_DOUBLE;
         case ENUM: 
             return new EnumDecoder(type);
         case FIXED: 
             return new FixedDecoder(type);
         case FLOAT: 
-            return DECODER_FLOAT;
+            return READER_FLOAT;
         case INT:
-            return DECODER_INT;
+            return READER_INT;
         case LONG: 
-            return DECODER_LONG;
+            return READER_LONG;
         case NULL: 
-            return DECODER_NULL;
+            return READER_NULL;
         case STRING: 
-            return DECODER_STRING;
+            return READER_STRING;
         case UNION:
             /* Union is a "scalar union" if all the alternative types
              * are scalar. One common type is that of "nullable" one,

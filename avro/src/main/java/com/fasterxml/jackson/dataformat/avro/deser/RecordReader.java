@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -15,7 +15,7 @@ final class RecordReader extends AvroStructureReader
     protected final static int STATE_DONE = 4;
 
     private final AvroFieldWrapper[] _fieldReaders;
-    private final BinaryDecoder _decoder;
+    private final Decoder _decoder;
     private final AvroParserImpl _parser;
 
     protected String _currentName;
@@ -29,7 +29,7 @@ final class RecordReader extends AvroStructureReader
 
     private RecordReader(AvroReadContext parent,
             AvroFieldWrapper[] fieldReaders,
-            BinaryDecoder decoder, AvroParserImpl parser)
+            Decoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_OBJECT);
         _fieldReaders = fieldReaders;
@@ -40,7 +40,7 @@ final class RecordReader extends AvroStructureReader
 
     @Override
     public RecordReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder) {
+            AvroParserImpl parser, Decoder decoder) {
         return new RecordReader(parent, _fieldReaders, decoder, parser);
     }
 
@@ -91,7 +91,7 @@ final class RecordReader extends AvroStructureReader
         AvroReadContext parent = getParent();
         // as per [dataformats-binary#38], may need to reset, instead of bailing out
         if (parent.inRoot()) {
-            if (!_decoder.isEnd()) {
+            if (!DecodeUtil.isEnd(_decoder)) {
                 _state = STATE_START;
                 _index = 0;
                 return (_currToken = JsonToken.END_OBJECT);

@@ -239,13 +239,18 @@ public abstract class AvroParser extends ParserBase
             return;
         }
         if (schema instanceof AvroSchema) {
-            _initSchema((AvroSchema) schema);
+            // 27-Jan-2016, tatu: Crap, can't expose exception directly.
+            try {
+                _initSchema((AvroSchema) schema);
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException(e);
+            }
         } else {
             super.setSchema(schema);
         }
     }
 
-    protected abstract void _initSchema(AvroSchema schema);
+    protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
 
     /*
     /**********************************************************
