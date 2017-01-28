@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.Schema;
