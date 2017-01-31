@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -15,7 +15,7 @@ final class RecordReader extends AvroStructureReader
     protected final static int STATE_DONE = 4;
 
     private final AvroFieldWrapper[] _fieldReaders;
-    private final Decoder _decoder;
+    private final ResolvingDecoder _decoder;
     private final AvroParserImpl _parser;
 
     protected String _currentName;
@@ -29,7 +29,7 @@ final class RecordReader extends AvroStructureReader
 
     private RecordReader(AvroReadContext parent,
             AvroFieldWrapper[] fieldReaders,
-            Decoder decoder, AvroParserImpl parser)
+            ResolvingDecoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_OBJECT);
         _fieldReaders = fieldReaders;
@@ -40,7 +40,7 @@ final class RecordReader extends AvroStructureReader
 
     @Override
     public RecordReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder) {
+            AvroParserImpl parser, ResolvingDecoder decoder) {
         return new RecordReader(parent, _fieldReaders, decoder, parser);
     }
 

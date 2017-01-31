@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -13,7 +13,7 @@ abstract class ArrayReader extends AvroStructureReader
     protected final static int STATE_END = 2;
     protected final static int STATE_DONE = 3;
 
-    protected final Decoder _decoder;
+    protected final ResolvingDecoder _decoder;
     protected final AvroParserImpl _parser;
 
     protected int _state;
@@ -22,7 +22,7 @@ abstract class ArrayReader extends AvroStructureReader
     protected String _currentName;
     
     protected ArrayReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder)
+            AvroParserImpl parser, ResolvingDecoder decoder)
     {
         super(parent, TYPE_ARRAY);
         _parser = parser;
@@ -73,14 +73,14 @@ abstract class ArrayReader extends AvroStructureReader
         }
 
         private Scalar(AvroReadContext parent, AvroScalarReader reader, 
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, ResolvingDecoder decoder) {
             super(parent, parser, decoder);
             _elementReader = reader;
         }
         
         @Override
         public Scalar newReader(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, ResolvingDecoder decoder) {
             return new Scalar(parent, _elementReader, parser, decoder);
         }
 
@@ -140,14 +140,14 @@ abstract class ArrayReader extends AvroStructureReader
 
         private NonScalar(AvroReadContext parent,
                 AvroStructureReader reader, 
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, ResolvingDecoder decoder) {
             super(parent, parser, decoder);
             _elementReader = reader;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, ResolvingDecoder decoder) {
             return new NonScalar(parent, _elementReader, parser, decoder);
         }
 

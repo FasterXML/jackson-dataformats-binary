@@ -245,7 +245,6 @@ public class AvroFactory extends JsonFactory
     /**********************************************************
      */
 
-    @SuppressWarnings("resource")
     @Override
     public AvroParser createParser(File f) throws IOException {
         IOContext ctxt = _createContext(f, true);
@@ -271,7 +270,6 @@ public class AvroFactory extends JsonFactory
         return createParser(data, 0, data.length);
     }
     
-    @SuppressWarnings("resource")
     @Override
     public AvroParser createParser(byte[] data, int offset, int len) throws IOException {
         IOContext ctxt = _createContext(data, true);

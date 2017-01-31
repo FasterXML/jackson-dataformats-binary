@@ -55,7 +55,7 @@ public final class CodecRecycler
         throws JsonProcessingException
     {
         try {
-            return DECODER_FACTORY.resolvingDecoder(writer, reader, src);
+            return DECODER_FACTORY.resolvingDecoder(Schema.applyAliases(writer, reader), reader, src);
         } catch (IOException e) {
             throw new BadSchemaException("Failed to create reader/writer-resolving Avro schema handler: "+e.getMessage(), e);
         }

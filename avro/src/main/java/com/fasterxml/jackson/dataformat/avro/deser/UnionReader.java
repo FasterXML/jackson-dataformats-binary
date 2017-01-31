@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonToken;
 final class UnionReader extends AvroStructureReader
 {
     private final AvroStructureReader[] _memberReaders;
-    private final Decoder _decoder;
+    private final ResolvingDecoder _decoder;
     private final AvroParserImpl _parser;
 
     public UnionReader(AvroStructureReader[] memberReaders) {
@@ -22,7 +22,7 @@ final class UnionReader extends AvroStructureReader
 
     private UnionReader(AvroReadContext parent,
             AvroStructureReader[] memberReaders,
-            Decoder decoder, AvroParserImpl parser)
+            ResolvingDecoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_ROOT);
         _memberReaders = memberReaders;
@@ -32,7 +32,7 @@ final class UnionReader extends AvroStructureReader
     
     @Override
     public UnionReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder) {
+            AvroParserImpl parser, ResolvingDecoder decoder) {
         return new UnionReader(parent, _memberReaders, decoder, parser);
     }
 

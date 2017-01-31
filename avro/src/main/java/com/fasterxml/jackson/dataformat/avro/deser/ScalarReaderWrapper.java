@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -30,7 +31,7 @@ final class ScalarReaderWrapper extends AvroStructureReader
 
     @Override
     public ScalarReaderWrapper newReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder) {
+            AvroParserImpl parser, ResolvingDecoder decoder) {
         return new ScalarReaderWrapper(parent, parser, decoder, _wrappedReader, parent.inRoot());
     }
 
