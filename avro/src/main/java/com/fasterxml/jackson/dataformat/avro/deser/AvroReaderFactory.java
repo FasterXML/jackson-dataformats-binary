@@ -1,8 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.apache.avro.Schema;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.*;
 
@@ -36,8 +38,9 @@ public class AvroReaderFactory
 
     /**
      * Method for creating a reader instance for specified type.
+     * @param decoder 
      */
-    public AvroStructureReader createReader(Schema schema)
+    public AvroStructureReader createReader(Schema schema, ResolvingDecoder decoder)
     {
         AvroStructureReader reader = _knownReaders.get(_typeName(schema));
         if (reader != null) {
@@ -45,13 +48,13 @@ public class AvroReaderFactory
         }
         switch (schema.getType()) {
         case ARRAY:
-            return createArrayReader(schema);
+            return createArrayReader(schema, decoder);
         case MAP: 
-            return createMapReader(schema);
+            return createMapReader(schema, decoder);
         case RECORD:
-            return createRecordReader(schema);
+            return createRecordReader(schema, decoder);
         case UNION:
-            return createUnionReader(schema);
+            return createUnionReader(schema, decoder);
         default:
             // for other types, we need wrappers
             return new ScalarReaderWrapper(createDecoder(schema));
@@ -114,61 +117,66 @@ public class AvroReaderFactory
     /**********************************************************************
      */
     
-    private AvroStructureReader createArrayReader(Schema schema)
+    private AvroStructureReader createArrayReader(Schema schema, ResolvingDecoder decoder)
     {
         Schema elementType = schema.getElementType();
         AvroScalarReader scalar = createDecoder(elementType);
         if (scalar != null) {
             return ArrayReader.scalar(scalar);
         }
-        return ArrayReader.nonScalar(createReader(elementType));
+        return ArrayReader.nonScalar(createReader(elementType, decoder));
     }
 
-    private AvroStructureReader createMapReader(Schema schema)
+    private AvroStructureReader createMapReader(Schema schema, ResolvingDecoder decoder)
     {
         Schema elementType = schema.getValueType();
         AvroScalarReader dec = createDecoder(elementType);
         if (dec != null) {
             return new MapReader(dec);
         }
-        return new MapReader(createReader(elementType));
+        return new MapReader(createReader(elementType, decoder));
     }
 
-    private AvroStructureReader createRecordReader(Schema schema)
+    private AvroStructureReader createRecordReader(Schema schema, ResolvingDecoder decoder)
     {
-        final List<Schema.Field> fields = schema.getFields();
+        List<Schema.Field> fields;
+		try {
+			fields = Arrays.asList(decoder.readFieldOrder());
+		} catch (IOException e) {
+			throw new IllegalStateException("I say, I say, I can't read this son", e);
+		}
         AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[fields.size()];
         RecordReader reader = new RecordReader(fieldReaders);
         _knownReaders.put(_typeName(schema), reader);
         int i = 0;
         for (Schema.Field field : fields) {
-            fieldReaders[i++] = createFieldReader(field);
+            fieldReaders[i++] = createFieldReader(field, decoder);
         }
         return reader;
     }
 
-    private AvroStructureReader createUnionReader(Schema schema)
+    private AvroStructureReader createUnionReader(Schema schema, ResolvingDecoder decoder)
     {
         final List<Schema> types = schema.getTypes();
         AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
         int i = 0;
         for (Schema type : types) {
-            typeReaders[i++] = createReader(type);
+            typeReaders[i++] = createReader(type, decoder);
         }
         return new UnionReader(typeReaders);
     }
 
-    private AvroFieldWrapper createFieldReader(Schema.Field field) {
-        return createFieldReader(field.name(), field.schema());
+    private AvroFieldWrapper createFieldReader(Schema.Field field, ResolvingDecoder decoder) {
+        return createFieldReader(field.name(), field.schema(), decoder);
     }
 
-    private AvroFieldWrapper createFieldReader(String name, Schema type)
+    private AvroFieldWrapper createFieldReader(String name, Schema type, ResolvingDecoder decoder)
     {
         AvroScalarReader scalar = createDecoder(type);
         if (scalar != null) {
             return new AvroFieldWrapper(name, scalar);
         }
-        return new AvroFieldWrapper(name, createReader(type));
+        return new AvroFieldWrapper(name, createReader(type, decoder));
     }
 
     private String _typeName(Schema schema) {

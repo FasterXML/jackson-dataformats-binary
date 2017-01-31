@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.avro.Schema;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.core.FormatSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -79,18 +80,19 @@ public class AvroSchema implements FormatSchema
     /**********************************************************************
      */
 
-    public AvroStructureReader getReader()
+    public AvroStructureReader getReader(ResolvingDecoder decoder)
     {
         AvroStructureReader r = _reader.get();
         if (r == null) {
-            r = new AvroReaderFactory().createReader(_avroSchema);
+            r = new AvroReaderFactory().createReader(_avroSchema, decoder);
             _reader.set(r);
         }
         return r;
     }
 
-    public Decoder decoder(BinaryDecoder physical) throws JsonProcessingException {
-        return physical;
+    public ResolvingDecoder decoder(BinaryDecoder physical) throws JsonProcessingException { 
+        return CodecRecycler.convertingDecoder(physical,
+        		getAvroSchema(), getAvroSchema());
     }
 
     /*
@@ -147,7 +149,7 @@ public class AvroSchema implements FormatSchema
         /**********************************************************************
          */
 
-        public Decoder decoder(BinaryDecoder physical) throws JsonProcessingException {
+        public ResolvingDecoder decoder(BinaryDecoder physical) throws JsonProcessingException {
             Decoder src = _parent.decoder(physical);
             return CodecRecycler.convertingDecoder(src,
                     _parent.getAvroSchema(), getAvroSchema());

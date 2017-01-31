@@ -5,9 +5,13 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
@@ -31,7 +35,7 @@ public class AvroParserImpl extends AvroParser
      * Actual decoder in use, possible same as <code>_rootDecoder</code>, but
      * not necessarily, in case of different reader/writer schema in use.
      */
-    protected Decoder _decoder;
+    protected ResolvingDecoder _decoder;
 
     protected ByteBuffer _byteBuffer;
 
@@ -134,7 +138,7 @@ public class AvroParserImpl extends AvroParser
     @Override
     protected void _initSchema(AvroSchema schema) throws JsonProcessingException {
         _decoder = schema.decoder(_rootDecoder);
-        AvroStructureReader reader = schema.getReader();
+        AvroStructureReader reader = schema.getReader(_decoder);
         RootReader root = new RootReader();
         _avroContext = reader.newReader(root, this, _decoder);
     }
