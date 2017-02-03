@@ -88,15 +88,15 @@ final class RecordReader extends AvroStructureReader
 
     private final JsonToken _nextAtEndObject() throws IOException
     {
-        AvroReadContext parent = getParent();
+//        AvroReadContext parent = getParent();
         // as per [dataformats-binary#38], may need to reset, instead of bailing out
-        if (parent.inRoot()) {
-            if (!DecodeUtil.isEnd(_decoder)) {
-                _state = STATE_START;
-                _index = 0;
-                return (_currToken = JsonToken.END_OBJECT);
-            }
-        }
+//        if (parent.inRoot()) {
+//            if (!DecodeUtil.isEnd(_decoder)) {
+//                _state = STATE_START;
+//                _index = 0;
+//                return (_currToken = JsonToken.END_OBJECT);
+//            }
+//        }
         _state = STATE_DONE;
         _parser.setAvroContext(getParent());
         return (_currToken = JsonToken.END_OBJECT);
