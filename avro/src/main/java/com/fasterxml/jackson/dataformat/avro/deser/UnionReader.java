@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import org.apache.avro.io.ResolvingDecoder;
 
@@ -12,20 +13,21 @@ import com.fasterxml.jackson.core.JsonToken;
  */
 final class UnionReader extends AvroStructureReader
 {
-    private final AvroStructureReader[] _memberReaders;
+    private AvroStructureReader[] _memberReaders;
+    private final Supplier<AvroStructureReader[]> _memberReadersProducer;
     private final ResolvingDecoder _decoder;
     private final AvroParserImpl _parser;
 
-    public UnionReader(AvroStructureReader[] memberReaders) {
+    public UnionReader(Supplier<AvroStructureReader[]> memberReaders) {
         this(null, memberReaders, null, null);
     }
 
     private UnionReader(AvroReadContext parent,
-            AvroStructureReader[] memberReaders,
+    		Supplier<AvroStructureReader[]> memberReadersProducer,
             ResolvingDecoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_ROOT);
-        _memberReaders = memberReaders;
+        _memberReadersProducer = memberReadersProducer;
         _decoder = decoder;
         _parser = parser;
     }
@@ -33,20 +35,21 @@ final class UnionReader extends AvroStructureReader
     @Override
     public UnionReader newReader(AvroReadContext parent,
             AvroParserImpl parser, ResolvingDecoder decoder) {
-        return new UnionReader(parent, _memberReaders, decoder, parser);
+        return new UnionReader(parent, () -> memberReaders(), decoder, parser);
     }
 
     @Override
     public JsonToken nextToken() throws IOException
     {
         int index = _decoder.readIndex();
-        if (index < 0 || index >= _memberReaders.length) {
+        AvroStructureReader[] memberReaders = memberReaders();
+		if (index < 0 || index >= memberReaders.length) {
             throw new JsonParseException(_parser, String.format
-                    ("Invalid index (%s); union only has %d types", index, _memberReaders.length));
+                    ("Invalid index (%s); union only has %d types", index, memberReaders.length));
         }
         // important: remember to create new instance
         // also: must pass our parent (not this instance)
-        AvroStructureReader reader = _memberReaders[index].newReader(_parent, _parser, _decoder);
+        AvroStructureReader reader = memberReaders[index].newReader(_parent, _parser, _decoder);
         return (_currToken = reader.nextToken());
     }
 
@@ -59,5 +62,13 @@ final class UnionReader extends AvroStructureReader
     @Override
     protected void appendDesc(StringBuilder sb) {
         sb.append('?');
+    }
+    
+    private AvroStructureReader[] memberReaders() {
+    	if (_memberReaders != null) {
+    		return _memberReaders;
+    	}
+    	_memberReaders = _memberReadersProducer.get();
+    	return _memberReaders;
     }
 }

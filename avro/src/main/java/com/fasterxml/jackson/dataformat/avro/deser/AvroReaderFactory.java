@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 
 import org.apache.avro.Schema;
 import org.apache.avro.io.ResolvingDecoder;
@@ -157,13 +158,16 @@ public class AvroReaderFactory
 
     private AvroStructureReader createUnionReader(Schema schema, ResolvingDecoder decoder)
     {
-        final List<Schema> types = schema.getTypes();
-        AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
-        int i = 0;
-        for (Schema type : types) {
-            typeReaders[i++] = createReader(type, decoder);
-        }
-        return new UnionReader(typeReaders);
+		Supplier<AvroStructureReader[]> supplier = () -> {
+			final List<Schema> types = schema.getTypes();
+			AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
+			int i = 0;
+			for (Schema type : types) {
+				typeReaders[i++] = createReader(type, decoder);
+			}
+			return typeReaders;
+		};
+		return new UnionReader(supplier);
     }
 
     private AvroFieldWrapper createFieldReader(Schema.Field field, ResolvingDecoder decoder) {
