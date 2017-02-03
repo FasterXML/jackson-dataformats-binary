@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import org.apache.avro.io.ResolvingDecoder;
 
@@ -33,7 +34,7 @@ abstract class ArrayReader extends AvroStructureReader
         return new Scalar(reader);
     }
 
-    public static ArrayReader nonScalar(AvroStructureReader reader) {
+    public static ArrayReader nonScalar(Supplier<AvroStructureReader> reader) {
         return new NonScalar(reader);
     }
 
@@ -132,23 +133,24 @@ abstract class ArrayReader extends AvroStructureReader
 
     private final static class NonScalar extends ArrayReader
     {
-        private final AvroStructureReader _elementReader;
+        private AvroStructureReader _elementReader;
+        private final Supplier<AvroStructureReader> _elementReaderSupplier;
         
-        public NonScalar(AvroStructureReader reader) {
+        public NonScalar(Supplier<AvroStructureReader> reader) {
             this(null, reader, null, null);
-        }
+        } 
 
         private NonScalar(AvroReadContext parent,
-                AvroStructureReader reader, 
+                Supplier<AvroStructureReader> supplier, 
                 AvroParserImpl parser, ResolvingDecoder decoder) {
             super(parent, parser, decoder);
-            _elementReader = reader;
+            _elementReaderSupplier = supplier;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent,
                 AvroParserImpl parser, ResolvingDecoder decoder) {
-            return new NonScalar(parent, _elementReader, parser, decoder);
+            return new NonScalar(parent, () -> elementReader(), parser, decoder);
         }
 
         @Override
@@ -187,9 +189,17 @@ abstract class ArrayReader extends AvroStructureReader
                 throwIllegalState(_state);
             }
             ++_index;
-            AvroStructureReader r = _elementReader.newReader(this, _parser, _decoder);
+            AvroStructureReader r = elementReader().newReader(this, _parser, _decoder);
             _parser.setAvroContext(r);
             return (_currToken = r.nextToken());
         }
+
+		private AvroStructureReader elementReader() {
+			if (_elementReader != null) {
+				return _elementReader;
+			}
+			_elementReader = _elementReaderSupplier.get();
+			return _elementReader;
+		}
     }
 }

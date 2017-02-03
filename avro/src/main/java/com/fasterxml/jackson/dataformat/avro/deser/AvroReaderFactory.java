@@ -124,7 +124,7 @@ public class AvroReaderFactory
         if (scalar != null) {
             return ArrayReader.scalar(scalar);
         }
-        return ArrayReader.nonScalar(createReader(elementType, decoder));
+        return ArrayReader.nonScalar(() -> createReader(elementType, decoder));
     }
 
     private AvroStructureReader createMapReader(Schema schema, ResolvingDecoder decoder)
