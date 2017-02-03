@@ -29,7 +29,7 @@ public class AvroParserImpl extends AvroParser
      * Actual physical decoder from input, which must use the original writer
      * schema. 
      */
-    protected BinaryDecoder _rootDecoder;
+    public BinaryDecoder _rootDecoder;
 
     /**
      * Actual decoder in use, possible same as <code>_rootDecoder</code>, but
@@ -85,7 +85,11 @@ public class AvroParserImpl extends AvroParser
     /* Abstract method impls
     /**********************************************************
      */
-
+    @Override
+	public boolean isEnd() throws IOException {
+		return _rootDecoder.isEnd();
+	}
+    
     @Override
     public JsonToken nextToken() throws IOException
     {

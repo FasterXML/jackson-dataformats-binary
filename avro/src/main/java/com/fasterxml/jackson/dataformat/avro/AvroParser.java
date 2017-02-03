@@ -399,4 +399,6 @@ public abstract class AvroParser extends ParserBase
         }
         return _binaryValue;
     }
+
+	abstract public boolean isEnd() throws IOException;
 }

@@ -110,18 +110,17 @@ public class RootSequenceTest extends AvroTestBase
         assertEquals(boss.name, boss2.name);
         assertArrayEquals(boss.emails, boss2.emails);
 
-        // HSH - I don't think this is valid any more.  We'll need to reset the decoder at its current state in the buffer
-//        assertTrue(it.hasNextValue());
-//        Employee worker1 = it.nextValue();
-//        assertEquals(peon1.age, worker1.age);
-//        assertEquals(peon1.name, worker1.name);
-//        assertArrayEquals(peon1.emails, worker1.emails);
-//
-//        assertTrue(it.hasNextValue());
-//        Employee worker2 = it.nextValue();
-//        assertEquals(peon2.age, worker2.age);
-//        assertEquals(peon2.name, worker2.name);
-//        assertArrayEquals(peon2.emails, worker2.emails);
+        assertTrue(it.hasNextValue());
+        Employee worker1 = it.nextValue();
+        assertEquals(peon1.age, worker1.age);
+        assertEquals(peon1.name, worker1.name);
+        assertArrayEquals(peon1.emails, worker1.emails);
+
+        assertTrue(it.hasNextValue());
+        Employee worker2 = it.nextValue();
+        assertEquals(peon2.age, worker2.age);
+        assertEquals(peon2.name, worker2.name);
+        assertArrayEquals(peon2.emails, worker2.emails);
 
         assertFalse(it.hasNextValue());
         it.close();

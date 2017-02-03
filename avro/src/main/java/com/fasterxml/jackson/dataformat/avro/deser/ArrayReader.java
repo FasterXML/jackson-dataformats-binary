@@ -107,13 +107,13 @@ abstract class ArrayReader extends AvroStructureReader
             case STATE_END:
                 final AvroReadContext parent = getParent();
                 // as per [dataformats-binary#38], may need to reset, instead of bailing out
-//                if (parent.inRoot()) {
-//                    if (!DecodeUtil.isEnd(_decoder)) {
-//                        _index = 0;
-//                        _state = STATE_START;
-//                        return (_currToken = JsonToken.END_ARRAY);
-//                    }
-//                }
+                if (parent.inRoot()) {
+					if (!_parser.isEnd()) {
+						_index = 0;
+						_state = STATE_START;
+						return (_currToken = JsonToken.END_ARRAY);
+					}
+                }
                 _state = STATE_DONE;
                 _parser.setAvroContext(parent);
                 return (_currToken = JsonToken.END_ARRAY);
@@ -174,13 +174,14 @@ abstract class ArrayReader extends AvroStructureReader
             case STATE_END:
                 final AvroReadContext parent = getParent();
                 // as per [dataformats-binary#38], may need to reset, instead of bailing out
-//                if (parent.inRoot()) {
-//                    if (!DecodeUtil.isEnd(_decoder)) {
-//                        _index = 0;
-//                        _state = STATE_START;
-//                        return (_currToken = JsonToken.END_ARRAY);
-//                    }
-//                }
+                if (parent.inRoot()) {
+					_decoder.drain();
+					if (!_parser.isEnd()) {
+						_index = 0;
+						_state = STATE_START;
+						return (_currToken = JsonToken.END_ARRAY);
+                	}
+                }
                 _state = STATE_DONE;
                 _parser.setAvroContext(parent);
                 return (_currToken = JsonToken.END_ARRAY);
