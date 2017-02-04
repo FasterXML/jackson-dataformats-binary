@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import org.apache.avro.io.ResolvingDecoder;
 
@@ -14,35 +15,40 @@ final class RecordReader extends AvroStructureReader
     protected final static int STATE_END = 3;
     protected final static int STATE_DONE = 4;
 
-    private final AvroFieldWrapper[] _fieldReaders;
+    private   AvroFieldWrapper[] _fieldReaders;
+    private final Callable<AvroFieldWrapper[]> _supplier;
     private final ResolvingDecoder _decoder;
     private final AvroParserImpl _parser;
 
     protected String _currentName;
 
     protected int _state;
-    protected final int _count;
+    protected   int _count;
 
-    public RecordReader(AvroFieldWrapper[] fieldReaders) {
-        this(null, fieldReaders, null, null);
+    public RecordReader(Callable<AvroFieldWrapper[]> supplier) {
+        this(null, supplier, null, null);
     }
 
     private RecordReader(AvroReadContext parent,
-            AvroFieldWrapper[] fieldReaders,
+    		Callable<AvroFieldWrapper[]> supplier,
             ResolvingDecoder decoder, AvroParserImpl parser)
     {
-        super(parent, TYPE_OBJECT);
-        _fieldReaders = fieldReaders;
+        super(parent, TYPE_OBJECT); 
         _decoder = decoder;
         _parser = parser;
-        _count = fieldReaders.length;
+        _supplier = supplier;
     }
 
     @Override
-    public RecordReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, ResolvingDecoder decoder) {
-        return new RecordReader(parent, _fieldReaders, decoder, parser);
-    }
+	public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser, ResolvingDecoder decoder)
+    {
+		return new RecordReader(parent, new Callable<AvroFieldWrapper[]>() {
+			@Override
+			public AvroFieldWrapper[] call() throws Exception {
+				return fieldReaders();
+			}
+		}, decoder, parser);
+	}
 
     @Override
     public String getCurrentName() { return _currentName; }
@@ -52,6 +58,7 @@ final class RecordReader extends AvroStructureReader
     {
         switch (_state) {
         case STATE_START:
+        	fieldReaders();
             _parser.setAvroContext(this);
             _state = (_count > 0) ? STATE_NAME : STATE_END;
             {
@@ -108,7 +115,7 @@ final class RecordReader extends AvroStructureReader
     {
         if (_state == STATE_NAME) {
             if (_index < _count) {
-                String name = _fieldReaders[_index].getName();
+                String name = fieldReaders()[_index].getName();
                 _currentName = name;
                 _state = STATE_VALUE;
                 _currToken = JsonToken.FIELD_NAME;
@@ -133,5 +140,19 @@ final class RecordReader extends AvroStructureReader
             sb.append('?');
         }
         sb.append('}');
+    }
+    
+    private AvroFieldWrapper[] fieldReaders()
+    {
+    	if (_fieldReaders != null) {
+    		return _fieldReaders;
+    	}
+    	try {
+			_fieldReaders = _supplier.call();
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+        _count = _fieldReaders.length;
+        return _fieldReaders;
     }
 }

@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.failing;
+package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.avro.AvroFactory;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
  
 
 public class ComplexPojoTestFromSchema extends AvroTestBase {

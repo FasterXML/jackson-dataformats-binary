@@ -158,19 +158,25 @@ public class AvroReaderFactory
 
     private AvroStructureReader createRecordReader(Schema schema, ResolvingDecoder decoder)
     {
-        List<Schema.Field> fields;
-		try {
-			fields = Arrays.asList(decoder.readFieldOrder());
-		} catch (IOException e) {
-			throw new IllegalStateException("I say, I say, I can't read this son", e);
-		}
-        AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[fields.size()];
-        RecordReader reader = new RecordReader(fieldReaders);
+		Callable<AvroFieldWrapper[]> supplier = new Callable<AvroFieldWrapper[]>() {
+			@Override
+			public AvroFieldWrapper[] call() throws Exception {
+				List<Schema.Field> fields;
+				try {
+					fields = Arrays.asList(decoder.readFieldOrder());
+				} catch (IOException e) {
+					throw new IllegalStateException("I say, I say, I can't read this son", e);
+				}
+				AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[fields.size()];
+				int i = 0;
+				for (Schema.Field field : fields) {
+					fieldReaders[i++] = createFieldReader(field, decoder);
+				}
+				return fieldReaders;
+			}
+		};
+		RecordReader reader = new RecordReader(supplier);
         _knownReaders.put(_typeName(schema), reader);
-        int i = 0;
-        for (Schema.Field field : fields) {
-            fieldReaders[i++] = createFieldReader(field, decoder);
-        }
         return reader;
     }
 
