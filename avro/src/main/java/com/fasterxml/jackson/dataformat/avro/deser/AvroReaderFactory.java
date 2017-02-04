@@ -156,7 +156,7 @@ public class AvroReaderFactory
         return new MapReader(createReader(elementType, decoder));
     }
 
-    private AvroStructureReader createRecordReader(Schema schema, ResolvingDecoder decoder)
+    private AvroStructureReader createRecordReader(Schema schema, final ResolvingDecoder decoder)
     {
 		Callable<AvroFieldWrapper[]> supplier = new Callable<AvroFieldWrapper[]>() {
 			@Override
