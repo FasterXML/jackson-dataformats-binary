@@ -4,120 +4,131 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
+import java.util.Map;
 
 import org.apache.avro.Schema;
 import org.apache.avro.io.*;
+import org.apache.avro.util.WeakIdentityHashMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * Simple helper class that contains extracted functionality for
- * simple encoder/decoder recycling.
+ * Simple helper class that contains extracted functionality for simple
+ * encoder/decoder recycling.
  *
  * @since 2.8.7
  */
-public final class CodecRecycler
-{
-    protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
+public final class CodecRecycler {
 
-    protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
+	private static final ThreadLocal<Map<Schema, Map<Schema, ResolvingDecoder>>> RESOLVER_CACHE;
+	protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
 
-    protected final static ThreadLocal<SoftReference<CodecRecycler>> _recycler
-            = new ThreadLocal<SoftReference<CodecRecycler>>();
+	protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
 
-    private BinaryDecoder decoder;
-    private BinaryEncoder encoder;
+	protected final static ThreadLocal<SoftReference<CodecRecycler>> _recycler = new ThreadLocal<SoftReference<CodecRecycler>>();
 
-    private CodecRecycler() { }
+	static {
+		RESOLVER_CACHE = new ThreadLocal<Map<Schema, Map<Schema, ResolvingDecoder>>>() {
+			protected Map<Schema, Map<Schema, ResolvingDecoder>> initialValue() {
+				return new WeakIdentityHashMap<Schema, Map<Schema, ResolvingDecoder>>();
+			}
+		};
+	}
 
-    /*
-    /**********************************************************
-    /* Public API
-    /**********************************************************
-     */
+	private BinaryDecoder decoder;
+	private BinaryEncoder encoder;
 
-    public static BinaryDecoder decoder(InputStream in, boolean buffering)
-    {
-        BinaryDecoder prev = _recycler().claimDecoder();
-        return buffering
-                ? DECODER_FACTORY.binaryDecoder(in, prev)
-                : DECODER_FACTORY.directBinaryDecoder(in, prev);
-    }
+	private CodecRecycler() {
+	}
 
-    public static BinaryDecoder decoder(byte[] buffer, int offset, int len)
-    {
-        BinaryDecoder prev = _recycler().claimDecoder();
-        return DECODER_FACTORY.binaryDecoder(buffer, offset, len, prev);
-    }
+	/*
+	 * /********************************************************** /* Public API
+	 * /**********************************************************
+	 */
 
-    public static ResolvingDecoder convertingDecoder(Decoder src,
-            Schema writer, Schema reader)
-        throws JsonProcessingException
-    {
-        try {
-            return DECODER_FACTORY.resolvingDecoder(Schema.applyAliases(writer, reader), reader, src);
-        } catch (IOException e) {
-            throw new BadSchemaException("Failed to create reader/writer-resolving Avro schema handler: "+e.getMessage(), e);
-        }
-    }
+	public static BinaryDecoder decoder(InputStream in, boolean buffering) {
+		BinaryDecoder prev = _recycler().claimDecoder();
+		return buffering ? DECODER_FACTORY.binaryDecoder(in, prev) : DECODER_FACTORY.directBinaryDecoder(in, prev);
+	}
 
-    public static BinaryEncoder encoder(OutputStream out, boolean buffering)
-    {
-        BinaryEncoder prev = _recycler().claimEncoder();
-        return buffering
-            ? ENCODER_FACTORY.binaryEncoder(out, prev)
-            : ENCODER_FACTORY.directBinaryEncoder(out, prev);
-    }
+	public static BinaryDecoder decoder(byte[] buffer, int offset, int len) {
+		BinaryDecoder prev = _recycler().claimDecoder();
+		return DECODER_FACTORY.binaryDecoder(buffer, offset, len, prev);
+	}
 
-    public static void release(BinaryDecoder dec) {
-        _recycler().decoder = (BinaryDecoder) dec;
-    }
+	public static ResolvingDecoder convertingDecoder(Decoder src, Schema actual, Schema expected)
+			throws JsonProcessingException {
+		try {
+			Map<Schema, ResolvingDecoder> cache = RESOLVER_CACHE.get().get(actual);
+			if (cache == null) {
+				cache = new WeakIdentityHashMap<Schema, ResolvingDecoder>();
+				RESOLVER_CACHE.get().put(actual, cache);
+			}
+			ResolvingDecoder resolver = cache.get(expected);
+			if (resolver == null) {
+				resolver = DecoderFactory.get().resolvingDecoder(Schema.applyAliases(actual, expected), expected, null);
+				cache.put(expected, resolver);
+			} 
+			resolver.configure(src);
+			return resolver;
+		} catch (IOException e) {
+			throw new BadSchemaException(
+					"Failed to create reader/writer-resolving Avro schema handler: " + e.getMessage(), e);
+		}
+	}
 
-    public static void release(BinaryEncoder enc) {
-        _recycler().encoder = enc;
-    }
+	public static BinaryEncoder encoder(OutputStream out, boolean buffering) {
+		BinaryEncoder prev = _recycler().claimEncoder();
+		return buffering ? ENCODER_FACTORY.binaryEncoder(out, prev) : ENCODER_FACTORY.directBinaryEncoder(out, prev);
+	}
 
-    /*
-    /**********************************************************
-    /* Internal per-instance methods
-    /**********************************************************
-     */
-    
-    private static CodecRecycler _recycler() {
-        SoftReference<CodecRecycler> ref = _recycler.get();
-        CodecRecycler r = (ref == null) ? null : ref.get();
+	public static void release(BinaryDecoder dec) {
+		_recycler().decoder = (BinaryDecoder) dec;
+	}
 
-        if (r == null) {
-            r = new CodecRecycler();
-            _recycler.set(new SoftReference<CodecRecycler>(r));
-        }
-        return r;
-    }
+	public static void release(BinaryEncoder enc) {
+		_recycler().encoder = enc;
+	}
 
-    private BinaryDecoder claimDecoder() {
-        BinaryDecoder d = decoder;
-        decoder = null;
-        return d;
-    }
+	/*
+	 * /********************************************************** /* Internal
+	 * per-instance methods
+	 * /**********************************************************
+	 */
 
-    private BinaryEncoder claimEncoder() {
-        BinaryEncoder e = encoder;
-        encoder = null;
-        return e;
-    }
+	private static CodecRecycler _recycler() {
+		SoftReference<CodecRecycler> ref = _recycler.get();
+		CodecRecycler r = (ref == null) ? null : ref.get();
 
-    /*
-    /**********************************************************
-    /* Helper class
-    /**********************************************************
-     */
+		if (r == null) {
+			r = new CodecRecycler();
+			_recycler.set(new SoftReference<CodecRecycler>(r));
+		}
+		return r;
+	}
 
-    public static class BadSchemaException extends JsonProcessingException
-    {
-        private static final long serialVersionUID = 1L;
+	private BinaryDecoder claimDecoder() {
+		BinaryDecoder d = decoder;
+		decoder = null;
+		return d;
+	}
 
-        public BadSchemaException(String msg, Throwable src) {
-            super(msg, src);
-        }
-    }
+	private BinaryEncoder claimEncoder() {
+		BinaryEncoder e = encoder;
+		encoder = null;
+		return e;
+	}
+
+	/*
+	 * /********************************************************** /* Helper
+	 * class /**********************************************************
+	 */
+
+	public static class BadSchemaException extends JsonProcessingException {
+		private static final long serialVersionUID = 1L;
+
+		public BadSchemaException(String msg, Throwable src) {
+			super(msg, src);
+		}
+	}
 }
