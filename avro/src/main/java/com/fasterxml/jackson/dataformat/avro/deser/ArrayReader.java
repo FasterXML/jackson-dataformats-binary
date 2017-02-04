@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 import org.apache.avro.io.ResolvingDecoder;
 
@@ -34,8 +34,8 @@ abstract class ArrayReader extends AvroStructureReader
         return new Scalar(reader);
     }
 
-    public static ArrayReader nonScalar(Supplier<AvroStructureReader> reader) {
-        return new NonScalar(reader);
+    public static ArrayReader nonScalar(Callable<AvroStructureReader> callable) {
+        return new NonScalar(callable);
     }
 
     @Override
@@ -134,23 +134,28 @@ abstract class ArrayReader extends AvroStructureReader
     private final static class NonScalar extends ArrayReader
     {
         private AvroStructureReader _elementReader;
-        private final Supplier<AvroStructureReader> _elementReaderSupplier;
+        private final Callable<AvroStructureReader> _elementReaderSupplier;
         
-        public NonScalar(Supplier<AvroStructureReader> reader) {
-            this(null, reader, null, null);
+        public NonScalar(Callable<AvroStructureReader> callable) {
+            this(null, callable, null, null);
         } 
 
         private NonScalar(AvroReadContext parent,
-                Supplier<AvroStructureReader> supplier, 
+                Callable<AvroStructureReader> callable, 
                 AvroParserImpl parser, ResolvingDecoder decoder) {
             super(parent, parser, decoder);
-            _elementReaderSupplier = supplier;
+            _elementReaderSupplier = callable;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent,
                 AvroParserImpl parser, ResolvingDecoder decoder) {
-            return new NonScalar(parent, () -> elementReader(), parser, decoder);
+            return new NonScalar(parent, new Callable<AvroStructureReader>() {
+				@Override
+				public AvroStructureReader call() throws Exception {
+					return elementReader();
+				}
+			}, parser, decoder);
         }
 
         @Override
@@ -199,7 +204,11 @@ abstract class ArrayReader extends AvroStructureReader
 			if (_elementReader != null) {
 				return _elementReader;
 			}
-			_elementReader = _elementReaderSupplier.get();
+			try {
+				_elementReader = _elementReaderSupplier.call();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
 			return _elementReader;
 		}
     }

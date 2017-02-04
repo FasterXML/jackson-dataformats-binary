@@ -1,13 +1,25 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
 
 import org.apache.avro.Schema;
 import org.apache.avro.io.ResolvingDecoder;
 
-import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.*;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.BooleanReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.BytesReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.DoubleReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.EnumDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.FixedDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.FloatReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.IntReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.LongReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.NullReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.ScalarUnionReader;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.StringReader;
 
 /**
  * Helper class used for constructing a hierarchic reader for given
@@ -118,14 +130,20 @@ public class AvroReaderFactory
     /**********************************************************************
      */
     
-    private AvroStructureReader createArrayReader(Schema schema, ResolvingDecoder decoder)
+    private AvroStructureReader createArrayReader(Schema schema, final ResolvingDecoder decoder)
     {
-        Schema elementType = schema.getElementType();
+        final Schema elementType = schema.getElementType();
         AvroScalarReader scalar = createDecoder(elementType);
         if (scalar != null) {
             return ArrayReader.scalar(scalar);
         }
-        return ArrayReader.nonScalar(() -> createReader(elementType, decoder));
+        return ArrayReader.nonScalar(new Callable<AvroStructureReader>() { 
+
+			@Override
+			public AvroStructureReader call() throws Exception {
+				return createReader(elementType, decoder);
+			}
+		});
     }
 
     private AvroStructureReader createMapReader(Schema schema, ResolvingDecoder decoder)
@@ -156,16 +174,19 @@ public class AvroReaderFactory
         return reader;
     }
 
-    private AvroStructureReader createUnionReader(Schema schema, ResolvingDecoder decoder)
+    private AvroStructureReader createUnionReader(final Schema schema, final ResolvingDecoder decoder)
     {
-		Supplier<AvroStructureReader[]> supplier = () -> {
-			final List<Schema> types = schema.getTypes();
-			AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
-			int i = 0;
-			for (Schema type : types) {
-				typeReaders[i++] = createReader(type, decoder);
+		Callable<AvroStructureReader[]> supplier = new Callable<AvroStructureReader[]>() {
+			@Override
+			public AvroStructureReader[] call() throws Exception {
+				final List<Schema> types = schema.getTypes();
+				AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
+				int i = 0;
+				for (Schema type : types) {
+					typeReaders[i++] = createReader(type, decoder);
+				}
+				return typeReaders;
 			}
-			return typeReaders;
 		};
 		return new UnionReader(supplier);
     }

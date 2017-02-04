@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 import org.apache.avro.io.ResolvingDecoder;
 
@@ -14,20 +14,20 @@ import com.fasterxml.jackson.core.JsonToken;
 final class UnionReader extends AvroStructureReader
 {
     private AvroStructureReader[] _memberReaders;
-    private final Supplier<AvroStructureReader[]> _memberReadersProducer;
+    private final Callable<AvroStructureReader[]> _memberReadersProducer;
     private final ResolvingDecoder _decoder;
     private final AvroParserImpl _parser;
 
-    public UnionReader(Supplier<AvroStructureReader[]> memberReaders) {
-        this(null, memberReaders, null, null);
+    public UnionReader(Callable<AvroStructureReader[]> supplier) {
+        this(null, supplier, null, null);
     }
 
     private UnionReader(AvroReadContext parent,
-    		Supplier<AvroStructureReader[]> memberReadersProducer,
+    		Callable<AvroStructureReader[]> supplier,
             ResolvingDecoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_ROOT);
-        _memberReadersProducer = memberReadersProducer;
+        _memberReadersProducer = supplier;
         _decoder = decoder;
         _parser = parser;
     }
@@ -35,7 +35,12 @@ final class UnionReader extends AvroStructureReader
     @Override
     public UnionReader newReader(AvroReadContext parent,
             AvroParserImpl parser, ResolvingDecoder decoder) {
-        return new UnionReader(parent, () -> memberReaders(), decoder, parser);
+        return new UnionReader(parent, new Callable<AvroStructureReader[]>() {
+			@Override
+			public AvroStructureReader[] call() throws Exception {
+				return memberReaders();
+			}
+		}, decoder, parser);
     }
 
     @Override
@@ -68,7 +73,11 @@ final class UnionReader extends AvroStructureReader
     	if (_memberReaders != null) {
     		return _memberReaders;
     	}
-    	_memberReaders = _memberReadersProducer.get();
+    	try {
+			_memberReaders = _memberReadersProducer.call();
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
     	return _memberReaders;
     }
 }
