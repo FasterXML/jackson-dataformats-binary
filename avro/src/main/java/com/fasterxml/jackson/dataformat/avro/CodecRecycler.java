@@ -4,10 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.apache.avro.Schema;
-import org.apache.avro.io.*;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.io.ResolvingDecoder;
+import org.apache.avro.io.parsing.Symbol;
 import org.apache.avro.util.WeakIdentityHashMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,19 +28,25 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public final class CodecRecycler {
 
-	private static final ThreadLocal<Map<Schema, Map<Schema, ResolvingDecoder>>> RESOLVER_CACHE;
+	private static final ThreadLocal<Map<Schema, Map<Schema, Symbol>>> RESOLVER_CACHE;
 	protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
-
 	protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
+	protected final static Constructor<ResolvingDecoder> RESOLVING_DECODER_CONSTRUCTOR;
 
 	protected final static ThreadLocal<SoftReference<CodecRecycler>> _recycler = new ThreadLocal<SoftReference<CodecRecycler>>();
 
 	static {
-		RESOLVER_CACHE = new ThreadLocal<Map<Schema, Map<Schema, ResolvingDecoder>>>() {
-			protected Map<Schema, Map<Schema, ResolvingDecoder>> initialValue() {
-				return new WeakIdentityHashMap<Schema, Map<Schema, ResolvingDecoder>>();
+		RESOLVER_CACHE = new ThreadLocal<Map<Schema, Map<Schema, Symbol>>>() {
+			protected Map<Schema, Map<Schema, Symbol>> initialValue() {
+				return new WeakIdentityHashMap<Schema, Map<Schema, Symbol>>();
 			}
 		};
+		try {
+			RESOLVING_DECODER_CONSTRUCTOR = ResolvingDecoder.class.getDeclaredConstructor(Object.class, Decoder.class);
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new IllegalStateException(e);
+		}
+		RESOLVING_DECODER_CONSTRUCTOR.setAccessible(true);
 	}
 
 	private BinaryDecoder decoder;
@@ -59,18 +73,23 @@ public final class CodecRecycler {
 	public static ResolvingDecoder convertingDecoder(Decoder src, Schema actual, Schema expected)
 			throws JsonProcessingException {
 		try {
-			Map<Schema, ResolvingDecoder> cache = RESOLVER_CACHE.get().get(actual);
+			Map<Schema, Symbol> cache = RESOLVER_CACHE.get().get(actual);
 			if (cache == null) {
-				cache = new WeakIdentityHashMap<Schema, ResolvingDecoder>();
+				cache = new WeakIdentityHashMap<Schema, Symbol>();
 				RESOLVER_CACHE.get().put(actual, cache);
 			}
-			ResolvingDecoder resolver = cache.get(expected);
+			Symbol resolver = cache.get(expected);
 			if (resolver == null) {
-				resolver = DecoderFactory.get().resolvingDecoder(Schema.applyAliases(actual, expected), expected, null);
+				resolver = (Symbol) ResolvingDecoder.resolve(actual, expected);
 				cache.put(expected, resolver);
 			} 
-			resolver.configure(src);
-			return resolver;
+			
+			try {
+				return RESOLVING_DECODER_CONSTRUCTOR.newInstance(resolver, src);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e) {
+				throw new IllegalStateException(e);
+			}
 		} catch (IOException e) {
 			throw new BadSchemaException(
 					"Failed to create reader/writer-resolving Avro schema handler: " + e.getMessage(), e);
