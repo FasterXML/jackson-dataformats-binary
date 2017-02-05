@@ -28,7 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public final class CodecRecycler {
 
-	private static final ThreadLocal<Map<Schema, Map<Schema, Symbol>>> RESOLVER_CACHE;
+	private static final ThreadLocal<Map<Schema, Map<Schema, Symbol>>> SYMBOL_CACHE;
 	protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
 	protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
 	protected final static Constructor<ResolvingDecoder> RESOLVING_DECODER_CONSTRUCTOR;
@@ -36,7 +36,7 @@ public final class CodecRecycler {
 	protected final static ThreadLocal<SoftReference<CodecRecycler>> _recycler = new ThreadLocal<SoftReference<CodecRecycler>>();
 
 	static {
-		RESOLVER_CACHE = new ThreadLocal<Map<Schema, Map<Schema, Symbol>>>() {
+		SYMBOL_CACHE = new ThreadLocal<Map<Schema, Map<Schema, Symbol>>>() {
 			protected Map<Schema, Map<Schema, Symbol>> initialValue() {
 				return new WeakIdentityHashMap<Schema, Map<Schema, Symbol>>();
 			}
@@ -73,10 +73,10 @@ public final class CodecRecycler {
 	public static ResolvingDecoder convertingDecoder(Decoder src, Schema actual, Schema expected)
 			throws JsonProcessingException {
 		try {
-			Map<Schema, Symbol> cache = RESOLVER_CACHE.get().get(actual);
+			Map<Schema, Symbol> cache = SYMBOL_CACHE.get().get(actual);
 			if (cache == null) {
 				cache = new WeakIdentityHashMap<Schema, Symbol>();
-				RESOLVER_CACHE.get().put(actual, cache);
+				SYMBOL_CACHE.get().put(actual, cache);
 			}
 			Symbol resolver = cache.get(expected);
 			if (resolver == null) {
