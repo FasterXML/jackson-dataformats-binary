@@ -29,7 +29,7 @@ abstract class ArrayReader extends AvroStructureReader
         _decoder = decoder;
     }
 
-    public static ArrayReader scalar(AvroScalarReader reader) {
+    public static ArrayReader scalar(AvroScalarDecoder reader) {
         return new Scalar(reader);
     }
 
@@ -66,13 +66,13 @@ abstract class ArrayReader extends AvroStructureReader
 
     private final static class Scalar extends ArrayReader
     {
-        private final AvroScalarReader _elementReader;
+        private final AvroScalarDecoder _elementReader;
         
-        public Scalar(AvroScalarReader reader) {
+        public Scalar(AvroScalarDecoder reader) {
             this(null, reader, null, null);
         }
 
-        private Scalar(AvroReadContext parent, AvroScalarReader reader, 
+        private Scalar(AvroReadContext parent, AvroScalarDecoder reader, 
                 AvroParserImpl parser, Decoder decoder) {
             super(parent, parser, decoder);
             _elementReader = reader;

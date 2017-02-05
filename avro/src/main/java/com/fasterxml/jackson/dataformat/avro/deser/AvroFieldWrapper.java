@@ -9,10 +9,10 @@ import com.fasterxml.jackson.core.JsonToken;
 public final class AvroFieldWrapper
 {
     protected final String _name;
-    protected final AvroScalarReader _scalarReader;
+    protected final AvroScalarDecoder _scalarReader;
     protected final AvroStructureReader _structureReader;
 
-    public AvroFieldWrapper(String name, AvroScalarReader scalarReader) {
+    public AvroFieldWrapper(String name, AvroScalarDecoder scalarReader) {
         _name = name;
         _scalarReader = scalarReader;
         _structureReader = null;

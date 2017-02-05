@@ -7,7 +7,6 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 
-import org.apache.avro.Schema;
 import org.apache.avro.io.Decoder;
 
 /**
@@ -15,7 +14,7 @@ import org.apache.avro.io.Decoder;
  * be accessed using simpler interface (although sometimes not: if so,
  * instances are wrapped in <code>ScalarReaderWrapper</code>s).
  */
-public abstract class AvroScalarReader
+public abstract class AvroScalarDecoder
 {
     protected abstract JsonToken readValue(AvroParserImpl parser, Decoder decoder)
         throws IOException;
@@ -27,11 +26,11 @@ public abstract class AvroScalarReader
      */
 
     protected final static class ScalarUnionReader
-        extends AvroScalarReader
+        extends AvroScalarDecoder
     {
-        public final AvroScalarReader[] _readers;
+        public final AvroScalarDecoder[] _readers;
 
-        public ScalarUnionReader(AvroScalarReader[] readers) {
+        public ScalarUnionReader(AvroScalarDecoder[] readers) {
             _readers = readers;
         }
         
@@ -47,7 +46,7 @@ public abstract class AvroScalarReader
         }
     }
     
-    protected final static class BooleanReader extends AvroScalarReader
+    protected final static class BooleanReader extends AvroScalarDecoder
     {
         @Override
         protected JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -55,7 +54,7 @@ public abstract class AvroScalarReader
         }
     }
     
-    protected final static class BytesReader extends AvroScalarReader
+    protected final static class BytesReader extends AvroScalarDecoder
     {
         @Override
         public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -65,7 +64,7 @@ public abstract class AvroScalarReader
         }
     }
 
-    protected final static class DoubleReader extends AvroScalarReader
+    protected final static class DoubleReader extends AvroScalarDecoder
     {
         @Override
         public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -73,14 +72,14 @@ public abstract class AvroScalarReader
         }
     }
     
-    protected final static class FloatReader extends AvroScalarReader {
+    protected final static class FloatReader extends AvroScalarDecoder {
         @Override
         public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readFloat());
         }
     }
     
-    protected final static class IntReader extends AvroScalarReader
+    protected final static class IntReader extends AvroScalarDecoder
     {
         @Override
         public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -88,7 +87,7 @@ public abstract class AvroScalarReader
         }
     }
     
-    protected final static class LongReader extends AvroScalarReader
+    protected final static class LongReader extends AvroScalarDecoder
     {
         @Override
         public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -96,14 +95,14 @@ public abstract class AvroScalarReader
         }
     }
     
-    protected final static class NullReader extends AvroScalarReader
+    protected final static class NullReader extends AvroScalarDecoder
     {
         @Override public JsonToken readValue(AvroParserImpl parser, Decoder decoder) {
             return JsonToken.VALUE_NULL;
         }
     }
     
-    protected final static class StringReader extends AvroScalarReader
+    protected final static class StringReader extends AvroScalarDecoder
     {
         @Override
         public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException
@@ -113,14 +112,13 @@ public abstract class AvroScalarReader
     }
 
     protected final static class EnumDecoder
-        extends AvroScalarReader
+        extends AvroScalarDecoder
     {
         protected final String[] _values;
         
-        public EnumDecoder(Schema schema)
+        public EnumDecoder(List<String> enumNames)
         {
-            List<String> v = schema.getEnumSymbols();
-            _values = v.toArray(new String[v.size()]);
+            _values = enumNames.toArray(new String[enumNames.size()]);
         }
         
         @Override
@@ -136,12 +134,12 @@ public abstract class AvroScalarReader
     }
 
     protected final static class FixedDecoder
-        extends AvroScalarReader
+        extends AvroScalarDecoder
     {
         protected final int _size;
         
-        public FixedDecoder(Schema schema) {
-            _size = schema.getFixedSize();
+        public FixedDecoder(int fixedSize) {
+            _size = fixedSize;
         }
         
         @Override

@@ -8,18 +8,18 @@ import com.fasterxml.jackson.core.JsonToken;
 
 final class ScalarReaderWrapper extends AvroStructureReader
 {
-    private final AvroScalarReader _wrappedReader;
+    private final AvroScalarDecoder _wrappedReader;
     private final Decoder _decoder;
     private final AvroParserImpl _parser;
     private final boolean _rootReader;
 
-    public ScalarReaderWrapper(AvroScalarReader wrappedReader) {
+    public ScalarReaderWrapper(AvroScalarDecoder wrappedReader) {
         this(null, null, null, wrappedReader, false);
     }
 
     private ScalarReaderWrapper(AvroReadContext parent,
             AvroParserImpl parser, Decoder decoder,
-            AvroScalarReader wrappedReader, boolean rootReader)
+            AvroScalarDecoder wrappedReader, boolean rootReader)
     {
         super(parent, TYPE_ROOT);
         _wrappedReader = wrappedReader;

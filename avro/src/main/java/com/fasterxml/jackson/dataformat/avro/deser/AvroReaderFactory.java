@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.*;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarDecoder.*;
 
 /**
  * Helper class used for constructing a hierarchic reader for given
@@ -12,14 +12,14 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroScalarReader.*;
  */
 public class AvroReaderFactory
 {
-    protected final static AvroScalarReader READER_BOOLEAN = new BooleanReader();
-    protected final static AvroScalarReader READER_BYTES = new BytesReader();
-    protected final static AvroScalarReader READER_DOUBLE = new DoubleReader();
-    protected final static AvroScalarReader READER_FLOAT = new FloatReader();
-    protected final static AvroScalarReader READER_INT = new IntReader();
-    protected final static AvroScalarReader READER_LONG = new LongReader();
-    protected final static AvroScalarReader READER_NULL = new NullReader();
-    protected final static AvroScalarReader READER_STRING = new StringReader();
+    protected final static AvroScalarDecoder READER_BOOLEAN = new BooleanReader();
+    protected final static AvroScalarDecoder READER_BYTES = new BytesReader();
+    protected final static AvroScalarDecoder READER_DOUBLE = new DoubleReader();
+    protected final static AvroScalarDecoder READER_FLOAT = new FloatReader();
+    protected final static AvroScalarDecoder READER_INT = new IntReader();
+    protected final static AvroScalarDecoder READER_LONG = new LongReader();
+    protected final static AvroScalarDecoder READER_NULL = new NullReader();
+    protected final static AvroScalarDecoder READER_STRING = new StringReader();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -58,7 +58,7 @@ public class AvroReaderFactory
         }
     }
 
-    public AvroScalarReader createDecoder(Schema type)
+    public AvroScalarDecoder createDecoder(Schema type)
     {
         switch (type.getType()) {
         case BOOLEAN:
@@ -68,9 +68,9 @@ public class AvroReaderFactory
         case DOUBLE: 
             return READER_DOUBLE;
         case ENUM: 
-            return new EnumDecoder(type);
+            return new EnumDecoder(type.getEnumSymbols());
         case FIXED: 
-            return new FixedDecoder(type);
+            return new FixedDecoder(type.getFixedSize());
         case FLOAT: 
             return READER_FLOAT;
         case INT:
@@ -88,10 +88,10 @@ public class AvroReaderFactory
              */
             List<Schema> types = type.getTypes();
             {
-                AvroScalarReader[] readers = new AvroScalarReader[types.size()];
+                AvroScalarDecoder[] readers = new AvroScalarDecoder[types.size()];
                 int i = 0;
                 for (Schema schema : types) {
-                    AvroScalarReader reader = createDecoder(schema);
+                    AvroScalarDecoder reader = createDecoder(schema);
                     if (reader == null) { // non-scalar; no go
                         return null;
                     }
@@ -117,7 +117,7 @@ public class AvroReaderFactory
     private AvroStructureReader createArrayReader(Schema schema)
     {
         Schema elementType = schema.getElementType();
-        AvroScalarReader scalar = createDecoder(elementType);
+        AvroScalarDecoder scalar = createDecoder(elementType);
         if (scalar != null) {
             return ArrayReader.scalar(scalar);
         }
@@ -127,7 +127,7 @@ public class AvroReaderFactory
     private AvroStructureReader createMapReader(Schema schema)
     {
         Schema elementType = schema.getValueType();
-        AvroScalarReader dec = createDecoder(elementType);
+        AvroScalarDecoder dec = createDecoder(elementType);
         if (dec != null) {
             return new MapReader(dec);
         }
@@ -164,7 +164,7 @@ public class AvroReaderFactory
 
     private AvroFieldWrapper createFieldReader(String name, Schema type)
     {
-        AvroScalarReader scalar = createDecoder(type);
+        AvroScalarDecoder scalar = createDecoder(type);
         if (scalar != null) {
             return new AvroFieldWrapper(name, scalar);
         }
