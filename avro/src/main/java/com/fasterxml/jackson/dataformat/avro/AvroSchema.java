@@ -83,7 +83,7 @@ public class AvroSchema implements FormatSchema
     {
         AvroStructureReader r = _reader.get();
         if (r == null) {
-            r = new AvroReaderFactory().createReader(_avroSchema);
+            r = AvroReaderFactory.createFor(_avroSchema);
             _reader.set(r);
         }
         return r;

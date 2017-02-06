@@ -6,24 +6,28 @@ import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
-final class ScalarReaderWrapper extends AvroStructureReader
+/**
+ * Simple adapter needed in some cases to unify handling of reading (and
+ * skipping) of structured and scalar values.
+ */
+final class ScalarDecoderWrapper extends AvroStructureReader
 {
     /**
      * Actual decoder used to decode scalar value, wrapped by this reader.
      */
-    private final AvroScalarDecoder _valueDecoder;
+    private final ScalarDecoder _valueDecoder;
 
     private final Decoder _decoder;
     private final AvroParserImpl _parser;
     private final boolean _rootReader;
 
-    public ScalarReaderWrapper(AvroScalarDecoder wrappedReader) {
+    public ScalarDecoderWrapper(ScalarDecoder wrappedReader) {
         this(null, null, null, wrappedReader, false);
     }
 
-    private ScalarReaderWrapper(AvroReadContext parent,
+    private ScalarDecoderWrapper(AvroReadContext parent,
             AvroParserImpl parser, Decoder decoder,
-            AvroScalarDecoder valueDecoder, boolean rootReader)
+            ScalarDecoder valueDecoder, boolean rootReader)
     {
         super(parent, TYPE_ROOT);
         _valueDecoder = valueDecoder;
@@ -33,9 +37,9 @@ final class ScalarReaderWrapper extends AvroStructureReader
     }
 
     @Override
-    public ScalarReaderWrapper newReader(AvroReadContext parent,
+    public ScalarDecoderWrapper newReader(AvroReadContext parent,
             AvroParserImpl parser, Decoder decoder) {
-        return new ScalarReaderWrapper(parent, parser, decoder, _valueDecoder, parent.inRoot());
+        return new ScalarDecoderWrapper(parent, parser, decoder, _valueDecoder, parent.inRoot());
     }
 
     @Override

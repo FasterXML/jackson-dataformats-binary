@@ -14,7 +14,7 @@ public final class MapReader extends AvroStructureReader
     protected final static int STATE_END = 3;
     protected final static int STATE_DONE = 4;
 
-    private final AvroScalarDecoder _scalarReader;
+    private final ScalarDecoder _scalarReader;
     private final AvroStructureReader _structureReader;
     protected final Decoder _decoder;
     protected final AvroParserImpl _parser;
@@ -24,7 +24,7 @@ public final class MapReader extends AvroStructureReader
     protected int _state;
     protected long _count;
     
-    public MapReader(AvroScalarDecoder reader) {
+    public MapReader(ScalarDecoder reader) {
         this(null, reader, null, null, null);
     }
 
@@ -33,7 +33,7 @@ public final class MapReader extends AvroStructureReader
     }
     
     private MapReader(AvroReadContext parent,
-            AvroScalarDecoder scalarReader,
+            ScalarDecoder scalarReader,
             AvroStructureReader structReader,
             Decoder decoder, AvroParserImpl parser) {
         super(parent, TYPE_OBJECT);

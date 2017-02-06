@@ -13,13 +13,13 @@ import org.apache.avro.io.Decoder;
  * be accessed using simpler interface (although sometimes not: if so,
  * instances are wrapped in <code>ScalarReaderWrapper</code>s).
  */
-public abstract class AvroScalarDecoder
+public abstract class ScalarDecoder
 {
     protected abstract JsonToken decodeValue(AvroParserImpl parser, Decoder decoder)
         throws IOException;
 
     protected abstract void skipValue(Decoder decoder)
-            throws IOException;
+        throws IOException;
     
     /*
     /**********************************************************************
@@ -28,11 +28,11 @@ public abstract class AvroScalarDecoder
      */
 
     protected final static class ScalarUnionReader
-        extends AvroScalarDecoder
+        extends ScalarDecoder
     {
-        public final AvroScalarDecoder[] _readers;
+        public final ScalarDecoder[] _readers;
 
-        public ScalarUnionReader(AvroScalarDecoder[] readers) {
+        public ScalarUnionReader(ScalarDecoder[] readers) {
             _readers = readers;
         }
 
@@ -48,7 +48,7 @@ public abstract class AvroScalarDecoder
             _checkIndex(decoder.readIndex()).skipValue(decoder);
         }
 
-        private AvroScalarDecoder _checkIndex(int index) throws IOException {
+        private ScalarDecoder _checkIndex(int index) throws IOException {
             if (index < 0 || index >= _readers.length) {
                 throw new IOException(String.format(
                         "Invalid Union index (%s); union only has %d types", index, _readers.length));
@@ -57,7 +57,7 @@ public abstract class AvroScalarDecoder
         }
     }
 
-    protected final static class BooleanReader extends AvroScalarDecoder
+    protected final static class BooleanReader extends ScalarDecoder
     {
         @Override
         protected JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -72,7 +72,7 @@ public abstract class AvroScalarDecoder
         }
     }
     
-    protected final static class BytesReader extends AvroScalarDecoder
+    protected final static class BytesReader extends ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -87,7 +87,7 @@ public abstract class AvroScalarDecoder
         }
     }
 
-    protected final static class DoubleReader extends AvroScalarDecoder
+    protected final static class DoubleReader extends ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -101,7 +101,7 @@ public abstract class AvroScalarDecoder
         }
     }
     
-    protected final static class FloatReader extends AvroScalarDecoder {
+    protected final static class FloatReader extends ScalarDecoder {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readFloat());
@@ -114,7 +114,7 @@ public abstract class AvroScalarDecoder
         }
     }
     
-    protected final static class IntReader extends AvroScalarDecoder
+    protected final static class IntReader extends ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -128,7 +128,7 @@ public abstract class AvroScalarDecoder
         }
     }
     
-    protected final static class LongReader extends AvroScalarDecoder
+    protected final static class LongReader extends ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -142,7 +142,7 @@ public abstract class AvroScalarDecoder
         }
     }
     
-    protected final static class NullReader extends AvroScalarDecoder
+    protected final static class NullReader extends ScalarDecoder
     {
         @Override public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) {
             return JsonToken.VALUE_NULL;
@@ -154,7 +154,7 @@ public abstract class AvroScalarDecoder
         }
     }
     
-    protected final static class StringReader extends AvroScalarDecoder
+    protected final static class StringReader extends ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException
@@ -169,7 +169,7 @@ public abstract class AvroScalarDecoder
     }
 
     protected final static class EnumDecoder
-        extends AvroScalarDecoder
+        extends ScalarDecoder
     {
         protected final String _name;
         protected final String[] _values;
@@ -202,7 +202,7 @@ public abstract class AvroScalarDecoder
     }
 
     protected final static class FixedDecoder
-        extends AvroScalarDecoder
+        extends ScalarDecoder
     {
         protected final int _size;
         

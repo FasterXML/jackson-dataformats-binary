@@ -60,16 +60,16 @@ final class RecordReader extends AvroStructureReader
                 return t;
             }
         case STATE_NAME:
-            if (_index >= _count) {
-                return _nextAtEndObject();
+            while (_index < _count) {
+                _currentName = _fieldReaders[_index].getName();
+                _state = STATE_VALUE;
+                {
+                    JsonToken t = JsonToken.FIELD_NAME;
+                    _currToken = t;
+                    return t;
+                }
             }
-            _currentName = _fieldReaders[_index].getName();
-            _state = STATE_VALUE;
-            {
-                JsonToken t = JsonToken.FIELD_NAME;
-                _currToken = t;
-                return t;
-            }
+            return _nextAtEndObject();
         case STATE_VALUE:
             break;
         case STATE_END:
