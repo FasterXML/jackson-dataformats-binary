@@ -26,7 +26,7 @@ public abstract class AvroReadContext extends JsonStreamContext
     }
 
     public abstract JsonToken nextToken() throws IOException;
-    
+
     public abstract String nextFieldName() throws IOException;
 
     /*

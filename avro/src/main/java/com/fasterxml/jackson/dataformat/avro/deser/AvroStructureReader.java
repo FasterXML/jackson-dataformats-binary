@@ -36,6 +36,12 @@ public abstract class AvroStructureReader
     @Override
     public abstract JsonToken nextToken() throws IOException;
 
+    /**
+     * Alternative to {@link #nextToken} which will simply skip the full
+     * value.
+     */
+    public abstract void skipValue(Decoder decoder) throws IOException;
+
     @Override
     public final JsonToken getCurrentToken() {
         return _currToken;

@@ -79,7 +79,6 @@ public final class MapReader extends AvroStructureReader
         case STATE_END:
             final AvroReadContext parent = getParent();
             // as per [dataformats-binary#38], may need to reset, instead of bailing out
-            // ... note, however, that we can't as of yet test it, alas.
             if (parent.inRoot()) {
                 if (!DecodeUtil.isEnd(_decoder)) {
                     _index = 0;
@@ -99,11 +98,28 @@ public final class MapReader extends AvroStructureReader
         _state = STATE_NAME;
         ++_index;
         if (_scalarReader != null) {
-            return _scalarReader.readValue(_parser, _decoder);
+            return _scalarReader.decodeValue(_parser, _decoder);
         }
         AvroStructureReader r = _structureReader.newReader(this, _parser, _decoder);
         _parser.setAvroContext(r);
         return (_currToken = r.nextToken());
+    }
+
+    @Override
+    public void skipValue(Decoder decoder) throws IOException {
+        // As per Avro spec/ref impl suggestion:
+        long l;
+        while ((l = decoder.skipMap()) > 0L) {
+            if (_scalarReader != null) {
+                while (--l >= 0) {
+                    _scalarReader.skipValue(decoder);
+                }
+            } else {
+                while (--l >= 0) {
+                    _structureReader.skipValue(decoder);
+                }
+            }
+        }
     }
 
     @Override

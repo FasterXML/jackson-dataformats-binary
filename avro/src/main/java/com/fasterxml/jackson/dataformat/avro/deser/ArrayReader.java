@@ -124,9 +124,20 @@ abstract class ArrayReader extends AvroStructureReader
 
             // all good, just need to read the element value:
             ++_index;
-            JsonToken t = _elementReader.readValue(_parser, _decoder);
+            JsonToken t = _elementReader.decodeValue(_parser, _decoder);
             _currToken = t;
             return t;
+        }
+
+        @Override
+        public void skipValue(Decoder decoder) throws IOException {
+            // As per Avro spec/ref impl suggestion:
+            long l;
+            while ((l = decoder.skipArray()) > 0L) {
+                while (--l >= 0) {
+                    _elementReader.skipValue(decoder);
+                }
+            }
         }
     }
 
@@ -190,6 +201,17 @@ abstract class ArrayReader extends AvroStructureReader
             AvroStructureReader r = _elementReader.newReader(this, _parser, _decoder);
             _parser.setAvroContext(r);
             return (_currToken = r.nextToken());
+        }
+
+        @Override
+        public void skipValue(Decoder decoder) throws IOException {
+            // As per Avro spec/ref impl suggestion:
+            long l;
+            while ((l = decoder.skipArray()) > 0L) {
+                while (--l >= 0) {
+                    _elementReader.skipValue(decoder);
+                }
+            }
         }
     }
 }

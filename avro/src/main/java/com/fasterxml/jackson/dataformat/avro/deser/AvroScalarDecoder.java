@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 
 import org.apache.avro.io.Decoder;
@@ -16,9 +15,12 @@ import org.apache.avro.io.Decoder;
  */
 public abstract class AvroScalarDecoder
 {
-    protected abstract JsonToken readValue(AvroParserImpl parser, Decoder decoder)
+    protected abstract JsonToken decodeValue(AvroParserImpl parser, Decoder decoder)
         throws IOException;
 
+    protected abstract void skipValue(Decoder decoder)
+            throws IOException;
+    
     /*
     /**********************************************************************
     /* Scalar lead value decoder implementations
@@ -33,103 +35,169 @@ public abstract class AvroScalarDecoder
         public ScalarUnionReader(AvroScalarDecoder[] readers) {
             _readers = readers;
         }
-        
+
         @Override
-        protected JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException
+        protected JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException
         {
-            int index = decoder.readIndex();
+            return _checkIndex(decoder.readIndex()).decodeValue(parser, decoder);
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException
+        {
+            _checkIndex(decoder.readIndex()).skipValue(decoder);
+        }
+
+        private AvroScalarDecoder _checkIndex(int index) throws IOException {
             if (index < 0 || index >= _readers.length) {
-                throw new JsonParseException(parser, String.format
-                        ("Invalid index (%s); union only has %d types", index, _readers.length));
+                throw new IOException(String.format(
+                        "Invalid Union index (%s); union only has %d types", index, _readers.length));
             }
-            return _readers[index].readValue(parser, decoder);
+            return _readers[index];
         }
     }
-    
+
     protected final static class BooleanReader extends AvroScalarDecoder
     {
         @Override
-        protected JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+        protected JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException
+        {
+            // for some reason, no `skipBoolean()` so:
+            decoder.skipFixed(1);
         }
     }
     
     protected final static class BytesReader extends AvroScalarDecoder
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             ByteBuffer bb = parser.borrowByteBuffer();
             bb = decoder.readBytes(bb);
             return parser.setBytes(bb);
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            decoder.skipBytes();
         }
     }
 
     protected final static class DoubleReader extends AvroScalarDecoder
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readDouble());
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            // doubles have fixed length of 8 bytes
+            decoder.skipFixed(8);
         }
     }
     
     protected final static class FloatReader extends AvroScalarDecoder {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readFloat());
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            // floats have fixed length of 4 bytes
+            decoder.skipFixed(8);
         }
     }
     
     protected final static class IntReader extends AvroScalarDecoder
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readInt());
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            // ints use variable-length zigzagging; alas, no native skipping
+            decoder.readInt();
         }
     }
     
     protected final static class LongReader extends AvroScalarDecoder
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
             return parser.setNumber(decoder.readLong());
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            // longs use variable-length zigzagging; alas, no native skipping
+            decoder.readLong();
         }
     }
     
     protected final static class NullReader extends AvroScalarDecoder
     {
-        @Override public JsonToken readValue(AvroParserImpl parser, Decoder decoder) {
+        @Override public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) {
             return JsonToken.VALUE_NULL;
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            ; // value implied
         }
     }
     
     protected final static class StringReader extends AvroScalarDecoder
     {
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder) throws IOException
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException
         {
             return parser.setString(decoder.readString());
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            decoder.skipString();
         }
     }
 
     protected final static class EnumDecoder
         extends AvroScalarDecoder
     {
+        protected final String _name;
         protected final String[] _values;
         
-        public EnumDecoder(List<String> enumNames)
+        public EnumDecoder(String name, List<String> enumNames)
         {
+            _name = name;
             _values = enumNames.toArray(new String[enumNames.size()]);
         }
-        
+
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder)
-            throws IOException
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException
         {
-            int index = decoder.readEnum();
+            return parser.setString(_checkIndex(decoder.readEnum()));
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            _checkIndex(decoder.readEnum());
+        }
+
+        private final String _checkIndex(int index) throws IOException {
             if (index < 0 || index >= _values.length) {
-                throw new IOException("Illegal Enum index ("+index+"): only "+_values.length+" entries");
+                throw new IOException(String.format(
+                        "Invalid Enum index (%s); enum '%s' only has %d types",
+                        index, _name, _values.length));
             }
-            return parser.setString(_values[index]);
+            return _values[index];
         }
     }
 
@@ -143,12 +211,17 @@ public abstract class AvroScalarDecoder
         }
         
         @Override
-        public JsonToken readValue(AvroParserImpl parser, Decoder decoder)
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder)
             throws IOException
         {
             byte[] data = new byte[_size];
             decoder.readFixed(data);
             return parser.setBytes(data);
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            decoder.skipFixed(_size);
         }
     }
 }

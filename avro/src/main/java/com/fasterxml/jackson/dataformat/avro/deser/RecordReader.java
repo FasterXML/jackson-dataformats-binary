@@ -84,7 +84,14 @@ final class RecordReader extends AvroStructureReader
         JsonToken t = field.readValue(this, _parser, _decoder);
         _currToken = t;
         return t;
-    }        
+    }
+
+    @Override
+    public void skipValue(Decoder decoder) throws IOException {
+        for (int i = 0, end = _fieldReaders.length; i < end; ++i) {
+            _fieldReaders[i].skipValue(decoder);
+        }
+    }
 
     private final JsonToken _nextAtEndObject() throws IOException
     {

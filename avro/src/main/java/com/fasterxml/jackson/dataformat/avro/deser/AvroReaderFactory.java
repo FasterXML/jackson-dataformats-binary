@@ -68,7 +68,7 @@ public class AvroReaderFactory
         case DOUBLE: 
             return READER_DOUBLE;
         case ENUM: 
-            return new EnumDecoder(type.getEnumSymbols());
+            return new EnumDecoder(type.getFullName(), type.getEnumSymbols());
         case FIXED: 
             return new FixedDecoder(type.getFixedSize());
         case FLOAT: 
@@ -166,9 +166,9 @@ public class AvroReaderFactory
     {
         AvroScalarDecoder scalar = createDecoder(type);
         if (scalar != null) {
-            return new AvroFieldWrapper(name, scalar);
+            return AvroFieldWrapper.construct(name, scalar);
         }
-        return new AvroFieldWrapper(name, createReader(type));
+        return AvroFieldWrapper.construct(name, createReader(type));
     }
 
     private String _typeName(Schema schema) {
