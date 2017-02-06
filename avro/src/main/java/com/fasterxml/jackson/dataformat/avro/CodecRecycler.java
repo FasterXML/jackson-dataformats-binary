@@ -78,14 +78,14 @@ public final class CodecRecycler {
 				cache = new WeakIdentityHashMap<Schema, Symbol>();
 				SYMBOL_CACHE.get().put(actual, cache);
 			}
-			Symbol resolver = cache.get(expected);
-			if (resolver == null) {
-				resolver = (Symbol) ResolvingDecoder.resolve(actual, expected);
-				cache.put(expected, resolver);
+			Symbol symbol = cache.get(expected);
+			if (symbol == null) {
+				symbol = (Symbol) ResolvingDecoder.resolve(actual, expected);
+				cache.put(expected, symbol);
 			} 
 			
 			try {
-				return RESOLVING_DECODER_CONSTRUCTOR.newInstance(resolver, src);
+				return RESOLVING_DECODER_CONSTRUCTOR.newInstance(symbol, src);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new IllegalStateException(e);
