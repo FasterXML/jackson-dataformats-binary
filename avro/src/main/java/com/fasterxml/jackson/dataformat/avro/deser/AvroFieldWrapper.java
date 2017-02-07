@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -40,9 +40,9 @@ public abstract class AvroFieldWrapper
     public final boolean isSkipper() { return _isSkipper; }
 
     public abstract JsonToken readValue(AvroReadContext parent,
-            AvroParserImpl parser, Decoder avroDecoder) throws IOException;
+            AvroParserImpl parser, BinaryDecoder avroDecoder) throws IOException;
 
-    public abstract void skipValue(Decoder decoder) throws IOException;
+    public abstract void skipValue(BinaryDecoder decoder) throws IOException;
 
     /**
      * Implementation used for scalar-valued fields
@@ -57,13 +57,13 @@ public abstract class AvroFieldWrapper
 
         @Override
         public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, Decoder avroDecoder) throws IOException
+                AvroParserImpl parser, BinaryDecoder avroDecoder) throws IOException
         {
             return _decoder.decodeValue(parser, avroDecoder);
         }
 
         @Override
-        public void skipValue(Decoder decoder) throws IOException {
+        public void skipValue(BinaryDecoder decoder) throws IOException {
             _decoder.skipValue(decoder);
         }
     }
@@ -81,14 +81,14 @@ public abstract class AvroFieldWrapper
 
         @Override
         public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder)
+                AvroParserImpl parser, BinaryDecoder decoder)
             throws IOException
         {
             return _reader.newReader(parent, parser, decoder).nextToken();
         }
 
         @Override
-        public void skipValue(Decoder decoder) throws IOException {
+        public void skipValue(BinaryDecoder decoder) throws IOException {
             _reader.skipValue(decoder);
         }
     }

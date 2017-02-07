@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -13,7 +13,7 @@ abstract class ArrayReader extends AvroStructureReader
     protected final static int STATE_END = 2;
     protected final static int STATE_DONE = 3;
 
-    protected final Decoder _decoder;
+    protected final BinaryDecoder _decoder;
     protected final AvroParserImpl _parser;
 
     protected int _state;
@@ -22,18 +22,18 @@ abstract class ArrayReader extends AvroStructureReader
     protected String _currentName;
     
     protected ArrayReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder)
+            AvroParserImpl parser, BinaryDecoder decoder)
     {
         super(parent, TYPE_ARRAY);
         _parser = parser;
         _decoder = decoder;
     }
 
-    public static ArrayReader scalar(ScalarDecoder reader) {
+    public static ArrayReader construct(ScalarDecoder reader) {
         return new Scalar(reader);
     }
 
-    public static ArrayReader nonScalar(AvroStructureReader reader) {
+    public static ArrayReader construct(AvroStructureReader reader) {
         return new NonScalar(reader);
     }
 
@@ -73,14 +73,14 @@ abstract class ArrayReader extends AvroStructureReader
         }
 
         private Scalar(AvroReadContext parent, ScalarDecoder reader, 
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, BinaryDecoder decoder) {
             super(parent, parser, decoder);
             _elementReader = reader;
         }
         
         @Override
         public Scalar newReader(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, BinaryDecoder decoder) {
             return new Scalar(parent, _elementReader, parser, decoder);
         }
 
@@ -130,7 +130,7 @@ abstract class ArrayReader extends AvroStructureReader
         }
 
         @Override
-        public void skipValue(Decoder decoder) throws IOException {
+        public void skipValue(BinaryDecoder decoder) throws IOException {
             // As per Avro spec/ref impl suggestion:
             long l;
             while ((l = decoder.skipArray()) > 0L) {
@@ -151,14 +151,14 @@ abstract class ArrayReader extends AvroStructureReader
 
         private NonScalar(AvroReadContext parent,
                 AvroStructureReader reader, 
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, BinaryDecoder decoder) {
             super(parent, parser, decoder);
             _elementReader = reader;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, BinaryDecoder decoder) {
             return new NonScalar(parent, _elementReader, parser, decoder);
         }
 
@@ -204,7 +204,7 @@ abstract class ArrayReader extends AvroStructureReader
         }
 
         @Override
-        public void skipValue(Decoder decoder) throws IOException {
+        public void skipValue(BinaryDecoder decoder) throws IOException {
             // As per Avro spec/ref impl suggestion:
             long l;
             while ((l = decoder.skipArray()) > 0L) {

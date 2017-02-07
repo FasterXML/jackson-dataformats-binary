@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -17,7 +17,7 @@ final class ScalarDecoderWrapper extends AvroStructureReader
      */
     private final ScalarDecoder _valueDecoder;
 
-    private final Decoder _decoder;
+    private final BinaryDecoder _decoder;
     private final AvroParserImpl _parser;
     private final boolean _rootReader;
 
@@ -26,7 +26,7 @@ final class ScalarDecoderWrapper extends AvroStructureReader
     }
 
     private ScalarDecoderWrapper(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder,
+            AvroParserImpl parser, BinaryDecoder decoder,
             ScalarDecoder valueDecoder, boolean rootReader)
     {
         super(parent, TYPE_ROOT);
@@ -38,7 +38,7 @@ final class ScalarDecoderWrapper extends AvroStructureReader
 
     @Override
     public ScalarDecoderWrapper newReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder) {
+            AvroParserImpl parser, BinaryDecoder decoder) {
         return new ScalarDecoderWrapper(parent, parser, decoder, _valueDecoder, parent.inRoot());
     }
 
@@ -57,7 +57,7 @@ final class ScalarDecoderWrapper extends AvroStructureReader
     }
 
     @Override
-    public void skipValue(Decoder decoder) throws IOException {
+    public void skipValue(BinaryDecoder decoder) throws IOException {
         _valueDecoder.skipValue(decoder);
     }
     

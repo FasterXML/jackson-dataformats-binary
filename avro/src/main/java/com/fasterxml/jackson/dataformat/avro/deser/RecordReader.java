@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -15,7 +15,7 @@ abstract class RecordReader extends AvroStructureReader
     protected final static int STATE_DONE = 4;
 
     protected final AvroFieldWrapper[] _fieldReaders;
-    protected final Decoder _decoder;
+    protected final BinaryDecoder _decoder;
     protected final AvroParserImpl _parser;
 
     protected String _currentName;
@@ -25,7 +25,7 @@ abstract class RecordReader extends AvroStructureReader
 
     protected RecordReader(AvroReadContext parent,
             AvroFieldWrapper[] fieldReaders,
-            Decoder decoder, AvroParserImpl parser)
+            BinaryDecoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_OBJECT);
         _fieldReaders = fieldReaders;
@@ -36,13 +36,13 @@ abstract class RecordReader extends AvroStructureReader
 
     @Override
     public abstract RecordReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder);
+            AvroParserImpl parser, BinaryDecoder decoder);
 
     @Override
     public String getCurrentName() { return _currentName; }
 
     @Override
-    public final void skipValue(Decoder decoder) throws IOException {
+    public final void skipValue(BinaryDecoder decoder) throws IOException {
         for (int i = 0, end = _fieldReaders.length; i < end; ++i) {
             _fieldReaders[i].skipValue(decoder);
         }
@@ -93,13 +93,13 @@ abstract class RecordReader extends AvroStructureReader
 
         public Std(AvroReadContext parent,
                 AvroFieldWrapper[] fieldReaders,
-                Decoder decoder, AvroParserImpl parser) {
+                BinaryDecoder decoder, AvroParserImpl parser) {
             super(parent, fieldReaders, decoder, parser);
         }
         
         @Override
         public RecordReader newReader(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, BinaryDecoder decoder) {
             return new Std(parent, _fieldReaders, decoder, parser);
         }
 
@@ -169,13 +169,13 @@ abstract class RecordReader extends AvroStructureReader
         }
         public Resolving(AvroReadContext parent,
                 AvroFieldWrapper[] fieldReaders,
-                Decoder decoder, AvroParserImpl parser) {
+                BinaryDecoder decoder, AvroParserImpl parser) {
             super(parent, fieldReaders, decoder, parser);
         }
 
         @Override
         public RecordReader newReader(AvroReadContext parent,
-                AvroParserImpl parser, Decoder decoder) {
+                AvroParserImpl parser, BinaryDecoder decoder) {
             return new Resolving(parent, _fieldReaders, decoder, parser);
         }
 

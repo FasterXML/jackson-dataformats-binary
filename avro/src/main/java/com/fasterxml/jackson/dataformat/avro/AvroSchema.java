@@ -3,8 +3,6 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.Schema;
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.Decoder;
 
 import com.fasterxml.jackson.core.FormatSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -93,10 +91,6 @@ public class AvroSchema implements FormatSchema
 
     protected AvroStructureReader _constructReader() {
         return AvroReaderFactory.createFor(_writerSchema);
-    }
-    
-    public Decoder decoder(BinaryDecoder physical) throws JsonProcessingException {
-        return physical;
     }
 
     /*

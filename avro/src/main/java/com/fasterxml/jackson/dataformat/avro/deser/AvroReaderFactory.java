@@ -136,9 +136,9 @@ public abstract class AvroReaderFactory
         Schema elementType = schema.getElementType();
         ScalarDecoder scalar = createDecoder(elementType);
         if (scalar != null) {
-            return ArrayReader.scalar(scalar);
+            return ArrayReader.construct(scalar);
         }
-        return ArrayReader.nonScalar(createReader(elementType));
+        return ArrayReader.construct(createReader(elementType));
     }
 
     protected AvroStructureReader createMapReader(Schema schema)
@@ -146,9 +146,9 @@ public abstract class AvroReaderFactory
         Schema elementType = schema.getValueType();
         ScalarDecoder dec = createDecoder(elementType);
         if (dec != null) {
-            return new MapReader(dec);
+            return MapReader.construct(dec);
         }
-        return new MapReader(createReader(elementType));
+        return MapReader.construct(createReader(elementType));
     }
 
     protected AvroStructureReader createRecordReader(Schema schema)
@@ -256,9 +256,9 @@ public abstract class AvroReaderFactory
             Schema elementType = writerSchema.getElementType();
             ScalarDecoder scalar = createDecoder(elementType);
             if (scalar != null) {
-                return ArrayReader.scalar(scalar);
+                return ArrayReader.construct(scalar);
             }
-            return ArrayReader.nonScalar(createReader(elementType,
+            return ArrayReader.construct(createReader(elementType,
                     readerSchema.getElementType()));
         }
 
@@ -267,9 +267,9 @@ public abstract class AvroReaderFactory
             Schema elementType = writerSchema.getValueType();
             ScalarDecoder dec = createDecoder(elementType);
             if (dec != null) {
-                return new MapReader(dec);
+                return MapReader.construct(dec);
             }
-            return new MapReader(createReader(elementType,
+            return MapReader.construct(createReader(elementType,
                     readerSchema.getElementType()));
         }
 
