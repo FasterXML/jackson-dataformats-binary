@@ -155,7 +155,7 @@ public abstract class AvroReaderFactory
     {
         final List<Schema.Field> fields = schema.getFields();
         AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[fields.size()];
-        RecordReader reader = new RecordReader(fieldReaders);
+        RecordReader reader = new RecordReader.Std(fieldReaders);
         _knownReaders.put(_typeName(schema), reader);
         int i = 0;
         for (Schema.Field field : fields) {
@@ -193,7 +193,6 @@ public abstract class AvroReaderFactory
     /* Internal methods
     /**********************************************************************
      */
-    
 
     protected final String _typeName(Schema schema) {
         return schema.getFullName();
@@ -286,7 +285,7 @@ public abstract class AvroReaderFactory
             // note: despite changes, we will always have known number of field entities,
             // ones from writer schema -- some may skip, but there's entry there
             AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[writerFields.size()];
-            RecordReader reader = new RecordReader(fieldReaders);
+            RecordReader reader = new RecordReader.Resolving(fieldReaders);
 
             // as per earlier, names should be the same
             _knownReaders.put(_typeName(readerSchema), reader);

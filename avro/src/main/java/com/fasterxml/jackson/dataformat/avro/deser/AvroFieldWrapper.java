@@ -13,28 +13,31 @@ import com.fasterxml.jackson.core.JsonToken;
 public abstract class AvroFieldWrapper
 {
     protected final String _name;
+    protected final boolean _isSkipper;
 
-    protected AvroFieldWrapper(String name) {
+    protected AvroFieldWrapper(String name, boolean isSkipper) {
         _name = name;
+        _isSkipper = isSkipper;
     }
 
     public static AvroFieldWrapper construct(String name, ScalarDecoder scalarReader) {
-        return new Scalar(name, scalarReader);
+        return new Scalar(name, false, scalarReader);
     }
 
     public static AvroFieldWrapper construct(String name, AvroStructureReader structureReader) {
-        return new Structured(name, structureReader);
+        return new Structured(name, false, structureReader);
     }
 
     public static AvroFieldWrapper constructSkipper(String name, ScalarDecoder scalarReader) {
-        return new Scalar(name, scalarReader);
+        return new Scalar(name, true, scalarReader);
     }
 
     public static AvroFieldWrapper constructSkipper(String name, AvroStructureReader structureReader) {
-        return new Structured(name, structureReader);
+        return new Structured(name, true, structureReader);
     }
-    
-    public String getName() { return _name; }
+
+    public final String getName() { return _name; }
+    public final boolean isSkipper() { return _isSkipper; }
 
     public abstract JsonToken readValue(AvroReadContext parent,
             AvroParserImpl parser, Decoder avroDecoder) throws IOException;
@@ -47,8 +50,8 @@ public abstract class AvroFieldWrapper
     private final static class Scalar extends AvroFieldWrapper {
         protected final ScalarDecoder _decoder;
 
-        public Scalar(String name, ScalarDecoder dec) {
-            super(name);
+        public Scalar(String name, boolean skipper, ScalarDecoder dec) {
+            super(name, skipper);
             _decoder = dec;
         }
 
@@ -71,8 +74,8 @@ public abstract class AvroFieldWrapper
     private final static class Structured extends AvroFieldWrapper {
         protected final AvroStructureReader _reader;
 
-        public Structured(String name, AvroStructureReader r) {
-            super(name);
+        public Structured(String name, boolean skipper, AvroStructureReader r) {
+            super(name, skipper);
             _reader = r;
         }
 

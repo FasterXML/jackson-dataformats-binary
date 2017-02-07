@@ -1,11 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 
-import org.apache.avro.Schema;
 import org.apache.avro.io.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,17 +46,6 @@ public final class CodecRecycler
     {
         BinaryDecoder prev = _recycler().claimDecoder();
         return DECODER_FACTORY.binaryDecoder(buffer, offset, len, prev);
-    }
-
-    public static ResolvingDecoder convertingDecoder(Decoder src,
-            Schema writer, Schema reader)
-        throws JsonProcessingException
-    {
-        try {
-            return DECODER_FACTORY.resolvingDecoder(writer, reader, src);
-        } catch (IOException e) {
-            throw new BadSchemaException("Failed to create reader/writer-resolving Avro schema handler: "+e.getMessage(), e);
-        }
     }
 
     public static BinaryEncoder encoder(OutputStream out, boolean buffering)

@@ -20,11 +20,10 @@ public class AvroSchema implements FormatSchema
     public final static String TYPE_ID = "avro";
 
     /**
-     * Schema that is used for reading data ("reader" schema) by this instance;
-     * and for lowest-level instance also schema used for decoding underlying
-     * data ("writer" schema).
+     * Schema that was used for writing the data to decode; for simple instance
+     * used for reading as well (reader schema).
      */
-    protected final Schema _avroSchema;
+    protected final Schema _writerSchema;
 
     /**
      * Lazily instantiated value reader for this schema.
@@ -33,7 +32,7 @@ public class AvroSchema implements FormatSchema
 
     public AvroSchema(Schema asch)
     {
-        _avroSchema = asch;
+        _writerSchema = asch;
     }
 
     /**
@@ -57,13 +56,13 @@ public class AvroSchema implements FormatSchema
     public AvroSchema withReaderSchema(AvroSchema readerSchema)
         throws JsonProcessingException
     {
-        Schema w = _avroSchema;
+        Schema w = _writerSchema;
         Schema r = readerSchema.getAvroSchema();
 
         if (r.equals(w)) {
             return this;
         }
-        return new Resolving(this, r);
+        return Resolving.create(w, r);
     }
 
     @Override
@@ -71,7 +70,10 @@ public class AvroSchema implements FormatSchema
         return TYPE_ID;
     }
 
-    public Schema getAvroSchema() { return _avroSchema; }
+    /**
+     * Accessor for "writer schema" contained in this instance.
+     */
+    public Schema getAvroSchema() { return _writerSchema; }
 
     /*
     /**********************************************************************
@@ -83,12 +85,16 @@ public class AvroSchema implements FormatSchema
     {
         AvroStructureReader r = _reader.get();
         if (r == null) {
-            r = AvroReaderFactory.createFor(_avroSchema);
+            r = _constructReader();
             _reader.set(r);
         }
         return r;
     }
 
+    protected AvroStructureReader _constructReader() {
+        return AvroReaderFactory.createFor(_writerSchema);
+    }
+    
     public Decoder decoder(BinaryDecoder physical) throws JsonProcessingException {
         return physical;
     }
@@ -101,12 +107,12 @@ public class AvroSchema implements FormatSchema
 
     @Override
     public String toString() {
-        return String.format("{AvroSchema: name=%s}", _avroSchema.getFullName());
+        return String.format("{AvroSchema: name=%s}", _writerSchema.getFullName());
     }
 
     @Override
     public int hashCode() {
-        return _avroSchema.hashCode();
+        return _writerSchema.hashCode();
     }
 
     @Override
@@ -114,7 +120,7 @@ public class AvroSchema implements FormatSchema
         if (o == this) return true;
         if ((o == null) || o.getClass() != getClass()) return false;
         AvroSchema other = (AvroSchema) o;
-        return _avroSchema.equals(other._avroSchema);
+        return _writerSchema.equals(other._writerSchema);
     }
 
     /*
@@ -130,27 +136,28 @@ public class AvroSchema implements FormatSchema
      */
     private final static class Resolving extends AvroSchema
     {
-        private final AvroSchema _parent;
+        private final Schema _readerSchema;
 
-        public Resolving(AvroSchema parent, Schema reader)
+        public Resolving(Schema writer, Schema reader)
         {
-            super(reader);
-            if (parent == null) {
-                throw new IllegalArgumentException("null `parent`");
-            }
-            _parent = parent;
+            super(writer);
+            _readerSchema = reader;
         }
 
+        public static Resolving create(Schema writer, Schema reader) {
+            writer = Schema.applyAliases(writer, reader);
+            return new Resolving(writer, reader);
+        }
+        
         /*
         /**********************************************************************
         /* Factory method overrides
         /**********************************************************************
          */
 
-        public Decoder decoder(BinaryDecoder physical) throws JsonProcessingException {
-            Decoder src = _parent.decoder(physical);
-            return CodecRecycler.convertingDecoder(src,
-                    _parent.getAvroSchema(), getAvroSchema());
+        @Override
+        protected AvroStructureReader _constructReader() {
+            return AvroReaderFactory.createFor(_writerSchema, _readerSchema);
         }
 
         /*
@@ -161,14 +168,12 @@ public class AvroSchema implements FormatSchema
 
         @Override
         public String toString() {
-            return String.format("{AvroSchema.Resolving: name=%s; from %s}",
-                    _avroSchema.getFullName(),
-                    _parent);
+            return String.format("{AvroSchema.Resolving: name=%s}", _writerSchema.getFullName());
         }
 
         @Override
         public int hashCode() {
-            return _avroSchema.hashCode() ^ _parent.hashCode();
+            return super.hashCode() ^ _readerSchema.hashCode();
         }
 
         @Override
@@ -176,8 +181,8 @@ public class AvroSchema implements FormatSchema
             if (o == this) return true;
             if ((o == null) || o.getClass() != getClass()) return false;
             Resolving other = (Resolving) o;
-            return _avroSchema.equals(other._avroSchema)
-                    && _parent.equals(other._parent);
+            return _writerSchema.equals(other._writerSchema)
+                    && _readerSchema.equals(other._readerSchema);
         }
     }
 }
