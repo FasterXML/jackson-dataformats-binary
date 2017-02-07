@@ -253,6 +253,7 @@ public abstract class AvroReaderFactory
 
         protected AvroStructureReader createArrayReader(Schema writerSchema, Schema readerSchema)
         {
+            readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
             Schema writerElementType = writerSchema.getElementType();
             ScalarDecoder scalar = createDecoder(writerElementType);
             if (scalar != null) {
@@ -264,6 +265,7 @@ public abstract class AvroReaderFactory
 
         protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema)
         {
+            readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
             Schema writerElementType = writerSchema.getValueType();
             ScalarDecoder dec = createDecoder(writerElementType);
             if (dec != null) {
@@ -275,6 +277,8 @@ public abstract class AvroReaderFactory
 
         protected AvroStructureReader createRecordReader(Schema writerSchema, Schema readerSchema)
         {
+            readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
+
             // Ok, this gets bit more complicated: need to iterate over writer schema
             // (since that will be the order fields are decoded in!), but also
             // keep track of which reader fields are being produced.
@@ -306,16 +310,6 @@ public abstract class AvroReaderFactory
             }
             
             return reader;
-        }
-
-        private Map<String,Schema.Field> _fieldMap(List<Schema.Field> fields)
-        {
-            // let's retain order, to keep possible default values ordered:
-            Map<String,Schema.Field> result = new LinkedHashMap<String,Schema.Field>();
-            for (Schema.Field field : fields) {
-                result.put(field.name(), field);
-            }
-            return result;
         }
 
         protected AvroStructureReader createUnionReader(Schema writerSchema, Schema readerSchema)
@@ -353,6 +347,56 @@ public abstract class AvroReaderFactory
             }
             return AvroFieldWrapper.constructSkipper(name,
                     createReader(writerSchema));
+        }
+
+        private Map<String,Schema.Field> _fieldMap(List<Schema.Field> fields)
+        {
+            // let's retain order, to keep possible default values ordered:
+            Map<String,Schema.Field> result = new LinkedHashMap<String,Schema.Field>();
+            for (Schema.Field field : fields) {
+                result.put(field.name(), field);
+            }
+            return result;
+        }
+
+        /**
+         * Helper method that verifies that the given reader schema is compatible
+         * with specified writer schema type: either directly (same type), or
+         * via latter being a union with compatible type. In latter case, type
+         * (schema) within union that matches writer schema is returned instead
+         * of containing union
+         *
+         * @return Reader schema that matches expected writer schema
+         */
+        private Schema _verifyMatchingStructure(Schema readerSchema, Schema writerSchema)
+        {
+            final Schema.Type expectedType = writerSchema.getType();
+            Schema.Type actualType = readerSchema.getType();
+            // Simple rules: if structures are the same (both arrays, both maps, both records),
+            // fine, without yet verifying element types
+            if (actualType == expectedType) {
+                return readerSchema;
+            }
+            // Or, similarly, find the first structure of same type within union.
+
+            // !!! 07-Feb-2017, tatu: Quite possibly we should do recursive match check here,
+            //    in case there are multiple alternatives of same structured type.
+            //    But since that is quite non-trivial let's wait for a good example of actual
+            //    usage before tackling that.
+            
+            if (actualType == Schema.Type.UNION) {
+                for (Schema sch : readerSchema.getTypes()) {
+                    if (sch.getType() == expectedType) {
+                        return sch;
+                    }
+                }
+                throw new IllegalStateException(String.format(
+                        "Mismatch between types: expected %s (name '%s'), encountered %s of %d types without match",
+                        expectedType, writerSchema.getName(), actualType, readerSchema.getTypes().size()));
+            }
+            throw new IllegalStateException(String.format(
+                    "Mismatch between types: expected %s (name '%s'), encountered %s",
+                    expectedType, writerSchema.getName(), actualType));
         }
     }
 }
