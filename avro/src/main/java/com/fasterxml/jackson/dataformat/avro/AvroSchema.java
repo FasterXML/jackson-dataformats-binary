@@ -3,9 +3,13 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaCompatibility;
+import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
+import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
 
 import com.fasterxml.jackson.core.FormatSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReaderFactory;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroStructureReader;
 
@@ -41,6 +45,10 @@ public class AvroSchema implements FormatSchema
      *<p>
      * Note that neither `this` instance nor `readerSchema` is ever modified: if an altered
      * version is needed, a new schema object will be constructed.
+     *<p>
+     * NOTE: this is a relatively expensive operation due to validation (although significant
+     *  part of cost is deferred until the first call to {@link #getReader}) so it is recommended
+     *  that these instances are reused whenever possible.
      *
      * @param readerSchema "Reader Schema" to use (in Avro terms): schema that specified how
      *    reader wants to see the data; specifies part of translation needed along with this
@@ -59,6 +67,22 @@ public class AvroSchema implements FormatSchema
 
         if (r.equals(w)) {
             return this;
+        }
+        // First: apply simple renamings:
+        w = Schema.applyAliases(w, r);
+
+        // and then use Avro std lib to validate compatibility
+        SchemaPairCompatibility comp;
+        try {
+            comp = SchemaCompatibility.checkReaderWriterCompatibility(r, w);
+        } catch (Exception e) {
+            throw new JsonMappingException(null, String.format(
+                    "Failed to resolve given reader/writer schemas, problem: (%s) %s",
+                    e.getClass().getName(), e.getMessage()));
+        }
+        if (comp.getType() != SchemaCompatibilityType.COMPATIBLE) {
+            throw new JsonMappingException(null, String.format("Incompatible reader/writer schema: %s",
+                    comp.getDescription()));
         }
         return Resolving.create(w, r);
     }
@@ -139,15 +163,8 @@ public class AvroSchema implements FormatSchema
         }
 
         public static Resolving create(Schema writer, Schema reader) {
-            writer = Schema.applyAliases(writer, reader);
             return new Resolving(writer, reader);
         }
-        
-        /*
-        /**********************************************************************
-        /* Factory method overrides
-        /**********************************************************************
-         */
 
         @Override
         protected AvroStructureReader _constructReader() {

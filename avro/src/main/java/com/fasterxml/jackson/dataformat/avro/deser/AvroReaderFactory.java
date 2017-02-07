@@ -253,23 +253,23 @@ public abstract class AvroReaderFactory
 
         protected AvroStructureReader createArrayReader(Schema writerSchema, Schema readerSchema)
         {
-            Schema elementType = writerSchema.getElementType();
-            ScalarDecoder scalar = createDecoder(elementType);
+            Schema writerElementType = writerSchema.getElementType();
+            ScalarDecoder scalar = createDecoder(writerElementType);
             if (scalar != null) {
                 return ArrayReader.construct(scalar);
             }
-            return ArrayReader.construct(createReader(elementType,
+            return ArrayReader.construct(createReader(writerElementType,
                     readerSchema.getElementType()));
         }
 
         protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema)
         {
-            Schema elementType = writerSchema.getValueType();
-            ScalarDecoder dec = createDecoder(elementType);
+            Schema writerElementType = writerSchema.getValueType();
+            ScalarDecoder dec = createDecoder(writerElementType);
             if (dec != null) {
                 return MapReader.construct(dec);
             }
-            return MapReader.construct(createReader(elementType,
+            return MapReader.construct(createReader(writerElementType,
                     readerSchema.getElementType()));
         }
 
@@ -299,12 +299,19 @@ public abstract class AvroReaderFactory
                         : createFieldReader(readerField.name(),
                                 writerField.schema(), readerField.schema());
             }
+            
+            // Any defaults to consider?
+            if (!readerFields.isEmpty()) {
+                // !!! TODO
+            }
+            
             return reader;
         }
 
         private Map<String,Schema.Field> _fieldMap(List<Schema.Field> fields)
         {
-            Map<String,Schema.Field> result = new HashMap<String,Schema.Field>();
+            // let's retain order, to keep possible default values ordered:
+            Map<String,Schema.Field> result = new LinkedHashMap<String,Schema.Field>();
             for (Schema.Field field : fields) {
                 result.put(field.name(), field);
             }
@@ -316,6 +323,9 @@ public abstract class AvroReaderFactory
             final List<Schema> types = writerSchema.getTypes();
             AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
             int i = 0;
+            
+            // !!! TODO: actual resolution !!!
+            
             for (Schema type : types) {
                 typeReaders[i++] = createReader(type);
             }
