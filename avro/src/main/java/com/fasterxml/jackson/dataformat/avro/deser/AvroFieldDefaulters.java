@@ -7,7 +7,7 @@ import org.codehaus.jackson.JsonNode;
  */
 public class AvroFieldDefaulters
 {
-    public static AvroFieldWrapper createDefaulter(String name,
+    public static AvroFieldReader createDefaulter(String name,
             JsonNode defaultAsNode) {
         switch (defaultAsNode.asToken()) {
         case VALUE_TRUE:

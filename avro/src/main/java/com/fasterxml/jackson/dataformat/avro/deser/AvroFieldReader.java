@@ -10,29 +10,21 @@ import com.fasterxml.jackson.core.JsonToken;
  * Entity that encapsulates details of accessing value of a single field
  * of a "Record" (Avro term, corresponding roughly to JSON Object).
  */
-public abstract class AvroFieldWrapper
+public abstract class AvroFieldReader
 {
     protected final String _name;
     protected final boolean _isSkipper;
 
-    protected AvroFieldWrapper(String name, boolean isSkipper) {
+    protected AvroFieldReader(String name, boolean isSkipper) {
         _name = name;
         _isSkipper = isSkipper;
     }
 
-    public static AvroFieldWrapper construct(String name, ScalarDecoder scalarReader) {
-        return new Scalar(name, false, scalarReader);
-    }
-
-    public static AvroFieldWrapper construct(String name, AvroStructureReader structureReader) {
+    public static AvroFieldReader construct(String name, AvroStructureReader structureReader) {
         return new Structured(name, false, structureReader);
     }
 
-    public static AvroFieldWrapper constructSkipper(String name, ScalarDecoder scalarReader) {
-        return new Scalar(name, true, scalarReader);
-    }
-
-    public static AvroFieldWrapper constructSkipper(String name, AvroStructureReader structureReader) {
+    public static AvroFieldReader constructSkipper(String name, AvroStructureReader structureReader) {
         return new Structured(name, true, structureReader);
     }
 
@@ -45,33 +37,9 @@ public abstract class AvroFieldWrapper
     public abstract void skipValue(BinaryDecoder decoder) throws IOException;
 
     /**
-     * Implementation used for scalar-valued fields
-     */
-    private final static class Scalar extends AvroFieldWrapper {
-        protected final ScalarDecoder _decoder;
-
-        public Scalar(String name, boolean skipper, ScalarDecoder dec) {
-            super(name, skipper);
-            _decoder = dec;
-        }
-
-        @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) throws IOException
-        {
-            return _decoder.decodeValue(parser, avroDecoder);
-        }
-
-        @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
-            _decoder.skipValue(decoder);
-        }
-    }
-
-    /**
      * Implementation used for non-scalar-valued (structured) fields
      */
-    private final static class Structured extends AvroFieldWrapper {
+    private final static class Structured extends AvroFieldReader {
         protected final AvroStructureReader _reader;
 
         public Structured(String name, boolean skipper, AvroStructureReader r) {

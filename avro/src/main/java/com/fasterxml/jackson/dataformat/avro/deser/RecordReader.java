@@ -14,7 +14,7 @@ abstract class RecordReader extends AvroStructureReader
     protected final static int STATE_END = 3;
     protected final static int STATE_DONE = 4;
 
-    protected final AvroFieldWrapper[] _fieldReaders;
+    protected final AvroFieldReader[] _fieldReaders;
     protected final BinaryDecoder _decoder;
     protected final AvroParserImpl _parser;
 
@@ -24,7 +24,7 @@ abstract class RecordReader extends AvroStructureReader
     protected final int _count;
 
     protected RecordReader(AvroReadContext parent,
-            AvroFieldWrapper[] fieldReaders,
+            AvroFieldReader[] fieldReaders,
             BinaryDecoder decoder, AvroParserImpl parser)
     {
         super(parent, TYPE_OBJECT);
@@ -87,12 +87,12 @@ abstract class RecordReader extends AvroStructureReader
     public final static class Std
         extends RecordReader
     {
-        public Std(AvroFieldWrapper[] fieldReaders) {
+        public Std(AvroFieldReader[] fieldReaders) {
             super(null, fieldReaders, null, null);
         }
 
         public Std(AvroReadContext parent,
-                AvroFieldWrapper[] fieldReaders,
+                AvroFieldReader[] fieldReaders,
                 BinaryDecoder decoder, AvroParserImpl parser) {
             super(parent, fieldReaders, decoder, parser);
         }
@@ -135,7 +135,7 @@ abstract class RecordReader extends AvroStructureReader
                 throwIllegalState(_state);
             }
             _state = STATE_NAME;
-            AvroFieldWrapper field = _fieldReaders[_index];
+            AvroFieldReader field = _fieldReaders[_index];
             ++_index;
             JsonToken t = field.readValue(this, _parser, _decoder);
             _currToken = t;
@@ -164,11 +164,11 @@ abstract class RecordReader extends AvroStructureReader
     public final static class Resolving
         extends RecordReader
     {
-        public Resolving(AvroFieldWrapper[] fieldReaders) {
+        public Resolving(AvroFieldReader[] fieldReaders) {
             super(null, fieldReaders, null, null);
         }
         public Resolving(AvroReadContext parent,
-                AvroFieldWrapper[] fieldReaders,
+                AvroFieldReader[] fieldReaders,
                 BinaryDecoder decoder, AvroParserImpl parser) {
             super(parent, fieldReaders, decoder, parser);
         }
@@ -193,7 +193,7 @@ abstract class RecordReader extends AvroStructureReader
                 }
             case STATE_NAME:
                 while (_index < _count) {
-                    AvroFieldWrapper r = _fieldReaders[_index];
+                    AvroFieldReader r = _fieldReaders[_index];
                     if (r.isSkipper()) {
                         ++_index;
                         r.skipValue(_decoder);
@@ -213,7 +213,7 @@ abstract class RecordReader extends AvroStructureReader
                 throwIllegalState(_state);
             }
             _state = STATE_NAME;
-            AvroFieldWrapper field = _fieldReaders[_index];
+            AvroFieldReader field = _fieldReaders[_index];
             ++_index;
             JsonToken t = field.readValue(this, _parser, _decoder);
             _currToken = t;
@@ -225,7 +225,7 @@ abstract class RecordReader extends AvroStructureReader
         {
             if (_state == STATE_NAME) {
                 while (_index < _count) {
-                    AvroFieldWrapper r = _fieldReaders[_index];
+                    AvroFieldReader r = _fieldReaders[_index];
                     if (r.isSkipper()) {
                         ++_index;
                         r.skipValue(_decoder);

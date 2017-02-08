@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonToken;
 public class ScalarDefaults
 {
     protected abstract static class DefaultsBase
-        extends AvroFieldWrapper
+        extends AvroFieldReader
     {
         protected DefaultsBase(String name) {
             super(name, false); // false -> not skip-only

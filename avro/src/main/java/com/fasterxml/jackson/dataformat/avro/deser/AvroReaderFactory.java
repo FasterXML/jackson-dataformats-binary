@@ -49,7 +49,7 @@ public abstract class AvroReaderFactory
     /**********************************************************************
      */
 
-    public ScalarDecoder createDecoder(Schema type)
+    public ScalarDecoder createScalarValueDecoder(Schema type)
     {
         switch (type.getType()) {
         case BOOLEAN:
@@ -82,7 +82,7 @@ public abstract class AvroReaderFactory
                 ScalarDecoder[] readers = new ScalarDecoder[types.size()];
                 int i = 0;
                 for (Schema schema : types) {
-                    ScalarDecoder reader = createDecoder(schema);
+                    ScalarDecoder reader = createScalarValueDecoder(schema);
                     if (reader == null) { // non-scalar; no go
                         return null;
                     }
@@ -127,14 +127,14 @@ public abstract class AvroReaderFactory
             return createUnionReader(schema);
         default:
             // for other types, we need wrappers
-            return new ScalarDecoderWrapper(createDecoder(schema));
+            return new ScalarDecoderWrapper(createScalarValueDecoder(schema));
         }
     }
 
     protected AvroStructureReader createArrayReader(Schema schema)
     {
         Schema elementType = schema.getElementType();
-        ScalarDecoder scalar = createDecoder(elementType);
+        ScalarDecoder scalar = createScalarValueDecoder(elementType);
         if (scalar != null) {
             return ArrayReader.construct(scalar);
         }
@@ -144,7 +144,7 @@ public abstract class AvroReaderFactory
     protected AvroStructureReader createMapReader(Schema schema)
     {
         Schema elementType = schema.getValueType();
-        ScalarDecoder dec = createDecoder(elementType);
+        ScalarDecoder dec = createScalarValueDecoder(elementType);
         if (dec != null) {
             return MapReader.construct(dec);
         }
@@ -154,7 +154,7 @@ public abstract class AvroReaderFactory
     protected AvroStructureReader createRecordReader(Schema schema)
     {
         final List<Schema.Field> fields = schema.getFields();
-        AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[fields.size()];
+        AvroFieldReader[] fieldReaders = new AvroFieldReader[fields.size()];
         RecordReader reader = new RecordReader.Std(fieldReaders);
         _knownReaders.put(_typeName(schema), reader);
         int i = 0;
@@ -175,17 +175,15 @@ public abstract class AvroReaderFactory
         return new UnionReader(typeReaders);
     }
 
-    protected AvroFieldWrapper createFieldReader(Schema.Field field) {
-        return createFieldReader(field.name(), field.schema());
-    }
+    protected AvroFieldReader createFieldReader(Schema.Field field) {
+        final String name = field.name();
+        final Schema type = field.schema();
 
-    protected AvroFieldWrapper createFieldReader(String name, Schema type)
-    {
-        ScalarDecoder scalar = createDecoder(type);
+        ScalarDecoder scalar = createScalarValueDecoder(type);
         if (scalar != null) {
-            return AvroFieldWrapper.construct(name, scalar);
+            return scalar.asFieldReader(name, false);
         }
-        return AvroFieldWrapper.construct(name, createReader(type));
+        return AvroFieldReader.construct(name, createReader(type));
     }
 
     /*
@@ -247,7 +245,7 @@ public abstract class AvroReaderFactory
                 return createUnionReader(writerSchema, readerSchema);
             default:
                 // for other types, we need wrappers
-                return new ScalarDecoderWrapper(createDecoder(writerSchema));
+                return new ScalarDecoderWrapper(createScalarValueDecoder(writerSchema));
             }
         }
 
@@ -255,7 +253,7 @@ public abstract class AvroReaderFactory
         {
             readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
             Schema writerElementType = writerSchema.getElementType();
-            ScalarDecoder scalar = createDecoder(writerElementType);
+            ScalarDecoder scalar = createScalarValueDecoder(writerElementType);
             if (scalar != null) {
                 return ArrayReader.construct(scalar);
             }
@@ -267,7 +265,7 @@ public abstract class AvroReaderFactory
         {
             readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
             Schema writerElementType = writerSchema.getValueType();
-            ScalarDecoder dec = createDecoder(writerElementType);
+            ScalarDecoder dec = createScalarValueDecoder(writerElementType);
             if (dec != null) {
                 return MapReader.construct(dec);
             }
@@ -306,7 +304,7 @@ public abstract class AvroReaderFactory
             
             // note: despite changes, we will always have known number of field entities,
             // ones from writer schema -- some may skip, but there's entry there
-            AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[writerFields.size()
+            AvroFieldReader[] fieldReaders = new AvroFieldReader[writerFields.size()
                                                                    + defaultFields.size()];
             RecordReader reader = new RecordReader.Resolving(fieldReaders);
 
@@ -347,26 +345,25 @@ public abstract class AvroReaderFactory
             return new UnionReader(typeReaders);
         }
 
-        protected AvroFieldWrapper createFieldReader(String name,
+        protected AvroFieldReader createFieldReader(String name,
                 Schema writerSchema, Schema readerSchema)
         {
-            ScalarDecoder scalar = createDecoder(writerSchema);
+            ScalarDecoder scalar = createScalarValueDecoder(writerSchema);
             if (scalar != null) {
-                return AvroFieldWrapper.construct(name, scalar);
+                return scalar.asFieldReader(name, false);
             }
-            return AvroFieldWrapper.construct(name,
+            return AvroFieldReader.construct(name,
                     createReader(writerSchema, readerSchema));
         }
 
-        protected AvroFieldWrapper createFieldSkipper(String name,
+        protected AvroFieldReader createFieldSkipper(String name,
                 Schema writerSchema)
         {
-            // 05-Feb-2016, tatu: initially simply construct regular
-            ScalarDecoder scalar = createDecoder(writerSchema);
+            ScalarDecoder scalar = createScalarValueDecoder(writerSchema);
             if (scalar != null) {
-                return AvroFieldWrapper.constructSkipper(name, scalar);
+                return scalar.asFieldReader(name, true);
             }
-            return AvroFieldWrapper.constructSkipper(name,
+            return AvroFieldReader.constructSkipper(name,
                     createReader(writerSchema));
         }
 
