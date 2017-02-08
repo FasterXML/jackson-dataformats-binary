@@ -82,7 +82,7 @@ public final class CodecRecycler {
 			if (symbol == null) {
 				symbol = (Symbol) ResolvingDecoder.resolve(actual, expected);
 				cache.put(expected, symbol);
-			} 
+			}
 			
 			try {
 				return RESOLVING_DECODER_CONSTRUCTOR.newInstance(symbol, src);

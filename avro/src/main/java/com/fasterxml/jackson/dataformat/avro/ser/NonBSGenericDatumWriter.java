@@ -15,9 +15,7 @@ import org.apache.avro.io.Encoder;
  * 
  * @since 2.5
  */
-public class NonBSGenericDatumWriter<D>
-	extends GenericDatumWriter<D>
-{
+public class NonBSGenericDatumWriter<D> extends GenericDatumWriter<D> {
 	public NonBSGenericDatumWriter(Schema root) {
 		super(root);
 	}
@@ -39,7 +37,7 @@ public class NonBSGenericDatumWriter<D>
 				default:
 				}
 			}
-		} else if( datum instanceof BigDecimal) {
+		} else if (datum instanceof BigDecimal) {
 			List<Schema> schemas = union.getTypes();
 			for (int i = 0, len = schemas.size(); i < len; ++i) {
 				Schema s = schemas.get(i);
@@ -56,10 +54,19 @@ public class NonBSGenericDatumWriter<D>
 
 	@Override
 	protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-	    if ((schema.getType() == Type.DOUBLE) && datum instanceof BigDecimal) {
-	        out.writeDouble(((BigDecimal)datum).doubleValue());
-	    } else {
-	        super.write(schema, datum, out);
-	    }
+		if ((schema.getType() == Type.DOUBLE) && datum instanceof BigDecimal) {
+			out.writeDouble(((BigDecimal) datum).doubleValue());
+		} else {
+			super.write(schema, datum, out);
+		}
+	}
+
+	/**
+	 * Overridden to elide the check on whether datum is a Java enum or not, as
+	 * Jackson can handle this differently
+	 */
+	@Override
+	protected void writeEnum(Schema schema, Object datum, Encoder out) throws IOException {
+		out.writeEnum(schema.getEnumOrdinal(datum.toString()));
 	}
 }
