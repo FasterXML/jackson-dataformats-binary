@@ -23,16 +23,16 @@ public abstract class ScalarDecoder
     
     /*
     /**********************************************************************
-    /* Scalar lead value decoder implementations
+    /* Decoder implementations
     /**********************************************************************
      */
 
-    protected final static class ScalarUnionReader
+    protected final static class ScalarUnionDecoder
         extends ScalarDecoder
     {
         public final ScalarDecoder[] _readers;
 
-        public ScalarUnionReader(ScalarDecoder[] readers) {
+        public ScalarUnionDecoder(ScalarDecoder[] readers) {
             _readers = readers;
         }
 
@@ -57,7 +57,7 @@ public abstract class ScalarDecoder
         }
     }
 
-    protected final static class BooleanReader extends ScalarDecoder
+    protected final static class BooleanDecoder extends ScalarDecoder
     {
         @Override
         protected JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
@@ -71,8 +71,8 @@ public abstract class ScalarDecoder
             decoder.skipFixed(1);
         }
     }
-    
-    protected final static class BytesReader extends ScalarDecoder
+
+    protected final static class BytesDecoder extends ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {

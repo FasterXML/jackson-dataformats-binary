@@ -12,8 +12,8 @@ import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
  */
 public abstract class AvroReaderFactory
 {
-    protected final static ScalarDecoder READER_BOOLEAN = new BooleanReader();
-    protected final static ScalarDecoder READER_BYTES = new BytesReader();
+    protected final static ScalarDecoder READER_BOOLEAN = new BooleanDecoder();
+    protected final static ScalarDecoder READER_BYTES = new BytesDecoder();
     protected final static ScalarDecoder READER_DOUBLE = new DoubleReader();
     protected final static ScalarDecoder READER_FLOAT = new FloatReader();
     protected final static ScalarDecoder READER_INT = new IntReader();
@@ -88,7 +88,7 @@ public abstract class AvroReaderFactory
                     }
                     readers[i++] = reader;
                 }
-                return new ScalarUnionReader(readers);
+                return new ScalarUnionDecoder(readers);
             }
         case ARRAY: // ok to call just can't handle
         case MAP:
@@ -284,18 +284,37 @@ public abstract class AvroReaderFactory
             // keep track of which reader fields are being produced.
 
             final List<Schema.Field> writerFields = writerSchema.getFields();
-            Map<String,Schema.Field> readerFields = _fieldMap(readerSchema.getFields());
 
+            // but first: find fields that only exist in reader-side and need defaults,
+            // and remove those from 
+            Map<String,Schema.Field> readerFields = new HashMap<String,Schema.Field>();
+            List<Schema.Field> defaultFields = new ArrayList<Schema.Field>();
+            {
+                Set<String> writerNames = new HashSet<String>();
+                for (Schema.Field f : writerFields) {
+                    writerNames.add(f.name());
+                }
+                for (Schema.Field f : readerSchema.getFields()) {
+                    String name = f.name();
+                    if (writerNames.contains(name)) {
+                        readerFields.put(name, f);
+                    } else {
+                        defaultFields.add(f);
+                    }
+                }
+            }
+            
             // note: despite changes, we will always have known number of field entities,
             // ones from writer schema -- some may skip, but there's entry there
-            AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[writerFields.size()];
+            AvroFieldWrapper[] fieldReaders = new AvroFieldWrapper[writerFields.size()
+                                                                   + defaultFields.size()];
             RecordReader reader = new RecordReader.Resolving(fieldReaders);
 
             // as per earlier, names should be the same
             _knownReaders.put(_typeName(readerSchema), reader);
             int i = 0;
             for (Schema.Field writerField : writerFields) {
-                Schema.Field readerField = readerFields.remove(writerField.name());
+                Schema.Field readerField = readerFields.get(writerField.name());
                 // need a skipper:
                 fieldReaders[i++] = (readerField == null)
                         ? createFieldSkipper(writerField.name(),
@@ -305,10 +324,12 @@ public abstract class AvroReaderFactory
             }
             
             // Any defaults to consider?
-            if (!readerFields.isEmpty()) {
-                // !!! TODO
+            if (!defaultFields.isEmpty()) {
+                for (Schema.Field defaultField : defaultFields) {
+                    fieldReaders[i++] = AvroFieldDefaulters.createDefaulter(defaultField.name(),
+                            defaultField.defaultValue());
+                }
             }
-            
             return reader;
         }
 
@@ -347,16 +368,6 @@ public abstract class AvroReaderFactory
             }
             return AvroFieldWrapper.constructSkipper(name,
                     createReader(writerSchema));
-        }
-
-        private Map<String,Schema.Field> _fieldMap(List<Schema.Field> fields)
-        {
-            // let's retain order, to keep possible default values ordered:
-            Map<String,Schema.Field> result = new LinkedHashMap<String,Schema.Field>();
-            for (Schema.Field field : fields) {
-                result.put(field.name(), field);
-            }
-            return result;
         }
 
         /**
