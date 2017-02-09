@@ -99,6 +99,11 @@ public abstract class AvroScalarReader
     protected final static class NullReader extends AvroScalarReader
     {
         @Override public JsonToken readValue(AvroParserImpl parser, Decoder decoder) {
+        	try {
+				decoder.readNull();
+			} catch (IOException e) {
+				throw new IllegalStateException("Expected 'null' in stream", e);
+			}
             return JsonToken.VALUE_NULL;
         }
     }

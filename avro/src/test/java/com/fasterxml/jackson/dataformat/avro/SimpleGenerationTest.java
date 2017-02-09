@@ -109,7 +109,6 @@ public class SimpleGenerationTest extends AvroTestBase
         Assert.assertArrayEquals(bin.value, output.value);
     }
 
-    @SuppressWarnings("resource")
     public void testIgnoringOfUnknownScalar() throws Exception
     {
         AvroFactory af = new AvroFactory();

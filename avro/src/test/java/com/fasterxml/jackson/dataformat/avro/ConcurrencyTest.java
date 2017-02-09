@@ -67,6 +67,7 @@ public class ConcurrencyTest extends AvroTestBase
         b = new ByteArrayOutputStream();
         sw = MAPPER.writer(EMPL_SCHEMA)
                 .writeValues(b);
+        // HSH - I don't think this is valid any more.  We'll need to reset the decoder at its current state in the buffer
         for (int i = 0; i < ROUNDS; ++i) {
             _writeEmpl(sw, "b", i);
         }

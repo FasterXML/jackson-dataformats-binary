@@ -393,11 +393,12 @@ public abstract class AvroParser extends ParserBase
             if (_currToken != JsonToken.VALUE_STRING) {
                 _reportError("Current token ("+_currToken+") not VALUE_STRING, can not access as binary");
             }
-            @SuppressWarnings("resource")
             ByteArrayBuilder builder = _getByteArrayBuilder();
             _decodeBase64(getText(), builder, variant);
             _binaryValue = builder.toByteArray();
         }
         return _binaryValue;
     }
+
+	abstract public boolean isEnd() throws IOException;
 }

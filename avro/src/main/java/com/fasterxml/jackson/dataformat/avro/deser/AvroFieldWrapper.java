@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.Decoder;
+import org.apache.avro.io.ResolvingDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -27,7 +27,7 @@ public final class AvroFieldWrapper
     public String getName() { return _name; }
 
     public JsonToken readValue(AvroReadContext parent,
-            AvroParserImpl parser, Decoder decoder)
+            AvroParserImpl parser, ResolvingDecoder decoder)
         throws IOException
     {
         if (_scalarReader != null) {
