@@ -11,6 +11,8 @@ Modules:
 
 2.9.0 (not yet released)
 
+- [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
+
 2.8.7 (not yet released)
 
 #35: (avro) Serialization of multiple objects (`SequenceWriter`
