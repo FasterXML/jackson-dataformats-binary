@@ -50,7 +50,7 @@ public class RecordVisitor
     public void property(BeanProperty writer) throws JsonMappingException
     {
         Schema schema = schemaForWriter(writer);
-        _fields.add(new Schema.Field(writer.getName(), schema, null, (Object) null));
+        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
     }
 
     @Override
@@ -60,7 +60,7 @@ public class RecordVisitor
         VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
         handler.acceptJsonFormatVisitor(wrapper, type);
         Schema schema = wrapper.getAvroSchema();
-        _fields.add(new Schema.Field(name, schema, null, (Object) null));
+        _fields.add(new Schema.Field(name, schema, null, null));
     }
 
     @Override
@@ -73,7 +73,7 @@ public class RecordVisitor
         if (!writer.getType().isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
-        _fields.add(new Schema.Field(writer.getName(), schema, null, (Object) null));
+        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class RecordVisitor
         if (!type.isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
-        _fields.add(new Schema.Field(name, schema, null, (Object) null));
+        _fields.add(new Schema.Field(name, schema, null, null));
     }
 
     /*
