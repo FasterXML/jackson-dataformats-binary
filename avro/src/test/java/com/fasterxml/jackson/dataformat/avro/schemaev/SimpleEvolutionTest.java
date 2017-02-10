@@ -1,18 +1,29 @@
-package com.fasterxml.jackson.dataformat.avro.schema;
+package com.fasterxml.jackson.dataformat.avro.schemaev;
+
+import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.SequenceWriter;
 
-public class SchemaEvolutionTest extends AvroTestBase
+import com.fasterxml.jackson.dataformat.avro.*;
+
+public class SimpleEvolutionTest extends AvroTestBase
 {
     // NOTE! Avro requires named types to match; this is why type names
     //   are identical despite differences in field composition...
 
+    static String SCHEMA_X_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'EvolvingPoint',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'x', 'type':'int' }\n"+
+            " ]\n"+
+            "}\n");
+    
     static String SCHEMA_XY_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolutionType',\n"+
+            " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
             "    { 'name':'x', 'type':'int' },\n"+
             "    { 'name':'y', 'type':'int' }\n"+
@@ -21,18 +32,10 @@ public class SchemaEvolutionTest extends AvroTestBase
 
     static String SCHEMA_XYZ_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolutionType',\n"+
+            " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
             "    { 'name':'z', 'type':'int', 'default': 99 },\n"+
             "    { 'name':'y', 'type':'int' },\n"+
-            "    { 'name':'x', 'type':'int' }\n"+
-            " ]\n"+
-            "}\n");
-
-    static String SCHEMA_X_JSON = aposToQuotes("{\n"+
-            " 'type':'record',\n"+
-            " 'name':'EvolutionType',\n"+
-            " 'fields':[\n"+
             "    { 'name':'x', 'type':'int' }\n"+
             " ]\n"+
             "}\n");
@@ -45,8 +48,18 @@ public class SchemaEvolutionTest extends AvroTestBase
             x = x0;
             y = y0;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            PointXY other = (PointXY) o;
+            return (x == other.x) && (y == other.y);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%d,%d]", x, y);
+        }
+    }
     static class PointXYZ {
         public int x, y, z;
 
@@ -55,6 +68,17 @@ public class SchemaEvolutionTest extends AvroTestBase
             x = x0;
             y = y0;
             z = z0;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            PointXYZ other = (PointXYZ) o;
+            return (x == other.x) && (y == other.y)  && (z == other.z);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%d,%d,%d]", x, y, z);
         }
     }
 
@@ -66,7 +90,6 @@ public class SchemaEvolutionTest extends AvroTestBase
     /**********************************************************************
      */
 
-    /*
     public void testAddField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XY_JSON);
@@ -81,8 +104,27 @@ public class SchemaEvolutionTest extends AvroTestBase
         assertEquals(2, result.y);
         // expect default:
         assertEquals(99, result.z);
+
+        // And same with a sequence
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        SequenceWriter w = MAPPER.writer(srcSchema)
+                .writeValues(out);
+        w.write(new PointXY(2, -999));
+        w.write(new PointXY(-4, 17));
+        w.write(new PointXY(9, 0));
+        w.close();
+        MappingIterator<PointXYZ> it = MAPPER.readerFor(PointXYZ.class)
+                .with(xlate)
+                .readValues(out.toByteArray());
+        assertTrue(it.hasNextValue());
+        assertEquals(new PointXYZ(2, -999, 99), it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(new PointXYZ(-4, 17, 99), it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(new PointXYZ(9, 0, 99), it.nextValue());
+        assertFalse(it.hasNextValue());
+        it.close();
     }
-    */
 
     public void testRemoveField() throws Exception
     {
@@ -96,6 +138,26 @@ public class SchemaEvolutionTest extends AvroTestBase
                 .readValue(avro);
         assertEquals(1, result.x);
         assertEquals(2, result.y);
+
+        // And same with a sequence
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        SequenceWriter w = MAPPER.writer(srcSchema)
+                .writeValues(out);
+        w.write(new PointXYZ(2, -999, -4));
+        w.write(new PointXYZ(-4, 17, 999));
+        w.write(new PointXYZ(9, 0, 4));
+        w.close();
+        MappingIterator<PointXY> it = MAPPER.readerFor(PointXY.class)
+                .with(xlate)
+                .readValues(out.toByteArray());
+        assertTrue(it.hasNextValue());
+        assertEquals(new PointXY(2, -999), it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(new PointXY(-4, 17), it.nextValue());
+        assertTrue(it.hasNextValue());
+        assertEquals(new PointXY(9, 0), it.nextValue());
+        assertFalse(it.hasNextValue());
+        it.close();
     }
 
     /*
