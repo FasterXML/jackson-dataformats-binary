@@ -6,32 +6,40 @@ import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.JsonToken;
 
-final class ScalarReaderWrapper extends AvroStructureReader
+/**
+ * Simple adapter needed in some cases to unify handling of reading (and
+ * skipping) of structured and scalar values.
+ */
+final class ScalarDecoderWrapper extends AvroStructureReader
 {
-    private final AvroScalarReader _wrappedReader;
+    /**
+     * Actual decoder used to decode scalar value, wrapped by this reader.
+     */
+    private final ScalarDecoder _valueDecoder;
+
     private final BinaryDecoder _decoder;
     private final AvroParserImpl _parser;
     private final boolean _rootReader;
 
-    public ScalarReaderWrapper(AvroScalarReader wrappedReader) {
+    public ScalarDecoderWrapper(ScalarDecoder wrappedReader) {
         this(null, null, null, wrappedReader, false);
     }
 
-    private ScalarReaderWrapper(AvroReadContext parent,
+    private ScalarDecoderWrapper(AvroReadContext parent,
             AvroParserImpl parser, BinaryDecoder decoder,
-            AvroScalarReader wrappedReader, boolean rootReader)
+            ScalarDecoder valueDecoder, boolean rootReader)
     {
         super(parent, TYPE_ROOT);
-        _wrappedReader = wrappedReader;
+        _valueDecoder = valueDecoder;
         _parser = parser;
         _decoder = decoder;
         _rootReader = rootReader;
     }
 
     @Override
-    public ScalarReaderWrapper newReader(AvroReadContext parent,
+    public ScalarDecoderWrapper newReader(AvroReadContext parent,
             AvroParserImpl parser, BinaryDecoder decoder) {
-        return new ScalarReaderWrapper(parent, parser, decoder, _wrappedReader, parent.inRoot());
+        return new ScalarDecoderWrapper(parent, parser, decoder, _valueDecoder, parent.inRoot());
     }
 
     @Override
@@ -41,13 +49,18 @@ final class ScalarReaderWrapper extends AvroStructureReader
         //    sequences. Because of this need to check for EOF. But only after reading
         //    one token successfully...
         if (_rootReader) {
-            JsonToken t = _decoder.isEnd() ? null : _wrappedReader.readValue(_parser, _decoder);
+            JsonToken t = DecodeUtil.isEnd(_decoder) ? null : _valueDecoder.decodeValue(_parser, _decoder);
             return (_currToken = t);
         }
         _parser.setAvroContext(getParent());
-        return (_currToken = _wrappedReader.readValue(_parser, _decoder));
+        return (_currToken = _valueDecoder.decodeValue(_parser, _decoder));
     }
 
+    @Override
+    public void skipValue(BinaryDecoder decoder) throws IOException {
+        _valueDecoder.skipValue(decoder);
+    }
+    
     @Override
     protected void appendDesc(StringBuilder sb) {
         sb.append('?');

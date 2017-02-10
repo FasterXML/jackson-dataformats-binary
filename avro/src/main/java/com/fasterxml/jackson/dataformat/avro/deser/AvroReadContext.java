@@ -26,7 +26,7 @@ public abstract class AvroReadContext extends JsonStreamContext
     }
 
     public abstract JsonToken nextToken() throws IOException;
-    
+
     public abstract String nextFieldName() throws IOException;
 
     /*
@@ -45,6 +45,12 @@ public abstract class AvroReadContext extends JsonStreamContext
     
     protected abstract void appendDesc(StringBuilder sb);
 
+    // !!! TODO: implement from here
+    /**
+     * @since 2.8.7
+    public abstract boolean isEnd() { }
+    */
+
     /*
     /**********************************************************************
     /* Helper methods
@@ -54,13 +60,13 @@ public abstract class AvroReadContext extends JsonStreamContext
     protected void _reportError() {
         throw new IllegalStateException("Can not read Avro input without specifying Schema");
     }
-    
+
     /*
     /**********************************************************************
     /* Overridden standard methods
     /**********************************************************************
      */
-    
+
     /**
      * Overridden to provide developer writeable "JsonPath" representation
      * of the context.

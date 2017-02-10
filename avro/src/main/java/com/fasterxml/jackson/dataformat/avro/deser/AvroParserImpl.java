@@ -20,6 +20,10 @@ public class AvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
 
+    /**
+     * Actual decoder in use, possible same as <code>_rootDecoder</code>, but
+     * not necessarily, in case of different reader/writer schema in use.
+     */
     protected BinaryDecoder _decoder;
 
     protected ByteBuffer _byteBuffer;
@@ -28,7 +32,8 @@ public class AvroParserImpl extends AvroParser
             ObjectCodec codec, InputStream in)
     {
         super(ctxt, parserFeatures, avroFeatures, codec, in);
-        _decoder = CodecRecycler.decoder(in, isEnabled(Feature.AVRO_BUFFERING));
+        _decoder = CodecRecycler.decoder(in,
+                Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
     public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
@@ -117,9 +122,9 @@ public class AvroParserImpl extends AvroParser
     public String nextTextValue() throws IOException {
         return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
     }
-    
+
     @Override
-    protected void _initSchema(AvroSchema schema) {
+    protected void _initSchema(AvroSchema schema) throws JsonProcessingException {
         AvroStructureReader reader = schema.getReader();
         RootReader root = new RootReader();
         _avroContext = reader.newReader(root, this, _decoder);

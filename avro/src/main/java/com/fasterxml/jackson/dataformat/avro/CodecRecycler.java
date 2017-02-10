@@ -4,10 +4,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.io.*;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Simple helper class that contains extracted functionality for
@@ -34,7 +33,7 @@ public final class CodecRecycler
     /* Public API
     /**********************************************************
      */
-    
+
     public static BinaryDecoder decoder(InputStream in, boolean buffering)
     {
         BinaryDecoder prev = _recycler().claimDecoder();
@@ -58,7 +57,7 @@ public final class CodecRecycler
     }
 
     public static void release(BinaryDecoder dec) {
-        _recycler().decoder = dec;
+        _recycler().decoder = (BinaryDecoder) dec;
     }
 
     public static void release(BinaryEncoder enc) {
@@ -92,5 +91,20 @@ public final class CodecRecycler
         BinaryEncoder e = encoder;
         encoder = null;
         return e;
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class
+    /**********************************************************
+     */
+
+    public static class BadSchemaException extends JsonProcessingException
+    {
+        private static final long serialVersionUID = 1L;
+
+        public BadSchemaException(String msg, Throwable src) {
+            super(msg, src);
+        }
     }
 }
