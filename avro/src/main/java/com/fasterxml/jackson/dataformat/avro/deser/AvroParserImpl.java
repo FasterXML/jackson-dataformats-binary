@@ -300,6 +300,40 @@ public class AvroParserImpl extends AvroParser
     public void skipFixed(int size) throws IOException {
         _decoder.skipFixed(size);
     }
+
+    // // // Array decoding
+
+    public long decodeArrayStart() throws IOException {
+        return _decoder.readArrayStart();
+    }
+
+    public long decodeArrayNext() throws IOException {
+        return _decoder.arrayNext();
+    }
+
+    public long skipArray() throws IOException {
+        return _decoder.skipArray();
+    }
+
+    // // // Map decoding
+    
+    public String decodeMapKey() throws IOException {
+        return _decoder.readString();
+    }
+
+    public long decodeMapStart() throws IOException {
+        return _decoder.readMapStart();
+    }
+
+    public long decodeMapNext() throws IOException {
+        return _decoder.mapNext();
+    }
+
+    public long skipMap() throws IOException {
+        return _decoder.skipMap();
+    }
+    
+    // // // Misc other decoding
     
     public int decodeIndex() throws IOException {
         return _decoder.readIndex();
@@ -307,6 +341,10 @@ public class AvroParserImpl extends AvroParser
 
     public int decodeEnum() throws IOException {
         return _decoder.readEnum();
+    }
+
+    public boolean checkInputEnd() throws IOException {
+        return _decoder.isEnd();
     }
 
     /*

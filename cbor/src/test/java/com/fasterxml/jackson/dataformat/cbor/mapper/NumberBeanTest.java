@@ -1,8 +1,5 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 

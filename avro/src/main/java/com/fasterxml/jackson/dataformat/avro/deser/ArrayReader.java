@@ -2,8 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
-
 import com.fasterxml.jackson.core.JsonToken;
 
 abstract class ArrayReader extends AvroStructureReader
@@ -13,7 +11,6 @@ abstract class ArrayReader extends AvroStructureReader
     protected final static int STATE_END = 2;
     protected final static int STATE_DONE = 3;
 
-    protected final BinaryDecoder _decoder;
     protected final AvroParserImpl _parser;
 
     protected int _state;
@@ -21,12 +18,10 @@ abstract class ArrayReader extends AvroStructureReader
 
     protected String _currentName;
     
-    protected ArrayReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder)
+    protected ArrayReader(AvroReadContext parent, AvroParserImpl parser)
     {
         super(parent, TYPE_ARRAY);
         _parser = parser;
-        _decoder = decoder;
     }
 
     public static ArrayReader construct(ScalarDecoder reader) {
@@ -69,19 +64,19 @@ abstract class ArrayReader extends AvroStructureReader
         private final ScalarDecoder _elementReader;
         
         public Scalar(ScalarDecoder reader) {
-            this(null, reader, null, null);
+            this(null, reader, null);
         }
 
         private Scalar(AvroReadContext parent, ScalarDecoder reader, 
-                AvroParserImpl parser, BinaryDecoder decoder) {
-            super(parent, parser, decoder);
+                AvroParserImpl parser) {
+            super(parent, parser);
             _elementReader = reader;
         }
         
         @Override
         public Scalar newReader(AvroReadContext parent,
         AvroParserImpl parser) {
-            return new Scalar(parent, _elementReader, parser, decoder);
+            return new Scalar(parent, _elementReader, parser);
         }
 
         @Override
@@ -91,14 +86,14 @@ abstract class ArrayReader extends AvroStructureReader
             case STATE_START:
                 _parser.setAvroContext(this);
                 _index = 0;
-                _count = _decoder.readArrayStart();
+                _count = _parser.decodeArrayStart();
                 _state = (_count > 0) ? STATE_ELEMENTS : STATE_END;
                 return (_currToken = JsonToken.START_ARRAY);
             case STATE_ELEMENTS:
                 if (_index < _count) {
                     break;
                 }
-                if ((_count = _decoder.arrayNext()) > 0L) { // got more data
+                if ((_count = _parser.decodeArrayNext()) > 0L) { // got more data
                     _index = 0;
                     break;
                 }
@@ -107,7 +102,7 @@ abstract class ArrayReader extends AvroStructureReader
                 final AvroReadContext parent = getParent();
                 // as per [dataformats-binary#38], may need to reset, instead of bailing out
                 if (parent.inRoot()) {
-                    if (!DecodeUtil.isEnd(_decoder)) {
+                    if (!_parser.checkInputEnd()) {
                         _index = 0;
                         _state = STATE_START;
                         return (_currToken = JsonToken.END_ARRAY);
@@ -124,18 +119,18 @@ abstract class ArrayReader extends AvroStructureReader
 
             // all good, just need to read the element value:
             ++_index;
-            JsonToken t = _elementReader.decodeValue(_parser, _decoder);
+            JsonToken t = _elementReader.decodeValue(_parser);
             _currToken = t;
             return t;
         }
 
         @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
+        public void skipValue(AvroParserImpl parser) throws IOException {
             // As per Avro spec/ref impl suggestion:
             long l;
-            while ((l = decoder.skipArray()) > 0L) {
+            while ((l = parser.skipArray()) > 0L) {
                 while (--l >= 0) {
-                    _elementReader.skipValue(decoder);
+                    _elementReader.skipValue(parser);
                 }
             }
         }
@@ -146,20 +141,19 @@ abstract class ArrayReader extends AvroStructureReader
         private final AvroStructureReader _elementReader;
         
         public NonScalar(AvroStructureReader reader) {
-            this(null, reader, null, null);
+            this(null, reader, null);
         }
 
         private NonScalar(AvroReadContext parent,
-                AvroStructureReader reader, 
-                AvroParserImpl parser, BinaryDecoder decoder) {
-            super(parent, parser, decoder);
+                AvroStructureReader reader, AvroParserImpl parser) {
+            super(parent, parser);
             _elementReader = reader;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder decoder) {
-            return new NonScalar(parent, _elementReader, parser, decoder);
+                AvroParserImpl parser) {
+            return new NonScalar(parent, _elementReader, parser);
         }
 
         @Override
@@ -168,14 +162,14 @@ abstract class ArrayReader extends AvroStructureReader
             switch (_state) {
             case STATE_START:
                 _parser.setAvroContext(this);
-                _count = _decoder.readArrayStart();
+                _count = _parser.decodeArrayStart();
                 _state = (_count > 0) ? STATE_ELEMENTS : STATE_END;
                 return (_currToken = JsonToken.START_ARRAY);
             case STATE_ELEMENTS:
                 if (_index < _count) {
                     break;
                 }
-                if ((_count = _decoder.arrayNext()) > 0L) { // got more data
+                if ((_count = _parser.decodeArrayNext()) > 0L) { // got more data
                     _index = 0;
                     break;
                 }
@@ -184,7 +178,7 @@ abstract class ArrayReader extends AvroStructureReader
                 final AvroReadContext parent = getParent();
                 // as per [dataformats-binary#38], may need to reset, instead of bailing out
                 if (parent.inRoot()) {
-                    if (!DecodeUtil.isEnd(_decoder)) {
+                    if (!_parser.checkInputEnd()) {
                         _index = 0;
                         _state = STATE_START;
                         return (_currToken = JsonToken.END_ARRAY);
@@ -198,18 +192,18 @@ abstract class ArrayReader extends AvroStructureReader
                 throwIllegalState(_state);
             }
             ++_index;
-            AvroStructureReader r = _elementReader.newReader(this, _parser, _decoder);
+            AvroStructureReader r = _elementReader.newReader(this, _parser);
             _parser.setAvroContext(r);
             return (_currToken = r.nextToken());
         }
 
         @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
+        public void skipValue(AvroParserImpl parser) throws IOException {
             // As per Avro spec/ref impl suggestion:
             long l;
-            while ((l = decoder.skipArray()) > 0L) {
+            while ((l = parser.skipArray()) > 0L) {
                 while (--l >= 0) {
-                    _elementReader.skipValue(decoder);
+                    _elementReader.skipValue(parser);
                 }
             }
         }

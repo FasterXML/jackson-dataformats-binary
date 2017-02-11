@@ -1,13 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonToken;
-
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.Decoder;
 
 /**
  * Helper classes for reading non-structured values, and can thereby usually

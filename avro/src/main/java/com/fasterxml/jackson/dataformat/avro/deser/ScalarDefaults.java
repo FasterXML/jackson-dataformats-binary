@@ -2,8 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
-
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
@@ -20,12 +18,11 @@ public class ScalarDefaults
         }
 
         @Override
-        public abstract JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder)
+        public abstract JsonToken readValue(AvroReadContext parent, AvroParserImpl parser)
             throws IOException;
 
         @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
+        public void skipValue(AvroParserImpl parser) throws IOException {
             // nothing to skip ever
         }
     }
@@ -40,8 +37,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return _defaults;
         }
     }
@@ -56,8 +52,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return parser.setString(_defaults);
         }
     }
@@ -72,8 +67,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return parser.setBytes(_defaults);
         }
     }
@@ -88,8 +82,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return parser.setNumber(_defaults);
         }
     }
@@ -104,8 +97,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return parser.setNumber(_defaults);
         }
     }
@@ -120,8 +112,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return parser.setNumber(_defaults);
         }
     }
@@ -136,8 +127,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return parser.setNumber(_defaults);
         }
     }
@@ -149,8 +139,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
             return JsonToken.VALUE_NULL;
         }
     }

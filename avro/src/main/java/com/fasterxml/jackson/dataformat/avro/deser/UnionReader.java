@@ -2,8 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -13,27 +11,23 @@ import com.fasterxml.jackson.core.JsonToken;
 final class UnionReader extends AvroStructureReader
 {
     private final AvroStructureReader[] _memberReaders;
-    private final BinaryDecoder _decoder;
     private final AvroParserImpl _parser;
 
     public UnionReader(AvroStructureReader[] memberReaders) {
-        this(null, memberReaders, null, null);
+        this(null, memberReaders, null);
     }
 
     private UnionReader(AvroReadContext parent,
-            AvroStructureReader[] memberReaders,
-            BinaryDecoder decoder, AvroParserImpl parser)
+            AvroStructureReader[] memberReaders, AvroParserImpl parser)
     {
         super(parent, TYPE_ROOT);
         _memberReaders = memberReaders;
-        _decoder = decoder;
         _parser = parser;
     }
     
     @Override
-    public UnionReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder) {
-        return new UnionReader(parent, _memberReaders, decoder, parser);
+    public UnionReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+        return new UnionReader(parent, _memberReaders, parser);
     }
 
     @Override
@@ -42,16 +36,16 @@ final class UnionReader extends AvroStructureReader
         int index = _decodeIndex();
         // important: remember to create new instance
         // also: must pass our parent (not this instance)
-        AvroStructureReader reader = _memberReaders[index].newReader(_parent, _parser, _decoder);
+        AvroStructureReader reader = _memberReaders[index].newReader(_parent, _parser);
         return (_currToken = reader.nextToken());
     }
 
     @Override
-    public void skipValue(BinaryDecoder decoder) throws IOException {
+    public void skipValue(AvroParserImpl parser) throws IOException {
         int index = _decodeIndex();
         // NOTE: no need to create new instance since it's stateless call and
         // we pass decoder to use
-        _memberReaders[index].skipValue(decoder);
+        _memberReaders[index].skipValue(parser);
     }
 
     @Override
@@ -66,7 +60,7 @@ final class UnionReader extends AvroStructureReader
     }
 
     private final int _decodeIndex() throws IOException {
-        int index = _decoder.readIndex();
+        int index = _parser.decodeIndex();
         if (index < 0 || index >= _memberReaders.length) {
             throw new JsonParseException(_parser, String.format
                     ("Invalid index (%s); union only has %d types", index, _memberReaders.length));

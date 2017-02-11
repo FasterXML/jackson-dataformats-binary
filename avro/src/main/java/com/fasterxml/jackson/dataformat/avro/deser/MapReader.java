@@ -2,8 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
-
 import com.fasterxml.jackson.core.JsonToken;
 
 public abstract class MapReader extends AvroStructureReader
@@ -14,7 +12,6 @@ public abstract class MapReader extends AvroStructureReader
     protected final static int STATE_END = 3;
     protected final static int STATE_DONE = 4;
 
-    protected final BinaryDecoder _decoder;
     protected final AvroParserImpl _parser;
 
     protected String _currentName;
@@ -23,13 +20,11 @@ public abstract class MapReader extends AvroStructureReader
     protected long _count;
     
     protected MapReader() {
-        this(null, null, null);
+        this(null, null);
     }
 
-    protected MapReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder) {
+    protected MapReader(AvroReadContext parent, AvroParserImpl parser) {
         super(parent, TYPE_OBJECT);
-        _decoder = decoder;
         _parser = parser;
     }
 
@@ -42,8 +37,7 @@ public abstract class MapReader extends AvroStructureReader
     }
 
     @Override
-    public abstract MapReader newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder);
+    public abstract MapReader newReader(AvroReadContext parent, AvroParserImpl parser);
 
     @Override
     public String getCurrentName() { return _currentName; }
@@ -52,7 +46,7 @@ public abstract class MapReader extends AvroStructureReader
     public abstract JsonToken nextToken() throws IOException;
     
     @Override
-    public abstract void skipValue(BinaryDecoder decoder) throws IOException;
+    public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
     @Override
     public String nextFieldName() throws IOException {
@@ -92,16 +86,14 @@ public abstract class MapReader extends AvroStructureReader
         }
 
         protected Scalar(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder,
-                ScalarDecoder sd) {
-            super(parent, parser, avroDecoder);
+                AvroParserImpl parser, ScalarDecoder sd) {
+            super(parent, parser);
             _scalarDecoder = sd;
         }
         
         @Override
-        public MapReader newReader(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder decoder) {
-            return new Scalar(parent, parser, decoder, _scalarDecoder);
+        public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+            return new Scalar(parent, parser, _scalarDecoder);
         }
 
         @Override
@@ -110,21 +102,21 @@ public abstract class MapReader extends AvroStructureReader
             switch (_state) {
             case STATE_START:
                 _parser.setAvroContext(this);
-                _count = _decoder.readMapStart();
+                _count = _parser.decodeMapStart();
                 _state = (_count > 0) ? STATE_NAME : STATE_END;
                 return (_currToken = JsonToken.START_OBJECT);
             case STATE_NAME:
                 if (_index < _count) {
                     _state = STATE_VALUE;
-                    _currentName = _decoder.readString();
+                    _currentName = _parser.decodeMapKey();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
                 // need more data...
-                _count = _decoder.mapNext();
+                _count = _parser.decodeMapNext();
                 // more stuff?
                 if (_count > 0L) {
                     _index = 0;
-                    _currentName = _decoder.readString();
+                    _currentName = _parser.decodeMapKey();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
                 // otherwise fall through:
@@ -132,7 +124,7 @@ public abstract class MapReader extends AvroStructureReader
                 final AvroReadContext parent = getParent();
                 // as per [dataformats-binary#38], may need to reset, instead of bailing out
                 if (parent.inRoot()) {
-                    if (!DecodeUtil.isEnd(_decoder)) {
+                    if (!_parser.checkInputEnd()) {
                         _index = 0;
                         _state = STATE_START;
                         return (_currToken = JsonToken.END_OBJECT);
@@ -149,16 +141,16 @@ public abstract class MapReader extends AvroStructureReader
             }
             _state = STATE_NAME;
             ++_index;
-            return _scalarDecoder.decodeValue(_parser, _decoder);
+            return _scalarDecoder.decodeValue(_parser);
         }
 
         @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
+        public void skipValue(AvroParserImpl parser) throws IOException {
             // As per Avro spec/ref impl suggestion:
             long l;
-            while ((l = decoder.skipMap()) > 0L) {
+            while ((l = parser.skipMap()) > 0L) {
                 while (--l >= 0) {
-                    _scalarDecoder.skipValue(decoder);
+                    _scalarDecoder.skipValue(parser);
                 }
             }
         }
@@ -173,16 +165,14 @@ public abstract class MapReader extends AvroStructureReader
         }
 
         public NonScalar(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder avroDecoder,
-                AvroStructureReader reader) {
-            super(parent, parser, avroDecoder);
+                AvroParserImpl parser, AvroStructureReader reader) {
+            super(parent, parser);
             _structureReader = reader;
         }
         
         @Override
-        public MapReader newReader(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder decoder) {
-            return new NonScalar(parent, parser, decoder, _structureReader);
+        public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+            return new NonScalar(parent, parser, _structureReader);
         }
         @Override
         public JsonToken nextToken() throws IOException
@@ -190,21 +180,21 @@ public abstract class MapReader extends AvroStructureReader
             switch (_state) {
             case STATE_START:
                 _parser.setAvroContext(this);
-                _count = _decoder.readMapStart();
+                _count = _parser.decodeMapStart();
                 _state = (_count > 0) ? STATE_NAME : STATE_END;
                 return (_currToken = JsonToken.START_OBJECT);
             case STATE_NAME:
                 if (_index < _count) {
                     _state = STATE_VALUE;
-                    _currentName = _decoder.readString();
+                    _currentName = _parser.decodeMapKey();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
                 // need more data...
-                _count = _decoder.mapNext();
+                _count = _parser.decodeMapNext();
                 // more stuff?
                 if (_count > 0L) {
                     _index = 0;
-                    _currentName = _decoder.readString();
+                    _currentName = _parser.decodeMapKey();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
                 // otherwise fall through:
@@ -212,7 +202,7 @@ public abstract class MapReader extends AvroStructureReader
                 final AvroReadContext parent = getParent();
                 // as per [dataformats-binary#38], may need to reset, instead of bailing out
                 if (parent.inRoot()) {
-                    if (!DecodeUtil.isEnd(_decoder)) {
+                    if (!_parser.checkInputEnd()) {
                         _index = 0;
                         _state = STATE_START;
                         return (_currToken = JsonToken.END_OBJECT);
@@ -229,18 +219,18 @@ public abstract class MapReader extends AvroStructureReader
             }
             _state = STATE_NAME;
             ++_index;
-            AvroStructureReader r = _structureReader.newReader(this, _parser, _decoder);
+            AvroStructureReader r = _structureReader.newReader(this, _parser);
             _parser.setAvroContext(r);
             return (_currToken = r.nextToken());
         }
 
         @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
+        public void skipValue(AvroParserImpl parser) throws IOException {
             // As per Avro spec/ref impl suggestion:
             long l;
-            while ((l = decoder.skipMap()) > 0L) {
+            while ((l = parser.skipMap()) > 0L) {
                 while (--l >= 0) {
-                    _structureReader.skipValue(decoder);
+                    _structureReader.skipValue(parser);
                 }
             }
         }

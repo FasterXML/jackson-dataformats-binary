@@ -2,8 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
-
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
@@ -17,29 +15,26 @@ final class ScalarDecoderWrapper extends AvroStructureReader
      */
     private final ScalarDecoder _valueDecoder;
 
-    private final BinaryDecoder _decoder;
     private final AvroParserImpl _parser;
     private final boolean _rootReader;
 
     public ScalarDecoderWrapper(ScalarDecoder wrappedReader) {
-        this(null, null, null, wrappedReader, false);
+        this(null, null, wrappedReader, false);
     }
 
     private ScalarDecoderWrapper(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder,
-            ScalarDecoder valueDecoder, boolean rootReader)
+            AvroParserImpl parser, ScalarDecoder valueDecoder,
+            boolean rootReader)
     {
         super(parent, TYPE_ROOT);
         _valueDecoder = valueDecoder;
         _parser = parser;
-        _decoder = decoder;
         _rootReader = rootReader;
     }
 
     @Override
-    public ScalarDecoderWrapper newReader(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder decoder) {
-        return new ScalarDecoderWrapper(parent, parser, decoder, _valueDecoder, parent.inRoot());
+    public ScalarDecoderWrapper newReader(AvroReadContext parent, AvroParserImpl parser) {
+        return new ScalarDecoderWrapper(parent, parser, _valueDecoder, parent.inRoot());
     }
 
     @Override
@@ -49,18 +44,18 @@ final class ScalarDecoderWrapper extends AvroStructureReader
         //    sequences. Because of this need to check for EOF. But only after reading
         //    one token successfully...
         if (_rootReader) {
-            JsonToken t = DecodeUtil.isEnd(_decoder) ? null : _valueDecoder.decodeValue(_parser, _decoder);
+            JsonToken t = _parser.checkInputEnd() ? null : _valueDecoder.decodeValue(_parser);
             return (_currToken = t);
         }
         _parser.setAvroContext(getParent());
-        return (_currToken = _valueDecoder.decodeValue(_parser, _decoder));
+        return (_currToken = _valueDecoder.decodeValue(_parser));
     }
 
     @Override
-    public void skipValue(BinaryDecoder decoder) throws IOException {
-        _valueDecoder.skipValue(decoder);
+    public void skipValue(AvroParserImpl parser) throws IOException {
+        _valueDecoder.skipValue(parser);
     }
-    
+
     @Override
     protected void appendDesc(StringBuilder sb) {
         sb.append('?');
