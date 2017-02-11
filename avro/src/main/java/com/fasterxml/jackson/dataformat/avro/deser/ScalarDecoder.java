@@ -16,10 +16,10 @@ import org.apache.avro.io.Decoder;
  */
 public abstract class ScalarDecoder
 {
-    protected abstract JsonToken decodeValue(AvroParserImpl parser, Decoder decoder)
+    protected abstract JsonToken decodeValue(AvroParserImpl parser)
         throws IOException;
 
-    protected abstract void skipValue(Decoder decoder)
+    protected abstract void skipValue(AvroParserImpl parser)
         throws IOException;
 
     public abstract AvroFieldReader asFieldReader(String name, boolean skipper);
@@ -33,15 +33,13 @@ public abstract class ScalarDecoder
     protected final static class BooleanDecoder extends ScalarDecoder
     {
         @Override
-        protected JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
+        protected JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeBoolean();
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException
-        {
-            // for some reason, no `skipBoolean()` so:
-            decoder.skipFixed(1);
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipBoolean();
         }
 
         @Override
@@ -55,55 +53,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException
-            {
-                return decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeBoolean();
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                // for some reason, no `skipBoolean()` so:
-                decoder.skipFixed(1);
-            }
-        }
-    }
-
-    protected final static class BytesDecoder extends ScalarDecoder
-    {
-        @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            ByteBuffer bb = parser.borrowByteBuffer();
-            bb = decoder.readBytes(bb);
-            return parser.setBytes(bb);
-        }
-
-        @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            decoder.skipBytes();
-        }
-
-        @Override
-        public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
-        }
-        
-        private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
-            }
-
-            @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                ByteBuffer bb = parser.borrowByteBuffer();
-                bb = decoder.readBytes(bb);
-                return parser.setBytes(bb);
-            }
-
-            @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.skipBytes();
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipBoolean();
             }
         }
     }
@@ -111,14 +67,13 @@ public abstract class ScalarDecoder
     protected final static class DoubleReader extends ScalarDecoder
     {
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return parser.setNumber(decoder.readDouble());
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeDouble();
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            // doubles have fixed length of 8 bytes
-            decoder.skipFixed(8);
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipDouble();
         }
 
         @Override
@@ -132,28 +87,26 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return parser.setNumber(decoder.readDouble());
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeDouble();
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.skipFixed(8);
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipDouble();
             }
         }
     }
     
     protected final static class FloatReader extends ScalarDecoder {
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return parser.setNumber(decoder.readFloat());
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeFloat();
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            // floats have fixed length of 4 bytes
-            decoder.skipFixed(4);
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipFloat();
         }
 
         @Override
@@ -167,14 +120,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return parser.setNumber(decoder.readFloat());
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeFloat();
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.skipFixed(4);
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipFloat();
             }
         }
     }
@@ -182,14 +134,13 @@ public abstract class ScalarDecoder
     protected final static class IntReader extends ScalarDecoder
     {
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return parser.setNumber(decoder.readInt());
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeInt();
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            // ints use variable-length zigzagging; alas, no native skipping
-            decoder.readInt();
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipInt();
         }
 
         @Override
@@ -203,14 +154,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return parser.setNumber(decoder.readInt());
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeInt();
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.readInt();
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipInt();
             }
         }
     }
@@ -218,14 +168,13 @@ public abstract class ScalarDecoder
     protected final static class LongReader extends ScalarDecoder
     {
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return parser.setNumber(decoder.readLong());
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeLong();
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            // longs use variable-length zigzagging; alas, no native skipping
-            decoder.readLong();
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipLong();
         }
 
         @Override
@@ -239,14 +188,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return parser.setNumber(decoder.readLong());
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeLong();
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.readLong();
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipLong();
             }
         }
     }
@@ -254,12 +202,12 @@ public abstract class ScalarDecoder
     protected final static class NullReader extends ScalarDecoder
     {
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) {
+        public JsonToken decodeValue(AvroParserImpl parser) {
             return JsonToken.VALUE_NULL;
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
+        protected void skipValue(AvroParserImpl parser) throws IOException {
             ; // value implied
         }
 
@@ -274,26 +222,25 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
                 return JsonToken.VALUE_NULL;
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException { }
+            public void skipValue(AvroParserImpl parser) throws IOException { }
         }
     }
     
     protected final static class StringReader extends ScalarDecoder
     {
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return parser.setString(decoder.readString());
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeString();
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            decoder.skipString();
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipString();
         }
 
         @Override
@@ -307,18 +254,51 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return parser.setString(decoder.readString());
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeString();
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.skipString();
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipString();
             }
         }
     }
 
+    protected final static class BytesDecoder extends ScalarDecoder
+    {
+        @Override
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeBytes();
+        }
+
+        @Override
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipBytes();
+        }
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper);
+        }
+        
+        private final static class FR extends AvroFieldReader {
+            public FR(String name, boolean skipper) {
+                super(name, skipper);
+            }
+
+            @Override
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeBytes();
+            }
+
+            @Override
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipBytes();
+            }
+        }
+    }
+    
     protected final static class ScalarUnionDecoder extends ScalarDecoder
     {
         public final ScalarDecoder[] _readers;
@@ -328,14 +308,14 @@ public abstract class ScalarDecoder
         }
 
         @Override
-        protected JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return _checkIndex(decoder.readIndex()).decodeValue(parser, decoder);
+        protected JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return _checkIndex(parser.decodeIndex()).decodeValue(parser);
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException
+        protected void skipValue(AvroParserImpl parser) throws IOException
         {
-            _checkIndex(decoder.readIndex()).skipValue(decoder);
+            _checkIndex(parser.decodeIndex()).skipValue(parser);
         }
 
         private ScalarDecoder _checkIndex(int index) throws IOException {
@@ -360,14 +340,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return _checkIndex(decoder.readIndex()).decodeValue(parser, decoder);
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return _checkIndex(parser.decodeIndex()).decodeValue(parser);
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                _checkIndex(decoder.readIndex()).skipValue(decoder);
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                _checkIndex(parser.decodeIndex()).skipValue(parser);
             }
 
             private ScalarDecoder _checkIndex(int index) throws IOException {
@@ -392,13 +371,13 @@ public abstract class ScalarDecoder
         }
 
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
-            return parser.setString(_checkIndex(decoder.readEnum()));
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.setString(_checkIndex(parser.decodeEnum()));
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            _checkIndex(decoder.readEnum());
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            _checkIndex(parser.decodeEnum());
         }
 
         private final String _checkIndex(int index) throws IOException {
@@ -424,14 +403,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException {
-                return parser.setString(_checkIndex(decoder.readEnum()));
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.setString(_checkIndex(parser.decodeEnum()));
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                _checkIndex(decoder.readEnum());
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                _checkIndex(parser.decodeEnum());
             }
 
             private final String _checkIndex(int index) throws IOException {
@@ -455,16 +433,13 @@ public abstract class ScalarDecoder
         }
         
         @Override
-        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException
-        {
-            byte[] data = new byte[_size];
-            decoder.readFixed(data);
-            return parser.setBytes(data);
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeFixed(_size);
         }
 
         @Override
-        protected void skipValue(Decoder decoder) throws IOException {
-            decoder.skipFixed(_size);
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipFixed(_size);
         }
 
         @Override
@@ -481,17 +456,13 @@ public abstract class ScalarDecoder
             }
 
             @Override
-            public JsonToken readValue(AvroReadContext parent,
-                    AvroParserImpl parser, BinaryDecoder decoder) throws IOException
-            {
-                byte[] data = new byte[_size];
-                decoder.readFixed(data);
-                return parser.setBytes(data);
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeFixed(_size);
             }
 
             @Override
-            public void skipValue(BinaryDecoder decoder) throws IOException {
-                decoder.skipFixed(_size);
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipFixed(_size);
             }
         }
     }

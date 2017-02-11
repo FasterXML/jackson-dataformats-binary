@@ -80,7 +80,7 @@ abstract class ArrayReader extends AvroStructureReader
         
         @Override
         public Scalar newReader(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder decoder) {
+        AvroParserImpl parser) {
             return new Scalar(parent, _elementReader, parser, decoder);
         }
 

@@ -2,8 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import org.apache.avro.io.BinaryDecoder;
-
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
@@ -31,10 +29,9 @@ public abstract class AvroFieldReader
     public final String getName() { return _name; }
     public final boolean isSkipper() { return _isSkipper; }
 
-    public abstract JsonToken readValue(AvroReadContext parent,
-            AvroParserImpl parser, BinaryDecoder avroDecoder) throws IOException;
+    public abstract JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException;
 
-    public abstract void skipValue(BinaryDecoder decoder) throws IOException;
+    public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
     /**
      * Implementation used for non-scalar-valued (structured) fields
@@ -48,16 +45,14 @@ public abstract class AvroFieldReader
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent,
-                AvroParserImpl parser, BinaryDecoder decoder)
-            throws IOException
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException
         {
-            return _reader.newReader(parent, parser, decoder).nextToken();
+            return _reader.newReader(parent, parser).nextToken();
         }
 
         @Override
-        public void skipValue(BinaryDecoder decoder) throws IOException {
-            _reader.skipValue(decoder);
+        public void skipValue(AvroParserImpl parser) throws IOException {
+            _reader.skipValue(parser);
         }
     }
 }

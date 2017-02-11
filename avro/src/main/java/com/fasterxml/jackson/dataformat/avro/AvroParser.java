@@ -83,14 +83,6 @@ public abstract class AvroParser extends ParserBase
 
     /*
     /**********************************************************************
-    /* Input sources
-    /**********************************************************************
-     */
-
-    final protected InputStream _input;
-
-    /*
-    /**********************************************************************
     /* State
     /**********************************************************************
      */
@@ -109,26 +101,14 @@ public abstract class AvroParser extends ParserBase
      */
 
     protected AvroParser(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec, InputStream in)
+            ObjectCodec codec)
     {
         super(ctxt, parserFeatures);    
         _objectCodec = codec;
         _formatFeatures = avroFeatures;
-        _input = in;
         _avroContext = MissingReader.instance;
     }
 
-    protected AvroParser(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec,
-            byte[] data, int offset, int len)
-    {
-        super(ctxt, parserFeatures);    
-        _objectCodec = codec;
-        _formatFeatures = avroFeatures;
-        _input = null;
-        _avroContext = MissingReader.instance;
-    }
-    
     @Override
     public ObjectCodec getCodec() {
         return _objectCodec;
@@ -140,9 +120,7 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public Object getInputSource() {
-        return _input;
-    }
+    public abstract Object getInputSource();
 
     // ensure impl defines
     @Override
@@ -171,11 +149,7 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    protected void _closeInput() throws IOException {
-        if (_input != null) {
-            _input.close();
-        }
-    }
+    protected abstract void _closeInput() throws IOException;
 
     /*
     /***************************************************

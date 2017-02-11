@@ -20,18 +20,64 @@ public class AvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
 
+    /*
+    /**********************************************************
+    /* Input source config, state
+    /**********************************************************
+     */
+
+    protected InputStream _inputStream;
+
+    /**
+     * Current buffer from which data is read; generally data is read into
+     * buffer from input source, but in some cases pre-loaded buffer
+     * is handed to the parser.
+     */
+    protected byte[] _inputBuffer;
+
+    /**
+     * Flag that indicates whether the input buffer is recycable (and
+     * needs to be returned to recycler once we are done) or not.
+     *<p>
+     * If it is not, it also means that parser can NOT modify underlying
+     * buffer.
+     */
+    protected boolean _bufferRecyclable;
+
+    /*
+    /**********************************************************
+    /* Helper objects
+    /**********************************************************
+     */
+
     /**
      * Actual decoder in use, possible same as <code>_rootDecoder</code>, but
      * not necessarily, in case of different reader/writer schema in use.
      */
     protected BinaryDecoder _decoder;
 
+    /**
+     * Lazily created {@link ByteBuffer} that is needed for decoding stuff when using
+     * Avro stdlib.
+     */
     protected ByteBuffer _byteBuffer;
 
+    /*
+    /**********************************************************
+    /* Life-cycle
+    /**********************************************************
+     */
+    
     public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec, InputStream in)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec, in);
+        super(ctxt, parserFeatures, avroFeatures, codec);
+        _inputStream = in;
+        _inputBuffer = ctxt.allocReadIOBuffer();
+        _inputPtr = 0;
+        _inputEnd = 0;
+        _bufferRecyclable = true;
+
         _decoder = CodecRecycler.decoder(in,
                 Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
@@ -40,14 +86,21 @@ public class AvroParserImpl extends AvroParser
             ObjectCodec codec,
             byte[] data, int offset, int len)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec,
-                data, offset, len);
+        super(ctxt, parserFeatures, avroFeatures, codec);
+        _inputStream = null;
         _decoder = CodecRecycler.decoder(data, offset, len);
     }
 
     @Override
     protected void _releaseBuffers() throws IOException {
         super._releaseBuffers();
+        if (_bufferRecyclable) {
+            byte[] buf = _inputBuffer;
+            if (buf != null) {
+                _inputBuffer = null;
+                _ioContext.releaseReadIOBuffer(buf);
+            }
+        }
         BinaryDecoder d = _decoder;
         if (d != null) {
             _decoder = null;
@@ -70,7 +123,25 @@ public class AvroParserImpl extends AvroParser
 
     /*
     /**********************************************************
-    /* Abstract method impls
+    /* Abstract method impls, i/o access
+    /**********************************************************
+     */
+
+    @Override
+    public Object getInputSource() {
+        return _inputStream;
+    }
+
+    @Override
+    protected void _closeInput() throws IOException {
+        if (_inputStream != null) {
+            _inputStream.close();
+        }
+    }
+
+    /*
+    /**********************************************************
+    /* Abstract method impls, traversal
     /**********************************************************
      */
 
@@ -127,15 +198,123 @@ public class AvroParserImpl extends AvroParser
     protected void _initSchema(AvroSchema schema) throws JsonProcessingException {
         AvroStructureReader reader = schema.getReader();
         RootReader root = new RootReader();
-        _avroContext = reader.newReader(root, this, _decoder);
+        _avroContext = reader.newReader(root, this);
     }
-    
+
     /*
     /**********************************************************
-    /* Methods for AvroReadContext implementations
+    /* Methods for AvroReadContext implementations: decoding
     /**********************************************************
      */
 
+    public JsonToken decodeBoolean() throws IOException {
+        return _decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
+    }
+
+    public void skipBoolean() throws IOException {
+        _decoder.skipFixed(1);
+    }
+
+    public JsonToken decodeInt() throws IOException {
+        _numberInt = _decoder.readInt();
+        _numTypesValid = NR_INT;
+        return JsonToken.VALUE_NUMBER_INT;
+    }
+
+    public void skipInt() throws IOException {
+        // ints use variable-length zigzagging; alas, no native skipping
+        _decoder.readInt();
+    }
+
+    public JsonToken decodeLong() throws IOException {
+        _numberLong = _decoder.readLong();
+        _numTypesValid = NR_LONG;
+        return JsonToken.VALUE_NUMBER_INT;
+    }
+
+    public void skipLong() throws IOException {
+        // ints use variable-length zigzagging; alas, no native skipping
+        _decoder.readLong();
+    }
+
+    public JsonToken decodeFloat() throws IOException {
+        // !!! 10-Feb-2017, tatu: Should support float, see CBOR
+        _numberDouble = _decoder.readDouble();
+        _numTypesValid = NR_DOUBLE;
+        return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    public void skipFloat() throws IOException {
+        // floats have fixed length of 4 bytes
+        _decoder.skipFixed(4);
+    }
+
+    public JsonToken decodeDouble() throws IOException {
+        _numberDouble = _decoder.readDouble();
+        _numTypesValid = NR_DOUBLE;
+        return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    public void skipDouble() throws IOException {
+        // doubles have fixed length of 8 bytes
+        _decoder.skipFixed(8);
+    }
+
+    public JsonToken decodeString() throws IOException {
+        _textValue = _decoder.readString();
+        return JsonToken.VALUE_STRING;
+    }
+
+    public void skipString() throws IOException {
+        _decoder.skipString();
+    }
+
+    public JsonToken decodeBytes() throws IOException {
+        ByteBuffer bb = borrowByteBuffer();
+        bb = _decoder.readBytes(bb);
+        // inlined `setBytes(bb)`:
+        int len = bb.remaining();
+        if (len <= 0) {
+            _binaryValue = NO_BYTES;
+        } else {
+            _binaryValue = new byte[len];
+            bb.get(_binaryValue);
+            // plus let's retain reference to this buffer, for reuse
+            // (is safe due to way Avro impl handles them)
+            _byteBuffer = bb;
+        }
+        return JsonToken.VALUE_EMBEDDED_OBJECT;
+    }
+
+    public void skipBytes() throws IOException {
+        _decoder.skipBytes();
+    }
+
+    public JsonToken decodeFixed(int size) throws IOException {
+        byte[] data = new byte[size];
+        _decoder.readFixed(data);
+        _binaryValue = data;
+        return JsonToken.VALUE_EMBEDDED_OBJECT;
+    }
+
+    public void skipFixed(int size) throws IOException {
+        _decoder.skipFixed(size);
+    }
+    
+    public int decodeIndex() throws IOException {
+        return _decoder.readIndex();
+    }
+
+    public int decodeEnum() throws IOException {
+        return _decoder.readEnum();
+    }
+
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext impls, other
+    /**********************************************************
+     */
+    
     protected void setAvroContext(AvroReadContext ctxt) {
         if (ctxt == null) { // sanity check
             throw new IllegalArgumentException();
@@ -167,7 +346,7 @@ public class AvroParserImpl extends AvroParser
         _binaryValue = b;
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
-    
+
     protected JsonToken setNumber(int v) {
         _numberInt = v;
         _numTypesValid = NR_INT;
