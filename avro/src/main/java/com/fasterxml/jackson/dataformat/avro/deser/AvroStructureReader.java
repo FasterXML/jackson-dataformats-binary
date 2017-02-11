@@ -5,8 +5,9 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
- * Base class for handlers for Avro structured types (or, in case of
- * root values, wrapped scalar values).
+ * Base class for handlers for Avro structured types (or in some cases,
+ * scalar types that need to be exposed in unified way similar to
+ * structured types).
  */
 public abstract class AvroStructureReader
     extends AvroReadContext

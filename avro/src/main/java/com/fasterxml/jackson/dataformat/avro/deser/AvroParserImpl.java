@@ -56,12 +56,6 @@ public class AvroParserImpl extends AvroParser
      */
     protected BinaryDecoder _decoder;
 
-    /**
-     * Lazily created {@link ByteBuffer} that is needed for decoding stuff when using
-     * Avro stdlib.
-     */
-    protected ByteBuffer _byteBuffer;
-
     /*
     /**********************************************************
     /* Life-cycle
@@ -268,18 +262,16 @@ public class AvroParserImpl extends AvroParser
     }
 
     public JsonToken decodeBytes() throws IOException {
-        ByteBuffer bb = borrowByteBuffer();
-        bb = _decoder.readBytes(bb);
-        // inlined `setBytes(bb)`:
-        int len = bb.remaining();
+        int len = _decoder.readInt();
         if (len <= 0) {
             _binaryValue = NO_BYTES;
         } else {
-            _binaryValue = new byte[len];
-            bb.get(_binaryValue);
+            byte[] b = new byte[len];
+            // this is simple raw read, safe to use:
+            _decoder.readFixed(b, 0, len);
             // plus let's retain reference to this buffer, for reuse
             // (is safe due to way Avro impl handles them)
-            _byteBuffer = bb;
+            _binaryValue = b;
         }
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
@@ -356,25 +348,6 @@ public class AvroParserImpl extends AvroParser
             throw new IllegalArgumentException();
         }
         _avroContext = ctxt;
-    }
-
-    protected ByteBuffer borrowByteBuffer() {
-        return _byteBuffer;
-    }
-    
-    protected JsonToken setBytes(ByteBuffer bb)
-    {
-        int len = bb.remaining();
-        if (len <= 0) {
-            _binaryValue = NO_BYTES;
-        } else {
-            _binaryValue = new byte[len];
-            bb.get(_binaryValue);
-            // plus let's retain reference to this buffer, for reuse
-            // (is safe due to way Avro impl handles them)
-            _byteBuffer = bb;
-        }
-        return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 
     protected JsonToken setBytes(byte[] b)
