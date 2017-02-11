@@ -10,14 +10,26 @@ import com.fasterxml.jackson.core.JsonToken;
  */
 public final class RootReader extends AvroReadContext
 {
-    public RootReader() {
+    private final AvroParserImpl _parser;
+    private final AvroStructureReader _valueReader;
+
+    public RootReader(AvroParserImpl parser,
+            AvroStructureReader valueReader) {
         super(null);
         _type = TYPE_ROOT;
+        _parser = parser;
+        _valueReader = valueReader;
     }
-    
+
     @Override
     public JsonToken nextToken() throws IOException {
-        return null;
+        // First: possibly we are at end. Could theoretically check against
+        // empty streams but...
+        if (_parser.checkInputEnd()) {
+            return null;
+        }
+        AvroStructureReader r = _valueReader.newReader(this, _parser);
+        return r.nextToken();
     }
 
     @Override
@@ -32,6 +44,7 @@ public final class RootReader extends AvroReadContext
 
     @Override
     public String nextFieldName() throws IOException {
-        return null;
+        AvroStructureReader r = _valueReader.newReader(this, _parser);
+        return r.nextFieldName();
     }
 }

@@ -74,8 +74,7 @@ abstract class ArrayReader extends AvroStructureReader
         }
         
         @Override
-        public Scalar newReader(AvroReadContext parent,
-        AvroParserImpl parser) {
+        public Scalar newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new Scalar(parent, _elementReader, parser);
         }
 
@@ -99,17 +98,8 @@ abstract class ArrayReader extends AvroStructureReader
                 }
                 // otherwise, we are done: fall through
             case STATE_END:
-                final AvroReadContext parent = getParent();
-                // as per [dataformats-binary#38], may need to reset, instead of bailing out
-                if (parent.inRoot()) {
-                    if (!_parser.checkInputEnd()) {
-                        _index = 0;
-                        _state = STATE_START;
-                        return (_currToken = JsonToken.END_ARRAY);
-                    }
-                }
                 _state = STATE_DONE;
-                _parser.setAvroContext(parent);
+                _parser.setAvroContext(getParent());
                 return (_currToken = JsonToken.END_ARRAY);
             case STATE_DONE:
             default:
@@ -175,17 +165,8 @@ abstract class ArrayReader extends AvroStructureReader
                 }
                 // otherwise, we are done: fall through
             case STATE_END:
-                final AvroReadContext parent = getParent();
-                // as per [dataformats-binary#38], may need to reset, instead of bailing out
-                if (parent.inRoot()) {
-                    if (!_parser.checkInputEnd()) {
-                        _index = 0;
-                        _state = STATE_START;
-                        return (_currToken = JsonToken.END_ARRAY);
-                    }
-                }
                 _state = STATE_DONE;
-                _parser.setAvroContext(parent);
+                _parser.setAvroContext(getParent());
                 return (_currToken = JsonToken.END_ARRAY);
             case STATE_DONE:
             default:

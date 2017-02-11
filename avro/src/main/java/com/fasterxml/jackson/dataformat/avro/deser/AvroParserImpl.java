@@ -196,9 +196,7 @@ public class AvroParserImpl extends AvroParser
 
     @Override
     protected void _initSchema(AvroSchema schema) throws JsonProcessingException {
-        AvroStructureReader reader = schema.getReader();
-        RootReader root = new RootReader();
-        _avroContext = reader.newReader(root, this);
+        _avroContext = new RootReader(this, schema.getReader());
     }
 
     /*
