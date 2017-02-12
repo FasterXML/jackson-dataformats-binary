@@ -1,11 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.*;
-
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class MapWithUnionTest extends AvroTestBase
 {
@@ -21,7 +22,7 @@ public class MapWithUnionTest extends AvroTestBase
 
     // for [dataformats-binary#39]
     final static String MAP_CONTAINER_SCHEMA_JSON = aposToQuotes("{\n"
-            +" 'namespace': 'com.salesforce.conduit.avro',\n"
+            +" 'namespace': 'com.fasterxml.jackson.dataformat.avro.MapWithUnionTest$',\n"
             +" 'type': 'record',\n"
             +" 'name': 'MapContainer',\n"
             +" 'fields': [\n"

@@ -14,7 +14,8 @@ public class ArrayEvolutionTest extends AvroTestBase
             "'type': 'array',\n"+
             "'items': {\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolvingPoint',\n"+
+            " 'namespace':'com.fasterxml.jackson.dataformat.avro.schemaev.ArrayEvolutionTest$',\n"+
+            " 'name':'PointX',\n"+
             " 'fields':[\n"+
             "    { 'name':'x', 'type':'int' }\n"+
             " ]}}");
@@ -24,7 +25,9 @@ public class ArrayEvolutionTest extends AvroTestBase
             "'type': 'array',\n"+
             "'items': {\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolvingPoint',\n"+
+            " 'namespace':'com.fasterxml.jackson.dataformat.avro.schemaev.ArrayEvolutionTest$',\n"+
+            " 'aliases':['PointX', 'PointXYZ'],\n"+
+            " 'name':'PointXY',\n"+
             " 'fields':[\n"+
             "    { 'name':'x', 'type':'int' },\n"+
             "    { 'name':'y', 'type':'int' }\n"+
@@ -35,7 +38,9 @@ public class ArrayEvolutionTest extends AvroTestBase
             "'type': 'array',\n"+
             "'items': {\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolvingPoint',\n"+
+            " 'namespace':'com.fasterxml.jackson.dataformat.avro.schemaev.ArrayEvolutionTest$',\n"+
+            " 'aliases':['PointXY'],\n"+
+            " 'name':'PointXYZ',\n"+
             " 'fields':[\n"+
             "    { 'name':'z', 'type':'int', 'default': 99 },\n"+
             "    { 'name':'y', 'type':'int' },\n"+

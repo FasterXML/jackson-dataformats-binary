@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
+import org.apache.avro.Schema;
+
 import com.fasterxml.jackson.core.JsonToken;
 
 abstract class RecordReader extends AvroStructureReader
@@ -21,9 +23,9 @@ abstract class RecordReader extends AvroStructureReader
     protected final int _count;
 
     protected RecordReader(AvroReadContext parent,
-            AvroFieldReader[] fieldReaders, AvroParserImpl parser)
+            AvroFieldReader[] fieldReaders, AvroParserImpl parser, Schema schema)
     {
-        super(parent, TYPE_OBJECT);
+        super(parent, TYPE_OBJECT, schema);
         _fieldReaders = fieldReaders;
         _parser = parser;
         _count = fieldReaders.length;
@@ -72,19 +74,30 @@ abstract class RecordReader extends AvroStructureReader
     public final static class Std
         extends RecordReader
     {
-        public Std(AvroFieldReader[] fieldReaders) {
-            super(null, fieldReaders, null);
+        public Std(AvroFieldReader[] fieldReaders, Schema schema) {
+            super(null, fieldReaders, null, schema);
         }
 
         public Std(AvroReadContext parent,
-                AvroFieldReader[] fieldReaders, AvroParserImpl parser) {
-            super(parent, fieldReaders, parser);
+                AvroFieldReader[] fieldReaders, AvroParserImpl parser, Schema schema) {
+            super(parent, fieldReaders, parser, schema);
         }
         
         @Override
         public RecordReader newReader(AvroReadContext parent,
                 AvroParserImpl parser) {
-            return new Std(parent, _fieldReaders, parser);
+            return new Std(parent, _fieldReaders, parser, _schema);
+        }
+
+        @Override
+        public Schema getSchema() {
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return super.getSchema().getFields().get(_index).schema();
+            }
+            if ( _state == STATE_NAME && _index <= _count && _currToken != JsonToken.START_OBJECT) {
+                return super.getSchema().getFields().get(_index-1).schema();
+            }
+            return super.getSchema();
         }
 
         @Override
@@ -148,17 +161,17 @@ abstract class RecordReader extends AvroStructureReader
     public final static class Resolving
         extends RecordReader
     {
-        public Resolving(AvroFieldReader[] fieldReaders) {
-            super(null, fieldReaders, null);
+        public Resolving(AvroFieldReader[] fieldReaders, Schema schema) {
+            super(null, fieldReaders, null, schema);
         }
         public Resolving(AvroReadContext parent,
-                AvroFieldReader[] fieldReaders, AvroParserImpl parser) {
-            super(parent, fieldReaders, parser);
+                AvroFieldReader[] fieldReaders, AvroParserImpl parser, Schema schema) {
+            super(parent, fieldReaders, parser, schema);
         }
 
         @Override
         public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) {
-            return new Resolving(parent, _fieldReaders, parser);
+            return new Resolving(parent, _fieldReaders, parser, _schema);
         }
 
         @Override

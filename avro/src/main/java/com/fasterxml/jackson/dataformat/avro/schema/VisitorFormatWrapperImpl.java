@@ -1,10 +1,20 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
 import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonAnyFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonBooleanFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonMapFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNullFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
@@ -90,7 +100,7 @@ public class VisitorFormatWrapperImpl
     }
     
     @Override
-    public JsonArrayFormatVisitor expectArrayFormat(JavaType convertedType) {
+    public JsonArrayFormatVisitor expectArrayFormat(final JavaType convertedType) {
         // 22-Mar-2016, tatu: Actually we can detect byte[] quite easily here can't we?
         if (convertedType.isArrayType()) {
             JavaType vt = convertedType.getContentType();
@@ -98,7 +108,9 @@ public class VisitorFormatWrapperImpl
                 _builder = new SchemaBuilder() {
                     @Override
                     public Schema builtAvroSchema() {
-                        return Schema.create(Schema.Type.BYTES);
+                        Schema schema = Schema.create(Schema.Type.BYTES);
+                        schema.addProp(SpecificData.CLASS_PROP, convertedType.toCanonical());
+                        return schema;
                     }
                     
                 };
@@ -140,7 +152,7 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        IntegerVisitor v = new IntegerVisitor();
+        IntegerVisitor v = new IntegerVisitor(type);
         _builder = v;
         return v;
     }

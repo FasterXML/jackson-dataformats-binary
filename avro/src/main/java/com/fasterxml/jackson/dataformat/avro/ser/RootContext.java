@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.*;
+import org.apache.avro.generic.GenericArray;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -86,7 +88,18 @@ class RootContext
     public void writeString(String value) throws IOException {
         // 19-Jan-2017, tatu: Implemented to allow/support root-level scalars, esp.
         //   for Avro streams
-        _writer().write(value, _encoder);
+        // Avro distinguishes between String and char[], whereas Jackson doesn't
+        // Check if the schema is expecting a char[] and handle appropriately
+        if (_schema.getType() == Schema.Type.ARRAY) {
+            Integer[] chars = new Integer[value.length()];
+            char[] src = value.toCharArray();
+            for(int i = 0; i < chars.length; i++) {
+                chars[i] = (int)src[i];
+            }
+            _writer().write(Arrays.asList(chars), _encoder);
+        } else {
+            _writer().write(value, _encoder);
+        }
     }
 
     @Override

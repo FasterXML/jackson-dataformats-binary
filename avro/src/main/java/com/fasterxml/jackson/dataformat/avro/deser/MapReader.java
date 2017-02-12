@@ -2,6 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
+import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
+
 import com.fasterxml.jackson.core.JsonToken;
 
 public abstract class MapReader extends AvroStructureReader
@@ -13,26 +16,31 @@ public abstract class MapReader extends AvroStructureReader
     protected final static int STATE_DONE = 4;
 
     protected final AvroParserImpl _parser;
+    protected final Schema _keySchema;
 
     protected String _currentName;
 
     protected int _state;
     
-    protected MapReader() {
-        this(null, null);
+    protected MapReader(Schema schema) {
+        this(null, null, schema);
     }
 
-    protected MapReader(AvroReadContext parent, AvroParserImpl parser) {
-        super(parent, TYPE_OBJECT);
+    protected MapReader(AvroReadContext parent, AvroParserImpl parser, Schema schema) {
+        super(parent, TYPE_OBJECT, schema);
         _parser = parser;
+        _keySchema = Schema.create(Schema.Type.STRING);
+        if (schema.getProp(SpecificData.KEY_CLASS_PROP) != null) {
+            _keySchema.addProp(SpecificData.CLASS_PROP, schema.getProp(SpecificData.KEY_CLASS_PROP));
+        }
     }
 
-    public static MapReader construct(ScalarDecoder dec) {
-        return new Scalar(dec);
+    public static MapReader construct(ScalarDecoder dec, Schema schema) {
+        return new Scalar(dec, schema);
     }
 
-    public static MapReader construct(AvroStructureReader reader) {
-        return new NonScalar(reader);
+    public static MapReader construct(AvroStructureReader reader, Schema schema) {
+        return new NonScalar(reader, schema);
     }
 
     @Override
@@ -70,6 +78,17 @@ public abstract class MapReader extends AvroStructureReader
         sb.append('}');
     }
 
+    @Override
+    public Schema getSchema() {
+        if (_currToken == JsonToken.FIELD_NAME) {
+            return _keySchema;
+        }
+        if (_currToken != JsonToken.START_OBJECT && _currToken != JsonToken.END_OBJECT) {
+            return _schema.getValueType();
+        }
+        return super.getSchema();
+    }
+
     /*
     /**********************************************************************
     /* Implementations
@@ -81,19 +100,20 @@ public abstract class MapReader extends AvroStructureReader
         private final ScalarDecoder _scalarDecoder;
         protected long _count;
 
-        protected Scalar(ScalarDecoder dec) {
+        protected Scalar(ScalarDecoder dec, Schema schema) {
+            super(schema);
             _scalarDecoder = dec;
         }
 
         protected Scalar(AvroReadContext parent,
-                AvroParserImpl parser, ScalarDecoder sd) {
-            super(parent, parser);
+                AvroParserImpl parser, ScalarDecoder sd, Schema schema) {
+            super(parent, parser, schema);
             _scalarDecoder = sd;
         }
         
         @Override
         public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
-            return new Scalar(parent, parser, _scalarDecoder);
+            return new Scalar(parent, parser, _scalarDecoder, _schema);
         }
 
         @Override
@@ -152,19 +172,20 @@ public abstract class MapReader extends AvroStructureReader
         private final AvroStructureReader _structureReader;
         protected long _count;
 
-        public NonScalar(AvroStructureReader reader) {
+        public NonScalar(AvroStructureReader reader, Schema schema) {
+            super(schema);
             _structureReader = reader;
         }
 
         public NonScalar(AvroReadContext parent,
-                AvroParserImpl parser, AvroStructureReader reader) {
-            super(parent, parser);
+                AvroParserImpl parser, AvroStructureReader reader, Schema schema) {
+            super(parent, parser, schema);
             _structureReader = reader;
         }
         
         @Override
         public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
-            return new NonScalar(parent, parser, _structureReader);
+            return new NonScalar(parent, parser, _structureReader, _schema);
         }
         @Override
         public JsonToken nextToken() throws IOException

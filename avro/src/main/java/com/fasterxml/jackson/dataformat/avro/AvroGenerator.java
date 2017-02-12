@@ -49,7 +49,17 @@ public class AvroGenerator extends GeneratorBase
          *
          * @since 2.7
          */
-        AVRO_BUFFERING(true)
+        AVRO_BUFFERING(true),
+
+        /**
+         * Feature that writes {@code char}, {@code char[]}, {@link Character}, and {@code Character[]} as {@code String strings} instead of
+         * the avro-standard integers.
+         * <p>
+         * Disabled by default to maintain compatibility with the Apache Avro reference implementation
+         *
+         * @since 2.9
+         */
+        WRITE_CHAR_ARRAY_AS_STRING(false)
         ;
 
         protected final boolean _defaultState;

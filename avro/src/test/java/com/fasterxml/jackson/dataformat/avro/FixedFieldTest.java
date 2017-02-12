@@ -1,15 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import org.junit.Assert;
-
 import java.io.IOException;
 import java.util.Random;
+
+import org.junit.Assert;
+
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 
 public class FixedFieldTest extends AvroTestBase
 {
     private static final String FIXED_SCHEMA_JSON = "{\n"
             + "    \"type\": \"record\",\n"
             + "    \"name\": \"WithFixedField\",\n"
+            +"     \"namespace\": \"com.fasterxml.jackson.dataformat.avro.FixedFieldTest$\",\n"
             + "    \"fields\": [\n"
             + "        {\"name\": \"fixedField\", \"type\": {\"type\": \"fixed\", \"name\": \"FixedFieldBytes\", \"size\": 4}}\n"
             + "    ]\n"
@@ -17,6 +20,7 @@ public class FixedFieldTest extends AvroTestBase
 
     public void testFixedField() throws IOException {
         AvroMapper mapper = getMapper();
+        mapper.registerSubtypes(new NamedType(byte[].class, "com.fasterxml.jackson.dataformat.avro.FixedFieldTest$FixedFieldBytes"));
         AvroSchema schema = mapper.schemaFrom(FIXED_SCHEMA_JSON);
 
         WithFixedField in = new WithFixedField();

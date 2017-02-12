@@ -1,15 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonToken;
+
+import java.io.IOException;
 
 public class MissingReader extends AvroReadContext
 {
     public final static MissingReader instance = new MissingReader();
     
     public MissingReader() {
-        super(null);
+        super(null, null);
         _type = TYPE_ROOT;
     }
 

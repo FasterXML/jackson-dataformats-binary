@@ -1,12 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.avro.Schema;
-
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
+import org.apache.avro.Schema;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Alternative to {@link ObjectWriteContext} that needs to be used with
@@ -37,7 +36,7 @@ public final class MapWriteContext
     @Override
     public final AvroWriteContext createChildArrayContext() {
         _verifyValueWrite();
-        AvroWriteContext child = new ArrayWriteContext(this, _generator, _createArray(_schema.getElementType()));
+        AvroWriteContext child = new ArrayWriteContext(this, _generator, _createArray(_schema.getValueType()));
         _data.put(_currentName, child.rawValue());
         return child;
     }

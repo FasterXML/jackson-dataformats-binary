@@ -1,8 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonToken;
+import org.apache.avro.Schema;
+
+import java.io.IOException;
 
 /**
  * Base class for handlers for Avro structured types (or in some cases,
@@ -14,8 +15,8 @@ public abstract class AvroStructureReader
 {
     protected JsonToken _currToken;
 
-    protected AvroStructureReader(AvroReadContext parent, int type) {
-        super(parent);
+    protected AvroStructureReader(AvroReadContext parent, int type, Schema schema) {
+        super(parent, schema);
         _type = type;
     }
     

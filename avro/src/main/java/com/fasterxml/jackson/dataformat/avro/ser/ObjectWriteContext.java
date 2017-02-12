@@ -1,14 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 public final class ObjectWriteContext
     extends KeyValueContext
@@ -95,7 +96,18 @@ public final class ObjectWriteContext
     public void writeString(String value) {
         _verifyValueWrite();
         if (_nextField != null) {
-            _record.put(_nextField.pos(), value);
+            // Avro distinguishes between String and char[], whereas Jackson doesn't
+            // Check if the schema is expecting a char[] and handle appropriately
+            if (_nextField.schema().getType() == Schema.Type.ARRAY) {
+                Integer[] chars = new Integer[value.length()];
+                char[] src = value.toCharArray();
+                for(int i = 0; i < chars.length; i++) {
+                    chars[i] = (int)src[i];
+                }
+                _record.put(_nextField.pos(), Arrays.asList(chars));
+            } else {
+                _record.put(_nextField.pos(), value);
+            }
         }
     }
 

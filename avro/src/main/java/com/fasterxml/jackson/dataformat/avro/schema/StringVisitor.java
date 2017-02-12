@@ -1,12 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import java.util.*;
-
-import org.apache.avro.Schema;
-
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
+import org.apache.avro.Schema;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 public class StringVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder

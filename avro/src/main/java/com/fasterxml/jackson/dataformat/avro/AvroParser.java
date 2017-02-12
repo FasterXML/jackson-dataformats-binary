@@ -1,8 +1,17 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Writer;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.Base64Variant;
+import com.fasterxml.jackson.core.FormatFeature;
+import com.fasterxml.jackson.core.FormatSchema;
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
@@ -254,6 +263,16 @@ public abstract class AvroParser extends ParserBase
     
     @Override
     public abstract JsonToken nextToken() throws IOException;
+
+    @Override
+    public boolean canReadTypeId() {
+        return getTypeId() != null;
+    }
+
+    @Override
+    public Object getTypeId() {
+        return _avroContext.getTypeId();
+    }
 
     /*
     /**********************************************************

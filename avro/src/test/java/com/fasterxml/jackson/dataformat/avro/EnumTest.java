@@ -5,6 +5,7 @@ public class EnumTest extends AvroTestBase
     protected final static String ENUM_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"
             +"\"name\": \"Employee\",\n"
+            +"\"namespace\": \"com.fasterxml.jackson.dataformat.avro.EnumTest$\",\n"
             +"\"fields\": [\n"
             +" {\"name\": \"gender\", \"type\": { \"type\" : \"enum\","
             +" \"name\": \"Gender\", \"symbols\": [\"M\",\"F\"] }"
