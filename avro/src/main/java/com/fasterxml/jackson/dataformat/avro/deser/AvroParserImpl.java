@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 import org.apache.avro.io.BinaryDecoder;
 
@@ -129,7 +128,10 @@ public class AvroParserImpl extends AvroParser
     @Override
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
-            _inputStream.close();
+            if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {
+                _inputStream.close();
+            }
+            _inputStream = null;
         }
     }
 
@@ -142,6 +144,8 @@ public class AvroParserImpl extends AvroParser
     @Override
     public JsonToken nextToken() throws IOException
     {
+        _numTypesValid = NR_UNKNOWN;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
         if (_closed) {
             return null;
@@ -154,6 +158,8 @@ public class AvroParserImpl extends AvroParser
     @Override
     public String nextFieldName() throws IOException
     {
+        _numTypesValid = NR_UNKNOWN;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
         if (_closed) {
             return null;
@@ -170,6 +176,8 @@ public class AvroParserImpl extends AvroParser
     @Override
     public boolean nextFieldName(SerializableString sstr) throws IOException
     {
+        _numTypesValid = NR_UNKNOWN;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
         if (_closed) {
             return false;
@@ -200,11 +208,14 @@ public class AvroParserImpl extends AvroParser
      */
 
     public JsonToken decodeBoolean() throws IOException {
-        return _decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
+        int b = _nextByteGuaranteed();
+        // As per Avro default impl: only `1` recognized as true (unlike
+        // "C-style" 0 == false, others true)
+        return (b == 1) ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
     }
 
     public void skipBoolean() throws IOException {
-        _decoder.skipFixed(1);
+        _skipByteGuaranteed();
     }
 
     public JsonToken decodeInt() throws IOException {
@@ -334,7 +345,13 @@ public class AvroParserImpl extends AvroParser
     }
 
     public boolean checkInputEnd() throws IOException {
-        return _decoder.isEnd();
+        if (_closed) {
+            return true;
+        }
+        if (_inputPtr < _inputEnd) {
+            return false;
+        }
+        return _loadMore();
     }
 
     /*
@@ -383,5 +400,103 @@ public class AvroParserImpl extends AvroParser
     protected JsonToken setString(String str) {
         _textValue = str;
         return JsonToken.VALUE_STRING;
+    }
+
+    /*
+    /**********************************************************
+    /* Low-level reading, other
+    /**********************************************************
+     */
+
+    private final byte _nextByteGuaranteed() throws IOException
+    {
+        int ptr = _inputPtr;
+        if (ptr < _inputEnd) {
+            byte b = _inputBuffer[ptr];
+            _inputPtr = ptr+1;
+            return b;
+        }
+        return _nextByteGuaranteed2();
+    }
+
+    private final byte _nextByteGuaranteed2() throws IOException
+    {
+        _loadMoreGuaranteed();
+        return _inputBuffer[_inputPtr++];
+    }
+
+    protected final void _loadMoreGuaranteed() throws IOException {
+        if (!_loadMore()) { _reportInvalidEOF(); }
+    }
+
+    private final void _skipByteGuaranteed() throws IOException
+    {
+        int ptr = _inputPtr;
+        if (ptr < _inputEnd) {
+            _inputPtr = ptr+1;
+            return;
+        }
+        _loadMoreGuaranteed();
+        _inputPtr += 1;
+    }
+
+    protected final boolean _loadMore() throws IOException
+    {
+        //_currInputRowStart -= _inputEnd;
+        
+        if (_inputStream != null) {
+            int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            _currInputProcessed += _inputEnd;
+            _inputPtr = 0;
+            if (count > 0) {
+                _inputEnd = count;
+                return true;
+            }
+            // important: move pointer to same as end, to keep location accurate
+            _inputEnd = 0;
+            // End of input
+            _closeInput();
+            // Should never return 0, so let's fail
+            if (count == 0) {
+                throw new IOException("InputStream.read() returned 0 characters when trying to read "+_inputBuffer.length+" bytes");
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Helper method that will try to load at least specified number bytes in
+     * input buffer, possible moving existing data around if necessary
+     */
+    protected final void _loadToHaveAtLeast(int minAvailable) throws IOException
+    {
+        // No input stream, no leading (either we are closed, or have non-stream input source)
+        if (_inputStream == null) {
+            throw _constructError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+        }
+        // Need to move remaining data in front?
+        int amount = _inputEnd - _inputPtr;
+        _currInputProcessed += _inputPtr;
+        if (amount > 0 && _inputPtr > 0) {
+            //_currInputRowStart -= _inputPtr;
+            System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
+            _inputEnd = amount;
+        } else {
+            _inputEnd = 0;
+        }
+        _inputPtr = 0;
+        while (_inputEnd < minAvailable) {
+            int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            if (count < 1) {
+                // End of input
+                _closeInput();
+                // Should never return 0, so let's fail
+                if (count == 0) {
+                    throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
+                }
+                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+            }
+            _inputEnd += count;
+        }
     }
 }

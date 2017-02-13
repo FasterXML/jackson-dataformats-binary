@@ -617,7 +617,7 @@ public final class CBORParser extends ParserMinimalBase
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         // also: clear any data retained so far
         _binaryValue = null;
-        
+
         /* First: need to keep track of lengths of defined-length Arrays and
          * Objects (to materialize END_ARRAY/END_OBJECT as necessary);
          * as well as handle names for Object entries.
