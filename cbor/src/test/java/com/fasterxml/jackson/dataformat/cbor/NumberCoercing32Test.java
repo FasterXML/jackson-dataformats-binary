@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor.failing;
+package com.fasterxml.jackson.dataformat.cbor;
 
 import java.util.*;
 
