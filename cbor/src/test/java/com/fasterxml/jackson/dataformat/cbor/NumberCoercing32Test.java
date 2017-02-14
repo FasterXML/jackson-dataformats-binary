@@ -4,8 +4,6 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.dataformat.cbor.*;
-
 public class NumberCoercing32Test extends CBORTestBase
 {
     /*

@@ -17,7 +17,6 @@ public abstract class MapReader extends AvroStructureReader
     protected String _currentName;
 
     protected int _state;
-    protected long _count;
     
     protected MapReader() {
         this(null, null);
@@ -80,6 +79,7 @@ public abstract class MapReader extends AvroStructureReader
     private final static class Scalar extends MapReader
     {
         private final ScalarDecoder _scalarDecoder;
+        protected long _count;
 
         protected Scalar(ScalarDecoder dec) {
             _scalarDecoder = dec;
@@ -150,6 +150,7 @@ public abstract class MapReader extends AvroStructureReader
     private final static class NonScalar extends MapReader
     {
         private final AvroStructureReader _structureReader;
+        protected long _count;
 
         public NonScalar(AvroStructureReader reader) {
             _structureReader = reader;
