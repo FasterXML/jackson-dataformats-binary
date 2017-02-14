@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 import org.apache.avro.io.BinaryDecoder;
 
