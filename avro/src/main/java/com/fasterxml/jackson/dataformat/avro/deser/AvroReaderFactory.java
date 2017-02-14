@@ -324,8 +324,12 @@ public abstract class AvroReaderFactory
             // Any defaults to consider?
             if (!defaultFields.isEmpty()) {
                 for (Schema.Field defaultField : defaultFields) {
-                    fieldReaders[i++] = AvroFieldDefaulters.createDefaulter(defaultField.name(),
+                    AvroFieldReader fr = AvroFieldDefaulters.createDefaulter(defaultField.name(),
                             defaultField.defaultValue());
+                    if (fr == null) {
+                        throw new IllegalArgumentException("Unsupported default type: "+defaultField.schema().getType());
+                    }
+                    fieldReaders[i++] = fr;
                 }
             }
             return reader;

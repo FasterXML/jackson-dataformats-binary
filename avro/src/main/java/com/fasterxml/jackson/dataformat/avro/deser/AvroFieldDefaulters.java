@@ -37,15 +37,9 @@ public class AvroFieldDefaulters
         case VALUE_STRING:
             return new ScalarDefaults.StringDefaults(name, defaultAsNode.asText());
         case START_ARRAY:
-            // !!! TODO
-            break;
         case START_OBJECT:
-            // !!! TODO
-            break;
         default:
         }
-
-        // TODO:
-        throw new IllegalArgumentException("Unsupported default type: "+defaultAsNode.asText());
+        return null;
     }
 }
