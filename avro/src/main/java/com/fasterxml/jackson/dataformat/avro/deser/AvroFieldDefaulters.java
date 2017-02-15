@@ -50,6 +50,13 @@ public class AvroFieldDefaulters
                 return StructDefaults.createObjectDefaults(name, readers);
             }
         case START_ARRAY:
+        {
+            List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+            for (JsonNode value : defaultAsNode) {
+                readers.add(createDefaulter("", value));
+            }
+            return StructDefaults.createArrayDefaults(name, readers);
+        }
         default:
         }
         return null;
