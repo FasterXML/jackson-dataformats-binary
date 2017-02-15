@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.avro.io.BinaryDecoder;
 
@@ -9,31 +10,29 @@ import com.fasterxml.jackson.core.JsonToken;
 public class StructDefaults
 {
     public static AvroFieldReader createObjectDefaults(String name,
-            String[] fieldNames, AvroStructureReader[] fieldReaders) {
+            List<AvroFieldReader> fieldReaders) {
+        
         return AvroFieldReader.construct(name, new ObjectDefaults(
                 null, null, null,
-                fieldNames, fieldReaders));
+                fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()])));
     }
 
     protected static class ObjectDefaults extends MapReader
     {
-        protected final String[] _fieldNames;
-        protected final AvroStructureReader[] _fieldReaders;
+        protected final AvroFieldReader[] _fieldReaders;
 
         public ObjectDefaults(AvroReadContext parent,
                 AvroParserImpl parser, BinaryDecoder decoder,
-                String[] fieldNames, AvroStructureReader[] fieldReaders)
+                AvroFieldReader[] fieldReaders)
         {
             super(parent, parser, decoder);
-            _fieldNames = fieldNames;
             _fieldReaders = fieldReaders;
         }
 
         @Override
         public MapReader newReader(AvroReadContext parent,
                 AvroParserImpl parser, BinaryDecoder decoder) {
-            return new ObjectDefaults(parent, parser, decoder,
-                    _fieldNames, _fieldReaders);
+            return new ObjectDefaults(parent, parser, decoder, _fieldReaders);
         }
 
         @Override
@@ -45,9 +44,9 @@ public class StructDefaults
                 _state = STATE_NAME;
                 return (_currToken = JsonToken.START_OBJECT);
             case STATE_NAME:
-                if (_index < _fieldNames.length) {
+                if (_index < _fieldReaders.length) {
                     _state = STATE_VALUE;
-                    _currentName = _fieldNames[_index];
+                    _currentName = _fieldReaders[_index].getName();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
                 final AvroReadContext parent = getParent();
@@ -64,10 +63,8 @@ public class StructDefaults
                 return (_currToken = JsonToken.END_OBJECT);
             case STATE_VALUE:
                 _state = STATE_NAME;
-                AvroStructureReader r = _fieldReaders[_index].newReader(this, _parser, _decoder);
-                _parser.setAvroContext(r);
-                ++_index;
-                return (_currToken = r.nextToken());
+                AvroFieldReader r = _fieldReaders[_index++];
+                return (_currToken = r.readValue(this, _parser, _decoder));
             default:
             }
             throwIllegalState(_state);

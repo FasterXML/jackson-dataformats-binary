@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
+import java.util.*;
+
 import org.codehaus.jackson.JsonNode;
 
 /**
@@ -36,8 +38,18 @@ public class AvroFieldDefaulters
             }
         case VALUE_STRING:
             return new ScalarDefaults.StringDefaults(name, defaultAsNode.asText());
-        case START_ARRAY:
         case START_OBJECT:
+            {
+                Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.getFields();
+                List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+                while (it.hasNext()) {
+                    Map.Entry<String,JsonNode> entry = it.next();
+                    String propName = entry.getKey();
+                    readers.add(createDefaulter(propName, entry.getValue()));
+                }
+                return StructDefaults.createObjectDefaults(name, readers);
+            }
+        case START_ARRAY:
         default:
         }
         return null;
