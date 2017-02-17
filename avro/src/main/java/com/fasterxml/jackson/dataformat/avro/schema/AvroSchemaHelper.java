@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JavaType;
@@ -12,8 +13,22 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 
 public abstract class AvroSchemaHelper
 {
+    /**
+     * Constant used by native Avro Schemas for indicating more specific
+     * physical class of a value; referenced indirectly to reduce direct
+     * dependencies to the standard avro library.
+     *
+     * @since 2.8.7
+     */
+    protected final static String AVRO_SCHEMA_PROP_CLASS = SpecificData.CLASS_PROP;
+
     protected static String getNamespace(JavaType type) {
         Class<?> cls = type.getRawClass();
+        // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`
+        Class<?> enclosing = cls.getEnclosingClass();
+        if (enclosing != null) {
+            return enclosing.getName() + "$";
+        }
         Package pkg = cls.getPackage();
         return (pkg == null) ? "" : pkg.getName();
     }
@@ -42,7 +57,7 @@ public abstract class AvroSchemaHelper
         return Schema.createUnion(schemas);
     }
 
-    public static Schema simpleSchema(JsonFormatTypes type)
+    public static Schema simpleSchema(JsonFormatTypes type, JavaType hint)
     {
         switch (type) {
         case BOOLEAN:
@@ -52,6 +67,13 @@ public abstract class AvroSchemaHelper
         case NULL:
             return Schema.create(Schema.Type.NULL);
         case NUMBER:
+            // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`
+            if (hint.hasRawClass(float.class)) {
+                return Schema.create(Schema.Type.FLOAT);
+            }
+            if (hint.hasRawClass(long.class)) {
+                return Schema.create(Schema.Type.LONG);
+            }
             return Schema.create(Schema.Type.DOUBLE);
         case STRING:
             return Schema.create(Schema.Type.STRING);
@@ -64,8 +86,7 @@ public abstract class AvroSchemaHelper
         }
     }
 
-    public static Schema numericAvroSchema(JsonParser.NumberType type)
-    {
+    public static Schema numericAvroSchema(JsonParser.NumberType type) {
         switch (type) {
         case INT:
             return Schema.create(Schema.Type.INT);
@@ -78,8 +99,27 @@ public abstract class AvroSchemaHelper
         case DOUBLE:
             return Schema.create(Schema.Type.DOUBLE);
         default:
-            throw new IllegalStateException("Unrecognized number type: "+type);
         }
+        throw new IllegalStateException("Unrecognized number type: "+type);
+    }
+
+    public static Schema numericAvroSchema(JsonParser.NumberType type, JavaType hint) {
+        Schema schema = numericAvroSchema(type);
+        if (hint != null) {
+            schema.addProp(AVRO_SCHEMA_PROP_CLASS, hint.toCanonical());
+        }
+        return schema;
+    }
+
+    /**
+     * Helper method for constructing type-tagged "native" Avro Schema instance.
+     *
+     * @since 2.8.7
+     */
+    public static Schema typedSchema(Schema.Type nativeType, JavaType javaType) {
+        Schema schema = Schema.create(nativeType);
+        schema.addProp(AVRO_SCHEMA_PROP_CLASS, javaType.toCanonical());
+        return schema;
     }
 
     public static Schema anyNumberSchema()
@@ -90,7 +130,7 @@ public abstract class AvroSchemaHelper
                 Schema.create(Schema.Type.DOUBLE)
                 ));
     }
-    
+
     protected static <T> T throwUnsupported() {
         throw new UnsupportedOperationException("Format variation not supported");
     }
