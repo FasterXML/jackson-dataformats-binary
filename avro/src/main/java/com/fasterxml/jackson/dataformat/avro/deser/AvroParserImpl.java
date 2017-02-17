@@ -230,7 +230,9 @@ public class AvroParserImpl extends AvroParser
 
     public JsonToken decodeFloat() throws IOException {
         // !!! 10-Feb-2017, tatu: Should support float, see CBOR
-        _numberDouble = _decoder.readDouble();
+        //   (requires addition of new NR_ constant, and possibly refactoring to
+        //   use `ParserMinimalBase` instead of `ParserBase`)
+        _numberDouble = _decoder.readFloat();
         _numTypesValid = NR_DOUBLE;
         return JsonToken.VALUE_NUMBER_FLOAT;
     }
