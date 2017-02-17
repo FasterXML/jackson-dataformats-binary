@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericArray;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -42,7 +43,11 @@ public final class ArrayWriteContext
 
     @Override
     public void writeString(String value) {
-        _array.add(value);
+        if (_schema.getElementType().getType() == Schema.Type.INT && value != null && value.length() == 1) {
+            _array.add((int)value.charAt(0));
+        } else {
+            _array.add(value);
+        }
     }
 
     @Override

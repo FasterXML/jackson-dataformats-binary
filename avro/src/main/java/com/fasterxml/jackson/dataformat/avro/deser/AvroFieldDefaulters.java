@@ -1,8 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.util.*;
-
+import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
 import org.codehaus.jackson.JsonNode;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Factory class for various default providers
@@ -10,7 +15,7 @@ import org.codehaus.jackson.JsonNode;
 public class AvroFieldDefaulters
 {
     public static AvroFieldReader createDefaulter(String name,
-            JsonNode defaultAsNode) {
+            JsonNode defaultAsNode, Schema schema) {
         switch (defaultAsNode.asToken()) {
         case VALUE_TRUE:
             return new ScalarDefaults.BooleanDefaults(name, true);
@@ -45,17 +50,21 @@ public class AvroFieldDefaulters
                 while (it.hasNext()) {
                     Map.Entry<String,JsonNode> entry = it.next();
                     String propName = entry.getKey();
-                    readers.add(createDefaulter(propName, entry.getValue()));
+                    readers.add(createDefaulter(
+                        propName,
+                        entry.getValue(),
+                        schema.getType() == Type.MAP ? schema.getValueType() : schema.getField(propName).schema()
+                    ));
                 }
-                return StructDefaults.createObjectDefaults(name, readers);
+                return StructDefaults.createObjectDefaults(name, readers, schema);
             }
         case START_ARRAY:
         {
             List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
             for (JsonNode value : defaultAsNode) {
-                readers.add(createDefaulter("", value));
+                readers.add(createDefaulter("", value, schema.getElementType()));
             }
-            return StructDefaults.createArrayDefaults(name, readers);
+            return StructDefaults.createArrayDefaults(name, readers, schema);
         }
         default:
         }

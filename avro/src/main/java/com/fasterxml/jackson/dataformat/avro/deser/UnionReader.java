@@ -1,9 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import org.apache.avro.Schema;
+
+import java.io.IOException;
 
 /**
  * Reader used in cases where union contains at least one non-scalar type.
@@ -13,21 +14,21 @@ final class UnionReader extends AvroStructureReader
     private final AvroStructureReader[] _memberReaders;
     private final AvroParserImpl _parser;
 
-    public UnionReader(AvroStructureReader[] memberReaders) {
-        this(null, memberReaders, null);
+    public UnionReader(AvroStructureReader[] memberReaders, Schema schema) {
+        this(null, memberReaders, null, schema);
     }
 
     private UnionReader(AvroReadContext parent,
-            AvroStructureReader[] memberReaders, AvroParserImpl parser)
+            AvroStructureReader[] memberReaders, AvroParserImpl parser, Schema schema)
     {
-        super(parent, TYPE_ROOT);
+        super(parent, TYPE_ROOT, schema);
         _memberReaders = memberReaders;
         _parser = parser;
     }
     
     @Override
     public UnionReader newReader(AvroReadContext parent, AvroParserImpl parser) {
-        return new UnionReader(parent, _memberReaders, parser);
+        return new UnionReader(parent, _memberReaders, parser, _schema);
     }
 
     @Override

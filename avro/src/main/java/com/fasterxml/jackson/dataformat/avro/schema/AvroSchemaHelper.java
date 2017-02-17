@@ -1,19 +1,21 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.avro.Schema;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
+import org.apache.avro.Schema;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class AvroSchemaHelper
 {
     protected static String getNamespace(JavaType type) {
         Class<?> cls = type.getRawClass();
+        if (cls.getEnclosingClass() != null) {
+            return cls.getEnclosingClass().getName() + "$";
+        }
         Package pkg = cls.getPackage();
         return (pkg == null) ? "" : pkg.getName();
     }
@@ -42,7 +44,7 @@ public abstract class AvroSchemaHelper
         return Schema.createUnion(schemas);
     }
 
-    public static Schema simpleSchema(JsonFormatTypes type)
+    public static Schema simpleSchema(JsonFormatTypes type, JavaType hint)
     {
         switch (type) {
         case BOOLEAN:
@@ -52,6 +54,12 @@ public abstract class AvroSchemaHelper
         case NULL:
             return Schema.create(Schema.Type.NULL);
         case NUMBER:
+            if (hint.hasRawClass(float.class)) {
+                return Schema.create(Schema.Type.FLOAT);
+            }
+            if (hint.hasRawClass(long.class)) {
+                return Schema.create(Schema.Type.LONG);
+            }
             return Schema.create(Schema.Type.DOUBLE);
         case STRING:
             return Schema.create(Schema.Type.STRING);

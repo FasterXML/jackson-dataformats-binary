@@ -2,6 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
+import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
+
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -12,6 +15,7 @@ import com.fasterxml.jackson.core.JsonToken;
 public abstract class AvroReadContext extends JsonStreamContext
 {
     protected final AvroReadContext _parent;
+    protected final Schema          _schema;
 
     /*
     /**********************************************************************
@@ -19,10 +23,11 @@ public abstract class AvroReadContext extends JsonStreamContext
     /**********************************************************************
      */
 
-    public AvroReadContext(AvroReadContext parent)
+    public AvroReadContext(AvroReadContext parent, Schema schema)
     {
         super();
         _parent = parent;
+        _schema = schema;
     }
 
     public abstract JsonToken nextToken() throws IOException;
@@ -42,6 +47,18 @@ public abstract class AvroReadContext extends JsonStreamContext
     
     @Override
     public final AvroReadContext getParent() { return _parent; }
+
+    public Schema getSchema() { return _schema; }
+
+    public Object getTypeId() {
+        switch (getSchema().getType()) {
+        case ENUM:
+        case RECORD:
+        case FIXED:
+            return SpecificData.getClassName(getSchema());
+        }
+        return getSchema().getProp(SpecificData.CLASS_PROP);
+    }
     
     protected abstract void appendDesc(StringBuilder sb);
 

@@ -1,19 +1,21 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.ByteArrayOutputStream;
-import java.util.*;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
 
+import java.io.ByteArrayOutputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class MapTest extends AvroTestBase
 {
     private final static String MAP_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"
             +"\"name\": \"Container\",\n"
+            +"\"namespace\": \"com.fasterxml.jackson.dataformat.avro.MapTest$\",\n"
             +"\"fields\": [\n"
             +" {\"name\": \"stuff\", \"type\":{\n"
             +"    \"type\":\"map\", \"values\":[\"string\",\"null\"]"
@@ -24,6 +26,7 @@ public class MapTest extends AvroTestBase
     private final static String MAP_OR_NULL_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"
             +"\"name\": \"Container\",\n"
+            +"\"namespace\": \"com.fasterxml.jackson.dataformat.avro.MapTest$\",\n"
             +"\"fields\": [\n"
             +" {\"name\": \"stuff\", \"type\":[\n"
             +"    \"null\", { \"type\" : \"map\", \"values\":\"string\" } \n"

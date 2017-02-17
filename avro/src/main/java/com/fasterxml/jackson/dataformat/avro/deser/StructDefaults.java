@@ -1,9 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
+import com.fasterxml.jackson.core.JsonToken;
+import org.apache.avro.Schema;
+
 import java.io.IOException;
 import java.util.List;
-
-import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * Default-providing {@link AvroFieldReader} implementations for
@@ -14,19 +15,19 @@ import com.fasterxml.jackson.core.JsonToken;
 public class StructDefaults
 {
     public static AvroFieldReader createObjectDefaults(String name,
-            List<AvroFieldReader> fieldReaders) {
+            List<AvroFieldReader> fieldReaders, Schema schema) {
         
         return AvroFieldReader.construct(name, new ObjectDefaults(
                 null, null,
-                fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()])));
+                fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()]), schema));
     }
 
     public static AvroFieldReader createArrayDefaults(String name,
-            List<AvroFieldReader> fieldReaders) {
+            List<AvroFieldReader> fieldReaders, Schema schema) {
         
         return AvroFieldReader.construct(name, new ArrayDefaults(
                 null, null,
-                fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()])));
+                fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()]), schema));
     }
 
     protected static class ObjectDefaults extends MapReader
@@ -34,16 +35,16 @@ public class StructDefaults
         protected final AvroFieldReader[] _fieldReaders;
 
         public ObjectDefaults(AvroReadContext parent,
-                AvroParserImpl parser, AvroFieldReader[] fieldReaders)
+                AvroParserImpl parser, AvroFieldReader[] fieldReaders, Schema schema)
         {
-            super(parent, parser);
+            super(parent, parser, schema);
             _fieldReaders = fieldReaders;
         }
 
         @Override
         public MapReader newReader(AvroReadContext parent,
                 AvroParserImpl parser) {
-            return new ObjectDefaults(parent, parser, _fieldReaders);
+            return new ObjectDefaults(parent, parser, _fieldReaders, _schema);
         }
 
         @Override
@@ -85,16 +86,16 @@ public class StructDefaults
         protected final AvroFieldReader[] _valueReaders;
 
         public ArrayDefaults(AvroReadContext parent,
-                AvroParserImpl parser, AvroFieldReader[] valueReaders)
+                AvroParserImpl parser, AvroFieldReader[] valueReaders, Schema schema)
         {
-            super(parent, parser);
+            super(parent, parser, schema);
             _valueReaders = valueReaders;
         }
 
         @Override
         public ArrayReader newReader(AvroReadContext parent,
                 AvroParserImpl parser) {
-            return new ArrayDefaults(parent, parser, _valueReaders);
+            return new ArrayDefaults(parent, parser, _valueReaders, _schema);
         }
 
         @Override

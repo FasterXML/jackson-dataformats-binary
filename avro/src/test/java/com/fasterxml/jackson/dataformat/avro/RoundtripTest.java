@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.*;
 public class RoundtripTest extends MapTest
 {
     static String SCHEMA_ISSUE_16 = aposToQuotes("{\n"+
-        " 'namespace':'org.example.testsnippets',\n"+
+        " 'namespace':'com.fasterxml.jackson.dataformat.avro.RoundtripTest$',\n"+
         " 'type':'record',\n"+
-        " 'name':'TestDto',\n"+
+        " 'name':'Issue16Bean',\n"+
         " 'fields':[\n"+
         "    {\n"+
         "        'name':'id',\n"+

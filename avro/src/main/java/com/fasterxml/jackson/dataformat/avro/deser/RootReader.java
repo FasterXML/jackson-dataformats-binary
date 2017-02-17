@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonToken;
+
+import java.io.IOException;
 
 /**
  * Context used at root level; basically just a container
@@ -15,7 +15,7 @@ public final class RootReader extends AvroReadContext
 
     public RootReader(AvroParserImpl parser,
             AvroStructureReader valueReader) {
-        super(null);
+        super(null, null);
         _type = TYPE_ROOT;
         _parser = parser;
         _valueReader = valueReader;

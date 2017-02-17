@@ -1,10 +1,27 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.util.*;
-
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.BooleanDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.BytesDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.CharReader;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.DoubleReader;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.EnumDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.FixedDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.FloatReader;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.IntReader;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.LongReader;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.NullReader;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.ScalarUnionDecoder;
+import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.StringReader;
 import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
 
-import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Helper class used for constructing a hierarchic reader for given
@@ -20,6 +37,7 @@ public abstract class AvroReaderFactory
     protected final static ScalarDecoder READER_LONG = new LongReader();
     protected final static ScalarDecoder READER_NULL = new NullReader();
     protected final static ScalarDecoder READER_STRING = new StringReader();
+    protected final static ScalarDecoder READER_CHARACTER = new CharReader();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -65,6 +83,9 @@ public abstract class AvroReaderFactory
         case FLOAT: 
             return READER_FLOAT;
         case INT:
+            if (Character.class.getName().equals(type.getProp(SpecificData.CLASS_PROP))) {
+                return READER_CHARACTER;
+            }
             return READER_INT;
         case LONG: 
             return READER_LONG;
@@ -127,7 +148,7 @@ public abstract class AvroReaderFactory
             return createUnionReader(schema);
         default:
             // for other types, we need wrappers
-            return new ScalarDecoderWrapper(createScalarValueDecoder(schema));
+            return new ScalarDecoderWrapper(createScalarValueDecoder(schema), schema);
         }
     }
 
@@ -136,9 +157,9 @@ public abstract class AvroReaderFactory
         Schema elementType = schema.getElementType();
         ScalarDecoder scalar = createScalarValueDecoder(elementType);
         if (scalar != null) {
-            return ArrayReader.construct(scalar);
+            return ArrayReader.construct(scalar, schema);
         }
-        return ArrayReader.construct(createReader(elementType));
+        return ArrayReader.construct(createReader(elementType), schema);
     }
 
     protected AvroStructureReader createMapReader(Schema schema)
@@ -146,16 +167,16 @@ public abstract class AvroReaderFactory
         Schema elementType = schema.getValueType();
         ScalarDecoder dec = createScalarValueDecoder(elementType);
         if (dec != null) {
-            return MapReader.construct(dec);
+            return MapReader.construct(dec, schema);
         }
-        return MapReader.construct(createReader(elementType));
+        return MapReader.construct(createReader(elementType), schema);
     }
 
     protected AvroStructureReader createRecordReader(Schema schema)
     {
         final List<Schema.Field> fields = schema.getFields();
         AvroFieldReader[] fieldReaders = new AvroFieldReader[fields.size()];
-        RecordReader reader = new RecordReader.Std(fieldReaders);
+        RecordReader reader = new RecordReader.Std(fieldReaders, schema);
         _knownReaders.put(_typeName(schema), reader);
         int i = 0;
         for (Schema.Field field : fields) {
@@ -172,7 +193,7 @@ public abstract class AvroReaderFactory
         for (Schema type : types) {
             typeReaders[i++] = createReader(type);
         }
-        return new UnionReader(typeReaders);
+        return new UnionReader(typeReaders, schema);
     }
 
     protected AvroFieldReader createFieldReader(Schema.Field field) {
@@ -245,7 +266,7 @@ public abstract class AvroReaderFactory
                 return createUnionReader(writerSchema, readerSchema);
             default:
                 // for other types, we need wrappers
-                return new ScalarDecoderWrapper(createScalarValueDecoder(writerSchema));
+                return new ScalarDecoderWrapper(createScalarValueDecoder(writerSchema), readerSchema);
             }
         }
 
@@ -255,10 +276,10 @@ public abstract class AvroReaderFactory
             Schema writerElementType = writerSchema.getElementType();
             ScalarDecoder scalar = createScalarValueDecoder(writerElementType);
             if (scalar != null) {
-                return ArrayReader.construct(scalar);
+                return ArrayReader.construct(scalar, readerSchema);
             }
             return ArrayReader.construct(createReader(writerElementType,
-                    readerSchema.getElementType()));
+                    readerSchema.getElementType()), readerSchema);
         }
 
         protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema)
@@ -267,10 +288,10 @@ public abstract class AvroReaderFactory
             Schema writerElementType = writerSchema.getValueType();
             ScalarDecoder dec = createScalarValueDecoder(writerElementType);
             if (dec != null) {
-                return MapReader.construct(dec);
+                return MapReader.construct(dec, readerSchema);
             }
             return MapReader.construct(createReader(writerElementType,
-                    readerSchema.getElementType()));
+                    readerSchema.getElementType()), readerSchema);
         }
 
         protected AvroStructureReader createRecordReader(Schema writerSchema, Schema readerSchema)
@@ -306,7 +327,7 @@ public abstract class AvroReaderFactory
             // ones from writer schema -- some may skip, but there's entry there
             AvroFieldReader[] fieldReaders = new AvroFieldReader[writerFields.size()
                                                                    + defaultFields.size()];
-            RecordReader reader = new RecordReader.Resolving(fieldReaders);
+            RecordReader reader = new RecordReader.Resolving(fieldReaders, readerSchema);
 
             // as per earlier, names should be the same
             _knownReaders.put(_typeName(readerSchema), reader);
@@ -325,7 +346,7 @@ public abstract class AvroReaderFactory
             if (!defaultFields.isEmpty()) {
                 for (Schema.Field defaultField : defaultFields) {
                     AvroFieldReader fr = AvroFieldDefaulters.createDefaulter(defaultField.name(),
-                            defaultField.defaultValue());
+                            defaultField.defaultValue(), defaultField.schema());
                     if (fr == null) {
                         throw new IllegalArgumentException("Unsupported default type: "+defaultField.schema().getType());
                     }
@@ -346,7 +367,7 @@ public abstract class AvroReaderFactory
             for (Schema type : types) {
                 typeReaders[i++] = createReader(type);
             }
-            return new UnionReader(typeReaders);
+            return new UnionReader(typeReaders, readerSchema);
         }
 
         protected AvroFieldReader createFieldReader(String name,

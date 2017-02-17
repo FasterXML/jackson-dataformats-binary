@@ -160,6 +160,41 @@ public abstract class ScalarDecoder
             }
         }
     }
+
+    protected final static class CharReader extends ScalarDecoder {
+        @Override
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            parser.decodeInt();
+            return parser.setString(Character.toString((char)parser.getIntValue()));
+        }
+
+        @Override
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipInt();
+        }
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper);
+        }
+
+        private final static class FR extends AvroFieldReader {
+            public FR(String name, boolean skipper) {
+                super(name, skipper);
+            }
+
+            @Override
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                parser.decodeInt();
+                return parser.setString(Character.toString((char)parser.getIntValue()));
+            }
+
+            @Override
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipInt();
+            }
+        }
+    }
     
     protected final static class LongReader extends ScalarDecoder
     {

@@ -2,6 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
+import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
+
 import com.fasterxml.jackson.core.JsonToken;
 
 abstract class ArrayReader extends AvroStructureReader
@@ -18,18 +21,18 @@ abstract class ArrayReader extends AvroStructureReader
 
     protected String _currentName;
     
-    protected ArrayReader(AvroReadContext parent, AvroParserImpl parser)
+    protected ArrayReader(AvroReadContext parent, AvroParserImpl parser, Schema schema)
     {
-        super(parent, TYPE_ARRAY);
+        super(parent, TYPE_ARRAY, schema);
         _parser = parser;
     }
 
-    public static ArrayReader construct(ScalarDecoder reader) {
-        return new Scalar(reader);
+    public static ArrayReader construct(ScalarDecoder reader, Schema schema) {
+        return new Scalar(reader, schema);
     }
 
-    public static ArrayReader construct(AvroStructureReader reader) {
-        return new NonScalar(reader);
+    public static ArrayReader construct(AvroStructureReader reader, Schema schema) {
+        return new NonScalar(reader, schema);
     }
 
     @Override
@@ -52,7 +55,24 @@ abstract class ArrayReader extends AvroStructureReader
         sb.append(getCurrentIndex());
         sb.append(']');
     }
-    
+
+    @Override
+    public Schema getSchema() {
+        if (_currToken != JsonToken.START_ARRAY && _currToken != JsonToken.END_ARRAY) {
+            return super.getSchema().getElementType();
+        }
+        return super.getSchema();
+    }
+
+    @Override
+    public Object getTypeId() {
+        if (_currToken != JsonToken.START_ARRAY && _currToken != JsonToken.END_ARRAY
+            && super.getSchema().getProp(SpecificData.ELEMENT_PROP) != null) {
+            return super.getSchema().getProp(SpecificData.ELEMENT_PROP);
+        }
+        return super.getTypeId();
+    }
+
     /*
     /**********************************************************************
     /* Reader implementations for Avro arrays
@@ -63,19 +83,19 @@ abstract class ArrayReader extends AvroStructureReader
     {
         private final ScalarDecoder _elementReader;
         
-        public Scalar(ScalarDecoder reader) {
-            this(null, reader, null);
+        public Scalar(ScalarDecoder reader, Schema schema) {
+            this(null, reader, null, schema);
         }
 
         private Scalar(AvroReadContext parent, ScalarDecoder reader, 
-                AvroParserImpl parser) {
-            super(parent, parser);
+                AvroParserImpl parser, Schema schema) {
+            super(parent, parser, schema);
             _elementReader = reader;
         }
         
         @Override
         public Scalar newReader(AvroReadContext parent, AvroParserImpl parser) {
-            return new Scalar(parent, _elementReader, parser);
+            return new Scalar(parent, _elementReader, parser, _schema);
         }
 
         @Override
@@ -130,20 +150,20 @@ abstract class ArrayReader extends AvroStructureReader
     {
         private final AvroStructureReader _elementReader;
         
-        public NonScalar(AvroStructureReader reader) {
-            this(null, reader, null);
+        public NonScalar(AvroStructureReader reader, Schema schema) {
+            this(null, reader, null, schema);
         }
 
         private NonScalar(AvroReadContext parent,
-                AvroStructureReader reader, AvroParserImpl parser) {
-            super(parent, parser);
+                AvroStructureReader reader, AvroParserImpl parser, Schema schema) {
+            super(parent, parser, schema);
             _elementReader = reader;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent,
                 AvroParserImpl parser) {
-            return new NonScalar(parent, _elementReader, parser);
+            return new NonScalar(parent, _elementReader, parser, _schema);
         }
 
         @Override

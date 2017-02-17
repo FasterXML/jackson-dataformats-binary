@@ -1,12 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
-import java.io.ByteArrayOutputStream;
-
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
-import com.fasterxml.jackson.dataformat.avro.*;
+import java.io.ByteArrayOutputStream;
 
 public class SimpleEvolutionTest extends AvroTestBase
 {
@@ -15,6 +16,7 @@ public class SimpleEvolutionTest extends AvroTestBase
 
     static String SCHEMA_X_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
+            " 'namespace':'com.fasterxml.jackson.dataformat.avro.schemaev.SimpleEvolutionTest$',\n"+
             " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
             "    { 'name':'x', 'type':'int' }\n"+
@@ -23,7 +25,9 @@ public class SimpleEvolutionTest extends AvroTestBase
     
     static String SCHEMA_XY_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolvingPoint',\n"+
+            " 'namespace':'com.fasterxml.jackson.dataformat.avro.schemaev.SimpleEvolutionTest$',\n"+
+            " 'name':'PointXY',\n"+
+            " 'aliases':['PointX', 'PointXYZ'],\n"+
             " 'fields':[\n"+
             "    { 'name':'x', 'type':'int' },\n"+
             "    { 'name':'y', 'type':'int' }\n"+
@@ -32,7 +36,9 @@ public class SimpleEvolutionTest extends AvroTestBase
 
     static String SCHEMA_XYZ_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
-            " 'name':'EvolvingPoint',\n"+
+            " 'namespace':'com.fasterxml.jackson.dataformat.avro.schemaev.SimpleEvolutionTest$',\n"+
+            " 'name':'PointXYZ',\n"+
+            " 'aliases':['PointXY'],\n"+
             " 'fields':[\n"+
             "    { 'name':'z', 'type':'int', 'default': 99 },\n"+
             "    { 'name':'y', 'type':'int' },\n"+

@@ -1,16 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import junit.framework.TestCase;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import junit.framework.TestCase;
-
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 public abstract class AvroTestBase extends TestCase
 {
@@ -23,6 +22,7 @@ public abstract class AvroTestBase extends TestCase
     protected final String EMPLOYEE_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"
             +"\"name\": \"Employee\",\n"
+            +"\"namespace\": \"com.fasterxml.jackson.dataformat.avro.AvroTestBase$\",\n"
             +"\"fields\": [\n"
             +" {\"name\": \"name\", \"type\": \"string\"},\n"
             +" {\"name\": \"age\", \"type\": \"int\"},\n"
@@ -47,6 +47,7 @@ public abstract class AvroTestBase extends TestCase
             +"'items': {\n"
             +"  'type': 'record',\n"
             +"  'name': 'Employee',\n"
+            +"  'namespace': 'com.fasterxml.jackson.dataformat.avro.AvroTestBase$',\n"
             +"   'fields': [\n"
             +"    {'name': 'name', 'type': 'string'},\n"
             +"    {'name': 'age', 'type': 'int'},\n"
