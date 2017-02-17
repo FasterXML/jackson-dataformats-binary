@@ -37,7 +37,8 @@ public final class MapWriteContext
     @Override
     public final AvroWriteContext createChildArrayContext() {
         _verifyValueWrite();
-        AvroWriteContext child = new ArrayWriteContext(this, _generator, _createArray(_schema.getElementType()));
+        AvroWriteContext child = new ArrayWriteContext(this, _generator,
+                _createArray(_schema.getValueType()));
         _data.put(_currentName, child.rawValue());
         return child;
     }

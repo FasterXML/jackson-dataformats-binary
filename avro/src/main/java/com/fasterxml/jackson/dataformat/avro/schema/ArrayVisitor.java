@@ -50,6 +50,6 @@ public class ArrayVisitor
     @Override
     public void itemsFormat(JsonFormatTypes type) throws JsonMappingException
     {
-        _elementSchema = AvroSchemaHelper.simpleSchema(type);
+        _elementSchema = AvroSchemaHelper.simpleSchema(type, _type.getContentType());
     }
 }

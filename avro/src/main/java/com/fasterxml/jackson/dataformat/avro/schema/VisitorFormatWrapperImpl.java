@@ -5,6 +5,7 @@ import org.apache.avro.Schema;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
@@ -90,7 +91,7 @@ public class VisitorFormatWrapperImpl
     }
     
     @Override
-    public JsonArrayFormatVisitor expectArrayFormat(JavaType convertedType) {
+    public JsonArrayFormatVisitor expectArrayFormat(final JavaType convertedType) {
         // 22-Mar-2016, tatu: Actually we can detect byte[] quite easily here can't we?
         if (convertedType.isArrayType()) {
             JavaType vt = convertedType.getContentType();
@@ -98,9 +99,8 @@ public class VisitorFormatWrapperImpl
                 _builder = new SchemaBuilder() {
                     @Override
                     public Schema builtAvroSchema() {
-                        return Schema.create(Schema.Type.BYTES);
+                        return AvroSchemaHelper.typedSchema(Schema.Type.BYTES, convertedType);
                     }
-                    
                 };
                 return null;
             }
@@ -140,7 +140,7 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        IntegerVisitor v = new IntegerVisitor();
+        IntegerVisitor v = new IntegerVisitor(type);
         _builder = v;
         return v;
     }
