@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -94,6 +95,10 @@ public abstract class AvroWriteContext
     public abstract Object rawValue();
 
     public void complete() throws IOException {
+        throw new IllegalStateException("Can not be called on "+getClass().getName());
+    }
+
+    public void complete(OutputStream outputStream) throws IOException {
         throw new IllegalStateException("Can not be called on "+getClass().getName());
     }
 
