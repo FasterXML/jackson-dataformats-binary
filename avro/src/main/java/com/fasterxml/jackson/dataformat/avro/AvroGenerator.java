@@ -49,7 +49,13 @@ public class AvroGenerator extends GeneratorBase
          *
          * @since 2.7
          */
-        AVRO_BUFFERING(true)
+        AVRO_BUFFERING(true),
+
+        /**
+         * Feature that tells Avro to write data in file format (i.e. including the schema with the data)
+         * rather than the RPC format
+         */
+        AVRO_FILE_OUTPUT(false)
         ;
 
         protected final boolean _defaultState;
@@ -600,8 +606,12 @@ public class AvroGenerator extends GeneratorBase
         // do not want to hide the original problem...
         // First one sanity check, for a (relatively?) common case
         if (_rootContext != null) {
-            _rootContext.complete();
-            _encoder.flush();
+            if (isEnabled(Feature.AVRO_FILE_OUTPUT)) {
+                _rootContext.complete(_output);
+            } else {
+                _rootContext.complete();
+                _encoder.flush();
+            }
         }
     }
 }

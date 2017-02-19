@@ -1,13 +1,16 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.*;
 import org.apache.avro.io.BinaryEncoder;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
+import org.apache.avro.io.DatumWriter;
 
 class RootContext
     extends AvroWriteContext
@@ -103,6 +106,16 @@ class RootContext
             _writer().write(_rootValue, _encoder);
         }
         _rootValue = null;
+    }
+
+    @Override
+    public void complete(OutputStream outputStream) throws IOException {
+        DatumWriter<Object> datumWriter = new NonBSGenericDatumWriter<>(_schema);
+        DataFileWriter<Object> dataFileWriter = new DataFileWriter<>(datumWriter);
+
+        dataFileWriter.create(_schema, outputStream);
+        dataFileWriter.append(_rootValue);
+        dataFileWriter.close();
     }
 
     @Override
