@@ -1,11 +1,16 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
+
+import static com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS;
 
 public class ArrayVisitor
     extends JsonArrayFormatVisitor.Base
@@ -29,7 +34,11 @@ public class ArrayVisitor
         if (_elementSchema == null) {
             throw new IllegalStateException("No element schema created for: "+_type);
         }
-        return Schema.createArray(_elementSchema);
+        Schema schema = Schema.createArray(_elementSchema);
+        if (_type.isArrayType()) {
+            schema.addProp(AVRO_SCHEMA_PROP_CLASS, _type.toCanonical());
+        }
+        return schema;
     }
 
     /*
@@ -50,6 +59,11 @@ public class ArrayVisitor
     @Override
     public void itemsFormat(JsonFormatTypes type) throws JsonMappingException
     {
-        _elementSchema = AvroSchemaHelper.simpleSchema(type, _type.getContentType());
+        // Unlike Jackson, Avro treats character arrays as an array of ints with the java.lang.Character class type.
+        if (_type.hasRawClass(char[].class)) {
+            _elementSchema = AvroSchemaHelper.typedSchema(Type.INT, _type.getContentType());
+        } else {
+            _elementSchema = AvroSchemaHelper.simpleSchema(type, _type.getContentType());
+        }
     }
 }

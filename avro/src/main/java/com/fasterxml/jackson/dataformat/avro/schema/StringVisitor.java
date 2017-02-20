@@ -1,12 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Set;
 
 import org.apache.avro.Schema;
 
+import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class StringVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder
@@ -33,6 +36,10 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
 
     @Override
     public Schema builtAvroSchema() {
+        // Unlike Jackson, Avro treats characters as an int with the java.lang.Character class type.
+        if (_type.hasRawClass(char.class) || _type.hasRawClass(Character.class)) {
+            return AvroSchemaHelper.numericAvroSchema(NumberType.INT, TypeFactory.defaultInstance().constructType(Character.class));
+        }
         if (_enums == null) {
             return Schema.create(Schema.Type.STRING);
         }

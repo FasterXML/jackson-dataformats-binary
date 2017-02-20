@@ -1,14 +1,20 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.util.*;
 
 import org.apache.avro.Schema;
+import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 
 public abstract class AvroSchemaHelper
@@ -20,7 +26,52 @@ public abstract class AvroSchemaHelper
      *
      * @since 2.8.7
      */
-    protected final static String AVRO_SCHEMA_PROP_CLASS = SpecificData.CLASS_PROP;
+    public static final    String        AVRO_SCHEMA_PROP_CLASS = SpecificData.CLASS_PROP;
+    /**
+     * Constant used by native Avro Schemas for indicating more specific
+     * physical class of a map key; referenced indirectly to reduce direct
+     * dependencies to the standard avro library.
+     *
+     * @since 2.8.7
+     */
+    public static final    String        AVRO_SCHEMA_PROP_KEY_CLASS = SpecificData.KEY_CLASS_PROP;
+    /**
+     * Default stringable classes
+     *
+     * @since 2.8.7
+     */
+    protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<Class<?>>(Arrays.asList(URI.class,
+                                                                                                  URL.class,
+                                                                                                  File.class,
+                                                                                                  BigInteger.class,
+                                                                                                  BigDecimal.class,
+                                                                                                  String.class
+    ));
+
+    /**
+     * Checks if a given type is "Stringable", that is one of the default {@link #STRINGABLE_CLASSES}, or is annotated with
+     * {@link Stringable @Stringable} and has a constructor that takes a single string argument capable of deserializing the output of its
+     * {@code toString()} method.
+     *
+     * @param type
+     *     Type to check if it can be serialized to a Avro string schema
+     *
+     * @return {@code true} if it can be stored in a string schema, otherwise {@code false}
+     */
+    public static boolean isStringable(AnnotatedClass type) {
+        if (STRINGABLE_CLASSES.contains(type.getRawType())) {
+            return true;
+        }
+        if (!type.hasAnnotation(Stringable.class)) {
+            return false;
+        }
+        for (AnnotatedConstructor constructor : type.getConstructors()) {
+            if (constructor.getParameterCount() == 1 && constructor.getRawParameterType(0) == String.class) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     protected static String getNamespace(JavaType type) {
         Class<?> cls = type.getRawClass();
@@ -106,7 +157,7 @@ public abstract class AvroSchemaHelper
     public static Schema numericAvroSchema(JsonParser.NumberType type, JavaType hint) {
         Schema schema = numericAvroSchema(type);
         if (hint != null) {
-            schema.addProp(AVRO_SCHEMA_PROP_CLASS, hint.toCanonical());
+            schema.addProp(AVRO_SCHEMA_PROP_CLASS, getTypeId(hint));
         }
         return schema;
     }
@@ -118,7 +169,7 @@ public abstract class AvroSchemaHelper
      */
     public static Schema typedSchema(Schema.Type nativeType, JavaType javaType) {
         Schema schema = Schema.create(nativeType);
-        schema.addProp(AVRO_SCHEMA_PROP_CLASS, javaType.toCanonical());
+        schema.addProp(AVRO_SCHEMA_PROP_CLASS, getTypeId(javaType));
         return schema;
     }
 
@@ -133,5 +184,31 @@ public abstract class AvroSchemaHelper
 
     protected static <T> T throwUnsupported() {
         throw new UnsupportedOperationException("Format variation not supported");
+    }
+
+    /**
+     * Returns the Avro type ID for a given type
+     */
+    protected static String getTypeId(JavaType type) {
+        // Primitives use the name of the wrapper class as their type ID
+        String canonical = type.toCanonical();
+        switch (canonical) {
+            case "byte":
+                return Byte.class.getName();
+            case "short":
+                return Short.class.getName();
+            case "char":
+                return Character.class.getName();
+            case "int":
+                return Integer.class.getName();
+            case "long":
+                return Long.class.getName();
+            case "float":
+                return Float.class.getName();
+            case "double":
+                return Double.class.getName();
+            default:
+                return canonical;
+        }
     }
 }
