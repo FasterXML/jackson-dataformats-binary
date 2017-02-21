@@ -11,7 +11,7 @@ Modules:
 
 2.9.0 (not yet released)
 
-2.8.7 (not yet released)
+2.8.7 (21-Feb-2017)
 
 #34 (avro): Reading Avro with specified reader and writer schemas
  (requested by Pawel S)
@@ -22,7 +22,7 @@ Modules:
 #43 (cbor): Buffer size dependency in `UTF8JsonGenerator writeRaw(...)`
  (reported by Christopher C)
 
-2.8.6 (12-Jan-2016)
+2.8.6 (12-Jan-2017)
 2.8.5 (14-Nov-2016)
 
 #30 (cbor): Overflow when decoding uint32 for Major type 0
