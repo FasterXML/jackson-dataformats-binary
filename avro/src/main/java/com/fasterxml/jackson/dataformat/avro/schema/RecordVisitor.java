@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
 
 import org.apache.avro.Schema;
+import org.apache.avro.reflect.AvroMeta;
 import org.apache.avro.reflect.AvroSchema;
 
 public class RecordVisitor
@@ -47,6 +48,10 @@ public class RecordVisitor
             String description = getProvider().getAnnotationIntrospector().findClassDescription(ac);
             _avroSchema = Schema.createRecord(AvroSchemaHelper.getName(type), description, AvroSchemaHelper.getNamespace(type), false);
             _overridden = false;
+            AvroMeta meta = ac.getAnnotation(AvroMeta.class);
+            if (meta != null) {
+                _avroSchema.addProp(meta.key(), meta.value());
+            }
         }
         schemas.addSchema(type, _avroSchema);
     }
@@ -159,6 +164,13 @@ public class RecordVisitor
             }
         }
         String description = getProvider().getAnnotationIntrospector().findPropertyDescription(prop.getMember());
-        return new Schema.Field(prop.getName(), writerSchema, description, null);
+        Schema.Field field = new Schema.Field(prop.getName(), writerSchema, description, null);
+
+        AvroMeta meta = prop.getAnnotation(AvroMeta.class);
+        if (meta != null) {
+            field.addProp(meta.key(), meta.value());
+        }
+
+        return field;
     }
 }
