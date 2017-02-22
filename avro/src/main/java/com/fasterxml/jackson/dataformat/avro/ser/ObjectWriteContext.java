@@ -125,10 +125,8 @@ public final class ObjectWriteContext
         return f;
     }
 
-    @SuppressWarnings("deprecation")
     protected void _reportUnknownField(String name) {
-        if (!_generator.isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)
-                && !_generator.isEnabled(AvroGenerator.Feature.IGNORE_UNKWNOWN)) {
+        if (!_generator.isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
             throw new IllegalStateException("No field named '"+_currentName+"'");
         }
     }

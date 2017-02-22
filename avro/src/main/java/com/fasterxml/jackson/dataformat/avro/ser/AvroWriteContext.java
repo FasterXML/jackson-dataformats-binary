@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -43,29 +44,39 @@ public abstract class AvroWriteContext
         return new RootContext(generator, schema, encoder);
     }
 
-    // To be removed ASAP (in 2.9)
-    @Deprecated
-    public static AvroWriteContext createRootContext(AvroGenerator generator, Schema schema) {
-        throw new IllegalStateException();
-    }
-
     /**
      * Factory method called to get a placeholder context that is only
      * in place until actual schema is handed.
      */
-    public static AvroWriteContext createNullContext() {
+    public static AvroWriteContext nullContext() {
         return NullContext.instance;
     }
-    
+
     public abstract AvroWriteContext createChildArrayContext() throws JsonMappingException;
     public abstract AvroWriteContext createChildObjectContext() throws JsonMappingException;
-    
+
+    public void complete() throws IOException {
+        throw new IllegalStateException("Can not be called on "+getClass().getName());
+    }
+
+    /*
+    /**********************************************************
+    /* Accessors
+    /**********************************************************
+     */
+
     @Override
     public final AvroWriteContext getParent() { return _parent; }
-    
+
     @Override
     public String getCurrentName() { return null; }
 
+    /*
+    /**********************************************************
+    /* Write methods
+    /**********************************************************
+     */
+    
     /**
      * Method that writer is to call before it writes a field name.
      *
@@ -92,13 +103,6 @@ public abstract class AvroWriteContext
      * Accessor called to link data being built with resulting object.
      */
     public abstract Object rawValue();
-
-    public void complete() throws IOException {
-        throw new IllegalStateException("Can not be called on "+getClass().getName());
-    }
-
-    @Deprecated // remove from 2.9
-    public void complete(BinaryEncoder encoder) throws IOException { complete(); }
 
     public boolean canClose() { return true; }
 
@@ -190,7 +194,7 @@ public abstract class AvroWriteContext
         }
         return match;
     }
-    
+
     /*
     /**********************************************************
     /* Implementations
