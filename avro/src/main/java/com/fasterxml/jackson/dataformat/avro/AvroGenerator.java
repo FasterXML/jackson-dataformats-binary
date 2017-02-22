@@ -53,7 +53,13 @@ public class AvroGenerator extends GeneratorBase
 
         /**
          * Feature that tells Avro to write data in file format (i.e. including the schema with the data)
-         * rather than the RPC format
+         * rather than the RPC format which is otherwise default
+         *<p>
+         * NOTE: reader-side will have to be aware of distinction as well, since possible inclusion
+         * of this header is not 100% reliably auto-detectable (while header has distinct marker,
+         * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
+         *
+         * @since 2.9
          */
         AVRO_FILE_OUTPUT(false)
         ;
@@ -606,6 +612,8 @@ public class AvroGenerator extends GeneratorBase
         // do not want to hide the original problem...
         // First one sanity check, for a (relatively?) common case
         if (_rootContext != null) {
+            // 21-Feb-2017, tatu: As per [dataformats-binary#15], need to ensure schema gets
+            //   written, if using "File" format (not raw "rpc" one)
             if (isEnabled(Feature.AVRO_FILE_OUTPUT)) {
                 _rootContext.complete(_output);
             } else {
