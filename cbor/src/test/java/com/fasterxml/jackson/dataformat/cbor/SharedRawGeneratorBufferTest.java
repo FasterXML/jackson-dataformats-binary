@@ -8,8 +8,6 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.dataformat.cbor.*;
-
 // for [dataformats-binary#43]
 public class SharedRawGeneratorBufferTest extends CBORTestBase
 {

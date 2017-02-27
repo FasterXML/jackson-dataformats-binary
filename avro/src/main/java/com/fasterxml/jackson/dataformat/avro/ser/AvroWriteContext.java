@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;

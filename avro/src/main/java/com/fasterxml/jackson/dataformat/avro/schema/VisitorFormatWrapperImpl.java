@@ -5,7 +5,6 @@ import org.apache.avro.Schema;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper

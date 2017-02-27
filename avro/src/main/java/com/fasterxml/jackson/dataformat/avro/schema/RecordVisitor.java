@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -50,7 +51,7 @@ public class RecordVisitor
     public void property(BeanProperty writer) throws JsonMappingException
     {
         Schema schema = schemaForWriter(writer);
-        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
+        _fields.add(_field(writer, schema));
     }
 
     @Override
@@ -60,7 +61,7 @@ public class RecordVisitor
         VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
         handler.acceptJsonFormatVisitor(wrapper, type);
         Schema schema = wrapper.getAvroSchema();
-        _fields.add(new Schema.Field(name, schema, null, null));
+        _fields.add(new Schema.Field(name, schema, null, (Object) null));
     }
 
     @Override
@@ -73,7 +74,20 @@ public class RecordVisitor
         if (!writer.getType().isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
-        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
+        _fields.add(_field(writer, schema));
+    }
+
+    protected Schema.Field _field(BeanProperty prop, Schema schema)
+    {
+        Schema.Field field = new Schema.Field(prop.getName(), schema, null, (Object) null);
+        MapperConfig<?> config = getProvider().getConfig();
+        List<PropertyName> aliases = prop.findAliases(config);
+        if (!aliases.isEmpty()) {
+            for (PropertyName pn : aliases) {
+                field.addAlias(pn.getSimpleName());
+            }
+        }
+        return field;
     }
 
     @Override
@@ -86,7 +100,7 @@ public class RecordVisitor
         if (!type.isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
-        _fields.add(new Schema.Field(name, schema, null, null));
+        _fields.add(new Schema.Field(name, schema, null, (Object) null));
     }
 
     /*
