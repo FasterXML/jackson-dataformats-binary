@@ -1,16 +1,19 @@
 package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
-import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+
 import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.apacheDeserializer;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getApacheSchema;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -65,6 +68,20 @@ public class MapSubtypeTest extends InteropTestBase {
         original.put("Second", 98768234);
         //
         TreeMap<String, Integer> result = roundTrip(type(TreeMap.class, String.class, Integer.class), original);
+        //
+        assertThat(result).isEqualTo(original);
+    }
+
+    @Test
+    public void testEnumMap() {
+        // Apache schema generator can't handle EnumMaps
+        Assume.assumeTrue(schemaFunctor != getApacheSchema);
+
+        EnumMap<DummyEnum, Integer> original = new EnumMap<>(DummyEnum.class);
+        original.put(DummyEnum.NORTH, 1234);
+        original.put(DummyEnum.SOUTH, 98768234);
+        //
+        EnumMap<DummyEnum, Integer> result = roundTrip(type(EnumMap.class, DummyEnum.class, Integer.class), original);
         //
         assertThat(result).isEqualTo(original);
     }

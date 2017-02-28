@@ -1,10 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
-import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

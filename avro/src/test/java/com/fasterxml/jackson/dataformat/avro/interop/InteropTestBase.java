@@ -1,11 +1,16 @@
 package com.fasterxml.jackson.dataformat.avro.interop;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.avro.Schema;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.*;
 
@@ -144,5 +149,19 @@ public abstract class InteropTestBase {
             return jacksonDeserialize(schema, schemaType, serializeFunctor.apply(schema, object));
         }
         return (T) deserializeFunctor.apply(schema, serializeFunctor.apply(schema, object));
+    }
+
+    public enum DummyEnum {
+        NORTH, SOUTH, EAST, WEST
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DummyRecord {
+        @JsonProperty(required = true)
+        private String firstValue;
+        @JsonProperty(required = true)
+        private int secondValue;
     }
 }
