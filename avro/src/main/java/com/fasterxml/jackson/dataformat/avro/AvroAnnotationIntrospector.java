@@ -15,7 +15,12 @@ import org.apache.avro.reflect.AvroName;
  * <ul>
  * <li>{@link AvroIgnore @AvroIgnore} - Alias for <code>JsonIgnore</code></li>
  * <li>{@link AvroName @AvroName("custom Name")} - Alias for <code>JsonProperty("custom name")</code></li>
+ * <li>{@link AvroDefault @AvroDefault("default value")} - Alias for <code>JsonProperty.defaultValue</code>, to
+ *     define default value for generated Schemas
+ *   </li>
  * </ul>
+ *
+ * @since 2.9
  */
 public class AvroAnnotationIntrospector extends AnnotationIntrospector
 {

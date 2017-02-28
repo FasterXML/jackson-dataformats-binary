@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 
 public abstract class AvroSchemaHelper
 {
@@ -26,7 +27,8 @@ public abstract class AvroSchemaHelper
      *
      * @since 2.8.7
      */
-    public static final    String        AVRO_SCHEMA_PROP_CLASS = SpecificData.CLASS_PROP;
+    public static final String AVRO_SCHEMA_PROP_CLASS = SpecificData.CLASS_PROP;
+
     /**
      * Constant used by native Avro Schemas for indicating more specific
      * physical class of a map key; referenced indirectly to reduce direct
@@ -34,22 +36,22 @@ public abstract class AvroSchemaHelper
      *
      * @since 2.8.7
      */
-    public static final    String        AVRO_SCHEMA_PROP_KEY_CLASS = SpecificData.KEY_CLASS_PROP;
+    public static final String AVRO_SCHEMA_PROP_KEY_CLASS = SpecificData.KEY_CLASS_PROP;
+
     /**
      * Default stringable classes
      *
      * @since 2.8.7
      */
-    protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<Class<?>>(Arrays.asList(URI.class,
-                                                                                                  URL.class,
-                                                                                                  File.class,
-                                                                                                  BigInteger.class,
-                                                                                                  BigDecimal.class,
-                                                                                                  String.class
+    protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<Class<?>>(Arrays.asList(
+            URI.class, URL.class, File.class,
+            BigInteger.class, BigDecimal.class,
+            String.class
     ));
 
     /**
-     * Checks if a given type is "Stringable", that is one of the default {@link #STRINGABLE_CLASSES}, or is annotated with
+     * Checks if a given type is "Stringable", that is one of the default {@link #STRINGABLE_CLASSES},
+     * or is annotated with
      * {@link Stringable @Stringable} and has a constructor that takes a single string argument capable of deserializing the output of its
      * {@code toString()} method.
      *
@@ -191,24 +193,9 @@ public abstract class AvroSchemaHelper
      */
     protected static String getTypeId(JavaType type) {
         // Primitives use the name of the wrapper class as their type ID
-        String canonical = type.toCanonical();
-        switch (canonical) {
-            case "byte":
-                return Byte.class.getName();
-            case "short":
-                return Short.class.getName();
-            case "char":
-                return Character.class.getName();
-            case "int":
-                return Integer.class.getName();
-            case "long":
-                return Long.class.getName();
-            case "float":
-                return Float.class.getName();
-            case "double":
-                return Double.class.getName();
-            default:
-                return canonical;
+        if (type.isPrimitive()) {
+            return ClassUtil.wrapperType(type.getRawClass()).getName();
         }
+        return type.toCanonical();
     }
 }

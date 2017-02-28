@@ -19,6 +19,14 @@ public class AvroModule extends SimpleModule
 {
     private static final long serialVersionUID = 1L;
 
+    protected final static AvroAnnotationIntrospector INTR
+           = new AvroAnnotationIntrospector();
+
+    /**
+     * @since 2.8.7
+     */
+    protected boolean _cfgAddIntrospector = true;
+
     public AvroModule()
     {
         super(PackageVersion.VERSION);
@@ -36,7 +44,18 @@ public class AvroModule extends SimpleModule
     @Override
     public void setupModule(SetupContext context) {
         super.setupModule(context);
-        context.insertAnnotationIntrospector(new AvroAnnotationIntrospector());
+        if (_cfgAddIntrospector) {
+            // insert (instead of append) to have higher precedence
+            context.insertAnnotationIntrospector(INTR);
+        }
+    }
+
+    /**
+     * @since 2.8.7
+     */
+    public AvroModule withAnnotationIntrospector(boolean state) {
+        _cfgAddIntrospector = state;
+        return this;
     }
 
     /*

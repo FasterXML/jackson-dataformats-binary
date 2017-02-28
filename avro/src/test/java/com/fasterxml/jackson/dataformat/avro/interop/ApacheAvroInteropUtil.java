@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroModule;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 /**
@@ -80,7 +81,9 @@ public class ApacheAvroInteropUtil {
             return apacheSerialize(schema, originalObject);
         }
     };
-    private static final AvroMapper MAPPER = new AvroMapper();
+
+    private static final AvroMapper MAPPER = new AvroMapper(new AvroModule());
+
     /*
      * Special subclass of ReflectData that knows how to resolve and bind generic types. This saves us much pain of
      * having to build these schemas by hand. Also, workarounds for several bugs in the Apache implementation are
@@ -236,9 +239,8 @@ public class ApacheAvroInteropUtil {
      * @return Deserialized payload
      */
     public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) {
-        AvroMapper mapper = new AvroMapper();
         try {
-            return mapper.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
+            return MAPPER.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
         } catch (IOException e) {
             throw new RuntimeException("Failed to Deserialize", e);
         }
@@ -273,10 +275,9 @@ public class ApacheAvroInteropUtil {
      * @return Payload containing the Avro-serialized form of {@code object}
      */
     public static byte[] jacksonSerialize(Schema schema, Object object) {
-        AvroMapper mapper = new AvroMapper();
         try {
-            return mapper.writer().with(new AvroSchema(schema)).writeValueAsBytes(object);
-        } catch (JsonProcessingException e) {
+            return MAPPER.writer().with(new AvroSchema(schema)).writeValueAsBytes(object);
+        } catch (IOException e) {
             throw new RuntimeException("Failed Serialization", e);
         }
     }
