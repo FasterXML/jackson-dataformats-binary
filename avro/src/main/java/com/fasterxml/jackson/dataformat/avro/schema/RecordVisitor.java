@@ -1,14 +1,20 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
-import org.apache.avro.Schema;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 
 public class RecordVisitor
     extends JsonObjectFormatVisitor.Base
@@ -50,7 +56,9 @@ public class RecordVisitor
     public void property(BeanProperty writer) throws JsonMappingException
     {
         Schema schema = schemaForWriter(writer);
-        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
+        JsonNode defaultValue = parseJson(getProvider().getAnnotationIntrospector().findPropertyDefaultValue(writer.getMember()));
+        schema = reorderUnionToMatchDefaultType(schema, defaultValue);
+        _fields.add(new Schema.Field(writer.getName(), schema, null, defaultValue));
     }
 
     @Override
@@ -73,7 +81,9 @@ public class RecordVisitor
         if (!writer.getType().isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
-        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
+        JsonNode defaultValue = parseJson(getProvider().getAnnotationIntrospector().findPropertyDefaultValue(writer.getMember()));
+        schema = reorderUnionToMatchDefaultType(schema, defaultValue);
+        _fields.add(new Schema.Field(writer.getName(), schema, null, defaultValue));
     }
 
     @Override
@@ -119,5 +129,100 @@ public class RecordVisitor
         VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
         ser.acceptJsonFormatVisitor(visitor, prop.getType());
         return visitor.getAvroSchema();
+    }
+
+    /**
+     * Parses a JSON-encoded string for use as the default value of a field
+     *
+     * @param defaultValue
+     *     Default value as a JSON-encoded string
+     *
+     * @return Jackson V1 {@link JsonNode} for use as the default value in a {@link Schema.Field}
+     *
+     * @throws JsonMappingException
+     *     if {@code defaultValue} is not valid JSON
+     */
+    protected JsonNode parseJson(String defaultValue) throws JsonMappingException {
+        if (defaultValue == null) {
+            return null;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readTree(defaultValue);
+        } catch (IOException e) {
+            throw JsonMappingException.from(getProvider(), "Unable to parse default value as JSON: " + defaultValue, e);
+        }
+    }
+
+    /**
+     * A union schema with a default value must always have the schema branch corresponding to the default value first, or Avro will print a
+     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Schema.Type#UNION UNION} schema and
+     * {@code defaultValue} is non-{@code null}, this finds the appropriate branch in the union and reorders the union so that it is first.
+     *
+     * @param schema
+     *     Schema to reorder; If {@code null} or not a {@code UNION}, then it is returned unmodified.
+     * @param defaultValue
+     *     Default value to match with the union
+     *
+     * @return A schema modified so the first branch matches the type of {@code defaultValue}; otherwise, {@code schema} is returned
+     * unmodified.
+     */
+    protected Schema reorderUnionToMatchDefaultType(Schema schema, JsonNode defaultValue) {
+        if (schema == null || defaultValue == null || schema.getType() != Type.UNION) {
+            return schema;
+        }
+        List<Schema> types = new ArrayList<>(schema.getTypes());
+        Integer matchingIndex = null;
+        if (defaultValue.isArray()) {
+            matchingIndex = schema.getIndexNamed(Type.ARRAY.getName());
+        } else if (defaultValue.isObject()) {
+            matchingIndex = schema.getIndexNamed(Type.MAP.getName());
+            if (matchingIndex == null) {
+                // search for a record
+                for (int i = 0; i < types.size(); i++) {
+                    if (types.get(i).getType() == Type.RECORD) {
+                        matchingIndex = i;
+                        break;
+                    }
+                }
+            }
+        } else if (defaultValue.isBoolean()) {
+            matchingIndex = schema.getIndexNamed(Type.BOOLEAN.getName());
+        } else if (defaultValue.isNull()) {
+            matchingIndex = schema.getIndexNamed(Type.NULL.getName());
+        } else if (defaultValue.isBinary()) {
+            matchingIndex = schema.getIndexNamed(Type.BYTES.getName());
+        } else if (defaultValue.isFloatingPointNumber()) {
+            matchingIndex = schema.getIndexNamed(Type.DOUBLE.getName());
+            if (matchingIndex == null) {
+                matchingIndex = schema.getIndexNamed(Type.FLOAT.getName());
+            }
+        } else if (defaultValue.isIntegralNumber()) {
+            matchingIndex = schema.getIndexNamed(Type.LONG.getName());
+            if (matchingIndex == null) {
+                matchingIndex = schema.getIndexNamed(Type.INT.getName());
+            }
+        } else if (defaultValue.isTextual()) {
+            matchingIndex = schema.getIndexNamed(Type.STRING.getName());
+            if (matchingIndex == null) {
+                // search for an enum
+                for (int i = 0; i < types.size(); i++) {
+                    if (types.get(i).getType() == Type.ENUM) {
+                        matchingIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        if (matchingIndex != null) {
+            types.add(0, types.remove((int)matchingIndex));
+            Map<String, JsonNode> jsonProps = schema.getJsonProps();
+            schema = Schema.createUnion(types);
+            // copy any properties over
+            for (String property : jsonProps.keySet()) {
+                schema.addProp(property, jsonProps.get(property));
+            }
+        }
+        return schema;
     }
 }
