@@ -1,14 +1,21 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.databind.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
-import org.apache.avro.Schema;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.avro.Schema;
+import org.apache.avro.reflect.AvroSchema;
 
 public class RecordVisitor
     extends JsonObjectFormatVisitor.Base
@@ -19,6 +26,8 @@ public class RecordVisitor
     protected final DefinedSchemas _schemas;
 
     protected Schema _avroSchema;
+
+    protected boolean _overridden;
     
     protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
     
@@ -27,16 +36,27 @@ public class RecordVisitor
         super(p);
         _type = type;
         _schemas = schemas;
-        _avroSchema = Schema.createRecord(AvroSchemaHelper.getName(type),
-                "Schema for "+type.toCanonical(),
-                AvroSchemaHelper.getNamespace(type), false);
+        // Check if the schema for this record is overridden
+        AnnotatedClass ac = getProvider().getConfig().introspectDirectClassAnnotations(_type).getClassInfo();
+        AvroSchema ann = ac.getAnnotation(AvroSchema.class);
+        if (ann != null) {
+            Schema.Parser parser = new Schema.Parser();
+            _avroSchema = parser.parse(ann.value());
+            _overridden = true;
+        } else {
+            String description = getProvider().getAnnotationIntrospector().findClassDescription(ac);
+            _avroSchema = Schema.createRecord(AvroSchemaHelper.getName(type), description, AvroSchemaHelper.getNamespace(type), false);
+            _overridden = false;
+        }
         schemas.addSchema(type, _avroSchema);
     }
     
     @Override
     public Schema builtAvroSchema() {
-        // Assumption now is that we are done, so let's assign fields
-        _avroSchema.setFields(_fields);
+        if (!_overridden) {
+            // Assumption now is that we are done, so let's assign fields
+            _avroSchema.setFields(_fields);
+        }
         return _avroSchema;
     }
 
@@ -49,14 +69,19 @@ public class RecordVisitor
     @Override
     public void property(BeanProperty writer) throws JsonMappingException
     {
-        Schema schema = schemaForWriter(writer);
-        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
+        if (_overridden) {
+            return;
+        }
+        _fields.add(schemaFieldForWriter(writer, false));
     }
 
     @Override
     public void property(String name, JsonFormatVisitable handler,
             JavaType type) throws JsonMappingException
     {
+        if (_overridden) {
+            return;
+        }
         VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
         handler.acceptJsonFormatVisitor(wrapper, type);
         Schema schema = wrapper.getAvroSchema();
@@ -65,21 +90,19 @@ public class RecordVisitor
 
     @Override
     public void optionalProperty(BeanProperty writer) throws JsonMappingException {
-        Schema schema = schemaForWriter(writer);
-        /* 23-Nov-2012, tatu: Actually let's also assume that primitive type values
-         *   are required, as Jackson does not distinguish whether optional has been
-         *   defined, or is merely the default setting.
-         */
-        if (!writer.getType().isPrimitive()) {
-            schema = AvroSchemaHelper.unionWithNull(schema);
+        if (_overridden) {
+            return;
         }
-        _fields.add(new Schema.Field(writer.getName(), schema, null, null));
+        _fields.add(schemaFieldForWriter(writer, true));
     }
 
     @Override
     public void optionalProperty(String name, JsonFormatVisitable handler,
             JavaType type) throws JsonMappingException
     {
+        if (_overridden) {
+            return;
+        }
         VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
         handler.acceptJsonFormatVisitor(wrapper, type);
         Schema schema = wrapper.getAvroSchema();
@@ -95,29 +118,47 @@ public class RecordVisitor
     /**********************************************************************
      */
     
-    protected Schema schemaForWriter(BeanProperty prop) throws JsonMappingException
+    protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional) throws JsonMappingException
     {
-        AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
-        if (fixedSize != null) {
-            return Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
-        }
+        Schema writerSchema;
+        // Check if schema for property is overridden
+        AvroSchema schemaOverride = prop.getAnnotation(AvroSchema.class);
+        if (schemaOverride != null) {
+            Schema.Parser parser = new Schema.Parser();
+            writerSchema = parser.parse(schemaOverride.value());
+        } else {
+            AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
+            if (fixedSize != null) {
+                writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
+            } else {
+                JsonSerializer<?> ser = null;
 
-        JsonSerializer<?> ser = null;
-
-        // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
-        if (prop instanceof BeanPropertyWriter) {
-            BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
-            ser = bpw.getSerializer();
-        }
-        final SerializerProvider prov = getProvider();
-        if (ser == null) {
-            if (prov == null) {
-                throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
+                if (prop instanceof BeanPropertyWriter) {
+                    BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
+                    ser = bpw.getSerializer();
+                }
+                final SerializerProvider prov = getProvider();
+                if (ser == null) {
+                    if (prov == null) {
+                        throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                    }
+                    ser = prov.findValueSerializer(prop.getType(), prop);
+                }
+                VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
+                ser.acceptJsonFormatVisitor(visitor, prop.getType());
+                writerSchema = visitor.getAvroSchema();
             }
-            ser = prov.findValueSerializer(prop.getType(), prop);
+
+            /* 23-Nov-2012, tatu: Actually let's also assume that primitive type values
+             *   are required, as Jackson does not distinguish whether optional has been
+             *   defined, or is merely the default setting.
+             */
+            if (optional && !prop.getType().isPrimitive()) {
+                writerSchema = AvroSchemaHelper.unionWithNull(writerSchema);
+            }
         }
-        VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
-        ser.acceptJsonFormatVisitor(visitor, prop.getType());
-        return visitor.getAvroSchema();
+        String description = getProvider().getAnnotationIntrospector().findPropertyDescription(prop.getMember());
+        return new Schema.Field(prop.getName(), writerSchema, description, null);
     }
 }
