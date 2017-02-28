@@ -167,10 +167,6 @@ public abstract class InteropTestBase
     @SuppressWarnings("unchecked")
     protected <T> T roundTrip(Type schemaType, T object) throws IOException {
         Schema schema = schemaFunctor.apply(schemaType);
-        // Temporary hack until jackson supports native type Ids and we don't need to give it a target type
-        if (deserializeFunctor == ApacheAvroInteropUtil.jacksonDeserializer) {
-            return ApacheAvroInteropUtil.jacksonDeserialize(schema, schemaType, serializeFunctor.apply(schema, object));
-        }
         return (T) deserializeFunctor.apply(schema, serializeFunctor.apply(schema, object));
     }
 }

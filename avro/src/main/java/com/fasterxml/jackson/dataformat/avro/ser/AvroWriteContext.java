@@ -218,6 +218,10 @@ public abstract class AvroWriteContext
             int subOptimal = -1;
             for(int i = 0, size = unionSchema.getTypes().size(); i < size; i++) {
                 Schema schema = unionSchema.getTypes().get(i);
+                // Exact schema match?
+                if (AvroSchemaHelper.getTypeId(datum.getClass()).equals(AvroSchemaHelper.getTypeId(schema))) {
+                    return i;
+                }
                 if (datum instanceof BigDecimal) {
                     // BigDecimals can be shoved into a double, but optimally would be a String or byte[] with logical type information
                     if (schema.getType() == Type.DOUBLE) {

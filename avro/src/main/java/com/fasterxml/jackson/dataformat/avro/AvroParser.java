@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
 import java.math.BigDecimal;
 
@@ -228,6 +227,16 @@ public abstract class AvroParser extends ParserBase
     }
 
     protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
+
+    @Override
+    public boolean canReadTypeId() {
+        return true;
+    }
+
+    @Override
+    public Object getTypeId() throws IOException {
+        return _avroContext != null ? _avroContext.getTypeId() : null;
+    }
 
     /*
     /**********************************************************

@@ -36,7 +36,7 @@ public class StructDefaults
         public ObjectDefaults(AvroReadContext parent,
                 AvroParserImpl parser, AvroFieldReader[] fieldReaders)
         {
-            super(parent, parser);
+            super(parent, parser, null, null, null);
             _fieldReaders = fieldReaders;
         }
 
@@ -87,7 +87,7 @@ public class StructDefaults
         public ArrayDefaults(AvroReadContext parent,
                 AvroParserImpl parser, AvroFieldReader[] valueReaders)
         {
-            super(parent, parser);
+            super(parent, parser, null, null);
             _valueReaders = valueReaders;
         }
 

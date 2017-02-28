@@ -15,7 +15,7 @@ public final class RootReader extends AvroReadContext
 
     public RootReader(AvroParserImpl parser,
             AvroStructureReader valueReader) {
-        super(null);
+        super(null, null);
         _type = TYPE_ROOT;
         _parser = parser;
         _valueReader = valueReader;
@@ -46,5 +46,10 @@ public final class RootReader extends AvroReadContext
     public String nextFieldName() throws IOException {
         AvroStructureReader r = _valueReader.newReader(this, _parser);
         return r.nextFieldName();
+    }
+
+    @Override
+    public String getTypeId() {
+        return _valueReader.getTypeId();
     }
 }

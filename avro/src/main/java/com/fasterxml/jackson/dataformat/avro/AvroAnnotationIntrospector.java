@@ -7,16 +7,21 @@ import java.util.List;
 import org.apache.avro.reflect.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
+
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
  * <ul>
@@ -73,7 +78,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     protected PropertyName _findName(Annotated a)
-    {
+	{
         AvroName ann = _findAnnotation(a, AvroName.class);
         return (ann == null) ? null : PropertyName.construct(ann.value());
     }
@@ -122,5 +127,29 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
             names.add(new NamedType(subtype, AvroSchemaHelper.getTypeId(subtype)));
         }
         return names;
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, AnnotatedClass ac, JavaType baseType) {
+        return _findTypeResolver(config, ac, baseType);
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType baseType) {
+        return _findTypeResolver(config, am, baseType);
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType containerType) {
+        return _findTypeResolver(config, am, containerType);
+    }
+
+    protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config, Annotated ann, JavaType baseType) {
+        TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
+        JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
+        if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
+            resolver = resolver.defaultImpl(typeInfo.defaultImpl());
+        }
+        return resolver;
     }
 }

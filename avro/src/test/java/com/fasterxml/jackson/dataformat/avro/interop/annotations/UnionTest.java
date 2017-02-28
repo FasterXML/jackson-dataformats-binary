@@ -1,23 +1,22 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.avro.reflect.Nullable;
-import org.apache.avro.reflect.Union;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.avro.UnresolvedUnionException;
+import org.apache.avro.reflect.Nullable;
+import org.apache.avro.reflect.Union;
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserializer;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for @Union
@@ -74,16 +73,8 @@ public class UnionTest extends InteropTestBase {
         private List<Animal> pets;
     }
 
-    /*
-     * Jackson deserializer doesn't understand native TypeIDs yet, so it can't handle deserialization of unions.
-     */
-    @Before
-    public void ignoreJacksonDeserializer() {
-        Assume.assumeTrue(deserializeFunctor != jacksonDeserializer);
-    }
-
     @Test
-    public void testInterfaceUnionWithCat() {
+    public void testInterfaceUnionWithCat() throws IOException {
         Cage cage = new Cage(new Cat("test"));
         //
         Cage result = roundTrip(cage);
@@ -92,7 +83,7 @@ public class UnionTest extends InteropTestBase {
     }
 
     @Test
-    public void testInterfaceUnionWithDog() {
+    public void testInterfaceUnionWithDog() throws IOException {
         Cage cage = new Cage(new Dog(4));
         //
         Cage result = roundTrip(cage);
@@ -100,15 +91,20 @@ public class UnionTest extends InteropTestBase {
         assertThat(result).isEqualTo(cage);
     }
 
-    @Test(expected = Exception.class)
-    public void testInterfaceUnionWithBird() {
+    @Test
+    public void testInterfaceUnionWithBird() throws IOException {
         Cage cage = new Cage(new Bird(true));
         //
-        roundTrip(cage);
+        try {
+            roundTrip(cage);
+            fail("Should throw exception about Bird not being in union");
+        } catch (UnresolvedUnionException | JsonMappingException e) {
+            // success
+        }
     }
 
     @Test
-    public void testListWithInterfaceUnion() {
+    public void testListWithInterfaceUnion() throws IOException {
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         //
         PetShop result = roundTrip(shop);

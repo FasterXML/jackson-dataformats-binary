@@ -41,6 +41,14 @@ public abstract class AvroSchemaHelper
     public static final String AVRO_SCHEMA_PROP_KEY_CLASS = SpecificData.KEY_CLASS_PROP;
 
     /**
+     * Constant used by native Avro Schemas for indicating more specific
+     * physical class of a array element; referenced indirectly to reduce direct
+     * dependencies to the standard avro library.
+     *
+     * @since 2.8.8
+     */
+    public static final    String        AVRO_SCHEMA_PROP_ELEMENT_CLASS = SpecificData.ELEMENT_PROP;
+    /**
      * Default stringable classes
      *
      * @since 2.8.7
@@ -52,7 +60,7 @@ public abstract class AvroSchemaHelper
     ));
 
     /**
-     * Checks if a given type is "Stringable", that is one of the default {@link #STRINGABLE_CLASSES},
+     * Checks if a given type is "Stringable", that is one of the default {@link #STRINGABLE_CLASSES}, is an {@code Enum},
      * or is annotated with
      * {@link Stringable @Stringable} and has a constructor that takes a single string argument capable of deserializing the output of its
      * {@code toString()} method.
@@ -63,10 +71,10 @@ public abstract class AvroSchemaHelper
      * @return {@code true} if it can be stored in a string schema, otherwise {@code false}
      */
     public static boolean isStringable(AnnotatedClass type) {
-        if (STRINGABLE_CLASSES.contains(type.getRawType())) {
+        if (STRINGABLE_CLASSES.contains(type.getRawType()) || Enum.class.isAssignableFrom(type.getRawType())) {
             return true;
         }
-        if (!type.hasAnnotation(Stringable.class)) {
+        if (type.getAnnotated().getAnnotation(Stringable.class) == null) {
             return false;
         }
         for (AnnotatedConstructor constructor : type.getConstructors()) {
@@ -188,6 +196,17 @@ public abstract class AvroSchemaHelper
                 ));
     }
 
+    public static Schema stringableKeyMapSchema(JavaType mapType, JavaType keyType, Schema valueSchema) {
+        Schema schema = Schema.createMap(valueSchema);
+        if (mapType != null && !mapType.hasRawClass(Map.class)) {
+            schema.addProp(AVRO_SCHEMA_PROP_CLASS, getTypeId(mapType));
+        }
+        if (keyType != null && !keyType.hasRawClass(String.class)) {
+            schema.addProp(AVRO_SCHEMA_PROP_KEY_CLASS, getTypeId(keyType));
+        }
+        return schema;
+    }
+
     protected static <T> T throwUnsupported() {
         throw new UnsupportedOperationException("Format variation not supported");
     }
@@ -237,5 +256,42 @@ public abstract class AvroSchemaHelper
             return ClassUtil.wrapperType(type).getName();
         }
         return type.getName();
+    }
+
+    /**
+     * Returns the type ID for this schema, or {@code null} if none is present.
+     */
+    public static String getTypeId(Schema schema) {
+        switch (schema.getType()) {
+        case RECORD:
+        case ENUM:
+        case FIXED:
+            return getFullName(schema);
+        default:
+            return schema.getProp(AVRO_SCHEMA_PROP_CLASS);
+        }
+
+    }
+
+    /**
+     * Returns the full name of a schema; This is similar to {@link Schema#getFullName()}, except that it properly handles namespaces for
+     * nested classes. (<code>package.name.ClassName$NestedClassName</code> instead of <code>package.name.ClassName$.NestedClassName</code>)
+     */
+    public static String getFullName(Schema schema) {
+        switch (schema.getType()) {
+        case RECORD:
+        case ENUM:
+        case FIXED:
+            String namespace = schema.getNamespace();
+            if (namespace == null) {
+                return schema.getName();
+            }
+            if (namespace.endsWith("$")) {
+                return String.format("%s%s", namespace, schema.getName());
+            }
+            return String.format("%s.%s", namespace, schema.getName());
+        default:
+            return schema.getType().getName();
+        }
     }
 }

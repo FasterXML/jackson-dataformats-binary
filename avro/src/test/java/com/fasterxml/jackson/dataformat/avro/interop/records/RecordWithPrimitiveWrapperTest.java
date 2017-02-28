@@ -1,11 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
+import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+
 import lombok.Data;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -37,6 +37,8 @@ public class AvroModule extends SimpleModule
         addSerializer(File.class, new ToStringSerializer(File.class));
         // 08-Mar-2016, tatu: to fix [dataformat-avro#35], need to prune 'schema' property:
         setSerializerModifier(new AvroSerializerModifier());
+        // Override untyped deserializer to one that checks for type information in the schema before going to default handling
+        addDeserializer(Object.class, new AvroUntypedDeserializer());
     }
 
     @Override
