@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.AvroDefault;
 import org.apache.avro.reflect.AvroIgnore;
 import org.apache.avro.reflect.AvroName;
@@ -50,6 +54,15 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     public String findPropertyDefaultValue(Annotated m) {
         AvroDefault ann = _findAnnotation(m, AvroDefault.class);
         return (ann == null) ? null : ann.value();
+    }
+
+    @Override
+    public List<PropertyName> findPropertyAliases(Annotated m) {
+        AvroAlias ann = _findAnnotation(m, AvroAlias.class);
+        if (ann == null) {
+            return null;
+        }
+        return Collections.singletonList(PropertyName.construct(ann.alias()));
     }
 
     protected PropertyName _findName(Annotated a)
