@@ -4,9 +4,8 @@ import java.io.IOException;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.core.*;
-
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
@@ -33,6 +32,12 @@ public class AvroModule extends SimpleModule
      */
     @Deprecated // 08-Mar-2016, tatu: How on earth did this end up here?!?
     public Schema schema;
+
+    @Override
+    public void setupModule(SetupContext context) {
+        super.setupModule(context);
+        context.insertAnnotationIntrospector(new AvroAnnotationIntrospector());
+    }
 
     /*
     /**********************************************************

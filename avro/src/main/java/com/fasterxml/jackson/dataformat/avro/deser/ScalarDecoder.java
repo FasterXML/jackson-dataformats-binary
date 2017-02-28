@@ -214,6 +214,42 @@ public abstract class ScalarDecoder
             }
         }
     }
+
+    protected final static class CharReader extends ScalarDecoder {
+        @Override
+        public JsonToken decodeValue(AvroParserImpl parser, Decoder decoder) throws IOException {
+            return parser.setString(Character.toString((char)decoder.readInt()));
+        }
+
+        @Override
+        protected void skipValue(Decoder decoder) throws IOException {
+            // ints use variable-length zigzagging; alas, no native skipping
+            decoder.readInt();
+        }
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper);
+        }
+
+        private final static class FR extends AvroFieldReader {
+            public FR(String name, boolean skipper) {
+                super(name, skipper);
+            }
+
+            @Override
+            public JsonToken readValue(
+                AvroReadContext parent, AvroParserImpl parser, BinaryDecoder decoder
+            ) throws IOException {
+                return parser.setString(Character.toString((char) decoder.readInt()));
+            }
+
+            @Override
+            public void skipValue(BinaryDecoder decoder) throws IOException {
+                decoder.readInt();
+            }
+        }
+    }
     
     protected final static class LongReader extends ScalarDecoder
     {

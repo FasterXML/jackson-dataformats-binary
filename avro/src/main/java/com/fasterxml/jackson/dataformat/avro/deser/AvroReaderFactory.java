@@ -5,6 +5,7 @@ import java.util.*;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 /**
  * Helper class used for constructing a hierarchic reader for given
@@ -20,6 +21,7 @@ public abstract class AvroReaderFactory
     protected final static ScalarDecoder READER_LONG = new LongReader();
     protected final static ScalarDecoder READER_NULL = new NullReader();
     protected final static ScalarDecoder READER_STRING = new StringReader();
+    protected final static ScalarDecoder READER_CHAR = new CharReader();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -65,6 +67,9 @@ public abstract class AvroReaderFactory
         case FLOAT: 
             return READER_FLOAT;
         case INT:
+            if (Character.class.getName().equals(type.getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))) {
+                return READER_CHAR;
+            }
             return READER_INT;
         case LONG: 
             return READER_LONG;
