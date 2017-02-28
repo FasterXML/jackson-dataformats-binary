@@ -196,6 +196,6 @@ public abstract class AvroSchemaHelper
         if (type.isPrimitive()) {
             return ClassUtil.wrapperType(type.getRawClass()).getName();
         }
-        return type.toCanonical();
+        return type.getRawClass().getName();
     }
 }

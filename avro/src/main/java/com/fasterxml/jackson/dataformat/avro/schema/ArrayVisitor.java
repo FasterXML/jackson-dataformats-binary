@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import java.util.List;
+
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 
@@ -35,8 +37,8 @@ public class ArrayVisitor
             throw new IllegalStateException("No element schema created for: "+_type);
         }
         Schema schema = Schema.createArray(_elementSchema);
-        if (_type.isArrayType()) {
-            schema.addProp(AVRO_SCHEMA_PROP_CLASS, _type.toCanonical());
+        if (!_type.hasRawClass(List.class)) {
+            schema.addProp(AVRO_SCHEMA_PROP_CLASS, AvroSchemaHelper.getTypeId(_type));
         }
         return schema;
     }

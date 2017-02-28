@@ -108,7 +108,7 @@ public class ApacheAvroInteropUtil {
                     }
                 }
             }
-            if (type instanceof Class<?> && ((Class<?>) type).getSuperclass() != null) {
+            if (type instanceof Class<?> && ((Class<?>) type).getSuperclass() != null && !Enum.class.isAssignableFrom((Class<?>) type)) {
                 // Raw class may extend a generic superclass
                 // extract all the type bindings and add them to the map so they can be returned by the next block
                 // Interfaces shouldn't matter here because interfaces can't have fields and avro only looks at fields.
