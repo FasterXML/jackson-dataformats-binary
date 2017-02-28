@@ -71,8 +71,8 @@ public abstract class InteropTestBase {
             if (typeBindings.length != 0) {
                 builder.append('<');
                 for (Type type : typeBindings) {
-                    if (type instanceof Class) {
-                        builder.append(((Class) type).getName());
+                    if (type instanceof Class<?>) {
+                        builder.append(((Class<?>) type).getName());
                     } else {
                         builder.append(type.toString());
                     }

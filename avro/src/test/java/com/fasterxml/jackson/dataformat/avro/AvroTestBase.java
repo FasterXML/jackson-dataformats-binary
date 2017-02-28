@@ -271,7 +271,7 @@ public abstract class AvroTestBase extends TestCase
         assertToken(expToken, jp.getCurrentToken());
     }
 
-    protected void verifyException(Throwable e, String... matches)
+    public static void verifyException(Throwable e, String... matches)
     {
         String msg = e.getMessage();
         String lmsg = (msg == null) ? "" : msg.toLowerCase();

@@ -5,7 +5,6 @@ import org.apache.avro.Schema;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 public class IntegerVisitor extends JsonIntegerFormatVisitor.Base
     implements SchemaBuilder

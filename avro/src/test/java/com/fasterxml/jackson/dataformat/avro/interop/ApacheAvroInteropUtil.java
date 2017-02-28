@@ -1,17 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.interop;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import org.apache.avro.Schema;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.Encoder;
-import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.reflect.ReflectData;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -20,6 +8,19 @@ import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.avro.Schema;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.reflect.ReflectData;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+
 /**
  * Utilities and helper functions to aid compatibility testing between Jackson and Apache Avro implementations
  */
@@ -27,7 +28,7 @@ public class ApacheAvroInteropUtil {
     /**
      * Functor of {@link #jacksonSerialize(Schema, Object)}
      */
-    public static final  BiFunction<Schema, Object, byte[]> jacksonSerializer         = new BiFunction<Schema, Object, byte[]>() {
+    public static final BiFunction<Schema, Object, byte[]> jacksonSerializer = new BiFunction<Schema, Object, byte[]>() {
         @Override
         public byte[] apply(Schema schema, Object originalObject) {
             return jacksonSerialize(schema, originalObject);
@@ -79,14 +80,14 @@ public class ApacheAvroInteropUtil {
             return apacheSerialize(schema, originalObject);
         }
     };
-    private static final AvroMapper                         MAPPER                    = new AvroMapper();
+    private static final AvroMapper MAPPER = new AvroMapper();
     /*
      * Special subclass of ReflectData that knows how to resolve and bind generic types. This saves us much pain of
      * having to build these schemas by hand. Also, workarounds for several bugs in the Apache implementation are
      * implemented here.
      */
-    private static final ReflectData                        PATCHED_AVRO_REFLECT_DATA = new ReflectData() {
-        @SuppressWarnings({"unchecked", "SuspiciousMethodCalls"})
+    private static final ReflectData PATCHED_AVRO_REFLECT_DATA = new ReflectData() {
+        @SuppressWarnings({"unchecked", "SuspiciousMethodCalls", "rawtypes"})
         @Override
         protected Schema createSchema(Type type, Map<String, Schema> names) {
         /*
@@ -96,7 +97,7 @@ public class ApacheAvroInteropUtil {
          * when building a schema from reflection data.
          */
             if (type instanceof ParameterizedType) {
-                TypeVariable[] genericParameters = ((Class) ((ParameterizedType) type).getRawType()).getTypeParameters();
+                TypeVariable<?>[] genericParameters = ((Class<?>) ((ParameterizedType) type).getRawType()).getTypeParameters();
                 if (genericParameters.length > 0) {
                     Type[] boundParameters = ((ParameterizedType) type).getActualTypeArguments();
                     for (int i = 0; i < boundParameters.length; i++) {
@@ -104,13 +105,13 @@ public class ApacheAvroInteropUtil {
                     }
                 }
             }
-            if (type instanceof Class && ((Class) type).getSuperclass() != null) {
+            if (type instanceof Class<?> && ((Class<?>) type).getSuperclass() != null) {
                 // Raw class may extend a generic superclass
                 // extract all the type bindings and add them to the map so they can be returned by the next block
                 // Interfaces shouldn't matter here because interfaces can't have fields and avro only looks at fields.
-                TypeVariable[] genericParameters = ((Class) type).getSuperclass().getTypeParameters();
+                TypeVariable<?>[] genericParameters = ((Class<?>) type).getSuperclass().getTypeParameters();
                 if (genericParameters.length > 0) {
-                    Type[] boundParameters = ((ParameterizedType) ((Class) type).getGenericSuperclass()).getActualTypeArguments();
+                    Type[] boundParameters = ((ParameterizedType) ((Class<?>) type).getGenericSuperclass()).getActualTypeArguments();
                     for (int i = 0; i < boundParameters.length; i++) {
                         ((Map) names).put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names)));
                     }

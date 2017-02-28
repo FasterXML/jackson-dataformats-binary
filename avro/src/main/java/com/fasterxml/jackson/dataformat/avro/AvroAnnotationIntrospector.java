@@ -1,40 +1,55 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+
+import org.apache.avro.reflect.AvroDefault;
 import org.apache.avro.reflect.AvroIgnore;
 import org.apache.avro.reflect.AvroName;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
  * <ul>
- * <li>{@link AvroIgnore @AvroIgnore} - Alias for {@link JsonIgnore @JsonIgnore(true)}</li>
- * <li>{@link AvroName @AvroName("custom Name")} - Alias for {@link JsonProperty @JsonProperty("custom name")}</li>
+ * <li>{@link AvroIgnore @AvroIgnore} - Alias for <code>JsonIgnore</code></li>
+ * <li>{@link AvroName @AvroName("custom Name")} - Alias for <code>JsonProperty("custom name")</code></li>
  * </ul>
  */
-public class AvroAnnotationIntrospector extends JacksonAnnotationIntrospector {
+public class AvroAnnotationIntrospector extends AnnotationIntrospector
+{
+    private static final long serialVersionUID = 1L;
 
     @Override
-    protected boolean _isIgnorable(Annotated a) {
-        return a.getAnnotation(AvroIgnore.class) != null || super._isIgnorable(a);
+    public Version version() {
+        return PackageVersion.VERSION;
+    }
+
+    @Override
+    public boolean hasIgnoreMarker(AnnotatedMember m) {
+        return _findAnnotation(m, AvroIgnore.class) != null;
     }
 
     @Override
     public PropertyName findNameForSerialization(Annotated a) {
-        if (a.hasAnnotation(AvroName.class)) {
-            return PropertyName.construct(a.getAnnotation(AvroName.class).value());
-        }
-        return super.findNameForSerialization(a);
+        return _findName(a);
     }
 
     @Override
     public PropertyName findNameForDeserialization(Annotated a) {
-        if (a.hasAnnotation(AvroName.class)) {
-            return PropertyName.construct(a.getAnnotation(AvroName.class).value());
-        }
-        return super.findNameForDeserialization(a);
+        return _findName(a);
+    }
+
+    @Override
+    public String findPropertyDefaultValue(Annotated m) {
+        AvroDefault ann = _findAnnotation(m, AvroDefault.class);
+        return (ann == null) ? null : ann.value();
+    }
+
+    protected PropertyName _findName(Annotated a)
+    {
+        AvroName ann = _findAnnotation(a, AvroName.class);
+        return (ann == null) ? null : PropertyName.construct(ann.value());
     }
 }
