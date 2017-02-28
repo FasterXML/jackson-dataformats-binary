@@ -5,9 +5,12 @@ import java.io.*;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
@@ -21,19 +24,47 @@ public class AvroMapper extends ObjectMapper
 {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructor that will construct mapper with standard {@link AvroFactory}
+     * as codec, and will also register {@link AvroModule}.
+     */
     public AvroMapper() {
         this(new AvroFactory());
     }
 
+    /**
+     * Constructor that will construct mapper with given {@link AvroFactory},
+     * as well as register standard {@link AvroModule} (with default settings).
+     */
     public AvroMapper(AvroFactory f) {
         super(f);
         registerModule(new AvroModule());
     }
 
+    /**
+     * Constructor that will construct mapper with standard {@link AvroFactory}
+     * as codec, and register given modules but nothing else (that is, will
+     * only register {@link AvroModule} if it's included as argument.
+     */
+    public AvroMapper(Module... modules) {
+        super(new AvroFactory());
+        registerModules(modules);
+    }
+
+    /**
+     * Constructor that will construct mapper with specified {@link AvroFactory}
+     * as codec, and register given modules but nothing else (that is, will
+     * only register {@link AvroModule} if it's included as argument.
+     */
+    public AvroMapper(AvroFactory f, Module... modules) {
+        super(f);
+        registerModules(modules);
+    }
+
     protected AvroMapper(ObjectMapper src) {
         super(src);
     }
-    
+
     @Override
     public AvroMapper copy()
     {

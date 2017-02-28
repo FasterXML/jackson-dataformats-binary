@@ -131,7 +131,7 @@ public abstract class ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return parser.decodeInt();
+            return parser.decodeIntToken();
         }
 
         @Override
@@ -151,7 +151,7 @@ public abstract class ScalarDecoder
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return parser.decodeInt();
+                return parser.decodeIntToken();
             }
 
             @Override
@@ -165,7 +165,7 @@ public abstract class ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return parser.decodeLong();
+            return parser.decodeLongToken();
         }
 
         @Override
@@ -185,12 +185,47 @@ public abstract class ScalarDecoder
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return parser.decodeLong();
+                return parser.decodeLongToken();
             }
 
             @Override
             public void skipValue(AvroParserImpl parser) throws IOException {
                 parser.skipLong();
+            }
+        }
+    }
+
+    protected final static class CharReader extends ScalarDecoder {
+        @Override
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.setString(Character.toString((char)parser.decodeInt()));
+        }
+
+        @Override
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            // ints use variable-length zigzagging; alas, no native skipping
+            parser.skipInt();
+        }
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper);
+        }
+
+        private final static class FR extends AvroFieldReader {
+            public FR(String name, boolean skipper) {
+                super(name, skipper);
+            }
+
+            @Override
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser)
+                    throws IOException {
+                return parser.setString(Character.toString((char) parser.decodeInt()));
+            }
+
+            @Override
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipInt();
             }
         }
     }

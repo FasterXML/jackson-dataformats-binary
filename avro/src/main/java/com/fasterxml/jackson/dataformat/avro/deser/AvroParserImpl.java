@@ -206,18 +206,22 @@ public class AvroParserImpl extends AvroParser
         _decoder.skipFixed(1);
     }
 
-    public JsonToken decodeInt() throws IOException {
+    public int decodeInt() throws IOException {
+        return _decoder.readInt();
+    }
+
+    public JsonToken decodeIntToken() throws IOException {
         _numberInt = _decoder.readInt();
         _numTypesValid = NR_INT;
         return JsonToken.VALUE_NUMBER_INT;
     }
-
+    
     public void skipInt() throws IOException {
         // ints use variable-length zigzagging; alas, no native skipping
         _decoder.readInt();
     }
 
-    public JsonToken decodeLong() throws IOException {
+    public JsonToken decodeLongToken() throws IOException {
         _numberLong = _decoder.readLong();
         _numTypesValid = NR_LONG;
         return JsonToken.VALUE_NUMBER_INT;
