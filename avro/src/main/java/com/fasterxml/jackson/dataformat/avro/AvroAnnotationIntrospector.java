@@ -1,18 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.avro.reflect.*;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.avro.reflect.AvroAlias;
-import org.apache.avro.reflect.AvroDefault;
-import org.apache.avro.reflect.AvroIgnore;
-import org.apache.avro.reflect.AvroName;
 
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
@@ -22,6 +19,7 @@ import org.apache.avro.reflect.AvroName;
  * <li>{@link AvroDefault @AvroDefault("default value")} - Alias for <code>JsonProperty.defaultValue</code>, to
  *     define default value for generated Schemas
  *   </li>
+ * <li>{@link Nullable @Nullable} - Alias for <code>JsonProperty(required = false)</code></li>
  * </ul>
  *
  * @since 2.9
@@ -69,5 +67,13 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     {
         AvroName ann = _findAnnotation(a, AvroName.class);
         return (ann == null) ? null : PropertyName.construct(ann.value());
+    }
+
+    @Override
+    public Boolean hasRequiredMarker(AnnotatedMember m) {
+        if (_hasAnnotation(m, Nullable.class)) {
+            return false;
+        }
+        return null;
     }
 }
