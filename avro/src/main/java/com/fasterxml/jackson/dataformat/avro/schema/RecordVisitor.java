@@ -3,20 +3,15 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import org.apache.avro.Schema;
+import org.apache.avro.reflect.AvroMeta;
+import org.apache.avro.reflect.AvroSchema;
+
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
-
-import org.apache.avro.Schema;
-import org.apache.avro.reflect.AvroMeta;
-import org.apache.avro.reflect.AvroSchema;
 
 public class RecordVisitor
     extends JsonObjectFormatVisitor.Base
@@ -26,9 +21,13 @@ public class RecordVisitor
 
     protected final DefinedSchemas _schemas;
 
-    protected Schema _avroSchema;
+    /**
+     * Tracks if the schema for this record has been overridden (by an annotation or other means), and calls to the {@code property} and
+     * {@code optionalProperty} methods should be ignored.
+     */
+    protected final boolean _overridden;
 
-    protected boolean _overridden;
+    protected Schema _avroSchema;
     
     protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
     
@@ -38,17 +37,15 @@ public class RecordVisitor
         _type = type;
         _schemas = schemas;
         // Check if the schema for this record is overridden
-        AnnotatedClass ac = getProvider().getConfig().introspectDirectClassAnnotations(_type).getClassInfo();
-        AvroSchema ann = ac.getAnnotation(AvroSchema.class);
+        BeanDescription bean = getProvider().getConfig().introspectDirectClassAnnotations(_type);
+        AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
         if (ann != null) {
-            Schema.Parser parser = new Schema.Parser();
-            _avroSchema = parser.parse(ann.value());
+            _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
             _overridden = true;
         } else {
-            String description = getProvider().getAnnotationIntrospector().findClassDescription(ac);
-            _avroSchema = Schema.createRecord(AvroSchemaHelper.getName(type), description, AvroSchemaHelper.getNamespace(type), false);
+            _avroSchema = AvroSchemaHelper.initializeRecordSchema(bean);
             _overridden = false;
-            AvroMeta meta = ac.getAnnotation(AvroMeta.class);
+            AvroMeta meta = bean.getClassInfo().getAnnotation(AvroMeta.class);
             if (meta != null) {
                 _avroSchema.addProp(meta.key(), meta.value());
             }
@@ -163,8 +160,7 @@ public class RecordVisitor
                 writerSchema = AvroSchemaHelper.unionWithNull(writerSchema);
             }
         }
-        String description = getProvider().getAnnotationIntrospector().findPropertyDescription(prop.getMember());
-        Schema.Field field = new Schema.Field(prop.getName(), writerSchema, description, null);
+        Schema.Field field = new Schema.Field(prop.getName(), writerSchema, prop.getMetadata().getDescription(), null);
 
         AvroMeta meta = prop.getAnnotation(AvroMeta.class);
         if (meta != null) {

@@ -8,10 +8,12 @@ import java.net.URL;
 import java.util.*;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Parser;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
@@ -186,6 +188,27 @@ public abstract class AvroSchemaHelper
 
     protected static <T> T throwUnsupported() {
         throw new UnsupportedOperationException("Format variation not supported");
+    }
+
+    /**
+     * Initializes a record schema with metadata from the given class; this schema is returned in a non-finalized state, and still
+     * needs to have fields added to it.
+     */
+    public static Schema initializeRecordSchema(BeanDescription bean) {
+        return Schema.createRecord(
+            getName(bean.getType()),
+            bean.findClassDescription(),
+            getNamespace(bean.getType()),
+            bean.getType().isTypeOrSubTypeOf(Throwable.class)
+        );
+    }
+
+    /**
+     * Parses a JSON-formatted representation of a schema
+     */
+    public static Schema parseJsonSchema(String json) {
+        Schema.Parser parser = new Parser();
+        return parser.parse(json);
     }
 
     /**
