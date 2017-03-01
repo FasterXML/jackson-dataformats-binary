@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.interop.arrays;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +19,7 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class ListWithComplexTest extends InteropTestBase {
     @Test
-    public void testEmptyListWithRecordElements() {
+    public void testEmptyListWithRecordElements() throws IOException {
         List<DummyRecord> original = new ArrayList<>();
         //
         List<DummyRecord> result = roundTrip(type(List.class, DummyRecord.class), original);
@@ -26,7 +28,7 @@ public class ListWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithEnumElements() {
+    public void testListWithEnumElements() throws IOException {
         List<DummyEnum> original = new ArrayList<>();
         original.add(DummyEnum.EAST);
         original.add(DummyEnum.WEST);
@@ -37,7 +39,7 @@ public class ListWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithListElements() {
+    public void testListWithListElements() throws IOException {
         List<List<List<String>>> original = new ArrayList<>();
         original.add(new ArrayList<List<String>>());
         original.get(0).add(Collections.singletonList("Hello"));
@@ -50,7 +52,7 @@ public class ListWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithMapElements() {
+    public void testListWithMapElements() throws IOException {
         List<Map<String, Integer>> original = new ArrayList<>();
         original.add(Collections.singletonMap("Hello", 1));
         original.add(Collections.singletonMap("World", 2));
@@ -79,7 +81,7 @@ public class ListWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithRecordElements() {
+    public void testListWithRecordElements() throws IOException {
         List<DummyRecord> original = new ArrayList<>();
         original.add(new DummyRecord("test", 2));
         original.add(new DummyRecord("test 2", 1235));

@@ -1,13 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro.interop;
 
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.avro.Schema;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -123,7 +119,7 @@ public abstract class InteropTestBase {
      *
      * @return A recreated version of the original object
      */
-    protected <T> T roundTrip(T object) {
+    protected <T> T roundTrip(T object) throws IOException {
         return roundTrip(object.getClass(), object);
     }
 
@@ -142,7 +138,7 @@ public abstract class InteropTestBase {
      * @return A recreated version of the original object
      */
     @SuppressWarnings("unchecked")
-    protected <T> T roundTrip(Type schemaType, T object) {
+    protected <T> T roundTrip(Type schemaType, T object) throws IOException {
         Schema schema = schemaFunctor.apply(schemaType);
         // Temporary hack until jackson supports native type Ids and we don't need to give it a target type
         if (deserializeFunctor == jacksonDeserializer) {
@@ -153,15 +149,5 @@ public abstract class InteropTestBase {
 
     public enum DummyEnum {
         NORTH, SOUTH, EAST, WEST
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DummyRecord {
-        @JsonProperty(required = true)
-        private String firstValue;
-        @JsonProperty(required = true)
-        private int secondValue;
     }
 }

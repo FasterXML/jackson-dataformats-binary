@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
+import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -29,7 +30,7 @@ public class MapSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testHashMap() {
+    public void testHashMap() throws IOException {
         HashMap<String, Integer> original = new HashMap<>();
         original.put("test", 1234);
         original.put("Second", 98768234);
@@ -40,7 +41,7 @@ public class MapSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testConcurrentHashMap() {
+    public void testConcurrentHashMap() throws IOException {
         ConcurrentHashMap<String, Integer> original = new ConcurrentHashMap<>();
         original.put("test", 1234);
         original.put("Second", 98768234);
@@ -51,7 +52,7 @@ public class MapSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testConcurrentSkipListMap() {
+    public void testConcurrentSkipListMap() throws IOException {
         ConcurrentSkipListMap<String, Integer> original = new ConcurrentSkipListMap<>();
         original.put("test", 1234);
         original.put("Second", 98768234);
@@ -62,7 +63,7 @@ public class MapSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testTreeMap() {
+    public void testTreeMap() throws IOException {
         TreeMap<String, Integer> original = new TreeMap<>();
         original.put("test", 1234);
         original.put("Second", 98768234);
@@ -73,7 +74,7 @@ public class MapSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testEnumMap() {
+    public void testEnumMap() throws IOException {
         // Apache schema generator can't handle EnumMaps
         Assume.assumeTrue(schemaFunctor != getApacheSchema);
 

@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MapWithPrimitiveArrayTest extends InteropTestBase {
     @Test
-    public void testMapWithBytes() {
+    public void testMapWithBytes() throws IOException {
         Map<String, byte[]> original = new HashMap<>();
         original.put("one", new byte[]{(byte)1 });
         original.put("zero", new byte[0]);
@@ -29,7 +30,7 @@ public class MapWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithCharacters() {
+    public void testMapWithCharacters() throws IOException {
         Map<String, char[]> original = new HashMap<>();
         original.put("one", new char[]{(char) 1});
         original.put("zero", new char[0]);
@@ -43,7 +44,7 @@ public class MapWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithDoubles() {
+    public void testMapWithDoubles() throws IOException {
         Map<String, double[]> original = new HashMap<>();
         original.put("one", new double[]{(double) 1});
         original.put("zero", new double[0]);
@@ -57,7 +58,7 @@ public class MapWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithFloats() {
+    public void testMapWithFloats() throws IOException {
         Map<String, float[]> original = new HashMap<>();
         original.put("one", new float[]{(float) 1});
         original.put("zero", new float[0]);
@@ -71,7 +72,7 @@ public class MapWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithIntegers() {
+    public void testMapWithIntegers() throws IOException {
         Map<String, int[]> original = new HashMap<>();
         original.put("one", new int[]{(int) 1});
         original.put("zero", new int[0]);
@@ -85,7 +86,7 @@ public class MapWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithLongs() {
+    public void testMapWithLongs() throws IOException {
         Map<String, long[]> original = new HashMap<>();
         original.put("one", new long[]{(long) 1});
         original.put("zero", new long[0]);
@@ -99,7 +100,7 @@ public class MapWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithShorts() {
+    public void testMapWithShorts() throws IOException {
         Map<String, short[]> original = new HashMap<>();
         original.put("one", new short[]{(short) 1});
         original.put("zero", new short[0]);

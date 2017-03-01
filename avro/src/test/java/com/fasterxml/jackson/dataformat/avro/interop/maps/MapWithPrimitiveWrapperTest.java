@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     @Test
-    public void testMapWithBytes() {
+    public void testMapWithBytes() throws IOException {
         Map<String, Byte> original = new HashMap<>();
         original.put("one", (byte) 1);
         original.put("zero", (byte) 0);
@@ -29,7 +30,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithCharacters() {
+    public void testMapWithCharacters() throws IOException {
         Map<String, Character> original = new HashMap<>();
         original.put("one", (char) 1);
         original.put("zero", (char) 0);
@@ -43,7 +44,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithDoubles() {
+    public void testMapWithDoubles() throws IOException {
         Map<String, Double> original = new HashMap<>();
         original.put("one", 1D);
         original.put("zero", 0D);
@@ -57,7 +58,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithFloats() {
+    public void testMapWithFloats() throws IOException {
         Map<String, Float> original = new HashMap<>();
         original.put("one", 1F);
         original.put("zero", 0F);
@@ -71,7 +72,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithIntegers() {
+    public void testMapWithIntegers() throws IOException {
         Map<String, Integer> original = new HashMap<>();
         original.put("one", 1);
         original.put("zero", 0);
@@ -85,7 +86,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithLongs() {
+    public void testMapWithLongs() throws IOException {
         Map<String, Long> original = new HashMap<>();
         original.put("one", 1L);
         original.put("zero", 0L);
@@ -99,7 +100,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithShorts() {
+    public void testMapWithShorts() throws IOException {
         Map<String, Short> original = new HashMap<>();
         original.put("one", (short) 1);
         original.put("zero", (short) 0);
@@ -113,7 +114,7 @@ public class MapWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithStrings() {
+    public void testMapWithStrings() throws IOException {
         Map<String, String> original = new HashMap<>();
         original.put("one", "1");
         original.put("empty", "");

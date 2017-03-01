@@ -7,6 +7,8 @@ import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 /**
  * Tests serializing primitive array fields on records
  */
@@ -23,7 +25,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testByteField() {
+    public void testByteField() throws IOException {
         TestRecord record = new TestRecord();
         record.byteArrayField = new byte[]{1, 0, -1, Byte.MIN_VALUE, Byte.MAX_VALUE};
         //
@@ -33,7 +35,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testCharacterField() {
+    public void testCharacterField() throws IOException {
         TestRecord record = new TestRecord();
         record.characterArrayField = new char[]{1, 0, Character.MIN_VALUE, Character.MAX_VALUE};
         //
@@ -43,7 +45,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testDoubleField() {
+    public void testDoubleField() throws IOException {
         TestRecord record = new TestRecord();
         record.doubleArrayField = new double[]{1, 0, -1, Double.MIN_VALUE, Double.MAX_VALUE};
         //
@@ -53,7 +55,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testFloatField() {
+    public void testFloatField() throws IOException {
         TestRecord record = new TestRecord();
         record.floatArrayField = new float[]{1, 0, -1, Float.MIN_VALUE, Float.MAX_VALUE};
         //
@@ -63,7 +65,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testInteger() {
+    public void testInteger() throws IOException {
         TestRecord record = new TestRecord();
         record.integerArrayField = new int[]{1, 0, -1, Integer.MIN_VALUE, Integer.MAX_VALUE};
         //
@@ -73,7 +75,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testLongField() {
+    public void testLongField() throws IOException {
         TestRecord record = new TestRecord();
         record.longArrayField = new long[]{1, 0, -1, Long.MIN_VALUE, Long.MAX_VALUE};
         //
@@ -83,7 +85,7 @@ public class RecordWithPrimitiveArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testShortField() {
+    public void testShortField() throws IOException {
         TestRecord record = new TestRecord();
         record.shortArrayField = new short[]{1, 0, -1, Short.MIN_VALUE, Short.MAX_VALUE};
         //

@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +17,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class MapWithComplexTest extends InteropTestBase {
 
     @Test
-    public void testMapWithRecordValues() {
+    public void testMapWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         original.put("one", new DummyRecord("test", 2));
         original.put("two", new DummyRecord("test 2", 1235));
@@ -27,7 +29,7 @@ public class MapWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testEmptyMapWithRecordValues() {
+    public void testEmptyMapWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         //
         Map<String, DummyRecord> result = roundTrip(type(Map.class, String.class, DummyRecord.class), original);
@@ -36,7 +38,7 @@ public class MapWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithNullValues() {
+    public void testMapWithNullValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         original.put("test", null);
         //
@@ -54,7 +56,7 @@ public class MapWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithEnumValues() {
+    public void testMapWithEnumValues() throws IOException {
         Map<String, DummyEnum> original = new HashMap<>();
         original.put("one", DummyEnum.EAST);
         original.put("two", DummyEnum.WEST);
@@ -65,7 +67,7 @@ public class MapWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithListValues() {
+    public void testMapWithListValues() throws IOException {
         Map<String, List<List<String>>> original = new HashMap<>();
         original.put("one", new ArrayList<List<String>>());
         original.get("one").add(Collections.singletonList("Hello"));
@@ -79,7 +81,7 @@ public class MapWithComplexTest extends InteropTestBase {
     }
 
     @Test
-    public void testMapWithMapValues() {
+    public void testMapWithMapValues() throws IOException {
         Map<String, Map<String, Integer>> original = new HashMap<>();
         original.put("one", Collections.singletonMap("Hello", 1));
         original.put("two", Collections.singletonMap("World", 2));

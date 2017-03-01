@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.interop.arrays;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     @Test
-    public void testListWithBytes() {
+    public void testListWithBytes() throws IOException {
         List<Byte[]> original = new ArrayList<>();
         original.add(new Byte[]{(byte) 1});
         original.add(new Byte[0]);
@@ -29,7 +30,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithCharacters() {
+    public void testListWithCharacters() throws IOException {
         List<Character[]> original = new ArrayList<>();
         original.add(new Character[]{(char) 1});
         original.add(new Character[0]);
@@ -43,7 +44,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithDoubles() {
+    public void testListWithDoubles() throws IOException {
         List<Double[]> original = new ArrayList<>();
         original.add(new Double[]{(double) 1});
         original.add(new Double[0]);
@@ -57,7 +58,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithFloats() {
+    public void testListWithFloats() throws IOException {
         List<Float[]> original = new ArrayList<>();
         original.add(new Float[]{(float) 1});
         original.add(new Float[0]);
@@ -71,7 +72,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithIntegers() {
+    public void testListWithIntegers() throws IOException {
         List<Integer[]> original = new ArrayList<>();
         original.add(new Integer[]{(int) 1});
         original.add(new Integer[0]);
@@ -85,7 +86,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithLongs() {
+    public void testListWithLongs() throws IOException {
         List<Long[]> original = new ArrayList<>();
         original.add(new Long[]{(long) 1});
         original.add(new Long[0]);
@@ -99,7 +100,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithShorts() {
+    public void testListWithShorts() throws IOException {
         List<Short[]> original = new ArrayList<>();
         original.add(new Short[]{(short) 1});
         original.add(new Short[0]);
@@ -113,7 +114,7 @@ public class ListWithPrimitiveWrapperArrayTest extends InteropTestBase {
     }
 
     @Test
-    public void testListWithStrings() {
+    public void testListWithStrings() throws IOException {
         List<String[]> original = new ArrayList<>();
         original.add(new String[]{"1"});
         original.add(new String[0]);

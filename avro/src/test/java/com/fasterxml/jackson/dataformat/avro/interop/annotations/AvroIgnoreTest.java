@@ -7,6 +7,8 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
+
 public class AvroIgnoreTest extends InteropTestBase
 {
     static class RecordWithIgnoredField {
@@ -15,11 +17,10 @@ public class AvroIgnoreTest extends InteropTestBase
         @AvroIgnore
         public String ignoredField;
         public String notIgnoredField;
-
     }
 
     @Test
-    public void testFieldIgnored() {
+    public void testFieldIgnored() throws IOException {
         RecordWithIgnoredField r = new RecordWithIgnoredField();
         r.ignoredField = "fail";
         r.notIgnoredField = "success";

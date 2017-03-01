@@ -7,6 +7,8 @@ import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 /**
  * Tests serializing wrapper types for primitives on records
  */
@@ -24,7 +26,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testByteField() {
+    public void testByteField() throws IOException {
         TestRecord record = new TestRecord();
         record.byteField = Byte.MAX_VALUE;
         //
@@ -34,7 +36,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testCharacterField() {
+    public void testCharacterField() throws IOException {
         TestRecord record = new TestRecord();
         record.characterField = Character.MAX_VALUE;
         //
@@ -44,7 +46,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testDoubleField() {
+    public void testDoubleField() throws IOException {
         TestRecord record = new TestRecord();
         record.doubleField = Double.MAX_VALUE;
         //
@@ -54,7 +56,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testFloatField() {
+    public void testFloatField() throws IOException {
         TestRecord record = new TestRecord();
         record.floatField = Float.MAX_VALUE;
         //
@@ -64,7 +66,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testInteger() {
+    public void testInteger() throws IOException {
         TestRecord record = new TestRecord();
         record.integerField = Integer.MAX_VALUE;
         //
@@ -74,7 +76,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testLongField() {
+    public void testLongField() throws IOException {
         TestRecord record = new TestRecord();
         record.longField = Long.MAX_VALUE;
         //
@@ -84,7 +86,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testShortField() {
+    public void testShortField() throws IOException {
         TestRecord record = new TestRecord();
         record.shortField = Short.MAX_VALUE;
         //
@@ -94,7 +96,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
     }
 
     @Test
-    public void testStringField() {
+    public void testStringField() throws IOException {
         TestRecord record = new TestRecord();
         record.stringField = "Hello World";
         //

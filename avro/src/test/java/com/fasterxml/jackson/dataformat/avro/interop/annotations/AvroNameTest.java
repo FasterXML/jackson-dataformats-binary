@@ -10,6 +10,8 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+
 /**
  * Tests the {@link AvroName @AvroName} annotation
  */
@@ -33,14 +35,14 @@ public class AvroNameTest extends InteropTestBase
     }
 
     @Test
-    public void testRecordWithRenamedField() {
+    public void testRecordWithRenamedField() throws IOException{
         RecordWithRenamed original = new RecordWithRenamed();
         original.someField = "blah";
         RecordWithRenamed result = roundTrip(original);
         assertThat(result).isEqualTo(original);
     }
 
-    public void testRecordWithNameCollision() {
+    public void testRecordWithNameCollision() throws IOException {
         try {
             schemaFunctor.apply(RecordWithNameCollision.class);
             fail("Should not pass");

@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.interop.arrays;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -20,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CollectionSubtypeTest extends InteropTestBase {
     @Test
-    public void testArrayList() {
+    public void testArrayList() throws IOException {
         ArrayList<String> original = new ArrayList<>();
         original.add("test");
         original.add("Second");
@@ -31,7 +32,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testConcurrentSkipListSet() {
+    public void testConcurrentSkipListSet() throws IOException {
         ConcurrentSkipListSet<Integer> original = new ConcurrentSkipListSet<>();
         original.add(1234);
         original.add(98768234);
@@ -42,7 +43,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testCopyOnWriteArrayList() {
+    public void testCopyOnWriteArrayList() throws IOException{
         CopyOnWriteArrayList<Integer> original = new CopyOnWriteArrayList<>();
         original.add(1234);
         original.add(98768234);
@@ -53,7 +54,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testCopyOnWriteArraySet() {
+    public void testCopyOnWriteArraySet() throws IOException{
         CopyOnWriteArraySet<Integer> original = new CopyOnWriteArraySet<>();
         original.add(1234);
         original.add(98768234);
@@ -64,7 +65,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testEnumSet() {
+    public void testEnumSet() throws IOException {
         // Bug in apache deserializer, can't handle EnumSet
         Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
         EnumSet<DummyEnum> original = EnumSet.of(DummyEnum.EAST, DummyEnum.NORTH);
@@ -75,7 +76,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testHashSet() {
+    public void testHashSet() throws IOException {
         HashSet<Integer> original = new HashSet<>();
         original.add(1234);
         original.add(98768234);
@@ -86,7 +87,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testLinkedList() {
+    public void testLinkedList() throws IOException {
         LinkedList<Integer> original = new LinkedList<>();
         original.add(1234);
         original.add(98768234);
@@ -97,7 +98,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testList() {
+    public void testList() throws IOException {
         List<String> original = new ArrayList<>();
         original.add("test");
         original.add("Second");
@@ -108,7 +109,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testSet() {
+    public void testSet() throws IOException {
         // Bug in apache deserializer, can't handle Set
         Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
         Set<Integer> original = new HashSet<>();
@@ -121,7 +122,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testStack() {
+    public void testStack() throws IOException {
         Stack<Integer> original = new Stack<>();
         original.add(1234);
         original.add(98768234);
@@ -132,7 +133,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     }
 
     @Test
-    public void testTreeSet() {
+    public void testTreeSet() throws IOException {
         TreeSet<Integer> original = new TreeSet<>();
         original.add(1234);
         original.add(98768234);
