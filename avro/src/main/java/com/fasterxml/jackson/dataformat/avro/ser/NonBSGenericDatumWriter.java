@@ -9,6 +9,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.Encoder;
+import org.apache.avro.reflect.Stringable;
 
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -58,10 +59,16 @@ public class NonBSGenericDatumWriter<D>
                 }
             }
         } else if (datum instanceof BigDecimal) {
+            int subOptimal = -1;
             for (int i = 0, len = schemas.size(); i < len; i++) {
-                if (schemas.get(i).getType() == Type.DOUBLE) {
+                if (schemas.get(i).getType() == Type.STRING) {
                     return i;
+                } else if (schemas.get(i).getType() == Type.DOUBLE) {
+                    subOptimal = i;
                 }
+            }
+            if (subOptimal > -1) {
+                return subOptimal;
             }
         }
 
@@ -71,8 +78,29 @@ public class NonBSGenericDatumWriter<D>
 
     @Override
     protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-        if ((schema.getType() == Type.DOUBLE) && datum instanceof BigDecimal) {
-            out.writeDouble(((BigDecimal)datum).doubleValue());
+        // Cocerce numerical types, like BigDecimal -> double and BigInteger -> long
+        if (datum instanceof Number) {
+            switch (schema.getType()) {
+            case LONG:
+                super.write(schema, (((Number) datum).longValue()), out);
+                return;
+            case INT:
+                super.write(schema, (((Number) datum).intValue()), out);
+                return;
+            case FLOAT:
+                super.write(schema, (((Number) datum).floatValue()), out);
+                return;
+            case DOUBLE:
+                super.write(schema, (((Number) datum).doubleValue()), out);
+                return;
+            case STRING:
+                super.write(schema, datum.toString(), out);
+                return;
+            }
+        }
+        // Handle stringable classes
+        if (schema.getType() == Type.STRING && datum != null && datum.getClass().getAnnotation(Stringable.class) != null) {
+            super.write(schema, datum.toString(), out);
             return;
         }
         if (datum instanceof String) {
