@@ -16,6 +16,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
 
@@ -44,10 +45,25 @@ public class RecordVisitor
         _schemas = schemas;
         // Check if the schema for this record is overridden
         BeanDescription bean = getProvider().getConfig().introspectDirectClassAnnotations(_type);
+        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
         AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
             _overridden = true;
+        } else if (subTypes != null && !subTypes.isEmpty()) {
+            List<Schema> unionSchemas = new ArrayList<>();
+            try {
+                for (NamedType subType : subTypes) {
+                    JsonSerializer           ser     = getProvider().findValueSerializer(subType.getType());
+                    VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, getProvider());
+                    ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
+                    unionSchemas.add(visitor.getAvroSchema());
+                }
+                _avroSchema = Schema.createUnion(unionSchemas);
+                _overridden = true;
+            } catch (JsonMappingException jme) {
+                throw new RuntimeException("Failed to build schema", jme);
+            }
         } else {
             _avroSchema = AvroSchemaHelper.initializeRecordSchema(bean);
             _overridden = false;
