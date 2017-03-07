@@ -1709,8 +1709,8 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, start, len);
             }
         }
+        _buffered = new ByteAccumulator(_buffered, typedTag, _currBuffer, ptr, _currStart);
         _currStart = _currPtr = ptr + 10;
-        _buffered = new ByteAccumulator(_buffered, typedTag, _currBuffer, ptr);
     }
 
     /**
@@ -1735,8 +1735,8 @@ public class ProtobufGenerator extends GeneratorBase
             }
         }
         
+        _buffered = new ByteAccumulator(_buffered, -1, _currBuffer, ptr, _currStart);
         _currStart = _currPtr = ptr + 5;
-        _buffered = new ByteAccumulator(_buffered, _currBuffer, ptr);
     }
 
     private final void _finishBuffering() throws IOException
@@ -1745,13 +1745,17 @@ public class ProtobufGenerator extends GeneratorBase
         final int currLen = _currPtr - start;
 
         ByteAccumulator acc = _buffered;
+        final ByteAccumulator child = _buffered;
         acc = acc.finish(_output, _currBuffer, start, currLen);
         _buffered = acc;
         if (acc == null) {
             _currStart = 0;
             _currPtr = 0;
         } else {
-            _currStart = _currPtr;
+            _currStart = child._parentStart;
+            _currPtr = child._prefixOffset;
+            // need to reallocate buffer, otherwise will overwrite
+            _ensureMore();
         }
     }
 
