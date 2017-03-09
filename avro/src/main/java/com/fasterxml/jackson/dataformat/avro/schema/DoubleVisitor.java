@@ -3,15 +3,19 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
 
 public class DoubleVisitor
     extends JsonNumberFormatVisitor.Base
     implements SchemaBuilder
 {
+    protected final JavaType _hint;
     protected JsonParser.NumberType _type;
 
-    public DoubleVisitor() { }
+    public DoubleVisitor(JavaType typeHint) {
+        _hint = typeHint;
+    }
 
     @Override
     public void numberType(JsonParser.NumberType type) {
@@ -25,6 +29,6 @@ public class DoubleVisitor
             //    would require union most likely
             return AvroSchemaHelper.anyNumberSchema();
         }
-        return AvroSchemaHelper.numericAvroSchema(_type);
+        return AvroSchemaHelper.numericAvroSchema(_type, _hint);
     }
 }

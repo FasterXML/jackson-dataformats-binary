@@ -10,6 +10,7 @@ import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.Encoder;
+import org.apache.avro.reflect.Stringable;
 
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -61,44 +62,54 @@ public class NonBSGenericDatumWriter<D>
                 }
             }
         } else if (datum instanceof BigDecimal) {
+            int subOptimal = -1;
             for (int i = 0, len = schemas.size(); i < len; i++) {
-                if (schemas.get(i).getType() == Type.DOUBLE) {
+                if (schemas.get(i).getType() == Type.STRING) {
                     return i;
+                } else if (schemas.get(i).getType() == Type.DOUBLE) {
+                    subOptimal = i;
                 }
+            }
+            if (subOptimal > -1) {
+                return subOptimal;
             }
         }
         // otherwise just default to base impl, stupid as it is...
         return super.resolveUnion(union, datum);
     }
-    /*
-    <<<<<<< HEAD
-    @Override
-    protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-        if ((schema.getType() == Type.DOUBLE) && datum instanceof BigDecimal) {
-            out.writeDouble(((BigDecimal)datum).doubleValue());
-        } else if (schema.getType() == Type.ENUM) {
-            super.write(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
-        } else {
-            super.write(schema, datum, out);
-        }
-    }
-    */
 
     @Override
     protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-        Schema.Type t = schema.getType();
-        if (t == Type.DOUBLE) {
-            if (datum instanceof BigDecimal) {
-                out.writeDouble(((BigDecimal)datum).doubleValue());
+        if (datum instanceof Number) {
+            switch (schema.getType()) {
+            case LONG:
+                super.write(schema, (((Number) datum).longValue()), out);
+                return;
+            case INT:
+                super.write(schema, (((Number) datum).intValue()), out);
+                return;
+            case FLOAT:
+                super.write(schema, (((Number) datum).floatValue()), out);
+                return;
+            case DOUBLE:
+                super.write(schema, (((Number) datum).doubleValue()), out);
+                return;
+            case STRING:
+                super.write(schema, datum.toString(), out);
                 return;
             }
-        } else if (t == Type.ENUM) {
+        }
+        // Handle stringable classes
+        if (schema.getType() == Type.STRING && datum != null && datum.getClass().getAnnotation(Stringable.class) != null) {
+            super.write(schema, datum.toString(), out);
+            return;
+        } else if (schema.getType() == Type.ENUM) {
             super.write(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
             return;
         } else if (datum instanceof String) {
             String str = (String) datum;
             final int len = str.length();
-            if (t == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
+            if (schema.getType() == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
                 ArrayList<Integer> chars = new ArrayList<>(len);
                 for (int i = 0; i < len; ++i) {
                     chars.add((int) str.charAt(i));
@@ -106,7 +117,7 @@ public class NonBSGenericDatumWriter<D>
                 super.write(schema, chars, out);
                 return;
             }
-            if (len == 1 && t == Type.INT) {
+            if (len == 1 && schema.getType() == Type.INT) {
                 super.write(schema, (int) str.charAt(0), out);
                 return;
             }

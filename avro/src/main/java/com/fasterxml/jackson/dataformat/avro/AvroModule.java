@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.avro.Schema;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Module that adds support for handling datatypes specific to the standard
@@ -31,6 +33,7 @@ public class AvroModule extends SimpleModule
     {
         super(PackageVersion.VERSION);
         addSerializer(new SchemaSerializer());
+        addSerializer(File.class, new ToStringSerializer(File.class));
         // 08-Mar-2016, tatu: to fix [dataformat-avro#35], need to prune 'schema' property:
         setSerializerModifier(new AvroSerializerModifier());
     }

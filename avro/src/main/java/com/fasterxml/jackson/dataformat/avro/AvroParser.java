@@ -1,6 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.math.BigDecimal;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
@@ -254,6 +257,17 @@ public abstract class AvroParser extends ParserBase
     
     @Override
     public abstract JsonToken nextToken() throws IOException;
+
+    @Override
+    protected void convertNumberToBigDecimal() throws IOException {
+        // ParserBase uses _textValue instead of _numberDouble for some reason when NR_DOUBLE is set, but _textValue is not set by setNumber()
+        // Catch and use _numberDouble instead
+        if ((_numTypesValid & NR_DOUBLE) != 0 && _textValue == null) {
+            _numberBigDecimal = BigDecimal.valueOf(_numberDouble);
+            return;
+        }
+        super.convertNumberToBigDecimal();
+    }
 
     /*
     /**********************************************************
