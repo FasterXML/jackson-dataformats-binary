@@ -29,20 +29,22 @@ public class ByteAccumulator
     protected Segment _firstSegment, _lastSegment;
 
     protected int _segmentBytes;
+    
+    // used to cache start pointer for nested message's parent
+    protected int _parentStart = 0;
+
+    public ByteAccumulator(ByteAccumulator p, int typedTag,
+            byte[] prefixBuffer, int prefixOffset, int parentStart)
+    {
+    	this(p, typedTag, prefixBuffer, prefixOffset);
+    	this._parentStart = parentStart;
+    }
 
     public ByteAccumulator(ByteAccumulator p, int typedTag,
             byte[] prefixBuffer, int prefixOffset)
     {
         _parent = p;
         _typedTag = typedTag;
-        _prefixBuffer = prefixBuffer;
-        _prefixOffset = prefixOffset;
-    }
-
-    public ByteAccumulator(ByteAccumulator p,
-            byte[] prefixBuffer, int prefixOffset) {
-        _parent = p;
-        _typedTag = -1;
         _prefixBuffer = prefixBuffer;
         _prefixOffset = prefixOffset;
     }
