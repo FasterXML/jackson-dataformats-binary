@@ -13,9 +13,14 @@ import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
-public class NestedMessages {
+public class NestedMessagesTest {
 
-	private static final String PROTO = //
+    private static final String VALUE_A = "value";
+    private static final String VALUE_B = "value-b";
+    private static final String VALUE_C = "valc";
+    private static final String VALUE_SUB_A = "a-value!";
+    
+    private static final String PROTO = //
 			"message TestObject {\n" + //
 					"optional string a = 1;\n" + //
 					"optional TestSub b = 2;\n" + //
@@ -107,25 +112,26 @@ public class NestedMessages {
 			@Override
 			public synchronized void write(byte[] b, int off, int len) {
 				super.write(b, off, len);
-				System.out.println("Off " + off + " len " + len);
+				// override for debug use
 			}
 		};
-		testClass.a = "value";
+		testClass.a = VALUE_A;
 		testClass.b = new TestObject.TestSub();
-		testClass.b.b = "value-b";
-		testClass.b.c = "valc";
+		testClass.b.b = VALUE_B;
+		testClass.b.c = VALUE_C;
 		// if this following row is commented out, test succeeds with old code
 		testClass.b.d = new TestObject.TestSub.TestSubSub();
-		testClass.b.d.a = "a-value!";
+		testClass.b.d.a = VALUE_SUB_A;
 
 		w.writeValue(out, testClass);
 		System.out.println("Size: " + out.size());
 
 		TestObject res = r.readValue(out.toByteArray());
 
-		Assert.assertEquals("value", res.a);
-		Assert.assertEquals("valc", res.b.c);
-		Assert.assertEquals("value-b", res.b.b);
+		Assert.assertEquals(VALUE_A, res.a);
+		Assert.assertEquals(VALUE_C, res.b.c);
+		Assert.assertEquals(VALUE_B, res.b.b);
+		Assert.assertEquals(VALUE_SUB_A, res.b.d.a);
 	}
 
 }

@@ -1742,6 +1742,7 @@ public class ProtobufGenerator extends GeneratorBase
     private final void _finishBuffering() throws IOException
     {
         final int start = _currStart;
+        final int newStart = _currPtr;
         final int currLen = _currPtr - start;
 
         ByteAccumulator acc = _buffered;
@@ -1753,7 +1754,7 @@ public class ProtobufGenerator extends GeneratorBase
             _currPtr = 0;
         } else {
             // need to reposition buffer, otherwise will overwrite
-            _flushBuffer(child._parentStart, child._parentStart-child._prefixOffset, start+currLen);
+            _flushBuffer(child._parentStart, child._prefixOffset-child._parentStart, newStart);
         }
     }
 
