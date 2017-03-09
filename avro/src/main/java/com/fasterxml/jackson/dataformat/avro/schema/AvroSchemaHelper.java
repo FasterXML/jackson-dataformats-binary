@@ -9,6 +9,7 @@ import java.util.*;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
+import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
@@ -197,12 +198,12 @@ public abstract class AvroSchemaHelper
      * needs to have fields added to it.
      */
     public static Schema initializeRecordSchema(BeanDescription bean) {
-        return Schema.createRecord(
+        return addAlias(Schema.createRecord(
             getName(bean.getType()),
             bean.findClassDescription(),
             getNamespace(bean.getType()),
             bean.getType().isTypeOrSubTypeOf(Throwable.class)
-        );
+        ), bean);
     }
 
     /**
@@ -221,7 +222,25 @@ public abstract class AvroSchemaHelper
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
     public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
-        return Schema.createEnum(getName(bean.getType()), bean.findClassDescription(), getNamespace(bean.getType()), values);
+        return addAlias(Schema.createEnum(
+            getName(bean.getType()),
+            bean.findClassDescription(),
+            getNamespace(bean.getType()), values
+        ), bean);
+    }
+
+    /**
+     * Looks for {@link AvroAlias @AvroAlias} on {@code bean} and adds it to {@code schema} if it exists
+     * @param schema Schema to which the alias should be added
+     * @param bean Bean to inspect for type aliases
+     * @return {@code schema}, possibly with an alias added
+     */
+    public static Schema addAlias(Schema schema, BeanDescription bean) {
+        AvroAlias ann = bean.getClassInfo().getAnnotation(AvroAlias.class);
+        if (ann != null) {
+            schema.addAlias(ann.alias(), ann.space().equals(AvroAlias.NULL) ? null : ann.space());
+        }
+        return schema;
     }
 
     /**
