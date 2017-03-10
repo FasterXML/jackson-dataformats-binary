@@ -17,6 +17,10 @@ Modules:
 #15 (avro): Add a way to produce "file" style Avro output
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
+2.8.8 (not yet released)
+
+#54 (protobuf): Some fields are left null
+
 2.8.7 (21-Feb-2017)
 
 #34 (avro): Reading Avro with specified reader and writer schemas
