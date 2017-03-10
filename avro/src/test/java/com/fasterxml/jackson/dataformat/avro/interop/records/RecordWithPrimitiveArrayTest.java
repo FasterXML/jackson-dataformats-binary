@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import lombok.Data;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -10,7 +12,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests serializing primitive array fields on records
  */
-public class RecordWithPrimitiveArrayTest extends InteropTestBase {
+public class RecordWithPrimitiveArrayTest extends InteropTestBase
+{
+    @Before
+    public void setup() {
+        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
+        assumeCompatibleNsForDeser();
+    }
+
     @Data
     public static class TestRecord {
         private byte[]   byteArrayField      = new byte[0];

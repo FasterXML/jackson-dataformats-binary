@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.apache.avro.reflect.Nullable;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +22,8 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * Tests records involving complex value types (Lists, Records, Maps, Enums)
  */
-public class RecordWithComplexTest extends InteropTestBase {
+public class RecordWithComplexTest extends InteropTestBase
+{
     @Data
     @ToString(callSuper = true)
     @EqualsAndHashCode(callSuper = true)
@@ -41,6 +43,13 @@ public class RecordWithComplexTest extends InteropTestBase {
             super(firstValue, secondValue);
             this.next = next;
         }
+    }
+
+    @Before
+    public void setup() {
+        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
+        assumeCompatibleNsForDeser();
+        assumeCompatibleNsForSer();
     }
 
     @Test

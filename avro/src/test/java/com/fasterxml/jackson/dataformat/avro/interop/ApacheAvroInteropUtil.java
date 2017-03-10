@@ -15,7 +15,6 @@ import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectData;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
@@ -38,7 +37,7 @@ public class ApacheAvroInteropUtil {
     /**
      * Functor of {@link #getJacksonSchema(Type)}
      */
-    public static final  Function<Type, Schema>             getJacksonSchema          = new Function<Type, Schema>() {
+    public static final  Function<Type, Schema> getJacksonSchema = new Function<Type, Schema>() {
         @Override
         public Schema apply(Type input) {
             return getJacksonSchema(input);
@@ -48,7 +47,7 @@ public class ApacheAvroInteropUtil {
      * Functor of {@link #jacksonDeserialize(Schema, Type, byte[])} which uses {@link Object} as the target type,
      * requiring the use of native type IDs
      */
-    public static final  BiFunction<Schema, byte[], Object> jacksonDeserializer       = new BiFunction<Schema, byte[], Object>() {
+    public static final  BiFunction<Schema, byte[], Object> jacksonDeserializer = new BiFunction<Schema, byte[], Object>() {
         @Override
         public Object apply(Schema schema, byte[] originalObject) {
             return jacksonDeserialize(schema, Object.class, originalObject);
@@ -57,7 +56,7 @@ public class ApacheAvroInteropUtil {
     /**
      * Functor of {@link #getApacheSchema(Type)}
      */
-    public static final  Function<Type, Schema>             getApacheSchema           = new Function<Type, Schema>() {
+    public static final  Function<Type, Schema> getApacheSchema = new Function<Type, Schema>() {
         @Override
         public Schema apply(Type input) {
             return getApacheSchema(input);
@@ -66,7 +65,7 @@ public class ApacheAvroInteropUtil {
     /**
      * Functor of {@link #apacheDeserialize(Schema, byte[])}
      */
-    public static final  BiFunction<Schema, byte[], Object> apacheDeserializer        = new BiFunction<Schema, byte[], Object>() {
+    public static final  BiFunction<Schema, byte[], Object> apacheDeserializer = new BiFunction<Schema, byte[], Object>() {
         @Override
         public Object apply(Schema first, byte[] second) {
             return apacheDeserialize(first, second);
@@ -75,7 +74,7 @@ public class ApacheAvroInteropUtil {
     /**
      * Functor of {@link #apacheSerialize(Schema, Object)}
      */
-    public static final  BiFunction<Schema, Object, byte[]> apacheSerializer          = new BiFunction<Schema, Object, byte[]>() {
+    public static final  BiFunction<Schema, Object, byte[]> apacheSerializer = new BiFunction<Schema, Object, byte[]>() {
         @Override
         public byte[] apply(Schema schema, Object originalObject) {
             return apacheSerialize(schema, originalObject);
@@ -93,8 +92,7 @@ public class ApacheAvroInteropUtil {
         @SuppressWarnings({"unchecked", "SuspiciousMethodCalls", "rawtypes"})
         @Override
         protected Schema createSchema(Type type, Map<String, Schema> names) {
-        /*
-         * Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String
+        /* Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String
          * keys. To persist and look up type variable information, we watch for ParameterizedTypes, TypeVariables, and Classes with
          * generic superclasses to extract type variable information and store it in the map. This allows full type variable resolution
          * when building a schema from reflection data.

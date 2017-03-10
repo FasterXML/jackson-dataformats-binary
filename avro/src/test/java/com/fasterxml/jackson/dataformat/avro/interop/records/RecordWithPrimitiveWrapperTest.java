@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import lombok.Data;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -10,7 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests serializing wrapper types for primitives on records
  */
-public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
+public class RecordWithPrimitiveWrapperTest extends InteropTestBase
+{
     @Data
     public static class TestRecord {
         private Byte      byteField      = 0;
@@ -23,13 +26,17 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase {
         private String    stringField    = "";
     }
 
+    @Before
+    public void setup() {
+        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
+        assumeCompatibleNsForDeser();
+    }
+    
     @Test
     public void testByteField() {
         TestRecord record = new TestRecord();
         record.byteField = Byte.MAX_VALUE;
-        //
         TestRecord result = roundTrip(record);
-        //
         assertThat(result.byteField).isEqualTo(record.byteField);
     }
 

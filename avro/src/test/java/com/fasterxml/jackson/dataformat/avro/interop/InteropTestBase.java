@@ -5,10 +5,8 @@ import java.lang.reflect.Type;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.avro.Schema;
+import org.junit.Assume;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -20,7 +18,22 @@ import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUti
  * interoperability between the implementations.
  */
 @RunWith(Parameterized.class)
-public abstract class InteropTestBase {
+public abstract class InteropTestBase
+{
+    // To work around 2.8/2.9 difference wrt namespaces for enums
+    // See [dataformats-binary#58] for details
+    protected void assumeCompatibleNsForDeser() {
+        Assume.assumeTrue(deserializeFunctor != ApacheAvroInteropUtil.apacheDeserializer
+                || schemaFunctor != ApacheAvroInteropUtil.getJacksonSchema);
+    }
+
+    // To work around 2.8/2.9 difference wrt namespaces for enums
+    // See [dataformats-binary#58] for details
+    protected void assumeCompatibleNsForSer() {
+        Assume.assumeTrue(serializeFunctor != ApacheAvroInteropUtil.apacheSerializer
+                || schemaFunctor != ApacheAvroInteropUtil.getJacksonSchema);
+    }
+
     /**
      * Helper method for building a {@link ParameterizedType} for use with {@link #roundTrip(Type, Object)}
      *
@@ -155,13 +168,32 @@ public abstract class InteropTestBase {
         NORTH, SOUTH, EAST, WEST
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class DummyRecord {
         @JsonProperty(required = true)
         private String firstValue;
         @JsonProperty(required = true)
         private int secondValue;
+
+        public DummyRecord(String f, int s) {
+            firstValue = f;
+            secondValue = s;
+        }
+        protected DummyRecord() { }
+
+        public String getFirstValue() { return firstValue; }
+        public int getSecondValue() { return secondValue; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || !(o instanceof DummyRecord)) return false;
+            DummyRecord other = (DummyRecord) o;
+            if (other.secondValue == secondValue) {
+                if (firstValue == null) {
+                    return other.firstValue == null;
+                }
+                return firstValue.equals(other.firstValue);
+            }
+            return false;
+        }
     }
 }

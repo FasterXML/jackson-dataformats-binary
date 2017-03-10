@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.maps;
 
 import java.util.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -12,7 +13,13 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * Tests Maps involving complex value types (Lists, Records, Maps, Enums)
  */
-public class MapWithComplexTest extends InteropTestBase {
+public class MapWithComplexTest extends InteropTestBase
+{
+    @Before
+    public void setup() {
+        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
+        assumeCompatibleNsForDeser();
+    }
 
     @Test
     public void testMapWithRecordValues() {
