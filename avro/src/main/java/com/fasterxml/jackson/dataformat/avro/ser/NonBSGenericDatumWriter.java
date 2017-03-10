@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,6 @@ import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.Encoder;
-import org.apache.avro.reflect.Stringable;
 
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -23,11 +23,11 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 public class NonBSGenericDatumWriter<D>
 	extends GenericDatumWriter<D>
 {
-	private static final GenericData GENERIC_DATA = GenericData.get();
+    private static final GenericData GENERIC_DATA = GenericData.get();
 
-	public NonBSGenericDatumWriter(Schema root) {
-		super(root);
-	}
+    public NonBSGenericDatumWriter(Schema root) {
+	super(root);
+    }
 
     @Override
     public int resolveUnion(Schema union, Object datum) {
@@ -54,7 +54,7 @@ public class NonBSGenericDatumWriter<D>
                     // Avro distinguishes between String and char[], whereas Jackson doesn't
                     // Check if the schema is expecting a char[] and handle appropriately
                     if (s.getElementType().getType() == Type.INT && Character.class
-                    .getName().equals(s.getElementType().getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))) {
+			    .getName().equals(s.getElementType().getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))) {
                         return i;
                     }
                     break;
@@ -81,52 +81,52 @@ public class NonBSGenericDatumWriter<D>
 
     @Override
     protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-        if (schema.getType() == Type.ENUM) {
-            super.write(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
+        Type t = schema.getType();
+        if (t == Type.ENUM) {
+            super.writeWithoutConversion(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
             return;
         }
         if (datum instanceof String) {
             String str = (String) datum;
             final int len = str.length();
-            if (schema.getType() == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
+            if (t == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
                 ArrayList<Integer> chars = new ArrayList<>(len);
                 for (int i = 0; i < len; ++i) {
                     chars.add((int) str.charAt(i));
                 }
-                super.write(schema, chars, out);
+                super.writeWithoutConversion(schema, chars, out);
                 return;
             }
-            if (len == 1 && schema.getType() == Type.INT) {
-                super.write(schema, (int) str.charAt(0), out);
+            if (len == 1 && t == Type.INT) {
+                super.writeWithoutConversion(schema, (int) str.charAt(0), out);
                 return;
             }
         }
-        if (datum instanceof Number) {
-            Number n = (Number) datum;
-            switch (schema.getType()) {
-            case LONG:
-                super.write(schema, n.longValue(), out);
-                return;
-            case INT:
-                super.write(schema, n.intValue(), out);
-                return;
-            case FLOAT:
-                super.write(schema, n.floatValue(), out);
+        // 09-Mar-2017, tatu: BigDecimal and BigInteger written using various
+        //    possible representations so... 
+        if (datum instanceof BigDecimal) {
+            switch (t) {
+            case STRING:
+                super.writeWithoutConversion(schema, datum.toString(), out);
                 return;
             case DOUBLE:
-                super.write(schema, n.doubleValue(), out);
-                return;
-            case STRING:
-                super.write(schema, datum.toString(), out);
+                super.writeWithoutConversion(schema, ((Number) datum).doubleValue(), out);
                 return;
             default:
             }
         }
-        // Handle stringable classes
-        if (schema.getType() == Type.STRING && datum != null && datum.getClass().getAnnotation(Stringable.class) != null) {
-            super.write(schema, datum.toString(), out);
-            return;
+        if (datum instanceof BigInteger) {
+            switch (t) {
+            case STRING:
+                super.writeWithoutConversion(schema, datum.toString(), out);
+                return;
+            case LONG:
+                super.writeWithoutConversion(schema, ((Number) datum).longValue(), out);
+                return;
+            default:
+            }
         }
-        super.write(schema, datum, out);
+        super.writeWithoutConversion(schema, datum, out);
+//        super.write(schema, datum, out);
     }
 }
