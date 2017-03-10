@@ -85,21 +85,24 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
 
     @Override
     public JsonCreator.Mode findCreatorAnnotation(MapperConfig<?> config, Annotated a) {
-        AnnotatedConstructor constructor = a instanceof AnnotatedConstructor ? (AnnotatedConstructor) a : null;
-        AnnotatedClass parentClass =
-            a instanceof AnnotatedConstructor && ((AnnotatedConstructor) a).getTypeContext() instanceof AnnotatedClass
-            ? (AnnotatedClass) ((AnnotatedConstructor) a).getTypeContext()
-            : null;
-        if (constructor != null && parentClass != null && parentClass.hasAnnotation(Stringable.class)
-            && constructor.getParameterCount() == 1 && String.class.equals(constructor.getRawParameterType(0))) {
-            return JsonCreator.Mode.DELEGATING;
+        if (a instanceof AnnotatedConstructor) {
+            AnnotatedConstructor constructor = (AnnotatedConstructor) a;
+            // 09-Mar-2017, tatu: Ideally would allow mix-ins etc, but for now let's take
+            //   a short-cut here:
+            Class<?> declClass = constructor.getDeclaringClass();
+            if (declClass.getAnnotation(Stringable.class) != null) {
+                 if (constructor.getParameterCount() == 1
+                         && String.class.equals(constructor.getRawParameterType(0))) {
+                     return JsonCreator.Mode.DELEGATING;
+                 }
+            }
         }
         return null;
     }
 
     @Override
     public Object findSerializer(Annotated a) {
-        if (a instanceof AnnotatedClass && a.hasAnnotation(Stringable.class)) {
+        if (a.hasAnnotation(Stringable.class)) {
             return ToStringSerializer.class;
         }
         return null;

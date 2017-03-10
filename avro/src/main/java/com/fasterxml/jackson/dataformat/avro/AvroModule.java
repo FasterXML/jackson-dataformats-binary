@@ -33,6 +33,7 @@ public class AvroModule extends SimpleModule
     {
         super(PackageVersion.VERSION);
         addSerializer(new SchemaSerializer());
+        // 09-Mar-2017, tatu: As per [dataformats-binary#57], require simple serialization?
         addSerializer(File.class, new ToStringSerializer(File.class));
         // 08-Mar-2016, tatu: to fix [dataformat-avro#35], need to prune 'schema' property:
         setSerializerModifier(new AvroSerializerModifier());

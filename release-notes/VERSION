@@ -15,6 +15,7 @@ Modules:
 #14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`
  (contributed by baharclerode@github)
 #15 (avro): Add a way to produce "file" style Avro output
+#57 (avro): Add support for @Stringable annotation
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
 2.8.8 (not yet released)

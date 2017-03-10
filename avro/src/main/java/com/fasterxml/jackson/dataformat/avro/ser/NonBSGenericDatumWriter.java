@@ -66,7 +66,8 @@ public class NonBSGenericDatumWriter<D>
             for (int i = 0, len = schemas.size(); i < len; i++) {
                 if (schemas.get(i).getType() == Type.STRING) {
                     return i;
-                } else if (schemas.get(i).getType() == Type.DOUBLE) {
+                }
+                if (schemas.get(i).getType() == Type.DOUBLE) {
                     subOptimal = i;
                 }
             }
@@ -80,33 +81,11 @@ public class NonBSGenericDatumWriter<D>
 
     @Override
     protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-        if (datum instanceof Number) {
-            switch (schema.getType()) {
-            case LONG:
-                super.write(schema, (((Number) datum).longValue()), out);
-                return;
-            case INT:
-                super.write(schema, (((Number) datum).intValue()), out);
-                return;
-            case FLOAT:
-                super.write(schema, (((Number) datum).floatValue()), out);
-                return;
-            case DOUBLE:
-                super.write(schema, (((Number) datum).doubleValue()), out);
-                return;
-            case STRING:
-                super.write(schema, datum.toString(), out);
-                return;
-            }
-        }
-        // Handle stringable classes
-        if (schema.getType() == Type.STRING && datum != null && datum.getClass().getAnnotation(Stringable.class) != null) {
-            super.write(schema, datum.toString(), out);
-            return;
-        } else if (schema.getType() == Type.ENUM) {
+        if (schema.getType() == Type.ENUM) {
             super.write(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
             return;
-        } else if (datum instanceof String) {
+        }
+        if (datum instanceof String) {
             String str = (String) datum;
             final int len = str.length();
             if (schema.getType() == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
@@ -121,6 +100,32 @@ public class NonBSGenericDatumWriter<D>
                 super.write(schema, (int) str.charAt(0), out);
                 return;
             }
+        }
+        if (datum instanceof Number) {
+            Number n = (Number) datum;
+            switch (schema.getType()) {
+            case LONG:
+                super.write(schema, n.longValue(), out);
+                return;
+            case INT:
+                super.write(schema, n.intValue(), out);
+                return;
+            case FLOAT:
+                super.write(schema, n.floatValue(), out);
+                return;
+            case DOUBLE:
+                super.write(schema, n.doubleValue(), out);
+                return;
+            case STRING:
+                super.write(schema, datum.toString(), out);
+                return;
+            default:
+            }
+        }
+        // Handle stringable classes
+        if (schema.getType() == Type.STRING && datum != null && datum.getClass().getAnnotation(Stringable.class) != null) {
+            super.write(schema, datum.toString(), out);
+            return;
         }
         super.write(schema, datum, out);
     }
