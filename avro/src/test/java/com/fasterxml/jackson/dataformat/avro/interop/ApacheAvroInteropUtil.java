@@ -92,8 +92,7 @@ public class ApacheAvroInteropUtil {
         @SuppressWarnings({"unchecked", "SuspiciousMethodCalls", "rawtypes"})
         @Override
         protected Schema createSchema(Type type, Map<String, Schema> names) {
-        /*
-         * Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String
+        /* Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String
          * keys. To persist and look up type variable information, we watch for ParameterizedTypes, TypeVariables, and Classes with
          * generic superclasses to extract type variable information and store it in the map. This allows full type variable resolution
          * when building a schema from reflection data.

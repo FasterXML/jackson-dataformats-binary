@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.avro.AvroTypeException;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -17,7 +19,15 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * Tests records involving complex value types (Lists, Records, Maps, Enums)
  */
-public class RecordWithComplexTest extends InteropTestBase {
+public class RecordWithComplexTest extends InteropTestBase
+{
+    @Before
+    public void setup() {
+        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
+        assumeCompatibleNsForDeser();
+        assumeCompatibleNsForSer();
+    }
+
     @Test
     public void testEmptyRecordWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();

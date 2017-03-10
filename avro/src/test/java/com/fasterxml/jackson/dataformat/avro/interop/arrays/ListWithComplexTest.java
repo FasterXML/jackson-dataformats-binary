@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
@@ -17,7 +18,14 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * Tests lists involving complex element types (Lists, Records, Maps, Enums)
  */
-public class ListWithComplexTest extends InteropTestBase {
+public class ListWithComplexTest extends InteropTestBase
+{
+    @Before
+    public void setup() {
+        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
+        assumeCompatibleNsForDeser();
+    }
+
     @Test
     public void testEmptyListWithRecordElements() throws IOException {
         List<DummyRecord> original = new ArrayList<>();

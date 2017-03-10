@@ -5,10 +5,18 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.apache.avro.Schema;
+import org.junit.Assume;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.*;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.apacheDeserializer;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.apacheSerializer;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserializer;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonSerializer;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getApacheSchema;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getJacksonSchema;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.Function;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.BiFunction;
 
 /**
  * Parameterized base class for tests that populates {@link #schemaFunctor}, {@link #serializeFunctor}, and
@@ -16,7 +24,26 @@ import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUti
  * interoperability between the implementations.
  */
 @RunWith(Parameterized.class)
-public abstract class InteropTestBase {
+public abstract class InteropTestBase
+{
+    public enum DummyEnum {
+        NORTH, SOUTH, EAST, WEST
+    }
+
+    // To work around 2.8/2.9 difference wrt namespaces for enums
+    // See [dataformats-binary#58] for details
+    protected void assumeCompatibleNsForDeser() {
+        Assume.assumeTrue(deserializeFunctor != apacheDeserializer
+                || schemaFunctor != ApacheAvroInteropUtil.getJacksonSchema);
+    }
+
+    // To work around 2.8/2.9 difference wrt namespaces for enums
+    // See [dataformats-binary#58] for details
+    protected void assumeCompatibleNsForSer() {
+        Assume.assumeTrue(serializeFunctor != apacheSerializer
+                || schemaFunctor != ApacheAvroInteropUtil.getJacksonSchema);
+    }
+
     /**
      * Helper method for building a {@link ParameterizedType} for use with {@link #roundTrip(Type, Object)}
      *
@@ -85,13 +112,13 @@ public abstract class InteropTestBase {
     }
 
     @Parameterized.Parameter
-    public Function<Type, Schema>             schemaFunctor;
+    public Function<Type, Schema> schemaFunctor;
     @Parameterized.Parameter(1)
     public BiFunction<Schema, Object, byte[]> serializeFunctor;
     @Parameterized.Parameter(2)
     public BiFunction<Schema, byte[], Object> deserializeFunctor;
     @Parameterized.Parameter(3)
-    public String                             combinationName;
+    public String combinationName;
 
     @Parameterized.Parameters(name = "{3}")
     public static Object[][] getParameters() {
@@ -141,13 +168,9 @@ public abstract class InteropTestBase {
     protected <T> T roundTrip(Type schemaType, T object) throws IOException {
         Schema schema = schemaFunctor.apply(schemaType);
         // Temporary hack until jackson supports native type Ids and we don't need to give it a target type
-        if (deserializeFunctor == jacksonDeserializer) {
-            return jacksonDeserialize(schema, schemaType, serializeFunctor.apply(schema, object));
+        if (deserializeFunctor == ApacheAvroInteropUtil.jacksonDeserializer) {
+            return ApacheAvroInteropUtil.jacksonDeserialize(schema, schemaType, serializeFunctor.apply(schema, object));
         }
         return (T) deserializeFunctor.apply(schema, serializeFunctor.apply(schema, object));
-    }
-
-    public enum DummyEnum {
-        NORTH, SOUTH, EAST, WEST
     }
 }

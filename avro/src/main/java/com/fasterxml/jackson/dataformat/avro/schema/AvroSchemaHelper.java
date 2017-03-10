@@ -79,7 +79,8 @@ public abstract class AvroSchemaHelper
 
     protected static String getNamespace(JavaType type) {
         Class<?> cls = type.getRawClass();
-        // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`
+        // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`;
+        //   NOTE: was revert in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
         if (enclosing != null) {
             return enclosing.getName() + "$";
@@ -87,7 +88,7 @@ public abstract class AvroSchemaHelper
         Package pkg = cls.getPackage();
         return (pkg == null) ? "" : pkg.getName();
     }
-    
+
     protected static String getName(JavaType type) {
         String name = type.getRawClass().getSimpleName();
         // Alas, some characters not accepted...
@@ -96,7 +97,7 @@ public abstract class AvroSchemaHelper
         }
         return name;
     }
-    
+
     protected static Schema unionWithNull(Schema otherSchema)
     {
         List<Schema> schemas = new ArrayList<Schema>();
