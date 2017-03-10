@@ -21,7 +21,12 @@ abstractions.
   </properties>
 
   <dependencies>
-    <!--  Hmmh. Need databind for Avro Schema generation... -->
+    <!--  Hmmh. Need annotations for introspection... -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+    <!--  and databind for Avro Schema generation... -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -32,14 +37,7 @@ abstractions.
       <version>1.8.1</version>
     </dependency>
 
-     <!-- and for testing we need annotations -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- plus logback -->
+    <!-- and for testing we need logback -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>

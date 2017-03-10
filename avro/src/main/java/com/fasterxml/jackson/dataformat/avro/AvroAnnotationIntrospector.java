@@ -5,12 +5,16 @@ import java.util.List;
 
 import org.apache.avro.reflect.*;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
  * <ul>
@@ -20,6 +24,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
  *     define default value for generated Schemas
  *   </li>
  * <li>{@link Nullable @Nullable} - Alias for <code>JsonProperty(required = false)</code></li>
+ * <li>{@link Stringable @Stringable} - Alias for <code>JsonCreator</code> on the constructor and <code>JsonValue</code> on
+ * the {@link #toString()} method. </li>
  * </ul>
  *
  * @since 2.9
@@ -73,6 +79,28 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     public Boolean hasRequiredMarker(AnnotatedMember m) {
         if (_hasAnnotation(m, Nullable.class)) {
             return false;
+        }
+        return null;
+    }
+
+    @Override
+    public JsonCreator.Mode findCreatorAnnotation(MapperConfig<?> config, Annotated a) {
+        AnnotatedConstructor constructor = a instanceof AnnotatedConstructor ? (AnnotatedConstructor) a : null;
+        AnnotatedClass parentClass =
+            a instanceof AnnotatedConstructor && ((AnnotatedConstructor) a).getTypeContext() instanceof AnnotatedClass
+            ? (AnnotatedClass) ((AnnotatedConstructor) a).getTypeContext()
+            : null;
+        if (constructor != null && parentClass != null && parentClass.hasAnnotation(Stringable.class)
+            && constructor.getParameterCount() == 1 && String.class.equals(constructor.getRawParameterType(0))) {
+            return JsonCreator.Mode.DELEGATING;
+        }
+        return null;
+    }
+
+    @Override
+    public Object findSerializer(Annotated a) {
+        if (a instanceof AnnotatedClass && a.hasAnnotation(Stringable.class)) {
+            return ToStringSerializer.class;
         }
         return null;
     }

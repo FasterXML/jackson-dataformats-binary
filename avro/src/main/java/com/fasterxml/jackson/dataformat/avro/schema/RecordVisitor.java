@@ -81,10 +81,6 @@ public class RecordVisitor
             return;
         }
         _fields.add(schemaFieldForWriter(writer, false));
-        /*
-        Schema schema = schemaForWriter(writer);        
-        _fields.add(_field(writer, schema));
-        */
     }
 
     @Override
@@ -274,7 +270,7 @@ public class RecordVisitor
         }
         if (matchingIndex != null) {
             types.add(0, types.remove((int)matchingIndex));
-            Map<String, JsonNode> jsonProps = schema.getJsonProps();
+            Map<String, Object> jsonProps = schema.getObjectProps();
             schema = Schema.createUnion(types);
             // copy any properties over
             for (String property : jsonProps.keySet()) {

@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.util.*;
 
 import org.apache.avro.Schema;
+import org.apache.avro.util.internal.JacksonUtils;
 
 import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
@@ -329,8 +330,8 @@ public abstract class AvroReaderFactory
             // Any defaults to consider?
             if (!defaultFields.isEmpty()) {
                 for (Schema.Field defaultField : defaultFields) {
-                    AvroFieldReader fr = AvroFieldDefaulters.createDefaulter(defaultField.name(),
-                            defaultField.defaultValue());
+                    AvroFieldReader fr =
+                        AvroFieldDefaulters.createDefaulter(defaultField.name(), JacksonUtils.toJsonNode(defaultField.defaultVal()));
                     if (fr == null) {
                         throw new IllegalArgumentException("Unsupported default type: "+defaultField.schema().getType());
                     }

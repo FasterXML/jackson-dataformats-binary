@@ -1,10 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
-import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
-
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroDefault;
 import org.junit.Test;
+
+import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +23,7 @@ public class AvroDefaultTest {
         Schema apacheSchema = ApacheAvroInteropUtil.getApacheSchema(RecordWithDefaults.class);
         Schema jacksonSchema = ApacheAvroInteropUtil.getJacksonSchema(RecordWithDefaults.class);
         //
-        assertThat(jacksonSchema.getField("booleanField").defaultValue()).isEqualTo(apacheSchema.getField("booleanField").defaultValue());
+        assertThat(jacksonSchema.getField("booleanField").defaultVal()).isEqualTo(apacheSchema.getField("booleanField").defaultVal());
     }
 
     @Test
@@ -31,7 +31,7 @@ public class AvroDefaultTest {
         Schema apacheSchema = ApacheAvroInteropUtil.getApacheSchema(RecordWithDefaults.class);
         Schema jacksonSchema = ApacheAvroInteropUtil.getJacksonSchema(RecordWithDefaults.class);
         //
-        assertThat(jacksonSchema.getField("intField").defaultValue()).isEqualTo(apacheSchema.getField("intField").defaultValue());
+        assertThat(jacksonSchema.getField("intField").defaultVal()).isEqualTo(apacheSchema.getField("intField").defaultVal());
     }
 
     @Test
@@ -39,6 +39,6 @@ public class AvroDefaultTest {
         Schema apacheSchema = ApacheAvroInteropUtil.getApacheSchema(RecordWithDefaults.class);
         Schema jacksonSchema = ApacheAvroInteropUtil.getJacksonSchema(RecordWithDefaults.class);
         //
-        assertThat(jacksonSchema.getField("stringField").defaultValue()).isEqualTo(apacheSchema.getField("stringField").defaultValue());
+        assertThat(jacksonSchema.getField("stringField").defaultVal()).isEqualTo(apacheSchema.getField("stringField").defaultVal());
     }
 }
