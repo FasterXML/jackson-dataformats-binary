@@ -138,9 +138,9 @@ public class NumberParsingTest
 
     public void testArrayWithInts() throws IOException
     {
-    	byte[] data = _smileDoc("[ 1, 0, -1, 255, -999, "
-    			+Integer.MIN_VALUE+","+Integer.MAX_VALUE+","
-    			+Long.MIN_VALUE+", "+Long.MAX_VALUE+" ]");
+        byte[] data = _smileDoc("[ 1, 0, -1, 255, -999, "
+                +Integer.MIN_VALUE+","+Integer.MAX_VALUE+","
+                +Long.MIN_VALUE+", "+Long.MAX_VALUE+" ]");
     	SmileParser p = _smileParser(data);
     	assertNull(p.getCurrentToken());
     	assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -182,60 +182,74 @@ public class NumberParsingTest
 
     public void testFloats() throws IOException
     {
-    	ByteArrayOutputStream bo = new ByteArrayOutputStream();
-    	SmileGenerator g = smileGenerator(bo, false);
-    	float value = 0.37f;
-    	g.writeNumber(value);
-    	g.close();
-    	byte[] data = bo.toByteArray();
-    	assertEquals(6, data.length);
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        float value = 0.37f;
+        g.writeNumber(value);
+        g.close();
+        byte[] data = bo.toByteArray();
+        assertEquals(6, data.length);
 
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
-    	assertEquals(value, p.getFloatValue());
-     p.close();
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertFalse(p.isNaN());
+        assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
+        assertEquals(value, p.getFloatValue());
+        p.close();
     }
 
     public void testDoubles() throws IOException
     {
-    	ByteArrayOutputStream bo = new ByteArrayOutputStream();
-    	SmileGenerator g = smileGenerator(bo, false);
-    	double value = -12.0986;
-    	g.writeNumber(value);
-    	g.close();
-    	byte[] data = bo.toByteArray();
-    	assertEquals(11, data.length);
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        double value = -12.0986;
+        g.writeNumber(value);
+        g.close();
+        byte[] data = bo.toByteArray();
+        assertEquals(11, data.length);
 
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
-    	assertEquals(value, p.getDoubleValue());
-     p.close();
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertFalse(p.isNaN());
+        assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
+        assertEquals(value, p.getDoubleValue());
+        p.close();
     }
-
+    
     public void testArrayWithDoubles() throws IOException
     {
-    	ByteArrayOutputStream bo = new ByteArrayOutputStream();
-    	SmileGenerator g = smileGenerator(bo, false);
-    	g.writeStartArray();
-    	g.writeNumber(0.1f);
-    	g.writeNumber(0.333);
-    	g.writeEndArray();
-    	g.close();
-    	byte[] data = bo.toByteArray();
-    	assertEquals(19, data.length);
+        final double[] values = new double[] {
+                0.1,
+                0.333,
+                Double.POSITIVE_INFINITY,
+                Double.NaN,
+                -2.5,
+                Double.NEGATIVE_INFINITY
+        };
+        
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeStartArray();
+        for (double d : values) {
+            g.writeNumber(d);
+        }
+        g.close();
 
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.START_ARRAY, p.nextToken());
-    	assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
-    	assertEquals(0.1f, p.getFloatValue());
-    	assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
-    	assertEquals(0.333, p.getDoubleValue());
-    	assertToken(JsonToken.END_ARRAY, p.nextToken());
-     p.close();
+        byte[] data = bo.toByteArray();
+        // 10 bytes per double, array start, end
+//        assertEquals(2 + values.length * 10, data.length);
+
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        for (double exp : values) {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            boolean expNaN = Double.isNaN(exp) || Double.isInfinite(exp);
+            assertEquals(exp, p.getDoubleValue());
+            assertEquals(expNaN, p.isNaN());
+        }
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        assertNull(p.nextToken());
+        p.close();
     }
 
     public void testObjectWithDoubles() throws IOException
