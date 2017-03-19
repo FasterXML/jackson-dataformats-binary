@@ -28,7 +28,7 @@ import static org.junit.Assume.assumeTrue;
 /**
  * Tests support for using classes marked {@link Stringable @Stringable} as map keys. These classes must have a constructor which accepts a
  * single string as an argument, and their {@link #toString()} must return a serialized version of the object that can be passed back into
- * the constructor to recreate it. In addition, Avro considers the following classes {@link SpecificData#stringableClasses stringable by
+ * the constructor to recreate it. In addition, Avro considers the following classes {@link SpecificData#stringableClasses} stringable by
  * default}:
  * <ul>
  * <li>{@link File}</li>
@@ -55,13 +55,17 @@ public class StringableTest extends InteropTestBase {
     }
 
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     static class BigNumberWrapper {
         @AvroSchema("\"double\"")
         private BigDecimal bigDecimal;
         @AvroSchema("\"long\"")
         private BigInteger bigInteger;
+
+        protected BigNumberWrapper() { }
+        public BigNumberWrapper(BigDecimal d1, BigInteger i2) {
+            bigDecimal = d1;
+            bigInteger = i2;
+        }
     }
 
     @Test
