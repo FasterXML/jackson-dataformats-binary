@@ -8,9 +8,9 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 public abstract class AvroTestBase extends TestCase
 {
@@ -61,7 +61,7 @@ public abstract class AvroTestBase extends TestCase
     /**********************************************************
      */
 
-    protected static class Employee
+    public static class Employee
     {
         public Employee() { }
 
