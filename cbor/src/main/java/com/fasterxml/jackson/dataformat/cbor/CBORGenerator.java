@@ -14,7 +14,7 @@ import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
 /**
  * {@link JsonGenerator} implementation that writes CBOR encoded content.
- * 
+ *
  * @author Tatu Saloranta
  */
 public class CBORGenerator extends GeneratorBase
@@ -183,18 +183,18 @@ public class CBORGenerator extends GeneratorBase
     /* Tracking of remaining elements to write
     /**********************************************************
      */
-    
+
     protected int[] _elementCounts = NO_INTS;
 
     protected int _elementCountsPtr;
-    
+
     /**
      * Number of elements remaining in the current complex structure (if any),
      * when writing defined-length Arrays, Objects; marker {@link #INDEFINITE_LENGTH}
      * otherwise.
      */
     protected int _currentRemainingElements = INDEFINITE_LENGTH;
-    
+
     /*
     /**********************************************************
     /* Shared String detection
@@ -490,7 +490,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("start an array");
         _writeContext = _writeContext.createChildArrayContext();
         if (_elementCountsPtr > 0) {
-            _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+            _pushRemainingElements();
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_ARRAY_INDEFINITE);
@@ -505,10 +505,7 @@ public class CBORGenerator extends GeneratorBase
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
         _writeContext = _writeContext.createChildArrayContext();
-        if (_elementCounts.length == _elementCountsPtr) { // initially, as well as if full
-            _elementCounts = Arrays.copyOf(_elementCounts, _elementCounts.length+10);
-        }
-        _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+        _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
     }
@@ -527,7 +524,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("start an object");
         _writeContext = _writeContext.createChildObjectContext();
         if (_elementCountsPtr > 0) {
-            _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+            _pushRemainingElements();
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_OBJECT_INDEFINITE);
@@ -543,7 +540,7 @@ public class CBORGenerator extends GeneratorBase
             ctxt.setCurrentValue(forValue);
         }
         if (_elementCountsPtr > 0) {
-            _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+            _pushRemainingElements();
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_OBJECT_INDEFINITE);
@@ -552,10 +549,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStartObject(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
         _writeContext = _writeContext.createChildObjectContext();
-        if (_elementCounts.length == _elementCountsPtr) { // initially, as well as if full
-            _elementCounts = Arrays.copyOf(_elementCounts, _elementCounts.length+10);
-        }
-        _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
+        _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
     }
@@ -603,6 +597,14 @@ public class CBORGenerator extends GeneratorBase
         for (int i = offset, end = offset+length; i < end; ++i) {
             _writeNumberNoCheck(array[i]);
         }
+    }
+
+    // @since 2.8.8
+    private final void _pushRemainingElements() {
+        if (_elementCounts.length == _elementCountsPtr) { // initially, as well as if full
+            _elementCounts = Arrays.copyOf(_elementCounts, _elementCounts.length+10);
+        }
+        _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
     }
 
     private final void _writeNumberNoCheck(int i) throws IOException {
