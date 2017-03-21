@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_END_OF_STRING;
