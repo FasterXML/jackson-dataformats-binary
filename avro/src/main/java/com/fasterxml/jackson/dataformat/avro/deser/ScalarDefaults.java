@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 /**
  * Container for various {@link ScalarDecoder} implementations that are
@@ -13,8 +14,8 @@ public class ScalarDefaults
     protected abstract static class DefaultsBase
         extends AvroFieldReader
     {
-        protected DefaultsBase(String name) {
-            super(name, false); // false -> not skip-only
+        protected DefaultsBase(String name, String typeId) {
+            super(name, false, typeId); // false -> not skip-only
         }
 
         @Override
@@ -32,7 +33,7 @@ public class ScalarDefaults
         protected final JsonToken _defaults;
 
         public BooleanDefaults(String name, boolean v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(boolean.class));
             _defaults = v ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
         }
 
@@ -47,7 +48,7 @@ public class ScalarDefaults
         protected final String _defaults;
 
         public StringDefaults(String name, String v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(String.class));
             _defaults = v;
         }
 
@@ -62,7 +63,7 @@ public class ScalarDefaults
         protected final byte[] _defaults;
 
         public BytesDefaults(String name, byte[] v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(byte[].class));
             _defaults = v;
         }
 
@@ -77,7 +78,7 @@ public class ScalarDefaults
         protected final double _defaults;
 
         public DoubleDefaults(String name, double v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(double.class));
             _defaults = v;
         }
 
@@ -92,7 +93,7 @@ public class ScalarDefaults
         protected final float _defaults;
 
         public FloatDefaults(String name, float v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(float.class));
             _defaults = v;
         }
 
@@ -107,7 +108,7 @@ public class ScalarDefaults
         protected final int _defaults;
 
         public IntDefaults(String name, int v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(int.class));
             _defaults = v;
         }
 
@@ -122,7 +123,7 @@ public class ScalarDefaults
         protected final long _defaults;
 
         public LongDefaults(String name, long v) {
-            super(name);
+            super(name, AvroSchemaHelper.getTypeId(long.class));
             _defaults = v;
         }
 
@@ -135,7 +136,7 @@ public class ScalarDefaults
     protected final static class NullDefaults extends DefaultsBase
     {
         public NullDefaults(String name) {
-            super(name);
+            super(name, null);
         }
 
         @Override

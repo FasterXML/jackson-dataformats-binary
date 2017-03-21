@@ -228,6 +228,16 @@ public abstract class AvroParser extends ParserBase
 
     protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
 
+    @Override
+    public boolean canReadTypeId() {
+        return true;
+    }
+
+    @Override
+    public Object getTypeId() throws IOException {
+        return _avroContext != null ? _avroContext.getTypeId() : null;
+    }
+
     /*
     /**********************************************************
     /* Location info

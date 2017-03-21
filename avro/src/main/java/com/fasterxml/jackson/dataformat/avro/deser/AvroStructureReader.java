@@ -14,8 +14,8 @@ public abstract class AvroStructureReader
 {
     protected JsonToken _currToken;
 
-    protected AvroStructureReader(AvroReadContext parent, int type) {
-        super(parent);
+    protected AvroStructureReader(AvroReadContext parent, int type, String typeId) {
+        super(parent, typeId);
         _type = type;
     }
     

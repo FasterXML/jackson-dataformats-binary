@@ -24,7 +24,7 @@ final class ScalarDecoderWrapper extends AvroStructureReader
     private ScalarDecoderWrapper(AvroReadContext parent,
             AvroParserImpl parser, ScalarDecoder valueDecoder)
     {
-        super(parent, TYPE_ROOT);
+        super(parent, TYPE_ROOT, null);
         _valueDecoder = valueDecoder;
         _parser = parser;
     }
@@ -39,6 +39,11 @@ final class ScalarDecoderWrapper extends AvroStructureReader
     {
         _parser.setAvroContext(getParent());
         return (_currToken = _valueDecoder.decodeValue(_parser));
+    }
+
+    @Override
+    public String getTypeId() {
+        return _valueDecoder.getTypeId();
     }
 
     @Override

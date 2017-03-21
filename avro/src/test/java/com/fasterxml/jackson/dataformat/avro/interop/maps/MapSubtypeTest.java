@@ -26,7 +26,11 @@ public class MapSubtypeTest extends InteropTestBase {
     public void ignoreApacheMapSubtypeBug() {
         // The Apache Avro implementation has a bug that causes all of these tests to fail. Conditionally ignore these tests when running
         // with Apache deserializer implementation
+
+        // Apache ignores any type information for maps
         Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        // Apache doesn't encode type information for maps
+        Assume.assumeTrue(schemaFunctor != getApacheSchema);
     }
 
     @Test

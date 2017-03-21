@@ -52,7 +52,7 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
         }
         Schema schema = Schema.create(Schema.Type.STRING);
         // Stringable classes need to include the type
-        if (AvroSchemaHelper.isStringable(bean.getClassInfo())) {
+        if (AvroSchemaHelper.isStringable(bean.getClassInfo()) && !_type.hasRawClass(String.class)) {
             schema.addProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS, AvroSchemaHelper.getTypeId(_type));
         }
         return schema;

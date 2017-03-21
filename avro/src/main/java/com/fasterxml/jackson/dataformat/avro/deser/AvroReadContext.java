@@ -13,16 +13,19 @@ public abstract class AvroReadContext extends JsonStreamContext
 {
     protected final AvroReadContext _parent;
 
+    protected final String _typeId;
+
     /*
     /**********************************************************************
     /* Instance construction
     /**********************************************************************
      */
 
-    public AvroReadContext(AvroReadContext parent)
+    public AvroReadContext(AvroReadContext parent, String typeId)
     {
         super();
         _parent = parent;
+        _typeId = typeId;
     }
 
     public abstract JsonToken nextToken() throws IOException;
@@ -44,6 +47,10 @@ public abstract class AvroReadContext extends JsonStreamContext
     public final AvroReadContext getParent() { return _parent; }
     
     protected abstract void appendDesc(StringBuilder sb);
+
+    public String getTypeId() {
+        return _typeId;
+    }
 
     // !!! TODO: implement from here
     /**

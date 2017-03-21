@@ -1,20 +1,27 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.avro.reflect.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
+
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
  * <ul>
@@ -26,6 +33,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  * <li>{@link Nullable @Nullable} - Alias for <code>JsonProperty(required = false)</code></li>
  * <li>{@link Stringable @Stringable} - Alias for <code>JsonCreator</code> on the constructor and <code>JsonValue</code> on
  * the {@link #toString()} method. </li>
+ * <li>{@link Union @Union} - Alias for <code>JsonSubTypes</code></li>
  * </ul>
  *
  * @since 2.9
@@ -70,7 +78,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     protected PropertyName _findName(Annotated a)
-    {
+	{
         AvroName ann = _findAnnotation(a, AvroName.class);
         return (ann == null) ? null : PropertyName.construct(ann.value());
     }
@@ -106,5 +114,42 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
             return ToStringSerializer.class;
         }
         return null;
+    }
+
+    @Override
+    public List<NamedType> findSubtypes(Annotated a) {
+        Union union = _findAnnotation(a, Union.class);
+        if (union == null) {
+            return null;
+        }
+        ArrayList<NamedType> names = new ArrayList<>(union.value().length);
+        for (Class<?> subtype : union.value()) {
+            names.add(new NamedType(subtype, AvroSchemaHelper.getTypeId(subtype)));
+        }
+        return names;
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, AnnotatedClass ac, JavaType baseType) {
+        return _findTypeResolver(config, ac, baseType);
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType baseType) {
+        return _findTypeResolver(config, am, baseType);
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType containerType) {
+        return _findTypeResolver(config, am, containerType);
+    }
+
+    protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config, Annotated ann, JavaType baseType) {
+        TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
+        JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
+        if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
+            resolver = resolver.defaultImpl(typeInfo.defaultImpl());
+        }
+        return resolver;
     }
 }

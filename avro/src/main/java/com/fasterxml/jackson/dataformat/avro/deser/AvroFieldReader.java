@@ -12,10 +12,12 @@ public abstract class AvroFieldReader
 {
     protected final String _name;
     protected final boolean _isSkipper;
+    protected final String _typeId;
 
-    protected AvroFieldReader(String name, boolean isSkipper) {
+    protected AvroFieldReader(String name, boolean isSkipper, String typeId) {
         _name = name;
         _isSkipper = isSkipper;
+        _typeId = typeId;
     }
 
     public static AvroFieldReader construct(String name, AvroStructureReader structureReader) {
@@ -33,6 +35,10 @@ public abstract class AvroFieldReader
 
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
+    public String getTypeId() {
+        return _typeId;
+    }
+
     /**
      * Implementation used for non-scalar-valued (structured) fields
      */
@@ -40,7 +46,7 @@ public abstract class AvroFieldReader
         protected final AvroStructureReader _reader;
 
         public Structured(String name, boolean skipper, AvroStructureReader r) {
-            super(name, skipper);
+            super(name, skipper, null);
             _reader = r;
         }
 
@@ -53,6 +59,11 @@ public abstract class AvroFieldReader
         @Override
         public void skipValue(AvroParserImpl parser) throws IOException {
             _reader.skipValue(parser);
+        }
+
+        @Override
+        public String getTypeId() {
+            return _reader.getTypeId();
         }
     }
 }

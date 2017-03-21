@@ -20,7 +20,7 @@ final class UnionReader extends AvroStructureReader
     private UnionReader(AvroReadContext parent,
             AvroStructureReader[] memberReaders, AvroParserImpl parser)
     {
-        super(parent, TYPE_ROOT);
+        super(parent, TYPE_ROOT, null);
         _memberReaders = memberReaders;
         _parser = parser;
     }
