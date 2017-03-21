@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.*;
 
 import com.fasterxml.jackson.core.Versioned;
+import com.fasterxml.jackson.core.json.PackageVersion;
 
 /**
  * Tests to verify [JACKSON-278]
