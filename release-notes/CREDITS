@@ -12,6 +12,18 @@ Michael Zeng (shotbythought@github)
 
 * Contributed fix for #27: (protobuf) Fixed long deserialization problem for longs of ~13digit length
  (2.8.2)
-
 * Reported #58 (avro): Regression due to changed namespace of inner enum types
  (2.8.8)
+
+baharclerode@github:
+
+* Contributed #14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`
+ (2.9.0)
+* Contributed #15 (avro): Add a way to produce "file" style Avro output
+ (2.9.0)
+* Contributed #57 (avro): Add support for @Stringable annotation
+ (2.9.0)
+* Contributed #59 (avro): Add support for @AvroAlias annotation for Record/Enum name evolution
+ (2.9.0)
+* Contributed #60 (avro): Add support for `@Union` and polymorphic types
+ (2.9.0)
