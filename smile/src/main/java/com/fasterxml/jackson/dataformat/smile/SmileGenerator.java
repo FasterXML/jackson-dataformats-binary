@@ -1825,6 +1825,7 @@ public class SmileGenerator
      * fit in the output buffer regardless of UTF-8 expansion.
      */
     private final int _shortUTF8Encode(char[] str, int i, int end)
+        throws IOException
     {
         // First: let's see if it's all ASCII: that's rather fast
         int ptr = _outputTail;
@@ -1847,6 +1848,7 @@ public class SmileGenerator
      * characters.
      */
     private final int _shortUTF8Encode2(char[] str, int i, int end, int outputPtr)
+        throws IOException
     {
         final byte[] outBuf = _outputBuffer;
         while (i < end) {
@@ -1892,6 +1894,7 @@ public class SmileGenerator
     }
 
     private final int _shortUTF8Encode(String str, int i, int end)
+        throws IOException
     {
         // First: let's see if it's all ASCII: that's rather fast
         int ptr = _outputTail;
@@ -1909,6 +1912,7 @@ public class SmileGenerator
     }
 
     private final int _shortUTF8Encode2(String str, int i, int end, int outputPtr)
+        throws IOException
     {
         final byte[] outBuf = _outputBuffer;
         while (i < end) {
@@ -2094,28 +2098,33 @@ public class SmileGenerator
     /**
      * Method called to calculate UTF codepoint, from a surrogate pair.
      */
-    private int _convertSurrogate(int firstPart, int secondPart)
+    private int _convertSurrogate(int firstPart, int secondPart) throws IOException
     {
         // Ok, then, is the second part valid?
         if (secondPart < SURR2_FIRST || secondPart > SURR2_LAST) {
-            throw new IllegalArgumentException("Broken surrogate pair: first char 0x"+Integer.toHexString(firstPart)+", second 0x"+Integer.toHexString(secondPart)+"; illegal combination");
+            String msg = String.format("Broken surrogate pair: first char 0x%04X, second 0x%04X; illegal combination",
+                    firstPart, secondPart);
+            _reportError(msg);
         }
         return 0x10000 + ((firstPart - SURR1_FIRST) << 10) + (secondPart - SURR2_FIRST);
     }
 
-    private void _throwIllegalSurrogate(int code)
+    private void _throwIllegalSurrogate(int code) throws IOException
     {
         if (code > 0x10FFFF) { // over max?
-            throw new IllegalArgumentException("Illegal character point (0x"+Integer.toHexString(code)+") to output; max is 0x10FFFF as per RFC 4627");
+            _reportError(String.format(
+                    "Illegal character point (0x%X) to output; max is 0x10FFFF as per RFC 4627", code));
         }
         if (code >= SURR1_FIRST) {
             if (code <= SURR1_LAST) { // Unmatched first part (closing without second part?)
-                throw new IllegalArgumentException("Unmatched first part of surrogate pair (0x"+Integer.toHexString(code)+")");
+                _reportError(String.format(
+                    "Unmatched first part of surrogate pair (0x%04X)", code));
             }
-            throw new IllegalArgumentException("Unmatched second part of surrogate pair (0x"+Integer.toHexString(code)+")");
+            _reportError(String.format(
+                    "Unmatched second part of surrogate pair (0x%04X)", code));
         }
         // should we ever get this?
-        throw new IllegalArgumentException("Illegal character point (0x"+Integer.toHexString(code)+") to output");
+        _reportError(String.format("Illegal character point (0x%X) to output", code));
     }
 
     /*
