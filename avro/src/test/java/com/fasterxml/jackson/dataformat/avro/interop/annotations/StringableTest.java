@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
