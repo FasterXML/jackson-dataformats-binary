@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 
-
+/**
+ * @since 2.9
+ */
 public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
 
     public AvroTypeResolverBuilder() {

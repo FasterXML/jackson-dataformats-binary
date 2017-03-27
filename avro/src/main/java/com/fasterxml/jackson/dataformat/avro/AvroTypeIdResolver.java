@@ -15,9 +15,11 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 /**
  * {@link com.fasterxml.jackson.databind.jsontype.TypeIdResolver} for Avro type IDs embedded in schemas. Avro generally uses class names,
  * but we want to also support named subtypes so that developers can easily remap the embedded type IDs to a different runtime class.
+ *
+ * @since 2.9
  */
-public class AvroTypeIdResolver extends ClassNameIdResolver {
-
+public class AvroTypeIdResolver extends ClassNameIdResolver
+{
     private final Map<String, Class<?>> _idTypes = new HashMap<>();
 
     private final Map<Class<?>, String> _typeIds = new HashMap<>();
