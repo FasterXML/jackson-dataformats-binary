@@ -25,8 +25,6 @@ public class EnumElementVisitor extends Base implements TypeElementBuilder {
 		_builder = EnumElement.builder();
 		_builder.name(type.getRawClass().getSimpleName());
 		_builder.documentation("Enum for " + type.toCanonical());
-
-		definedTypeElementBuilders.AddTypeElement(type, this, isNested);
 	}
 
 	@Override

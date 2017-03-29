@@ -54,7 +54,7 @@ public class RecordVisitor
             List<Schema> unionSchemas = new ArrayList<>();
             try {
                 for (NamedType subType : subTypes) {
-                    JsonSerializer           ser     = getProvider().findValueSerializer(subType.getType());
+                    JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
                     VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, getProvider());
                     ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
                     unionSchemas.add(visitor.getAvroSchema());
