@@ -51,21 +51,23 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
 
     @Override
     public void property(BeanProperty writer) throws JsonMappingException {
-        FieldElement fElement = buildFieldElement(writer, Label.REQUIRED);
-        _builder.addField(fElement);
+        _builder.addField(buildFieldElement(writer, Label.REQUIRED));
     }
 
     @Override
-    public void property(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) { }
+    public void property(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public void optionalProperty(BeanProperty writer) throws JsonMappingException {
-        FieldElement fElement = buildFieldElement(writer, Label.OPTIONAL);
-        _builder.addField(fElement);
+        _builder.addField(buildFieldElement(writer, Label.OPTIONAL));
     }
 
     @Override
-    public void optionalProperty(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) { }
+    public void optionalProperty(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) {
+        throw new UnsupportedOperationException();
+    }
 
     protected FieldElement buildFieldElement(BeanProperty writer, Label label) throws JsonMappingException
     {
