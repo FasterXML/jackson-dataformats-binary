@@ -30,10 +30,10 @@ public class RecordWithComplexTest extends InteropTestBase
     @RequiredArgsConstructor
     public static class RecursiveDummyRecord extends DummyRecord {
         @Nullable
-        private DummyRecord next;
-        private Map<String, Integer> simpleMap = new HashMap<>();
-        private Map<String, RecursiveDummyRecord> recursiveMap = new HashMap<>();
-        private List<Integer> requiredList = new ArrayList<>();
+        DummyRecord next;
+        Map<String, Integer> simpleMap = new HashMap<>();
+        Map<String, RecursiveDummyRecord> recursiveMap = new HashMap<>();
+        List<Integer> requiredList = new ArrayList<>();
         @JsonProperty(required = true)
         private DummyEnum requiredEnum = DummyEnum.EAST;
         @Nullable

@@ -12,8 +12,8 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AvroMetaTest extends InteropTestBase {
-
+public class AvroMetaTest extends InteropTestBase
+{
     @Data
     @AvroMeta(key = "class-meta", value = "class value")
     static class MetaTest {
@@ -37,8 +37,7 @@ public class AvroMetaTest extends InteropTestBase {
     @AvroSchema("{\"type\":\"string\"}")
     @AvroMeta(key="overridden", value = "true")
     static class OverriddenClassSchema {
-
-        private int field;
+        int field;
     }
 
     @Test

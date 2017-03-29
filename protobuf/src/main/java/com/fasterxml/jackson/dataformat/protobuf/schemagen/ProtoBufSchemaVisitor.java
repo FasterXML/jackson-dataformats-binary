@@ -78,6 +78,7 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
 		MessageElementVisitor visitor = new MessageElementVisitor(_provider, type, _definedTypeElementBuilders,
 				_isNested);
 		_builder = visitor;
+		_definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
 		return visitor;
 	}
 

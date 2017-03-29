@@ -29,8 +29,7 @@ public class AvroSchemaTest extends InteropTestBase {
     @Data
     @AvroSchema("{\"type\":\"string\"}")
     public static class OverriddenClassSchema {
-
-        private int field;
+        int field;
     }
 
     @Data
