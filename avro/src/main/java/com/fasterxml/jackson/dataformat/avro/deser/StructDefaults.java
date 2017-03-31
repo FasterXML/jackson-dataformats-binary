@@ -41,6 +41,11 @@ public class StructDefaults
         }
 
         @Override
+        public long getRemainingElements() {
+            return _fieldReaders.length - _index;
+        }
+
+        @Override
         public MapReader newReader(AvroReadContext parent,
                 AvroParserImpl parser) {
             return new ObjectDefaults(parent, parser, _fieldReaders);

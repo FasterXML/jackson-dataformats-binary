@@ -8,18 +8,11 @@ import java.nio.ByteBuffer;
 
 import org.apache.avro.io.BinaryEncoder;
 
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.FormatFeature;
-import com.fasterxml.jackson.core.FormatSchema;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.PrettyPrinter;
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
+import com.fasterxml.jackson.dataformat.avro.ser.EncodedDatum;
 
 public class AvroGenerator extends GeneratorBase
 {
@@ -457,6 +450,15 @@ public class AvroGenerator extends GeneratorBase
     /* Output method implementations, unprocessed ("raw")
     /**********************************************************
      */
+
+    @Override
+    public void writeEmbeddedObject(Object object) throws IOException {
+        if (object instanceof EncodedDatum) {
+            _avroContext.writeValue(object);
+            return;
+        }
+        super.writeEmbeddedObject(object);
+    }
 
     @Override
     public void writeRaw(String text) throws IOException {

@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
 
-abstract class ArrayReader extends AvroStructureReader
+public abstract class ArrayReader extends AvroStructureReader
 {
     protected final static int STATE_START = 0;
     protected final static int STATE_ELEMENTS = 1;
@@ -53,6 +53,10 @@ abstract class ArrayReader extends AvroStructureReader
         sb.append('[');
         sb.append(getCurrentIndex());
         sb.append(']');
+    }
+
+    public long getRemainingElements() {
+        return _count - _index;
     }
 
     @Override

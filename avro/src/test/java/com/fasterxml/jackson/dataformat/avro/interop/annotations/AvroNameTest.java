@@ -1,16 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
+import java.io.IOException;
+
+import org.apache.avro.reflect.AvroName;
+import org.junit.Test;
+
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
-import org.apache.avro.reflect.AvroName;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-
-import java.io.IOException;
 
 /**
  * Tests the {@link AvroName @AvroName} annotation
@@ -32,12 +31,6 @@ public class AvroNameTest extends InteropTestBase
         public String firstField;
 
         public String otherField;
-    }
-
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
     }
 
     @Test
