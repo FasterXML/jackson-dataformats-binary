@@ -42,8 +42,6 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
         _builder = MessageElement.builder();
         _builder.name(type.getRawClass().getSimpleName());
         _builder.documentation("Message for " + type.toCanonical());
-
-        _definedTypeElementBuilders.AddTypeElement(type, this, isNested);
     }
 
     @Override
@@ -53,21 +51,23 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
 
     @Override
     public void property(BeanProperty writer) throws JsonMappingException {
-        FieldElement fElement = buildFieldElement(writer, Label.REQUIRED);
-        _builder.addField(fElement);
+        _builder.addField(buildFieldElement(writer, Label.REQUIRED));
     }
 
     @Override
-    public void property(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) { }
+    public void property(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public void optionalProperty(BeanProperty writer) throws JsonMappingException {
-        FieldElement fElement = buildFieldElement(writer, Label.OPTIONAL);
-        _builder.addField(fElement);
+        _builder.addField(buildFieldElement(writer, Label.OPTIONAL));
     }
 
     @Override
-    public void optionalProperty(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) { }
+    public void optionalProperty(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) {
+        throw new UnsupportedOperationException();
+    }
 
     protected FieldElement buildFieldElement(BeanProperty writer, Label label) throws JsonMappingException
     {
@@ -95,7 +95,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
 
     protected void getTagGenerator(BeanProperty writer) {
         if (_tagGenerator == null) {
-            if (ProtobuffSchemaHelper.hasIndex(writer)) {
+            if (ProtobufSchemaHelper.hasIndex(writer)) {
                 _tagGenerator = new AnnotationBasedTagGenerator();
             } else {
                 _tagGenerator = new DefaultTagGenerator();
@@ -104,7 +104,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
     }
 
     protected DataType getDataType(JavaType type) throws JsonMappingException {
-        ScalarType sType = ProtobuffSchemaHelper.getScalarType(type);
+        ScalarType sType = ProtobufSchemaHelper.getScalarType(type);
         if (sType != null) { // Is scalar type ref
             return sType;
         }
@@ -113,13 +113,13 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
             if (Arrays.asList(_type.getRawClass().getDeclaredClasses()).contains(type.getRawClass())) { // nested
                 if (!_nestedTypes.contains(type)) { // create nested type
                     _nestedTypes.add(type);
-                    TypeElementBuilder nestedTypeBuilder = ProtobuffSchemaHelper.acceptTypeElement(_provider, type,
+                    TypeElementBuilder nestedTypeBuilder = ProtobufSchemaHelper.acceptTypeElement(_provider, type,
                             _definedTypeElementBuilders, true);
 
                     _builder.addType(nestedTypeBuilder.build());
                 }
             } else { // tracking non-nested types to generate them later
-                ProtobuffSchemaHelper.acceptTypeElement(_provider, type, _definedTypeElementBuilders, false);
+                ProtobufSchemaHelper.acceptTypeElement(_provider, type, _definedTypeElementBuilders, false);
             }
         }
         return NamedType.create(type.getRawClass().getSimpleName());

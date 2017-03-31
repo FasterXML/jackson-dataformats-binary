@@ -19,6 +19,9 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroStructureReader;
  */
 public class AvroSchema implements FormatSchema
 {
+    /**
+     * Format type id used by Jackson components to refer to Avro Format.
+     */
     public final static String TYPE_ID = "avro";
 
     /**

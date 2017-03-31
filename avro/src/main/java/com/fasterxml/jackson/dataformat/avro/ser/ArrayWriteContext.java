@@ -34,7 +34,14 @@ public final class ArrayWriteContext
         _array.add(child.rawValue());
         return child;
     }
-    
+
+    @Override
+    public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException {
+        AvroWriteContext child = _createObjectContext(_schema.getElementType(), object);
+        _array.add(child.rawValue());
+        return child;
+    }
+
     @Override
     public void writeValue(Object value) {
         _array.add(value);

@@ -40,7 +40,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
      */
 
     final ProtobufMapper MAPPER = new ProtobufMapper();
-    
+
     public void testMediaItemSimple() throws Exception
     {
         _testMediaItem(false);

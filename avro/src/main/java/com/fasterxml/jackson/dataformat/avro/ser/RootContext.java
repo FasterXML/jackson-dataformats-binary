@@ -1,13 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.*;
 import org.apache.avro.io.BinaryEncoder;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
+import com.fasterxml.jackson.dataformat.avro.AvroGenerator.Feature;
+
+import org.apache.avro.io.DatumWriter;
 
 class RootContext
     extends AvroWriteContext
@@ -95,14 +100,30 @@ class RootContext
         _writer().write(null, _encoder);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void complete() throws IOException {
+        final Object rootValue = _rootValue;
+        _rootValue = null;
+
+        // 21-Feb-2017, tatu: As per [dataformats-binary#15], need to ensure schema gets
+        //   written, if using "File" format (not raw "rpc" one)
+        if (_generator.isEnabled(Feature.AVRO_FILE_OUTPUT)) {
+            OutputStream outputStream = (OutputStream) _generator.getOutputTarget();
+            DatumWriter<Object> datumWriter = new NonBSGenericDatumWriter<>(_schema);
+            DataFileWriter<Object> dataFileWriter = new DataFileWriter<>(datumWriter);
+
+            dataFileWriter.create(_schema, outputStream);
+            dataFileWriter.append(rootValue);
+            dataFileWriter.close();
+            return;
+        }
         // 19-Jan-2017, tatu: Gets also called for root-level scalar, in which
         //    case nothing (more) to output.
-        if (_rootValue != null) {
-            _writer().write(_rootValue, _encoder);
+        if (rootValue != null) {
+            _writer().write(rootValue, _encoder);
         }
-        _rootValue = null;
+        _encoder.flush();
     }
 
     @Override

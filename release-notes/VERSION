@@ -11,16 +11,37 @@ Modules:
 
 2.9.0 (not yet released)
 
+#13 (avro): Add support for Avro default values
+#14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`
+ (contributed by baharclerode@github)
+#15 (avro): Add a way to produce "file" style Avro output
+#57 (avro): Add support for @Stringable annotation
+ (contributed by baharclerode@github)
+#59 (avro): Add support for @AvroAlias annotation for Record/Enum name evolution
+ (contributed by baharclerode@github)
+#60 (avro): Add support for `@Union` and polymorphic types
+ (contributed by baharclerode@github)
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
-2.8.7 (not yet released)
+2.8.8 (not yet released)
 
-#35: (avro) Serialization of multiple objects (`SequenceWriter`
+#54 (protobuf): Some fields are left null
+#58 (avro): Regression due to changed namespace of inner enum types
+ (reported by Peter R)
+#62: `java.lang.ArrayIndexOutOfBoundsException` at `CBORGenerator.java`:548
+
+2.8.7 (21-Feb-2017)
+
+#34 (avro): Reading Avro with specified reader and writer schemas
+ (requested by Pawel S)
+#35 (avro): Serialization of multiple objects (`SequenceWriter`
  (reported by tomvandenberge@github)
-#38: (avro) Deserialization of multiple (root) values from Avro
-#39: (avro) Problem decoding Maps with union values
+#38 (avro): Deserialization of multiple (root) values from Avro
+#39 (avro): Problem decoding Maps with union values
+#43 (cbor): Buffer size dependency in `UTF8JsonGenerator writeRaw(...)`
+ (reported by Christopher C)
 
-2.8.6 (12-Jan-2016)
+2.8.6 (12-Jan-2017)
 2.8.5 (14-Nov-2016)
 
 #30 (cbor): Overflow when decoding uint32 for Major type 0

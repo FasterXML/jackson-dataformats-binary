@@ -1,14 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.core.*;
-
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Module that adds support for handling datatypes specific to the standard
@@ -20,12 +21,41 @@ public class AvroModule extends SimpleModule
 {
     private static final long serialVersionUID = 1L;
 
+    protected final static AvroAnnotationIntrospector INTR
+           = new AvroAnnotationIntrospector();
+
+    /**
+     * @since 2.9
+     */
+    protected boolean _cfgAddIntrospector = true;
+
     public AvroModule()
     {
         super(PackageVersion.VERSION);
         addSerializer(new SchemaSerializer());
+        // 09-Mar-2017, tatu: As per [dataformats-binary#57], require simple serialization?
+        addSerializer(File.class, new ToStringSerializer(File.class));
         // 08-Mar-2016, tatu: to fix [dataformat-avro#35], need to prune 'schema' property:
         setSerializerModifier(new AvroSerializerModifier());
+        // Override untyped deserializer to one that checks for type information in the schema before going to default handling
+        addDeserializer(Object.class, new AvroUntypedDeserializer());
+    }
+
+    @Override
+    public void setupModule(SetupContext context) {
+        super.setupModule(context);
+        if (_cfgAddIntrospector) {
+            // insert (instead of append) to have higher precedence
+            context.insertAnnotationIntrospector(INTR);
+        }
+    }
+
+    /**
+     * @since 2.9
+     */
+    public AvroModule withAnnotationIntrospector(boolean state) {
+        _cfgAddIntrospector = state;
+        return this;
     }
 
     /*

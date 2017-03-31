@@ -9,7 +9,7 @@ public class MissingReader extends AvroReadContext
     public final static MissingReader instance = new MissingReader();
     
     public MissingReader() {
-        super(null);
+        super(null, null);
         _type = TYPE_ROOT;
     }
 

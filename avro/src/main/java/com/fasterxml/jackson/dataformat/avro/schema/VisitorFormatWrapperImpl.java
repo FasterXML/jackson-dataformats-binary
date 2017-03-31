@@ -90,7 +90,7 @@ public class VisitorFormatWrapperImpl
     }
     
     @Override
-    public JsonArrayFormatVisitor expectArrayFormat(JavaType convertedType) {
+    public JsonArrayFormatVisitor expectArrayFormat(final JavaType convertedType) {
         // 22-Mar-2016, tatu: Actually we can detect byte[] quite easily here can't we?
         if (convertedType.isArrayType()) {
             JavaType vt = convertedType.getContentType();
@@ -98,9 +98,8 @@ public class VisitorFormatWrapperImpl
                 _builder = new SchemaBuilder() {
                     @Override
                     public Schema builtAvroSchema() {
-                        return Schema.create(Schema.Type.BYTES);
+                        return AvroSchemaHelper.typedSchema(Schema.Type.BYTES, convertedType);
                     }
-                    
                 };
                 return null;
             }
@@ -119,14 +118,14 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        StringVisitor v = new StringVisitor(_schemas, type);
+        StringVisitor v = new StringVisitor(_provider, _schemas, type);
         _builder = v;
         return v;
     }
 
     @Override
     public JsonNumberFormatVisitor expectNumberFormat(JavaType convertedType) {
-        DoubleVisitor v = new DoubleVisitor();
+        DoubleVisitor v = new DoubleVisitor(convertedType);
         _builder = v;
         return v;
     }
@@ -140,7 +139,7 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        IntegerVisitor v = new IntegerVisitor();
+        IntegerVisitor v = new IntegerVisitor(type);
         _builder = v;
         return v;
     }

@@ -174,12 +174,15 @@ public class ParserNumbersTest extends CBORTestBase
 
     public void testDoubleValues() throws Exception
     {
-        _verifyDouble(CBOR_F, 0.25);
-        _verifyDouble(CBOR_F, 20.5);
-        _verifyDouble(CBOR_F, -5000.25);
+        _verifyDouble(CBOR_F, 0.25, false);
+        _verifyDouble(CBOR_F, 20.5, false);
+        _verifyDouble(CBOR_F, Double.NaN, true);
+        _verifyDouble(CBOR_F, Double.POSITIVE_INFINITY, true);
+        _verifyDouble(CBOR_F, Double.NEGATIVE_INFINITY, true);
+        _verifyDouble(CBOR_F, -5000.25, false);
     }
 
-    private void _verifyDouble(CBORFactory f, double value) throws Exception
+    private void _verifyDouble(CBORFactory f, double value, boolean isNaN) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = cborGenerator(f, out);
@@ -191,9 +194,11 @@ public class ParserNumbersTest extends CBORTestBase
             fail("Expected `NumberType.DOUBLE`, got "+p.getNumberType()+": "+p.getText());
         }
         assertEquals(value, p.getDoubleValue());
+        assertEquals(isNaN, p.isNaN());
         assertEquals((float) value, p.getFloatValue());
-        assertNull(p.nextToken());
 
+        assertNull(p.nextToken());
+        
         // also skip
         p = cborParser(f, out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -207,9 +212,12 @@ public class ParserNumbersTest extends CBORTestBase
         // first, single-byte
         CBORFactory f = cborFactory();
         // single byte
-        _verifyFloat(f, 0.25);
-        _verifyFloat(f, 20.5);
-        _verifyFloat(f, -5000.25);
+        _verifyFloat(f, 0.25, false);
+        _verifyFloat(f, 20.5, false);
+        _verifyFloat(CBOR_F, Float.NaN, true);
+        _verifyFloat(CBOR_F, Float.POSITIVE_INFINITY, true);
+        _verifyFloat(CBOR_F, Float.NEGATIVE_INFINITY, true);
+        _verifyFloat(f, -5000.25, false);
 
         // But then, oddity: 16-bit mini-float
         // Examples from [https://en.wikipedia.org/wiki/Half_precision_floating-point_format]
@@ -223,7 +231,7 @@ public class ParserNumbersTest extends CBORTestBase
         // ... can add more, but need bit looser comparison if so
     }
 
-    private void _verifyFloat(CBORFactory f, double value) throws Exception
+    private void _verifyFloat(CBORFactory f, double value, boolean isNaN) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = cborGenerator(f, out);
@@ -235,6 +243,7 @@ public class ParserNumbersTest extends CBORTestBase
             fail("Expected `NumberType.FLOAT`, got "+p.getNumberType()+": "+p.getText());
         }
         assertEquals((float) value, p.getFloatValue());
+        assertEquals(isNaN, p.isNaN());
         assertEquals(value, p.getDoubleValue());
         assertNull(p.nextToken());
 
@@ -253,8 +262,11 @@ public class ParserNumbersTest extends CBORTestBase
                 (byte) (i16 >> 8), (byte) i16
         };
 
+        boolean expNaN = Double.isNaN(value) || Double.isInfinite(value);
+        
         JsonParser p = f.createParser(data);
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(expNaN, p.isNaN());
         assertEquals(NumberType.FLOAT, p.getNumberType());
         assertEquals(value, p.getDoubleValue());
         assertNull(p.nextToken());

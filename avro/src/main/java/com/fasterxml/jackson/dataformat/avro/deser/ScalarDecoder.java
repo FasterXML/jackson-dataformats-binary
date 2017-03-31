@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 /**
  * Helper classes for reading non-structured values, and can thereby usually
@@ -19,6 +20,8 @@ public abstract class ScalarDecoder
         throws IOException;
 
     public abstract AvroFieldReader asFieldReader(String name, boolean skipper);
+
+    public abstract String getTypeId();
     
     /*
     /**********************************************************************
@@ -39,13 +42,18 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(boolean.class);
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+            return new FR(name, skipper, getTypeId());
         }
         
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
 
             @Override
@@ -73,13 +81,18 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(double.class);
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+            return new FR(name, skipper, getTypeId());
         }
         
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
 
             @Override
@@ -106,13 +119,18 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(float.class);
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+            return new FR(name, skipper, getTypeId());
         }
         
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
 
             @Override
@@ -129,9 +147,24 @@ public abstract class ScalarDecoder
     
     protected final static class IntReader extends ScalarDecoder
     {
+        private final String _typeId;
+
+        public IntReader(String typeId) {
+            _typeId = typeId;
+        }
+
+        public IntReader() {
+            this(AvroSchemaHelper.getTypeId(int.class));
+        }
+
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return parser.decodeInt();
+            JsonToken token = parser.decodeIntToken();
+            // Character deserializer expects parser.getText() to return something. Make sure it's populated!
+            if (Character.class.getName().equals(getTypeId())) {
+                return parser.setString(Character.toString((char) parser.getIntValue()));
+            }
+            return token;
         }
 
         @Override
@@ -140,18 +173,23 @@ public abstract class ScalarDecoder
         }
 
         @Override
-        public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+        public String getTypeId() {
+            return _typeId;
         }
-        
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper, getTypeId());
+        }
+
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return parser.decodeInt();
+                return parser.decodeIntToken();
             }
 
             @Override
@@ -165,27 +203,33 @@ public abstract class ScalarDecoder
     {
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return parser.decodeLong();
+            return parser.decodeLongToken();
         }
 
         @Override
         protected void skipValue(AvroParserImpl parser) throws IOException {
             parser.skipLong();
         }
-
+        
+        @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(long.class);
+        }
+        
         @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+            return new FR(name, skipper, getTypeId());
         }
         
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
+
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return parser.decodeLong();
+                return parser.decodeLongToken();
             }
 
             @Override
@@ -208,13 +252,18 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return null;
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
             return new FR(name, skipper);
         }
         
         private final static class FR extends AvroFieldReader {
             public FR(String name, boolean skipper) {
-                super(name, skipper);
+                super(name, skipper, null);
             }
 
             @Override
@@ -229,6 +278,16 @@ public abstract class ScalarDecoder
     
     protected final static class StringReader extends ScalarDecoder
     {
+        private final String _typeId;
+
+        public StringReader(String typeId) {
+            _typeId = typeId;
+        }
+
+        public StringReader() {
+            this(AvroSchemaHelper.getTypeId(String.class));
+        }
+
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
             return parser.decodeString();
@@ -240,13 +299,18 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return _typeId;
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+            return new FR(name, skipper, getTypeId());
         }
         
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
 
             @Override
@@ -272,15 +336,19 @@ public abstract class ScalarDecoder
         protected void skipValue(AvroParserImpl parser) throws IOException {
             parser.skipBytes();
         }
+        @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(byte[].class);
+        }
 
         @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper);
+            return new FR(name, skipper, getTypeId());
         }
         
         private final static class FR extends AvroFieldReader {
-            public FR(String name, boolean skipper) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, String typeId) {
+                super(name, skipper, typeId);
             }
 
             @Override
@@ -323,6 +391,11 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return null;
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
             return new FR(name, skipper, _readers);
         }
@@ -331,7 +404,7 @@ public abstract class ScalarDecoder
             public final ScalarDecoder[] _readers;
 
             public FR(String name, boolean skipper, ScalarDecoder[] readers) {
-                super(name, skipper);
+                super(name, skipper, null);
                 _readers = readers;
             }
 
@@ -386,15 +459,20 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return _name;
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper, this);
+            return new FR(name, skipper, this, _name);
         }
         
         private final static class FR extends AvroFieldReader {
             protected final String[] _values;
 
-            public FR(String name, boolean skipper, EnumDecoder base) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, EnumDecoder base, String typeId) {
+                super(name, skipper, typeId);
                 _values = base._values;
             }
 
@@ -423,9 +501,11 @@ public abstract class ScalarDecoder
         extends ScalarDecoder
     {
         private final int _size;
+        private final String _typeId;
         
-        public FixedDecoder(int fixedSize) {
+        public FixedDecoder(int fixedSize, String typeId) {
             _size = fixedSize;
+            _typeId = typeId;
         }
         
         @Override
@@ -439,15 +519,20 @@ public abstract class ScalarDecoder
         }
 
         @Override
+        public String getTypeId() {
+            return _typeId;
+        }
+
+        @Override
         public AvroFieldReader asFieldReader(String name, boolean skipper) {
-            return new FR(name, skipper, _size);
+            return new FR(name, skipper, _size, _typeId);
         }
         
         private final static class FR extends AvroFieldReader {
             private final int _size;
 
-            public FR(String name, boolean skipper, int size) {
-                super(name, skipper);
+            public FR(String name, boolean skipper, int size, String typeId) {
+                super(name, skipper, typeId);
                 _size = size;
             }
 

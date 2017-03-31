@@ -15,8 +15,8 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
-public class SchemaGenTest extends ProtobufTestBase {
-
+public class SchemaGenTest extends ProtobufTestBase
+{
 	public static class WithNestedClass {
 		@JsonProperty(required = true)
 		public String name;
@@ -64,26 +64,13 @@ public class SchemaGenTest extends ProtobufTestBase {
 		public String[] emails;
 
 		public Employee boss;
-	}
+    }
 
-	protected RootType buildRootType() {
-		RootType rType = new RootType();
-		rType.name = "rTpye";
-		rType.value = 100;
-		rType.other = new ArrayList<String>();
-		rType.other.add("12345");
-		rType.other.add("abcdefg");
-		return rType;
-	}
-
-	protected Employee buildEmployee() {
-		Employee empl = new Employee();
-		empl.name = "Bobbee";
-		empl.age = 39;
-		empl.emails = new String[] { "bob@aol.com", "bobby@gmail.com" };
-		empl.boss = null;
-		return empl;
-	}
+    /*
+    /**********************************************************
+    /* Test methods
+    /**********************************************************
+     */
 
 	public void testWithNestedClass() throws Exception {
 		ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
@@ -186,4 +173,23 @@ public class SchemaGenTest extends ProtobufTestBase {
 		assertEquals(rType.value, parsedRootType.value);
 		assertEquals(rType.other, parsedRootType.other);
 	}
+
+     protected RootType buildRootType() {
+         RootType rType = new RootType();
+         rType.name = "rTpye";
+         rType.value = 100;
+         rType.other = new ArrayList<String>();
+         rType.other.add("12345");
+         rType.other.add("abcdefg");
+         return rType;
+    }
+
+    protected Employee buildEmployee() {
+         Employee empl = new Employee();
+         empl.name = "Bobbee";
+         empl.age = 39;
+         empl.emails = new String[] { "bob@aol.com", "bobby@gmail.com" };
+         empl.boss = null;
+         return empl;
+    }
 }

@@ -527,7 +527,7 @@ public class SmileParser extends ParserBase
                  _ioContext.releaseReadIOBuffer(buf);
              }
          }
-        {
+         {
             String[] nameBuf = _seenNames;
             if (nameBuf != null && nameBuf.length > 0) {
                 _seenNames = null;

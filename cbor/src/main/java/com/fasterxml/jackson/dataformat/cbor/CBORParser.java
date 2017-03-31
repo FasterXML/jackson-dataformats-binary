@@ -1558,7 +1558,23 @@ public final class CBORParser extends ParserMinimalBase
     /* Numeric accessors of public API
     /**********************************************************
      */
-    
+
+    @Override // since 2.9
+    public boolean isNaN() {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
+                double d = _numberDouble;
+                return Double.isNaN(d) || Double.isInfinite(d);
+            }
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                float f = _numberFloat;
+                return Float.isNaN(f) || Float.isInfinite(f);
+            }
+        }
+        return false;
+    }
+
     @Override
     public Number getNumberValue() throws IOException
     {

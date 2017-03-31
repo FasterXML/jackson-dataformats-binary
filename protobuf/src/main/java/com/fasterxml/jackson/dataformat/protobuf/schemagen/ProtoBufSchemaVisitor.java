@@ -78,6 +78,7 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
 		MessageElementVisitor visitor = new MessageElementVisitor(_provider, type, _definedTypeElementBuilders,
 				_isNested);
 		_builder = visitor;
+		_definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
 		return visitor;
 	}
 
@@ -99,6 +100,7 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
 
 		EnumElementVisitor visitor = new EnumElementVisitor(_provider, type, _definedTypeElementBuilders, _isNested);
 		_builder = visitor;
+		_definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
 		return visitor;
 	}
 
@@ -140,5 +142,4 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
 	protected <T> T _throwUnsupported(String msg) {
 		throw new UnsupportedOperationException(msg);
 	}
-
 }

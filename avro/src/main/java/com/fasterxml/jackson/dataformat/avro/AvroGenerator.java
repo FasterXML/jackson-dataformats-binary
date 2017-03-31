@@ -1,17 +1,25 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.GeneratorBase;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
-
-import org.apache.avro.io.BinaryEncoder;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+
+import org.apache.avro.io.BinaryEncoder;
+
+import com.fasterxml.jackson.core.Base64Variant;
+import com.fasterxml.jackson.core.FormatFeature;
+import com.fasterxml.jackson.core.FormatSchema;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.PrettyPrinter;
+import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.base.GeneratorBase;
+import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
 
 public class AvroGenerator extends GeneratorBase
 {
@@ -21,23 +29,6 @@ public class AvroGenerator extends GeneratorBase
     public enum Feature
         implements FormatFeature // since 2.7
     {
-        // !!! TODO: remove from 2.9
-        /**
-         * Feature that can be enabled to quietly ignore serialization of properties
-         * that can not be mapped to output schema: if enabled, trying to output
-         * properties that do not map result in such output calls being discarded;
-         * if disabled, an exception is thrown.
-         *<p>
-         * Feature is disabled by default.
-         * 
-         * @since 2.4
-         * 
-         * @deprecated Since 2.5 replaced by {@link com.fasterxml.jackson.core.JsonGenerator.Feature#IGNORE_UNKNOWN}
-         *   which should be used instead
-         */
-        @Deprecated
-        IGNORE_UNKWNOWN(false),
-
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
          * data then absolutely necessary.
@@ -49,7 +40,19 @@ public class AvroGenerator extends GeneratorBase
          *
          * @since 2.7
          */
-        AVRO_BUFFERING(true)
+        AVRO_BUFFERING(true),
+
+        /**
+         * Feature that tells Avro to write data in file format (i.e. including the schema with the data)
+         * rather than the RPC format which is otherwise default
+         *<p>
+         * NOTE: reader-side will have to be aware of distinction as well, since possible inclusion
+         * of this header is not 100% reliably auto-detectable (while header has distinct marker,
+         * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
+         *
+         * @since 2.9
+         */
+        AVRO_FILE_OUTPUT(false)
         ;
 
         protected final boolean _defaultState;
@@ -145,7 +148,7 @@ public class AvroGenerator extends GeneratorBase
         _ioContext = ctxt;
         _formatFeatures = avroFeatures;
         _output = output;
-        _avroContext = AvroWriteContext.createNullContext();
+        _avroContext = AvroWriteContext.nullContext();
         _encoder = CodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
     }
 
@@ -387,6 +390,17 @@ public class AvroGenerator extends GeneratorBase
     }
 
     @Override
+    public void writeStartObject(Object forValue) throws IOException {
+        _avroContext = _avroContext.createChildObjectContext(forValue);
+        _complete = false;
+        if(this._writeContext != null && forValue != null) {
+            this._writeContext.setCurrentValue(forValue);
+        }
+
+        this.setCurrentValue(forValue);
+    }
+
+    @Override
     public final void writeEndObject() throws IOException
     {
         if (!_avroContext.inObject()) {
@@ -601,7 +615,6 @@ public class AvroGenerator extends GeneratorBase
         // First one sanity check, for a (relatively?) common case
         if (_rootContext != null) {
             _rootContext.complete();
-            _encoder.flush();
         }
     }
 }

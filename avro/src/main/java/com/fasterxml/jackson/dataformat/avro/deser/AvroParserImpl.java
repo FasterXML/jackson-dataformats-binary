@@ -218,18 +218,22 @@ public class AvroParserImpl extends AvroParser
         _skipByteGuaranteed();
     }
 
-    public JsonToken decodeInt() throws IOException {
+    public int decodeInt() throws IOException {
+        return _decoder.readInt();
+    }
+
+    public JsonToken decodeIntToken() throws IOException {
         _numberInt = _decoder.readInt();
         _numTypesValid = NR_INT;
         return JsonToken.VALUE_NUMBER_INT;
     }
-
+    
     public void skipInt() throws IOException {
         // ints use variable-length zigzagging; alas, no native skipping
         _decoder.readInt();
     }
 
-    public JsonToken decodeLong() throws IOException {
+    public JsonToken decodeLongToken() throws IOException {
         _numberLong = _decoder.readLong();
         _numTypesValid = NR_LONG;
         return JsonToken.VALUE_NUMBER_INT;
@@ -242,7 +246,9 @@ public class AvroParserImpl extends AvroParser
 
     public JsonToken decodeFloat() throws IOException {
         // !!! 10-Feb-2017, tatu: Should support float, see CBOR
-        _numberDouble = _decoder.readDouble();
+        //   (requires addition of new NR_ constant, and possibly refactoring to
+        //   use `ParserMinimalBase` instead of `ParserBase`)
+        _numberDouble = _decoder.readFloat();
         _numTypesValid = NR_DOUBLE;
         return JsonToken.VALUE_NUMBER_FLOAT;
     }

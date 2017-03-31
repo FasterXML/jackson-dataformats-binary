@@ -5,6 +5,7 @@ import org.apache.avro.Schema;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonMapFormatVisitor;
 
@@ -12,11 +13,13 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
     implements SchemaBuilder
 {
     protected final JavaType _type;
-    
+
     protected final DefinedSchemas _schemas;
     
     protected Schema _valueSchema;
-    
+
+    protected JavaType _keyType;
+
     public MapVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
     {
         super(p);
@@ -30,7 +33,12 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
         if (_valueSchema == null) {
             throw new IllegalStateException("Missing value type for "+_type);
         }
-        return Schema.createMap(_valueSchema);
+        AnnotatedClass ac = _provider.getConfig().introspectClassAnnotations(_keyType).getClassInfo();
+        if (AvroSchemaHelper.isStringable(ac)) {
+            return AvroSchemaHelper.stringableKeyMapSchema(_type, _keyType, _valueSchema);
+        } else {
+            throw new UnsupportedOperationException("Maps with non-stringable keys are not supported yet");
+        }
     }
 
     /*
@@ -43,12 +51,7 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
     public void keyFormat(JsonFormatVisitable handler, JavaType keyType)
         throws JsonMappingException
     {
-        /* We actually don't care here, since Avro only has String-keyed
-         * Maps like JSON: meaning that anything Jackson can regularly
-         * serialize must convert to Strings anyway.
-         * If we do find problem cases, we can start verifying them here,
-         * but for now assume it all "just works".
-         */
+        _keyType = keyType;
     }
 
     @Override

@@ -1,25 +1,22 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import java.nio.ByteBuffer;
+import java.util.*;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroFactory;
-import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+import com.fasterxml.jackson.dataformat.avro.*;
 
 import org.apache.avro.Schema;
-
-import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 public class TestSimpleGeneration extends AvroTestBase
 {
     public static class RootType
     {
+        @JsonAlias({"nm", "Name"})
         public String name;
         
         public int value;
@@ -75,8 +72,18 @@ public class TestSimpleGeneration extends AvroTestBase
         // And read it back too just for fun
         AvroSchema s2 = mapper.schemaFrom(json);
         assertNotNull(s2);
-        
+
 //        System.out.println("Basic schema:\n"+json);
+        Schema avroSchema = s2.getAvroSchema();
+
+        // String name, int value
+        assertEquals(2, avroSchema.getFields().size());
+        Schema.Field f = avroSchema.getField("name");
+        assertNotNull(f);
+        assertEquals("name", f.name());
+
+        // also verify that aliases are passed.
+        assertEquals(new HashSet<String>(Arrays.asList("nm", "Name")), f.aliases());
     }
 
     public void testEmployee() throws Exception

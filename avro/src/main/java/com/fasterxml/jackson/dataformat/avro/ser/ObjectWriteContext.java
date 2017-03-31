@@ -1,14 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 public final class ObjectWriteContext
     extends KeyValueContext
@@ -53,6 +54,18 @@ public final class ObjectWriteContext
             return new NopWriteContext(TYPE_OBJECT, this, _generator);
         }
         AvroWriteContext child = _createObjectContext(field.schema());
+        _record.put(_currentName, child.rawValue());
+        return child;
+    }
+
+    @Override
+    public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException {
+        _verifyValueWrite();
+        Schema.Field field = _findField();
+        if (field == null) { // unknown, to ignore
+            return new NopWriteContext(TYPE_OBJECT, this, _generator);
+        }
+        AvroWriteContext child = _createObjectContext(field.schema(), object);
         _record.put(_currentName, child.rawValue());
         return child;
     }
@@ -125,10 +138,8 @@ public final class ObjectWriteContext
         return f;
     }
 
-    @SuppressWarnings("deprecation")
     protected void _reportUnknownField(String name) {
-        if (!_generator.isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)
-                && !_generator.isEnabled(AvroGenerator.Feature.IGNORE_UNKWNOWN)) {
+        if (!_generator.isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
             throw new IllegalStateException("No field named '"+_currentName+"'");
         }
     }
