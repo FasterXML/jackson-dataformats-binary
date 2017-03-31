@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.avro.AvroTypeException;
-
-import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -21,12 +19,6 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class RecordWithComplexTest extends InteropTestBase
 {
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
-        assumeCompatibleNsForSer();
-    }
 
     @Test
     public void testEmptyRecordWithRecordValues() throws IOException {

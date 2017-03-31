@@ -1,16 +1,17 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
-import org.apache.avro.reflect.AvroIgnore;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.*;
-
-import static org.junit.Assert.assertThat;
-
 import java.io.IOException;
 
+import org.apache.avro.reflect.AvroIgnore;
+import org.junit.Test;
+
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class AvroIgnoreTest extends InteropTestBase
 {
@@ -20,12 +21,6 @@ public class AvroIgnoreTest extends InteropTestBase
         @AvroIgnore
         public String ignoredField;
         public String notIgnoredField;
-    }
-
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
     }
 
     @Test

@@ -90,7 +90,7 @@ public final class ObjectWriteContext
         _verifyValueWrite();
         if (_nextField != null) {
             Schema schema = _nextField.schema();
-            if (schema.getType() == Schema.Type.FIXED) {
+            if (schema.getType() == Schema.Type.FIXED && value instanceof ByteBuffer) {
                 // 13-Nov-2014 josh: AvroGenerator wraps all binary values in ByteBuffers,
                 // but avro wants FIXED, so rewrap the array, copying if necessary
                 ByteBuffer bb = (ByteBuffer) value;

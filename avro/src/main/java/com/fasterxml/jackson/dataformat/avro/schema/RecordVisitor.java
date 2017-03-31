@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
+import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 public class RecordVisitor
     extends JsonObjectFormatVisitor.Base
@@ -161,6 +162,10 @@ public class RecordVisitor
                 if (prop instanceof BeanPropertyWriter) {
                     BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
                     ser = bpw.getSerializer();
+                    /*
+                     * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
+                     */
+                    optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                 }
                 final SerializerProvider prov = getProvider();
                 if (ser == null) {

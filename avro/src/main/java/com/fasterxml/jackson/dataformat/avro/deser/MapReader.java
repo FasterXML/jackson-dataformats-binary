@@ -51,6 +51,8 @@ public abstract class MapReader extends AvroStructureReader
     @Override
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
+    public abstract long getRemainingElements();
+
     @Override
     public String nextFieldName() throws IOException {
         JsonToken t = nextToken();
@@ -105,6 +107,10 @@ public abstract class MapReader extends AvroStructureReader
                 AvroParserImpl parser, ScalarDecoder sd, String typeId, String keyTypeId, String valueTypeId) {
             super(parent, parser, typeId, keyTypeId, valueTypeId != null ? valueTypeId : sd.getTypeId());
             _scalarDecoder = sd;
+        }
+
+        public long getRemainingElements() {
+            return _count - _index;
         }
         
         @Override
@@ -177,6 +183,10 @@ public abstract class MapReader extends AvroStructureReader
                 AvroParserImpl parser, AvroStructureReader reader, String typeId, String keyTypeId) {
             super(parent, parser, typeId, keyTypeId, null);
             _structureReader = reader;
+        }
+
+        public long getRemainingElements() {
+            return _count - _index;
         }
         
         @Override
