@@ -173,6 +173,8 @@ public class AvroParserImpl extends AvroParser
     {
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _branchIndex = -1;
+        _enumIndex = -1;
         _binaryValue = null;
         if (_closed) {
             return null;
