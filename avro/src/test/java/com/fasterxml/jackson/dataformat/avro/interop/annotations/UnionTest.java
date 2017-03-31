@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.avro.UnresolvedUnionException;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Union;
@@ -24,53 +21,86 @@ import static org.junit.Assert.fail;
 public class UnionTest extends InteropTestBase {
 
     @Union({ Cat.class, Dog.class })
-    public interface Animal {
+    public interface Animal { }
 
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Cat implements Animal {
-
+    static class Cat implements Animal {
         @Nullable
-        private String color;
+        public String color;
+
+        protected Cat() { }
+        public Cat(String c) { color = c; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() == getClass()) {
+                Cat other = (Cat) o;
+                if (color == null) return other.color == null;
+                else return color.equals(other.color);
+            }
+            return false;
+        }
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Dog implements Animal {
+    static class Dog implements Animal {
+        public int size;
 
-        private int size;
+        protected Dog() { }
+        public Dog(int s) { size = s; }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o.getClass() == getClass())
+                && (size == ((Dog) o).size);
+        }
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Bird implements Animal {
+    static class Bird implements Animal {
+        public boolean flying;
 
-        private boolean flying;
+        protected Bird() { }
+        public Bird(boolean f) { flying = f; }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o.getClass() == getClass())
+                && (flying == ((Bird) o).flying);
+        }
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class Cage {
+        public Animal animal;
 
-        private Animal animal;
+        public Cage(Animal a) { animal = a; }
+        protected Cage() { }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof Cage) {
+                Cage other = (Cage) o;
+                if (animal == null) return other.animal == null;
+                return animal.equals(other.animal);
+            }
+            return false;
+        }
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class PetShop {
+        public List<Animal> pets;
 
-        public PetShop(Animal... pets) {
-            this(Arrays.asList(pets));
+        protected PetShop() { }
+        public PetShop(Animal... p) {
+            pets = Arrays.asList(p);
         }
 
-        private List<Animal> pets;
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() == getClass()) {
+                PetShop other = (PetShop) o;
+                if (pets == null) return other.pets == null;
+                else return pets.equals(other.pets);
+            }
+            return false;
+        }
     }
 
     @Test

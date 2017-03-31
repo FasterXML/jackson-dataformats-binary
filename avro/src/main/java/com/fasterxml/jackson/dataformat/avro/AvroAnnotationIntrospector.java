@@ -69,7 +69,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     public Object findDeserializer(Annotated am) {
         AvroEncode ann = _findAnnotation(am, AvroEncode.class);
         if (ann != null) {
-            return new CustomEncodingDeserializer<>((CustomEncoding)ClassUtil.createInstance(ann.using(), true));
+            return new CustomEncodingDeserializer<>((CustomEncoding<?>)ClassUtil.createInstance(ann.using(), true));
         }
         return null;
     }
@@ -127,7 +127,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
         }
         AvroEncode ann = _findAnnotation(a, AvroEncode.class);
         if (ann != null) {
-            return new CustomEncodingSerializer<>((CustomEncoding)ClassUtil.createInstance(ann.using(), true));
+            return new CustomEncodingSerializer<>((CustomEncoding<?>)ClassUtil.createInstance(ann.using(), true));
         }
         return null;
     }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
-import lombok.Data;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Nullable;
@@ -27,27 +26,23 @@ import java.io.IOException;
  * Additionally, tests that class and property descriptions are picked up correctly when using Jackson annotations
  */
 public class AvroSchemaTest extends InteropTestBase {
-
-    @Data
     @AvroSchema("{\"type\":\"string\"}")
     public static class OverriddenClassSchema {
-        int field;
+        public int field;
     }
 
-    @Data
     @JsonClassDescription("A cool class!")
     public static class OverriddenFieldSchema {
-
         @AvroSchema("{\"type\":\"int\"}")
-        private String myField;
+        public String myField;
 
         @Nullable
         @JsonPropertyDescription("the best field in the world")
-        private OverriddenClassSchema recursiveOverride;
+        public OverriddenClassSchema recursiveOverride;
 
         @Nullable
         @AvroSchema("{\"type\":\"long\"}")
-        private OverriddenClassSchema precedenceField;
+        public OverriddenClassSchema precedenceField;
     }
 
     @Test
