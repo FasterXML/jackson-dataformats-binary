@@ -1,15 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
-import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+import java.io.IOException;
 
 import lombok.Data;
-
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests serializing wrapper types for primitives on records
@@ -26,12 +24,6 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         private Float     floatField     = 0F;
         private Double    doubleField    = 0D;
         private String    stringField    = "";
-    }
-
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
     }
     
     @Test

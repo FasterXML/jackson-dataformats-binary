@@ -33,6 +33,11 @@ public class NonBSGenericDatumWriter<D>
 
     @Override
     protected void write(Schema schema, Object datum, Encoder out) throws IOException {
+        // EncodedDatum are already in an avro-encoded format and can be written out directly to the underlying encoder
+        if (datum instanceof EncodedDatum) {
+            ((EncodedDatum) datum).write(out);
+            return;
+        }
         Type t = schema.getType();
         if (t == Type.ENUM) {
             super.writeWithoutConversion(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);

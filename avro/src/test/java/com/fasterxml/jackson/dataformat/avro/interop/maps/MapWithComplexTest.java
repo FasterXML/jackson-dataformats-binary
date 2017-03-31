@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.avro.interop.maps;
 import java.io.IOException;
 import java.util.*;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
@@ -17,11 +16,6 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class MapWithComplexTest extends InteropTestBase
 {
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
-    }
 
     @Test
     public void testMapWithRecordValues() throws IOException {

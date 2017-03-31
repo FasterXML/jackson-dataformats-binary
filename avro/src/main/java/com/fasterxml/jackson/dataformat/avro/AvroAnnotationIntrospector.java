@@ -20,7 +20,10 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.dataformat.avro.deser.CustomEncodingDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
+import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
@@ -60,6 +63,15 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     @Override
     public PropertyName findNameForDeserialization(Annotated a) {
         return _findName(a);
+    }
+
+    @Override
+    public Object findDeserializer(Annotated am) {
+        AvroEncode ann = _findAnnotation(am, AvroEncode.class);
+        if (ann != null) {
+            return new CustomEncodingDeserializer<>((CustomEncoding)ClassUtil.createInstance(ann.using(), true));
+        }
+        return null;
     }
 
     @Override
@@ -112,6 +124,10 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     public Object findSerializer(Annotated a) {
         if (a.hasAnnotation(Stringable.class)) {
             return ToStringSerializer.class;
+        }
+        AvroEncode ann = _findAnnotation(a, AvroEncode.class);
+        if (ann != null) {
+            return new CustomEncodingSerializer<>((CustomEncoding)ClassUtil.createInstance(ann.using(), true));
         }
         return null;
     }

@@ -5,18 +5,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.apache.avro.Schema;
-import org.junit.Assume;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.apacheDeserializer;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.apacheSerializer;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserializer;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonSerializer;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getApacheSchema;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getJacksonSchema;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.Function;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.BiFunction;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.*;
 
 /**
  * Parameterized base class for tests that populates {@link #schemaFunctor}, {@link #serializeFunctor}, and
@@ -28,20 +20,6 @@ public abstract class InteropTestBase
 {
     public enum DummyEnum {
         NORTH, SOUTH, EAST, WEST
-    }
-
-    // To work around 2.8/2.9 difference wrt namespaces for enums
-    // See [dataformats-binary#58] for details
-    protected void assumeCompatibleNsForDeser() {
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer
-                || schemaFunctor != ApacheAvroInteropUtil.getJacksonSchema);
-    }
-
-    // To work around 2.8/2.9 difference wrt namespaces for enums
-    // See [dataformats-binary#58] for details
-    protected void assumeCompatibleNsForSer() {
-        Assume.assumeTrue(serializeFunctor != apacheSerializer
-                || schemaFunctor != ApacheAvroInteropUtil.getJacksonSchema);
     }
 
     /**

@@ -20,11 +20,6 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class ListWithComplexTest extends InteropTestBase
 {
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
-    }
 
     @Test
     public void testEmptyListWithRecordElements() throws IOException {

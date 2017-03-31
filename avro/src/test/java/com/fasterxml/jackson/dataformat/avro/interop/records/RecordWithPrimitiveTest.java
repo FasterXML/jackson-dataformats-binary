@@ -1,15 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
-import lombok.Data;
+import java.io.IOException;
 
-import org.junit.Before;
+import lombok.Data;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
 
 /**
  * Tests serializing primitive fields on records
@@ -25,12 +23,6 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         private long   longField;
         private float  floatField;
         private double doubleField;
-    }
-
-    @Before
-    public void setup() {
-        // 2.8 doesn't generate schemas with compatible namespaces for Apache deserializer
-        assumeCompatibleNsForDeser();
     }
     
     @Test

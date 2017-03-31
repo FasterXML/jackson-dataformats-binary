@@ -55,6 +55,16 @@ public class AvroParserImpl extends AvroParser
      */
     protected BinaryDecoder _decoder;
 
+    /**
+     * Index of the union branch that was followed to reach the current token. This is cleared when the next token is read.
+     */
+    protected int _branchIndex;
+
+    /**
+     * Index of the enum that was read as the current token. This is cleared when the next token is read.
+     */
+    protected int _enumIndex;
+
     /*
     /**********************************************************
     /* Life-cycle
@@ -101,6 +111,23 @@ public class AvroParserImpl extends AvroParser
         }
     }
 
+    /**
+     * Skip to the end of the current structure (array/map/object); This is different from {@link #skipMap()} and {@link #skipArray()}
+     * because it operates at the parser level instead of at the decoder level and advances the parsing context in addition to consuming
+     * the data from the input.
+     *
+     * @throws IOException If there was an issue advancing through the underlying data stream
+     */
+    protected void skipValue() throws IOException {
+        if (_avroContext instanceof ArrayReader) {
+            ((ArrayReader) _avroContext).skipValue(this);
+        } else if (_avroContext instanceof MapReader) {
+            ((MapReader) _avroContext).skipValue(this);
+        } else if (_avroContext instanceof RecordReader) {
+            ((RecordReader) _avroContext).skipValue(this);
+        }
+    }
+
     @Override
     public JsonParser overrideFormatFeatures(int values, int mask) {
         int oldF = _formatFeatures;
@@ -141,6 +168,8 @@ public class AvroParserImpl extends AvroParser
     @Override
     public JsonToken nextToken() throws IOException
     {
+        _branchIndex = -1;
+        _enumIndex = -1;
         _binaryValue = null;
         if (_closed) {
             return null;
@@ -331,11 +360,11 @@ public class AvroParserImpl extends AvroParser
     // // // Misc other decoding
     
     public int decodeIndex() throws IOException {
-        return _decoder.readIndex();
+        return (_branchIndex = _decoder.readIndex());
     }
 
     public int decodeEnum() throws IOException {
-        return _decoder.readEnum();
+        return (_enumIndex = _decoder.readEnum());
     }
 
     public boolean checkInputEnd() throws IOException {
@@ -347,6 +376,18 @@ public class AvroParserImpl extends AvroParser
     /* Methods for AvroReadContext impls, other
     /**********************************************************
      */
+
+    protected int branchIndex() {
+        return _branchIndex;
+    }
+
+    protected int enumIndex() {
+        return _enumIndex;
+    }
+
+    protected boolean isRecord() {
+        return _avroContext instanceof RecordReader;
+    }
     
     protected void setAvroContext(AvroReadContext ctxt) {
         if (ctxt == null) { // sanity check
