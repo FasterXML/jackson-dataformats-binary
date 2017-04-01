@@ -1,13 +1,8 @@
 package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.squareup.protoparser.DataType;
-import com.squareup.protoparser.DataType.ScalarType;
 
 public class ProtobufSchemaHelper
 {
@@ -19,6 +14,7 @@ public class ProtobufSchemaHelper
         return (pkg == null) ? "" : pkg.getName();
     }
 
+    /* 31-Mar-2017, tatu: Shouldn't be needed...
     public static ScalarType getScalarType(JavaType type) {
         Class<?> raw = type.getRawClass();
         if (raw.isPrimitive()) {
@@ -51,16 +47,14 @@ public class ProtobufSchemaHelper
         }
         return null;
     }
+    */
 
     public static boolean hasIndex(BeanProperty writer) {
         return writer.getMetadata().hasIndex();
     }
 
-    public static TypeElementBuilder acceptTypeElement(SerializerProvider provider, JavaType type,
-            DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested) throws JsonMappingException {
-        JsonSerializer<Object> serializer = provider.findValueSerializer(type, null);
-        ProtoBufSchemaVisitor visitor = new ProtoBufSchemaVisitor(provider, definedTypeElementBuilders, isNested);
-        serializer.acceptJsonFormatVisitor(visitor, type);
-        return visitor;
+    public static boolean isBinaryType(JavaType type) {
+        return type.hasRawClass(byte[].class)
+                || type.isTypeOrSubTypeOf(ByteBuffer.class);
     }
 }

@@ -3,75 +3,82 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonAnyFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonBooleanFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonMapFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNullFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+
+import com.squareup.protoparser.DataType;
 import com.squareup.protoparser.TypeElement;
+import com.squareup.protoparser.DataType.ScalarType;
 
 public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
     implements TypeElementBuilder
 {
-	protected DefinedTypeElementBuilders _definedTypeElementBuilders;
+    protected final DefinedTypeElementBuilders _definedTypeElementBuilders;
 
-	protected TypeElementBuilder _builder;
+    /**
+     * When visiting Object (Record) types, Enums, Arrays, we get
+     * this type builder.
+     */
+    protected TypeElementBuilder _builder;
 
-	protected boolean _isNested;
+    /**
+     * When visiting simple scalar types, we'll get this assigned
+     */
+    protected DataType _simpleType;
 
-	/*
-	 * /**********************************************************************
-	 * /* Construction
-	 * /**********************************************************************
-	 */
+    protected boolean _isNested;
 
-	public ProtoBufSchemaVisitor(SerializerProvider provider) {
-		this(provider, null, false);
-	}
+    /*
+    /**********************************************************************
+    /* Construction
+    /**********************************************************************
+	*/
 
-	public ProtoBufSchemaVisitor(SerializerProvider provider, DefinedTypeElementBuilders definedTypeElementBuilders,
-			boolean isNested) {
-		super(provider);
+    // Called by sub-classes only
+    protected ProtoBufSchemaVisitor() {
+        this(null, new DefinedTypeElementBuilders(), false);
+    }
 
-		_definedTypeElementBuilders = (definedTypeElementBuilders != null) ? definedTypeElementBuilders
-				: new DefinedTypeElementBuilders();
+    public ProtoBufSchemaVisitor(SerializerProvider provider, DefinedTypeElementBuilders defBuilders,
+            boolean isNested)
+    {
+        super(provider);
+        _definedTypeElementBuilders = defBuilders;
+        _isNested = isNested;
+    }
 
-		_isNested = isNested;
-	}
+    /*
+    /**********************************************************************
+    /* Extended API
+    /**********************************************************************
+	*/
 
-	/*
-	 * /**********************************************************************
-	 * /* Extended API
-	 * /**********************************************************************
-	 */
+    @Override
+    public TypeElement build() {
+        return _builder.build();
+    }
 
-	@Override
-	public TypeElement build() {
-		return _builder.build();
-	}
+    public DataType getSimpleType() {
+        return _simpleType;
+    }
 
-	public Set<TypeElement> buildWithDependencies() {
-		Set<TypeElement> allTypeElements = new LinkedHashSet<>();
-		allTypeElements.add(build());
-		
-		for(TypeElementBuilder builder : _definedTypeElementBuilders.getDependencyBuilders()) {
-			allTypeElements.add(builder.build());
-		}
-		return allTypeElements;
-	}
+    public Set<TypeElement> buildWithDependencies() {
+        Set<TypeElement> allTypeElements = new LinkedHashSet<>();
+        allTypeElements.add(build());
 
-	/*
-	/**********************************************************************
-	/* Callbacks
-	/**********************************************************************
-	 */
+        for (TypeElementBuilder builder : _definedTypeElementBuilders.getDependencyBuilders()) {
+            allTypeElements.add(builder.build());
+        }
+        return allTypeElements;
+    }
+
+    /*
+    /*********************************************************************
+    /* Callbacks, structured types
+    /*********************************************************************
+     */
 
 	@Override
 	public JsonObjectFormatVisitor expectObjectFormat(JavaType type) {
@@ -84,55 +91,113 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
 
 	@Override
 	public JsonMapFormatVisitor expectMapFormat(JavaType mapType) {
-		return _throwUnsupported("'Map' type not supported as root type by protobuf");
+         // 31-Mar-2017, tatu: I don't think protobuf v2 really supports map types natively,
+	    //   and we can't quite assume anything specific can we?
+		return _throwUnsupported("'Map' type not supported as type by protobuf module");
 	}
 
 	@Override
-	public JsonArrayFormatVisitor expectArrayFormat(JavaType convertedType) {
-		return _throwUnsupported("'Array' type not supported as root type by protobuf");
+	public JsonArrayFormatVisitor expectArrayFormat(JavaType type) {
+         // 31-Mar-2017, tatu: This is bit messy, may get Base64 encoded or int array so
+         if (ProtobufSchemaHelper.isBinaryType(type)) {
+              _simpleType = ScalarType.BYTES;
+              return null;
+         }
+         
+         // !!! TODO: surely we should support array types, right?
+         
+         return _throwUnsupported("'Map' type not supported as type by protobuf module");
+	}
+
+    /*
+    /*********************************************************************
+    /* Callbacks, scalar types
+    /*********************************************************************
+     */
+
+    @Override
+    public JsonStringFormatVisitor expectStringFormat(JavaType type) {
+        if (type.isEnumType()) {
+            EnumElementVisitor visitor = new EnumElementVisitor(_provider, type, _definedTypeElementBuilders, _isNested);
+            _builder = visitor;
+            _definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
+            return visitor;
+        }
+        // 31-Mar-2017, tatu: This is bit messy, may get Base64 encoded or int array so
+        if (ProtobufSchemaHelper.isBinaryType(type)) {
+            _simpleType = ScalarType.BYTES;
+        } else {
+            _simpleType = ScalarType.STRING;
+        }
+        return null;
+    }
+
+    @Override
+    public JsonNumberFormatVisitor expectNumberFormat(JavaType type)
+    {
+        // default to some sane value
+        _simpleType = DataType.ScalarType.DOUBLE;
+        return new JsonNumberFormatVisitor.Base() {
+            @Override
+            public void numberType(NumberType nt) {
+                switch (nt) {
+                // should only get decimal types
+                case FLOAT:
+                    _simpleType = ScalarType.FLOAT;
+                    break;
+                case BIG_DECIMAL:
+                case DOUBLE:
+                    _simpleType = ScalarType.DOUBLE;
+                    break;
+                default:
+                }
+            }
+         };
 	}
 
 	@Override
-	public JsonStringFormatVisitor expectStringFormat(JavaType type) {
-		if (!type.isEnumType()) {
-			return _throwUnsupported("'String' type not supported as root type by protobuf");
-		}
-
-		EnumElementVisitor visitor = new EnumElementVisitor(_provider, type, _definedTypeElementBuilders, _isNested);
-		_builder = visitor;
-		_definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
-		return visitor;
-	}
-
-	@Override
-	public JsonNumberFormatVisitor expectNumberFormat(JavaType convertedType) {
-		return _throwUnsupported("'Number' type not supported as root type by protobuf");
-	}
-
-	@Override
-	public JsonIntegerFormatVisitor expectIntegerFormat(JavaType type) {
-		return _throwUnsupported("'Integer' type not supported as root type by protobuf");
+	public JsonIntegerFormatVisitor expectIntegerFormat(JavaType type)
+	{
+	    // default to some sane value
+         _simpleType = DataType.ScalarType.INT64;
+         return new JsonIntegerFormatVisitor.Base() {
+            @Override
+            public void numberType(NumberType nt) {
+                switch (nt) {
+                // should only get integer types
+                case INT:
+                    _simpleType = ScalarType.INT32;
+                    break;
+                case LONG:
+                case BIG_INTEGER:
+                    _simpleType = ScalarType.INT64;
+                    break;
+                default:
+                }
+            }
+         };
 	}
 
 	@Override
 	public JsonBooleanFormatVisitor expectBooleanFormat(JavaType convertedType) {
-		return _throwUnsupported("'Boolean' type not supported as root type by protobuf");
+	    _simpleType = ScalarType.BOOL;
+         return null;
 	}
 
 	@Override
 	public JsonNullFormatVisitor expectNullFormat(JavaType convertedType) {
-		return _throwUnsupported("'Null' type not supported as root type by protobuf");
+         return _throwUnsupported("'Null type' not supported as a type by protobuf");
 	}
 
 	@Override
-	public JsonAnyFormatVisitor expectAnyFormat(JavaType convertedType) {
-		return _throwUnsupported("'Any' type not supported as root type by protobuf");
-	}
+     public JsonAnyFormatVisitor expectAnyFormat(JavaType convertedType) {
+          return _throwUnsupported("'Any' type not supported as a type by protobuf");
+     }
 
-	/*
-	/**********************************************************************
+     /*
+	/*********************************************************************
 	/* Internal methods
-	/**********************************************************************
+	/*********************************************************************
 	 */
 
 	protected <T> T _throwUnsupported() {

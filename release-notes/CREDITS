@@ -27,3 +27,10 @@ baharclerode@github:
  (2.9.0)
 * Contributed #60 (avro): Add support for `@Union` and polymorphic types
  (2.9.0)
+
+Eldad Rudich (eldadru@github)
+
+* Reported #68 (proto): Getting "type not supported as root type by protobuf" for serialization
+  of short and UUID types
+ (2.9.0)
+

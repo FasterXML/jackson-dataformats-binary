@@ -21,6 +21,9 @@ Modules:
  (contributed by baharclerode@github)
 #60 (avro): Add support for `@Union` and polymorphic types
  (contributed by baharclerode@github)
+#68 (proto): Getting "type not supported as root type by protobuf" for serialization
+  of short and UUID types
+ (reported by Eldad R)
 #69 (avro): Add support for `@AvroEncode` annotation
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
