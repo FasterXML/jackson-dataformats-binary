@@ -1,9 +1,8 @@
-package com.fasterxml.jackson.dataformat.protobuf.failing;
+package com.fasterxml.jackson.dataformat.protobuf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class NestedWrite67Test extends ProtobufTestBase

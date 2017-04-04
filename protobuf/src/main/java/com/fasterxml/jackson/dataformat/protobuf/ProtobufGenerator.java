@@ -326,7 +326,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _output.flush();
     }
-    
+
     @Override
     public void close() throws IOException
     {
@@ -1731,6 +1731,10 @@ public class ProtobufGenerator extends GeneratorBase
          *  similar to method above. But somehow that does not seem to be needed...
          *  Let's add it just to be safe, still.
          */
+        // 04-Apr-2017, tatu: Most likely this is because this can only happen when we are
+        //   writing Objects as elements of packed array; and this can not be root-level
+        //   value: and if so we must be buffering (to get length prefix)
+/*        
         if (_buffered == null) {
             int len = ptr - _currStart;
             if (len > 0) {
@@ -1738,34 +1742,31 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, _currStart, len);
             }
         }
+*/        
         _buffered = new ByteAccumulator(_buffered, -1, _currBuffer, ptr, _currStart);
         ptr += 5;
         _currStart = ptr;
         _currPtr = ptr;
     }
 
+    /**
+     * Helper method called when the current buffering scope is closed;
+     * when packed array is completed (`writeEndArray()`) or record is
+     * completed (`writeEndObject()`).
+     */
     private final void _finishBuffering() throws IOException
     {
         final int start = _currStart;
-        final int newStart = _currPtr;
+        final int newStart = _currPtr;        
         final int currLen = newStart - start;
 
         ByteAccumulator acc = _buffered;
-        final ByteAccumulator child = _buffered;
         acc = acc.finish(_output, _currBuffer, start, currLen);
         _buffered = acc;
         if (acc == null) {
             _currStart = 0;
             _currPtr = 0;
             return;
-        }
-
-        // 08-Mar-2017, tatu: for [dataformats-binary#54]
-        // need to reposition buffer, otherwise will overwrite
-        final int parentStart = child._parentStart;
-        final int flushLen = child._prefixOffset - parentStart;
-        if (flushLen > 0) {
-            _buffered.append(_currBuffer, parentStart, flushLen);
         }
         _currStart = newStart;
 // already same, no need to change
@@ -1822,7 +1823,7 @@ public class ProtobufGenerator extends GeneratorBase
         } else {
             acc = acc.finish(_output, _currBuffer, start, currLen);
             while (acc != null) {
-                acc = acc.finish(_output);
+                acc = acc.finish(_output, _currBuffer);
             }
             _buffered = null;
         }

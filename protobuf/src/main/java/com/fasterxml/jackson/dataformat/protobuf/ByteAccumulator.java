@@ -19,8 +19,7 @@ public class ByteAccumulator
     protected final byte[] _prefixBuffer;
 
     /**
-     * Offset within {@link #_prefixBuffer} where there is room
-     * for prefix.
+     * Offset within {@link #_prefixBuffer} where there is room for prefix.
      */
     protected final int _prefixOffset;
     
@@ -40,17 +39,11 @@ public class ByteAccumulator
     public ByteAccumulator(ByteAccumulator p, int typedTag,
             byte[] prefixBuffer, int prefixOffset, int parentStart)
     {
-        this(p, typedTag, prefixBuffer, prefixOffset);
-        _parentStart = parentStart;
-    }
-
-    public ByteAccumulator(ByteAccumulator p, int typedTag,
-            byte[] prefixBuffer, int prefixOffset)
-    {
         _parent = p;
         _typedTag = typedTag;
         _prefixBuffer = prefixBuffer;
         _prefixOffset = prefixOffset;
+        _parentStart = parentStart;
     }
 
     public void append(byte[] buf, int offset, int len) {
@@ -66,9 +59,9 @@ public class ByteAccumulator
     public ByteAccumulator finish(OutputStream out,
             byte[] input, int offset, int len) throws IOException
     {
+        final byte[] prefix = _prefixBuffer;
         int start = _prefixOffset;
         int ptr;
-        final byte[] prefix = _prefixBuffer;
 
         if (_typedTag == -1) {
             ptr = start;
@@ -77,11 +70,12 @@ public class ByteAccumulator
         }
 
         int plen = _segmentBytes + len;
-
         ptr = ProtobufUtil.appendLengthLength(plen, prefix, ptr);
-
+        
         // root? Just output it all 
         if (_parent == null) {
+            // 04-Apr-2017, tatu: We know that parent will have flushed anything it might have,
+            //    so `_parentStart` is irrelevant here (but not in the other branch)
             out.write(prefix, start, ptr-start);
             for (Segment s = _firstSegment; s != null; s = s.next()) {
                 s.writeTo(out);
@@ -90,6 +84,12 @@ public class ByteAccumulator
                 out.write(input, offset, len);
             }
         } else {
+            // 04-Apr-2017, tatu: for [dataformats-binary#67], need to flush possible
+            //    content parent had...
+            final int flushLen = _prefixOffset - _parentStart;
+            if (flushLen > 0) {
+                _parent.append(input, _parentStart, flushLen);
+            }
             _parent.append(prefix, start, ptr-start);
             if (_firstSegment != null) {
                 _parent.appendAll(_firstSegment, _lastSegment, _segmentBytes);
@@ -101,7 +101,7 @@ public class ByteAccumulator
         return _parent;
     }
 
-    public ByteAccumulator finish(OutputStream out) throws IOException
+    public ByteAccumulator finish(OutputStream out, byte[] input) throws IOException
     {
         int start = _prefixOffset;
         int ptr;
@@ -117,11 +117,17 @@ public class ByteAccumulator
 
         // root? Just output it all 
         if (_parent == null) {
+            // 04-Apr-2017, tatu: We know that parent will have flushed anything it might have,
+            //    so `_parentStart` is irrelevant here (but not in the other branch)
             out.write(prefix, start, ptr-start);
             for (Segment s = _firstSegment; s != null; s = s.next()) {
                 s.writeTo(out);
             }
         } else {
+            final int flushLen = _prefixOffset - _parentStart;
+            if (flushLen > 0) {
+                _parent.append(input, _parentStart, flushLen);
+            }
             _parent.append(prefix, start, ptr-start);
             if (_firstSegment != null) {
                 _parent.appendAll(_firstSegment, _lastSegment, _segmentBytes);
