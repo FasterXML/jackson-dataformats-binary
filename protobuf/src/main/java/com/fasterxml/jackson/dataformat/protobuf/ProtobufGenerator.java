@@ -1699,17 +1699,15 @@ public class ProtobufGenerator extends GeneratorBase
         _ensureRoom(20);
         // and leave the gap of 10 bytes
         int ptr = _currPtr;
+        int start = _currStart;
 
         // root level content to flush first?
         if (_buffered == null) {
-            int start = _currStart;
             int len = ptr - start;
             if (len > 0) {
-                ptr = 0;
+                ptr = start = 0;
                 _output.write(_currBuffer, start, len);
             }
-            // note: no need to (re)set _currStart since nothing is buffered, so whatever
-            // is passed to child accumulator will NOT be used by or for anything
         }
         _buffered = new ByteAccumulator(_buffered, typedTag, _currBuffer, ptr, _currStart);
         ptr += 10;
@@ -1742,7 +1740,7 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, _currStart, len);
             }
         }
-*/        
+*/
         _buffered = new ByteAccumulator(_buffered, -1, _currBuffer, ptr, _currStart);
         ptr += 5;
         _currStart = ptr;

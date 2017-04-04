@@ -58,7 +58,7 @@ public class NestedWrite67Test extends ProtobufTestBase
 
       byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(level1);
 
-      showBytes(bytes);
+//      showBytes(bytes);
 
       Level1 gotLevel1 = MAPPER.readerFor(Level1.class).with(schema).readValue(bytes);
 
@@ -75,12 +75,12 @@ public class NestedWrite67Test extends ProtobufTestBase
       assertEquals(level3s.length, gotLevel1.level2.level3s.length);
       assertEquals(level3a.value3, gotLevel1.level2.level3s[0].value3);
     }
-
+/*
     private void showBytes(byte[] bytes) {
         for (byte b : bytes) {
           System.out.print(String.format("%8s", Integer.toHexString(b)).substring(6, 8).replaceAll(" ", "0") + " ");
         }
         System.out.println();
       }
-
+*/
 }
