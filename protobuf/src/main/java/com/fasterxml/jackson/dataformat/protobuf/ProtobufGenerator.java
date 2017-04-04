@@ -1708,9 +1708,13 @@ public class ProtobufGenerator extends GeneratorBase
                 ptr = 0;
                 _output.write(_currBuffer, start, len);
             }
+            // note: no need to (re)set _currStart since nothing is buffered, so whatever
+            // is passed to child accumulator will NOT be used by or for anything
         }
         _buffered = new ByteAccumulator(_buffered, typedTag, _currBuffer, ptr, _currStart);
-        _currStart = _currPtr = ptr + 10;
+        ptr += 10;
+        _currStart = ptr;
+        _currPtr = ptr;
     }
 
     /**
@@ -1735,13 +1739,15 @@ public class ProtobufGenerator extends GeneratorBase
             }
         }
         _buffered = new ByteAccumulator(_buffered, -1, _currBuffer, ptr, _currStart);
-        _currStart = _currPtr = ptr + 5;
+        ptr += 5;
+        _currStart = ptr;
+        _currPtr = ptr;
     }
 
     private final void _finishBuffering() throws IOException
     {
         final int start = _currStart;
-        final int newStart = _currPtr;        
+        final int newStart = _currPtr;
         final int currLen = newStart - start;
 
         ByteAccumulator acc = _buffered;
@@ -1751,12 +1757,19 @@ public class ProtobufGenerator extends GeneratorBase
         if (acc == null) {
             _currStart = 0;
             _currPtr = 0;
-        } else {
-            // 08-Mar-2017, tatu: for [dataformats-binary#54]
-            // need to reposition buffer, otherwise will overwrite
-            final int parentStart = child._parentStart;
-            _flushBuffer(parentStart, child._prefixOffset - parentStart, newStart);
+            return;
         }
+
+        // 08-Mar-2017, tatu: for [dataformats-binary#54]
+        // need to reposition buffer, otherwise will overwrite
+        final int parentStart = child._parentStart;
+        final int flushLen = child._prefixOffset - parentStart;
+        if (flushLen > 0) {
+            _buffered.append(_currBuffer, parentStart, flushLen);
+        }
+        _currStart = newStart;
+// already same, no need to change
+//      _currPtr = newStart;
     }
 
     protected final void _ensureRoom(int needed) throws IOException
@@ -1790,32 +1803,6 @@ public class ProtobufGenerator extends GeneratorBase
             acc.append(_currBuffer, start, currLen);
         }
         _currBuffer = ProtobufUtil.allocSecondary(_currBuffer);
-    }
-
-    /**
-     * Flushes current buffer either to output or (if buffered) ByteAccumulator (append)
-     * and sets current start position to current pointer.
-     *
-     * @since 2.8.8
-     */
-    protected final void _flushBuffer(final int start, final int currLen, final int newStart) throws IOException
-    {
-        ByteAccumulator acc = _buffered;
-        if (acc == null) {
-            // without accumulation, we know buffer is free for reuse
-            if (currLen > 0) {
-                _output.write(_currBuffer, start, currLen);
-            }
-            _currStart = 0;
-            _currPtr = 0;
-            return;
-        }
-        // but with buffered, need to append, allocate new buffer (since old
-        // almost certainly contains buffered data)
-        if (currLen > 0) {
-            acc.append(_currBuffer, start, currLen);
-        }
-        _currPtr = _currStart = newStart;
     }
 
     protected void _complete() throws IOException
