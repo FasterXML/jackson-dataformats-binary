@@ -32,7 +32,8 @@ Modules:
 #54 (protobuf): Some fields are left null
 #58 (avro): Regression due to changed namespace of inner enum types
  (reported by Peter R)
-#62: `java.lang.ArrayIndexOutOfBoundsException` at `CBORGenerator.java`:548
+#62: (cbor) `java.lang.ArrayIndexOutOfBoundsException` at `CBORGenerator.java`:548
+#67: (proto) Serialization of multiple nesting levels has issues
 
 2.8.7 (21-Feb-2017)
 
