@@ -1609,7 +1609,7 @@ public final class CBORParser extends ParserMinimalBase
         }
         return _numberFloat;
     }
-    
+
     @Override
     public NumberType getNumberType() throws IOException
     {
@@ -1682,7 +1682,7 @@ public final class CBORParser extends ParserMinimalBase
         }
         return _numberBigInt;
     }
-    
+
     @Override
     public float getFloatValue() throws IOException
     {
