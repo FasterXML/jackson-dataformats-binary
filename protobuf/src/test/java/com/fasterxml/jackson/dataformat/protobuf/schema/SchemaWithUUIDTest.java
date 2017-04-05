@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.protobuf.schemagen;
+package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;

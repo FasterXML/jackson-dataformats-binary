@@ -1596,9 +1596,8 @@ public final class CBORParser extends ParserMinimalBase
             return _numberBigDecimal;
         }
     
-        /* And then floating point types. But here optimal type
-         * needs to be big decimal, to avoid losing any data?
-         */
+        // And then floating point types. But here optimal type
+        // needs to be big decimal, to avoid losing any data?
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             return _numberBigDecimal;
         }
@@ -1897,14 +1896,6 @@ public final class CBORParser extends ParserMinimalBase
         _numTypesValid |= NR_BIGDECIMAL;
     }
 
-    protected void reportOverflowInt() throws IOException {
-        _reportError("Numeric value ("+getText()+") out of range of int ("+Integer.MIN_VALUE+" - "+Integer.MAX_VALUE+")");
-    }
-    
-    protected void reportOverflowLong() throws IOException {
-        _reportError("Numeric value ("+getText()+") out of range of long ("+Long.MIN_VALUE+" - "+Long.MAX_VALUE+")");
-    }    
-    
     /*
     /**********************************************************
     /* Internal methods, secondary parsing

@@ -58,6 +58,7 @@ public class AvroUntypedDeserializer extends UntypedObjectDeserializer
      * Method called to map a JSON Object into a Java value.
      */
     // Would we just be better off deferring to the Map<Object,Object> deserializer?
+    @Override
     protected Object mapObject(JsonParser p, DeserializationContext ctxt) throws IOException {
         Object key1;
         JsonToken t = p.getCurrentToken();

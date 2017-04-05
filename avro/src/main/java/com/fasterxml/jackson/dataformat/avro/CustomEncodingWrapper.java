@@ -52,6 +52,7 @@ public class CustomEncodingWrapper<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public T read(Object reuse, Decoder in) throws IOException {
         try {
             return (T) READ.invoke(encoding, reuse, in);
