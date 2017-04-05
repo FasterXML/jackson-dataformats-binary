@@ -11,7 +11,7 @@ Modules:
 
 2.9.0 (not yet released)
 
-2.8.8 (not yet released)
+2.8.8 (05-Apr-2017)
 
 #54 (protobuf): Some fields are left null
 #58 (avro): Regression due to changed namespace of inner enum types
