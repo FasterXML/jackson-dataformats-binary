@@ -33,7 +33,7 @@ public class GenerateNestedType73Test extends ProtobufTestBase
                 ;
 
         ProtobufSchema schema = MAPPER.schemaLoader()
-                .load(new StringReader(SCHEMA_STR));
+                .load(new StringReader(SCHEMA_STR), "t2");
         assertNotNull(schema);
     }
 }
