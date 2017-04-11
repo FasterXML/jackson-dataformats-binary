@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 import java.io.StringReader;
-import java.util.Base64;
 
 public class ReadPackedRepeatedTest extends ProtobufTestBase
 {
@@ -17,8 +16,7 @@ public class ReadPackedRepeatedTest extends ProtobufTestBase
             + "message t {\n"
             + "        repeated uint32 f = 1 [packed=true];\n"
             + "}";
-        final String base64pb = "CgNkyAE=";         // f = [100, 200]
-        final byte[] pb = Base64.getDecoder().decode(base64pb);
+        final byte[] pb = {0xa, 0x3, 0x64, (byte)0xc8, 0x1}; // f = [100, 200]
 
         ProtobufSchema schema = MAPPER.schemaLoader().load(new StringReader(SCHEMA_STR));
         JsonNode t = MAPPER.readerFor(JsonNode.class).with(schema).readValue(pb);
