@@ -21,9 +21,8 @@ public class ReadPackedRepeatedTest extends ProtobufTestBase
         ProtobufSchema schema = MAPPER.schemaLoader().load(new StringReader(SCHEMA_STR));
         JsonNode t = MAPPER.readerFor(JsonNode.class).with(schema).readValue(pb);
 
-        String s = t.get("f").asText();
-        assertEquals(t.get("f").size(), 2);
-        assertEquals(t.get("f").get(0).asInt(), 100);
-        assertEquals(t.get("f").get(1).asInt(), 200);
+        assertEquals(2, t.get("f").size());
+        assertEquals(100, t.get("f").get(0).asInt());
+        assertEquals(200, t.get("f").get(1).asInt());
     }
 }
