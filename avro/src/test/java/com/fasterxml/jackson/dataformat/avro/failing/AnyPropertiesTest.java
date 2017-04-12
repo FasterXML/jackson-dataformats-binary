@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro;
+package com.fasterxml.jackson.dataformat.avro.failing;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 // for [dataformats-binary#75]
 public class AnyPropertiesTest extends AvroTestBase
