@@ -27,7 +27,7 @@ abstractions.
     <dependency>
       <groupId>com.squareup</groupId>
       <artifactId>protoparser</artifactId>
-      <version>4.0.0</version>
+      <version>4.0.3</version>
     </dependency>
 
     <!-- Hmmh. Need databind for schema generation, convenience ProtobufMapper.

@@ -1,7 +1,8 @@
-package com.fasterxml.jackson.dataformat.protobuf;
+package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.List;
 
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 import com.fasterxml.jackson.dataformat.protobuf.schema.NativeProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;

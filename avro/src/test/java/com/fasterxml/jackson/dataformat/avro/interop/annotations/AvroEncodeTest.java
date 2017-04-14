@@ -6,9 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.reflect.AvroEncode;
@@ -24,49 +21,45 @@ import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AvroEncodeTest extends InteropTestBase {
-
-    @Data
     static class Wrapper {
-
-        private double precedingValue = 0.18273465;
+        public double precedingValue = 0.18273465;
 
         @AvroEncode(using = ApacheImplEncoding.class)
-        private CustomComponent component;
+        public CustomComponent component;
 
-        private int followingValue = 3456;
+        public int followingValue = 3456;
 
+        public void setComponent(CustomComponent c) { component = c; }
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     static class CustomComponent {
+        public int intValue;
 
-        private int intValue;
+        public byte byteValue;
 
-        private byte byteValue;
+        public short shortValue;
 
-        private short shortValue;
-
-        private String stringValue;
-
-        @Nullable
-        private Map<String, ArrayList<Integer>> mapValue;
+        public String stringValue;
 
         @Nullable
-        private CustomComponent nestedRecordValue;
+        public Map<String, ArrayList<Integer>> mapValue;
 
         @Nullable
-        private Double doubleValue;
+        public CustomComponent nestedRecordValue;
 
         @Nullable
-        private Long longValue;
+        public Double doubleValue;
 
+        @Nullable
+        public Long longValue;
+
+        protected CustomComponent() { }
     }
 
+    @SuppressWarnings("unchecked")
     public static class ApacheImplEncoding extends CustomEncoding<CustomComponent> {
 
-        public ApacheImplEncoding() {
+        public ApacheImplEncoding() throws IOException {
             schema = ApacheAvroInteropUtil.getJacksonSchema(CustomComponent.class);
         }
 
@@ -91,54 +84,57 @@ public class AvroEncodeTest extends InteropTestBase {
         wrapper = new Wrapper();
         //
         wrapper.setComponent(new CustomComponent());
-        wrapper.getComponent().setByteValue((byte) 126);
-        wrapper.getComponent().setIntValue(897125364);
-        wrapper.getComponent().setShortValue((short) -7614);
-        wrapper.getComponent().setMapValue(new HashMap<String, ArrayList<Integer>>());
-        wrapper.getComponent().getMapValue().put("birds", new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6)));
-        wrapper.getComponent().getMapValue().put("cats", new ArrayList<Integer>());
-        wrapper.getComponent().getMapValue().put("dogs", new ArrayList<>(Arrays.asList(-1234, 56, 6767, 54134, 57, 86)));
-        wrapper.getComponent().setStringValue("Hello World!");
-        //
-        wrapper.getComponent().setNestedRecordValue(new CustomComponent());
-        wrapper.getComponent().getNestedRecordValue().setByteValue((byte) 42);
-        wrapper.getComponent().getNestedRecordValue().setIntValue(9557748);
-        wrapper.getComponent().getNestedRecordValue().setShortValue((short) -1542);
-        wrapper.getComponent().getNestedRecordValue().setDoubleValue(Double.POSITIVE_INFINITY);
-        wrapper.getComponent().getNestedRecordValue().setLongValue(Long.MAX_VALUE);
-        wrapper.getComponent().getNestedRecordValue().setStringValue("Nested Hello World!");
+        wrapper.component.byteValue = (byte) 126;
+        wrapper.component.intValue = 897125364;
+        wrapper.component.shortValue = (short) -7614;
+        Map<String, ArrayList<Integer>> mv = new HashMap<>();
+        wrapper.component.mapValue = mv;
+        mv.put("birds", new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6)));
+        mv.put("cats", new ArrayList<Integer>());
+        mv.put("dogs", new ArrayList<>(Arrays.asList(-1234, 56, 6767, 54134, 57, 86)));
+        wrapper.component.stringValue = "Hello World!";
+
+        CustomComponent cc = new CustomComponent();
+        cc.byteValue = (byte) 42;
+        cc.intValue = 9557748;
+        cc.shortValue = (short) -1542;
+        cc.doubleValue = Double.POSITIVE_INFINITY;
+        cc.longValue = Long.MAX_VALUE;
+        cc.stringValue = "Nested Hello World!";
+        wrapper.component.nestedRecordValue = cc;
+
         //
         result = roundTrip(wrapper);
     }
 
     @Test
     public void testByteValue() {
-        assertThat(result.getComponent().getByteValue()).isEqualTo(wrapper.getComponent().getByteValue());
+        assertThat(result.component.byteValue).isEqualTo(wrapper.component.byteValue);
     }
 
     @Test
     public void testShortValue() {
-        assertThat(result.getComponent().getShortValue()).isEqualTo(wrapper.getComponent().getShortValue());
+        assertThat(result.component.shortValue).isEqualTo(wrapper.component.shortValue);
     }
 
     @Test
     public void testStringValue() {
-        assertThat(result.getComponent().getStringValue()).isEqualTo(wrapper.getComponent().getStringValue());
+        assertThat(result.component.stringValue).isEqualTo(wrapper.component.stringValue);
     }
 
     @Test
     public void testDoubleValue() {
-        assertThat(result.getComponent().getDoubleValue()).isEqualTo(wrapper.getComponent().getDoubleValue());
+        assertThat(result.component.doubleValue).isEqualTo(wrapper.component.doubleValue);
     }
 
     @Test
     public void testLongValue() {
-        assertThat(result.getComponent().getLongValue()).isEqualTo(wrapper.getComponent().getLongValue());
+        assertThat(result.component.longValue).isEqualTo(wrapper.component.longValue);
     }
 
     @Test
     public void testIntegerValue() {
-        assertThat(result.getComponent().getIntValue()).isEqualTo(wrapper.getComponent().getIntValue());
+        assertThat(result.component.intValue).isEqualTo(wrapper.component.intValue);
     }
 
 }

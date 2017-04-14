@@ -16,7 +16,7 @@ public class NativeProtobufSchema
     protected final Collection<TypeElement> _nativeTypes;
 
     protected volatile String[] _messageNames;
-    
+
     protected NativeProtobufSchema(ProtoFile input)
     {
         this(input.filePath(), input.typeElements());

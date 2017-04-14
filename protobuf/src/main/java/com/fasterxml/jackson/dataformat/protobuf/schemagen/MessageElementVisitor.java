@@ -1,15 +1,12 @@
 package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+
 import com.squareup.protoparser.DataType;
 import com.squareup.protoparser.DataType.NamedType;
 import com.squareup.protoparser.DataType.ScalarType;
@@ -18,7 +15,8 @@ import com.squareup.protoparser.FieldElement.Label;
 import com.squareup.protoparser.MessageElement;
 import com.squareup.protoparser.TypeElement;
 
-public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implements TypeElementBuilder
+public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
+    implements TypeElementBuilder
 {
     protected MessageElement.Builder _builder;
 
@@ -34,11 +32,8 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
             DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested)
     {
         super(provider);
-
         _definedTypeElementBuilders = definedTypeElementBuilders;
-
         _type = type;
-
         _builder = MessageElement.builder();
         _builder.name(type.getRawClass().getSimpleName());
         _builder.documentation("Message for " + type.toCanonical());
@@ -79,8 +74,13 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
         JavaType type = writer.getType();
 
         if (type.isArrayType() || type.isCollectionLikeType()) {
-            fBuilder.label(Label.REPEATED);
-            fBuilder.type(getDataType(type.getContentType()));
+            if (ProtobufSchemaHelper.isBinaryType(type)) {
+                fBuilder.label(label);
+                fBuilder.type(ScalarType.BYTES);
+            } else {
+                fBuilder.label(Label.REPEATED);
+                fBuilder.type(getDataType(type.getContentType()));
+            }
         } else {
             fBuilder.label(label);
             fBuilder.type(getDataType(type));
@@ -103,25 +103,49 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base implemen
         }
     }
 
-    protected DataType getDataType(JavaType type) throws JsonMappingException {
-        ScalarType sType = ProtobufSchemaHelper.getScalarType(type);
-        if (sType != null) { // Is scalar type ref
-            return sType;
-        }
-
+    protected DataType getDataType(JavaType type) throws JsonMappingException
+    {
         if (!_definedTypeElementBuilders.containsBuilderFor(type)) { // No self ref
-            if (Arrays.asList(_type.getRawClass().getDeclaredClasses()).contains(type.getRawClass())) { // nested
+            if (isNested(type)) {
                 if (!_nestedTypes.contains(type)) { // create nested type
                     _nestedTypes.add(type);
-                    TypeElementBuilder nestedTypeBuilder = ProtobufSchemaHelper.acceptTypeElement(_provider, type,
+                    ProtoBufSchemaVisitor builder = acceptTypeElement(_provider, type,
                             _definedTypeElementBuilders, true);
-
-                    _builder.addType(nestedTypeBuilder.build());
+                    DataType scalarType = builder.getSimpleType();
+                    if (scalarType != null){
+                        return scalarType;
+                    }
+                    _builder.addType(builder.build());
                 }
-            } else { // tracking non-nested types to generate them later
-                ProtobufSchemaHelper.acceptTypeElement(_provider, type, _definedTypeElementBuilders, false);
+            } else { // track non-nested types to generate them later
+                ProtoBufSchemaVisitor builder = acceptTypeElement(_provider, type,
+                        _definedTypeElementBuilders, false);
+                DataType scalarType = builder.getSimpleType();
+                if (scalarType != null){
+                    return scalarType;
+                }
             }
         }
         return NamedType.create(type.getRawClass().getSimpleName());
+    }
+
+    private ProtoBufSchemaVisitor acceptTypeElement(SerializerProvider provider, JavaType type,
+            DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested) throws JsonMappingException
+    {
+        JsonSerializer<Object> serializer = provider.findValueSerializer(type, null);
+        ProtoBufSchemaVisitor visitor = new ProtoBufSchemaVisitor(provider, definedTypeElementBuilders, isNested);
+        serializer.acceptJsonFormatVisitor(visitor, type);
+        return visitor;
+    }
+
+    private boolean isNested(JavaType type)
+    {
+        Class<?> match = type.getRawClass();
+        for (Class<?> cls : _type.getRawClass().getDeclaredClasses()) {
+            if (cls == match) {
+                return true;
+            }
+        }
+        return false;
     }
 }

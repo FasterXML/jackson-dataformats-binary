@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroModule;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
+import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
 
 /**
  * Utilities and helper functions to aid compatibility testing between Jackson and Apache Avro implementations
@@ -141,14 +143,6 @@ public class ApacheAvroInteropUtil {
         }
     };
 
-    public interface BiFunction<T, U, V> {
-        V apply(T first, U second) throws IOException;
-    }
-
-    public interface Function<T, U> {
-        U apply(T input) throws IOException;
-    }
-
     /**
      * Deserialize an avro-encoded payload using the given {@code schema} and Apache implementation
      *
@@ -206,12 +200,8 @@ public class ApacheAvroInteropUtil {
      *
      * @return Schema for {@code type}
      */
-    public static Schema getJacksonSchema(Type type) {
-        try {
-            return MAPPER.schemaFor(MAPPER.constructType(type)).getAvroSchema();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException("Could not generate schema for " + type, e);
-        }
+    public static Schema getJacksonSchema(Type type) throws IOException {
+        return MAPPER.schemaFor(MAPPER.constructType(type)).getAvroSchema();
     }
 
     /**
@@ -228,12 +218,8 @@ public class ApacheAvroInteropUtil {
      *
      * @return Deserialized payload
      */
-    public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) {
-        try {
-            return MAPPER.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to Deserialize", e);
-        }
+    public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) throws IOException {
+        return MAPPER.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
     }
 
     /**

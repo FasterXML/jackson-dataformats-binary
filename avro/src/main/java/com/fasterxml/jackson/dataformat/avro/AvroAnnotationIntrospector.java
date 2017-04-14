@@ -45,6 +45,8 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
 {
     private static final long serialVersionUID = 1L;
 
+    public AvroAnnotationIntrospector() { }
+
     @Override
     public Version version() {
         return PackageVersion.VERSION;
@@ -69,7 +71,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     public Object findDeserializer(Annotated am) {
         AvroEncode ann = _findAnnotation(am, AvroEncode.class);
         if (ann != null) {
-            return new CustomEncodingDeserializer<>((CustomEncoding)ClassUtil.createInstance(ann.using(), true));
+            return new CustomEncodingDeserializer<>((CustomEncoding<?>)ClassUtil.createInstance(ann.using(), true));
         }
         return null;
     }
@@ -98,7 +100,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     @Override
     public Boolean hasRequiredMarker(AnnotatedMember m) {
         if (_hasAnnotation(m, Nullable.class)) {
-            return false;
+            return Boolean.FALSE;
         }
         return null;
     }
@@ -127,19 +129,20 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
         }
         AvroEncode ann = _findAnnotation(a, AvroEncode.class);
         if (ann != null) {
-            return new CustomEncodingSerializer<>((CustomEncoding)ClassUtil.createInstance(ann.using(), true));
+            return new CustomEncodingSerializer<>((CustomEncoding<?>)ClassUtil.createInstance(ann.using(), true));
         }
         return null;
     }
 
     @Override
-    public List<NamedType> findSubtypes(Annotated a) {
-        Union union = _findAnnotation(a, Union.class);
-        if (union == null) {
+    public List<NamedType> findSubtypes(Annotated a)
+    {
+        Class<?>[] types = _getUnionTypes(a);
+        if (types == null) {
             return null;
         }
-        ArrayList<NamedType> names = new ArrayList<>(union.value().length);
-        for (Class<?> subtype : union.value()) {
+        ArrayList<NamedType> names = new ArrayList<>(types.length);
+        for (Class<?> subtype : types) {
             names.add(new NamedType(subtype, AvroSchemaHelper.getTypeId(subtype)));
         }
         return names;
@@ -161,11 +164,33 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config, Annotated ann, JavaType baseType) {
-        TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
-        JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
-        if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
-            resolver = resolver.defaultImpl(typeInfo.defaultImpl());
+        // 14-Apr-2017, tatu: There are two ways to enable polymorphic typing, above and beyond
+        //    basic Jackson: use of `@Union`, and "default typing" approach for `java.lang.Object`:
+        //    latter since Avro support for "untyped" values is otherwise difficult.
+        //    This seems to work for now, but maybe needs more work in future...
+        if (baseType.isJavaLangObject() || (_getUnionTypes(ann) != null)) {
+            TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
+            JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
+            if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
+                resolver = resolver.defaultImpl(typeInfo.defaultImpl());
+            }
+            return resolver;
         }
-        return resolver;
+        return null;
+    }
+
+    protected Class<?>[] _getUnionTypes(Annotated a) {
+        Union ann = _findAnnotation(a, Union.class);
+        if (ann != null) {
+            // 14-Apr-2017, tatu: I think it makes sense to require non-empty List, as this allows
+            //   disabling annotation with overrides. But one could even consider requiring more than
+            //   one (where single type is not really polymorphism)... for now, however, just one
+            //   is acceptable, and maybe that has valid usages.
+            Class<?>[] c = ann.value();
+            if (c.length > 0) {
+                return c;
+            }
+        }
+        return null;
     }
 }

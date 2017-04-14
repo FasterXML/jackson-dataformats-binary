@@ -22,6 +22,7 @@ public class CustomEncodingDatum<T> implements EncodedDatum {
         this._datum = datum;
     }
 
+    @Override
     public void write(Encoder encoder) throws IOException {
         _encoding.write(_datum, encoder);
     }

@@ -271,8 +271,9 @@ public class ProtobufParser extends ParserMinimalBase
 
     // And then floating point types
 
-    final protected static int NR_DOUBLE = 0x008;
-    final protected static int NR_BIGDECIMAL = 0x0010;
+    final protected static int NR_FLOAT = 0x008;
+    final protected static int NR_DOUBLE = 0x010;
+    final protected static int NR_BIGDECIMAL = 0x0020;
 
     // Also, we need some numeric constants
 
@@ -298,7 +299,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     final static double MIN_INT_D = (double) Integer.MIN_VALUE;
     final static double MAX_INT_D = (double) Integer.MAX_VALUE;
-    
+
     /**
      * Bitfield that indicates which numeric representations
      * have been calculated for the current type
@@ -308,6 +309,8 @@ public class ProtobufParser extends ParserMinimalBase
     // First primitives
 
     protected int _numberInt;
+    protected float _numberFloat;
+
     protected long _numberLong;
     protected double _numberDouble;
 
@@ -802,8 +805,8 @@ public class ProtobufParser extends ParserMinimalBase
             type = JsonToken.VALUE_NUMBER_FLOAT;
             break;
         case FLOAT:
-            _numberDouble = (double) Float.intBitsToFloat(_decode32Bits());
-            _numTypesValid = NR_DOUBLE;
+            _numberFloat = Float.intBitsToFloat(_decode32Bits());
+            _numTypesValid = NR_FLOAT;
             type =  JsonToken.VALUE_NUMBER_FLOAT;
             break;
         case VINT32_Z:
@@ -1478,7 +1481,23 @@ public class ProtobufParser extends ParserMinimalBase
     /* Numeric accessors of public API
     /**********************************************************
      */
-    
+
+    @Override // since 2.9
+    public boolean isNaN() {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
+                double d = _numberDouble;
+                return Double.isNaN(d) || Double.isInfinite(d);
+            }
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                float f = _numberFloat;
+                return Float.isNaN(f) || Float.isInfinite(f);
+            }
+        }
+        return false;
+    }
+
     @Override
     public Number getNumberValue() throws IOException
     {
@@ -1499,17 +1518,19 @@ public class ProtobufParser extends ParserMinimalBase
             // Shouldn't get this far but if we do
             return _numberBigDecimal;
         }
-    
-        /* And then floating point types. But here optimal type
-         * needs to be big decimal, to avoid losing any data?
-         */
+
+        // And then floating point types. But here optimal type
+        // needs to be big decimal, to avoid losing any data?
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             return _numberBigDecimal;
         }
-        if ((_numTypesValid & NR_DOUBLE) == 0) { // sanity check
+        if ((_numTypesValid & NR_DOUBLE) != 0) {
+            return _numberDouble;
+        }
+        if ((_numTypesValid & NR_FLOAT) == 0) { // sanity check
             _throwInternal();
         }
-        return _numberDouble;
+        return _numberFloat;
     }
     
     @Override
@@ -1537,9 +1558,12 @@ public class ProtobufParser extends ParserMinimalBase
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             return NumberType.BIG_DECIMAL;
         }
-        return NumberType.DOUBLE;
+        if ((_numTypesValid & NR_DOUBLE) != 0) {
+            return NumberType.DOUBLE;
+        }
+        return NumberType.FLOAT;
     }
-    
+
     @Override
     public int getIntValue() throws IOException
     {
@@ -1585,16 +1609,21 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public float getFloatValue() throws IOException
     {
-        double value = getDoubleValue();
-        /* 22-Jan-2009, tatu: Bounds/range checks would be tricky
-         *   here, so let's not bother even trying...
-         */
+        if ((_numTypesValid & NR_FLOAT) == 0) {
+            if (_numTypesValid == NR_UNKNOWN) {
+                _checkNumericValue(NR_FLOAT);
+            }
+            if ((_numTypesValid & NR_FLOAT) == 0) {
+                convertNumberToFloat();
+            }
+        }
+        // Bounds/range checks would be tricky here, so let's not bother even trying...
         /*
         if (value < -Float.MAX_VALUE || value > MAX_FLOAT_D) {
             _reportError("Numeric value ("+getText()+") out of range of Java float");
         }
         */
-        return (float) value;
+        return _numberFloat;
     }
     
     @Override
@@ -1640,18 +1669,6 @@ public class ProtobufParser extends ParserMinimalBase
         _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
     }
 
-    @Override // since 2.9
-    public boolean isNaN() {
-        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            if ((_numTypesValid & NR_DOUBLE) != 0) {
-                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
-                double d = _numberDouble;
-                return Double.isNaN(d) || Double.isInfinite(d);              
-            }
-        }
-        return false;
-    }
-
     protected void convertNumberToInt() throws IOException
     {
         // First, converting from long ought to be easy
@@ -1674,6 +1691,11 @@ public class ProtobufParser extends ParserMinimalBase
                 reportOverflowInt();
             }
             _numberInt = (int) _numberDouble;
+        } else if ((_numTypesValid & NR_FLOAT) != 0) {
+            if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
+                reportOverflowInt();
+            }
+            _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
@@ -1697,11 +1719,15 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
-            // Need to check boundaries
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
                 reportOverflowLong();
             }
             _numberLong = (long) _numberDouble;
+        } else if ((_numTypesValid & NR_FLOAT) != 0) {
+            if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
+                reportOverflowInt();
+            }
+            _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
@@ -1725,18 +1751,42 @@ public class ProtobufParser extends ParserMinimalBase
             _numberBigInt = BigInteger.valueOf(_numberInt);
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             _numberBigInt = BigDecimal.valueOf(_numberDouble).toBigInteger();
+        } else if ((_numTypesValid & NR_FLOAT) != 0) {
+            _numberBigInt = BigDecimal.valueOf(_numberFloat).toBigInteger();
         } else {
             _throwInternal();
         }
         _numTypesValid |= NR_BIGINT;
     }
-    
+
+    protected void convertNumberToFloat() throws IOException
+    {
+        // Note: this MUST start with more accurate representations, since we don't know which
+        //  value is the original one (others get generated when requested)
+        if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+            _numberFloat = _numberBigDecimal.floatValue();
+        } else if ((_numTypesValid & NR_BIGINT) != 0) {
+            _numberFloat = _numberBigInt.floatValue();
+        } else if ((_numTypesValid & NR_DOUBLE) != 0) {
+            _numberFloat = (float) _numberDouble;
+        } else if ((_numTypesValid & NR_LONG) != 0) {
+            _numberFloat = (float) _numberLong;
+        } else if ((_numTypesValid & NR_INT) != 0) {
+            _numberFloat = (float) _numberInt;
+        } else {
+            _throwInternal();
+        }
+        _numTypesValid |= NR_FLOAT;
+    }
+
     protected void convertNumberToDouble() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             _numberDouble = _numberBigDecimal.doubleValue();
+        } else if ((_numTypesValid & NR_FLOAT) != 0) {
+            _numberDouble = (double) _numberFloat;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberDouble = _numberBigInt.doubleValue();
         } else if ((_numTypesValid & NR_LONG) != 0) {
@@ -1753,7 +1803,7 @@ public class ProtobufParser extends ParserMinimalBase
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
-        if ((_numTypesValid & NR_DOUBLE) != 0) {
+        if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
             _numberBigDecimal = NumberInput.parseBigDecimal(getText());
@@ -2452,16 +2502,6 @@ public class ProtobufParser extends ParserMinimalBase
     /* Helper methods, error reporting
     /**********************************************************
      */
-
-    protected void reportOverflowInt() throws IOException {
-        _reportErrorF("Numeric value (%s) out of range of int (%d - %d)",
-                getText(), Integer.MIN_VALUE, Integer.MAX_VALUE);
-    }
-
-    protected void reportOverflowLong() throws IOException {
-        _reportErrorF("Numeric value (%s) out of range of long (%d - %d)",
-                getText(), Long.MIN_VALUE, Long.MAX_VALUE);
-    }
 
     private void _reportErrorF(String format, Object... args) throws JsonParseException {
         _reportError(String.format(format, args));

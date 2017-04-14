@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.protobuf;
+package com.fasterxml.jackson.dataformat.protobuf.testutil;
 
 import java.io.*;
 import java.util.Random;

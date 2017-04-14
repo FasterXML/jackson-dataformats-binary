@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+import com.fasterxml.jackson.dataformat.protobuf.testutil.LimitingInputStream;
 
 public class ReadComplexPojoTest extends ProtobufTestBase
 {

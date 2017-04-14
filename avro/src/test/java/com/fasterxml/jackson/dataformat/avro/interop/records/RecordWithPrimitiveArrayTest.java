@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
 
-import lombok.Data;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -14,16 +13,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RecordWithPrimitiveArrayTest extends InteropTestBase
 {
-
-    @Data
     public static class TestRecord {
-        private byte[]   byteArrayField      = new byte[0];
-        private short[]  shortArrayField     = new short[0];
-        private char[]   characterArrayField = new char[0];
-        private int[]    integerArrayField   = new int[0];
-        private long[]   longArrayField      = new long[0];
-        private float[]  floatArrayField     = new float[0];
-        private double[] doubleArrayField    = new double[0];
+        public byte[]   byteArrayField      = new byte[0];
+        public short[]  shortArrayField     = new short[0];
+        public char[]   characterArrayField = new char[0];
+        public int[]    integerArrayField   = new int[0];
+        public long[]   longArrayField      = new long[0];
+        public float[]  floatArrayField     = new float[0];
+        public double[] doubleArrayField    = new double[0];
     }
 
     @Test

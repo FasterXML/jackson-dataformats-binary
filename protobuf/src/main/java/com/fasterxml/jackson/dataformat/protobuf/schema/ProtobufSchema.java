@@ -20,13 +20,13 @@ public class ProtobufSchema implements FormatSchema
      * in which case this would be `null`.
      */
     protected final NativeProtobufSchema _source;
-    
+
     protected final ProtobufMessage _rootType;
-    
+
     /*
-    /**********************************************************
+    /************************************************************
     /* Construction
-    /**********************************************************
+    /************************************************************
      */
     
     public ProtobufSchema(NativeProtobufSchema src, ProtobufMessage rootType) {
@@ -94,5 +94,16 @@ public class ProtobufSchema implements FormatSchema
     @Override
     public String getSchemaType() {
         return FORMAT_NAME_PROTOBUF;
+    }
+
+    /*
+    /**********************************************************
+    /* API
+    /**********************************************************
+     */
+
+    @Override
+    public String toString() {
+        return String.valueOf(_source);
     }
 }

@@ -138,7 +138,14 @@ public class AvroParserImplDecoder extends Decoder {
     @Override
     public ByteBuffer readBytes(ByteBuffer old) throws IOException {
         consumeToken(JsonToken.VALUE_EMBEDDED_OBJECT);
-        return ByteBuffer.wrap(_parser.getBinaryValue());
+        byte[] value = _parser.getBinaryValue();
+        if ((old != null) && value.length <= old.capacity()) {
+            old.clear();
+            old.put(value);
+            old.flip();
+            return old;
+        }
+        return ByteBuffer.wrap(value);
     }
 
     @Override

@@ -26,6 +26,11 @@ public abstract class AvroWriteContext
     
     protected final Schema _schema;
 
+    /**
+     * @since 2.9
+     */
+    protected Object _currentValue;
+
     /*
     /**********************************************************
     /* Life-cycle
@@ -64,13 +69,24 @@ public abstract class AvroWriteContext
         throw new IllegalStateException("Can not be called on "+getClass().getName());
     }
 
-
     public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException { return createChildObjectContext(); }
 
+    /*
+    /**********************************************************
     /* Accessors
     /**********************************************************
      */
 
+    @Override
+    public Object getCurrentValue() {
+        return _currentValue;
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _currentValue = v;
+    }
+    
     @Override
     public final AvroWriteContext getParent() { return _parent; }
 

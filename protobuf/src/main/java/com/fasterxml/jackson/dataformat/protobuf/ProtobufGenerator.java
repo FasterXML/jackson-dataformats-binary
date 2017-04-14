@@ -326,7 +326,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _output.flush();
     }
-    
+
     @Override
     public void close() throws IOException
     {
@@ -1699,18 +1699,20 @@ public class ProtobufGenerator extends GeneratorBase
         _ensureRoom(20);
         // and leave the gap of 10 bytes
         int ptr = _currPtr;
+        int start = _currStart;
 
         // root level content to flush first?
         if (_buffered == null) {
-            int start = _currStart;
             int len = ptr - start;
             if (len > 0) {
-                ptr = 0;
+                ptr = start = 0;
                 _output.write(_currBuffer, start, len);
             }
         }
         _buffered = new ByteAccumulator(_buffered, typedTag, _currBuffer, ptr, _currStart);
-        _currStart = _currPtr = ptr + 10;
+        ptr += 10;
+        _currStart = ptr;
+        _currPtr = ptr;
     }
 
     /**
@@ -1727,6 +1729,10 @@ public class ProtobufGenerator extends GeneratorBase
          *  similar to method above. But somehow that does not seem to be needed...
          *  Let's add it just to be safe, still.
          */
+        // 04-Apr-2017, tatu: Most likely this is because this can only happen when we are
+        //   writing Objects as elements of packed array; and this can not be root-level
+        //   value: and if so we must be buffering (to get length prefix)
+/*        
         if (_buffered == null) {
             int len = ptr - _currStart;
             if (len > 0) {
@@ -1734,10 +1740,18 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, _currStart, len);
             }
         }
+*/
         _buffered = new ByteAccumulator(_buffered, -1, _currBuffer, ptr, _currStart);
-        _currStart = _currPtr = ptr + 5;
+        ptr += 5;
+        _currStart = ptr;
+        _currPtr = ptr;
     }
 
+    /**
+     * Helper method called when the current buffering scope is closed;
+     * when packed array is completed (`writeEndArray()`) or record is
+     * completed (`writeEndObject()`).
+     */
     private final void _finishBuffering() throws IOException
     {
         final int start = _currStart;
@@ -1745,18 +1759,16 @@ public class ProtobufGenerator extends GeneratorBase
         final int currLen = newStart - start;
 
         ByteAccumulator acc = _buffered;
-        final ByteAccumulator child = _buffered;
         acc = acc.finish(_output, _currBuffer, start, currLen);
         _buffered = acc;
         if (acc == null) {
             _currStart = 0;
             _currPtr = 0;
-        } else {
-            // 08-Mar-2017, tatu: for [dataformats-binary#54]
-            // need to reposition buffer, otherwise will overwrite
-            final int parentStart = child._parentStart;
-            _flushBuffer(parentStart, child._prefixOffset - parentStart, newStart);
+            return;
         }
+        _currStart = newStart;
+// already same, no need to change
+//      _currPtr = newStart;
     }
 
     protected final void _ensureRoom(int needed) throws IOException
@@ -1792,32 +1804,6 @@ public class ProtobufGenerator extends GeneratorBase
         _currBuffer = ProtobufUtil.allocSecondary(_currBuffer);
     }
 
-    /**
-     * Flushes current buffer either to output or (if buffered) ByteAccumulator (append)
-     * and sets current start position to current pointer.
-     *
-     * @since 2.8.8
-     */
-    protected final void _flushBuffer(final int start, final int currLen, final int newStart) throws IOException
-    {
-        ByteAccumulator acc = _buffered;
-        if (acc == null) {
-            // without accumulation, we know buffer is free for reuse
-            if (currLen > 0) {
-                _output.write(_currBuffer, start, currLen);
-            }
-            _currStart = 0;
-            _currPtr = 0;
-            return;
-        }
-        // but with buffered, need to append, allocate new buffer (since old
-        // almost certainly contains buffered data)
-        if (currLen > 0) {
-            acc.append(_currBuffer, start, currLen);
-        }
-        _currPtr = _currStart = newStart;
-    }
-
     protected void _complete() throws IOException
     {
         _complete = true;
@@ -1835,7 +1821,7 @@ public class ProtobufGenerator extends GeneratorBase
         } else {
             acc = acc.finish(_output, _currBuffer, start, currLen);
             while (acc != null) {
-                acc = acc.finish(_output);
+                acc = acc.finish(_output, _currBuffer);
             }
             _buffered = null;
         }

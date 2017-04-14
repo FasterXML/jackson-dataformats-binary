@@ -21,15 +21,24 @@ Modules:
  (contributed by baharclerode@github)
 #60 (avro): Add support for `@Union` and polymorphic types
  (contributed by baharclerode@github)
+#63: (avro): Implement native `float` handling for parser
+#64: (proto): Implement native `float` handling for parser
+#68 (proto): Getting "type not supported as root type by protobuf" for serialization
+  of short and UUID types
+ (reported by Eldad R)
 #69 (avro): Add support for `@AvroEncode` annotation
+#79 (proto): Fix wire type for packed arrays
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
-2.8.8 (not yet released)
+2.8.8 (05-Apr-2017)
 
 #54 (protobuf): Some fields are left null
 #58 (avro): Regression due to changed namespace of inner enum types
  (reported by Peter R)
-#62: `java.lang.ArrayIndexOutOfBoundsException` at `CBORGenerator.java`:548
+#62: (cbor) `java.lang.ArrayIndexOutOfBoundsException` at `CBORGenerator.java`:548
+#67: (proto) Serialization of multiple nesting levels has issues
+#70: (proto) Can't deserialize packed repeated field
+ (reported by Kenji N)
 
 2.8.7 (21-Feb-2017)
 

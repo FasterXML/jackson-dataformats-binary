@@ -19,19 +19,23 @@ public class ByteAccumulator
     protected final byte[] _prefixBuffer;
 
     /**
-     * Offset within {@link #_prefixBuffer} where there is room
-     * for prefix.
+     * Offset within {@link #_prefixBuffer} where there is room for encoding
+     * prefix (type, tag, length).
      */
     protected final int _prefixOffset;
-    
+
     protected final int _typedTag;
 
     protected Segment _firstSegment, _lastSegment;
 
+    /**
+     * Total number of bytes contained within buffers, to be used for length prefix.
+     */
     protected int _segmentBytes;
 
     /**
-     * Used to cache start pointer for nested message's parent
+     * Pointer to start of contents provided by parent, preceding room
+     * for prefix (that is, same as or less than `_prefixOffset`)
      * 
      * @since 2.8.8
      */
@@ -40,17 +44,11 @@ public class ByteAccumulator
     public ByteAccumulator(ByteAccumulator p, int typedTag,
             byte[] prefixBuffer, int prefixOffset, int parentStart)
     {
-        this(p, typedTag, prefixBuffer, prefixOffset);
-        _parentStart = parentStart;
-    }
-
-    public ByteAccumulator(ByteAccumulator p, int typedTag,
-            byte[] prefixBuffer, int prefixOffset)
-    {
         _parent = p;
         _typedTag = typedTag;
         _prefixBuffer = prefixBuffer;
         _prefixOffset = prefixOffset;
+        _parentStart = parentStart;
     }
 
     public void append(byte[] buf, int offset, int len) {
@@ -66,23 +64,25 @@ public class ByteAccumulator
     public ByteAccumulator finish(OutputStream out,
             byte[] input, int offset, int len) throws IOException
     {
-        int start = _prefixOffset;
+        final byte[] prefixBuf = _prefixBuffer;
         int ptr;
-        final byte[] prefix = _prefixBuffer;
 
+        // First: encode full tag to use, now that we length to calculate prefix from
         if (_typedTag == -1) {
-            ptr = start;
+            ptr = _prefixOffset;
         } else {
-            ptr = ProtobufUtil.appendLengthLength(_typedTag, prefix, start);
+            ptr = ProtobufUtil.appendLengthLength(_typedTag, prefixBuf, _prefixOffset);
         }
 
         int plen = _segmentBytes + len;
-
-        ptr = ProtobufUtil.appendLengthLength(plen, prefix, ptr);
+        ptr = ProtobufUtil.appendLengthLength(plen, prefixBuf, ptr);
 
         // root? Just output it all 
+        final int writeStart = _parentStart; // same as `_prefixOffset` or less, if buffered content
         if (_parent == null) {
-            out.write(prefix, start, ptr-start);
+            // 04-Apr-2017, tatu: We know that parent will have flushed anything it might have,
+            //    so `_parentStart` is irrelevant here (but not in the other branch)
+            out.write(prefixBuf, writeStart, ptr-writeStart);
             for (Segment s = _firstSegment; s != null; s = s.next()) {
                 s.writeTo(out);
             }
@@ -90,7 +90,9 @@ public class ByteAccumulator
                 out.write(input, offset, len);
             }
         } else {
-            _parent.append(prefix, start, ptr-start);
+            // 04-Apr-2017, tatu: for [dataformats-binary#67], need to flush possible
+            //    content parent had...
+            _parent.append(prefixBuf, writeStart, ptr-writeStart);
             if (_firstSegment != null) {
                 _parent.appendAll(_firstSegment, _lastSegment, _segmentBytes);
             }
@@ -101,28 +103,30 @@ public class ByteAccumulator
         return _parent;
     }
 
-    public ByteAccumulator finish(OutputStream out) throws IOException
+    public ByteAccumulator finish(OutputStream out, byte[] input) throws IOException
     {
-        int start = _prefixOffset;
         int ptr;
-        final byte[] prefix = _prefixBuffer;
+        final byte[] prefixBuf = _prefixBuffer;
 
         if (_typedTag == -1) {
-            ptr = start;
+            ptr = _prefixOffset;
         } else {
-            ptr = ProtobufUtil.appendLengthLength(_typedTag, prefix, start);
+            ptr = ProtobufUtil.appendLengthLength(_typedTag, prefixBuf, _prefixOffset);
         }
         int plen = _segmentBytes;
-        ptr = ProtobufUtil.appendLengthLength(plen, prefix, ptr);
+        ptr = ProtobufUtil.appendLengthLength(plen, prefixBuf, ptr);
 
+        final int writeStart = _parentStart; // same as `_prefixOffset` or less, if buffered content
         // root? Just output it all 
         if (_parent == null) {
-            out.write(prefix, start, ptr-start);
+            // 04-Apr-2017, tatu: We know that parent will have flushed anything it might have,
+            //    so `_parentStart` is irrelevant here (but not in the other branch)
+            out.write(prefixBuf, writeStart, ptr-writeStart);
             for (Segment s = _firstSegment; s != null; s = s.next()) {
                 s.writeTo(out);
             }
         } else {
-            _parent.append(prefix, start, ptr-start);
+            _parent.append(prefixBuf, writeStart, ptr-writeStart);
             if (_firstSegment != null) {
                 _parent.appendAll(_firstSegment, _lastSegment, _segmentBytes);
             }

@@ -109,6 +109,7 @@ public abstract class MapReader extends AvroStructureReader
             _scalarDecoder = sd;
         }
 
+        @Override
         public long getRemainingElements() {
             return _count - _index;
         }
@@ -185,6 +186,7 @@ public abstract class MapReader extends AvroStructureReader
             _structureReader = reader;
         }
 
+        @Override
         public long getRemainingElements() {
             return _count - _index;
         }
@@ -193,6 +195,7 @@ public abstract class MapReader extends AvroStructureReader
         public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new NonScalar(parent, parser, _structureReader, _typeId, _keyTypeId);
         }
+
         @Override
         public JsonToken nextToken() throws IOException
         {

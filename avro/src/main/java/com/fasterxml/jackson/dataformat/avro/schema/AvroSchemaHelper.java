@@ -48,7 +48,7 @@ public abstract class AvroSchemaHelper
      *
      * @since 2.8.8
      */
-    public static final    String        AVRO_SCHEMA_PROP_ELEMENT_CLASS = SpecificData.ELEMENT_PROP;
+    public static final String AVRO_SCHEMA_PROP_ELEMENT_CLASS = SpecificData.ELEMENT_PROP;
     /**
      * Default stringable classes
      *
@@ -61,7 +61,8 @@ public abstract class AvroSchemaHelper
     ));
 
     /**
-     * Checks if a given type is "Stringable", that is one of the default {@link #STRINGABLE_CLASSES}, is an {@code Enum},
+     * Checks if a given type is "Stringable", that is one of the default
+     * {@link #STRINGABLE_CLASSES}, is an {@code Enum},
      * or is annotated with
      * {@link Stringable @Stringable} and has a constructor that takes a single string argument capable of deserializing the output of its
      * {@code toString()} method.
@@ -89,7 +90,7 @@ public abstract class AvroSchemaHelper
     protected static String getNamespace(JavaType type) {
         Class<?> cls = type.getRawClass();
         // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`;
-        //   NOTE: was revert in 2.8.8, but is enabled for Jackson 2.9.
+        //   NOTE: was reverted in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
         if (enclosing != null) {
             return enclosing.getName() + "$";

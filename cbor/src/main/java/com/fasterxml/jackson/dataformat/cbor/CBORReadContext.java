@@ -28,6 +28,11 @@ public final class CBORReadContext
     // // // Location information (minus source reference)
 
     protected String _currentName;
+
+    /**
+     * @since 2.9
+     */
+    protected Object _currentValue;
     
     /*
     /**********************************************************
@@ -60,11 +65,22 @@ public final class CBORReadContext
         _expEntryCount = expEntryCount;
         _index = -1;
         _currentName = null;
+        _currentValue = null;
         if (_dups != null) {
             _dups.reset();
         }
     }
 
+    @Override
+    public Object getCurrentValue() {
+        return _currentValue;
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _currentValue = v;
+    }
+    
     // // // Factory methods
 
     public static CBORReadContext createRootContext(DupDetector dups) {
