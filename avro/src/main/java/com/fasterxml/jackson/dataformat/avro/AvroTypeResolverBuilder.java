@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
 
     public AvroTypeResolverBuilder() {
-        super(JsonTypeInfo.Id.CUSTOM,
+        super(JsonTypeInfo.Id.CUSTOM, // could be NONE, but there is type discriminator in Avro...
                 JsonTypeInfo.As.PROPERTY, // N/A for custom
                 "@class" // similarly, N/A
                 );
