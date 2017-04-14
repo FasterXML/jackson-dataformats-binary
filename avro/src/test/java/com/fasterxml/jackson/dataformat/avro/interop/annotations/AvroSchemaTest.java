@@ -46,14 +46,14 @@ public class AvroSchemaTest extends InteropTestBase {
     }
 
     @Test
-    public void testJacksonClassDescription() {
+    public void testJacksonClassDescription() throws Exception {
         Schema schema = ApacheAvroInteropUtil.getJacksonSchema(OverriddenFieldSchema.class);
         //
         assertThat(schema.getDoc()).isEqualTo("A cool class!");
     }
 
     @Test
-    public void testJacksonPropertyDescription() {
+    public void testJacksonPropertyDescription() throws Exception {
         Schema schema = ApacheAvroInteropUtil.getJacksonSchema(OverriddenFieldSchema.class);
         //
         assertThat(schema.getField("recursiveOverride").doc()).isEqualTo("the best field in the world");

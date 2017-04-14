@@ -8,6 +8,9 @@ import org.apache.avro.Schema;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
+import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
+
 import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.*;
 
 /**

@@ -59,7 +59,7 @@ public class AvroEncodeTest extends InteropTestBase {
     @SuppressWarnings("unchecked")
     public static class ApacheImplEncoding extends CustomEncoding<CustomComponent> {
 
-        public ApacheImplEncoding() {
+        public ApacheImplEncoding() throws IOException {
             schema = ApacheAvroInteropUtil.getJacksonSchema(CustomComponent.class);
         }
 

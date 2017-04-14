@@ -45,6 +45,12 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
 {
     private static final long serialVersionUID = 1L;
 
+    protected final boolean _useEnhancedTyping;
+
+    public AvroAnnotationIntrospector() {
+        _useEnhancedTyping = true;
+    }
+
     @Override
     public Version version() {
         return PackageVersion.VERSION;
@@ -98,7 +104,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     @Override
     public Boolean hasRequiredMarker(AnnotatedMember m) {
         if (_hasAnnotation(m, Nullable.class)) {
-            return false;
+            return Boolean.FALSE;
         }
         return null;
     }
@@ -133,13 +139,14 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public List<NamedType> findSubtypes(Annotated a) {
-        Union union = _findAnnotation(a, Union.class);
-        if (union == null) {
+    public List<NamedType> findSubtypes(Annotated a)
+    {
+        Class<?>[] types = _getUnionTypes(a);
+        if (types == null) {
             return null;
         }
-        ArrayList<NamedType> names = new ArrayList<>(union.value().length);
-        for (Class<?> subtype : union.value()) {
+        ArrayList<NamedType> names = new ArrayList<>(types.length);
+        for (Class<?> subtype : types) {
             names.add(new NamedType(subtype, AvroSchemaHelper.getTypeId(subtype)));
         }
         return names;
@@ -161,11 +168,32 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config, Annotated ann, JavaType baseType) {
-        TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
-        JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
-        if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
-            resolver = resolver.defaultImpl(typeInfo.defaultImpl());
+        // 14-Apr-2017, tatu: Only enable polymorphic type handling if explicitly annotated; otherwise
+        //    we have no way to determine this. Part of the problem is that we have no access to
+        //    schema infomration here, which would contain information.
+        if (_useEnhancedTyping || (_getUnionTypes(ann) != null)) {
+            TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
+            JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
+            if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
+                resolver = resolver.defaultImpl(typeInfo.defaultImpl());
+            }
+            return resolver;
         }
-        return resolver;
+        return null;
+    }
+
+    protected Class<?>[] _getUnionTypes(Annotated a) {
+        Union ann = _findAnnotation(a, Union.class);
+        if (ann != null) {
+            // 14-Apr-2017, tatu: I think it makes sense to require non-empty List, as this allows
+            //   disabling annotation with overrides. But one could even consider requiring more than
+            //   one (where single type is not really polymorphism)... for now, however, just one
+            //   is acceptable, and maybe that has valid usages.
+            Class<?>[] c = ann.value();
+            if (c.length > 0) {
+                return c;
+            }
+        }
+        return null;
     }
 }
