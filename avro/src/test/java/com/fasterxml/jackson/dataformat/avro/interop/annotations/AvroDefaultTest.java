@@ -19,7 +19,7 @@ public class AvroDefaultTest {
     }
 
     @Test
-    public void testUnionBooleanDefault() {
+    public void testUnionBooleanDefault() throws Exception {
         Schema apacheSchema = ApacheAvroInteropUtil.getApacheSchema(RecordWithDefaults.class);
         Schema jacksonSchema = ApacheAvroInteropUtil.getJacksonSchema(RecordWithDefaults.class);
         //
@@ -27,7 +27,7 @@ public class AvroDefaultTest {
     }
 
     @Test
-    public void testUnionIntegerDefault() {
+    public void testUnionIntegerDefault() throws Exception {
         Schema apacheSchema = ApacheAvroInteropUtil.getApacheSchema(RecordWithDefaults.class);
         Schema jacksonSchema = ApacheAvroInteropUtil.getJacksonSchema(RecordWithDefaults.class);
         //
@@ -35,7 +35,7 @@ public class AvroDefaultTest {
     }
 
     @Test
-    public void testUnionStringDefault() {
+    public void testUnionStringDefault() throws Exception {
         Schema apacheSchema = ApacheAvroInteropUtil.getApacheSchema(RecordWithDefaults.class);
         Schema jacksonSchema = ApacheAvroInteropUtil.getJacksonSchema(RecordWithDefaults.class);
         //

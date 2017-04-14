@@ -56,6 +56,7 @@ public class AvroEncodeTest extends InteropTestBase {
         protected CustomComponent() { }
     }
 
+    @SuppressWarnings("unchecked")
     public static class ApacheImplEncoding extends CustomEncoding<CustomComponent> {
 
         public ApacheImplEncoding() {

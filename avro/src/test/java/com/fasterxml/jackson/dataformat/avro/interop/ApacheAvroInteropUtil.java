@@ -228,12 +228,8 @@ public class ApacheAvroInteropUtil {
      *
      * @return Deserialized payload
      */
-    public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) {
-        try {
-            return MAPPER.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to Deserialize", e);
-        }
+    public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) throws IOException {
+        return MAPPER.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
     }
 
     /**
