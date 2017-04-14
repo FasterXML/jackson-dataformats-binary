@@ -1,11 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.ByteBuffer;
+import java.util.*;
 
+import org.apache.avro.SchemaBuilder;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.reflect.AvroEncode;
@@ -53,6 +52,9 @@ public class AvroEncodeTest extends InteropTestBase {
         @Nullable
         public Long longValue;
 
+        @AvroEncode(using = UuidAsBytesAvroEncoding.class)
+        private UUID uuidValue;
+
         protected CustomComponent() { }
     }
 
@@ -60,7 +62,7 @@ public class AvroEncodeTest extends InteropTestBase {
     public static class ApacheImplEncoding extends CustomEncoding<CustomComponent> {
 
         public ApacheImplEncoding() throws IOException {
-            schema = ApacheAvroInteropUtil.getJacksonSchema(CustomComponent.class);
+            schema = ApacheAvroInteropUtil.getApacheSchema(CustomComponent.class);
         }
 
         @Override
@@ -75,8 +77,67 @@ public class AvroEncodeTest extends InteropTestBase {
 
     }
 
-    protected Wrapper wrapper;
+    public static class UuidAsBytesAvroEncoding extends CustomEncoding<UUID> {
+        public static byte[] asByteArray(UUID uuid) {
+            long msb = uuid.getMostSignificantBits();
+            long lsb = uuid.getLeastSignificantBits();
+            byte[] buffer = new byte[16];
+            for (int i = 0; i < 8; i++) {
+                buffer[i] = (byte) (msb >>> 8 * (7 - i));
+            }
+            for (int i = 8; i < 16; i++) {
+                buffer[i] = (byte) (lsb >>> 8 * (7 - i));
+            }
+            return buffer;
+        }
 
+        public static UUID toUUID(byte[] byteArray) {
+            long msb = 0;
+            long lsb = 0;
+            for (int i = 0; i < 8; i++) { msb = (msb << 8) | (byteArray[i] & 0xff); }
+            for (int i = 8; i < 16; i++) { lsb = (lsb << 8) | (byteArray[i] & 0xff); }
+            return new UUID(msb, lsb);
+        }
+
+        public UuidAsBytesAvroEncoding() {
+            this.schema = SchemaBuilder.unionOf().nullType().and().bytesBuilder().endBytes().endUnion();
+        }
+
+        @Override
+        public void write(Object datum, Encoder encoder) throws IOException {
+            if (datum == null) {
+                encoder.writeIndex(0);
+                encoder.writeNull();
+                return;
+            }
+            encoder.writeIndex(1);
+            encoder.writeBytes(asByteArray((UUID) datum));
+        }
+
+        @Override
+        public UUID read(Object datum, Decoder decoder) throws IOException {
+            try {
+                // get index in union
+                int index = decoder.readIndex();
+                if (index == 1) {
+                    // read in 16 bytes of data
+                    ByteBuffer b = ByteBuffer.allocate(16);
+                    decoder.readBytes(b);
+                    // convert
+                    UUID uuid = toUUID(b.array());
+                    return uuid;
+                } else {
+                    decoder.readNull();
+                    // no uuid present
+                    return null;
+                }
+            } catch (Exception exception) {
+                throw new IllegalStateException("Could not decode bytes into UUID", exception);
+            }
+        }
+    }
+
+    protected Wrapper wrapper;
     protected Wrapper result;
 
     @Before
@@ -93,6 +154,7 @@ public class AvroEncodeTest extends InteropTestBase {
         mv.put("cats", new ArrayList<Integer>());
         mv.put("dogs", new ArrayList<>(Arrays.asList(-1234, 56, 6767, 54134, 57, 86)));
         wrapper.component.stringValue = "Hello World!";
+        wrapper.component.uuidValue = UUID.randomUUID();
 
         CustomComponent cc = new CustomComponent();
         cc.byteValue = (byte) 42;
@@ -101,8 +163,8 @@ public class AvroEncodeTest extends InteropTestBase {
         cc.doubleValue = Double.POSITIVE_INFINITY;
         cc.longValue = Long.MAX_VALUE;
         cc.stringValue = "Nested Hello World!";
+        cc.uuidValue = UUID.randomUUID();
         wrapper.component.nestedRecordValue = cc;
-
         //
         result = roundTrip(wrapper);
     }
@@ -137,4 +199,13 @@ public class AvroEncodeTest extends InteropTestBase {
         assertThat(result.component.intValue).isEqualTo(wrapper.component.intValue);
     }
 
+    @Test
+    public void testNestedUuidValue() {
+        assertThat(result.component.nestedRecordValue.uuidValue).isEqualTo(wrapper.component.nestedRecordValue.uuidValue);
+    }
+
+    @Test
+    public void testUuidValue() {
+        assertThat(result.component.uuidValue).isEqualTo(wrapper.component.uuidValue);
+    }
 }
