@@ -28,7 +28,12 @@ public final class ProtobufReadContext
     protected ProtobufField _field;
 
     protected String _currentName;
-    
+
+    /**
+     * @since 2.9
+     */
+    protected Object _currentValue;
+
     /**
      * Offset within input buffer where the message represented
      * by this context (if message context) ends.
@@ -66,9 +71,20 @@ public final class ProtobufReadContext
         _type = type;
         _index = -1;
         _currentName = null;
+        _currentValue = null;
         _endOffset = endOffset;
     }
 
+    @Override
+    public Object getCurrentValue() {
+        return _currentValue;
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _currentValue = v;
+    }
+    
     // // // Factory methods
 
     public static ProtobufReadContext createRootContext() {

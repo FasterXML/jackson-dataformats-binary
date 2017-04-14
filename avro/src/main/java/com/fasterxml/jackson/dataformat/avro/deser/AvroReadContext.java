@@ -15,6 +15,11 @@ public abstract class AvroReadContext extends JsonStreamContext
 
     protected final String _typeId;
 
+    /**
+     * @since 2.9
+     */
+    protected Object _currentValue;
+
     /*
     /**********************************************************************
     /* Instance construction
@@ -28,9 +33,26 @@ public abstract class AvroReadContext extends JsonStreamContext
         _typeId = typeId;
     }
 
+    /*
+    /**********************************************************************
+    /* Traversal
+    /**********************************************************************
+     */
+
     public abstract JsonToken nextToken() throws IOException;
 
     public abstract String nextFieldName() throws IOException;
+
+    
+    @Override
+    public Object getCurrentValue() {
+        return _currentValue;
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _currentValue = v;
+    }
 
     /*
     /**********************************************************************

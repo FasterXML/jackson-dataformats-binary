@@ -56,6 +56,7 @@ public class ProtobufWriteContext
         _type = type;
         _message = msg;
         _field = f;
+        _currentValue = null;
     }
     
     // // // Factory methods
