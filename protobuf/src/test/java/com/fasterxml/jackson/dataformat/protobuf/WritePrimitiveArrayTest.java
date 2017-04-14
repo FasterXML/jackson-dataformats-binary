@@ -48,6 +48,16 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
             +" repeated double values = 1 [packed=true];\n"
             +"}\n"
     ;
+
+    final protected static String PROTOC_STRING_ARRAY_SPARSE = "message Strings {\n"
+            +" repeated string values = 1;\n"
+            +"}\n"
+    ;
+
+    final protected static String PROTOC_STRING_ARRAY_PACKED = "message Strings {\n"
+            +" repeated string values = 1 [packed=true];\n"
+            +"}\n"
+    ;
     
     static class IntArray {
         public int[] values;
@@ -76,6 +86,15 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         }
     }
     
+    static class StringArray {
+        public String[] values;
+
+        protected StringArray() { }
+        public StringArray(String... v) {
+            values = v;
+        }
+    }
+
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
     public WritePrimitiveArrayTest() throws Exception { }
@@ -236,5 +255,37 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
                 fail("Entry #"+i+" wrong: expected "+exp[i]+", got "+act[i]);
             }
         }
+    }
+
+    /*
+    /**********************************************************
+    /* Test methods, floating-point arrays
+    /**********************************************************
+     */
+
+    public void testStringArraySparse() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRING_ARRAY_SPARSE);
+        final ObjectWriter w = MAPPER.writer(schema);
+        final StringArray input = new StringArray("foo", "foobar", "", "x");
+        byte[] bytes = w.writeValueAsBytes(input);
+        assertEquals(18, bytes.length);
+
+        StringArray result = MAPPER.readerFor(StringArray.class).with(schema)
+                .readValue(bytes);
+        Assert.assertArrayEquals(input.values, result.values);
+    }
+
+    public void testStringArrayPacked() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRING_ARRAY_PACKED);
+        final ObjectWriter w = MAPPER.writer(schema);
+        final StringArray input = new StringArray("foobar", "", "x", "foo");
+        byte[] bytes = w.writeValueAsBytes(input);
+        assertEquals(16, bytes.length);
+
+        StringArray result = MAPPER.readerFor(StringArray.class).with(schema)
+                .readValue(bytes);
+        Assert.assertArrayEquals(input.values, result.values);
     }
 }
