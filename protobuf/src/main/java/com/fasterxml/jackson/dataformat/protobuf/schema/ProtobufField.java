@@ -191,7 +191,7 @@ public class ProtobufField
     }
 
     public final boolean isValidFor(int typeTag) {
-        return (typeTag == type.getWireType());
+        return (typeTag == type.getWireType() || packed && repeated && typeTag == WireType.LENGTH_PREFIXED);
     }
 
     @Override
