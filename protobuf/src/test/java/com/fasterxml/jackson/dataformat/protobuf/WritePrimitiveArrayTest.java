@@ -106,7 +106,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         byte[] bytes = w.writeValueAsBytes(new IntArray(3, -1, 2));
         // 1 byte for typed tag, 1 byte for length, 3 x 1 byte per value -> 5
         assertEquals(5, bytes.length);
-        assertEquals(0x8, bytes[0]); // zig-zagged vint (0) value, field 1
+        assertEquals(0x0A, bytes[0]); // packed (2) value, field 1
         assertEquals(0x3, bytes[1]); // length for array, 3 bytes
         assertEquals(0x6, bytes[2]); // zig-zagged value for 3
         assertEquals(0x1, bytes[3]); // zig-zagged value for -1

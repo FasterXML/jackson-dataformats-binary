@@ -94,7 +94,6 @@ public class ProtobufField
             name = "UNKNOWN";
         } else {
             id = nativeField.tag();
-            typedTag = (id << 3) + wireType;
             name = nativeField.name();
             switch (nativeField.label()) {
             case REPEATED:
@@ -115,6 +114,14 @@ public class ProtobufField
              */
             packed = _findBooleanOption(nativeField, "packed");
             deprecated = _findBooleanOption(nativeField, "deprecated");
+
+            // 13-Apr-2017, tatu: [databind#79] Need to write length-prefixed for packed arrays
+            if (repeated && packed) {
+                typedTag = (id << 3) + WireType.LENGTH_PREFIXED;
+            } else {
+                typedTag = (id << 3) + wireType;
+            }
+        
         }
         isObject = (type == FieldType.MESSAGE);
     }
@@ -191,9 +198,9 @@ public class ProtobufField
     }
 
     public final boolean isValidFor(int typeTag) {
-        return (typeTag == type.getWireType()
+        return (typeTag == wireType)
                 // 13-Apr-2017, tatu: to fix [dataformats-binary#76]
-                || packed && repeated && typeTag == WireType.LENGTH_PREFIXED);
+                || (packed && repeated && typeTag == WireType.LENGTH_PREFIXED);
     }
 
     @Override

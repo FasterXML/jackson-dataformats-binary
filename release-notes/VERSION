@@ -21,12 +21,13 @@ Modules:
  (contributed by baharclerode@github)
 #60 (avro): Add support for `@Union` and polymorphic types
  (contributed by baharclerode@github)
-#64: (avro): Implement native `float` handling for parser
+#63: (avro): Implement native `float` handling for parser
 #64: (proto): Implement native `float` handling for parser
 #68 (proto): Getting "type not supported as root type by protobuf" for serialization
   of short and UUID types
  (reported by Eldad R)
 #69 (avro): Add support for `@AvroEncode` annotation
+#79 (proto): Fix wire type for packed arrays
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
 2.8.8 (05-Apr-2017)
