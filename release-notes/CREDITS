@@ -15,6 +15,11 @@ Michael Zeng (shotbythought@github)
 * Reported #58 (avro): Regression due to changed namespace of inner enum types
  (2.8.8)
 
+Kenji Noguchi (knoguchi@github)
+
+* Reported #70 (protobuf), contributed fix: Can't deserialize packed repeated field
+ (2.8.9)
+
 baharclerode@github:
 
 * Contributed #14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`
@@ -33,4 +38,3 @@ Eldad Rudich (eldadru@github)
 * Reported #68 (proto): Getting "type not supported as root type by protobuf" for serialization
   of short and UUID types
  (2.9.0)
-

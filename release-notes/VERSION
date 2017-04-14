@@ -36,6 +36,8 @@ Modules:
  (reported by Peter R)
 #62: (cbor) `java.lang.ArrayIndexOutOfBoundsException` at `CBORGenerator.java`:548
 #67: (proto) Serialization of multiple nesting levels has issues
+#70: (proto) Can't deserialize packed repeated field
+ (reported by Kenji N)
 
 2.8.7 (21-Feb-2017)
 
