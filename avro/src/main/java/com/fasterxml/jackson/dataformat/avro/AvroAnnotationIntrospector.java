@@ -45,11 +45,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
 {
     private static final long serialVersionUID = 1L;
 
-    protected final boolean _useEnhancedTyping;
-
-    public AvroAnnotationIntrospector() {
-        _useEnhancedTyping = true;
-    }
+    public AvroAnnotationIntrospector() { }
 
     @Override
     public Version version() {
@@ -168,10 +164,11 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config, Annotated ann, JavaType baseType) {
-        // 14-Apr-2017, tatu: Only enable polymorphic type handling if explicitly annotated; otherwise
-        //    we have no way to determine this. Part of the problem is that we have no access to
-        //    schema infomration here, which would contain information.
-        if (_useEnhancedTyping || (_getUnionTypes(ann) != null)) {
+        // 14-Apr-2017, tatu: There are two ways to enable polymorphic typing, above and beyond
+        //    basic Jackson: use of `@Union`, and "default typing" approach for `java.lang.Object`:
+        //    latter since Avro support for "untyped" values is otherwise difficult.
+        //    This seems to work for now, but maybe needs more work in future...
+        if (baseType.isJavaLangObject() || (_getUnionTypes(ann) != null)) {
             TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
             JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
             if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
