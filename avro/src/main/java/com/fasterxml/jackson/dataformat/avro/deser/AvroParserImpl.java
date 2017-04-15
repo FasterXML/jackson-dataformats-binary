@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -675,11 +676,11 @@ public final class AvroParserImpl extends AvroParser
 
     public long decodeLong() throws IOException {
         int ptr = _inputPtr;
-        if ((_inputEnd - ptr) < 5) {
+        if ((_inputEnd - ptr) < 10) {
             return _decodeLongSlow();
         }
         final byte[] buf = _inputBuffer;
-        // Inline handling of first 4 bytes (for 28-bits of content)
+        // inline handling of first 4 bytes (for 28-bits of content)
         int i = buf[ptr++];
         if (i < 0) {
             i &= 0x7F;
@@ -703,13 +704,55 @@ public final class AvroParserImpl extends AvroParser
                 i += (b << 7);
             }
         }
+        _inputPtr = ptr;
         // should be ok to zigzag as int, then sign-extend
         i = (i >>> 1) ^ (-(i & 1));
         return (long) i;
     }
-    
-    private long _decodeLong2(int ptr, int b) throws IOException
+
+    private long _decodeLong2(int ptr, long lo) throws IOException
     {
+        final byte[] buf = _inputBuffer;
+        // then next 28 bits (altogether 8 bytes)
+        int i = buf[ptr++];
+        if (i < 0) {
+            i &= 0x7F;
+            int b = buf[ptr++];
+            if (b < 0) {
+                i += ((b & 0x7F) << 7);
+                b = buf[ptr++];
+                if (b < 0) {
+                    i += ((b & 0x7F) << 14);
+                    b = buf[ptr++];
+                    if (b < 0) {
+                        // Ok 56-bits gone... still going strong!
+                        i += ((b & 0x7F) << 21);
+                        lo |= (((long) i) << 28);
+                        i = buf[ptr++];
+                        if (i < 0) {
+                            i &= 0x7F;
+                            b = buf[ptr++];
+                            if (i < 0) {
+                                _inputPtr = ptr;
+                                _reportInvalidNegative(b);
+                            }
+                            i |= (b << 7);
+                        }
+                        lo |= (((long) i) << 56);
+                        return (lo >>> 1) ^ (-(lo & 1));
+                    }
+                    i += (b << 21);
+                } else {
+                    i += (b << 14);
+                }
+                
+            } else {
+                i += (b << 7);
+            }
+        }
+        _inputPtr = ptr;
+        lo |= (((long) i) << 28);
+        return (lo >>> 1) ^ (-(lo & 1));
     }
 
     public long _decodeLongSlow() throws IOException {
@@ -740,9 +783,52 @@ public final class AvroParserImpl extends AvroParser
         return (long) i;
     }
 
+    private long _decodeLongSlow2(long lo) throws IOException
+    {
+        // then next 28 bits (altogether 8 bytes)
+        int i = _nextByteGuaranteed();
+        if (i < 0) {
+            i &= 0x7F;
+            int b = _nextByteGuaranteed();
+            if (b < 0) {
+                i += ((b & 0x7F) << 7);
+                b = _nextByteGuaranteed();
+                if (b < 0) {
+                    i += ((b & 0x7F) << 14);
+                    b = _nextByteGuaranteed();
+                    if (b < 0) {
+                        // Ok 56-bits gone... still going strong!
+                        i += ((b & 0x7F) << 21);
+                        lo |= (((long) i) << 28);
+                        i = _nextByteGuaranteed();
+                        if (i < 0) {
+                            i &= 0x7F;
+                            b = _nextByteGuaranteed();
+                            if (i < 0) {
+                                _reportInvalidNegative(b);
+                            }
+                            i |= (b << 7);
+                        }
+                        lo |= (((long) i) << 56);
+                        return (lo >>> 1) ^ (-(lo & 1));
+
+                    }
+                    i += (b << 21);
+                } else {
+                    i += (b << 14);
+                }
+                
+            } else {
+                i += (b << 7);
+            }
+        }
+        lo |= (((long) i) << 28);
+        return (lo >>> 1) ^ (-(lo & 1));
+    }
+    
     public void skipLong() throws IOException {
         int ptr = _inputPtr;
-        if ((_inputEnd - ptr) < 5) {
+        if ((_inputEnd - ptr) < 10) {
             _skipLongSlow();
             return;
         }
@@ -777,13 +863,16 @@ public final class AvroParserImpl extends AvroParser
     /* Methods for AvroReadContext implementations: decoding float/double
     /**********************************************************
      */
-    
+
     public JsonToken decodeFloat() throws IOException {
-        // !!! 10-Feb-2017, tatu: Should support float, see CBOR
-        //   (requires addition of new NR_ constant, and possibly refactoring to
-        //   use `ParserMinimalBase` instead of `ParserBase`)
-        _numberDouble = _decoder.readFloat();
-        _numTypesValid = NR_DOUBLE;
+        _loadToHaveAtLeast(4);
+        final byte[] buf = _inputBuffer;
+        int ptr = _inputPtr;
+        _inputPtr = ptr+4;
+        int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
+                | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
+        _numberFloat = Float.intBitsToFloat(i);
+        _numTypesValid = NR_FLOAT;
         return JsonToken.VALUE_NUMBER_FLOAT;
     }
 
@@ -792,7 +881,17 @@ public final class AvroParserImpl extends AvroParser
     }
 
     public JsonToken decodeDouble() throws IOException {
-        _numberDouble = _decoder.readDouble();
+        final byte[] buf = _inputBuffer;
+        int ptr = _inputPtr;
+        int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
+                | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
+        ptr += 4;
+        int i2 = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
+                | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
+
+        _inputPtr = ptr+4;
+        _numberDouble = Double.longBitsToDouble((((long) i) & 0xffffffffL)
+                | (((long) i2) << 32));
         _numTypesValid = NR_DOUBLE;
         return JsonToken.VALUE_NUMBER_FLOAT;
     }
