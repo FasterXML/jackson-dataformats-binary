@@ -2164,29 +2164,29 @@ public class SmileParser extends ParserBase
         }
         int value = _inputBuffer[ptr++];
         int i;
-         if (value < 0) { // 6 bits
-             value &= 0x3F;
-         } else {
-             i = _inputBuffer[ptr++];
-             if (i >= 0) { // 13 bits
-                 value = (value << 7) + i;
-                 i = _inputBuffer[ptr++];
-                 if (i >= 0) {
-                     value = (value << 7) + i;
-                     i = _inputBuffer[ptr++];
-                     if (i >= 0) {
-                         value = (value << 7) + i;
-                         // and then we must get negative
-                         i = _inputBuffer[ptr++];
-                         if (i >= 0) {
-                             _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
-                         }
-                     }
-                 }
-             }
-             value = (value << 6) + (i & 0x3F);
-         }
-         _inputPtr = ptr;
+        if (value < 0) { // 6 bits
+            value &= 0x3F;
+        } else {
+            i = _inputBuffer[ptr++];
+            if (i >= 0) { // 13 bits
+                value = (value << 7) + i;
+                i = _inputBuffer[ptr++];
+                if (i >= 0) {
+                    value = (value << 7) + i;
+                    i = _inputBuffer[ptr++];
+                    if (i >= 0) {
+                        value = (value << 7) + i;
+                        // and then we must get negative
+                        i = _inputBuffer[ptr++];
+                        if (i >= 0) {
+                            _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                        }
+                    }
+                }
+            }
+            value = (value << 6) + (i & 0x3F);
+        }
+        _inputPtr = ptr;
         _numberInt = SmileUtil.zigzagDecode(value);
         _numTypesValid = NR_INT;
     }

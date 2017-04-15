@@ -548,33 +548,26 @@ public final class AvroParserImpl extends AvroParser
             return _decodeIntSlow();
         }
         final byte[] buf = _inputBuffer;
-        int i = buf[ptr++];
-        if (i < 0) {
-            i &= 0x7F;
-            int b = buf[ptr++];
+        int b = buf[ptr++];
+        int i = b & 0x7F;
+        if (b < 0) {
+            b = buf[ptr++];
+            i += ((b & 0x7F) << 7);
             if (b < 0) {
-                i += ((b & 0x7F) << 7);
                 b = buf[ptr++];
+                i += ((b & 0x7F) << 14);
                 if (b < 0) {
-                    i += ((b & 0x7F) << 14);
                     b = buf[ptr++];
+                    i += ((b & 0x7F) << 21);
                     if (b < 0) {
-                        i += ((b & 0x7F) << 21);
                         b = buf[ptr++];
                         if (b < 0) {
                             _inputPtr = ptr;
                             _reportInvalidNegative(b);
                         }
                         i += (b << 28);
-                    } else {
-                        i += (b << 21);
                     }
-                } else {
-                    i += (b << 14);
                 }
-                
-            } else {
-                i += (b << 7);
             }
         }
         _inputPtr = ptr;
@@ -583,32 +576,25 @@ public final class AvroParserImpl extends AvroParser
     }
 
     public int _decodeIntSlow() throws IOException {
-        int i = _nextByteGuaranteed();
-        if (i < 0) {
-            i &= 0x7F;
-            int b = _nextByteGuaranteed();
+        int b = _nextByteGuaranteed();
+        int i = b & 0x7F;
+        if (b < 0) {
+            b = _nextByteGuaranteed();
+            i += ((b & 0x7F) << 7);
             if (b < 0) {
-                i += ((b & 0x7F) << 7);
                 b = _nextByteGuaranteed();
+                i += ((b & 0x7F) << 14);
                 if (b < 0) {
-                    i += ((b & 0x7F) << 14);
                     b = _nextByteGuaranteed();
+                    i += ((b & 0x7F) << 21);
                     if (b < 0) {
-                        i += ((b & 0x7F) << 21);
                         b = _nextByteGuaranteed();
                         if (b < 0) {
                             _reportInvalidNegative(b);
                         }
                         i += (b << 28);
-                    } else {
-                        i += (b << 21);
                     }
-                } else {
-                    i += (b << 14);
                 }
-                
-            } else {
-                i += (b << 7);
             }
         }
         // and final part: Zigzag decode
@@ -623,15 +609,11 @@ public final class AvroParserImpl extends AvroParser
             return;
         }
         final byte[] buf = _inputBuffer;
-        int b = buf[ptr++];
-        if (b < 0) {
-            b = buf[ptr++];
-            if (b < 0) {
-                b = buf[ptr++];
-                if (b < 0) {
-                    b = buf[ptr++];
-                    if (b < 0) {
-                        b = buf[ptr++];
+        if (buf[ptr++] < 0) {
+            if (buf[ptr++] < 0) {
+                if (buf[ptr++] < 0) {
+                    if (buf[ptr++] < 0) {
+                        int b = buf[ptr++];
                         if (b < 0) {
                             _inputPtr = ptr;
                             _reportInvalidNegative(b);
@@ -644,15 +626,11 @@ public final class AvroParserImpl extends AvroParser
     }
 
     public void _skipIntSlow() throws IOException {
-        int b = _nextByteGuaranteed();
-        if (b < 0) {
-            b = _nextByteGuaranteed();
-            if (b < 0) {
-                b = _nextByteGuaranteed();
-                if (b < 0) {
-                    b = _nextByteGuaranteed();
-                    if (b < 0) {
-                        b = _nextByteGuaranteed();
+        if (_nextByteGuaranteed() < 0) {
+            if (_nextByteGuaranteed() < 0) {
+                if (_nextByteGuaranteed() < 0) {
+                    if (_nextByteGuaranteed() < 0) {
+                        int b = _nextByteGuaranteed();
                         if (b < 0) {
                             _reportInvalidNegative(b);
                         }
@@ -681,27 +659,21 @@ public final class AvroParserImpl extends AvroParser
         }
         final byte[] buf = _inputBuffer;
         // inline handling of first 4 bytes (for 28-bits of content)
-        int i = buf[ptr++];
-        if (i < 0) {
-            i &= 0x7F;
-            int b = buf[ptr++];
+        int b = buf[ptr++];
+        int i = b & 0x7F;
+        if (b < 0) {
+            b = buf[ptr++];
+            i += ((b & 0x7F) << 7);
             if (b < 0) {
-                i += ((b & 0x7F) << 7);
                 b = buf[ptr++];
+                i += ((b & 0x7F) << 14);
                 if (b < 0) {
-                    i += ((b & 0x7F) << 14);
                     b = buf[ptr++];
+                    i += ((b & 0x7F) << 21);
                     if (b < 0) {
-                        i += ((b & 0x7F) << 21);
                         return _decodeLong2(ptr, i);
                     }
-                    i += (b << 21);
-                } else {
-                    i += (b << 14);
                 }
-                
-            } else {
-                i += (b << 7);
             }
         }
         _inputPtr = ptr;
@@ -714,23 +686,24 @@ public final class AvroParserImpl extends AvroParser
     {
         final byte[] buf = _inputBuffer;
         // then next 28 bits (altogether 8 bytes)
-        int i = buf[ptr++];
-        if (i < 0) {
+        int b = buf[ptr++];
+        int i = b & 0x7F;
+        if (b < 0) {
             i &= 0x7F;
-            int b = buf[ptr++];
+            b = buf[ptr++];
+            i += ((b & 0x7F) << 7);
             if (b < 0) {
-                i += ((b & 0x7F) << 7);
                 b = buf[ptr++];
+                i += ((b & 0x7F) << 14);
                 if (b < 0) {
-                    i += ((b & 0x7F) << 14);
                     b = buf[ptr++];
+                    i += ((b & 0x7F) << 21);
                     if (b < 0) {
                         // Ok 56-bits gone... still going strong!
-                        i += ((b & 0x7F) << 21);
                         lo |= (((long) i) << 28);
-                        i = buf[ptr++];
-                        if (i < 0) {
-                            i &= 0x7F;
+                        b = buf[ptr++];
+                        i = b & 0x7F;
+                        if (b < 0) {
                             b = buf[ptr++];
                             if (i < 0) {
                                 _inputPtr = ptr;
@@ -741,13 +714,7 @@ public final class AvroParserImpl extends AvroParser
                         lo |= (((long) i) << 56);
                         return (lo >>> 1) ^ (-(lo & 1));
                     }
-                    i += (b << 21);
-                } else {
-                    i += (b << 14);
                 }
-                
-            } else {
-                i += (b << 7);
             }
         }
         _inputPtr = ptr;
@@ -756,27 +723,21 @@ public final class AvroParserImpl extends AvroParser
     }
 
     public long _decodeLongSlow() throws IOException {
-        int i = _nextByteGuaranteed();
-        if (i < 0) {
-            i &= 0x7F;
-            int b = _nextByteGuaranteed();
+        int b = _nextByteGuaranteed();
+        int i = b & 0x7F;
+        if (b < 0) {
+            b = _nextByteGuaranteed();
+            i += ((b & 0x7F) << 7);
             if (b < 0) {
-                i += ((b & 0x7F) << 7);
                 b = _nextByteGuaranteed();
+                i += ((b & 0x7F) << 14);
                 if (b < 0) {
-                    i += ((b & 0x7F) << 14);
                     b = _nextByteGuaranteed();
+                    i += ((b & 0x7F) << 21);
                     if (b < 0) {
-                        i += ((b & 0x7F) << 21);
                         return _decodeLongSlow2(i);
                     }
-                    i += (b << 21);
-                } else {
-                    i += (b << 14);
                 }
-                
-            } else {
-                i += (b << 7);
             }
         }
         i = (i >>> 1) ^ (-(i & 1));
@@ -786,23 +747,24 @@ public final class AvroParserImpl extends AvroParser
     private long _decodeLongSlow2(long lo) throws IOException
     {
         // then next 28 bits (altogether 8 bytes)
-        int i = _nextByteGuaranteed();
-        if (i < 0) {
+        int b = _nextByteGuaranteed();
+        int i = b & 0x7F;
+        if (b < 0) {
             i &= 0x7F;
-            int b = _nextByteGuaranteed();
+            b = _nextByteGuaranteed();
+            i += ((b & 0x7F) << 7);
             if (b < 0) {
-                i += ((b & 0x7F) << 7);
                 b = _nextByteGuaranteed();
+                i += ((b & 0x7F) << 14);
                 if (b < 0) {
-                    i += ((b & 0x7F) << 14);
                     b = _nextByteGuaranteed();
+                    i += ((b & 0x7F) << 21);
                     if (b < 0) {
                         // Ok 56-bits gone... still going strong!
-                        i += ((b & 0x7F) << 21);
                         lo |= (((long) i) << 28);
-                        i = _nextByteGuaranteed();
-                        if (i < 0) {
-                            i &= 0x7F;
+                        b = _nextByteGuaranteed();
+                        i = b & 0x7F;
+                        if (b < 0) {
                             b = _nextByteGuaranteed();
                             if (i < 0) {
                                 _reportInvalidNegative(b);
@@ -811,15 +773,8 @@ public final class AvroParserImpl extends AvroParser
                         }
                         lo |= (((long) i) << 56);
                         return (lo >>> 1) ^ (-(lo & 1));
-
                     }
-                    i += (b << 21);
-                } else {
-                    i += (b << 14);
                 }
-                
-            } else {
-                i += (b << 7);
             }
         }
         lo |= (((long) i) << 28);
@@ -833,9 +788,9 @@ public final class AvroParserImpl extends AvroParser
             return;
         }
         final byte[] buf = _inputBuffer;
-        int b = buf[ptr++];
-        if (b < 0) {
+        if (buf[ptr++] < 0) {
             int maxLeft = 9;
+            int b;
             do {
                 b = _nextByteGuaranteed();
             } while ((--maxLeft > 0) && (b < 0));
@@ -846,9 +801,9 @@ public final class AvroParserImpl extends AvroParser
     }
 
     public void _skipLongSlow() throws IOException {
-        int b = _nextByteGuaranteed();
-        if (b < 0) {
+        if (_nextByteGuaranteed() < 0) {
             int maxLeft = 9;
+            int b;
             do {
                 b = _nextByteGuaranteed();
             } while ((--maxLeft > 0) && (b < 0));
