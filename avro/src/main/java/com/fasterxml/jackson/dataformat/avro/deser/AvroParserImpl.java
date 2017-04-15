@@ -17,7 +17,7 @@ import com.fasterxml.jackson.dataformat.avro.CodecRecycler;
  * Implementation class that exposes additional internal API
  * to be used as callbacks by {@link AvroReadContext} implementations.
  */
-public class AvroParserImpl extends AvroParser
+public final class AvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
 
@@ -541,7 +541,7 @@ public class AvroParserImpl extends AvroParser
         return JsonToken.VALUE_NUMBER_INT;
     }
 
-    public int decodeInt() throws IOException {
+    public final int decodeInt() throws IOException {
         int ptr = _inputPtr;
         if ((_inputEnd - ptr) < 5) {
             return _decodeIntSlow();
@@ -668,16 +668,110 @@ public class AvroParserImpl extends AvroParser
      */
 
     public JsonToken decodeLongToken() throws IOException {
-        _numberLong = _decoder.readLong();
+        _numberLong = decodeLong();
         _numTypesValid = NR_LONG;
         return JsonToken.VALUE_NUMBER_INT;
     }
 
-    public void skipLong() throws IOException {
-        // ints use variable-length zigzagging; alas, no native skipping
-        _decoder.readLong();
+    public long decodeLong() throws IOException {
+        int ptr = _inputPtr;
+        if ((_inputEnd - ptr) < 5) {
+            return _decodeLongSlow();
+        }
+        final byte[] buf = _inputBuffer;
+        // Inline handling of first 4 bytes (for 28-bits of content)
+        int i = buf[ptr++];
+        if (i < 0) {
+            i &= 0x7F;
+            int b = buf[ptr++];
+            if (b < 0) {
+                i += ((b & 0x7F) << 7);
+                b = buf[ptr++];
+                if (b < 0) {
+                    i += ((b & 0x7F) << 14);
+                    b = buf[ptr++];
+                    if (b < 0) {
+                        i += ((b & 0x7F) << 21);
+                        return _decodeLong2(ptr, i);
+                    }
+                    i += (b << 21);
+                } else {
+                    i += (b << 14);
+                }
+                
+            } else {
+                i += (b << 7);
+            }
+        }
+        // should be ok to zigzag as int, then sign-extend
+        i = (i >>> 1) ^ (-(i & 1));
+        return (long) i;
+    }
+    
+    private long _decodeLong2(int ptr, int b) throws IOException
+    {
     }
 
+    public long _decodeLongSlow() throws IOException {
+        int i = _nextByteGuaranteed();
+        if (i < 0) {
+            i &= 0x7F;
+            int b = _nextByteGuaranteed();
+            if (b < 0) {
+                i += ((b & 0x7F) << 7);
+                b = _nextByteGuaranteed();
+                if (b < 0) {
+                    i += ((b & 0x7F) << 14);
+                    b = _nextByteGuaranteed();
+                    if (b < 0) {
+                        i += ((b & 0x7F) << 21);
+                        return _decodeLongSlow2(i);
+                    }
+                    i += (b << 21);
+                } else {
+                    i += (b << 14);
+                }
+                
+            } else {
+                i += (b << 7);
+            }
+        }
+        i = (i >>> 1) ^ (-(i & 1));
+        return (long) i;
+    }
+
+    public void skipLong() throws IOException {
+        int ptr = _inputPtr;
+        if ((_inputEnd - ptr) < 5) {
+            _skipLongSlow();
+            return;
+        }
+        final byte[] buf = _inputBuffer;
+        int b = buf[ptr++];
+        if (b < 0) {
+            int maxLeft = 9;
+            do {
+                b = _nextByteGuaranteed();
+            } while ((--maxLeft > 0) && (b < 0));
+            if (b < 0) {
+                _reportInvalidNegative(b);
+            }
+        }
+    }
+
+    public void _skipLongSlow() throws IOException {
+        int b = _nextByteGuaranteed();
+        if (b < 0) {
+            int maxLeft = 9;
+            do {
+                b = _nextByteGuaranteed();
+            } while ((--maxLeft > 0) && (b < 0));
+            if (b < 0) {
+                _reportInvalidNegative(b);
+            }
+        }
+    }
+    
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding float/double
@@ -694,8 +788,7 @@ public class AvroParserImpl extends AvroParser
     }
 
     public void skipFloat() throws IOException {
-        // floats have fixed length of 4 bytes
-        _decoder.skipFixed(4);
+        _skip(4);
     }
 
     public JsonToken decodeDouble() throws IOException {
@@ -705,8 +798,7 @@ public class AvroParserImpl extends AvroParser
     }
 
     public void skipDouble() throws IOException {
-        // doubles have fixed length of 8 bytes
-        _decoder.skipFixed(8);
+        _skip(8);
     }
 
     /*
@@ -731,35 +823,55 @@ public class AvroParserImpl extends AvroParser
      */
     
     public JsonToken decodeBytes() throws IOException {
-        int len = _decoder.readInt();
+        int len = decodeInt();
         if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for Bytes: "+len);
+            }
             _binaryValue = NO_BYTES;
         } else {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
-            _decoder.readFixed(b, 0, len);
-            // plus let's retain reference to this buffer, for reuse
-            // (is safe due to way Avro impl handles them)
+            _read(b, 0, len);
             _binaryValue = b;
         }
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 
     public void skipBytes() throws IOException {
+        int len = decodeInt();
+        if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for Bytes: "+len);
+            }
+            _binaryValue = NO_BYTES;
+        } else {
+            _skip(len);
+        }
         _decoder.skipBytes();
     }
 
     public JsonToken decodeFixed(int size) throws IOException {
         byte[] data = new byte[size];
-        _decoder.readFixed(data);
+        _read(data, 0, size);
         _binaryValue = data;
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 
     public void skipFixed(int size) throws IOException {
-        _decoder.skipFixed(size);
+        _skip(size);
     }
 
+    private final void _read(byte[] target, int offset, int len) throws IOException
+    {
+        
+    }
+    
+    private final void _skip(int len) throws IOException
+    {
+        
+    }
+    
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Arrays
