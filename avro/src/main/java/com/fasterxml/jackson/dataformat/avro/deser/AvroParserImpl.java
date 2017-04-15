@@ -577,7 +577,8 @@ public class AvroParserImpl extends AvroParser
             }
         }
         _inputPtr = ptr;
-        return i;
+        // and final part: Zigzag decode
+        return (i >>> 1) ^ (-(i & 1));
     }
 
     public int _decodeIntSlow() throws IOException {
@@ -609,7 +610,8 @@ public class AvroParserImpl extends AvroParser
                 i += (b << 7);
             }
         }
-        return i;
+        // and final part: Zigzag decode
+        return (i >>> 1) ^ (-(i & 1));
     }
 
     public void skipInt() throws IOException
