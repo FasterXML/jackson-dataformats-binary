@@ -531,35 +531,139 @@ public class AvroParserImpl extends AvroParser
 
     /*
     /**********************************************************
-    /* Methods for AvroReadContext implementations: decoding
+    /* Methods for AvroReadContext implementations: decoding int
     /**********************************************************
      */
 
-    public JsonToken decodeBoolean() throws IOException {
-        int b = _nextByteGuaranteed();
-        // As per Avro default impl: only `1` recognized as true (unlike
-        // "C-style" 0 == false, others true)
-        return (b == 1) ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
-    }
-
-    public void skipBoolean() throws IOException {
-        _skipByteGuaranteed();
-    }
-
-    public int decodeInt() throws IOException {
-        return _decoder.readInt();
-    }
-
     public JsonToken decodeIntToken() throws IOException {
-        _numberInt = _decoder.readInt();
+        _numberInt = decodeInt();
         _numTypesValid = NR_INT;
         return JsonToken.VALUE_NUMBER_INT;
     }
-    
-    public void skipInt() throws IOException {
-        // ints use variable-length zigzagging; alas, no native skipping
-        _decoder.readInt();
+
+    public int decodeInt() throws IOException {
+        int ptr = _inputPtr;
+        if ((_inputEnd - ptr) < 5) {
+            return _decodeIntSlow();
+        }
+        final byte[] buf = _inputBuffer;
+        int i = buf[ptr++];
+        if (i < 0) {
+            i &= 0x7F;
+            int b = buf[ptr++];
+            if (b < 0) {
+                i += ((b & 0x7F) << 7);
+                b = buf[ptr++];
+                if (b < 0) {
+                    i += ((b & 0x7F) << 14);
+                    b = buf[ptr++];
+                    if (b < 0) {
+                        i += ((b & 0x7F) << 21);
+                        b = buf[ptr++];
+                        if (b < 0) {
+                            _inputPtr = ptr;
+                            _reportInvalidNegative(b);
+                        }
+                        i += (b << 28);
+                    } else {
+                        i += (b << 21);
+                    }
+                } else {
+                    i += (b << 14);
+                }
+                
+            } else {
+                i += (b << 7);
+            }
+        }
+        _inputPtr = ptr;
+        return i;
     }
+
+    public int _decodeIntSlow() throws IOException {
+        int i = _nextByteGuaranteed();
+        if (i < 0) {
+            i &= 0x7F;
+            int b = _nextByteGuaranteed();
+            if (b < 0) {
+                i += ((b & 0x7F) << 7);
+                b = _nextByteGuaranteed();
+                if (b < 0) {
+                    i += ((b & 0x7F) << 14);
+                    b = _nextByteGuaranteed();
+                    if (b < 0) {
+                        i += ((b & 0x7F) << 21);
+                        b = _nextByteGuaranteed();
+                        if (b < 0) {
+                            _reportInvalidNegative(b);
+                        }
+                        i += (b << 28);
+                    } else {
+                        i += (b << 21);
+                    }
+                } else {
+                    i += (b << 14);
+                }
+                
+            } else {
+                i += (b << 7);
+            }
+        }
+        return i;
+    }
+
+    public void skipInt() throws IOException
+    {
+        int ptr = _inputPtr;
+        if ((_inputEnd - ptr) < 5) {
+            _skipIntSlow();
+            return;
+        }
+        final byte[] buf = _inputBuffer;
+        int b = buf[ptr++];
+        if (b < 0) {
+            b = buf[ptr++];
+            if (b < 0) {
+                b = buf[ptr++];
+                if (b < 0) {
+                    b = buf[ptr++];
+                    if (b < 0) {
+                        b = buf[ptr++];
+                        if (b < 0) {
+                            _inputPtr = ptr;
+                            _reportInvalidNegative(b);
+                        }
+                    }
+                }
+            }
+        }
+        _inputPtr = ptr;
+    }
+
+    public void _skipIntSlow() throws IOException {
+        int b = _nextByteGuaranteed();
+        if (b < 0) {
+            b = _nextByteGuaranteed();
+            if (b < 0) {
+                b = _nextByteGuaranteed();
+                if (b < 0) {
+                    b = _nextByteGuaranteed();
+                    if (b < 0) {
+                        b = _nextByteGuaranteed();
+                        if (b < 0) {
+                            _reportInvalidNegative(b);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: decoding long
+    /**********************************************************
+     */
 
     public JsonToken decodeLongToken() throws IOException {
         _numberLong = _decoder.readLong();
@@ -572,6 +676,12 @@ public class AvroParserImpl extends AvroParser
         _decoder.readLong();
     }
 
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: decoding float/double
+    /**********************************************************
+     */
+    
     public JsonToken decodeFloat() throws IOException {
         // !!! 10-Feb-2017, tatu: Should support float, see CBOR
         //   (requires addition of new NR_ constant, and possibly refactoring to
@@ -597,6 +707,12 @@ public class AvroParserImpl extends AvroParser
         _decoder.skipFixed(8);
     }
 
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: decoding Strings
+    /**********************************************************
+     */
+    
     public JsonToken decodeString() throws IOException {
         _textValue = _decoder.readString();
         return JsonToken.VALUE_STRING;
@@ -606,6 +722,12 @@ public class AvroParserImpl extends AvroParser
         _decoder.skipString();
     }
 
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: decoding Bytes
+    /**********************************************************
+     */
+    
     public JsonToken decodeBytes() throws IOException {
         int len = _decoder.readInt();
         if (len <= 0) {
@@ -636,7 +758,11 @@ public class AvroParserImpl extends AvroParser
         _decoder.skipFixed(size);
     }
 
-    // // // Array decoding
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: decoding Arrays
+    /**********************************************************
+     */
 
     public long decodeArrayStart() throws IOException {
         return _decoder.readArrayStart();
@@ -650,8 +776,12 @@ public class AvroParserImpl extends AvroParser
         return _decoder.skipArray();
     }
 
-    // // // Map decoding
-    
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: decoding Maps
+    /**********************************************************
+     */
+
     public String decodeMapKey() throws IOException {
         return _decoder.readString();
     }
@@ -667,15 +797,30 @@ public class AvroParserImpl extends AvroParser
     public long skipMap() throws IOException {
         return _decoder.skipMap();
     }
-    
-    // // // Misc other decoding
-    
+
+    /*
+    /**********************************************************
+    /* Methods for AvroReadContext implementations: misc
+    /**********************************************************
+     */
+
+    public JsonToken decodeBoolean() throws IOException {
+        int b = _nextByteGuaranteed();
+        // As per Avro default impl: only `1` recognized as true (unlike
+        // "C-style" 0 == false, others true)
+        return (b == 1) ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
+    }
+
+    public void skipBoolean() throws IOException {
+        _skipByteGuaranteed();
+    }
+
     public int decodeIndex() throws IOException {
-        return (_branchIndex = _decoder.readIndex());
+        return (_branchIndex = decodeInt());
     }
 
     public int decodeEnum() throws IOException {
-        return (_enumIndex = _decoder.readEnum());
+        return (_enumIndex = decodeInt());
     }
 
     public boolean checkInputEnd() throws IOException {
@@ -844,5 +989,10 @@ public class AvroParserImpl extends AvroParser
             }
             _inputEnd += count;
         }
+    }
+
+    private void _reportInvalidNegative(int v) throws IOException
+    {
+        _reportError("Invalid negative byte %x at end of VInt", v);
     }
 }
