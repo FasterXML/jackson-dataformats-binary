@@ -862,12 +862,27 @@ public final class AvroParserImpl extends AvroParser
      */
     
     public JsonToken decodeString() throws IOException {
-        _textValue = _decoder.readString();
+        int len = decodeInt();
+        if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for String: "+len);
+            }
+            _textValue = "";
+        } else {
+            _textValue = "";
+        }
         return JsonToken.VALUE_STRING;
     }
 
     public void skipString() throws IOException {
-        _decoder.skipString();
+        int len = decodeInt();
+        if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for String: "+len);
+            }
+            return;
+        }
+        _skip(len);
     }
 
     /*
@@ -918,14 +933,43 @@ public final class AvroParserImpl extends AvroParser
 
     private final void _read(byte[] target, int offset, int len) throws IOException
     {
-        
+        int available = _inputEnd - _inputPtr;
+        if (len <= available) { // already got it all?
+            System.arraycopy(_inputBuffer, _inputPtr, target, offset, len);
+            _inputPtr += len;
+            return;
+        }
+        // only had some, copy whatever there is
+        System.arraycopy(_inputBuffer, _inputPtr, target, offset, available);
+        _inputPtr += available;
+        offset += available;
+        int left = len - available;
+        // and rest we can read straight from input
+        do {
+            int count = _inputStream.read(target, offset, left);
+            if (count <= 0) {
+                _reportError("Needed to read "+len+" bytes, reached end-of-input after reading "+(len - left));
+            }
+            offset += count;
+            left -= count;
+        } while (left > 0);
     }
-    
+
     private final void _skip(int len) throws IOException
     {
-        
+        if (_inputStream == null) {
+            _reportError("Needed to skip "+len+" bytes, reached end-of-input");
+        }
+        int left = len;
+        while (left > 0) {
+            int skipped = (int) _inputStream.skip(len);
+            if (skipped < 0) {
+                _reportError("Only able to skip "+(len-left)+" bytes before end-of-input (needed "+len+")");
+            }
+            left -= skipped;
+        }
     }
-    
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Arrays
@@ -1131,7 +1175,7 @@ public final class AvroParserImpl extends AvroParser
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            throw _constructError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            _reportError("Needed to read "+minAvailable+" bytes, reached end-of-input");
         }
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
@@ -1153,7 +1197,7 @@ public final class AvroParserImpl extends AvroParser
                 if (count == 0) {
                     throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                _reportError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
             }
             _inputEnd += count;
         }
