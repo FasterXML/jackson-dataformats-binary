@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -114,7 +113,9 @@ public final class AvroParserImpl extends AvroParser
     {
         super(ctxt, parserFeatures, avroFeatures, codec);
         _inputStream = null;
-        _decoder = CodecRecycler.decoder(data, offset, len);
+        _inputBuffer = data;
+        _inputPtr = offset;
+        _inputEnd = offset + len;
     }
 
     @Override
@@ -542,7 +543,8 @@ public final class AvroParserImpl extends AvroParser
         return JsonToken.VALUE_NUMBER_INT;
     }
 
-    public final int decodeInt() throws IOException {
+    public final int decodeInt() throws IOException
+    {
         int ptr = _inputPtr;
         if ((_inputEnd - ptr) < 5) {
             return _decodeIntSlow();
@@ -869,7 +871,9 @@ public final class AvroParserImpl extends AvroParser
             }
             _textValue = "";
         } else {
-            _textValue = "";
+            byte[] b = new byte[len];
+            _read(b, 0, len);
+            _textValue = new String(b, 0, len);
         }
         return JsonToken.VALUE_STRING;
     }
@@ -1070,6 +1074,12 @@ public final class AvroParserImpl extends AvroParser
         _avroContext = ctxt;
     }
 
+    /*
+    /**********************************************************
+    /* Low-level methods: setting values from defaults
+    /**********************************************************
+     */
+
     protected JsonToken setBytes(byte[] b)
     {
         _binaryValue = b;
@@ -1124,7 +1134,7 @@ public final class AvroParserImpl extends AvroParser
 
     private final byte _nextByteGuaranteed2() throws IOException
     {
-        _loadMoreGuaranteed();
+        if (!_loadMore()) { _reportInvalidEOF(); }
         return _inputBuffer[_inputPtr++];
     }
 
@@ -1146,7 +1156,6 @@ public final class AvroParserImpl extends AvroParser
     protected final boolean _loadMore() throws IOException
     {
         //_currInputRowStart -= _inputEnd;
-        
         if (_inputStream != null) {
             int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
             _currInputProcessed += _inputEnd;
