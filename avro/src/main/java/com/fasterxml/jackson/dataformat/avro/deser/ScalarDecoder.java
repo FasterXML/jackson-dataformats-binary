@@ -290,7 +290,7 @@ public abstract class ScalarDecoder
 
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return parser.decodeString();
+            return parser.decodeStringToken();
         }
 
         @Override
@@ -315,7 +315,7 @@ public abstract class ScalarDecoder
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return parser.decodeString();
+                return parser.decodeStringToken();
             }
 
             @Override

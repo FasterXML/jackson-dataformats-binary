@@ -389,7 +389,7 @@ public abstract class AvroParser extends ParserBase
     public int getTextOffset() throws IOException {
         return 0;
     }
-    
+
     /*
     /**********************************************************************
     /* Binary (base64)

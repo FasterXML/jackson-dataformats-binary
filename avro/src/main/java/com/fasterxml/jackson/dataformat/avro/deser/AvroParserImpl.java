@@ -47,18 +47,6 @@ public final class AvroParserImpl extends AvroParser
 
     /*
     /**********************************************************
-    /* Helper objects
-    /**********************************************************
-     */
-
-    /**
-     * Actual decoder in use, possible same as <code>_rootDecoder</code>, but
-     * not necessarily, in case of different reader/writer schema in use.
-     */
-    protected BinaryDecoder _decoder;
-
-    /*
-    /**********************************************************
     /* Other decoding state
     /**********************************************************
      */
@@ -102,9 +90,6 @@ public final class AvroParserImpl extends AvroParser
         _inputPtr = 0;
         _inputEnd = 0;
         _bufferRecyclable = true;
-
-        _decoder = CodecRecycler.decoder(in,
-                Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
     public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
@@ -127,11 +112,6 @@ public final class AvroParserImpl extends AvroParser
                 _inputBuffer = null;
                 _ioContext.releaseReadIOBuffer(buf);
             }
-        }
-        BinaryDecoder d = _decoder;
-        if (d != null) {
-            _decoder = null;
-            CodecRecycler.release(d);
         }
     }
 
@@ -862,20 +842,23 @@ public final class AvroParserImpl extends AvroParser
     /* Methods for AvroReadContext implementations: decoding Strings
     /**********************************************************
      */
-    
-    public JsonToken decodeString() throws IOException {
+
+    public JsonToken decodeStringToken() throws IOException {
+        _textValue = decodeString();
+        return JsonToken.VALUE_STRING;
+    }
+
+    public String decodeString() throws IOException {
         int len = decodeInt();
         if (len <= 0) {
             if (len < 0) {
                 _reportError("Invalid length indicator for String: "+len);
             }
-            _textValue = "";
-        } else {
-            byte[] b = new byte[len];
-            _read(b, 0, len);
-            _textValue = new String(b, 0, len);
+            return "";
         }
-        return JsonToken.VALUE_STRING;
+        byte[] b = new byte[len];
+        _read(b, 0, len);
+        return new String(b, 0, len);
     }
 
     public void skipString() throws IOException {
@@ -921,7 +904,6 @@ public final class AvroParserImpl extends AvroParser
         } else {
             _skip(len);
         }
-        _decoder.skipBytes();
     }
 
     public JsonToken decodeFixed(int size) throws IOException {
@@ -981,15 +963,26 @@ public final class AvroParserImpl extends AvroParser
      */
 
     public long decodeArrayStart() throws IOException {
-        return _decoder.readArrayStart();
+        long result = decodeLong();
+        if (result < 0) {
+            skipLong(); // Consume byte-count if present
+            result = -result;
+        }
+        return result;
     }
 
     public long decodeArrayNext() throws IOException {
-        return _decoder.arrayNext();
+        long result = decodeLong();
+        if (result < 0) {
+            skipLong(); // Consume byte-count if present
+            result = -result;
+        }
+        return result;
     }
 
     public long skipArray() throws IOException {
-        return _decoder.skipArray();
+//        return _decoder.skipArray();
+        return 1;
     }
 
     /*
@@ -999,19 +992,30 @@ public final class AvroParserImpl extends AvroParser
      */
 
     public String decodeMapKey() throws IOException {
-        return _decoder.readString();
+        return decodeString();
     }
 
     public long decodeMapStart() throws IOException {
-        return _decoder.readMapStart();
+        long result = decodeLong();
+        if (result < 0) {
+            skipLong(); // Consume byte-count if present
+            result = -result;
+        }
+        return result;
     }
 
     public long decodeMapNext() throws IOException {
-        return _decoder.mapNext();
+        long result = decodeLong();
+        if (result < 0) {
+            skipLong(); // Consume byte-count if present
+            result = -result;
+        }
+        return result;
     }
 
     public long skipMap() throws IOException {
-        return _decoder.skipMap();
+//        return _decoder.skipMap();
+        return 1;
     }
 
     /*
@@ -1046,7 +1050,7 @@ public final class AvroParserImpl extends AvroParser
         if (_inputPtr < _inputEnd) {
             return false;
         }
-        return _loadMore();
+        return !_loadMore();
     }
 
     /*
