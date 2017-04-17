@@ -30,6 +30,10 @@ Modules:
 #79 (proto): Fix wire type for packed arrays
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
+2.8.9 (not yet released)
+
+#72: (proto) parser fails with /* comment */
+
 2.8.8 (05-Apr-2017)
 
 #54 (protobuf): Some fields are left null

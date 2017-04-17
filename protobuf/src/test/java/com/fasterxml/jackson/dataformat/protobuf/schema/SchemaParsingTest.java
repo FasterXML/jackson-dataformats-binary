@@ -30,10 +30,10 @@ public class SchemaParsingTest extends ProtobufTestBase
 
     final protected static String PROTOC_STRINGS_PACKED =
             "message Strings {\n"
-            +" repeated string values = 2 [packed=true];\n"
+            +" repeated string values = 2 [packed=true]; /* comment */\n"
             +"}\n"
     ;
-    
+
     public void testSimpleSearchRequest() throws Exception
     {
         // First: with implicit first type:
