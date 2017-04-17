@@ -691,7 +691,6 @@ public final class AvroParserImpl extends AvroParser
                             i |= (b << 7);
                         }
                         lo |= (((long) i) << 56);
-                        return (lo >>> 1) ^ (-(lo & 1));
                     }
                 }
             }
@@ -777,6 +776,7 @@ public final class AvroParserImpl extends AvroParser
                 _reportInvalidNegative(b);
             }
         }
+        _inputPtr = ptr;
     }
 
     public void _skipLongSlow() throws IOException {
@@ -799,9 +799,12 @@ public final class AvroParserImpl extends AvroParser
      */
 
     public JsonToken decodeFloat() throws IOException {
-        _loadToHaveAtLeast(4);
-        final byte[] buf = _inputBuffer;
         int ptr = _inputPtr;
+        if ((_inputEnd - ptr) < 4) {
+            _loadToHaveAtLeast(4);
+            ptr = _inputPtr;
+        }
+        final byte[] buf = _inputBuffer;
         _inputPtr = ptr+4;
         int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
                 | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
@@ -815,8 +818,12 @@ public final class AvroParserImpl extends AvroParser
     }
 
     public JsonToken decodeDouble() throws IOException {
-        final byte[] buf = _inputBuffer;
         int ptr = _inputPtr;
+        if ((_inputEnd - ptr) < 8) {
+            _loadToHaveAtLeast(8);
+            ptr = _inputPtr;
+        }
+        final byte[] buf = _inputBuffer;
         int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
                 | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
         ptr += 4;
@@ -916,15 +923,16 @@ public final class AvroParserImpl extends AvroParser
 
     private final void _read(byte[] target, int offset, int len) throws IOException
     {
-        int available = _inputEnd - _inputPtr;
+        int ptr = _inputPtr;
+        int available = _inputEnd - ptr;
         if (len <= available) { // already got it all?
-            System.arraycopy(_inputBuffer, _inputPtr, target, offset, len);
-            _inputPtr += len;
+            System.arraycopy(_inputBuffer, ptr, target, offset, len);
+            _inputPtr = ptr + len;
             return;
         }
         // only had some, copy whatever there is
-        System.arraycopy(_inputBuffer, _inputPtr, target, offset, available);
-        _inputPtr += available;
+        System.arraycopy(_inputBuffer, ptr, target, offset, available);
+        _inputPtr = ptr + available;
         offset += available;
         int left = len - available;
         // and rest we can read straight from input
@@ -943,7 +951,13 @@ public final class AvroParserImpl extends AvroParser
         if (_inputStream == null) {
             _reportError("Needed to skip "+len+" bytes, reached end-of-input");
         }
-        int left = len;
+        int ptr = _inputPtr;
+        int available = _inputEnd - ptr;
+        if (len <= available) {
+            _inputPtr = ptr + len;
+            return;
+        }
+        int left = len - available;
         while (left > 0) {
             int skipped = (int) _inputStream.skip(len);
             if (skipped < 0) {
@@ -1183,10 +1197,6 @@ public final class AvroParserImpl extends AvroParser
      */
     protected final void _loadToHaveAtLeast(int minAvailable) throws IOException
     {
-        // No input stream, no leading (either we are closed, or have non-stream input source)
-        if (_inputStream == null) {
-            _reportError("Needed to read "+minAvailable+" bytes, reached end-of-input");
-        }
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
         _currInputProcessed += _inputPtr;
@@ -1198,6 +1208,10 @@ public final class AvroParserImpl extends AvroParser
             _inputEnd = 0;
         }
         _inputPtr = 0;
+        // No input stream, no leading (either we are closed, or have non-stream input source)
+        if (_inputStream == null) {
+            _reportError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+        }
         while (_inputEnd < minAvailable) {
             int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
             if (count < 1) {

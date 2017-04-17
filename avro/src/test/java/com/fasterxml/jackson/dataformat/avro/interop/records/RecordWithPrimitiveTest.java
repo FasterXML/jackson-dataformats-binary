@@ -5,6 +5,7 @@ import java.io.IOException;
 import lombok.Data;
 import org.junit.Test;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,16 +16,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RecordWithPrimitiveTest extends InteropTestBase
 {
     @Data
+    @JsonPropertyOrder({ "byteField", "shortField", "characterField", "integerField", "longField",
+        "floatField", "doubleField" })
     public static class TestRecord {
-        private byte   byteField;
-        private short  shortField;
-        private char   characterField;
-        private int    integerField;
-        private long   longField;
-        private float  floatField;
-        private double doubleField;
+        public byte   byteField;
+        public short  shortField;
+        public char   characterField;
+        public int    integerField;
+        public long   longField;
+        public float  floatField;
+        public double doubleField;
     }
-    
+
     @Test
     public void testByteField() throws IOException {
         TestRecord record = new TestRecord();
