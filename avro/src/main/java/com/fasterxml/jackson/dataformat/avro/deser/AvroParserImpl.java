@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -18,6 +19,36 @@ public final class AvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
 
+    /**
+     * Additionally we can combine UTF-8 decoding info into similar
+     * data table.
+     * Values indicate "byte length - 1"; meaning -1 is used for
+     * invalid bytes, 0 for single-byte codes, 1 for 2-byte codes
+     * and 2 for 3-byte codes.
+     */
+    public final static int[] sUtf8UnitLengths;
+    static {
+        int[] table = new int[256];
+        for (int c = 128; c < 256; ++c) {
+            int code;
+
+            // We'll add number of bytes needed for decoding
+            if ((c & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
+                code = 1;
+            } else if ((c & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
+                code = 2;
+            } else if ((c & 0xF8) == 0xF0) {
+                // 4 bytes; double-char with surrogates and all...
+                code = 3;
+            } else {
+                // And -1 seems like a good "universal" error marker...
+                code = -1;
+            }
+            table[c] = code;
+        }
+        sUtf8UnitLengths = table;
+    }
+    
     /*
     /**********************************************************
     /* Input source config
@@ -163,6 +194,19 @@ public final class AvroParserImpl extends AvroParser
         }
     }
 
+    @Override
+    public int releaseBuffered(OutputStream out) throws IOException
+    {
+        int count = _inputEnd - _inputPtr;
+        if (count < 1) {
+            return 0;
+        }
+        // let's just advance ptr to end
+        int origPtr = _inputPtr;
+        out.write(_inputBuffer, origPtr, count);
+        return count;
+    }
+
     /*
     /**********************************************************
     /* Abstract method impls, traversal
@@ -221,9 +265,13 @@ public final class AvroParserImpl extends AvroParser
         return name.equals(sstr.getValue());
     }
 
+    // !!! TODO: optimize
     @Override
     public String nextTextValue() throws IOException {
-        return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
+        if (nextToken() == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsAsString();
+        }
+        return null;
     }
 
     @Override
@@ -848,21 +896,31 @@ public final class AvroParserImpl extends AvroParser
      */
 
     public JsonToken decodeStringToken() throws IOException {
-        _textValue = decodeString();
+        decodeString();
         return JsonToken.VALUE_STRING;
     }
 
-    public String decodeString() throws IOException {
+    public void decodeString() throws IOException {
         int len = decodeInt();
         if (len <= 0) {
             if (len < 0) {
                 _reportError("Invalid length indicator for String: "+len);
             }
-            return "";
+            _textBuffer.resetWithEmpty();
+            return;
         }
-        byte[] b = new byte[len];
-        _read(b, 0, len);
-        return new String(b, 0, len);
+
+        if (len > (_inputEnd - _inputPtr)) {
+            // or if not, could we read?
+            if (len >= _inputBuffer.length) {
+                // If not enough space, need handling similar to chunked
+                _finishLongText(len);
+                return;
+            }
+            _loadToHaveAtLeast(len);
+        }
+        // offline for better optimization
+        _finishShortText(len);
     }
 
     public void skipString() throws IOException {
@@ -876,6 +934,178 @@ public final class AvroParserImpl extends AvroParser
         _skip(len);
     }
 
+    private final String _finishShortText(int len) throws IOException
+    {
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        if (outBuf.length < len) { // one minor complication
+            outBuf = _textBuffer.expandCurrentSegment(len);
+        }
+        
+        int outPtr = 0;
+        int inPtr = _inputPtr;
+        _inputPtr += len;
+        final byte[] inputBuf = _inputBuffer;
+
+        // Let's actually do a tight loop for ASCII first:
+        final int end = inPtr + len;
+
+        int i;
+        while ((i = inputBuf[inPtr]) >= 0) {
+            outBuf[outPtr++] = (char) i;
+            if (++inPtr == end) {
+                return _textBuffer.setCurrentAndReturn(outPtr);
+            }
+        }
+
+        final int[] codes = sUtf8UnitLengths;
+        do {
+            i = inputBuf[inPtr++] & 0xFF;
+            switch (codes[i]) {
+            case 0:
+                break;
+            case 1:
+                i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
+                break;
+            case 2:
+                i = ((i & 0x0F) << 12)
+                   | ((inputBuf[inPtr++] & 0x3F) << 6)
+                   | (inputBuf[inPtr++] & 0x3F);
+                break;
+            case 3:
+                i = ((i & 0x07) << 18)
+                 | ((inputBuf[inPtr++] & 0x3F) << 12)
+                 | ((inputBuf[inPtr++] & 0x3F) << 6)
+                 | (inputBuf[inPtr++] & 0x3F);
+                // note: this is the codepoint value; need to split, too
+                i -= 0x10000;
+                outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                i = 0xDC00 | (i & 0x3FF);
+                break;
+            default: // invalid
+                _reportError("Invalid byte "+Integer.toHexString(i)+" in Unicode text block");
+            }
+            outBuf[outPtr++] = (char) i;
+        } while (inPtr < end);
+        return _textBuffer.setCurrentAndReturn(outPtr);
+    }
+
+    private final void _finishLongText(int len) throws IOException
+    {
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        int outPtr = 0;
+        final int[] codes = sUtf8UnitLengths;
+        int outEnd = outBuf.length;
+
+        while (--len >= 0) {
+            int c = _nextByteGuaranteed() & 0xFF;
+            int code = codes[c];
+            if (code == 0 && outPtr < outEnd) {
+                outBuf[outPtr++] = (char) c;
+                continue;
+            }
+            if ((len -= code) < 0) { // may need to improve error here but...
+                throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+            }
+            
+            switch (code) {
+            case 0:
+                break;
+            case 1: // 2-byte UTF
+                {
+                    int d = _nextByteGuaranteed();
+                    if ((d & 0xC0) != 0x080) {
+                        _reportInvalidOther(d & 0xFF, _inputPtr);
+                    }
+                    c = ((c & 0x1F) << 6) | (d & 0x3F);
+                }
+                break;
+            case 2: // 3-byte UTF
+                c = _decodeUTF8_3(c);
+                break;
+            case 3: // 4-byte UTF
+                c = _decodeUTF8_4(c);
+                // Let's add first part right away:
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
+                if (outPtr >= outBuf.length) {
+                    outBuf = _textBuffer.finishCurrentSegment();
+                    outPtr = 0;
+                    outEnd = outBuf.length;
+                }
+                c = 0xDC00 | (c & 0x3FF);
+                // And let the other char output down below
+                break;
+            default:
+                // Is this good enough error message?
+                _reportInvalidChar(c);
+            }
+            // Need more room?
+            if (outPtr >= outEnd) {
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+                outEnd = outBuf.length;
+            }
+            // Ok, let's add char to output:
+            outBuf[outPtr++] = (char) c;
+        }
+        _textBuffer.setCurrentLength(outPtr);
+    }
+
+    private final int _decodeUTF8_3(int c1) throws IOException
+    {
+        c1 &= 0x0F;
+        int d = _nextByteGuaranteed();
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        int c = (c1 << 6) | (d & 0x3F);
+        d = _nextByteGuaranteed();
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = (c << 6) | (d & 0x3F);
+        return c;
+    }
+
+    private final int _decodeUTF8_4(int c) throws IOException
+    {
+        int d = _nextByteGuaranteed();
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = ((c & 0x07) << 6) | (d & 0x3F);
+        d = _nextByteGuaranteed();
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = (c << 6) | (d & 0x3F);
+        d = _nextByteGuaranteed();
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        return ((c << 6) | (d & 0x3F)) - 0x10000;
+    }
+
+    protected void _reportInvalidChar(int c) throws JsonParseException {
+        // Either invalid WS or illegal UTF-8 start char
+        if (c < ' ') {
+            _throwInvalidSpace(c);
+        }
+        _reportInvalidInitial(c);
+    }
+
+    private void _reportInvalidInitial(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
+    }
+
+    private void _reportInvalidOther(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
+    }
+
+    private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
+        _inputPtr = ptr;
+        _reportInvalidOther(mask);
+    }
+    
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Bytes
@@ -1003,7 +1233,8 @@ public final class AvroParserImpl extends AvroParser
      */
 
     public String decodeMapKey() throws IOException {
-        return decodeString();
+        decodeString();
+        return _textBuffer.contentsAsString();
     }
 
     public long decodeMapStart() throws IOException {
@@ -1126,7 +1357,7 @@ public final class AvroParserImpl extends AvroParser
     }
 
     protected JsonToken setString(String str) {
-        _textValue = str;
+        _textBuffer.resetWithString(str);
         return JsonToken.VALUE_STRING;
     }
 

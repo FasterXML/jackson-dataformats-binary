@@ -93,11 +93,6 @@ public abstract class AvroParser extends ParserBase
 
     protected AvroReadContext _avroContext;
 
-    /**
-     * We need to keep track of text values.
-     */
-    protected String _textValue;
-
     /*
     /**********************************************************************
     /* Life-cycle
@@ -283,19 +278,6 @@ public abstract class AvroParser extends ParserBase
     @Override
     public abstract JsonToken nextToken() throws IOException;
 
-    @Override
-    protected void convertNumberToBigDecimal() throws IOException {
-        // ParserBase uses _textValue instead of _numberDouble for some reason when NR_DOUBLE is set, but _textValue is not set by setNumber()
-        // Catch and use _numberDouble instead
-        if ((_numTypesValid & NR_DOUBLE) != 0) {
-            if (_textValue == null) {
-                _numberBigDecimal = BigDecimal.valueOf(_numberDouble);
-                return;
-            }
-        }
-        super.convertNumberToBigDecimal();
-    }
-
     /*
     /**********************************************************
     /* String value handling
@@ -311,15 +293,16 @@ public abstract class AvroParser extends ParserBase
     @Override
     public String getText() throws IOException
     {
-        if (_currToken == JsonToken.VALUE_STRING) {
-            return _textValue;
+        JsonToken t = _currToken;
+        if (t == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsAsString();
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.FIELD_NAME) {
             return _avroContext.getCurrentName();
         }
-        if (_currToken != null) {
-            if (_currToken.isScalarValue()) {
-                return _textValue;
+        if (t != null) {
+            if (t.isNumeric()) {
+                return getNumberValue().toString();
             }
             return _currToken.asString();
         }
@@ -331,8 +314,7 @@ public abstract class AvroParser extends ParserBase
     {
         JsonToken t = _currToken;
         if (t == JsonToken.VALUE_STRING) {
-            writer.write(_textValue);
-            return _textValue.length();
+            return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
             String n = _parsingContext.getCurrentName();
