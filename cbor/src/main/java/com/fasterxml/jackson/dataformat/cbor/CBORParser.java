@@ -299,20 +299,6 @@ public final class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    final protected static int NR_UNKNOWN = 0;
-
-    // First, integer types
-
-    final protected static int NR_INT = 0x0001;
-    final protected static int NR_LONG = 0x0002;
-    final protected static int NR_BIGINT = 0x0004;
-
-    // And then floating point types
-
-    final protected static int NR_FLOAT = 0x008;
-    final protected static int NR_DOUBLE = 0x010;
-    final protected static int NR_BIGDECIMAL = 0x0020;
-
     // Also, we need some numeric constants
 
     final static BigInteger BI_MIN_INT = BigInteger.valueOf(Integer.MIN_VALUE);
@@ -327,26 +313,6 @@ public final class CBORParser extends ParserMinimalBase
     final static BigDecimal BD_MIN_INT = new BigDecimal(BI_MIN_INT);
     final static BigDecimal BD_MAX_INT = new BigDecimal(BI_MAX_INT);
 
-    final static long MIN_INT_L = (long) Integer.MIN_VALUE;
-    final static long MAX_INT_L = (long) Integer.MAX_VALUE;
-
-    // These are not very accurate, but have to do... (for bounds checks)
-
-    final static double MIN_LONG_D = (double) Long.MIN_VALUE;
-    final static double MAX_LONG_D = (double) Long.MAX_VALUE;
-
-    final static double MIN_INT_D = (double) Integer.MIN_VALUE;
-    final static double MAX_INT_D = (double) Integer.MAX_VALUE;
-
-    // Digits, numeric
-    final protected static int INT_0 = '0';
-    final protected static int INT_9 = '9';
-
-    final protected static int INT_MINUS = '-';
-    final protected static int INT_PLUS = '+';
-
-    final protected static char CHAR_NULL = '\0';
-    
     // Numeric value holders: multiple fields used for
     // for efficiency
 
