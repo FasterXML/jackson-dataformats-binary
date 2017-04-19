@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 abstract class RecordReader extends AvroStructureReader
 {
@@ -68,9 +69,9 @@ abstract class RecordReader extends AvroStructureReader
             return super.getTypeId();
         }
         if (_currToken == JsonToken.FIELD_NAME) {
-            return _fieldReaders[_index].getTypeId();
+            return AvroSchemaHelper.getTypeId(String.class);
         }
-        // When reading a value type ID, the index pointer has already advanced to the field, so look at the previous
+        // When reading a value type ID, the index pointer has already advanced to the next field, so look at the previous
         return _fieldReaders[_index - 1].getTypeId();
     }
 
