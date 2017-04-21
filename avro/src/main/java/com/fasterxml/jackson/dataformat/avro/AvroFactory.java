@@ -7,8 +7,8 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
-import com.fasterxml.jackson.dataformat.avro.deser.JacksonAvroParserImpl;
+
+import com.fasterxml.jackson.dataformat.avro.deser.*;
 
 public class AvroFactory extends JsonFactory
 {
@@ -327,6 +327,7 @@ public class AvroFactory extends JsonFactory
     @Override
     protected AvroParser _createParser(InputStream in, IOContext ctxt) throws IOException {
         return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+//        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _objectCodec, in);
     }
 
@@ -344,6 +345,7 @@ public class AvroFactory extends JsonFactory
     @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
         return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+//        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _objectCodec, data, offset, len);
     }
 

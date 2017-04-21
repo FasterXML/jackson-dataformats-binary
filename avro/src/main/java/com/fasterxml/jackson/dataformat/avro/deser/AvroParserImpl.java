@@ -84,6 +84,13 @@ public abstract class AvroParserImpl
         return this;
     }
 
+    @Override
+    public void close() throws IOException {
+        // 20-Apr-2017, tatu: Let's simplify some checks by changing context
+        _avroContext = MissingReader.instance;
+        super.close();
+    }
+
     /*
     /**********************************************************
     /* Abstract method impls, traversal
@@ -93,14 +100,12 @@ public abstract class AvroParserImpl
     @Override
     public JsonToken nextToken() throws IOException
     {
+        // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _branchIndex = -1;
         _enumIndex = -1;
         _binaryValue = null;
-        if (_closed) {
-            return null;
-        }
         JsonToken t = _avroContext.nextToken();
         _currToken = t;
         return t;
@@ -109,12 +114,10 @@ public abstract class AvroParserImpl
     @Override
     public String nextFieldName() throws IOException
     {
+        // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
-        if (_closed) {
-            return null;
-        }
         String name = _avroContext.nextFieldName();
         if (name == null) {
             _currToken = _avroContext.getCurrentToken();
@@ -127,12 +130,10 @@ public abstract class AvroParserImpl
     @Override
     public boolean nextFieldName(SerializableString sstr) throws IOException
     {
+        // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
-        if (_closed) {
-            return false;
-        }
         String name = _avroContext.nextFieldName();
         if (name == null) {
             _currToken = _avroContext.getCurrentToken();
@@ -426,11 +427,17 @@ public abstract class AvroParserImpl
 
     /*
     /**********************************************************
+    /* Methods for AvroReadContext implementations: state
+    /**********************************************************
+     */
+    
+    public abstract boolean checkInputEnd() throws IOException;
+    
+    /*
+    /**********************************************************
     /* Methods for AvroReadContext implementations: decoding int
     /**********************************************************
      */
-
-    public abstract boolean checkInputEnd() throws IOException;
 
     public abstract JsonToken decodeIntToken() throws IOException;
 
