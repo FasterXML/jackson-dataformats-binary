@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
+import com.fasterxml.jackson.dataformat.avro.deser.JacksonAvroParserImpl;
 
 public class AvroFactory extends JsonFactory
 {
@@ -19,13 +20,13 @@ public class AvroFactory extends JsonFactory
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
      */
-    final static int DEFAULT_SMILE_PARSER_FEATURE_FLAGS = AvroParser.Feature.collectDefaults();
+    final static int DEFAULT_AVRO_PARSER_FEATURE_FLAGS = AvroParser.Feature.collectDefaults();
 
     /**
      * Bitfield (set of flags) of all generator features that are enabled
      * by default.
      */
-    final static int DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS = AvroGenerator.Feature.collectDefaults();
+    final static int DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS = AvroGenerator.Feature.collectDefaults();
 
     /*
     /**********************************************************
@@ -58,8 +59,8 @@ public class AvroFactory extends JsonFactory
     public AvroFactory(ObjectCodec oc)
     {
         super(oc);
-        _avroParserFeatures = DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
-        _avroGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
+        _avroParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
+        _avroGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
 
         /* 04-Mar-2013, tatu: Content auto-closing is unfortunately a feature
          *    that works poorly with Avro error reporting, and generally
@@ -325,7 +326,7 @@ public class AvroFactory extends JsonFactory
      */
     @Override
     protected AvroParser _createParser(InputStream in, IOContext ctxt) throws IOException {
-        return new AvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _objectCodec, in);
     }
 
@@ -342,7 +343,7 @@ public class AvroFactory extends JsonFactory
 
     @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
-        return new AvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _objectCodec, data, offset, len);
     }
 

@@ -38,6 +38,7 @@ public abstract class AvroStructureReader
      * Alternative to {@link #nextToken} which will simply skip the full
      * value.
      */
+    @Override
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
     @Override
