@@ -33,6 +33,11 @@ public final class RootReader extends AvroReadContext
     }
 
     @Override
+    public void skipValue(AvroParserImpl parser) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public JsonToken getCurrentToken() {
         return null;
     }

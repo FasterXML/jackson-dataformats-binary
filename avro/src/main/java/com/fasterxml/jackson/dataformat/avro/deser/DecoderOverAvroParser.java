@@ -12,11 +12,11 @@ import com.fasterxml.jackson.core.JsonToken;
 /**
  * Wraps an AvroParser instance and allows it to be advanced by reading from it like an avro {@link Decoder}
  */
-public class AvroParserImplDecoder extends Decoder {
+public class DecoderOverAvroParser extends Decoder {
 
     protected final AvroParserImpl _parser;
 
-    public AvroParserImplDecoder(AvroParserImpl parser) {
+    public DecoderOverAvroParser(AvroParserImpl parser) {
         _parser = parser;
     }
 

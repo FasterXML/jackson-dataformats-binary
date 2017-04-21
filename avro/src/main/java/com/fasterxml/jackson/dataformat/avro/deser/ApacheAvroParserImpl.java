@@ -17,7 +17,7 @@ import com.fasterxml.jackson.dataformat.avro.CodecRecycler;
  * Implementation class that exposes additional internal API
  * to be used as callbacks by {@link AvroReadContext} implementations.
  */
-public class AvroParserImpl extends AvroParser
+public class ApacheAvroParserImpl extends AvroParser
 {
     protected final static byte[] NO_BYTES = new byte[0];
 
@@ -93,7 +93,7 @@ public class AvroParserImpl extends AvroParser
     /**********************************************************
      */
     
-    public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
+    public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec, InputStream in)
     {
         super(ctxt, parserFeatures, avroFeatures, codec);
@@ -107,7 +107,7 @@ public class AvroParserImpl extends AvroParser
                 Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
-    public AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
+    public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec,
             byte[] data, int offset, int len)
     {
