@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.math.BigDecimal;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
