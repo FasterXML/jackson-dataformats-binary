@@ -283,53 +283,14 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************
      */
 
-    // For now we do not store char[] representation...
     @Override
-    public boolean hasTextCharacters() {
-        return false;
-    }
-    
-    @Override
-    public String getText() throws IOException
-    {
-        JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsAsString();
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            return _avroContext.getCurrentName();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
-                return getNumberValue().toString();
-            }
-            return _currToken.asString();
-        }
-        return null;
-    }
+    public abstract boolean hasTextCharacters();
 
-    @Override // since 2.8
-    public int getText(Writer writer) throws IOException
-    {
-        JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(writer);
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
-                return _textBuffer.contentsToWriter(writer);
-            }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
-        }
-        return 0;
-    }
+    @Override
+    public abstract String getText() throws IOException;
+
+    @Override
+    public abstract int getText(Writer writer) throws IOException;
     
     @Override
     public String getCurrentName() throws IOException {

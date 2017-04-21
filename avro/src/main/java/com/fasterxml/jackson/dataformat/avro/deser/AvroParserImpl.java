@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -273,6 +274,61 @@ public final class AvroParserImpl extends AvroParser
         _avroContext = new RootReader(this, schema.getReader());
     }
 
+    /*
+    /**********************************************************
+    /* Abstract method impls, text
+    /**********************************************************
+     */
+
+    @Override
+    public boolean hasTextCharacters() {
+        if (_currToken == JsonToken.VALUE_STRING) { return true; } // usually true
+        // name might be copied but...
+        return false;
+    }
+
+    @Override
+    public String getText() throws IOException
+    {
+        JsonToken t = _currToken;
+        if (t == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsAsString();
+        }
+        if (t == JsonToken.FIELD_NAME) {
+            return _avroContext.getCurrentName();
+        }
+        if (t != null) {
+            if (t.isNumeric()) {
+                return getNumberValue().toString();
+            }
+            return _currToken.asString();
+        }
+        return null;
+    }
+
+    @Override // since 2.8
+    public int getText(Writer writer) throws IOException
+    {
+        JsonToken t = _currToken;
+        if (t == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsToWriter(writer);
+        }
+        if (t == JsonToken.FIELD_NAME) {
+            String n = _parsingContext.getCurrentName();
+            writer.write(n);
+            return n.length();
+        }
+        if (t != null) {
+            if (t.isNumeric()) {
+                return _textBuffer.contentsToWriter(writer);
+            }
+            char[] ch = t.asCharArray();
+            writer.write(ch);
+            return ch.length;
+        }
+        return 0;
+    }
+    
     /*
     /**********************************************************
     /* Numeric accessors of public API

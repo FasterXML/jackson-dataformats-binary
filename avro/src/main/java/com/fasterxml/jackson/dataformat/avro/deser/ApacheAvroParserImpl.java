@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -56,6 +57,11 @@ public class ApacheAvroParserImpl extends AvroParser
      * not necessarily, in case of different reader/writer schema in use.
      */
     protected BinaryDecoder _decoder;
+
+    /**
+     * We need to keep track of text values.
+     */
+    protected String _textValue;
 
     /*
     /**********************************************************
@@ -235,6 +241,29 @@ public class ApacheAvroParserImpl extends AvroParser
     @Override
     protected void _initSchema(AvroSchema schema) throws JsonProcessingException {
         _avroContext = new RootReader(this, schema.getReader());
+    }
+
+    /*
+    /**********************************************************
+    /* Abstract method impls, text
+    /**********************************************************
+     */
+    
+    // For now we do not store char[] representation...
+    @Override
+    public boolean hasTextCharacters() {
+        return false;
+    }
+
+    @Override
+    public String getText() throws IOException
+    {
+    }
+
+    @Override // since 2.8
+    public int getText(Writer writer) throws IOException
+    {
+        
     }
 
     /*
