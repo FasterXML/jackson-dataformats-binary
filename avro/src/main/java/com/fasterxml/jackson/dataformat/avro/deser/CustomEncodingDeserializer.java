@@ -25,14 +25,14 @@ public class CustomEncodingDeserializer<T> extends JsonDeserializer<T> {
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         AvroParserImpl avroParser = (AvroParserImpl) p;
-        AvroParserImplDecoder decoder = new AvroParserImplDecoder(avroParser);
+        DecoderOverAvroParser decoder = new DecoderOverAvroParser(avroParser);
         return encoding.read(null, decoder);
     }
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt, T intoValue) throws IOException {
         AvroParserImpl avroParser = (AvroParserImpl) p;
-        AvroParserImplDecoder decoder = new AvroParserImplDecoder(avroParser);
+        DecoderOverAvroParser decoder = new DecoderOverAvroParser(avroParser);
         return encoding.read(intoValue, decoder);
     }
 }

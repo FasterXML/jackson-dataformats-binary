@@ -43,7 +43,8 @@ public abstract class AvroReadContext extends JsonStreamContext
 
     public abstract String nextFieldName() throws IOException;
 
-    
+    public abstract void skipValue(AvroParserImpl parser) throws IOException;
+
     @Override
     public Object getCurrentValue() {
         return _currentValue;

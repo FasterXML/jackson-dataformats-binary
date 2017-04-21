@@ -151,13 +151,7 @@ public final class AvroParserImpl extends AvroParser
      * @throws IOException If there was an issue advancing through the underlying data stream
      */
     protected void skipValue() throws IOException {
-        if (_avroContext instanceof ArrayReader) {
-            ((ArrayReader) _avroContext).skipValue(this);
-        } else if (_avroContext instanceof MapReader) {
-            ((MapReader) _avroContext).skipValue(this);
-        } else if (_avroContext instanceof RecordReader) {
-            ((RecordReader) _avroContext).skipValue(this);
-        }
+        _avroContext.skipValue(this);
     }
 
     @Override

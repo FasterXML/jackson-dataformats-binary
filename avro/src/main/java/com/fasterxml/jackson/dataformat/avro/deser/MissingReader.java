@@ -33,5 +33,7 @@ public class MissingReader extends AvroReadContext
     public String nextFieldName() throws IOException {
         return null;
     }
-}
 
+    @Override
+    public void skipValue(AvroParserImpl parser) throws IOException { }
+}
