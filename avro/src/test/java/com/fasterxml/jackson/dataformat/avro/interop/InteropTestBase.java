@@ -35,7 +35,7 @@ public abstract class InteropTestBase
      *
      * @return A type representing the bound {@code baseClass}
      */
-    protected static ParameterizedType type(Class<?> baseClass, Type... parameters) {
+    public static ParameterizedType type(Class<?> baseClass, Type... parameters) {
         if (baseClass.getTypeParameters().length != parameters.length) {
             throw new IllegalArgumentException("Incorrect number of type parameters, expected "
                                                + baseClass.getTypeParameters().length
