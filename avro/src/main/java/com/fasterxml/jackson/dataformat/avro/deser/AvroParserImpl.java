@@ -60,17 +60,6 @@ public abstract class AvroParserImpl
         super(ctxt, parserFeatures, avroFeatures, codec);
     }
 
-    /**
-     * Skip to the end of the current structure (array/map/object); This is different from {@link #skipMap()} and {@link #skipArray()}
-     * because it operates at the parser level instead of at the decoder level and advances the parsing context in addition to consuming
-     * the data from the input.
-     *
-     * @throws IOException If there was an issue advancing through the underlying data stream
-     */
-    protected final void skipValue() throws IOException {
-        _avroContext.skipValue(this);
-    }
-
     @Override
     public final JsonParser overrideFormatFeatures(int values, int mask) {
         int oldF = _formatFeatures;
@@ -146,6 +135,18 @@ public abstract class AvroParserImpl
     @Override
     protected final void _initSchema(AvroSchema schema) throws JsonProcessingException {
         _avroContext = new RootReader(this, schema.getReader());
+    }
+
+    /**
+     * Skip to the end of the current structure (array/map/object); This is different
+     * from {@link #skipMap()} and {@link #skipArray()} because it operates at the parser
+     * level instead of at the decoder level and advances the parsing context in addition
+     * to consuming the data from the input.
+     *
+     * @throws IOException If there was an issue advancing through the underlying data stream
+     */
+    protected final void skipValue() throws IOException {
+        _avroContext.skipValue(this);
     }
 
     /*
@@ -432,7 +433,25 @@ public abstract class AvroParserImpl
      */
     
     public abstract boolean checkInputEnd() throws IOException;
-    
+
+    /**
+     * Returns the remaining number of elements in the current block of a map or array
+     */
+    public long getRemainingElements()
+    {
+        return _avroContext.getRemainingElements();
+        /*
+        // !!! TODO: maybe just add in `
+        if ( _avroContext instanceof ArrayReader) {
+            return ((ArrayReader) _avroContext).getRemainingElements();
+        }
+        if (_avroContext instanceof MapReader) {
+            return ((MapReader) _avroContext).getRemainingElements();
+        }
+        return -1;
+        */
+    }
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding int

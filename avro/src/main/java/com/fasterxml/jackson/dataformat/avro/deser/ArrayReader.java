@@ -55,6 +55,7 @@ public abstract class ArrayReader extends AvroStructureReader
         sb.append(']');
     }
 
+    @Override
     public long getRemainingElements() {
         return _count - _index;
     }

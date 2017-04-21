@@ -45,6 +45,10 @@ public abstract class AvroReadContext extends JsonStreamContext
 
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
+    public long getRemainingElements() {
+        return -1L;
+    }
+
     @Override
     public Object getCurrentValue() {
         return _currentValue;

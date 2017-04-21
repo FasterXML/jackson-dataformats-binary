@@ -8,9 +8,8 @@ import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.dataformat.avro.deser.ArrayReader;
+
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
-import com.fasterxml.jackson.dataformat.avro.deser.MapReader;
 import com.fasterxml.jackson.dataformat.avro.deser.MissingReader;
 
 /**
@@ -254,20 +253,6 @@ public abstract class AvroParser extends ParserBase
         return null;
     }
 
-    /**
-     * Returns the remaining number of elements in the current block of a map or array
-     */
-    public long getRemainingElements() {
-
-        if ( _avroContext instanceof ArrayReader) {
-            return ((ArrayReader) _avroContext).getRemainingElements();
-        }
-        if (_avroContext instanceof MapReader) {
-            return ((MapReader) _avroContext).getRemainingElements();
-        }
-        return -1;
-    }
-    
     /*
     /**********************************************************
     /* Parsing

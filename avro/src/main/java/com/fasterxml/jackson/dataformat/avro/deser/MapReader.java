@@ -51,6 +51,7 @@ public abstract class MapReader extends AvroStructureReader
     @Override
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
+    @Override
     public abstract long getRemainingElements();
 
     @Override
