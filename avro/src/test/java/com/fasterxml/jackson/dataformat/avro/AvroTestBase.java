@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -20,16 +21,6 @@ public abstract class AvroTestBase extends TestCase
     /**********************************************************
      */
 
-    protected final String EMPLOYEE_SCHEMA_JSON = "{\n"
-            +"\"type\": \"record\",\n"
-            +"\"name\": \"Employee\",\n"
-            +"\"fields\": [\n"
-            +" {\"name\": \"name\", \"type\": \"string\"},\n"
-            +" {\"name\": \"age\", \"type\": \"int\"},\n"
-            +" {\"name\": \"emails\", \"type\": {\"type\": \"array\", \"items\": \"string\"}},\n"
-            +" {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
-            +"]}";
-
     protected final String STRING_ARRAY_SCHEMA_JSON = "{\n"
             +"\"name\": \"StringArray\",\n"
             +"\"type\": \"array\",\n"
@@ -39,6 +30,16 @@ public abstract class AvroTestBase extends TestCase
             +"\"name\": \"StringMap\",\n"
             +"\"type\": \"map\",\n"
             +"\"values\": \"string\"\n}";
+
+    protected final String EMPLOYEE_SCHEMA_JSON = "{\n"
+            +"\"type\": \"record\",\n"
+            +"\"name\": \"Employee\",\n"
+            +"\"fields\": [\n"
+            +" {\"name\": \"name\", \"type\": \"string\"},\n"
+            +" {\"name\": \"age\", \"type\": \"int\"},\n"
+            +" {\"name\": \"emails\", \"type\": {\"type\": \"array\", \"items\": \"string\"}},\n"
+            +" {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
+            +"]}";
 
     protected final String EMPLOYEE_ARRAY_SCHEMA_JSON = aposToQuotes(
             "{"
@@ -55,12 +56,52 @@ public abstract class AvroTestBase extends TestCase
             +"   ]}\n"
             +"}\n");
 
+    protected final String POINT_LONG_SCHEMA_JSON = "{\n"
+            +"\"type\": \"record\",\n"
+            +"\"name\": \"Point\",\n"
+            +"\"fields\": [\n"
+            +" {\"name\": \"x\", \"type\": \"long\"},\n"
+            +" {\"name\": \"y\", \"type\": \"long\"}\n"
+            +"]}";
+
+    protected final String POINT_DOUBLE_SCHEMA_JSON = "{\n"
+            +"\"type\": \"record\",\n"
+            +"\"name\": \"Point\",\n"
+            +"\"fields\": [\n"
+            +" {\"name\": \"x\", \"type\": \"double\"},\n"
+            +" {\"name\": \"y\", \"type\": \"double\"}\n"
+            +"]}";
+    
     /*
     /**********************************************************
     /* Test classes
     /**********************************************************
      */
 
+    public static class PointLong
+    {
+        public long x, y;
+
+        protected PointLong() { }
+
+        public PointLong(long x0, long y0) {
+            x = x0;
+            y = y0;
+        }
+    }
+
+    public static class PointDouble
+    {
+        public double x, y;
+
+        protected PointDouble() { }
+
+        public PointDouble(long x0, long y0) {
+            x = x0;
+            y = y0;
+        }
+    }
+    
     public static class Employee
     {
         public Employee() { }
@@ -290,5 +331,59 @@ public abstract class AvroTestBase extends TestCase
     
     protected static String aposToQuotes(String json) {
         return json.replace("'", "\"");
+    }
+
+    /*
+    /**********************************************************
+    /* Text generation
+    /**********************************************************
+     */
+
+    protected static String generateUnicodeString(int length) {
+        return generateUnicodeString(length, new Random(length));
+    }
+    
+    protected static String generateUnicodeString(int length, Random rnd)
+    {
+        StringBuilder sw = new StringBuilder(length+10);
+        do {
+            // First, add 7 ascii characters
+            int num = 4 + (rnd.nextInt() & 7);
+            while (--num >= 0) {
+                sw.append((char) ('A' + num));
+            }
+            // Then a unicode char of 2, 3 or 4 bytes long
+            switch (rnd.nextInt() % 3) {
+            case 0:
+                sw.append((char) (256 + rnd.nextInt() & 511));
+                break;
+            case 1:
+                sw.append((char) (2048 + rnd.nextInt() & 4095));
+                break;
+            default:
+                sw.append((char) (65536 + rnd.nextInt() & 0x3FFF));
+                break;
+            }
+        } while (sw.length() < length);
+        return sw.toString();
+    }
+
+    protected static String generateAsciiString(int length) {
+        return generateAsciiString(length, new Random(length));
+    }
+    
+    protected static String generateAsciiString(int length, Random rnd)
+    {
+        StringBuilder sw = new StringBuilder(length+10);
+        do {
+            // First, add 7 ascii characters
+            int num = 4 + (rnd.nextInt() & 7);
+            while (--num >= 0) {
+                sw.append((char) ('A' + num));
+            }
+            // and space
+            sw.append(' ');
+        } while (sw.length() < length);
+        return sw.toString();
     }
 }

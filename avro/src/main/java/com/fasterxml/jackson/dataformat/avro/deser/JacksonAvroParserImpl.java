@@ -148,60 +148,6 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
     /**********************************************************
      */
 
-    /*
-    @Override
-    public JsonToken nextToken() throws IOException
-    {
-        _numTypesValid = NR_UNKNOWN;
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        _branchIndex = -1;
-        _enumIndex = -1;
-        _binaryValue = null;
-        if (_closed) {
-            return null;
-        }
-        JsonToken t = _avroContext.nextToken();
-        _currToken = t;
-        return t;
-    }
-
-    @Override
-    public String nextFieldName() throws IOException
-    {
-        _numTypesValid = NR_UNKNOWN;
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        _binaryValue = null;
-        if (_closed) {
-            return null;
-        }
-        String name = _avroContext.nextFieldName();
-        if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
-            return null;
-        }
-        _currToken = JsonToken.FIELD_NAME;
-        return name;
-    }
-
-    @Override
-    public boolean nextFieldName(SerializableString sstr) throws IOException
-    {
-        _numTypesValid = NR_UNKNOWN;
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        _binaryValue = null;
-        if (_closed) {
-            return false;
-        }
-        String name = _avroContext.nextFieldName();
-        if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
-            return false;
-        }
-        _currToken = JsonToken.FIELD_NAME;
-        return name.equals(sstr.getValue());
-    }
-    */
-
     // !!! TODO: optimize
     @Override
     public String nextTextValue() throws IOException {
@@ -251,7 +197,7 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _avroContext.getCurrentName();
             writer.write(n);
             return n.length();
         }
@@ -905,25 +851,52 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
 
     private final void _skip(int len) throws IOException
     {
-        if (_inputStream == null) {
-            _reportError("Needed to skip "+len+" bytes, reached end-of-input");
-        }
         int ptr = _inputPtr;
         int available = _inputEnd - ptr;
-        if (len <= available) {
+        int left = len - available;
+        if (left <= 0) {
             _inputPtr = ptr + len;
             return;
         }
-        int left = len - available;
-        while (left > 0) {
-            int skipped = (int) _inputStream.skip(len);
-            if (skipped < 0) {
-                _reportError("Only able to skip "+(len-left)+" bytes before end-of-input (needed "+len+")");
-            }
-            left -= skipped;
+        _inputPtr = _inputEnd; // mark all used, whatever it was
+        if (_inputStream != null) {
+            do {
+                int skipped = (int) _inputStream.skip(left);
+                if (skipped < 0) {
+                    break;
+                }
+                left -= skipped;
+            } while (left > 0);
+        }
+        if (left > 0) {
+            _reportError("Only able to skip "+(len-left)+" bytes before end-of-input (needed "+len+")");
         }
     }
 
+    private final void _skipL(long len) throws IOException
+    {
+        int ptr = _inputPtr;
+        int available = _inputEnd - ptr;
+        long left = len - available;
+        if (left <= 0L) {
+            _inputPtr = ptr + (int)  len;
+            return;
+        }
+        _inputPtr = _inputEnd; // mark all used, whatever it was
+        if (_inputStream != null) {
+            do {
+                int skipped = (int) _inputStream.skip(left);
+                if (skipped < 0) {
+                    break;
+                }
+                left -= skipped;
+            } while (left > 0L);
+        }
+        if (left > 0L) {
+            _reportError("Only able to skip "+(len-left)+" bytes before end-of-input (needed "+len+")");
+        }
+    }
+    
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Arrays
@@ -932,16 +905,21 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public long decodeArrayStart() throws IOException {
-        long result = decodeLong();
-        if (result < 0) {
-            skipLong(); // Consume byte-count if present
-            result = -result;
-        }
-        return result;
+        return _decodeChunkLength();
     }
 
     @Override
     public long decodeArrayNext() throws IOException {
+        return _decodeChunkLength();
+    }
+
+    @Override
+    public long skipArray() throws IOException {
+        return _skipChunkElements();
+    }
+
+    // used for Arrays and Maps, first and other chunks
+    private final long _decodeChunkLength() throws IOException {
         long result = decodeLong();
         if (result < 0) {
             skipLong(); // Consume byte-count if present
@@ -950,13 +928,16 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
         return result;
     }
 
-    @Override
-    public long skipArray() throws IOException {
-        // !!! TODO
-//        return _decoder.skipArray();
-        throw new UnsupportedOperationException();
+    private long _skipChunkElements() throws IOException {
+        int result = decodeInt();
+        while (result < 0) {
+            long bytecount = decodeLong();
+            _skipL(bytecount);
+            result = decodeInt();
+        }
+        return result;
     }
-
+    
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Maps
@@ -971,29 +952,17 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public long decodeMapStart() throws IOException {
-        long result = decodeLong();
-        if (result < 0) {
-            skipLong(); // Consume byte-count if present
-            result = -result;
-        }
-        return result;
+        return _decodeChunkLength();
     }
 
     @Override
     public long decodeMapNext() throws IOException {
-        long result = decodeLong();
-        if (result < 0) {
-            skipLong(); // Consume byte-count if present
-            result = -result;
-        }
-        return result;
+        return _decodeChunkLength();
     }
 
     @Override
     public long skipMap() throws IOException {
-        // !!! TODO
-//      return _decoder.skipMap();
-        throw new UnsupportedOperationException();
+        return _skipChunkElements();
     }
 
     /*

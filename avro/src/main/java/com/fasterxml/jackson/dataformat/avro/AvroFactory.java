@@ -327,8 +327,8 @@ public class AvroFactory extends JsonFactory
     @Override
     protected AvroParser _createParser(InputStream in, IOContext ctxt) throws IOException {
 // !!! 21-Apr-2017, tatu: make configurable
-//        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
-        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+//        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _objectCodec, in);
     }
 
@@ -346,8 +346,8 @@ public class AvroFactory extends JsonFactory
     @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
 // !!! 21-Apr-2017, tatu: make configurable
-//        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
-        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+//        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _objectCodec, data, offset, len);
     }
 

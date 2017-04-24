@@ -76,7 +76,7 @@ public abstract class AvroParserImpl
     @Override
     public void close() throws IOException {
         // 20-Apr-2017, tatu: Let's simplify some checks by changing context
-        _avroContext = MissingReader.instance;
+        _avroContext = MissingReader.closedInstance;
         super.close();
     }
 
@@ -529,6 +529,10 @@ public abstract class AvroParserImpl
 
     public abstract long decodeArrayNext() throws IOException;
 
+    /**
+     * @return Either 0, in which case all entries have been successfully skipped; or
+     *    positive non-zero number to indicate elements that caller has to skip
+     */
     public abstract long skipArray() throws IOException;
 
     /*
@@ -540,6 +544,11 @@ public abstract class AvroParserImpl
     public abstract String decodeMapKey() throws IOException;
     public abstract long decodeMapStart() throws IOException;
     public abstract long decodeMapNext() throws IOException;
+
+    /**
+     * @return Either 0, in which case all entries have been successfully skipped; or
+     *    positive non-zero number to indicate map entries that caller has to skip
+     */
     public abstract long skipMap() throws IOException;
 
     /*

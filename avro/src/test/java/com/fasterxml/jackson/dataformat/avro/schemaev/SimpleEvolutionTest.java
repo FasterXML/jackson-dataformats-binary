@@ -3,11 +3,13 @@ package com.fasterxml.jackson.dataformat.avro.schemaev;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
 
 import com.fasterxml.jackson.dataformat.avro.*;
+import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
 
 public class SimpleEvolutionTest extends AvroTestBase
 {
@@ -51,6 +53,17 @@ public class SimpleEvolutionTest extends AvroTestBase
             "       'type':'array', 'items': 'int'\n"+
             "      }\n"+
             "    },\n"+
+            "    { 'name':'y', 'type':'int' }\n"+
+            " ]\n"+
+            "}\n");
+
+    // then one with X + T and an Array
+    static String SCHEMA_XBY_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'EvolvingPoint',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'x', 'type':'int' },\n"+
+            "    { 'name':'binary', 'type':'bytes' },\n"+
             "    { 'name':'y', 'type':'int' }\n"+
             " ]\n"+
             "}\n");
@@ -131,7 +144,20 @@ public class SimpleEvolutionTest extends AvroTestBase
                     Arrays.asList(a));
         }
     }
-    
+
+    @JsonPropertyOrder({ "x", "binary", "y" })
+    static class PointXBinaryY {
+        public int x, y;
+        public byte[] binary;
+
+        protected PointXBinaryY() { }
+        public PointXBinaryY(int x0, int y0, byte[] b0) {
+            x = x0;
+            y = y0;
+            binary = b0;
+        }
+    }
+
     private final AvroMapper MAPPER = getMapper();
 
     /*
@@ -252,6 +278,23 @@ public class SimpleEvolutionTest extends AvroTestBase
         assertEquals(elem3.y, result3.y);
         assertFalse(it.hasNextValue());
         it.close();
+    }
+
+    public void testRemoveBinaryField() throws Exception
+    {
+        final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XBY_JSON);
+        final AvroSchema dstSchema = MAPPER.schemaFrom(SCHEMA_XY_JSON);
+        final AvroSchema xlate = srcSchema.withReaderSchema(dstSchema);
+
+        byte[] binary = generateAsciiString(9000).getBytes("UTF-8");
+        byte[] avro = MAPPER.writer(srcSchema).writeValueAsBytes(new PointXBinaryY(Integer.MIN_VALUE,
+                Integer.MAX_VALUE, binary));
+
+        PointXY result = MAPPER.readerFor(PointXY.class)
+                .with(xlate)
+                .readValue(LimitingInputStream.wrap(avro, 479));
+        assertEquals(Integer.MIN_VALUE, result.x);
+        assertEquals(Integer.MAX_VALUE, result.y);
     }
 
     /*

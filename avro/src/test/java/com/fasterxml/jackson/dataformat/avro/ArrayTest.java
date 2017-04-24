@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
 
 public class ArrayTest extends AvroTestBase
 {
@@ -43,9 +45,13 @@ public class ArrayTest extends AvroTestBase
     public void testStringArraySequence() throws Exception
     {
         AvroSchema schema = getStringArraySchema();
-        List<String> input1 = Arrays.asList("foo", "bar");
+        List<String> input1 = Arrays.asList("foo", "bar",
+                "...........................................................!");
         List<String> input2 = Arrays.asList("foobar");
-        String[] input3 = new String[] { "a", "b", "c"};
+        String[] input3 = new String[] { "a",
+"Something very much longer than the first entry: and with \u00DCnicod\u00E9 -- at least "
++"2 lines full of stuff... 12235u4039680346 -346-0436 34-6 -43609 4363469 436-09",
+"Last and perhaps also least!"};
 
         // First: write a sequence of 3 root-level Employee Objects
 
@@ -66,7 +72,8 @@ public class ArrayTest extends AvroTestBase
         //   quite know whether to advance cursor to START_ARRAY or not, and we must
         //   instead prepare things... and use direct bind
 
-        JsonParser p = MAPPER.getFactory().createParser(b.toByteArray());
+        JsonParser p = MAPPER.getFactory().createParser(
+                LimitingInputStream.wrap(new ByteArrayInputStream(b.toByteArray()), 123));
         p.setSchema(schema);
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());

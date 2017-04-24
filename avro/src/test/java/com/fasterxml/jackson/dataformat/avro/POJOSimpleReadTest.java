@@ -1,12 +1,14 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.StringWriter;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
@@ -49,11 +51,23 @@ public class POJOSimpleReadTest extends AvroTestBase
                 ? ThrottledInputStream.wrap(in, 9) : in);
         p.setSchema(getEmployeeSchema());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
+
+        if (!smallReads) {
+            assertSame(in, p.getInputSource());
+        }
+
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertFalse(p.hasTextCharacters());
         assertEquals("name", p.getCurrentName());
         assertEquals("name", p.getText());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(empl.name, p.getText());
+
+        StringWriter sw  = new StringWriter();
+        assertEquals(empl.name.length(), p.getText(sw));
+        assertEquals(empl.name, sw.toString());
+
+        assertTrue(p.hasTextCharacters());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("age", p.getCurrentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -65,6 +79,10 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
 
         assertEquals("emails", p.getCurrentName());
+        sw  = new StringWriter();
+        assertEquals(6, p.getText(sw));
+        assertEquals("emails", sw.toString());
+
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(empl.emails[0], p.getText());
@@ -96,12 +114,29 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
-        /*
-        public String name;
-        public int age;
-        public String[] emails;
-        public Employee boss;
-         */
+        // should have consumed it all, but let's verify
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        assertEquals(0, p.releaseBuffered(b));
+        b.close();
+        // also...
+        sw = new StringWriter();
+        assertEquals(-1, p.releaseBuffered(sw));
+
+        p.close();
+    }
+
+    public void testMissingSchema() throws Exception
+    {
+        Employee empl = _simpleEmployee();
+        byte[] avro = toAvro(empl);
+        JsonParser p = MAPPER.getFactory().createParser(avro);
+
+        try {
+            p.nextToken();
+            fail("Should not pass");
+        } catch (JsonParseException e) {
+            verifyException(e, "No AvroSchema set");
+        }
         p.close();
     }
 
