@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
@@ -40,6 +41,20 @@ public class SimpleEvolutionTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
+    // and one with X + T and an Array
+    static String SCHEMA_XAY_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'EvolvingPoint',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'x', 'type':'int' },\n"+
+            "    { 'name':'a', 'type': {\n"+
+            "       'type':'array', 'items': 'int'\n"+
+            "      }\n"+
+            "    },\n"+
+            "    { 'name':'y', 'type':'int' }\n"+
+            " ]\n"+
+            "}\n");
+    
     static class PointXY {
         public int x, y;
 
@@ -60,6 +75,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             return String.format("[%d,%d]", x, y);
         }
     }
+
     static class PointXYZ {
         public int x, y, z;
 
@@ -82,6 +98,40 @@ public class SimpleEvolutionTest extends AvroTestBase
         }
     }
 
+    static class PointXAY {
+        public int x, y;
+        public int[] a;
+
+        protected PointXAY() { }
+        public PointXAY(int x0, int y0, int[] a0) {
+            x = x0;
+            y = y0;
+            a = a0;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            PointXAY other = (PointXAY) o;
+            if ((x == other.x) && (y == other.y)) {
+                if (other.a.length == a.length) {
+                    for (int i = 0; i < a.length; ++i) {
+                        if (other.a[i] != a[i]) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%d,%d,a=%s]", x, y,
+                    Arrays.asList(a));
+        }
+    }
+    
     private final AvroMapper MAPPER = getMapper();
 
     /*
@@ -156,6 +206,50 @@ public class SimpleEvolutionTest extends AvroTestBase
         assertEquals(new PointXY(-4, 17), it.nextValue());
         assertTrue(it.hasNextValue());
         assertEquals(new PointXY(9, 0), it.nextValue());
+        assertFalse(it.hasNextValue());
+        it.close();
+    }
+
+    public void testRemoveArrayField() throws Exception
+    {
+        final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XAY_JSON);
+        final AvroSchema dstSchema = MAPPER.schemaFrom(SCHEMA_XY_JSON);
+        final AvroSchema xlate = srcSchema.withReaderSchema(dstSchema);
+
+        byte[] avro = MAPPER.writer(srcSchema).writeValueAsBytes(new PointXAY(1, 2,
+                new int[] { 1, 2, 3 }));
+        PointXY result = MAPPER.readerFor(PointXY.class)
+                .with(xlate)
+                .readValue(avro);
+        assertEquals(1, result.x);
+        assertEquals(2, result.y);
+
+        // And same with a sequence
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        SequenceWriter w = MAPPER.writer(srcSchema)
+                .writeValues(out);
+        PointXAY elem1 = new PointXAY(2, -999, new int[] { 1, 5 });
+        w.write(elem1);
+        PointXAY elem2 = new PointXAY(2, -999, new int[0]);
+        w.write(elem2);
+        PointXAY elem3 = new PointXAY(2, -999, new int[] { -63 });
+        w.write(elem3);
+        w.close();
+        MappingIterator<PointXY> it = MAPPER.readerFor(PointXY.class)
+                .with(xlate)
+                .readValues(out.toByteArray());
+        assertTrue(it.hasNextValue());
+        PointXY result1 = it.nextValue();
+        assertEquals(elem1.x, result1.x);
+        assertEquals(elem1.y, result1.y);
+        assertTrue(it.hasNextValue());
+        PointXY result2 = it.nextValue();
+        assertEquals(elem2.x, result2.x);
+        assertEquals(elem2.y, result2.y);
+        assertTrue(it.hasNextValue());
+        PointXY result3 = it.nextValue();
+        assertEquals(elem3.x, result3.x);
+        assertEquals(elem3.y, result3.y);
         assertFalse(it.hasNextValue());
         it.close();
     }

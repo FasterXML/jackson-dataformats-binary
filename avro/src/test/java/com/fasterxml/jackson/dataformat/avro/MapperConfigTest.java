@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.databind.*;
 
-public class SimpleMapperTest extends AvroTestBase
+public class MapperConfigTest extends AvroTestBase
 {
     // Test to verify that data format affects default state of order-props-alphabetically
     public void testDefaultSettingsWithObjectMapper()

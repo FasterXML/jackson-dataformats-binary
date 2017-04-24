@@ -124,63 +124,6 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
 
     /*
     /**********************************************************
-    /* Abstract method impls, traversal
-    /**********************************************************
-     */
-
-    @Override
-    public JsonToken nextToken() throws IOException
-    {
-        _branchIndex = -1;
-        _enumIndex = -1;
-        _binaryValue = null;
-        if (_closed) {
-            return null;
-        }
-        JsonToken t = _avroContext.nextToken();
-        _currToken = t;
-        return t;
-    }
-
-    @Override
-    public String nextFieldName() throws IOException
-    {
-        _binaryValue = null;
-        if (_closed) {
-            return null;
-        }
-        String name = _avroContext.nextFieldName();
-        if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
-            return null;
-        }
-        _currToken = JsonToken.FIELD_NAME;
-        return name;
-    }
-
-    @Override
-    public boolean nextFieldName(SerializableString sstr) throws IOException
-    {
-        _binaryValue = null;
-        if (_closed) {
-            return false;
-        }
-        String name = _avroContext.nextFieldName();
-        if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
-            return false;
-        }
-        _currToken = JsonToken.FIELD_NAME;
-        return name.equals(sstr.getValue());
-    }
-
-    @Override
-    public String nextTextValue() throws IOException {
-        return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
-    }
-
-    /*
-    /**********************************************************
     /* Abstract method impls, text
     /**********************************************************
      */
@@ -189,6 +132,11 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
     @Override
     public boolean hasTextCharacters() {
         return false;
+    }
+
+    @Override
+    public String nextTextValue() throws IOException {
+        return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
     }
 
     @Override

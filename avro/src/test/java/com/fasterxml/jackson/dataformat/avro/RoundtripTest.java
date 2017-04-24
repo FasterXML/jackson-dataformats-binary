@@ -23,21 +23,21 @@ public class RoundtripTest extends MapTest
         "}\n");
 
     
-    static AvroSchema ISSUE_16_SCHEMA;
+    static AvroSchema CHARSEQ_SCHEMA;
     static {
         try {
-            ISSUE_16_SCHEMA = new AvroMapper().schemaFrom(SCHEMA_ISSUE_16);
+            CHARSEQ_SCHEMA = new AvroMapper().schemaFrom(SCHEMA_ISSUE_16);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    
-    static class Issue16Bean {
+
+    static class CharSeqBean {
         public CharSequence id;
         public CharSequence name;
 
         public org.apache.avro.Schema getSchema() {
-            return ISSUE_16_SCHEMA.getAvroSchema();
+            return CHARSEQ_SCHEMA.getAvroSchema();
         }
     }
 
@@ -59,13 +59,13 @@ public class RoundtripTest extends MapTest
         assertNotNull(avroData);
     }
 
-    public void testIssue16() throws Exception
+    public void testCharSequences() throws Exception
     {
         ObjectMapper mapper = new AvroMapper()
             .enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
-        ObjectWriter writ = mapper.writer(ISSUE_16_SCHEMA);
+        ObjectWriter writ = mapper.writer(CHARSEQ_SCHEMA);
 
-        Issue16Bean input = new Issue16Bean();
+        CharSeqBean input = new CharSeqBean();
         input.id = "123";
         input.name = "John";
 
@@ -78,8 +78,8 @@ public class RoundtripTest extends MapTest
             throw e;
         }
 
-        Issue16Bean output = mapper.reader(ISSUE_16_SCHEMA)
-                .forType(Issue16Bean.class).readValue(avroData);
+        CharSeqBean output = mapper.reader(CHARSEQ_SCHEMA)
+                .forType(CharSeqBean.class).readValue(avroData);
         assertNotNull(avroData);
 
         assertEquals(input.id, output.id);

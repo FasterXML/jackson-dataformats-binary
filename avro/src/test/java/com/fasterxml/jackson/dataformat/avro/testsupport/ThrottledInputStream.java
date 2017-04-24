@@ -20,6 +20,13 @@ public class ThrottledInputStream extends FilterInputStream
         _maxBytes = maxBytes;
     }
 
+    public static ThrottledInputStream wrap(InputStream in, int maxBytes) {
+        if (in instanceof ThrottledInputStream) {
+            return (ThrottledInputStream) in;
+        }
+        return new ThrottledInputStream(in, maxBytes);
+    }
+
     @Override
     public int read(byte[] buf) throws IOException {
         return read(buf, 0, buf.length);
