@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.deser;
+package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,8 @@ import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.dataformat.avro.CodecRecycler;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 
 /**
  * Implementation class that exposes additional internal API
@@ -73,7 +74,7 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
         _inputEnd = 0;
         _bufferRecyclable = true;
 
-        _decoder = CodecRecycler.decoder(in,
+        _decoder = ApacheCodecRecycler.decoder(in,
                 Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
@@ -83,7 +84,7 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
     {
         super(ctxt, parserFeatures, avroFeatures, codec);
         _inputStream = null;
-        _decoder = CodecRecycler.decoder(data, offset, len);
+        _decoder = ApacheCodecRecycler.decoder(data, offset, len);
     }
 
     @Override
@@ -99,7 +100,7 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
         BinaryDecoder d = _decoder;
         if (d != null) {
             _decoder = null;
-            CodecRecycler.release(d);
+            ApacheCodecRecycler.release(d);
         }
     }
 

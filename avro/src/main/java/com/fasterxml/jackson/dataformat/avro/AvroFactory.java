@@ -10,6 +10,12 @@ import com.fasterxml.jackson.core.io.IOContext;
 
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
+/**
+ * Default {@link JsonFactory} implementation for encoding/decoding Avro
+ * content, uses native Jackson encoder/decoder.
+ *
+ * @see com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory
+ */
 public class AvroFactory extends JsonFactory
 {
     private static final long serialVersionUID = 1L;

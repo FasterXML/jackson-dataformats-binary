@@ -217,7 +217,8 @@ public abstract class AvroParser extends ParserBase
                 throw new IllegalArgumentException(e);
             }
         } else {
-            super.setSchema(schema);
+            throw new IllegalArgumentException("Can not use FormatSchema of type "
+                    +schema.getClass().getName());
         }
     }
 

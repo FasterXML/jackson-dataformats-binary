@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.deser;
+package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
 import java.io.IOException;
 
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.dataformat.avro.CustomEncodingWrapper;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 
 /**
  * Deserializes an object using a avro {@link CustomEncoding}

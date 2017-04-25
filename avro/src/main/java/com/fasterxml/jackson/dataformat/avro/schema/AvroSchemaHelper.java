@@ -62,7 +62,7 @@ public abstract class AvroSchemaHelper
 
     /**
      * Checks if a given type is "Stringable", that is one of the default
-     * {@link #STRINGABLE_CLASSES}, is an {@code Enum},
+     * {@code STRINGABLE_CLASSES}, is an {@code Enum},
      * or is annotated with
      * {@link Stringable @Stringable} and has a constructor that takes a single string argument capable of deserializing the output of its
      * {@code toString()} method.

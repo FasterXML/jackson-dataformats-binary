@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
@@ -25,13 +26,20 @@ public class BinaryDataTest extends AvroTestBase
         public long size;
     }
 
+    private final AvroMapper AVRO_JACKSON_MAPPER =  new AvroMapper(new AvroFactory());
+    private final AvroMapper AVRO_APACHE_MAPPER =  new AvroMapper(new ApacheAvroFactory());
+    
     public void testAvroSchemaGenerationWithJackson() throws Exception
     {
-        AvroMapper mapper = new AvroMapper();
+        _testAvroSchemaGenerationWithJackson(AVRO_JACKSON_MAPPER);
+        _testAvroSchemaGenerationWithJackson(AVRO_APACHE_MAPPER);
+    }
+
+    public void _testAvroSchemaGenerationWithJackson(AvroMapper mapper) throws Exception
+    {
         AvroSchemaGenerator visitor = new AvroSchemaGenerator();
         mapper.acceptJsonFormatVisitor(FilePojo.class, visitor);
         AvroSchema schema = visitor.getGeneratedSchema();
-
         byte[] ser = mapper.writer(schema).writeValueAsBytes(new FilePojo(
                 "ABCDEFGERRJEOOJKDPKPEWVEW PKWEVPKEVEW"));
         assertNotNull(ser);

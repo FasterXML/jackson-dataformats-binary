@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.deser;
+package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -8,6 +8,7 @@ import org.apache.avro.io.Decoder;
 import org.apache.avro.util.Utf8;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 
 /**
  * Wraps an AvroParser instance and allows it to be advanced by reading from it like an avro {@link Decoder}

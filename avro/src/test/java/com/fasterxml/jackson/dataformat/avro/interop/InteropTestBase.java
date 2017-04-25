@@ -26,7 +26,7 @@ public abstract class InteropTestBase
     }
 
     /**
-     * Helper method for building a {@link ParameterizedType} for use with {@link #roundTrip(Type, Object)}
+     * Helper method for building a {@link ParameterizedType} for use with <code>roundTrip(Type, Object)</code>
      *
      * @param baseClass
      *     A generic {@link Class} with type variables

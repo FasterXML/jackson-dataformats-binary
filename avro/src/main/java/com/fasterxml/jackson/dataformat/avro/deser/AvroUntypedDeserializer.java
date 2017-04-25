@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro;
+package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -7,7 +7,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.KeyDeserializer;
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -20,29 +22,45 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
  *
  * @since 2.9
  */
-public class AvroUntypedDeserializer extends UntypedObjectDeserializer
+public class AvroUntypedDeserializer
+    extends UntypedObjectDeserializer
+    implements ResolvableDeserializer
 {
     private static final long serialVersionUID = 1L;
+
+    protected JavaType _typeObject;
+    protected TypeDeserializer _typeDeserializer;
 
     public AvroUntypedDeserializer() { super(); }
 
     @Override
+    public void resolve(DeserializationContext ctxt)
+        throws JsonMappingException
+    {
+        _typeObject = ctxt.constructType(Object.class);
+        _typeDeserializer = ctxt.getConfig().findTypeDeserializer(_typeObject);
+    }
+
+    @Override
     public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         // Make sure we have a native type ID *AND* that we can resolve it to a type; otherwise, we'll end up in a recursive loop
-        if (p.canReadTypeId() && p.getTypeId() != null) {
-            TypeDeserializer deser = ctxt.getConfig().findTypeDeserializer(ctxt.constructType(Object.class));
-            if (deser != null) {
-                TypeIdResolver resolver = deser.getTypeIdResolver();
-                if (resolver != null && resolver.typeFromId(ctxt, p.getTypeId().toString()) != null) {
-                    return deser.deserializeTypedFromAny(p, ctxt);
+        if (p.canReadTypeId()) {
+             Object typeId = p.getTypeId();
+             if (typeId != null) {
+                if (_typeDeserializer != null) {
+                    TypeIdResolver resolver = _typeDeserializer.getTypeIdResolver();
+                    if (resolver != null && resolver.typeFromId(ctxt, typeId.toString()) != null) {
+                        return _typeDeserializer.deserializeTypedFromAny(p, ctxt);
+                    }
                 }
-            }
+             }
         }
         return super.deserialize(p, ctxt);
     }
 
     @Override
-    public Object deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+    public Object deserializeWithType(JsonParser p, DeserializationContext ctxt,
+            TypeDeserializer typeDeserializer) throws IOException {
         // Use type deserializer if we have type information, even for scalar values
         if (p.canReadTypeId() && p.getTypeId() != null && typeDeserializer != null) {
             TypeIdResolver resolver = typeDeserializer.getTypeIdResolver();
@@ -81,9 +99,8 @@ public class AvroUntypedDeserializer extends UntypedObjectDeserializer
 
         KeyDeserializer deserializer = null;
         if (p.getTypeId() != null) {
-            TypeDeserializer typeDeserializer = ctxt.getConfig().findTypeDeserializer(ctxt.constructType(Object.class));
-            if (typeDeserializer != null) {
-                TypeIdResolver idResolver = typeDeserializer.getTypeIdResolver();
+            if (_typeDeserializer != null) {
+                TypeIdResolver idResolver = _typeDeserializer.getTypeIdResolver();
                 JavaType keyType = idResolver.typeFromId(ctxt, p.getTypeId().toString());
                 if (keyType != null) {
                     deserializer = ctxt.findKeyDeserializer(keyType, null);
@@ -93,9 +110,6 @@ public class AvroUntypedDeserializer extends UntypedObjectDeserializer
         if (deserializer != null) {
             key1 = deserializer.deserializeKey(key1.toString(), ctxt);
         }
-        // minor optimization; let's handle 1 and 2 entry cases separately
-        // 24-Mar-2015, tatu: Ideally, could use one of 'nextXxx()' methods, but for
-        //   that we'd need new method(s) in JsonDeserializer. So not quite yet.
         p.nextToken();
         Object value1 = deserialize(p, ctxt);
 

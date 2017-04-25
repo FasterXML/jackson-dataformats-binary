@@ -11,6 +11,7 @@ import org.apache.avro.io.BinaryEncoder;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
 import com.fasterxml.jackson.dataformat.avro.ser.EncodedDatum;
 
@@ -142,7 +143,7 @@ public class AvroGenerator extends GeneratorBase
         _formatFeatures = avroFeatures;
         _output = output;
         _avroContext = AvroWriteContext.nullContext();
-        _encoder = CodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+        _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
     }
 
     public void setSchema(AvroSchema schema)
@@ -597,7 +598,7 @@ public class AvroGenerator extends GeneratorBase
         BinaryEncoder e = _encoder;
         if (e != null) {
             _encoder = null;
-            CodecRecycler.release(e);
+            ApacheCodecRecycler.release(e);
         }
     }
 

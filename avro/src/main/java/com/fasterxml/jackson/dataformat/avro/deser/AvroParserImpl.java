@@ -136,7 +136,7 @@ public abstract class AvroParserImpl
     public abstract String nextTextValue() throws IOException;
 
     @Override
-    protected final void _initSchema(AvroSchema schema) throws JsonProcessingException {
+    public final void _initSchema(AvroSchema schema) throws JsonProcessingException {
         _avroContext = new RootReader(this, schema.getReader());
     }
 
@@ -148,7 +148,7 @@ public abstract class AvroParserImpl
      *
      * @throws IOException If there was an issue advancing through the underlying data stream
      */
-    protected final void skipValue() throws IOException {
+    public final void skipValue() throws IOException {
         _avroContext.skipValue(this);
     }
 
@@ -561,25 +561,26 @@ public abstract class AvroParserImpl
     public abstract void skipBoolean() throws IOException;
     public abstract int decodeIndex() throws IOException;
     public abstract int decodeEnum() throws IOException;
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext impls, other
     /**********************************************************
      */
 
-    protected final int branchIndex() {
+    public final int branchIndex() {
         return _branchIndex;
     }
 
-    protected final int enumIndex() {
+    public final int enumIndex() {
         return _enumIndex;
     }
 
-    protected final boolean isRecord() {
+    public final boolean isRecord() {
         return _avroContext instanceof RecordReader;
     }
-    
-    protected final void setAvroContext(AvroReadContext ctxt) {
+
+    public final void setAvroContext(AvroReadContext ctxt) {
         _avroContext = ctxt;
     }
 

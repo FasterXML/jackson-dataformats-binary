@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.fasterxml.jackson.dataformat.avro.deser.CustomEncodingDeserializer;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 

@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro;
+package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,19 +14,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  *
  * @since 2.8.7
  */
-public final class CodecRecycler
+public final class ApacheCodecRecycler
 {
     protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
 
     protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
 
-    protected final static ThreadLocal<SoftReference<CodecRecycler>> _recycler
-            = new ThreadLocal<SoftReference<CodecRecycler>>();
+    protected final static ThreadLocal<SoftReference<ApacheCodecRecycler>> _recycler
+            = new ThreadLocal<SoftReference<ApacheCodecRecycler>>();
 
     private BinaryDecoder decoder;
     private BinaryEncoder encoder;
 
-    private CodecRecycler() { }
+    private ApacheCodecRecycler() { }
 
     /*
     /**********************************************************
@@ -70,13 +70,13 @@ public final class CodecRecycler
     /**********************************************************
      */
     
-    private static CodecRecycler _recycler() {
-        SoftReference<CodecRecycler> ref = _recycler.get();
-        CodecRecycler r = (ref == null) ? null : ref.get();
+    private static ApacheCodecRecycler _recycler() {
+        SoftReference<ApacheCodecRecycler> ref = _recycler.get();
+        ApacheCodecRecycler r = (ref == null) ? null : ref.get();
 
         if (r == null) {
-            r = new CodecRecycler();
-            _recycler.set(new SoftReference<CodecRecycler>(r));
+            r = new ApacheCodecRecycler();
+            _recycler.set(new SoftReference<ApacheCodecRecycler>(r));
         }
         return r;
     }

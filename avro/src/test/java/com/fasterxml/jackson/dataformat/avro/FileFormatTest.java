@@ -7,11 +7,18 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 
 // for [dataformats-binary#15]
 public class FileFormatTest extends AvroTestBase
 {
     public void testFileFormatOutput() throws Exception
+    {
+        _testFileFormatOutput(new AvroFactory());
+        _testFileFormatOutput(new ApacheAvroFactory());
+    }
+
+    private void _testFileFormatOutput(AvroFactory af) throws Exception
     {
         Employee empl = new Employee();
         empl.name = "Bobbee";
@@ -19,7 +26,6 @@ public class FileFormatTest extends AvroTestBase
         empl.emails = new String[] { "bob@aol.com", "bobby@gmail.com" };
         empl.boss = null;
 
-        AvroFactory af = new AvroFactory();
         ObjectMapper mapper = new ObjectMapper(af);
 
         af.enable(AvroGenerator.Feature.AVRO_FILE_OUTPUT);
