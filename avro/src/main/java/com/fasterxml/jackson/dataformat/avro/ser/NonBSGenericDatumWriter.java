@@ -22,6 +22,10 @@ public class NonBSGenericDatumWriter<D>
 {
     private static final GenericData GENERIC_DATA = GenericData.get();
 
+    private final static Class<?> CLS_STRING = String.class;
+    private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
+    private final static Class<?> CLS_BIG_INTEGER = BigInteger.class;
+    
     public NonBSGenericDatumWriter(Schema root) {
 	super(root);
     }
@@ -32,10 +36,10 @@ public class NonBSGenericDatumWriter<D>
     }
 
     @Override
-    protected void write(Schema schema, Object datum, Encoder out) throws IOException {
-        // EncodedDatum are already in an avro-encoded format and can be written out directly to the underlying encoder
-        if (datum instanceof EncodedDatum) {
-            ((EncodedDatum) datum).write(out);
+    protected void write(Schema schema, Object datum, Encoder out) throws IOException
+    {
+        if (datum == null) {
+            super.writeWithoutConversion(schema, datum, out);
             return;
         }
         Type t = schema.getType();
@@ -43,10 +47,15 @@ public class NonBSGenericDatumWriter<D>
             super.writeWithoutConversion(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
             return;
         }
-        if (datum instanceof String) {
-            String str = (String) datum;
-            final int len = str.length();
+        Class<?> raw = datum.getClass();
+        if (raw == CLS_STRING) {
+            if (t == Type.STRING) { // just short-circuit quickly it being the common case
+                super.writeWithoutConversion(schema, datum, out);
+                return;
+            }
             if (t == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
+                String str = (String) datum;
+                final int len = str.length();
                 ArrayList<Integer> chars = new ArrayList<>(len);
                 for (int i = 0; i < len; ++i) {
                     chars.add((int) str.charAt(i));
@@ -54,14 +63,18 @@ public class NonBSGenericDatumWriter<D>
                 super.writeWithoutConversion(schema, chars, out);
                 return;
             }
-            if (len == 1 && t == Type.INT) {
-                super.writeWithoutConversion(schema, (int) str.charAt(0), out);
-                return;
+            if (t == Type.INT) {
+                String str = (String) datum;
+                final int len = str.length();
+                if (len == 1) {
+                    super.writeWithoutConversion(schema, (int) str.charAt(0), out);
+                    return;
+                }
             }
         }
         // 09-Mar-2017, tatu: BigDecimal and BigInteger written using various
         //    possible representations so... 
-        if (datum instanceof BigDecimal) {
+        else if (raw == CLS_BIG_DECIMAL) {
             switch (t) {
             case STRING:
                 super.writeWithoutConversion(schema, datum.toString(), out);
@@ -72,7 +85,7 @@ public class NonBSGenericDatumWriter<D>
             default:
             }
         }
-        if (datum instanceof BigInteger) {
+        else if (raw == CLS_BIG_INTEGER) {
             switch (t) {
             case STRING:
                 super.writeWithoutConversion(schema, datum.toString(), out);
@@ -82,6 +95,11 @@ public class NonBSGenericDatumWriter<D>
                 return;
             default:
             }
+        }
+        // EncodedDatum are already in an avro-encoded format and can be written out directly to the underlying encoder
+        else if (datum instanceof EncodedDatum) {
+            ((EncodedDatum) datum).write(out);
+            return;
         }
         super.writeWithoutConversion(schema, datum, out);
 //        super.write(schema, datum, out);
