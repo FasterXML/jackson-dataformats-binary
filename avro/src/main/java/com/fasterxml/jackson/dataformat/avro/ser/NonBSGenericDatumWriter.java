@@ -42,28 +42,23 @@ public class NonBSGenericDatumWriter<D>
             super.writeWithoutConversion(schema, datum, out);
             return;
         }
-        Type t = schema.getType();
-        if (t == Type.ENUM) {
+        switch (schema.getType()) {
+        case STRING: // just short-circuit quickly it being the common case
+            Class<?> raw = datum.getClass();
+            if (raw == CLS_STRING) {
+                writeString(datum, out);
+                return;
+            }
+            if ((raw == CLS_BIG_DECIMAL) || (raw == CLS_BIG_INTEGER)) {
+                writeString(datum.toString(), out);
+                return;
+            }
+            break;
+        case ENUM:
             super.writeWithoutConversion(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
             return;
-        }
-        Class<?> raw = datum.getClass();
-        if (raw == CLS_STRING) {
-            if (t == Type.STRING) { // just short-circuit quickly it being the common case
-                super.writeWithoutConversion(schema, datum, out);
-                return;
-            }
-            if (t == Type.ARRAY && schema.getElementType().getType() == Type.INT) {
-                String str = (String) datum;
-                final int len = str.length();
-                ArrayList<Integer> chars = new ArrayList<>(len);
-                for (int i = 0; i < len; ++i) {
-                    chars.add((int) str.charAt(i));
-                }
-                super.writeWithoutConversion(schema, chars, out);
-                return;
-            }
-            if (t == Type.INT) {
+        case INT:
+            if (datum.getClass() == CLS_STRING) {
                 String str = (String) datum;
                 final int len = str.length();
                 if (len == 1) {
@@ -71,33 +66,35 @@ public class NonBSGenericDatumWriter<D>
                     return;
                 }
             }
-        }
-        // 09-Mar-2017, tatu: BigDecimal and BigInteger written using various
-        //    possible representations so... 
-        else if (raw == CLS_BIG_DECIMAL) {
-            switch (t) {
-            case STRING:
-                super.writeWithoutConversion(schema, datum.toString(), out);
-                return;
-            case DOUBLE:
-                super.writeWithoutConversion(schema, ((Number) datum).doubleValue(), out);
-                return;
-            default:
+            break;
+        case LONG:
+            if (datum.getClass() == CLS_BIG_INTEGER) {
+                datum = ((BigInteger) datum).longValue();
             }
-        }
-        else if (raw == CLS_BIG_INTEGER) {
-            switch (t) {
-            case STRING:
-                super.writeWithoutConversion(schema, datum.toString(), out);
-                return;
-            case LONG:
-                super.writeWithoutConversion(schema, ((Number) datum).longValue(), out);
-                return;
-            default:
+            break;
+        case DOUBLE:
+            if (datum.getClass() == CLS_BIG_DECIMAL) {
+                datum = ((BigDecimal) datum).doubleValue();
             }
+            break;
+        case ARRAY:
+            if (datum.getClass() == CLS_STRING) {
+                if (schema.getElementType().getType() == Type.INT) {
+                    String str = (String) datum;
+                    final int len = str.length();
+                    ArrayList<Integer> chars = new ArrayList<>(len);
+                    for (int i = 0; i < len; ++i) {
+                        chars.add((int) str.charAt(i));
+                    }
+                    super.writeWithoutConversion(schema, chars, out);
+                    return;
+                }
+            }
+            break;
+        default:
         }
         // EncodedDatum are already in an avro-encoded format and can be written out directly to the underlying encoder
-        else if (datum instanceof EncodedDatum) {
+        if (datum instanceof EncodedDatum) {
             ((EncodedDatum) datum).write(out);
             return;
         }
