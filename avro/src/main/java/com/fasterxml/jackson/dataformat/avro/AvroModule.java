@@ -88,7 +88,7 @@ public class AvroModule extends Module
     protected void _addIntrospector(SetupContext context) {
         if (_intr != null) {
             // insert (instead of append) to have higher precedence
-            context.insertAnnotationIntrospector(INTR);
+            context.insertAnnotationIntrospector(_intr);
         }
     }
 
