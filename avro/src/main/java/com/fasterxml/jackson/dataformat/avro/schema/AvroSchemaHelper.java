@@ -303,13 +303,15 @@ public abstract class AvroSchemaHelper
         case ENUM:
         case FIXED:
             String namespace = schema.getNamespace();
+            String name = schema.getName();
             if (namespace == null) {
                 return schema.getName();
             }
             if (namespace.endsWith("$")) {
-                return String.format("%s%s", namespace, schema.getName());
+                return namespace + name;
             }
-            return String.format("%s.%s", namespace, schema.getName());
+            StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
+            return sb.append(namespace).append('.').append(name).toString();
         default:
             return schema.getType().getName();
         }
