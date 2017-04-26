@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -24,6 +24,9 @@ public abstract class AvroWriteContext
 {
     private final static Class<?> CLS_STRING = String.class;
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
+
+    private final static Class<?> CLS_GENERIC_RECORD = GenericData.Record.class;
+    private final static Class<?> CLS_GENERIC_ARRAY = GenericData.Array.class;
 
     protected final AvroWriteContext _parent;
     
@@ -252,6 +255,21 @@ public abstract class AvroWriteContext
             if (raw == CLS_BIG_DECIMAL) {
                 return _resolveBigDecimalIndex(unionSchema, types, (BigDecimal) datum);
             }
+            if (raw == CLS_GENERIC_RECORD) {
+                return _resolveRecordIndex(unionSchema, types, (GenericData.Record) datum);
+            }
+            if (raw == CLS_GENERIC_ARRAY) {
+                return _resolveArrayIndex(unionSchema, types, (GenericData.Array<?>) datum);
+            }
+            if (datum instanceof Map<?,?>) {
+                return _resolveMapIndex(unionSchema, types, datum);
+            }
+
+            // !!! TODO:
+            //  - ByteBuffer
+            //  - Number wrappers (Integer, ...)
+            
+            /*
             String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
@@ -260,7 +278,9 @@ public abstract class AvroWriteContext
                     return i;
                 }
             }
+            */
         }
+//System.out.println("Union type for: "+datum.getClass());        
         return ReflectData.get().resolveUnion(unionSchema, datum);
     }
 
@@ -282,6 +302,17 @@ public abstract class AvroWriteContext
             if (raw == CLS_BIG_DECIMAL) {
                 return types.get(_resolveBigDecimalIndex(unionSchema, types, (BigDecimal) datum));
             }
+            if (raw == CLS_GENERIC_RECORD) {
+                return types.get(_resolveRecordIndex(unionSchema, types, (GenericData.Record) datum));
+            }
+            if (raw == CLS_GENERIC_ARRAY) {
+                return types.get(_resolveArrayIndex(unionSchema, types, (GenericData.Array<?>) datum));
+            }
+            if (datum instanceof Map<?,?>) {
+                return types.get(_resolveMapIndex(unionSchema, types, datum));
+            }
+
+            /*
             String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
@@ -290,6 +321,7 @@ public abstract class AvroWriteContext
                     return schema;
                 }
             }
+            */
         }
         int ix = ReflectData.get().resolveUnion(unionSchema, datum);
         return types.get(ix);
@@ -349,7 +381,49 @@ public abstract class AvroWriteContext
         }
         return match;
     }
-    
+
+    private static int _resolveMapIndex(Schema unionSchema, List<Schema> types,
+            Object value)
+    {
+        for (int i = 0, size = types.size(); i < size; ++i) {
+            if (types.get(i).getType() == Type.MAP) {
+                return i;
+            }
+        }
+        return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
+    private static int _resolveRecordIndex(Schema unionSchema, List<Schema> types,
+            GenericData.Record value)
+    {
+        String name = value.getSchema().getFullName();
+        for (int i = 0, size = types.size(); i < size; ++i) {
+            Schema sch = types.get(i);
+            if (sch.getType() == Type.RECORD) {
+                if (name.equals(sch.getFullName())) {
+                    return i;
+                }
+            }
+        }
+        return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
+    private static int _resolveArrayIndex(Schema unionSchema, List<Schema> types,
+            GenericData.Array<?> value)
+    {
+//        String name = value.getSchema().getFullName();
+        for (int i = 0, size = types.size(); i < size; ++i) {
+            Schema sch = types.get(i);
+            if (sch.getType() == Type.ARRAY) {
+                // should we verify contents?
+//                if (name.equals(sch.getFullName())) {
+                    return i;
+//                }
+            }
+        }
+        return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
     /**
      * Resolves the sub-schema from a union that should correspond to the {@code datum}.
      *
@@ -360,7 +434,6 @@ public abstract class AvroWriteContext
      * @throws org.apache.avro.UnresolvedUnionException if {@code unionSchema} does not have a schema that can encode {@code datum}
      */
     public static Schema resolveUnionSchema(Schema unionSchema, Object datum) {
-//        return unionSchema.getTypes().get(resolveUnionIndex(unionSchema, datum));
         return resolveUnionType(unionSchema, datum);
     }
 
