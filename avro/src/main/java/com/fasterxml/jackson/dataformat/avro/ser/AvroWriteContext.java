@@ -252,6 +252,14 @@ public abstract class AvroWriteContext
             if (raw == CLS_STRING) {
                 return _resolveStringIndex(unionSchema, types, (String) datum);
             }
+            // 26-Apr-2017, tatu: This may look odd optimization, but turns out that:
+            //   (a) case of "null and ONE other type" is VERY common, and
+            //   (b) cost of real lookup for POJO types is VERY expensive (due to elaborate
+            //      caching Avro lib does
+            int ix = _findNotNullIndex(types);
+            if (ix >= 0) {
+                return ix;
+            }
             if (raw == CLS_BIG_DECIMAL) {
                 return _resolveBigDecimalIndex(unionSchema, types, (BigDecimal) datum);
             }
@@ -280,7 +288,7 @@ public abstract class AvroWriteContext
             }
             */
         }
-//System.out.println("Union type for: "+datum.getClass());        
+//System.err.println("Missing index for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);  
         return ReflectData.get().resolveUnion(unionSchema, datum);
     }
 
@@ -298,6 +306,14 @@ public abstract class AvroWriteContext
             Class<?> raw = datum.getClass();
             if (raw == CLS_STRING) {
                 return types.get(_resolveStringIndex(unionSchema, types, (String) datum));
+            }
+            // 26-Apr-2017, tatu: This may look odd optimization, but turns out that:
+            //   (a) case of "null and ONE other type" is VERY common, and
+            //   (b) cost of real lookup for POJO types is VERY expensive (due to elaborate
+            //      caching Avro lib does
+            Schema sch = _findNotNull(types);
+            if (sch != null) {
+                return sch;
             }
             if (raw == CLS_BIG_DECIMAL) {
                 return types.get(_resolveBigDecimalIndex(unionSchema, types, (BigDecimal) datum));
@@ -323,6 +339,7 @@ public abstract class AvroWriteContext
             }
             */
         }
+//System.err.println("Missing schema for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);  
         int ix = ReflectData.get().resolveUnion(unionSchema, datum);
         return types.get(ix);
     }
@@ -357,6 +374,32 @@ public abstract class AvroWriteContext
             }
         }
         return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
+    private static Schema _findNotNull(List<Schema> types)
+    {
+        if (types.size() == 2) {
+            if (types.get(0).getType() == Type.NULL) {
+                return types.get(1);
+            }
+            if (types.get(1).getType() == Type.NULL) {
+                return types.get(0);
+            }
+        }
+        return null;
+    }
+
+    private static int _findNotNullIndex(List<Schema> types)
+    {
+        if (types.size() == 2) {
+            if (types.get(0).getType() == Type.NULL) {
+                return 1;
+            }
+            if (types.get(1).getType() == Type.NULL) {
+                return 0;
+            }
+        }
+        return -1;
     }
 
     private static int _resolveBigDecimalIndex(Schema unionSchema, List<Schema> types,

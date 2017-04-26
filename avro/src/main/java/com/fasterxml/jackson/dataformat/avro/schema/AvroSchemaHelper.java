@@ -213,10 +213,6 @@ public abstract class AvroSchemaHelper
         throw new UnsupportedOperationException("Format variation not supported");
     }
 
-    public static String getTypeId(JavaType type) {
-        return getTypeId(type.getRawClass());
-    }
-
     /**
      * Initializes a record schema with metadata from the given class; this schema is returned in a non-finalized state, and still
      * needs to have fields added to it.
@@ -267,6 +263,10 @@ public abstract class AvroSchemaHelper
         return schema;
     }
 
+    public static String getTypeId(JavaType type) {
+        return getTypeId(type.getRawClass());
+    }
+
     /**
      * Returns the Avro type ID for a given type
      */
@@ -290,7 +290,6 @@ public abstract class AvroSchemaHelper
         default:
             return schema.getProp(AVRO_SCHEMA_PROP_CLASS);
         }
-
     }
 
     /**
