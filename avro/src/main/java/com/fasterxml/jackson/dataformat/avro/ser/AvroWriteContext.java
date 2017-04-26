@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -20,6 +22,9 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 public abstract class AvroWriteContext
     extends JsonStreamContext
 {
+    private final static Class<?> CLS_STRING = String.class;
+    private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
+
     protected final AvroWriteContext _parent;
     
     protected final AvroGenerator _generator;
@@ -230,50 +235,121 @@ public abstract class AvroWriteContext
      * @throws org.apache.avro.UnresolvedUnionException if {@code unionSchema} does not have a schema that can encode {@code datum}
      */
     public static int resolveUnionIndex(Schema unionSchema, Object datum) {
-        if (datum != null) {
-            int subOptimal = -1;
-            for(int i = 0, size = unionSchema.getTypes().size(); i < size; i++) {
-                Schema schema = unionSchema.getTypes().get(i);
-                // Exact schema match?
-                if (AvroSchemaHelper.getTypeId(datum.getClass()).equals(AvroSchemaHelper.getTypeId(schema))) {
+        final List<Schema> types = unionSchema.getTypes();
+        // nulls should map to null type
+        if (datum == null) {
+            for (int i = 0, size = types.size(); i < size; ++i) {
+                Schema type = types.get(i);
+                if (type.getType() == Type.NULL) {
                     return i;
                 }
-                if (datum instanceof BigDecimal) {
-                    // BigDecimals can be shoved into a double, but optimally would be a String or byte[] with logical type information
-                    if (schema.getType() == Type.DOUBLE) {
-                        subOptimal = i;
-                        continue;
-                    }
-                }
-                if (datum instanceof String) {
-                    // Jackson serializes enums as strings, so try and find a matching schema
-                    if (schema.getType() == Type.ENUM && schema.hasEnumSymbol((String) datum)) {
-                        return i;
-                    }
-                    // Jackson serializes char/Character as a string, so try and find a matching schema
-                    if (schema.getType() == Type.INT
-                        && ((String) datum).length() == 1
-                        && AvroSchemaHelper.getTypeId(Character.class).equals(schema.getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))
-                    ) {
-                        return i;
-                    }
-                    // Jackson serializes char[]/Character[] as a string, so try and find a matching schema
-                    if (schema.getType() == Type.ARRAY
-                        && schema.getElementType().getType() == Type.INT
-                        && AvroSchemaHelper.getTypeId(Character.class).equals(schema.getElementType().getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))
-                    ) {
-                        return i;
-                    }
-                }
             }
-            // Did we find a sub-optimal match?
-            if (subOptimal != -1) {
-                return subOptimal;
+        } else {
+            Class<?> raw = datum.getClass();
+            if (raw == CLS_STRING) {
+                return _resolveStringIndex(unionSchema, types, (String) datum);
+            }
+            if (raw == CLS_BIG_DECIMAL) {
+                return _resolveBigDecimalIndex(unionSchema, types, (BigDecimal) datum);
+            }
+            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
+            for (int i = 0, size = types.size(); i < size; ++i) {
+                Schema schema = types.get(i);
+                // Exact schema match?
+                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                    return i;
+                }
             }
         }
         return ReflectData.get().resolveUnion(unionSchema, datum);
     }
 
+    public static Schema resolveUnionType(Schema unionSchema, Object datum) {
+        final List<Schema> types = unionSchema.getTypes();
+        // nulls should map to null type
+        if (datum == null) {
+            for (int i = 0, size = types.size(); i < size; ++i) {
+                Schema type = types.get(i);
+                if (type.getType() == Type.NULL) {
+                    return type;
+                }
+            }
+        } else {
+            Class<?> raw = datum.getClass();
+            if (raw == CLS_STRING) {
+                return types.get(_resolveStringIndex(unionSchema, types, (String) datum));
+            }
+            if (raw == CLS_BIG_DECIMAL) {
+                return types.get(_resolveBigDecimalIndex(unionSchema, types, (BigDecimal) datum));
+            }
+            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
+            for (int i = 0, size = types.size(); i < size; ++i) {
+                Schema schema = types.get(i);
+                // Exact schema match?
+                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                    return schema;
+                }
+            }
+        }
+        int ix = ReflectData.get().resolveUnion(unionSchema, datum);
+        return types.get(ix);
+    }
+
+    private static int _resolveStringIndex(Schema unionSchema, List<Schema> types,
+            String value)
+    {
+        for (int i = 0, size = types.size(); i < size; ++i) {
+            Schema schema = types.get(i);
+            Schema.Type t = schema.getType();
+
+            if (t == Type.STRING) {
+                return i;
+            }
+            // Jackson serializes enums as strings, so try and find a matching schema
+            if (t == Type.ENUM) { // && schema.hasEnumSymbol((String) datum)) {
+                return i;
+            }
+            // Jackson serializes char/Character as a string, so try and find a matching schema
+            if (t == Type.INT
+                && value.length() == 1
+                && AvroSchemaHelper.getTypeId(Character.class).equals(schema.getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))
+            ) {
+                return i;
+            }
+            // Jackson serializes char[]/Character[] as a string, so try and find a matching schema
+            if (t == Type.ARRAY
+                && schema.getElementType().getType() == Type.INT
+                && AvroSchemaHelper.getTypeId(Character.class).equals(schema.getElementType().getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS))
+            ) {
+                return i;
+            }
+        }
+        return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
+    private static int _resolveBigDecimalIndex(Schema unionSchema, List<Schema> types,
+            BigDecimal value) {
+        int match = -1;
+
+        for (int i = 0, size = types.size(); i < size; ++i) {
+            Schema schema = types.get(i);
+            Schema.Type t = schema.getType();
+
+            if (t == Type.DOUBLE) {
+                return i;
+            }
+            // BigDecimals can be shoved into a double, but optimally would be a String or byte[] with logical type information
+            if (t == Type.DOUBLE) {
+                match = i;
+                continue;
+            }
+        }
+        if (match < 0) {
+            match = ReflectData.get().resolveUnion(unionSchema, value);
+        }
+        return match;
+    }
+    
     /**
      * Resolves the sub-schema from a union that should correspond to the {@code datum}.
      *
@@ -284,7 +360,8 @@ public abstract class AvroWriteContext
      * @throws org.apache.avro.UnresolvedUnionException if {@code unionSchema} does not have a schema that can encode {@code datum}
      */
     public static Schema resolveUnionSchema(Schema unionSchema, Object datum) {
-        return unionSchema.getTypes().get(resolveUnionIndex(unionSchema, datum));
+//        return unionSchema.getTypes().get(resolveUnionIndex(unionSchema, datum));
+        return resolveUnionType(unionSchema, datum);
     }
 
     /*
