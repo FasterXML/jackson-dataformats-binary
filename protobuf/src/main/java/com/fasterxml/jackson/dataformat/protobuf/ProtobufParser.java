@@ -2419,8 +2419,8 @@ public class ProtobufParser extends ParserMinimalBase
             return _slow32();
         }
         final byte[] b = _inputBuffer;
-        int v = (b[ptr] & 0xFF) + ((b[ptr+1]) << 8)
-                + ((b[ptr+2] & 0xFF) << 16) + (b[ptr+3] << 24);
+        int v = (b[ptr] & 0xFF) + ((b[ptr+1] & 0xFF) << 8)
+                + ((b[ptr+2] & 0xFF) << 16) + ((b[ptr+3] & 0xFF) << 24);
         _inputPtr = ptr+4;
         return v;
     }

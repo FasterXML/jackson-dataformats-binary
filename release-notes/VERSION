@@ -33,6 +33,8 @@ Modules:
 2.8.9 (not yet released)
 
 #72: (proto) parser fails with /* comment */
+#85: _decode32Bits() bug in ProtobufParser
+ (reported by marsqing@github)
 
 2.8.8 (05-Apr-2017)
 
