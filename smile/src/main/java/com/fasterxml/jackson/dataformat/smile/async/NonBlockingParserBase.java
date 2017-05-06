@@ -45,12 +45,12 @@ public abstract class NonBlockingParserBase
      */
     protected final static int MAJOR_HEADER = 2;
 
-    protected final static int MAJOR_OBJECT_START = 3;
     protected final static int MAJOR_OBJECT_FIELD = 4;
     protected final static int MAJOR_OBJECT_VALUE = 5;
 
-    protected final static int MAJOR_ARRAY_START = 6;
     protected final static int MAJOR_ARRAY_ELEMENT = 7;
+
+    protected final static int MAJOR_SCALAR_VALUE = 8;
 
     protected final static int MAJOR_VALUE_BINARY_RAW = 10;
     protected final static int MAJOR_VALUE_BINARY_7BIT = 11;
@@ -125,16 +125,6 @@ public abstract class NonBlockingParserBase
     protected boolean _got32BitFloat;
 
     /**
-     * For 32-bit values, we may use this for combining values
-     */
-    protected int _pendingInt;
-
-    /**
-     * For 64-bit values, we may use this for combining values
-     */
-    protected long _pendingLong;
-    
-    /**
      * Flag that is sent when calling application indicates that there will
      * be no more input to parse.
      */
@@ -156,6 +146,17 @@ public abstract class NonBlockingParserBase
      */
     protected int[] _quadBuffer = NO_INTS;
 
+    /**
+     * Temporary buffer for holding content if input not contiguous (but can
+     * fit in buffer)
+     */
+    protected byte[] _inputCopy;
+
+    /**
+     * Number of bytes buffered in <code>_inputCopy</code>
+     */
+    protected int _inputCopyLen;
+    
     /*
     /**********************************************************************
     /* Name/entity parsing state
@@ -221,6 +222,8 @@ public abstract class NonBlockingParserBase
     {
         super(ctxt, parserFeatures);        
         _symbols = sym;
+        // We don't need a lot; for most things maximum known a-priori length below 70 bytes
+        _inputCopy = ctxt.allocReadIOBuffer(500);
         
         _tokenInputRow = -1;
         _tokenInputCol = -1;
@@ -371,6 +374,13 @@ public abstract class NonBlockingParserBase
     {
         super._releaseBuffers();
         {
+            byte[] b = _inputCopy;
+            if (b != null) {
+                _inputCopy = null;
+                _ioContext.releaseReadIOBuffer(b);
+            }
+        }
+        {
             String[] nameBuf = _seenNames;
             if (nameBuf != null && nameBuf.length > 0) {
                 _seenNames = null;
@@ -421,18 +431,16 @@ public abstract class NonBlockingParserBase
         return (_currToken = JsonToken.VALUE_STRING);
     }
 
-    protected final void _addSeenStringValue() throws IOException
+    protected final void _addSeenStringValue(String v) throws IOException
     {
-//        _finishToken();
         if (_seenStringValueCount < _seenStringValues.length) {
-            // !!! TODO: actually only store char[], first time around?
-            _seenStringValues[_seenStringValueCount++] = _textBuffer.contentsAsString();
+            _seenStringValues[_seenStringValueCount++] = v;
             return;
         }
-        _expandSeenStringValues();
+        _expandSeenStringValues(v);
     }
 
-    private final void _expandSeenStringValues()
+    private final void _expandSeenStringValues(String v)
     {
         String[] oldShared = _seenStringValues;
         int len = oldShared.length;
@@ -451,7 +459,7 @@ public abstract class NonBlockingParserBase
             System.arraycopy(oldShared, 0, newShared, 0, oldShared.length);
         }
         _seenStringValues = newShared;
-        _seenStringValues[_seenStringValueCount++] = _textBuffer.contentsAsString();
+        _seenStringValues[_seenStringValueCount++] = v;
     }
 
     @Override
