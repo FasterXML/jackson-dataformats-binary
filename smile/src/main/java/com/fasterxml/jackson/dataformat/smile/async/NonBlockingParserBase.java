@@ -12,10 +12,9 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.*;
 
-public abstract class NonBlockingParserBase
+public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     extends ParserBase
-    implements NonBlockingParser<NonBlockingByteArrayFeeder>,
-        NonBlockingByteArrayFeeder
+    implements NonBlockingParser<F>
 {
     protected final static byte[] NO_BYTES = new byte[0];
     protected final static int[] NO_INTS = new int[0];
@@ -52,31 +51,37 @@ public abstract class NonBlockingParserBase
 
     protected final static int MAJOR_SCALAR_VALUE = 8;
 
-    protected final static int MAJOR_VALUE_BINARY_RAW = 10;
-    protected final static int MAJOR_VALUE_BINARY_7BIT = 11;
-
-    protected final static int MAJOR_VALUE_STRING_SHORT_ASCII = 15;
-    protected final static int MAJOR_VALUE_STRING_SHORT_UNICODE = 16;
-    protected final static int MAJOR_VALUE_STRING_LONG_ASCII = 17;
-    protected final static int MAJOR_VALUE_STRING_LONG_UNICODE = 18;
-    protected final static int MAJOR_VALUE_STRING_SHARED_LONG = 19;
-
-    protected final static int MAJOR_VALUE_NUMBER_INT = 20;
-    protected final static int MAJOR_VALUE_NUMBER_LONG = 21;
-    protected final static int MAJOR_VALUE_NUMBER_FLOAT = 22;
-    protected final static int MAJOR_VALUE_NUMBER_DOUBLE = 23;
-    protected final static int MAJOR_VALUE_NUMBER_BIGINT = 24;
-    protected final static int MAJOR_VALUE_NUMBER_BIGDEC = 25;
-
+    /**
+     * State after non-blocking input source has indicated that no more input
+     * is forthcoming AND we have exhausted all the input
+     */
+    protected final static int MAJOR_CLOSED = 9;
+    
     // // // "Sub-states"
 
-    // Need 2nd byte of 2-byte field back reference
-    protected final static int MINOR_FIELD_NAME_2BYTE = 1;
+    protected final static int MINOR_HEADER = 1;
 
-    protected final static int MINOR_FIELD_NAME_LONG = 2;
-    protected final static int MINOR_FIELD_NAME_SHORT_ASCII = 3;
-    protected final static int MINOR_FIELD_NAME_SHORT_UNICODE = 4;
+    protected final static int MINOR_FIELD_NAME_2BYTE = 2;
+
+    protected final static int MINOR_FIELD_NAME_LONG = 3;
+    protected final static int MINOR_FIELD_NAME_SHORT_ASCII = 4;
+    protected final static int MINOR_FIELD_NAME_SHORT_UNICODE = 5;
     
+    protected final static int MINOR_VALUE_BINARY_RAW = 6;
+    protected final static int MINOR_VALUE_BINARY_7BIT = 7;
+
+    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 10;
+    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 11;
+    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 12;
+    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 13;
+    protected final static int MINOR_VALUE_STRING_SHARED_LONG = 14;
+
+    protected final static int MINOR_VALUE_NUMBER_INT = 15;
+    protected final static int MINOR_VALUE_NUMBER_LONG = 16;
+    protected final static int MINOR_VALUE_NUMBER_FLOAT = 17;
+    protected final static int MINOR_VALUE_NUMBER_DOUBLE = 18;
+    protected final static int MINOR_VALUE_NUMBER_BIGINT = 19;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC = 20;
     /*
     /**********************************************************************
     /* Configuration
@@ -115,6 +120,11 @@ public abstract class NonBlockingParserBase
      * Addition indicator within state; contextually relevant for just that state
      */
     protected int _minorState;
+
+    /**
+     * Value of {@link #_majorState} after completing a scalar value
+     */
+    protected int _majorStateAfterValue;
 
     /**
      * Specific flag that is set when we encountered a 32-bit
@@ -267,11 +277,11 @@ public abstract class NonBlockingParserBase
     public Version version() {
         return PackageVersion.VERSION;
     }
-    
+
     /*
-    /**********************************************************************
-    /* Former StreamBasedParserBase methods
-    /**********************************************************************
+    /**********************************************************
+    /* Overridden methods
+    /**********************************************************
      */
 
     @Override
@@ -485,10 +495,8 @@ public abstract class NonBlockingParserBase
      */
 
     @Override
-    public NonBlockingByteArrayFeeder getInputFeeder() {
-        return this;
-    }
-    
+    public abstract F getInputFeeder();
+
     /*
     /**********************************************************************
     /* Public API, access to token information, text
@@ -513,7 +521,7 @@ public abstract class NonBlockingParserBase
         }
         */
         JsonToken t = _currToken;
-        if (t == null) { // null only before/after document
+        if (t == null || _currToken == JsonToken.NOT_AVAILABLE) { // null only before/after document
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
@@ -552,6 +560,8 @@ public abstract class NonBlockingParserBase
             case VALUE_NUMBER_FLOAT:
                 // TODO: optimize
                 return getNumberValue().toString().toCharArray();
+            case NOT_AVAILABLE:
+                return null;
             default:
 /*                
                 if (_tokenIncomplete) {
@@ -584,6 +594,8 @@ public abstract class NonBlockingParserBase
                 // TODO: optimize
                 return getNumberValue().toString().length();
                 
+            case NOT_AVAILABLE:
+                return 0;
             default:
                 return _currToken.asCharArray().length;
             }
@@ -778,7 +790,20 @@ public abstract class NonBlockingParserBase
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
 */
-    
+
+    /**
+     * Helper method called at point when all input has been exhausted and
+     * input feeder has indicated no more input will be forthcoming.
+     */
+    protected final JsonToken _eofAsNextToken() throws IOException {
+        _majorState = MAJOR_CLOSED;
+        if (!_parsingContext.inRoot()) {
+            _handleEOF();
+        }
+        close();
+        return (_currToken = null);
+    }
+
     /*
     /**********************************************************************
     /* Internal methods, error reporting

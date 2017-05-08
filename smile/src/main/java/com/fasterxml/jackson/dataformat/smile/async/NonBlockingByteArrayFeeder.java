@@ -12,10 +12,10 @@ public interface NonBlockingByteArrayFeeder extends NonBlockingInputFeeder
       *    stable until it is fully processed (which is true when {@link #needMoreInput}
       *    returns true)
       * @param offset Offset within array where input data to process starts
-      * @param len Length of input data within array to process.
+      * @param end Offset after last byte contained in the input array
       * 
       * @throws IOException if the state is such that this method should not be called
       *   (has not yet consumed existing input data, or has been marked as closed)
       */
-     public void feedInput(byte[] data, int offset, int len) throws IOException;
+     public void feedInput(byte[] data, int offset, int end) throws IOException;
 }

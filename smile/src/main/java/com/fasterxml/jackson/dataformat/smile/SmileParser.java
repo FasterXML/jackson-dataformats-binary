@@ -470,7 +470,7 @@ public class SmileParser extends ParserBase
             _inputEnd += count;
         }
     }
-    
+
     @Override
     protected void _closeInput() throws IOException
     {
@@ -481,7 +481,7 @@ public class SmileParser extends ParserBase
             _inputStream = null;
         }
     }
-    
+
     /*
     /**********************************************************
     /* Overridden methods
@@ -2906,7 +2906,7 @@ public class SmileParser extends ParserBase
     /* Internal methods, other
     /**********************************************************
      */
-    
+
     private final JsonToken _eofAsNextToken() throws IOException {
         if (!_parsingContext.inRoot()) {
             _handleEOF();

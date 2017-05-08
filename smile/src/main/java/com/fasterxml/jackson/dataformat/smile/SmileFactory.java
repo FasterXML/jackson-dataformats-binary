@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
 /**
  * Factory used for constructing {@link SmileParser} and {@link SmileGenerator}
@@ -363,6 +365,22 @@ public class SmileFactory extends JsonFactory
         // false -> we won't manage the stream unless explicitly directed to
         IOContext ctxt = _createContext(out, false);
         return _createGenerator(_decorate(out, ctxt), ctxt);
+    }
+
+    /*
+    /**********************************************************
+    /* Experimental extended factory method(s) for creating
+    /* non-blocking parsers
+    /**********************************************************
+     */
+
+    /**
+     * @since 2.9
+     */
+    public NonBlockingByteArrayParser createNonBlockingParser() throws IOException {
+        IOContext ctxt = _createContext(null, false);
+        ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
+        return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can);
     }
 
     /*
