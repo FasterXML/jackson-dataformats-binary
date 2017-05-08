@@ -11,29 +11,23 @@ public class SimpleObjectTest extends AsyncTestBase
 {
     @JsonPropertyOrder(alphabetic=true)
     static class BooleanBean {
-        public boolean a, b, c, d, e;
+        public boolean a, b, ac, abcde, e;
     }
     
     public void testBooleans() throws IOException
     {
         final SmileFactory f = new SmileFactory();
         f.enable(SmileParser.Feature.REQUIRE_HEADER);
-        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'c':true, 'd':true, 'e':false }"), true);
+        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'ac':true, 'abcde':true, 'e':false }"), true);
         // first, no offsets
         _testBooleans(f, data, 0, 100);
-
-        // 07-May-2017, tatu: Won't pass until we handle gathering of bytes
-        /*
         _testBooleans(f, data, 0, 3);
         _testBooleans(f, data, 0, 1);
-*/
 
         // then with some
         _testBooleans(f, data, 1, 100);
-/*        
         _testBooleans(f, data, 1, 3);
         _testBooleans(f, data, 1, 1);
-*/
     }
 
     private void _testBooleans(SmileFactory f,
@@ -53,11 +47,11 @@ public class SimpleObjectTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_FALSE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
-        assertEquals("c", r.currentText());
+        assertEquals("ac", r.currentText());
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
-        assertEquals("d", r.currentText());
+        assertEquals("abcde", r.currentText());
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());

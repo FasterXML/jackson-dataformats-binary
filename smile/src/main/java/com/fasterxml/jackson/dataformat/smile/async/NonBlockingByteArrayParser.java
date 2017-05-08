@@ -195,11 +195,71 @@ public class NonBlockingByteArrayParser
      */
     protected final JsonToken _finishToken() throws IOException
     {
-        // first need to handle possible header, since that is usually not
-        // exposed as an event (expect when it implies document boundary)
+        // NOTE: caller ensures availability of at least one byte
+
         switch (_minorState) {
         case MINOR_HEADER:
             return _finishHeader();
+
+        case MINOR_FIELD_NAME_2BYTE:
+            {
+                int index = _pending32 + (_inputBuffer[_inputPtr++] & 0xFF);
+                if (index >= _seenNameCount) {
+                    _reportInvalidSharedName(index);
+                }
+                _parsingContext.setCurrentName(_seenNames[index]);
+            }
+            _majorState = MAJOR_OBJECT_VALUE;
+            return (_currToken = JsonToken.FIELD_NAME);
+
+        case MINOR_FIELD_NAME_LONG:
+            // !!! TBI!
+            break;
+        
+        case MINOR_FIELD_NAME_SHORT_ASCII:
+        case MINOR_FIELD_NAME_SHORT_UNICODE:
+            {
+                final int fullLen = _pending32;
+                final int needed = fullLen - _inputCopyLen;
+                final int avail = _inputEnd - _inputPtr;
+                if (avail >= needed) { // got it all
+                    System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
+                    _inputPtr += needed;
+                    String name = _findDecodedFromSymbols(_inputCopy, 0, fullLen);
+                    if (name == null) {
+                        name = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
+                                ? _decodeShortASCII(_inputCopy, 0, fullLen)
+                                : _decodeShortUnicode(_inputCopy, 0, fullLen)
+                                ;
+                        name = _addDecodedToSymbols(fullLen, name);
+                    }
+                    // either way, may need to keep a copy for possible back-ref
+                    if (_seenNames != null) {
+                        if (_seenNameCount >= _seenNames.length) {
+                            _seenNames = _expandSeenNames(_seenNames);
+                        }
+                        _seenNames[_seenNameCount++] = name;
+                    }
+                    _parsingContext.setCurrentName(name);
+                    _majorState = MAJOR_OBJECT_VALUE;
+                    return (_currToken = JsonToken.FIELD_NAME);
+                }
+                // Otherwise append to buffer, not done
+                System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, avail);
+                _inputPtr += avail;
+                _inputCopyLen += avail;
+                return JsonToken.NOT_AVAILABLE;
+            }
+
+        case MINOR_VALUE_BINARY_RAW:
+        case MINOR_VALUE_BINARY_7BIT:
+
+        case MINOR_VALUE_STRING_SHORT_ASCII:
+        case MINOR_VALUE_STRING_SHORT_UNICODE:
+        case MINOR_VALUE_STRING_LONG_ASCII:
+        case MINOR_VALUE_STRING_LONG_UNICODE:
+        case MINOR_VALUE_STRING_SHARED_LONG:
+
         case MINOR_VALUE_NUMBER_INT:
             return _startInt(_minorState, _pending32);
         case MINOR_VALUE_NUMBER_LONG:
@@ -438,8 +498,8 @@ public class NonBlockingByteArrayParser
                 _minorState = MINOR_FIELD_NAME_LONG;
 
                 // !!! TODO: Implement !!!
-                
-                return JsonToken.FIELD_NAME;
+
+                return (_currToken = JsonToken.FIELD_NAME);
             }
             break;
         case 1: // short shared, can fully process
@@ -458,13 +518,12 @@ public class NonBlockingByteArrayParser
                 final int len = 1 + (ch & 0x3f);
                 final int left = _inputEnd - _inputPtr;
                 if (len <= left) { // gotcha!
-                    String name = _findDecodedFromSymbols(len);
-                    if (name != null) {
-                        _inputPtr += len;
-                    } else {
-                        name = _decodeShortASCII(len);
+                    String name = _findDecodedFromSymbols(_inputBuffer, _inputPtr, len);
+                    if (name == null) {
+                        name = _decodeShortASCII(_inputBuffer, _inputPtr, len);
                         name = _addDecodedToSymbols(len, name);
                     }
+                    _inputPtr += len;
                     // either way, may need to keep a copy for possible back-ref
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
@@ -481,10 +540,11 @@ public class NonBlockingByteArrayParser
                 _inputCopyLen = left;
                 if (left > 0) {
                     System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
+                    _inputPtr += left;
                 }
             }
             _minorState = MINOR_FIELD_NAME_SHORT_ASCII;
-            return JsonToken.NOT_AVAILABLE;
+            return (_currToken = JsonToken.NOT_AVAILABLE);
 
         case 3: // short Unicode; possibly doable
             // all valid, except for 0xFF
@@ -498,13 +558,12 @@ public class NonBlockingByteArrayParser
                     final int len = ch + 2; // values from 2 to 57...
                     final int left = _inputEnd - _inputPtr;
                     if (len <= left) { // gotcha!
-                        String name = _findDecodedFromSymbols(len);
-                        if (name != null) {
-                            _inputPtr += len;
-                        } else {
-                            name = _decodeShortUnicode(len);
+                        String name = _findDecodedFromSymbols(_inputBuffer, _inputPtr, len);
+                        if (name == null) {
+                            name = _decodeShortUnicode(_inputBuffer, _inputPtr, len);
                             name = _addDecodedToSymbols(len, name);
                         }
+                        _inputPtr += len;
                         if (_seenNames != null) {
                             if (_seenNameCount >= _seenNames.length) {
                              _seenNames = _expandSeenNames(_seenNames);
@@ -521,7 +580,7 @@ public class NonBlockingByteArrayParser
                     }
                 }
                 _minorState = MINOR_FIELD_NAME_SHORT_UNICODE;
-                return JsonToken.NOT_AVAILABLE;
+                return (_currToken = JsonToken.NOT_AVAILABLE);
             }
         }
         // Other byte values are illegal
@@ -710,31 +769,24 @@ public class NonBlockingByteArrayParser
      * Helper method for trying to find specified encoded UTF-8 byte sequence
      * from symbol table; if successful avoids actual decoding to String
      */
-    private final String _findDecodedFromSymbols(int len) throws IOException
+    private final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws IOException
     {
-        if ((_inputEnd - _inputPtr) < len) {
-            _loadToHaveAtLeast(len);
-        }
         // First: maybe we already have this name decoded?
         if (len < 5) {
-         int inPtr = _inputPtr;
-         final byte[] inBuf = _inputBuffer;
-         int q = inBuf[inPtr] & 0xFF;
-         if (--len > 0) {
-             q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-             if (--len > 0) {
-                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                 if (--len > 0) {
-                     q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                 }
-             }
-         }
-         _quad1 = q;
-         return _symbols.findName(q);
+            int q = inBuf[inPtr] & 0xFF;
+            if (--len > 0) {
+                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                if (--len > 0) {
+                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                    if (--len > 0) {
+                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                    }
+                }
+            }
+            _quad1 = q;
+            return _symbols.findName(q);
         }
         if (len < 9) {
-            int inPtr = _inputPtr;
-            final byte[] inBuf = _inputBuffer;
             // First quadbyte is easy
             int q1 = (inBuf[inPtr] & 0xFF) << 8;
             q1 += (inBuf[++inPtr] & 0xFF);
@@ -757,15 +809,13 @@ public class NonBlockingByteArrayParser
             _quad2 = q2;
             return _symbols.findName(q1, q2);
         }
-        return _findDecodedMedium(len);
+        return _findDecodedMedium(inBuf, inPtr, len);
     }
-
-    /**
-     * Method for locating names longer than 8 bytes (in UTF-8)
-     */
-    private final String _findDecodedMedium(int len) throws IOException
+    
+    // Method for locating names longer than 8 bytes (in UTF-8)
+    private final String _findDecodedMedium(byte[] inBuf, int inPtr, int len) throws IOException
     {
-     // first, need enough buffer to store bytes as ints:
+        // first, need enough buffer to store bytes as ints:
         {
             int bufLen = (len + 3) >> 2;
             if (bufLen > _quadBuffer.length) {
@@ -774,8 +824,6 @@ public class NonBlockingByteArrayParser
         }
         // then decode, full quads first
         int offset = 0;
-        int inPtr = _inputPtr;
-        final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF) << 8;
             q |= inBuf[inPtr++] & 0xFF;
@@ -1275,7 +1323,7 @@ public class NonBlockingByteArrayParser
     /* Shared text decoding methods
     /**********************************************************************
      */
-    
+
     private final String _decodeShortASCII(int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
@@ -1306,6 +1354,33 @@ public class NonBlockingByteArrayParser
         return _textBuffer.contentsAsString();
     }
 
+    private final String _decodeShortASCII(byte[] inBuf, int inPtr, int len) throws IOException
+    {
+        // note: caller ensures we have enough bytes available
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        int outPtr = 0;
+
+        // loop unrolling seems to help here:
+        for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        }
+        int left = (len & 3);
+        if (left > 0) {
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            if (left > 1) {
+                outBuf[outPtr++] = (char) inBuf[inPtr++];
+                if (left > 2) {
+                    outBuf[outPtr++] = (char) inBuf[inPtr++];
+                }
+            }
+        }
+        _textBuffer.setCurrentLength(len);
+        return _textBuffer.contentsAsString();
+    }
+
     /**
      * Helper method used to decode short Unicode string, length for which actual
      * length (in bytes) is known
@@ -1321,6 +1396,46 @@ public class NonBlockingByteArrayParser
         _inputPtr += len;
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         final byte[] inBuf = _inputBuffer;
+        for (int end = inPtr + len; inPtr < end; ) {
+            int i = inBuf[inPtr++] & 0xFF;
+            int code = codes[i];
+            if (code != 0) {
+                // trickiest one, need surrogate handling
+                switch (code) {
+                case 1:
+                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
+                    break;
+                case 2:
+                    i = ((i & 0x0F) << 12)
+                        | ((inBuf[inPtr++] & 0x3F) << 6)
+                        | (inBuf[inPtr++] & 0x3F);
+                    break;
+                case 3:
+                    i = ((i & 0x07) << 18)
+                    | ((inBuf[inPtr++] & 0x3F) << 12)
+                    | ((inBuf[inPtr++] & 0x3F) << 6)
+                    | (inBuf[inPtr++] & 0x3F);
+                    // note: this is the codepoint value; need to split, too
+                    i -= 0x10000;
+                    outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                    i = 0xDC00 | (i & 0x3FF);
+                    break;
+                default: // invalid
+                    _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
+                }
+            }
+            outBuf[outPtr++] = (char) i;
+        }
+        _textBuffer.setCurrentLength(outPtr);
+        return _textBuffer.contentsAsString();
+    }
+
+    private final String _decodeShortUnicode(byte[] inBuf, int inPtr, int len) throws IOException
+    {
+        // note: caller ensures we have enough bytes available
+        int outPtr = 0;
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        final int[] codes = SmileConstants.sUtf8UnitLengths;
         for (int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
