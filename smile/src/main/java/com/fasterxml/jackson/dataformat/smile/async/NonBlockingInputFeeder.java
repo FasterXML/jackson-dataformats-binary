@@ -9,8 +9,6 @@ package com.fasterxml.jackson.dataformat.smile.async;
  * when parser's <code>nextToken</code> is called). Once application using
  * non-blocking parser has no more data to feed it should call
  * {@link #endOfInput} to indicate end of logical input stream.
- * 
- * @author Tatu Saloranta
  */
 public interface NonBlockingInputFeeder
 {

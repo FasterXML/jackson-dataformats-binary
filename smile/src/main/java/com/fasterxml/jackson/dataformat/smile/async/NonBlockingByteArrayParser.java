@@ -261,17 +261,17 @@ public class NonBlockingByteArrayParser
         case MINOR_VALUE_STRING_SHARED_LONG:
 
         case MINOR_VALUE_NUMBER_INT:
-            return _startInt(_minorState, _pending32);
+            return _finishInt(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_LONG:
-            return _startLong(_minorState, _pending64);
+            return _finishLong(_pending64, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGINT:
-            return _startBigInt(_minorState);
+//            return _startBigInt(_minorState);
         case MINOR_VALUE_NUMBER_FLOAT:
-            return _startFloat(_minorState, _pending32);
+//            return _startFloat(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_DOUBLE:
-            return _startDouble(_minorState, _pending64);
+//            return _startDouble(_pending64, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC:
-            return _startBigDecimal(_minorState);
+//            return _startBigDecimal(_minorState);
         default:
         }
         _throwInvalidState("Illegal state when trying to complete token: ");
@@ -375,27 +375,18 @@ public class NonBlockingByteArrayParser
             case 0x03: // 0x03 == true
                 return _valueComplete(JsonToken.VALUE_TRUE);
             case 0x04:
-                _majorState = MINOR_VALUE_NUMBER_INT;
-                return _startInt(0, 0);
+                return _startInt();
             case 0x05:
-                _numberLong = 0;
-                _majorState = MINOR_VALUE_NUMBER_LONG;
-                return _startLong(0, 0L);
+                return _startLong();
             case 0x06:
                 _majorState = MINOR_VALUE_NUMBER_BIGINT;
                 return _startBigInt(0);
             case 0x07: // illegal
                 break;
             case 0x08:
-                _pending32 = 0;
-                _majorState = MINOR_VALUE_NUMBER_FLOAT;
-                _got32BitFloat = true;
-                return _startFloat(0, 0);
+                return _startFloat();
             case 0x09:
-                _pending64 = 0L;
-                _majorState = MINOR_VALUE_NUMBER_DOUBLE;
-                _got32BitFloat = false;
-                return _startDouble(0, 0L);
+                return _startDouble();
             case 0x0A:
                 _majorState = MINOR_VALUE_NUMBER_BIGDEC;
                 return _startBigDecimal(0);
@@ -1166,7 +1157,44 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    protected final JsonToken _startInt(int substate, int value) throws IOException
+    protected final JsonToken _startInt() throws IOException
+    {
+        // common case first: have all we need
+        int ptr = _inputPtr;
+        if ((ptr + 5) > _inputEnd) {
+            return _finishInt(0, 0);
+        }
+        int value = _inputBuffer[ptr++];
+        int i;
+        if (value < 0) { // 6 bits
+            value &= 0x3F;
+        } else {
+            i = _inputBuffer[ptr++];
+            if (i >= 0) { // 13 bits
+                value = (value << 7) + i;
+                i = _inputBuffer[ptr++];
+                if (i >= 0) {
+                    value = (value << 7) + i;
+                    i = _inputBuffer[ptr++];
+                    if (i >= 0) {
+                        value = (value << 7) + i;
+                        // and then we must get negative
+                        i = _inputBuffer[ptr++];
+                        if (i >= 0) {
+                            _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                        }
+                    }
+                }
+            }
+            value = (value << 6) + (i & 0x3F);
+        }
+        _inputPtr = ptr;
+        _numberInt = SmileUtil.zigzagDecode(value);
+        _numTypesValid = NR_INT;
+        return _valueComplete(JsonToken.VALUE_NUMBER_INT);
+    }
+
+    protected final JsonToken _finishInt(int value, int bytesRead) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1174,24 +1202,51 @@ public class NonBlockingByteArrayParser
                 value = (value << 6) | (b & 0x3F);
                 _numberInt = SmileUtil.zigzagDecode(value);
                 _numTypesValid = NR_INT;
-//                _tokenIncomplete = false;
-                return (_currToken = JsonToken.VALUE_NUMBER_INT);
+                return _valueComplete(JsonToken.VALUE_NUMBER_INT);
             }
             // can't get too big; 5 bytes is max
-            if (++substate >= 5 ) {
+            if (++bytesRead >= 5 ) {
                 _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
             }
             value = (value << 7) | b;
         }
-        // did not get it all; mark the state so we know where to return:
-//        _tokenIncomplete = true;
-        _minorState = substate;
+        _minorState = MINOR_VALUE_NUMBER_INT;
         _pending32 = value;
-        _majorState = MINOR_VALUE_NUMBER_INT;
+        _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _startLong(int substate, long value) throws IOException
+    protected final JsonToken _startLong() throws IOException
+    {
+        // common case first: have all we need
+        int ptr = _inputPtr;
+        final int maxEnd = ptr+11;
+        if (maxEnd >= _inputEnd) {
+            return _finishLong(0L, 0);
+        }
+        int i = _inputBuffer[ptr++]; // first 7 bits
+        i = (i << 7) + _inputBuffer[ptr++]; // 14 bits
+        i = (i << 7) + _inputBuffer[ptr++]; // 21
+        i = (i << 7) + _inputBuffer[ptr++];
+
+        long l = i;
+        while (true) {
+            int value = _inputBuffer[ptr++];
+            if (value < 0) {
+                l = (l << 6) + (value & 0x3F);
+                _inputPtr = ptr;
+                _numberLong = SmileUtil.zigzagDecode(l);
+                _numTypesValid = NR_LONG;
+                return _valueComplete(JsonToken.VALUE_NUMBER_INT);
+            }
+            l = (l << 7) + value;
+            if (ptr >= maxEnd) {
+                _reportError("Corrupt input; 64-bit VInt extends beyond 11 data bytes");
+            }
+        }
+    }
+
+    protected final JsonToken _finishLong(long value, int bytesRead) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1199,20 +1254,17 @@ public class NonBlockingByteArrayParser
                 value = (value << 6) | (b & 0x3F);
                 _numberLong = SmileUtil.zigzagDecode(value);
                 _numTypesValid = NR_LONG;
-//                _tokenIncomplete = false;
-                return (_currToken = JsonToken.VALUE_NUMBER_INT);
+                return _valueComplete(JsonToken.VALUE_NUMBER_INT);
             }
-            // can't get too big; 10 bytes is max
-            if (++substate >=  10) {
-                _reportError("Corrupt input; 64-bit VInt extends beyond 10 data bytes");
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 11) {
+                _reportError("Corrupt input; 64-bit VInt extends beyond 5 data bytes");
             }
             value = (value << 7) | b;
         }
-        // did not get it all; mark the state so we know where to return:
-        //        _tokenIncomplete = true;
-        _minorState = substate;
+        _minorState = MINOR_VALUE_NUMBER_LONG;
         _pending64 = value;
-        _majorState = MINOR_VALUE_NUMBER_LONG;
+        _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
@@ -1240,8 +1292,10 @@ public class NonBlockingByteArrayParser
     }
 */
     
-    protected final JsonToken _startFloat(int substate, int value) throws IOException
+    protected final JsonToken _startFloat() throws IOException
     {
+        int value = 0;
+        int substate = 0;
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             value = (value << 7) + b;
@@ -1259,12 +1313,14 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _startDouble(int substate, long value) throws IOException
+    protected final JsonToken _startDouble() throws IOException
     {
+        int value = 0;
+        int bytesRead = 0;
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             value = (value << 7) + b;
-            if (++substate == 10) { // done!
+            if (++bytesRead == 10) { // done!
                 _numberDouble = Double.longBitsToDouble(value);
                 _numTypesValid = NR_DOUBLE;
                 //                _tokenIncomplete = false;
@@ -1272,7 +1328,7 @@ public class NonBlockingByteArrayParser
             }
         }
         //        _tokenIncomplete = true;
-        _minorState = substate;
+        _minorState = bytesRead;
         _pending64 = value;
         _majorState = MINOR_VALUE_NUMBER_DOUBLE;
         return (_currToken = JsonToken.NOT_AVAILABLE);

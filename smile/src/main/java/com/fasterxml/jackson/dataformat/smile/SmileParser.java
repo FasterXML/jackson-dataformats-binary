@@ -2262,7 +2262,7 @@ public class SmileParser extends ParserBase
             }
             l = (l << 7) + value;
         } while (ptr < maxEnd);
-        _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+        _reportError("Corrupt input; 64-bit VInt extends beyond 11 data bytes");
     }
 
     private final void  _finishLongSlow() throws IOException
