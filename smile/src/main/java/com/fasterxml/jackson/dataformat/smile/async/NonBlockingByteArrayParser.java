@@ -42,23 +42,6 @@ public class NonBlockingByteArrayParser
 
     /*
     /**********************************************************************
-    /* Decoding state
-    /**********************************************************************
-     */
-    
-    /**
-     * Temporary storage for 32-bit values (int, float), as well as length markers
-     * for length-prefixed values.
-     */
-    protected int _pending32;
-
-    /**
-     * For 64-bit values, we may use this for combining values
-     */
-    protected long _pending64;
-
-    /*
-    /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
@@ -267,9 +250,9 @@ public class NonBlockingByteArrayParser
         case MINOR_VALUE_NUMBER_BIGINT:
 //            return _startBigInt(_minorState);
         case MINOR_VALUE_NUMBER_FLOAT:
-//            return _startFloat(_pending32, _inputCopyLen);
+            return _finishFloat(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_DOUBLE:
-//            return _startDouble(_pending64, _inputCopyLen);
+            return _finishDouble(_pending64, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC:
 //            return _startBigDecimal(_minorState);
         default:
@@ -412,6 +395,7 @@ public class NonBlockingByteArrayParser
         case 6: // small integers; zigzag encoded
             _numberInt = SmileUtil.zigzagDecode(ch & 0x1F);
             _numTypesValid = NR_INT;
+            _numberType = NumberType.INT;
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
         case 7: // binary/long-text/long-shared/start-end-markers
             switch (ch & 0x1F) {
@@ -1153,7 +1137,7 @@ public class NonBlockingByteArrayParser
     
     /*
     /**********************************************************************
-    /* Internal methods: second-level parsing: numbers
+    /* Internal methods: second-level parsing: numbers, integral
     /**********************************************************************
      */
 
@@ -1191,6 +1175,7 @@ public class NonBlockingByteArrayParser
         _inputPtr = ptr;
         _numberInt = SmileUtil.zigzagDecode(value);
         _numTypesValid = NR_INT;
+        _numberType = NumberType.INT;
         return _valueComplete(JsonToken.VALUE_NUMBER_INT);
     }
 
@@ -1202,6 +1187,7 @@ public class NonBlockingByteArrayParser
                 value = (value << 6) | (b & 0x3F);
                 _numberInt = SmileUtil.zigzagDecode(value);
                 _numTypesValid = NR_INT;
+                _numberType = NumberType.INT;
                 return _valueComplete(JsonToken.VALUE_NUMBER_INT);
             }
             // can't get too big; 5 bytes is max
@@ -1237,6 +1223,7 @@ public class NonBlockingByteArrayParser
                 _inputPtr = ptr;
                 _numberLong = SmileUtil.zigzagDecode(l);
                 _numTypesValid = NR_LONG;
+                _numberType = NumberType.LONG;
                 return _valueComplete(JsonToken.VALUE_NUMBER_INT);
             }
             l = (l << 7) + value;
@@ -1254,6 +1241,7 @@ public class NonBlockingByteArrayParser
                 value = (value << 6) | (b & 0x3F);
                 _numberLong = SmileUtil.zigzagDecode(value);
                 _numTypesValid = NR_LONG;
+                _numberType = NumberType.LONG;
                 return _valueComplete(JsonToken.VALUE_NUMBER_INT);
             }
             // can't get too big; 5 bytes is max
@@ -1291,49 +1279,86 @@ public class NonBlockingByteArrayParser
         return true;
     }
 */
+
+    /*
+    /**********************************************************************
+    /* Internal methods: second-level parsing: numbers, integral
+    /**********************************************************************
+     */
     
     protected final JsonToken _startFloat() throws IOException
     {
-        int value = 0;
-        int substate = 0;
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            value = (value << 7) + b;
-            if (++substate == 5) { // done!
-                _numberDouble = (double) Float.intBitsToFloat(value);
-                _numTypesValid = NR_DOUBLE;
-                //                _tokenIncomplete = false;
-                return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
-            }
+        int ptr = _inputPtr;
+        if ((ptr + 5) > _inputEnd) {
+            return _finishFloat(0, 0);
         }
-        //        _tokenIncomplete = true;
-        _minorState = substate;
-        _pending32 = value;
-        _majorState = MINOR_VALUE_NUMBER_FLOAT;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        // NOTE! all bytes guaranteed to be unsigned (should verify?)
+        int i = _fourBytesToInt(ptr);
+        ptr += 4;
+        i = (i << 7) + _inputBuffer[ptr++];
+        _inputPtr = ptr;
+        _numberFloat = (float) Float.intBitsToFloat(i);
+        _numTypesValid = NR_FLOAT;
+        _numberType = NumberType.FLOAT;
+        return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
     }
 
+    protected final JsonToken _finishFloat(int value, int bytesRead) throws IOException
+    {
+        while (_inputPtr < _inputEnd) {
+            value = (value << 7) + _inputBuffer[_inputPtr++];
+            if (++bytesRead == 5) {
+                _numberFloat = (float) Float.intBitsToFloat(value);
+                _numTypesValid = NR_FLOAT;
+                _numberType = NumberType.FLOAT;
+                return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
+            }
+        }
+        _minorState = MINOR_VALUE_NUMBER_FLOAT;
+        _pending32 = value;
+        _inputCopyLen = bytesRead;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+    
     protected final JsonToken _startDouble() throws IOException
     {
-        int value = 0;
-        int bytesRead = 0;
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            value = (value << 7) + b;
-            if (++bytesRead == 10) { // done!
-                _numberDouble = Double.longBitsToDouble(value);
-                _numTypesValid = NR_DOUBLE;
-                //                _tokenIncomplete = false;
-                return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
-            }
+        int ptr = _inputPtr;
+        if ((ptr + 10) > _inputEnd) {
+            return _finishDouble(0L, 0);
         }
-        //        _tokenIncomplete = true;
-        _minorState = bytesRead;
-        _pending64 = value;
-        _majorState = MINOR_VALUE_NUMBER_DOUBLE;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        // NOTE! all bytes guaranteed to be unsigned (should verify?)
+        long hi = _fourBytesToInt(ptr);
+        ptr += 4;
+        long value = (hi << 28) + (long) _fourBytesToInt(ptr);
+        ptr += 4;
+
+        // and then remaining 2 bytes
+        value = (value << 7) + _inputBuffer[ptr++];
+        value = (value << 7) + _inputBuffer[ptr++];
+        _inputPtr = ptr;
+        _numberDouble = Double.longBitsToDouble(value);
+        _numTypesValid = NR_DOUBLE;
+        _numberType = NumberType.DOUBLE;
+        return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
     }
 
+    protected final JsonToken _finishDouble(long value, int bytesRead) throws IOException
+    {
+        while (_inputPtr < _inputEnd) {
+            value = (value << 7) + _inputBuffer[_inputPtr++];
+            if (++bytesRead == 10) {
+                _numberDouble = Double.longBitsToDouble(value);
+                _numTypesValid = NR_DOUBLE;
+                _numberType = NumberType.DOUBLE;
+                return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
+            }
+        }
+        _minorState = MINOR_VALUE_NUMBER_DOUBLE;
+        _pending64 = value;
+        _inputCopyLen = bytesRead;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+    
     protected final JsonToken _startBigDecimal(int substate) throws IOException
     {
         // !!! TBI
@@ -1374,6 +1399,15 @@ public class NonBlockingByteArrayParser
     }
     */
 
+    private final int _fourBytesToInt(int ptr)  throws IOException
+    {
+        int i = _inputBuffer[ptr++]; // first 7 bits
+        i = (i << 7) + _inputBuffer[ptr++]; // 14 bits
+        i = (i << 7) + _inputBuffer[ptr++]; // 21
+        i = (i << 7) + _inputBuffer[ptr++];
+        return i;
+    }
+    
     /*
     /**********************************************************************
     /* Shared text decoding methods

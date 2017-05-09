@@ -2365,8 +2365,7 @@ public class SmileParser extends ParserBase
         _numTypesValid = NR_BIGDECIMAL;
     }
 
-    private final int _readUnsignedVInt()
-        throws IOException
+    private final int _readUnsignedVInt() throws IOException
     {
         int value = 0;
         while (true) {

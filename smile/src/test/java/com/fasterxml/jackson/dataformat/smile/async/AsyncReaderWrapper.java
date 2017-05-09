@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
 
 public abstract class AsyncReaderWrapper
@@ -21,6 +22,13 @@ public abstract class AsyncReaderWrapper
     }
 
     public abstract JsonToken nextToken() throws IOException;
+
+    public int getIntValue() throws IOException { return _streamReader.getIntValue(); }
+    public long getLongValue() throws IOException { return _streamReader.getLongValue(); }
+    public float getFloatValue() throws IOException { return _streamReader.getFloatValue(); }
+    public double getDoubleValue() throws IOException { return _streamReader.getDoubleValue(); }
+
+    public NumberType getNumberType() throws IOException { return _streamReader.getNumberType(); }
 
     public boolean isClosed() {
         return _streamReader.isClosed();

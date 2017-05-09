@@ -127,14 +127,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected int _majorStateAfterValue;
 
     /**
-     * Specific flag that is set when we encountered a 32-bit
-     * floating point value; needed since numeric super classes do
-     * not track distinction between float and double, but Smile
-     * format does, and we want to retain that separation.
-     */
-    protected boolean _got32BitFloat;
-
-    /**
      * Flag that is sent when calling application indicates that there will
      * be no more input to parse.
      */
@@ -156,17 +148,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      */
     protected int[] _quadBuffer = NO_INTS;
 
-    /**
-     * Temporary buffer for holding content if input not contiguous (but can
-     * fit in buffer)
-     */
-    protected byte[] _inputCopy;
-
-    /**
-     * Number of bytes buffered in <code>_inputCopy</code>
-     */
-    protected int _inputCopyLen;
-    
     /*
     /**********************************************************************
     /* Name/entity parsing state
@@ -206,7 +187,39 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected String[] _seenStringValues = null;
 
     protected int _seenStringValueCount = -1;
+
+    /*
+    /**********************************************************************
+    /* Other buffering
+    /**********************************************************************
+     */
     
+    /**
+     * Temporary buffer for holding content if input not contiguous (but can
+     * fit in buffer)
+     */
+    protected byte[] _inputCopy;
+
+    /**
+     * Number of bytes buffered in <code>_inputCopy</code>
+     */
+    protected int _inputCopyLen;
+
+    protected float _numberFloat;
+
+    /**
+     * Temporary storage for 32-bit values (int, float), as well as length markers
+     * for length-prefixed values.
+     */
+    protected int _pending32;
+
+    /**
+     * For 64-bit values, we may use this for combining values
+     */
+    protected long _pending64;
+
+    protected NumberType _numberType;
+
     /*
     /**********************************************************************
     /* Thread-local recycling
@@ -478,16 +491,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         return _parsingContext.getCurrentName();
     }
 
-    @Override
-    public NumberType getNumberType()
-        throws IOException
-    {
-        if (_got32BitFloat) {
-            return NumberType.FLOAT;
-        }
-        return super.getNumberType();
-    }
-    
     /*
     /**********************************************************************
     /* NonBlockParser impl (except for NonBlockingInputFeeder)
@@ -623,6 +626,57 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      */
 
     @Override
+    public NumberType getNumberType() throws IOException {
+        _checkNumericValue();
+        return _numberType;
+    }
+
+    @Override
+    public float getFloatValue() throws IOException
+    {
+        if ((_numTypesValid & NR_FLOAT) == 0) {
+            _checkNumericValue();
+            convertNumberToFloat();
+        }
+        return _numberFloat;
+    }
+
+    protected final void convertNumberToFloat() throws IOException
+    {
+        // Note: this MUST start with more accurate representations, since we don't know which
+        //  value is the original one (others get generated when requested)
+        if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+            _numberFloat = _numberBigDecimal.floatValue();
+        } else if ((_numTypesValid & NR_BIGINT) != 0) {
+            _numberFloat = _numberBigInt.floatValue();
+        } else if ((_numTypesValid & NR_DOUBLE) != 0) {
+            _numberFloat = (float) _numberDouble;
+        } else if ((_numTypesValid & NR_LONG) != 0) {
+            _numberFloat = (float) _numberLong;
+        } else if ((_numTypesValid & NR_INT) != 0) {
+            _numberFloat = (float) _numberInt;
+        } else {
+            _throwInternal();
+        }
+        _numTypesValid |= NR_FLOAT;
+    }
+    
+    protected final void _checkNumericValue() throws IOException
+    {
+        // Int or float?
+        if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            return;
+        }
+        _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
+    }
+
+    /*
+    /**********************************************************************
+    /* Public API, access to token information, binary
+    /**********************************************************************
+     */
+
+    @Override
     public byte[] getBinaryValue(Base64Variant b64variant)
         throws IOException
     {
@@ -679,20 +733,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
             System.arraycopy(oldShared, 0, newShared, 0, oldShared.length);
         }
         return newShared;
-    }
-
-    /*
-    /**********************************************************************
-    /* Internal methods, secondary parsing
-    /**********************************************************************
-     */
-
-    @Override
-    protected void _parseNumericValue(int expType) throws IOException
-    {
-//        if (_tokenIncomplete) {
-            _reportError("No current token available, can not call accessors");
-//        }
     }
 
     /*
