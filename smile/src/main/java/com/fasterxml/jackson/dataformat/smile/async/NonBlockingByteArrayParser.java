@@ -146,15 +146,15 @@ public class NonBlockingByteArrayParser
             // otherwise fine, just drop through to next state
             // (NOTE: it double-checks header; fine, won't match; just need the rest)
             _majorState = MAJOR_ROOT;
-            return _startScalarValue(ch);
-            
+            return _startValue(ch);
+
         case MAJOR_ROOT: // 
             if (SmileConstants.HEADER_BYTE_1 == ch) { // looks like a header
                 _minorState = MINOR_HEADER;
                 _pending32 = 0;
                 return _finishHeader();
             }
-            return _startScalarValue(ch);
+            return _startValue(ch);
 
         case MAJOR_OBJECT_FIELD: // field or end-object
             // expect name
@@ -162,10 +162,8 @@ public class NonBlockingByteArrayParser
             
         case MAJOR_OBJECT_VALUE:
         case MAJOR_ARRAY_ELEMENT: // element or end-array
-            return _startScalarValue(ch);
+            return _startValue(ch);
 
-            // These types should never be not-incomplete so:
-        case MAJOR_HEADER: // never gets here
         default:
         }
         VersionUtil.throwInternal();
@@ -231,17 +229,8 @@ public class NonBlockingByteArrayParser
                 System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, avail);
                 _inputPtr += avail;
                 _inputCopyLen += avail;
-                return JsonToken.NOT_AVAILABLE;
             }
-
-        case MINOR_VALUE_BINARY_RAW:
-        case MINOR_VALUE_BINARY_7BIT:
-
-        case MINOR_VALUE_STRING_SHORT_ASCII:
-        case MINOR_VALUE_STRING_SHORT_UNICODE:
-        case MINOR_VALUE_STRING_LONG_ASCII:
-        case MINOR_VALUE_STRING_LONG_UNICODE:
-        case MINOR_VALUE_STRING_SHARED_LONG:
+            return JsonToken.NOT_AVAILABLE;
 
         case MINOR_VALUE_NUMBER_INT:
             return _finishInt(_pending32, _inputCopyLen);
@@ -249,12 +238,47 @@ public class NonBlockingByteArrayParser
             return _finishLong(_pending64, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGINT:
 //            return _startBigInt(_minorState);
+            break;
         case MINOR_VALUE_NUMBER_FLOAT:
             return _finishFloat(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_DOUBLE:
             return _finishDouble(_pending64, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC:
 //            return _startBigDecimal(_minorState);
+            break;
+            
+        case MINOR_VALUE_STRING_SHORT_ASCII:
+        case MINOR_VALUE_STRING_SHORT_UNICODE:
+            {
+                final int fullLen = _pending32;
+                final int needed = fullLen - _inputCopyLen;
+                final int avail = _inputEnd - _inputPtr;
+                if (avail >= needed) { // got it all
+                    System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
+                    _inputPtr += needed;
+                    String text = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
+                            ? _decodeShortASCII(_inputCopy, 0, fullLen)
+                            : _decodeShortUnicode(_inputCopy, 0, fullLen);
+                    if (_seenStringValueCount >= 0) { // shared text values enabled
+                        _addSeenStringValue(text);
+                    }
+                    return _valueComplete(JsonToken.VALUE_STRING);
+                }
+                // Otherwise append to buffer, not done
+                System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, avail);
+                _inputPtr += avail;
+                _inputCopyLen += avail;
+            }
+            return JsonToken.NOT_AVAILABLE;
+        
+        case MINOR_VALUE_STRING_LONG_ASCII:
+        case MINOR_VALUE_STRING_LONG_UNICODE:
+        case MINOR_VALUE_STRING_SHARED_LONG:
+            break;
+
+        case MINOR_VALUE_BINARY_RAW:
+        case MINOR_VALUE_BINARY_7BIT:
+            break;
         default:
         }
         _throwInvalidState("Illegal state when trying to complete token: ");
@@ -331,11 +355,11 @@ public class NonBlockingByteArrayParser
     }
 
     /**
-     * Helper method called to detect type of non-header token we have at
-     * root level. Note that possible header has been ruled out by caller
-     * and is not checked here.
+     * Helper method called to detect type of a value token (at any level), and possibly
+     * decode it if contained in input buffer.
+     * Note that possible header has been ruled out by caller and is not checked here.
      */
-    private final JsonToken _startScalarValue(int ch) throws IOException
+    private final JsonToken _startValue(int ch) throws IOException
     {
         main_switch:
         switch ((ch >> 5) & 0x7) {
@@ -363,7 +387,7 @@ public class NonBlockingByteArrayParser
                 return _startLong();
             case 0x06:
                 _majorState = MINOR_VALUE_NUMBER_BIGINT;
-                return _startBigInt(0);
+                return _startBigInt();
             case 0x07: // illegal
                 break;
             case 0x08:
@@ -372,7 +396,7 @@ public class NonBlockingByteArrayParser
                 return _startDouble();
             case 0x0A:
                 _majorState = MINOR_VALUE_NUMBER_BIGDEC;
-                return _startBigDecimal(0);
+                return _startBigDecimal();
             case 0x0B: // illegal
                 break;
             case 0x1A:
@@ -409,7 +433,7 @@ public class NonBlockingByteArrayParser
             case 0x0D:
             case 0x0E:
             case 0x0F:
-                return _startLongSharedString(0);
+                return _startLongSharedString();
 //                return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
             case 0x18: // START_ARRAY
                 return _startArrayScope();
@@ -421,7 +445,7 @@ public class NonBlockingByteArrayParser
                 _reportError("Invalid type marker byte 0xFB in value mode (would be END_OBJECT in key mode)");
             case 0x1D: // binary, raw
                 // should we validate this is legal? (as per header)
-                return _startRawBinary(0);
+                return _startRawBinary();
             case 0x1F: // 0xFF, end of content
                 return (_currToken = null);
             }
@@ -473,6 +497,7 @@ public class NonBlockingByteArrayParser
                 _minorState = MINOR_FIELD_NAME_LONG;
 
                 // !!! TODO: Implement !!!
+VersionUtil.throwInternal();
 
                 return (_currToken = JsonToken.FIELD_NAME);
             }
@@ -564,15 +589,17 @@ public class NonBlockingByteArrayParser
         return null;
     }
 
+    /*
     private final String _decodeLongUnicodeName(int[] quads, int byteLen, int quadLen) throws IOException
     {
         int lastQuadBytes = byteLen & 3;
+
         // Ok: must decode UTF-8 chars. No other validation SHOULD be needed (except bounds checks?)
-        /* Note: last quad is not correctly aligned (leading zero bytes instead
-         * need to shift a bit, instead of trailing). Only need to shift it
-         * for UTF-8 decoding; need revert for storage (since key will not
-         * be aligned, to optimize lookup speed)
-         */
+        // Note: last quad is not correctly aligned (leading zero bytes instead
+        // need to shift a bit, instead of trailing). Only need to shift it
+        // for UTF-8 decoding; need revert for storage (since key will not
+        // be aligned, to optimize lookup speed)
+
         int lastQuad;
     
         if (lastQuadBytes < 4) {
@@ -665,7 +692,9 @@ public class NonBlockingByteArrayParser
         }
         return _symbols.addName(baseName, quads, quadLen);
     }
+    */
 
+    /*
     private final void _handleLongFieldName() throws IOException
     {
         // First: gather quads we need, looking for end marker
@@ -739,11 +768,10 @@ public class NonBlockingByteArrayParser
         }
         _parsingContext.setCurrentName(name);
     }
+    */
 
-    /**
-     * Helper method for trying to find specified encoded UTF-8 byte sequence
-     * from symbol table; if successful avoids actual decoding to String
-     */
+    // Helper method for trying to find specified encoded UTF-8 byte sequence
+    // from symbol table; if successful avoids actual decoding to String
     private final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // First: maybe we already have this name decoded?
@@ -857,16 +885,17 @@ public class NonBlockingByteArrayParser
             if (_seenStringValueCount >= 0) { // shared text values enabled
                 _addSeenStringValue(text);
             }
-            return _valueComplete(JsonToken.FIELD_NAME);
+            return _valueComplete(JsonToken.VALUE_STRING);
         }
         // Nope: need to copy
         _pending32 = len;
         _inputCopyLen = left;
         if (left > 0) {
             System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
+            _inputPtr += left;
         }
-        _minorState = MINOR_FIELD_NAME_SHORT_ASCII;
-        return JsonToken.NOT_AVAILABLE;
+        _minorState = MINOR_VALUE_STRING_SHORT_ASCII;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
     private final JsonToken _startShortUnicode(final int len) throws IOException
@@ -877,17 +906,17 @@ public class NonBlockingByteArrayParser
             if (_seenStringValueCount >= 0) { // shared text values enabled
                 _addSeenStringValue(text);
             }
-            return _valueComplete(JsonToken.FIELD_NAME);
+            return _valueComplete(JsonToken.VALUE_STRING);
         }
         // Nope: need to copy
         _pending32 = len;
         _inputCopyLen = left;
         if (left > 0) {
             System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
+            _inputPtr += left;
         }
-        _majorState = MAJOR_SCALAR_VALUE;
-        _minorState = MINOR_FIELD_NAME_SHORT_UNICODE;
-        return JsonToken.NOT_AVAILABLE;
+        _minorState = MINOR_VALUE_STRING_SHORT_UNICODE;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
     private final JsonToken _startLongASCII() throws IOException
@@ -925,9 +954,7 @@ public class NonBlockingByteArrayParser
     protected final JsonToken _startLongUnicode() throws IOException
     {
         // did not get it all; mark the state so we know where to return:
-        _majorState = MINOR_VALUE_STRING_LONG_UNICODE;
-//        _tokenIncomplete = true;
-//        _minorState = substate;
+        _minorState = MINOR_VALUE_STRING_LONG_UNICODE;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
     
@@ -1014,21 +1041,19 @@ public class NonBlockingByteArrayParser
     }
      */
     
-    protected final JsonToken _startLongSharedString(int substate) throws IOException
+    protected final JsonToken _startLongSharedString() throws IOException
     {
         // did not get it all; mark the state so we know where to return:
 //        _tokenIncomplete = true;
-        _majorState = MINOR_VALUE_STRING_SHARED_LONG;
-        _minorState = substate;
+        _minorState = MINOR_VALUE_STRING_SHARED_LONG;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _startRawBinary(int substate) throws IOException
+    protected final JsonToken _startRawBinary() throws IOException
     {
         // did not get it all; mark the state so we know where to return:
 //        _tokenIncomplete = true;
-        _majorState = MINOR_VALUE_BINARY_RAW;
-        _minorState = substate;
+        _minorState = MINOR_VALUE_BINARY_RAW;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
@@ -1256,13 +1281,9 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _startBigInt(int substate) throws IOException
+    protected final JsonToken _startBigInt() throws IOException
     {
-        // !!! TBI
-        //        _tokenIncomplete = true;
-        _minorState = substate;
-//        _pendingLong = value;
-        _majorState = MINOR_VALUE_NUMBER_BIGDEC;
+         _minorState = MINOR_VALUE_NUMBER_BIGDEC;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
@@ -1359,13 +1380,10 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
     
-    protected final JsonToken _startBigDecimal(int substate) throws IOException
+    protected final JsonToken _startBigDecimal() throws IOException
     {
         // !!! TBI
-        //        _tokenIncomplete = true;
-        _minorState = substate;
-//        _pendingLong = value;
-        _majorState = MINOR_VALUE_NUMBER_BIGDEC;
+        _minorState = MINOR_VALUE_NUMBER_BIGDEC;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 /*
@@ -1381,8 +1399,7 @@ public class NonBlockingByteArrayParser
  */
 
     /*
-    private final int _readUnsignedVInt()
-        throws IOException
+    private final int _readUnsignedVInt() throws IOException
     {
         int value = 0;
         while (true) {

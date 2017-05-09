@@ -38,24 +38,16 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      */
     protected final static int MAJOR_ROOT = 1;
 
-    /**
-     * State for recognized header marker, either in-feed or initial, and at least
-     * one byte of it has been read.
-     */
-    protected final static int MAJOR_HEADER = 2;
+    protected final static int MAJOR_OBJECT_FIELD = 2;
+    protected final static int MAJOR_OBJECT_VALUE = 3;
 
-    protected final static int MAJOR_OBJECT_FIELD = 4;
-    protected final static int MAJOR_OBJECT_VALUE = 5;
-
-    protected final static int MAJOR_ARRAY_ELEMENT = 7;
-
-    protected final static int MAJOR_SCALAR_VALUE = 8;
+    protected final static int MAJOR_ARRAY_ELEMENT = 4;
 
     /**
      * State after non-blocking input source has indicated that no more input
      * is forthcoming AND we have exhausted all the input
      */
-    protected final static int MAJOR_CLOSED = 9;
+    protected final static int MAJOR_CLOSED = 5;
     
     // // // "Sub-states"
 
@@ -66,22 +58,23 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected final static int MINOR_FIELD_NAME_LONG = 3;
     protected final static int MINOR_FIELD_NAME_SHORT_ASCII = 4;
     protected final static int MINOR_FIELD_NAME_SHORT_UNICODE = 5;
+
+    protected final static int MINOR_VALUE_NUMBER_INT = 6;
+    protected final static int MINOR_VALUE_NUMBER_LONG = 7;
+    protected final static int MINOR_VALUE_NUMBER_FLOAT = 8;
+    protected final static int MINOR_VALUE_NUMBER_DOUBLE = 9;
+    protected final static int MINOR_VALUE_NUMBER_BIGINT = 10;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC = 11;
+
+    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 12;
+    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 13;
+    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 14;
+    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 15;
+    protected final static int MINOR_VALUE_STRING_SHARED_LONG = 16;
+
+    protected final static int MINOR_VALUE_BINARY_RAW = 17;
+    protected final static int MINOR_VALUE_BINARY_7BIT = 18;
     
-    protected final static int MINOR_VALUE_BINARY_RAW = 6;
-    protected final static int MINOR_VALUE_BINARY_7BIT = 7;
-
-    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 10;
-    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 11;
-    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 12;
-    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 13;
-    protected final static int MINOR_VALUE_STRING_SHARED_LONG = 14;
-
-    protected final static int MINOR_VALUE_NUMBER_INT = 15;
-    protected final static int MINOR_VALUE_NUMBER_LONG = 16;
-    protected final static int MINOR_VALUE_NUMBER_FLOAT = 17;
-    protected final static int MINOR_VALUE_NUMBER_DOUBLE = 18;
-    protected final static int MINOR_VALUE_NUMBER_BIGINT = 19;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC = 20;
     /*
     /**********************************************************************
     /* Configuration

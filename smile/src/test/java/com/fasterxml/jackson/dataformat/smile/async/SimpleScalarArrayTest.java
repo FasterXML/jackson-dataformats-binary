@@ -3,13 +3,11 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.dataformat.smile.*;
 
-public class SimpleArrayTest extends AsyncTestBase
+public class SimpleScalarArrayTest extends AsyncTestBase
 {
     private final SmileFactory F_REQ_HEADERS = new SmileFactory();
     {
@@ -20,7 +18,7 @@ public class SimpleArrayTest extends AsyncTestBase
     {
         F_REQ_HEADERS.disable(SmileParser.Feature.REQUIRE_HEADER);
     }
-    
+
     public void testBooleans() throws IOException
     {
         byte[] data = _smileDoc("[ true, false, true, true, false ]", true);
@@ -67,6 +65,7 @@ public class SimpleArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
+   
     public void testInts() throws IOException
     {
         final int[] input = new int[] { 1, -1, 16, -17, 131, -155, 1000, -3000, 0xFFFF, -99999,
