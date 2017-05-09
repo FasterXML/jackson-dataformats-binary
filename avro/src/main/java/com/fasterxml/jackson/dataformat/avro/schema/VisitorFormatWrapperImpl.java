@@ -118,14 +118,14 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        StringVisitor v = new StringVisitor(_schemas, type);
+        StringVisitor v = new StringVisitor(_provider, _schemas, type);
         _builder = v;
         return v;
     }
 
     @Override
     public JsonNumberFormatVisitor expectNumberFormat(JavaType convertedType) {
-        DoubleVisitor v = new DoubleVisitor();
+        DoubleVisitor v = new DoubleVisitor(convertedType);
         _builder = v;
         return v;
     }

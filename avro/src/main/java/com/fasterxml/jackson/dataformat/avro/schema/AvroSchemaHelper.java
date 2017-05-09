@@ -148,14 +148,15 @@ public abstract class AvroSchemaHelper
         switch (type) {
         case INT:
             return Schema.create(Schema.Type.INT);
-        case BIG_INTEGER:
         case LONG:
             return Schema.create(Schema.Type.LONG);
         case FLOAT:
             return Schema.create(Schema.Type.FLOAT);
-        case BIG_DECIMAL:
         case DOUBLE:
             return Schema.create(Schema.Type.DOUBLE);
+        case BIG_INTEGER:
+        case BIG_DECIMAL:
+            return Schema.create(Schema.Type.STRING);
         default:
         }
         throw new IllegalStateException("Unrecognized number type: "+type);
@@ -212,6 +213,17 @@ public abstract class AvroSchemaHelper
     public static Schema parseJsonSchema(String json) {
         Schema.Parser parser = new Parser();
         return parser.parse(json);
+    }
+
+    /**
+     * Constructs a new enum schema
+     *
+     * @param bean Enum type to use for name / description / namespace
+     * @param values List of enum names
+     * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
+     */
+    public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
+        return Schema.createEnum(getName(bean.getType()), bean.findClassDescription(), getNamespace(bean.getType()), values);
     }
 
     /**
