@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
@@ -19,6 +20,12 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         F_REQ_HEADERS.disable(SmileParser.Feature.REQUIRE_HEADER);
     }
 
+    /*
+    /**********************************************************************
+    /* Boolean, int, long tests
+    /**********************************************************************
+     */
+    
     public void testBooleans() throws IOException
     {
         byte[] data = _smileDoc("[ true, false, true, true, false ]", true);
@@ -151,6 +158,12 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
+    /*
+    /**********************************************************************
+    /* Floating point
+    /**********************************************************************
+     */
+    
     public void testFloats() throws IOException
     {
         final float[] input = new float[] { 0.0f, 0.25f, -0.5f, 10000.125f, - 99999.075f };
@@ -231,4 +244,55 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertNull(r.nextToken());
         assertTrue(r.isClosed());
     }
+
+    /*
+    /**********************************************************************
+    /* BigInteger, BigDecimal
+    /**********************************************************************
+     */
+/*
+    public void testBigIntegers() throws IOException
+    {
+        BigInteger bigBase = BigInteger.valueOf(1234567890344656736L);
+        final BigInteger[] input = new BigInteger[] { BigInteger.ONE,
+                BigInteger.TEN, BigInteger.ZERO,
+                bigBase, bigBase.shiftLeft(100),
+                bigBase.negate()
+        };
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
+        SmileFactory f = F_REQ_HEADERS;
+        JsonGenerator g = f.createGenerator(bytes);
+        g.writeStartArray();
+        for (int i = 0; i < input.length; ++i) {
+            g.writeNumber(input[i]);
+        }
+        g.writeEndArray();
+        g.close();
+        byte[] data = bytes.toByteArray();
+        _testBigIntegers(f, input, data, 0, 100);
+        _testBigIntegers(f, input, data, 0, 3);
+        _testBigIntegers(f, input, data, 0, 1);
+
+        _testBigIntegers(f, input, data, 1, 100);
+        _testBigIntegers(f, input, data, 1, 3);
+        _testBigIntegers(f, input, data, 1, 1);
+    }
+
+    private void _testBigIntegers(SmileFactory f, BigInteger[] values,
+            byte[] data, int offset, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        // start with "no token"
+        assertNull(r.currentToken());
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        for (int i = 0; i < values.length; ++i) {
+            assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
+            assertEquals(values[i], r.getBigIntegerValue());
+            assertEquals(NumberType.BIG_INTEGER, r.getNumberType());
+        }
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        assertNull(r.nextToken());
+        assertTrue(r.isClosed());
+    }
+    */
 }

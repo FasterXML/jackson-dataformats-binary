@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
@@ -27,6 +29,8 @@ public abstract class AsyncReaderWrapper
     public long getLongValue() throws IOException { return _streamReader.getLongValue(); }
     public float getFloatValue() throws IOException { return _streamReader.getFloatValue(); }
     public double getDoubleValue() throws IOException { return _streamReader.getDoubleValue(); }
+    public BigInteger getBigIntegerValue() throws IOException { return _streamReader.getBigIntegerValue(); }
+    public BigDecimal getBigDecimalValue() throws IOException { return _streamReader.getDecimalValue(); }
 
     public NumberType getNumberType() throws IOException { return _streamReader.getNumberType(); }
 

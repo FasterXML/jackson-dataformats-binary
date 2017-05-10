@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -235,14 +236,21 @@ public class NonBlockingByteArrayParser
             return _finishInt(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_LONG:
             return _finishLong(_pending64, _inputCopyLen);
-        case MINOR_VALUE_NUMBER_BIGINT:
-//            return _startBigInt(_minorState);
+
+        case MINOR_VALUE_NUMBER_BIGINT_LEN:
+            _finishBigIntLen(_pending32, _inputCopyLen);
+        case MINOR_VALUE_NUMBER_BIGINT_BODY:
+            _finishBigIntBody(_pending32, _inputCopyLen);
             break;
+
         case MINOR_VALUE_NUMBER_FLOAT:
             return _finishFloat(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_DOUBLE:
             return _finishDouble(_pending64, _inputCopyLen);
-        case MINOR_VALUE_NUMBER_BIGDEC:
+
+        case MINOR_VALUE_NUMBER_BIGDEC_SCALE:
+        case MINOR_VALUE_NUMBER_BIGDEC_LEN:
+        case MINOR_VALUE_NUMBER_BIGDEC_BODY:
 //            return _startBigDecimal(_minorState);
             break;
             
@@ -279,8 +287,11 @@ public class NonBlockingByteArrayParser
         case MINOR_VALUE_STRING_SHARED_2BYTE:
             return _handleSharedString(_pending32 + (_inputBuffer[_inputPtr++] & 0xFF));
 
-        case MINOR_VALUE_BINARY_RAW:
-        case MINOR_VALUE_BINARY_7BIT:
+        case MINOR_VALUE_BINARY_RAW_LEN:
+        case MINOR_VALUE_BINARY_RAW_BODY:
+
+        case MINOR_VALUE_BINARY_7BIT_LEN:
+        case MINOR_VALUE_BINARY_7BIT_BODY:
             break;
         default:
         }
@@ -389,7 +400,6 @@ public class NonBlockingByteArrayParser
             case 0x05:
                 return _startLong();
             case 0x06:
-                _majorState = MINOR_VALUE_NUMBER_BIGINT;
                 return _startBigInt();
             case 0x07: // illegal
                 break;
@@ -398,7 +408,6 @@ public class NonBlockingByteArrayParser
             case 0x09:
                 return _startDouble();
             case 0x0A:
-                _majorState = MINOR_VALUE_NUMBER_BIGDEC;
                 return _startBigDecimal();
             case 0x0B: // illegal
                 break;
@@ -1194,7 +1203,7 @@ VersionUtil.throwInternal();
     {
         // did not get it all; mark the state so we know where to return:
 //        _tokenIncomplete = true;
-        _minorState = MINOR_VALUE_BINARY_RAW;
+        _minorState = MINOR_VALUE_BINARY_RAW_LEN;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
@@ -1226,7 +1235,7 @@ VersionUtil.throwInternal();
     {
         // did not get it all; mark the state so we know where to return:
 //        _tokenIncomplete = true;
-        _majorState = MINOR_VALUE_BINARY_7BIT;
+        _majorState = MINOR_VALUE_BINARY_7BIT_LEN;
         _minorState = substate;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
@@ -1386,35 +1395,10 @@ VersionUtil.throwInternal();
     protected final JsonToken _startInt() throws IOException
     {
         // common case first: have all we need
-        int ptr = _inputPtr;
-        if ((ptr + 5) > _inputEnd) {
+        if ((_inputPtr + 5) > _inputEnd) {
             return _finishInt(0, 0);
         }
-        int value = _inputBuffer[ptr++];
-        int i;
-        if (value < 0) { // 6 bits
-            value &= 0x3F;
-        } else {
-            i = _inputBuffer[ptr++];
-            if (i >= 0) { // 13 bits
-                value = (value << 7) + i;
-                i = _inputBuffer[ptr++];
-                if (i >= 0) {
-                    value = (value << 7) + i;
-                    i = _inputBuffer[ptr++];
-                    if (i >= 0) {
-                        value = (value << 7) + i;
-                        // and then we must get negative
-                        i = _inputBuffer[ptr++];
-                        if (i >= 0) {
-                            _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
-                        }
-                    }
-                }
-            }
-            value = (value << 6) + (i & 0x3F);
-        }
-        _inputPtr = ptr;
+        int value = _decodeVInt();
         _numberInt = SmileUtil.zigzagDecode(value);
         _numTypesValid = NR_INT;
         _numberType = NumberType.INT;
@@ -1500,10 +1484,51 @@ VersionUtil.throwInternal();
 
     protected final JsonToken _startBigInt() throws IOException
     {
-         _minorState = MINOR_VALUE_NUMBER_BIGDEC;
+        if ((_inputPtr + 5) > _inputEnd) {
+            return _finishBigIntLen(0, 0);
+        }
+        int byteLen = _decodeVInt();
+        return _finishBigIntBody(byteLen, 0);
+    }
+
+    protected final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
+    {
+        while (_inputPtr < _inputEnd) {
+            int b = _inputBuffer[_inputPtr++];
+            if (b < 0) { // got it all; these are last 6 bits
+                value = (value << 6) | (b & 0x3F);
+                return _finishBigIntBody(value, 0);
+            }
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 5 ) {
+                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+            }
+            value = (value << 7) | b;
+        }
+        _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
+        _pending32 = value;
+        _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
+    protected final JsonToken _finishBigIntBody(int byteLen, int bytesRead) throws IOException
+    {
+        byte[] buf = _inputCopy;
+        if (bytesRead == 0) {
+            if (buf.length < byteLen) {
+                buf = Arrays.copyOf(buf, byteLen);
+                _inputCopy = buf;
+            }
+        }
+        int avail = _inputEnd - _inputPtr;
+        if (avail >= byteLen) {
+ // !!! TODO
+            
+        }
+// !!! TODO
+        return JsonToken.NOT_AVAILABLE;
+    }
+    
     /*
     private final boolean _finishBigInteger()
         throws IOException
@@ -1518,6 +1543,35 @@ VersionUtil.throwInternal();
     }
 */
 
+    private final int _decodeVInt() throws IOException
+    {
+        int ptr = _inputPtr;
+        int value = _inputBuffer[ptr++];
+        if (value < 0) { // 6 bits
+            _inputPtr = ptr;
+            return value & 0x3F;
+        }
+        int i = _inputBuffer[ptr++];
+        if (i >= 0) { // 13 bits
+            value = (value << 7) + i;
+            i = _inputBuffer[ptr++];
+            if (i >= 0) {
+                value = (value << 7) + i;
+                i = _inputBuffer[ptr++];
+                if (i >= 0) {
+                    value = (value << 7) + i;
+                    // and then we must get negative
+                    i = _inputBuffer[ptr++];
+                    if (i >= 0) {
+                        _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                    }
+                }
+            }
+        }
+        _inputPtr = ptr;
+        return (value << 6) + (i & 0x3F);
+    }
+    
     /*
     /**********************************************************************
     /* Internal methods: second-level parsing: numbers, integral
@@ -1600,7 +1654,7 @@ VersionUtil.throwInternal();
     protected final JsonToken _startBigDecimal() throws IOException
     {
         // !!! TBI
-        _minorState = MINOR_VALUE_NUMBER_BIGDEC;
+        _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 /*

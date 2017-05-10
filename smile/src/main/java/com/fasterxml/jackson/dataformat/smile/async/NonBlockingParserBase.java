@@ -63,17 +63,24 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected final static int MINOR_VALUE_NUMBER_LONG = 7;
     protected final static int MINOR_VALUE_NUMBER_FLOAT = 8;
     protected final static int MINOR_VALUE_NUMBER_DOUBLE = 9;
-    protected final static int MINOR_VALUE_NUMBER_BIGINT = 10;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC = 11;
 
-    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 12;
-    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 13;
-    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 14;
-    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 15;
-    protected final static int MINOR_VALUE_STRING_SHARED_2BYTE = 16;
+    protected final static int MINOR_VALUE_NUMBER_BIGINT_LEN = 10;
+    protected final static int MINOR_VALUE_NUMBER_BIGINT_BODY = 11;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_LEN = 12;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_SCALE = 13;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_BODY = 14;
 
-    protected final static int MINOR_VALUE_BINARY_RAW = 17;
-    protected final static int MINOR_VALUE_BINARY_7BIT = 18;
+    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 15;
+    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 16;
+    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 17;
+    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 18;
+    protected final static int MINOR_VALUE_STRING_SHARED_2BYTE = 19;
+
+    protected final static int MINOR_VALUE_BINARY_RAW_LEN = 20;
+    protected final static int MINOR_VALUE_BINARY_RAW_BODY = 21;
+
+    protected final static int MINOR_VALUE_BINARY_7BIT_LEN = 22;
+    protected final static int MINOR_VALUE_BINARY_7BIT_BODY = 23;
     
     /*
     /**********************************************************************
