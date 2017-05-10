@@ -70,7 +70,7 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 13;
     protected final static int MINOR_VALUE_STRING_LONG_ASCII = 14;
     protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 15;
-    protected final static int MINOR_VALUE_STRING_SHARED_LONG = 16;
+    protected final static int MINOR_VALUE_STRING_SHARED_2BYTE = 16;
 
     protected final static int MINOR_VALUE_BINARY_RAW = 17;
     protected final static int MINOR_VALUE_BINARY_7BIT = 18;
@@ -432,52 +432,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         return _mayContainRawBinary;
     }
 
-    /*
-    /**********************************************************************
-    /* JsonParser impl
-    /**********************************************************************
-     */
-
-    protected final JsonToken _handleSharedString(int index) throws IOException
-    {
-        if (index >= _seenStringValueCount) {
-            _reportInvalidSharedStringValue(index);
-        }
-        _textBuffer.resetWithString(_seenStringValues[index]);
-        return (_currToken = JsonToken.VALUE_STRING);
-    }
-
-    protected final void _addSeenStringValue(String v) throws IOException
-    {
-        if (_seenStringValueCount < _seenStringValues.length) {
-            _seenStringValues[_seenStringValueCount++] = v;
-            return;
-        }
-        _expandSeenStringValues(v);
-    }
-
-    private final void _expandSeenStringValues(String v)
-    {
-        String[] oldShared = _seenStringValues;
-        int len = oldShared.length;
-        String[] newShared;
-        if (len == 0) {
-            newShared = _smileBufferRecycler.allocSeenStringValuesBuffer();
-            if (newShared == null) {
-                newShared = new String[SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH];
-            }
-        } else if (len == SmileConstants.MAX_SHARED_STRING_VALUES) { // too many? Just flush...
-           newShared = oldShared;
-           _seenStringValueCount = 0; // could also clear, but let's not yet bother
-        } else {
-            int newSize = (len == SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_STRING_VALUES;
-            newShared = new String[newSize];
-            System.arraycopy(oldShared, 0, newShared, 0, oldShared.length);
-        }
-        _seenStringValues = newShared;
-        _seenStringValues[_seenStringValueCount++] = v;
-    }
-
     @Override
     public String getCurrentName() throws IOException
     {
@@ -703,6 +657,107 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     /**********************************************************************
      */
 
+    // Helper method for trying to find specified encoded UTF-8 byte sequence
+    // from symbol table; if successful avoids actual decoding to String
+    protected final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws IOException
+    {
+        // First: maybe we already have this name decoded?
+        if (len < 5) {
+            int q = inBuf[inPtr] & 0xFF;
+            if (--len > 0) {
+                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                if (--len > 0) {
+                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                    if (--len > 0) {
+                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                    }
+                }
+            }
+            _quad1 = q;
+            return _symbols.findName(q);
+        }
+        if (len < 9) {
+            // First quadbyte is easy
+            int q1 = (inBuf[inPtr] & 0xFF) << 8;
+            q1 += (inBuf[++inPtr] & 0xFF);
+            q1 <<= 8;
+            q1 += (inBuf[++inPtr] & 0xFF);
+            q1 <<= 8;
+            q1 += (inBuf[++inPtr] & 0xFF);
+            int q2 = (inBuf[++inPtr] & 0xFF);
+            len -= 5;
+            if (len > 0) {
+                q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
+                if (--len > 0) {
+                    q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
+                    if (--len > 0) {
+                        q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
+                    }
+                }
+            }
+            _quad1 = q1;
+            _quad2 = q2;
+            return _symbols.findName(q1, q2);
+        }
+        return _findDecodedMedium(inBuf, inPtr, len);
+    }
+    
+    // Method for locating names longer than 8 bytes (in UTF-8)
+    private final String _findDecodedMedium(byte[] inBuf, int inPtr, int len) throws IOException
+    {
+        // first, need enough buffer to store bytes as ints:
+        {
+            int bufLen = (len + 3) >> 2;
+            if (bufLen > _quadBuffer.length) {
+                _quadBuffer = _growArrayTo(_quadBuffer, bufLen);
+            }
+        }
+        // then decode, full quads first
+        int offset = 0;
+        do {
+            int q = (inBuf[inPtr++] & 0xFF) << 8;
+            q |= inBuf[inPtr++] & 0xFF;
+            q <<= 8;
+            q |= inBuf[inPtr++] & 0xFF;
+            q <<= 8;
+            q |= inBuf[inPtr++] & 0xFF;
+            _quadBuffer[offset++] = q;
+        } while ((len -= 4) > 3);
+        // and then leftovers
+        if (len > 0) {
+            int q = inBuf[inPtr] & 0xFF;
+            if (--len > 0) {
+                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                if (--len > 0) {
+                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                }
+            }
+            _quadBuffer[offset++] = q;
+        }
+        return _symbols.findName(_quadBuffer, offset);
+    }
+    
+    private static int[] _growArrayTo(int[] arr, int minSize) {
+        final int size = minSize+4;
+        if (arr == null) {
+            return new int[size];
+        }
+        return Arrays.copyOf(arr, size);
+    }
+
+    private int _quad1, _quad2;
+    protected final String _addDecodedToSymbols(int len, String name)
+    {
+        if (len < 5) {
+            return _symbols.addName(name, _quad1, 0);
+        }
+        if (len < 9) {
+            return _symbols.addName(name, _quad1, _quad2);
+        }
+        int qlen = (len + 3) >> 2;
+        return _symbols.addName(name, _quadBuffer, qlen);
+    }
+    
     /**
      * Method called to try to expand shared name area to fit one more potentially
      * shared String. If area is already at its biggest size, will just clear
@@ -730,100 +785,10 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
 
     /*
     /**********************************************************************
-    /* Internal methods, UTF8 decoding
+    /* Internal methods, state changes
     /**********************************************************************
      */
-
-    /*
-    private final int _decodeUtf8_2(int c)
-        throws IOException
-    {
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        return ((c & 0x1F) << 6) | (d & 0x3F);
-    }
-
-    private final int _decodeUtf8_3(int c1)
-        throws IOException
-    {
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        c1 &= 0x0F;
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        int c = (c1 << 6) | (d & 0x3F);
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = (c << 6) | (d & 0x3F);
-        return c;
-    }
-
-    private final int _decodeUtf8_3fast(int c1)
-        throws IOException
-    {
-        c1 &= 0x0F;
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        int c = (c1 << 6) | (d & 0x3F);
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = (c << 6) | (d & 0x3F);
-        return c;
-    }
-
-    // @return Character value <b>minus 0x10000</c>; this so that caller
-    //    can readily expand it to actual surrogates
-    private final int _decodeUtf8_4(int c)
-        throws IOException
-    {
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = ((c & 0x07) << 6) | (d & 0x3F);
-
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = (c << 6) | (d & 0x3F);
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-
-        // note: won't change it to negative here, since caller
-        // already knows it'll need a surrogate
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
-    }
-*/
-
+    
     /**
      * Helper method called at point when all input has been exhausted and
      * input feeder has indicated no more input will be forthcoming.
@@ -835,6 +800,54 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         }
         close();
         return (_currToken = null);
+    }
+
+    protected final JsonToken _valueComplete(JsonToken t) throws IOException
+    {
+        _majorState = _majorStateAfterValue;
+        _currToken = t;
+        return t;
+    }
+
+    protected final JsonToken _handleSharedString(int index) throws IOException
+    {
+        if (index >= _seenStringValueCount) {
+            _reportInvalidSharedStringValue(index);
+        }
+        _textBuffer.resetWithString(_seenStringValues[index]);
+        return _valueComplete(JsonToken.VALUE_STRING);
+        
+    }
+
+    protected final void _addSeenStringValue(String v) throws IOException
+    {
+        if (_seenStringValueCount < _seenStringValues.length) {
+            _seenStringValues[_seenStringValueCount++] = v;
+            return;
+        }
+        _expandSeenStringValues(v);
+    }
+
+    private final void _expandSeenStringValues(String v)
+    {
+        String[] oldShared = _seenStringValues;
+        int len = oldShared.length;
+        String[] newShared;
+        if (len == 0) {
+            newShared = _smileBufferRecycler.allocSeenStringValuesBuffer();
+            if (newShared == null) {
+                newShared = new String[SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH];
+            }
+        } else if (len == SmileConstants.MAX_SHARED_STRING_VALUES) { // too many? Just flush...
+           newShared = oldShared;
+           _seenStringValueCount = 0; // could also clear, but let's not yet bother
+        } else {
+            int newSize = (len == SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_STRING_VALUES;
+            newShared = new String[newSize];
+            System.arraycopy(oldShared, 0, newShared, 0, oldShared.length);
+        }
+        _seenStringValues = newShared;
+        _seenStringValues[_seenStringValueCount++] = v;
     }
 
     /*

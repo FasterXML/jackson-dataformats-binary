@@ -15,9 +15,10 @@ public class SimpleStringArrayTest extends AsyncTestBase
         F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
     }
 
+    private final static String str0to9 = "1234567890";
+    
     public void testShortAsciiStrings() throws IOException
     {
-        final String str0to9 = "1234567890";
         final String[] input = new String[] {
                 "Test", "", "1",
                 // 60 chars, to stay short
@@ -43,7 +44,6 @@ public class SimpleStringArrayTest extends AsyncTestBase
 
     public void testShortUnicodeStrings() throws IOException
     {
-        final String str0to9 = "1234567890";
         final String repeat = "Test: "+UNICODE_2BYTES;
         final String[] input = new String[] {
                 repeat, "",
@@ -66,6 +66,50 @@ public class SimpleStringArrayTest extends AsyncTestBase
 
         // then with some offsets:
         _testStrings(f, input, data, 1, 100);
+        _testStrings(f, input, data, 1, 3);
+        _testStrings(f, input, data, 1, 1);
+    }
+
+    public void testLongAsciiStrings() throws IOException
+    {
+        final String[] input = new String[] {
+                // ~100 chars for long(er) content
+                String.format("%s %s %s %s %s %s %s %s %s %s %s %s",
+                        str0to9,str0to9,"...",str0to9,"/", str0to9,
+                        str0to9,"",str0to9,str0to9,"...",str0to9)
+        };
+        SmileFactory f = F_REQ_HEADERS;
+        byte[] data = _stringDoc(f, input);
+
+        // first: require headers, no offsets
+        _testStrings(f, input, data, 0, 9000);
+        _testStrings(f, input, data, 0, 3);
+        _testStrings(f, input, data, 0, 1);
+
+        // then with some offsets:
+        _testStrings(f, input, data, 1, 9000);
+        _testStrings(f, input, data, 1, 3);
+        _testStrings(f, input, data, 1, 1);
+    }
+
+    public void testLongUnicodeStrings() throws IOException
+    {
+        final String[] input = new String[] {
+                // ~100 chars for long(er) content
+                String.format("%s %s %s %s %s %s %s %s %s %s %s %s",
+                        str0to9,str0to9,UNICODE_2BYTES,str0to9,UNICODE_3BYTES, str0to9,
+                        str0to9,UNICODE_3BYTES,str0to9,str0to9,UNICODE_2BYTES,str0to9)
+        };
+        SmileFactory f = F_REQ_HEADERS;
+        byte[] data = _stringDoc(f, input);
+
+        // first: require headers, no offsets
+        _testStrings(f, input, data, 0, 9000);
+        _testStrings(f, input, data, 0, 3);
+        _testStrings(f, input, data, 0, 1);
+
+        // then with some offsets:
+        _testStrings(f, input, data, 1, 9000);
         _testStrings(f, input, data, 1, 3);
         _testStrings(f, input, data, 1, 1);
     }

@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -272,9 +271,13 @@ public class NonBlockingByteArrayParser
             return JsonToken.NOT_AVAILABLE;
         
         case MINOR_VALUE_STRING_LONG_ASCII:
+            return _finishLongASCII();
+
         case MINOR_VALUE_STRING_LONG_UNICODE:
-        case MINOR_VALUE_STRING_SHARED_LONG:
-            break;
+            return _finishLongUnicode();
+
+        case MINOR_VALUE_STRING_SHARED_2BYTE:
+            return _handleSharedString(_pending32 + (_inputBuffer[_inputPtr++] & 0xFF));
 
         case MINOR_VALUE_BINARY_RAW:
         case MINOR_VALUE_BINARY_7BIT:
@@ -433,8 +436,16 @@ public class NonBlockingByteArrayParser
             case 0x0D:
             case 0x0E:
             case 0x0F:
-                return _startLongSharedString();
-//                return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
+                {
+                    ch = (ch & 0x3) << 8;
+                    if (_inputPtr < _inputEnd) {
+                        return _handleSharedString(ch + (_inputBuffer[_inputPtr++] & 0xFF));
+                    }
+                }
+                // did not get it all; mark the state so we know where to return:
+                _pending32 = ch;
+                _minorState = MINOR_VALUE_STRING_SHARED_2BYTE;
+                return (_currToken = JsonToken.NOT_AVAILABLE);
             case 0x18: // START_ARRAY
                 return _startArrayScope();
             case 0x19: // END_ARRAY
@@ -770,110 +781,10 @@ VersionUtil.throwInternal();
     }
     */
 
-    // Helper method for trying to find specified encoded UTF-8 byte sequence
-    // from symbol table; if successful avoids actual decoding to String
-    private final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws IOException
-    {
-        // First: maybe we already have this name decoded?
-        if (len < 5) {
-            int q = inBuf[inPtr] & 0xFF;
-            if (--len > 0) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (--len > 0) {
-                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    }
-                }
-            }
-            _quad1 = q;
-            return _symbols.findName(q);
-        }
-        if (len < 9) {
-            // First quadbyte is easy
-            int q1 = (inBuf[inPtr] & 0xFF) << 8;
-            q1 += (inBuf[++inPtr] & 0xFF);
-            q1 <<= 8;
-            q1 += (inBuf[++inPtr] & 0xFF);
-            q1 <<= 8;
-            q1 += (inBuf[++inPtr] & 0xFF);
-            int q2 = (inBuf[++inPtr] & 0xFF);
-            len -= 5;
-            if (len > 0) {
-                q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
-                    q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (--len > 0) {
-                        q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                    }
-                }
-            }
-            _quad1 = q1;
-            _quad2 = q2;
-            return _symbols.findName(q1, q2);
-        }
-        return _findDecodedMedium(inBuf, inPtr, len);
-    }
-    
-    // Method for locating names longer than 8 bytes (in UTF-8)
-    private final String _findDecodedMedium(byte[] inBuf, int inPtr, int len) throws IOException
-    {
-        // first, need enough buffer to store bytes as ints:
-        {
-            int bufLen = (len + 3) >> 2;
-            if (bufLen > _quadBuffer.length) {
-                _quadBuffer = _growArrayTo(_quadBuffer, bufLen);
-            }
-        }
-        // then decode, full quads first
-        int offset = 0;
-        do {
-            int q = (inBuf[inPtr++] & 0xFF) << 8;
-            q |= inBuf[inPtr++] & 0xFF;
-            q <<= 8;
-            q |= inBuf[inPtr++] & 0xFF;
-            q <<= 8;
-            q |= inBuf[inPtr++] & 0xFF;
-            _quadBuffer[offset++] = q;
-        } while ((len -= 4) > 3);
-        // and then leftovers
-        if (len > 0) {
-            int q = inBuf[inPtr] & 0xFF;
-            if (--len > 0) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                }
-            }
-            _quadBuffer[offset++] = q;
-        }
-        return _symbols.findName(_quadBuffer, offset);
-    }
-    
-    private static int[] _growArrayTo(int[] arr, int minSize) {
-        final int size = minSize+4;
-        if (arr == null) {
-            return new int[size];
-        }
-        return Arrays.copyOf(arr, size);
-    }
-
-    private int _quad1, _quad2;
-    protected final String _addDecodedToSymbols(int len, String name)
-    {
-        if (len < 5) {
-            return _symbols.addName(name, _quad1, 0);
-        }
-        if (len < 9) {
-            return _symbols.addName(name, _quad1, _quad2);
-        }
-        int qlen = (len + 3) >> 2;
-        return _symbols.addName(name, _quadBuffer, qlen);
-    }
 
     /*
     /**********************************************************************
-    /* Internal methods: second-level parsing: Strings
+    /* Internal methods: second-level parsing: Strings, short (length-prefix)
     /**********************************************************************
      */
 
@@ -919,17 +830,18 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
+    /*
+    /**********************************************************************
+    /* Internal methods: second-level parsing: Strings, long (end marker)
+    /**********************************************************************
+     */
+
     private final JsonToken _startLongASCII() throws IOException
     {
-        return null;
-        /*
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-        main_loop:
-        while (true) {
-            if (_inputPtr >= _inputEnd) {
-                _loadMoreGuaranteed();
-            }
+
+        while (_inputPtr < _inputEnd) {
             int inPtr = _inputPtr;
             int left = _inputEnd - inPtr;
             if (outPtr >= outBuf.length) {
@@ -941,25 +853,49 @@ VersionUtil.throwInternal();
                 byte b = _inputBuffer[inPtr++];
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
                     _inputPtr = inPtr;
-                    break main_loop;
+                    _textBuffer.setCurrentLength(outPtr);
+                    return _valueComplete(JsonToken.VALUE_STRING);
                 }
                 outBuf[outPtr++] = (char) b;                    
             } while (--left > 0);
             _inputPtr = inPtr;
         }
+        // denote current length; no partial input to save
         _textBuffer.setCurrentLength(outPtr);
-        */
+        _minorState = MINOR_VALUE_STRING_LONG_ASCII;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+
+    private final JsonToken _finishLongASCII() throws IOException
+    {
+        char[] outBuf = _textBuffer.getBufferWithoutReset();
+        int outPtr = _textBuffer.getCurrentSegmentSize();
+
+        while (_inputPtr < _inputEnd) {
+            int inPtr = _inputPtr;
+            int left = _inputEnd - inPtr;
+            if (outPtr >= outBuf.length) {
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+            }
+            left = Math.min(left, outBuf.length - outPtr);
+            do {
+                byte b = _inputBuffer[inPtr++];
+                if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
+                    _inputPtr = inPtr;
+                    _textBuffer.setCurrentLength(outPtr);
+                    return _valueComplete(JsonToken.VALUE_STRING);
+                }
+                outBuf[outPtr++] = (char) b;                    
+            } while (--left > 0);
+            _inputPtr = inPtr;
+        }
+        // denote current length; no partial input to save
+        _textBuffer.setCurrentLength(outPtr);
+        return JsonToken.NOT_AVAILABLE;
     }
 
     protected final JsonToken _startLongUnicode() throws IOException
-    {
-        // did not get it all; mark the state so we know where to return:
-        _minorState = MINOR_VALUE_STRING_LONG_UNICODE;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
-    }
-    
-/*
-    private final void _decodeLongUnicode() throws IOException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -967,15 +903,200 @@ VersionUtil.throwInternal();
         int c;
         final byte[] inputBuffer = _inputBuffer;
 
+        // NOTE: caller guarantees there is at least one byte available at this point!
+
         main_loop:
         while (true) {
             // First the tight ASCII loop:
             ascii_loop:
             while (true) {
                 int ptr = _inputPtr;
+                if (outPtr >= outBuf.length) {
+                    outBuf = _textBuffer.finishCurrentSegment();
+                    outPtr = 0;
+                }
+                int max = _inputEnd;
+                {
+                    int max2 = ptr + (outBuf.length - outPtr);
+                    if (max2 < max) {
+                        max = max2;
+                    }
+                }
+                while (ptr < max) {
+                    c = inputBuffer[ptr++] & 0xFF;
+                    if (codes[c] != 0) {
+                        _inputPtr = ptr;
+                        break ascii_loop;
+                    }
+                    outBuf[outPtr++] = (char) c;
+                }
+                _inputPtr = ptr;
                 if (ptr >= _inputEnd) {
-                    _loadMoreGuaranteed();
-                    ptr = _inputPtr;
+                    break main_loop;
+                }
+            }
+            // Ok: end marker, escape or multi-byte?
+            if (c == SmileConstants.INT_MARKER_END_OF_STRING) {
+                _textBuffer.setCurrentLength(outPtr);
+                return _valueComplete(JsonToken.VALUE_STRING);
+            }
+
+            // otherwise need at least one more byte, so:
+            if (_inputPtr >= _inputEnd) {
+                _pending32 = c;
+                _inputCopyLen = 1;
+                break main_loop;
+            }
+            int d = _inputBuffer[_inputPtr++];
+
+            switch (codes[c]) {
+            case 1: // 2-byte UTF
+                c = _decodeUTF8_2(c, d);
+                break;
+            case 2: // 3-byte UTF
+                if (_inputPtr >= _inputEnd) {
+                    _pending32 = c;
+                    _inputCopy[0] = (byte) d;
+                    _inputCopyLen = 2;
+                    break main_loop;
+                }
+                c = _decodeUTF8_3(c, d);
+                break;
+            case 3: // 4-byte UTF
+                if ((_inputPtr + 1) >= _inputEnd) {
+                    _pending32 = c;
+                    _inputCopy[0] = (byte) d;
+                    if (_inputPtr >= _inputEnd) {
+                        _inputCopyLen = 2;
+                    } else {
+                        _inputCopy[1] = _inputBuffer[_inputPtr++];
+                        _inputCopyLen = 3;
+                    }
+                    break main_loop;
+                }
+                c = _decodeUTF8_4(c, d);
+                // Let's add first part right away:
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
+                if (outPtr >= outBuf.length) {
+                    outBuf = _textBuffer.finishCurrentSegment();
+                    outPtr = 0;
+                }
+                c = 0xDC00 | (c & 0x3FF);
+                // And let the other char output down below
+                break;
+            default:
+                // Is this good enough error message?
+                _reportInvalidChar(c);
+            }
+            // Need more room?
+            if (outPtr >= outBuf.length) {
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+            }
+            // Ok, let's add char to output:
+            outBuf[outPtr++] = (char) c;
+            if (_inputPtr >= _inputEnd) {
+                _inputCopyLen = 0; // no partially decoded UTF-8 codepoint
+                break;
+            }
+        }
+        _textBuffer.setCurrentLength(outPtr);
+        _minorState = MINOR_VALUE_STRING_LONG_UNICODE;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+
+    private final JsonToken _finishLongUnicode() throws IOException
+    {
+        final int[] codes = SmileConstants.sUtf8UnitLengths;
+        int c;
+        final byte[] inputBuffer = _inputBuffer;
+        char[] outBuf = _textBuffer.getBufferWithoutReset();
+        int outPtr = _textBuffer.getCurrentSegmentSize();
+
+        // First things first: did we have partially decoded multi-byte UTF-8 character?
+        if (_inputCopyLen > 0) {
+            // NOTE: first byte stored in `_pending32` and we know we got one more byte for sure
+            int next = _inputBuffer[_inputPtr++];
+            switch (codes[_pending32]) {
+            case 1: // 2-byte UTF
+                c = _decodeUTF8_2(_pending32, next);
+                break;
+            case 2: // 3-byte UTF: did we have one or two bytes?
+                if (_inputCopyLen == 1) {
+                    if (_inputPtr >= _inputEnd) {
+                        _inputCopy[0] = (byte) next;
+                        _inputCopyLen = 2;
+                        return JsonToken.NOT_AVAILABLE;
+                    }
+                    c = _decodeUTF8_3(_pending32, next, _inputBuffer[_inputPtr++]);
+                } else {
+                    c = _decodeUTF8_3(_pending32, _inputCopy[0], next);
+                }
+                break;
+            case 3: // 4-byte UTF; had 1/2/3 bytes, now got 2/3/4
+                switch (_inputCopyLen) {
+                case 1:
+                    if (_inputPtr >= _inputEnd) {
+                        _inputCopy[0] = (byte) next;
+                        _inputCopyLen = 2;
+                        return JsonToken.NOT_AVAILABLE;
+                    }
+                    int i3 = _inputBuffer[_inputPtr++];
+                    if (_inputPtr >= _inputEnd) {
+                        _inputCopy[0] = (byte) next;
+                        _inputCopy[1] = (byte) i3;
+                        _inputCopyLen = 3;
+                        return JsonToken.NOT_AVAILABLE;
+                    }
+                    c = _decodeUTF8_4(_pending32, next, i3, _inputBuffer[_inputPtr++]);
+                    break;
+                case 2:
+                    if (_inputPtr >= _inputEnd) {
+                        _inputCopy[1] = (byte) next;
+                        _inputCopyLen = 3;
+                        return JsonToken.NOT_AVAILABLE;
+                    }
+                    c = _decodeUTF8_4(_pending32, _inputCopy[0], next, _inputBuffer[_inputPtr++]);
+                    break;
+                case 3:
+                default:
+                    c = _decodeUTF8_4(_pending32, _inputCopy[0], _inputCopy[1], _inputBuffer[_inputPtr++]);
+                    break;
+                }
+                // Let's add first part right away:
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
+                if (outPtr >= outBuf.length) {
+                    outBuf = _textBuffer.finishCurrentSegment();
+                    outPtr = 0;
+                }
+                c = 0xDC00 | (c & 0x3FF);
+                // And let the other char output down below
+                break;
+            default:
+                // Is this good enough error message?
+                _reportInvalidChar(_pending32);
+                c = 0;
+            }
+            _inputCopyLen = 0; // just for safety
+            // Need more room?
+            if (outPtr >= outBuf.length) {
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+            }
+            // Ok, let's add char to output:
+            outBuf[outPtr++] = (char) c;
+        }
+
+        main_loop:
+        while (true) {
+            // First the tight ASCII loop:
+            ascii_loop:
+            while (true) {
+                int ptr = _inputPtr;
+                // Since we have no guarantee for any content, check it first
+                if (ptr >= _inputEnd) {
+                    _inputCopyLen = 0; // no partially decoded UTF-8 codepoint
+                    break main_loop;
                 }
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
@@ -989,7 +1110,7 @@ VersionUtil.throwInternal();
                     }
                 }
                 while (ptr < max) {
-                    c = (int) inputBuffer[ptr++] & 0xFF;
+                    c = inputBuffer[ptr++] & 0xFF;
                     if (codes[c] != 0) {
                         _inputPtr = ptr;
                         break ascii_loop;
@@ -1000,22 +1121,44 @@ VersionUtil.throwInternal();
             }
             // Ok: end marker, escape or multi-byte?
             if (c == SmileConstants.INT_MARKER_END_OF_STRING) {
+                _textBuffer.setCurrentLength(outPtr);
+                return _valueComplete(JsonToken.VALUE_STRING);
+            }
+
+            // otherwise need at least one more byte, so:
+            if (_inputPtr >= _inputEnd) {
+                _pending32 = c;
+                _inputCopyLen = 1;
                 break main_loop;
             }
+            int d = _inputBuffer[_inputPtr++];
 
             switch (codes[c]) {
             case 1: // 2-byte UTF
-                c = _decodeUtf8_2(c);
+                c = _decodeUTF8_2(c, d);
                 break;
             case 2: // 3-byte UTF
-                if ((_inputEnd - _inputPtr) >= 2) {
-                    c = _decodeUtf8_3fast(c);
-                } else {
-                    c = _decodeUtf8_3(c);
+                if (_inputPtr >= _inputEnd) {
+                    _pending32 = c;
+                    _inputCopy[0] = (byte) d;
+                    _inputCopyLen = 2;
+                    break main_loop;
                 }
+                c = _decodeUTF8_3(c, d);
                 break;
             case 3: // 4-byte UTF
-                c = _decodeUtf8_4(c);
+                if ((_inputPtr + 1) >= _inputEnd) {
+                    _pending32 = c;
+                    _inputCopy[0] = (byte) d;
+                    if (_inputPtr >= _inputEnd) {
+                        _inputCopyLen = 2;
+                    } else {
+                        _inputCopy[1] = _inputBuffer[_inputPtr++];
+                        _inputCopyLen = 3;
+                    }
+                    break main_loop;
+                }
+                c = _decodeUTF8_4(c, d);
                 // Let's add first part right away:
                 outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 if (outPtr >= outBuf.length) {
@@ -1038,17 +1181,15 @@ VersionUtil.throwInternal();
             outBuf[outPtr++] = (char) c;
         }
         _textBuffer.setCurrentLength(outPtr);
-    }
-     */
-    
-    protected final JsonToken _startLongSharedString() throws IOException
-    {
-        // did not get it all; mark the state so we know where to return:
-//        _tokenIncomplete = true;
-        _minorState = MINOR_VALUE_STRING_SHARED_LONG;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return JsonToken.NOT_AVAILABLE;
     }
 
+    /*
+    /**********************************************************************
+    /* Internal methods: second-level parsing: Binary
+    /**********************************************************************
+     */
+    
     protected final JsonToken _startRawBinary() throws IOException
     {
         // did not get it all; mark the state so we know where to return:
@@ -1059,8 +1200,7 @@ VersionUtil.throwInternal();
 
 /*
 
-    private final void _finishRawBinary()
-        throws IOException
+    private final void _finishRawBinary() throws IOException
     {
         int byteLen = _readUnsignedVInt();
         _binaryValue = new byte[byteLen];
@@ -1142,6 +1282,83 @@ VersionUtil.throwInternal();
         return result;
     }
      */
+
+    /*
+    /**********************************************************************
+    /* Internal methods, UTF8 decoding
+    /**********************************************************************
+     */
+
+    private final int _decodeUTF8_2(int c, int d) throws IOException
+    {
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        return ((c & 0x1F) << 6) | (d & 0x3F);
+    }
+
+    private final int _decodeUTF8_3(int c, int d) throws IOException
+    {
+        c &= 0x0F;
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = (c << 6) | (d & 0x3F);
+        int e = _inputBuffer[_inputPtr++];
+        if ((e & 0xC0) != 0x080) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
+        }
+        return (c << 6) | (e & 0x3F);
+    }
+
+    private final int _decodeUTF8_3(int c, int d, int e) throws IOException
+    {
+        c &= 0x0F;
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = (c << 6) | (d & 0x3F);
+        if ((e & 0xC0) != 0x080) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
+        }
+        return (c << 6) | (e & 0x3F);
+    }
+
+    // @return Character value <b>minus 0x10000</c>; this so that caller
+    //    can readily expand it to actual surrogates
+    private final int _decodeUTF8_4(int c, int d) throws IOException
+    {
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = ((c & 0x07) << 6) | (d & 0x3F);
+        d = (int) _inputBuffer[_inputPtr++];
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = (c << 6) | (d & 0x3F);
+        d = (int) _inputBuffer[_inputPtr++];
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        return ((c << 6) | (d & 0x3F)) - 0x10000;
+    }
+
+    private final int _decodeUTF8_4(int c, int d, int e, int f) throws IOException
+    {
+        if ((d & 0xC0) != 0x080) {
+            _reportInvalidOther(d & 0xFF, _inputPtr);
+        }
+        c = ((c & 0x07) << 6) | (d & 0x3F);
+        if ((e & 0xC0) != 0x080) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
+        }
+        c = (c << 6) | (e & 0x3F);
+        if ((f & 0xC0) != 0x080) {
+            _reportInvalidOther(f & 0xFF, _inputPtr);
+        }
+        return ((c << 6) | (f & 0x3F)) - 0x10000;
+    }
 
     /*
     /**********************************************************************
@@ -1639,13 +1856,6 @@ VersionUtil.throwInternal();
         _majorState = st;
         _majorStateAfterValue = st;
         return (_currToken = JsonToken.END_OBJECT);
-    }
-
-    private final JsonToken _valueComplete(JsonToken t) throws IOException
-    {
-        _majorState = _majorStateAfterValue;
-        _currToken = t;
-        return t;
     }
 
     /*
