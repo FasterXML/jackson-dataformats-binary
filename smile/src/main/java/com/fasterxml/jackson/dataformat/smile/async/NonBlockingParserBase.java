@@ -7,19 +7,15 @@ import java.lang.ref.SoftReference;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
-    extends ParserBase
+    extends SmileParserBase
     implements NonBlockingParser<F>
 {
-    protected final static byte[] NO_BYTES = new byte[0];
-    protected final static int[] NO_INTS = new int[0];
-    protected final static String[] NO_STRINGS = new String[0];
-
     /*
     /**********************************************************************
     /* Major state constants
@@ -205,8 +201,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      */
     protected int _inputCopyLen;
 
-    protected float _numberFloat;
-
     /**
      * Temporary storage for 32-bit values (int, float), as well as length markers
      * for length-prefixed values.
@@ -217,8 +211,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      * For 64-bit values, we may use this for combining values
      */
     protected long _pending64;
-
-    protected NumberType _numberType;
 
     /*
     /**********************************************************************
@@ -243,13 +235,11 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     public NonBlockingParserBase(IOContext ctxt, int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(ctxt, parserFeatures);        
+        super(ctxt, parserFeatures, smileFeatures, sym);        
         _symbols = sym;
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
         _inputCopy = ctxt.allocReadIOBuffer(500);
         
-        _tokenInputRow = -1;
-        _tokenInputCol = -1;
         _smileBufferRecycler = _smileBufferRecycler();
 
         _currToken = null;
@@ -268,38 +258,15 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         throw new UnsupportedOperationException("Can not use ObjectMapper with non-blocking parser");
     }
 
-    protected final static SmileBufferRecycler<String> _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler<String>> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler<String> br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler<String>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<String>>(br));
-        }
-        return br;
-    }
-
     /**
      * @since 2.9
      */
     @Override
     public boolean canParseAsync() { return true; }
 
-    /*                                                                                       
-    /**********************************************************************
-    /* Versioned                                                                             
-    /**********************************************************************
-     */
-
-    @Override
-    public Version version() {
-        return PackageVersion.VERSION;
-    }
-
     /*
     /**********************************************************
-    /* Overridden methods
+    /* Abstract methods from JsonParser
     /**********************************************************
      */
 
@@ -316,51 +283,20 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         return null;
     }
 
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
     @Override
-    public JsonLocation getTokenLocation()
-    {
-        // token location is correctly managed...
-        return new JsonLocation(_ioContext.getSourceReference(),
-                _tokenInputTotal, // bytes
-                -1, -1, (int) _tokenInputTotal); // char offset, line, column
-    }   
-
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
-    @Override
-    public JsonLocation getCurrentLocation()
-    {
-        final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.getSourceReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
+    protected void _closeInput() throws IOException {
+        // nothing to do here
     }
 
     /*
     /**********************************************************************
-    /* Low-level reading, other
+    /* Abstract methods from SmileParserBase
     /**********************************************************************
      */
 
-    /**
-     * Helper method that will try to load at least specified number bytes in
-     * input buffer, possible moving existing data around if necessary
-     */
-    protected final boolean _loadToHaveAtLeast(int minAvailable) throws IOException
-    {
-        _throwInternal();
-        return false;
-    }
-    
     @Override
-    protected void _closeInput() throws IOException {
-        // nothing to do here
+    protected void _parseNumericValue() throws IOException {
+        VersionUtil.throwInternal();
     }
     
     /*
@@ -368,14 +304,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     /* Overridden methods
     /**********************************************************************
      */
-
-    @Override
-    public void close() throws IOException
-    {
-        super.close();
-        // Merge found symbols, if any:
-        _symbols.release();
-    }
 
     @Override
     public boolean hasTextCharacters()
@@ -399,56 +327,13 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      * separately (if need be).
      */
     @Override
-    protected void _releaseBuffers() throws IOException
+    protected void _releaseBuffers2()
     {
-        super._releaseBuffers();
-        {
-            byte[] b = _inputCopy;
-            if (b != null) {
-                _inputCopy = null;
-                _ioContext.releaseReadIOBuffer(b);
-            }
+        byte[] b = _inputCopy;
+        if (b != null) {
+            _inputCopy = null;
+            _ioContext.releaseReadIOBuffer(b);
         }
-        {
-            String[] nameBuf = _seenNames;
-            if (nameBuf != null && nameBuf.length > 0) {
-                _seenNames = null;
-                // Need to clear the buffer;
-                // but we only need to clear up to count as it is not a hash area
-                if (_seenNameCount > 0) {
-                    Arrays.fill(nameBuf, 0, _seenNameCount, null);
-                }
-                _smileBufferRecycler.releaseSeenNamesBuffer(nameBuf);
-            }
-        }
-        {
-            String[] valueBuf = _seenStringValues;
-            if (valueBuf != null && valueBuf.length > 0) {
-                _seenStringValues = null;
-                // Need to clear the buffer;
-                // but we only need to clear up to count as it is not a hash area
-                if (_seenStringValueCount > 0) {
-                    Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
-                }
-                _smileBufferRecycler.releaseSeenStringValuesBuffer(valueBuf);
-            }
-        }
-    }
-    
-    /*
-    /**********************************************************************
-    /* Extended API
-    /**********************************************************************
-     */
-
-    public boolean mayContainRawBinary() {
-        return _mayContainRawBinary;
-    }
-
-    @Override
-    public String getCurrentName() throws IOException
-    {
-        return _parsingContext.getCurrentName();
     }
 
     /*
@@ -585,42 +470,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     /**********************************************************************
      */
 
-    @Override
-    public NumberType getNumberType() throws IOException {
-        _checkNumericValue();
-        return _numberType;
-    }
-
-    @Override
-    public float getFloatValue() throws IOException
-    {
-        if ((_numTypesValid & NR_FLOAT) == 0) {
-            _checkNumericValue();
-            convertNumberToFloat();
-        }
-        return _numberFloat;
-    }
-
-    protected final void convertNumberToFloat() throws IOException
-    {
-        // Note: this MUST start with more accurate representations, since we don't know which
-        //  value is the original one (others get generated when requested)
-        if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            _numberFloat = _numberBigDecimal.floatValue();
-        } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            _numberFloat = _numberBigInt.floatValue();
-        } else if ((_numTypesValid & NR_DOUBLE) != 0) {
-            _numberFloat = (float) _numberDouble;
-        } else if ((_numTypesValid & NR_LONG) != 0) {
-            _numberFloat = (float) _numberLong;
-        } else if ((_numTypesValid & NR_INT) != 0) {
-            _numberFloat = (float) _numberInt;
-        } else {
-            _throwInternal();
-        }
-        _numTypesValid |= NR_FLOAT;
-    }
-    
     protected final void _checkNumericValue() throws IOException
     {
         // Int or float?

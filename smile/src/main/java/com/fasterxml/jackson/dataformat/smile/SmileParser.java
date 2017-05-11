@@ -1,19 +1,17 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_END_OF_STRING;
 
-public class SmileParser extends ParserBase
+public class SmileParser extends SmileParserBase
 {
     /**
      * Enumeration that defines all togglable features for Smile generators.
@@ -57,10 +55,6 @@ public class SmileParser extends ParserBase
         @Override public boolean enabledIn(int flags) { return (flags & getMask()) != 0; }    
     }
 
-    private final static int[] NO_INTS = new int[0];
-
-    private final static String[] NO_STRINGS = new String[0];
-
     /*
     /**********************************************************
     /* Configuration
@@ -71,21 +65,6 @@ public class SmileParser extends ParserBase
      * Codec used for data binding when (if) requested.
      */
     protected ObjectCodec _objectCodec;
-
-    /**
-     * Flag that indicates whether content can legally have raw (unquoted)
-     * binary data. Since this information is included both in header and
-     * in actual binary data blocks there is redundancy, and we want to
-     * ensure settings are compliant. Using application may also want to
-     * know this setting in case it does some direct (random) access.
-     */
-    protected boolean _mayContainRawBinary;
-
-    /**
-     * Helper object used for low-level recycling of Smile-generator
-     * specific buffers.
-     */
-    final protected SmileBufferRecycler<String> _smileBufferRecycler;
 
     /*
     /**********************************************************
@@ -107,15 +86,6 @@ public class SmileParser extends ParserBase
      */
     protected byte[] _inputBuffer;
 
-    /**
-     * Bit flag composed of bits that indicate which
-     * {@link SmileParser.Feature}s are enabled.
-     *<p>
-     * NOTE: currently the only feature ({@link SmileParser.Feature#REQUIRE_HEADER}
-     * takes effect during bootstrapping.
-     */
-    protected int _formatFeatures;
-    
     /**
      * Flag that indicates whether the input buffer is recycable (and
      * needs to be returned to recycler once we are done) or not.
@@ -143,99 +113,26 @@ public class SmileParser extends ParserBase
      */
     protected int _typeAsInt;
 
-    /**
-     * Specific flag that is set when we encountered a 32-bit
-     * floating point value; needed since numeric super classes do
-     * not track distinction between float and double, but Smile
-     * format does, and we want to retain that separation.
-     */
-    protected boolean _got32BitFloat;
-
-    /**
-     * Alternative to {@link #_tokenInputTotal} that will only contain
-     * offset within input buffer, as int.
-     */
-    protected int _tokenOffsetForTotal;
-
-    /*
-    /**********************************************************
-    /* Symbol handling, decoding
-    /**********************************************************
-     */
-
-    /**
-     * Symbol table that contains field names encountered so far
-     */
-    final protected ByteQuadsCanonicalizer _symbols;
-    
-    /**
-     * Temporary buffer used for name parsing.
-     */
-    protected int[] _quadBuffer = NO_INTS;
-
-    /**
-     * Quads used for hash calculation
-     */
-    protected int _quad1, _quad2, _quad3;
-     
-    /**
-     * Array of recently seen field names, which may be back referenced
-     * by later fields.
-     * Defaults set to enable handling even if no header found.
-     */
-    protected String[] _seenNames = NO_STRINGS;
-
-    protected int _seenNameCount = 0;
-
-    /**
-     * Array of recently seen field names, which may be back referenced
-     * by later fields
-     * Defaults set to disable handling if no header found.
-     */
-    protected String[] _seenStringValues = null;
-
-    protected int _seenStringValueCount = -1;
-    
-    /*
-    /**********************************************************
-    /* Thread-local recycling
-    /**********************************************************
-     */
-    
-    /**
-     * <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<String>>>();
-
     /*
     /**********************************************************
     /* Life-cycle
     /**********************************************************
      */
-    
+
     public SmileParser(IOContext ctxt, int parserFeatures, int smileFeatures,
             ObjectCodec codec,
             ByteQuadsCanonicalizer sym,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(ctxt, parserFeatures);        
+        super(ctxt, parserFeatures, smileFeatures, sym);        
         _objectCodec = codec;
-        _symbols = sym;
-        _formatFeatures = smileFeatures;
 
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-        
-        _tokenInputRow = -1;
-        _tokenInputCol = -1;
-        _smileBufferRecycler = _smileBufferRecycler();
     }
 
     @Override
@@ -296,46 +193,6 @@ public class SmileParser extends ParserBase
         return true;
     }
 
-    protected final static SmileBufferRecycler<String> _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler<String>> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler<String> br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler<String>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<String>>(br));
-        }
-        return br;
-    }
-
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
-     */
-
-    @Override
-    public Version version() {
-        return PackageVersion.VERSION;
-    }
-
-    /*                                                                                       
-    /**********************************************************                              
-    /* FormatFeature support                                                                             
-    /**********************************************************                              
-     */
-
-    @Override
-    public int getFormatFeatures() {
-        return _formatFeatures;
-    }
-
-    @Override
-    public JsonParser overrideFormatFeatures(int values, int mask) {
-        _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
-        return this;
-    }
-
     /*
     /**********************************************************
     /* Former StreamBasedParserBase methods
@@ -358,34 +215,6 @@ public class SmileParser extends ParserBase
     @Override
     public Object getInputSource() {
         return _inputStream;
-    }
-
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
-    @Override
-    public JsonLocation getTokenLocation()
-    {
-        // token location is correctly managed...
-        long total = _currInputProcessed + _tokenOffsetForTotal;
-        // 2.4: used to be: _tokenInputTotal
-        return new JsonLocation(_ioContext.getSourceReference(),
-                total, // bytes
-                -1, -1, (int) total); // char offset, line, column
-    }   
-
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
-    @Override
-    public JsonLocation getCurrentLocation()
-    {
-        final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.getSourceReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
     }
 
     /*
@@ -489,13 +318,6 @@ public class SmileParser extends ParserBase
      */
 
     @Override
-    public void close() throws IOException {
-        super.close();
-        // Merge found symbols, if any:
-        _symbols.release();
-    }
-
-    @Override
     public boolean hasTextCharacters()
     {
         if (_currToken == JsonToken.VALUE_STRING) {
@@ -517,54 +339,17 @@ public class SmileParser extends ParserBase
      * separately (if need be).
      */
     @Override
-    protected void _releaseBuffers() throws IOException
+    protected void _releaseBuffers2()
     {
-         super._releaseBuffers();
-         if (_bufferRecyclable) {
-             byte[] buf = _inputBuffer;
-             if (buf != null) {
-                 _inputBuffer = null;
-                 _ioContext.releaseReadIOBuffer(buf);
-             }
-         }
-         {
-            String[] nameBuf = _seenNames;
-            if (nameBuf != null && nameBuf.length > 0) {
-                _seenNames = null;
-                /* 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-                 *   but we only need to clear up to count as it is not a hash area
-                 */
-                if (_seenNameCount > 0) {
-                    Arrays.fill(nameBuf, 0, _seenNameCount, null);
-                }
-                _smileBufferRecycler.releaseSeenNamesBuffer(nameBuf);
-            }
-        }
-        {
-            String[] valueBuf = _seenStringValues;
-            if (valueBuf != null && valueBuf.length > 0) {
-                _seenStringValues = null;
-                /* 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-                 *   but we only need to clear up to count as it is not a hash area
-                 */
-                if (_seenStringValueCount > 0) {
-                    Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
-                }
-                _smileBufferRecycler.releaseSeenStringValuesBuffer(valueBuf);
+        if (_bufferRecyclable) {
+            byte[] buf = _inputBuffer;
+            if (buf != null) {
+                _inputBuffer = null;
+                _ioContext.releaseReadIOBuffer(buf);
             }
         }
     }
-    
-    /*
-    /**********************************************************
-    /* Extended API
-    /**********************************************************
-     */
 
-    public boolean mayContainRawBinary() {
-        return _mayContainRawBinary;
-    }
-    
     /*
     /**********************************************************
     /* JsonParser impl
@@ -627,7 +412,6 @@ public class SmileParser extends ParserBase
                     return (_currToken = JsonToken.VALUE_NUMBER_INT);
                 }
                 if (typeBits < 11 && typeBits != 7) { // floating-point
-                    _got32BitFloat = (typeBits == 8);
                     _tokenIncomplete = true;
                     return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
                 }
@@ -664,6 +448,7 @@ public class SmileParser extends ParserBase
         case 6: // small integers; zigzag encoded
             _numberInt = SmileUtil.zigzagDecode(ch & 0x1F);
             _numTypesValid = NR_INT;
+            _numberType = NumberType.INT;
             return (_currToken = JsonToken.VALUE_NUMBER_INT);
         case 7: // binary/long-text/long-shared/start-end-markers
             switch (ch & 0x1F) {
@@ -762,17 +547,6 @@ public class SmileParser extends ParserBase
         if (_tokenIncomplete) {
             _finishToken();
         }
-    }
-
-    // base impl is fine:
-    //public String getCurrentName() throws IOException
-
-    @Override
-    public NumberType getNumberType() throws IOException {
-        if (_got32BitFloat && _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            return NumberType.FLOAT;
-        }
-        return super.getNumberType();
     }
 
     /*
@@ -2048,19 +1822,21 @@ public class SmileParser extends ParserBase
      */
 
     @Override
-    protected void _parseNumericValue(int expType) throws IOException
+    protected void _parseNumericValue() throws IOException
     {
-        if (_tokenIncomplete) {
-            int tb = _typeAsInt;
-    	        // ensure we got a numeric type with value that is lazily parsed
-            if ((tb >> 5) != 1) {
-                _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
-            }
-            _tokenIncomplete = false;
-            _finishNumberToken(tb);
+        if (!_tokenIncomplete) {
+            _reportError("Internal error: number token (%s) decoded, no value set", _currToken);
         }
+        _tokenIncomplete = false;
+        int tb = _typeAsInt;
+	        // ensure we got a numeric type with value that is lazily parsed
+        if ((tb >> 5) != 1) {
+            _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
+        }
+        _finishNumberToken(tb);
     }
 
+    /*
     @Override // since 2.6
     protected int _parseIntValue() throws IOException
     {
@@ -2078,6 +1854,7 @@ public class SmileParser extends ParserBase
         }
         return _numberInt;
     }
+    */
 
     /**
      * Method called to finish parsing of a token so that token contents
@@ -2157,6 +1934,8 @@ public class SmileParser extends ParserBase
 
     private final void _finishInt() throws IOException
     {
+        _numTypesValid = NR_INT;
+        _numberType = NumberType.INT;
         int ptr = _inputPtr;
         if ((ptr + 5) >= _inputEnd) {
             _finishIntSlow();
@@ -2188,7 +1967,6 @@ public class SmileParser extends ParserBase
         }
         _inputPtr = ptr;
         _numberInt = SmileUtil.zigzagDecode(value);
-        _numTypesValid = NR_INT;
     }
     
     private final void _finishIntSlow() throws IOException
@@ -2233,11 +2011,12 @@ public class SmileParser extends ParserBase
     	        value = (value << 6) + (i & 0x3F);
     	    }
         _numberInt = SmileUtil.zigzagDecode(value);
-        _numTypesValid = NR_INT;
     }
 
     private final void  _finishLong() throws IOException
     {
+        _numTypesValid = NR_LONG;
+        _numberType = NumberType.LONG;
         int ptr = _inputPtr;
         final int maxEnd = ptr+11;
         if (maxEnd >= _inputEnd) {
@@ -2257,7 +2036,6 @@ public class SmileParser extends ParserBase
                 l = (l << 6) + (value & 0x3F);
                 _inputPtr = ptr;
                 _numberLong = SmileUtil.zigzagDecode(l);
-                _numTypesValid = NR_LONG;
                 return;
             }
             l = (l << 7) + value;
@@ -2278,7 +2056,6 @@ public class SmileParser extends ParserBase
             if (value < 0) {
                 l = (l << 6) + (value & 0x3F);
                 _numberLong = SmileUtil.zigzagDecode(l);
-                _numTypesValid = NR_LONG;
                 return;
     	        }
     	        l = (l << 7) + value;
@@ -2324,6 +2101,7 @@ public class SmileParser extends ParserBase
         byte[] raw = _read7BitBinaryWithLength();
         _numberBigInt = new BigInteger(raw);
         _numTypesValid = NR_BIGINT;
+        _numberType = NumberType.BIG_INTEGER;
     }
 
     private final void _finishFloat() throws IOException
@@ -2335,8 +2113,9 @@ public class SmileParser extends ParserBase
     	    }
     	    i = (i << 7) + _inputBuffer[_inputPtr++];
     	    float f = Float.intBitsToFloat(i);
-    	    _numberDouble = (double) f;
-    	    _numTypesValid = NR_DOUBLE;
+    	    _numberFloat = f;
+         _numberType = NumberType.FLOAT;
+    	    _numTypesValid = NR_FLOAT;
     }
 
     private final void _finishDouble() throws IOException
@@ -2354,6 +2133,7 @@ public class SmileParser extends ParserBase
         }
         value = (value << 7) + _inputBuffer[_inputPtr++];
         _numberDouble = Double.longBitsToDouble(value);
+        _numberType = NumberType.DOUBLE;
         _numTypesValid = NR_DOUBLE;
     }
 	
@@ -2363,6 +2143,7 @@ public class SmileParser extends ParserBase
         byte[] raw = _read7BitBinaryWithLength();
         _numberBigDecimal = new BigDecimal(new BigInteger(raw), scale);
         _numTypesValid = NR_BIGDECIMAL;
+        _numberType = NumberType.BIG_DECIMAL;
     }
 
     private final int _readUnsignedVInt() throws IOException

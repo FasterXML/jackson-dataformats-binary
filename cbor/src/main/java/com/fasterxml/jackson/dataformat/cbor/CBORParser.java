@@ -20,6 +20,7 @@ import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 public final class CBORParser extends ParserMinimalBase
 {
     private final static byte[] NO_BYTES = new byte[0];
+    private final static int[] NO_INTS = new int[0];
 
     /**
      * Enumeration that defines all togglable features for CBOR generators.
@@ -58,8 +59,6 @@ public final class CBORParser extends ParserMinimalBase
     }
 
     private final static Charset UTF8 = Charset.forName("UTF-8");
-
-    private final static int[] NO_INTS = new int[0];
 
     private final static int[] UTF8_UNIT_CODES = CBORConstants.sUtf8UnitLengths;
 

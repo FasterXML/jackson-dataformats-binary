@@ -84,7 +84,6 @@ public class NonBlockingByteArrayParser
         }
         // Time to update pointers first
         _currInputProcessed += _origBufferLen;
-        _currInputRowStart -= _origBufferLen;
 
         // And then update buffer settings
         _inputBuffer = buf;
