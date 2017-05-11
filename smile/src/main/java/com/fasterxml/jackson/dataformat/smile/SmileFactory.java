@@ -164,9 +164,6 @@ public class SmileFactory extends JsonFactory
     // Defaults work fine for this:
     // public boolean canUseSchema(FormatSchema schema) { }
 
-    @Override
-    public boolean canUseCharArrays() { return false; }
-
     /**
      * Sub-classes need to override this method (as of 1.8)
      */
@@ -182,10 +179,14 @@ public class SmileFactory extends JsonFactory
      */
 
     @Override
-    public boolean canHandleBinaryNatively() {
-        return true;
-    }
+    public boolean canUseCharArrays() { return false; }
 
+    @Override
+    public boolean canHandleBinaryNatively() { return true; }
+
+    @Override // since 2.9
+    public boolean canParseAsync() { return true; }
+    
     @Override // since 2.6
     public Class<SmileParser.Feature> getFormatReadFeatureType() {
         return SmileParser.Feature.class;
@@ -377,7 +378,7 @@ public class SmileFactory extends JsonFactory
     /**
      * @since 2.9
      */
-    public NonBlockingByteArrayParser createNonBlockingParser() throws IOException {
+    public NonBlockingByteArrayParser createNonBlockingByteArrayParser() throws IOException {
         IOContext ctxt = _createContext(null, false);
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
         return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can);

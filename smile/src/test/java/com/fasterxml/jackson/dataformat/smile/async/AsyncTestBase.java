@@ -19,7 +19,7 @@ abstract class AsyncTestBase extends BaseTestForSmile
             int bytesPerRead,
             byte[] bytes, int padding) throws IOException
     {
-        return new AsyncReaderWrapperForByteArray(f.createNonBlockingParser(),
+        return new AsyncReaderWrapperForByteArray(f.createNonBlockingByteArrayParser(),
                 bytesPerRead, bytes, padding);
     }
 

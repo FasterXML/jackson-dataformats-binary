@@ -279,7 +279,13 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         }
         return br;
     }
-    
+
+    /**
+     * @since 2.9
+     */
+    @Override
+    public boolean canParseAsync() { return true; }
+
     /*                                                                                       
     /**********************************************************************
     /* Versioned                                                                             
