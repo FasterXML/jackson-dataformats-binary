@@ -1,14 +1,12 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
-//import java.math.BigDecimal;
-//import java.math.BigInteger;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.smile.*;
 
@@ -77,29 +75,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
 
     protected final static int MINOR_VALUE_BINARY_7BIT_LEN = 22;
     protected final static int MINOR_VALUE_BINARY_7BIT_BODY = 23;
-    
-    /*
-    /**********************************************************************
-    /* Configuration
-    /**********************************************************************
-     */
-
-    /**
-     * Flag that indicates whether content can legally have raw (unquoted)
-     * binary data. Since this information is included both in header and
-     * in actual binary data blocks there is redundancy, and we want to
-     * ensure settings are compliant. Using application may also want to
-     * know this setting in case it does some direct (random) access.
-     */
-    protected boolean _mayContainRawBinary;
-
-    protected final boolean _cfgRequireHeader;
-
-    /**
-     * Helper object used for low-level recycling of Smile-generator
-     * specific buffers.
-     */
-    final protected SmileBufferRecycler<String> _smileBufferRecycler;
 
     /*
     /**********************************************************************
@@ -127,22 +102,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      * be no more input to parse.
      */
     protected boolean _endOfInput = false;
-    
-    /*
-    /**********************************************************************
-    /* Symbol handling, decoding
-    /**********************************************************************
-     */
-
-    /**
-     * Symbol table that contains field names encountered so far
-     */
-    final protected ByteQuadsCanonicalizer _symbols;
-    
-    /**
-     * Temporary buffer used for name parsing.
-     */
-    protected int[] _quadBuffer = NO_INTS;
 
     /*
     /**********************************************************************
@@ -165,24 +124,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      * Number of bytes pending/buffered, stored in {@link #_currQuad}
      */
     protected int _currQuadBytes = 0;
-     
-    /**
-     * Array of recently seen field names, which may be back referenced
-     * by later fields.
-     * Defaults set to enable handling even if no header found.
-     */
-    protected String[] _seenNames = NO_STRINGS;
-
-    protected int _seenNameCount = 0;
-
-    /**
-     * Array of recently seen field names, which may be back referenced
-     * by later fields
-     * Defaults set to disable handling if no header found.
-     */
-    protected String[] _seenStringValues = null;
-
-    protected int _seenStringValueCount = -1;
 
     /*
     /**********************************************************************
@@ -214,20 +155,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
 
     /*
     /**********************************************************************
-    /* Thread-local recycling
-    /**********************************************************************
-     */
-    
-    /**
-     * <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<String>>>();
-    
-    /*
-    /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
@@ -235,17 +162,12 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     public NonBlockingParserBase(IOContext ctxt, int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);        
-        _symbols = sym;
+        super(ctxt, parserFeatures, smileFeatures, sym);
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
         _inputCopy = ctxt.allocReadIOBuffer(500);
-        
-        _smileBufferRecycler = _smileBufferRecycler();
 
         _currToken = null;
         _majorState = MAJOR_INITIAL;
-
-        _cfgRequireHeader = (smileFeatures & SmileParser.Feature.REQUIRE_HEADER.getMask()) != 0;
     }
 
     @Override
@@ -294,6 +216,8 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     /**********************************************************************
      */
 
+    // No incomplete values yet -- although may want to make BigInt/BigDec lazy
+    // in future
     @Override
     protected void _parseNumericValue() throws IOException {
         VersionUtil.throwInternal();
@@ -363,11 +287,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
         }
-        /*
-        if (_tokenIncomplete) {
-            return null;
-        }
-        */
         JsonToken t = _currToken;
         if (t == null || _currToken == JsonToken.NOT_AVAILABLE) { // null only before/after document
             return null;
@@ -411,11 +330,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
             case NOT_AVAILABLE:
                 return null;
             default:
-/*                
-                if (_tokenIncomplete) {
-                    return null;
-                }
- */
                 return _currToken.asCharArray();
             }
         }
@@ -426,11 +340,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     public int getTextLength() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            /*
-            if (_tokenIncomplete) {
-                return -1; // or throw exception?
-            }
-            */
             switch (_currToken) {
             case VALUE_STRING:
                 return _textBuffer.size();                
@@ -443,7 +352,7 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
                 return getNumberValue().toString().length();
                 
             case NOT_AVAILABLE:
-                return 0;
+                return 0; // or throw exception?
             default:
                 return _currToken.asCharArray().length;
             }
@@ -476,7 +385,7 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             return;
         }
-        _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
+        _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
     }
 
     /*
@@ -486,19 +395,16 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      */
 
     @Override
-    public byte[] getBinaryValue(Base64Variant b64variant)
-        throws IOException
+    public byte[] getBinaryValue(Base64Variant b64variant) throws IOException
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
-            // Todo, maybe: support base64 for text?
-            _reportError("Current token ("+_currToken+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            _reportError("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
         }
         return _binaryValue;
     }
 
     @Override
-    public Object getEmbeddedObject()
-        throws IOException
+    public Object getEmbeddedObject() throws IOException
     {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
             return _binaryValue;
@@ -506,11 +412,14 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         return null;
     }
 
-    // could possibly implement this... or maybe not.
     @Override
     public int readBinaryValue(Base64Variant b64variant, OutputStream out)
             throws IOException {
-        throw new UnsupportedOperationException();
+        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
+            _reportError("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
+        }
+        out.write(_binaryValue);
+        return _binaryValue.length;
     }
 
     /*
@@ -607,7 +516,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         return Arrays.copyOf(arr, size);
     }
 
-    private int _quad1, _quad2;
     protected final String _addDecodedToSymbols(int len, String name)
     {
         if (len < 5) {
@@ -712,6 +620,28 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         _seenStringValues[_seenStringValueCount++] = v;
     }
 
+
+    /*
+    /**********************************************************
+    /* Internal/package methods: shared/reusable builders
+    /**********************************************************
+     */
+
+    /**
+     * ByteArrayBuilder is needed if 'getBinaryValue' is called. If so,
+     * we better reuse it for remainder of content.
+     */
+    protected ByteArrayBuilder _byteArrayBuilder = null;
+
+    public void _initByteArrayBuilder()
+    {
+        if (_byteArrayBuilder == null) {
+            _byteArrayBuilder = new ByteArrayBuilder();
+        } else {
+            _byteArrayBuilder.reset();
+        }
+    }
+
     /*
     /**********************************************************************
     /* Internal methods, error reporting
@@ -748,20 +678,17 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         _reportInvalidInitial(c);
     }
 	
-    protected void _reportInvalidInitial(int mask)
-        throws JsonParseException
+    protected void _reportInvalidInitial(int mask) throws JsonParseException
     {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 	
-    protected void _reportInvalidOther(int mask)
-        throws JsonParseException
+    protected void _reportInvalidOther(int mask) throws JsonParseException
     {
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 	
-    protected void _reportInvalidOther(int mask, int ptr)
-        throws JsonParseException
+    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException
     {
         _inputPtr = ptr;
         _reportInvalidOther(mask);

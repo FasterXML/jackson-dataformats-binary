@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
@@ -16,7 +17,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
 
     private final SmileFactory F_NO_HEADERS = new SmileFactory();
     {
-        F_REQ_HEADERS.disable(SmileParser.Feature.REQUIRE_HEADER);
+        F_NO_HEADERS.disable(SmileParser.Feature.REQUIRE_HEADER);
     }
 
     /*
@@ -31,6 +32,8 @@ public class SimpleScalarArrayTest extends AsyncTestBase
 
         // first: require headers, no offsets
         SmileFactory f = F_REQ_HEADERS;
+        assertTrue(f.isEnabled(SmileParser.Feature.REQUIRE_HEADER));
+
         _testBooleans(f, data, 0, 100);
         _testBooleans(f, data, 0, 3);
         _testBooleans(f, data, 0, 1);
@@ -41,8 +44,10 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         _testBooleans(f, data, 1, 1);
 
         // also similar but without header
-        data = _smileDoc("[ true, false, true, true, false ]", true);
+        data = _smileDoc("[ true, false, true, true, false ]", false);
         f = F_NO_HEADERS;
+        assertFalse(f.isEnabled(SmileParser.Feature.REQUIRE_HEADER));
+
         _testBooleans(f, data, 0, 100);
         _testBooleans(f, data, 0, 3);
         _testBooleans(f, data, 0, 1);
@@ -50,6 +55,11 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         _testBooleans(f, data, 1, 100);
         _testBooleans(f, data, 1, 3);
         _testBooleans(f, data, 1, 1);
+
+        // and finally, error case too
+        _testBooleanFail(F_REQ_HEADERS, data, 0, 100);
+        _testBooleanFail(F_REQ_HEADERS, data, 0, 3);
+        _testBooleanFail(F_REQ_HEADERS, data, 0, 1);
     }
 
     private void _testBooleans(SmileFactory f,
@@ -71,7 +81,18 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
-   
+    private void _testBooleanFail(SmileFactory f,
+            byte[] data, int offset, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(f, 100, data, 0);
+        try {
+            r.nextToken();
+            fail("Should not pass");
+        } catch (JsonParseException e) {
+            verifyException(e, "does not start with Smile format header");
+        }
+    }
+
     public void testInts() throws IOException
     {
         final int[] input = new int[] { 1, -1, 16, -17, 131, -155, 1000, -3000, 0xFFFF, -99999,
@@ -249,13 +270,17 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     /* BigInteger, BigDecimal
     /**********************************************************************
      */
-/*
+
     public void testBigIntegers() throws IOException
     {
         BigInteger bigBase = BigInteger.valueOf(1234567890344656736L);
-        final BigInteger[] input = new BigInteger[] { BigInteger.ONE,
-                BigInteger.TEN, BigInteger.ZERO,
+        final BigInteger[] input = new BigInteger[] {
+                BigInteger.ONE,
+                BigInteger.ZERO,
+                BigInteger.TEN,
                 bigBase, bigBase.shiftLeft(100),
+                bigBase.add(bigBase),
+                bigBase.multiply(BigInteger.valueOf(17)),
                 bigBase.negate()
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
@@ -269,12 +294,12 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         g.close();
         byte[] data = bytes.toByteArray();
         _testBigIntegers(f, input, data, 0, 100);
-        _testBigIntegers(f, input, data, 0, 3);
-        _testBigIntegers(f, input, data, 0, 1);
+//        _testBigIntegers(f, input, data, 0, 3);
+//        _testBigIntegers(f, input, data, 0, 1);
 
         _testBigIntegers(f, input, data, 1, 100);
-        _testBigIntegers(f, input, data, 1, 3);
-        _testBigIntegers(f, input, data, 1, 1);
+//        _testBigIntegers(f, input, data, 1, 3);
+//        _testBigIntegers(f, input, data, 1, 1);
     }
 
     private void _testBigIntegers(SmileFactory f, BigInteger[] values,
@@ -293,5 +318,4 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertNull(r.nextToken());
         assertTrue(r.isClosed());
     }
-    */
 }

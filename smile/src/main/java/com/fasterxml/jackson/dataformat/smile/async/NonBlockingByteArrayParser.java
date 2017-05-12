@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.VersionUtil;
 
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
 
 public class NonBlockingByteArrayParser
@@ -139,7 +140,7 @@ public class NonBlockingByteArrayParser
                 _pending32 = 0;
                 return _finishHeader();
             }
-            if (_cfgRequireHeader) {
+            if (SmileParser.Feature.REQUIRE_HEADER.enabledIn(_formatFeatures)) {
                 _reportMissingHeader(ch);
             }
             // otherwise fine, just drop through to next state
@@ -237,10 +238,9 @@ public class NonBlockingByteArrayParser
             return _finishLong(_pending64, _inputCopyLen);
 
         case MINOR_VALUE_NUMBER_BIGINT_LEN:
-            _finishBigIntLen(_pending32, _inputCopyLen);
+            return _finishBigIntLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGINT_BODY:
-            _finishBigIntBody(_pending32, _inputCopyLen);
-            break;
+            return _finishBigIntBody(_pending32, _inputCopyLen);
 
         case MINOR_VALUE_NUMBER_FLOAT:
             return _finishFloat(_pending32, _inputCopyLen);
@@ -1391,7 +1391,7 @@ VersionUtil.throwInternal();
     /**********************************************************************
      */
 
-    protected final JsonToken _startInt() throws IOException
+    private final JsonToken _startInt() throws IOException
     {
         // common case first: have all we need
         if ((_inputPtr + 5) > _inputEnd) {
@@ -1404,7 +1404,7 @@ VersionUtil.throwInternal();
         return _valueComplete(JsonToken.VALUE_NUMBER_INT);
     }
 
-    protected final JsonToken _finishInt(int value, int bytesRead) throws IOException
+    private final JsonToken _finishInt(int value, int bytesRead) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1427,7 +1427,7 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _startLong() throws IOException
+    private final JsonToken _startLong() throws IOException
     {
         // common case first: have all we need
         int ptr = _inputPtr;
@@ -1458,7 +1458,7 @@ VersionUtil.throwInternal();
         }
     }
 
-    protected final JsonToken _finishLong(long value, int bytesRead) throws IOException
+    private final JsonToken _finishLong(long value, int bytesRead) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1481,16 +1481,16 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _startBigInt() throws IOException
+    private final JsonToken _startBigInt() throws IOException
     {
+        _initByteArrayBuilder();
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishBigIntLen(0, 0);
         }
-        int byteLen = _decodeVInt();
-        return _finishBigIntBody(byteLen, 0);
+        return _finishBigIntBody(_decodeVInt(), 0);
     }
 
-    protected final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
+    private final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1510,37 +1510,131 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    protected final JsonToken _finishBigIntBody(int byteLen, int bytesRead) throws IOException
+    private final JsonToken _finishBigIntBody(int bytesToDecode, int buffered) throws IOException
     {
-        byte[] buf = _inputCopy;
-        if (bytesRead == 0) {
-            if (buf.length < byteLen) {
-                buf = Arrays.copyOf(buf, byteLen);
-                _inputCopy = buf;
-            }
+//System.err.println("_finishBigIntBody: bytes to decode = "+bytesToDecode+", buffered = "+buffered);
+        if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
+//System.err.println("_finishBigIntBody -> decoded ok... construct");
+            _numberBigInt = new BigInteger(_byteArrayBuilder.toByteArray());
+//System.err.println("_finishBigIntBody -> "+_numberBigInt);
+            _numberType = NumberType.BIG_INTEGER;
+            _numTypesValid = NR_BIGINT;
+            return _valueComplete(JsonToken.VALUE_NUMBER_INT);
         }
-        int avail = _inputEnd - _inputPtr;
-        if (avail >= byteLen) {
- // !!! TODO
-            
-        }
-// !!! TODO
+//System.err.println("_finishBigIntBody -> NOT_AVAILABLE");
+        _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
         return JsonToken.NOT_AVAILABLE;
     }
-    
-    /*
-    private final boolean _finishBigInteger()
-        throws IOException
+
+    private final boolean _decode7BitEncoded(int bytesToDecode, int buffered) throws IOException
     {
-        byte[] raw = _read7BitBinaryWithLength();
-        if (raw == null) {
-            return false;
+        int ptr = _inputPtr;
+        int avail = _inputEnd - ptr;
+
+        // Leftovers from past round?
+        if (buffered > 0) {
+            // but offline case of incomplete last block
+            if (bytesToDecode < 7) {
+                return _decode7BitEncodedTail(bytesToDecode, buffered);
+            }
+            int needed = 8 - buffered;
+            if (avail < needed) { // not enough to decode, just copy
+                System.arraycopy(_inputBuffer, ptr, _inputCopy, buffered, avail);
+                _inputPtr = ptr+avail;
+                _inputCopyLen = buffered + avail;
+                _pending32 = bytesToDecode;
+                return false;
+            }
+            // yes, got full 8 byte chunk
+            final byte[] copy = _inputCopy;
+            System.arraycopy(_inputBuffer, ptr, copy, buffered, needed);
+            ptr += needed;
+            int i1 = (copy[0] << 25) + (copy[1] << 18)
+                    + (copy[2] << 11) + (copy[3] << 4);
+            int x = copy[4];
+            i1 += x >> 3;
+            _byteArrayBuilder.appendFourBytes(i1);
+            i1 = ((x & 0x7) << 21) + (copy[5] << 14)
+                + (copy[6] << 7) + copy[7];
+            _byteArrayBuilder.appendThreeBytes(i1);
+            bytesToDecode -= 7;
+            avail -= 8;
+            _inputCopyLen = 0;
         }
-        _numberBigInt = new BigInteger(raw);
-        _numTypesValid = NR_BIGINT;
+
+        final byte[] input = _inputBuffer;
+        // And then all full 8-to-7-byte chunks
+        while (bytesToDecode > 6) {
+            if (avail < 8) { // full blocks missing, quit
+                _pending32 = bytesToDecode;
+                _inputPtr = ptr;
+                return false;
+            }
+            int i1 = (input[ptr++] << 25)
+                + (input[ptr++] << 18)
+                + (input[ptr++] << 11)
+                + (input[ptr++] << 4);
+            int x = input[ptr++];
+            i1 += x >> 3;
+            _byteArrayBuilder.appendFourBytes(i1);
+            i1 = ((x & 0x7) << 21)
+                + (input[ptr++] << 14)
+                + (input[ptr++] << 7)
+                + input[ptr++];
+            _byteArrayBuilder.appendThreeBytes(i1);
+            bytesToDecode -= 7;
+            avail -= 8;
+        }
+        _inputPtr = ptr;
+
+        // and finally, tail?
+        if (bytesToDecode > 0) {
+            if (avail == 0) {
+                _pending32 = bytesToDecode;
+                return false;
+            }
+            return _decode7BitEncodedTail(bytesToDecode, 0);
+        }
         return true;
     }
-*/
+
+    protected final boolean _decode7BitEncodedTail(int bytesToDecode, int buffered) throws IOException
+    {
+        if (bytesToDecode == 0) {
+//System.err.println("_decode7BitEncodedTail: bytes to decode = 0 -> SHORT-CIRCUIT");
+            return true;
+        }
+//System.err.println("_decode7BitEncodedTail: bytes to decode = "+bytesToDecode+", buffered = "+buffered);
+        int avail = _inputEnd - _inputPtr;
+        int needed = bytesToDecode + 1;
+
+//System.err.println("avail = "+avail+", needed = "+needed);
+        if (avail < needed) {
+            System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, avail);
+            _inputPtr += avail;
+            _inputCopyLen = buffered + avail;
+            _pending32 = bytesToDecode;
+            return false;
+        }
+        System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, needed);
+        _inputPtr += needed;
+
+        // Handling of full tail is bit different...
+        int value = _inputCopy[0];
+//System.err.println(" value = 0x"+Integer.toHexString(value));
+
+        for (int i = 1; i < bytesToDecode; ++i) {
+            value = (value << 7) + _inputCopy[i];
+//System.err.println(" append #"+i+" -> 0x"+Integer.toHexString(value >> (7 - i)));
+
+            _byteArrayBuilder.append(value >> (7 - i));
+        }
+        // last byte is different, has remaining 1 - 6 bits, right-aligned
+        value <<= bytesToDecode;
+        _byteArrayBuilder.append(value + _inputCopy[bytesToDecode]);
+//System.err.println(" append #"+bytesToDecode+" -> 0x"+Integer.toHexString(value + _inputCopy[bytesToDecode]));
+        return true;
+    }
 
     private final int _decodeVInt() throws IOException
     {
@@ -1570,13 +1664,13 @@ VersionUtil.throwInternal();
         _inputPtr = ptr;
         return (value << 6) + (i & 0x3F);
     }
-    
+
     /*
     /**********************************************************************
     /* Internal methods: second-level parsing: numbers, integral
     /**********************************************************************
      */
-    
+
     protected final JsonToken _startFloat() throws IOException
     {
         int ptr = _inputPtr;

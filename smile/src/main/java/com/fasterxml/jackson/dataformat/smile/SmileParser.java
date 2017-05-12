@@ -94,7 +94,7 @@ public class SmileParser extends SmileParserBase
      * buffer.
      */
     protected boolean _bufferRecyclable;
-    
+
     /*
     /**********************************************************
     /* Additional parsing state
@@ -102,16 +102,16 @@ public class SmileParser extends SmileParserBase
      */
 
     /**
+     * Type byte of the current token (as in)
+     */
+    protected int _typeAsInt;
+
+    /**
      * Flag that indicates that the current token has not yet
      * been fully processed, and needs to be finished for
      * some access (or skipped to obtain the next token)
      */
     protected boolean _tokenIncomplete = false;
-
-    /**
-     * Type byte of the current token (as in)
-     */
-    protected int _typeAsInt;
 
     /*
     /**********************************************************
@@ -2162,8 +2162,7 @@ public class SmileParser extends SmileParserBase
         }
     }
 
-    private final byte[] _read7BitBinaryWithLength()
-        throws IOException
+    private final byte[] _read7BitBinaryWithLength() throws IOException
     {
         int byteLen = _readUnsignedVInt();
         byte[] result = new byte[byteLen];

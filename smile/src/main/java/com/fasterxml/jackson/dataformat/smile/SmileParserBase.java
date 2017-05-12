@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
 /**
@@ -30,7 +29,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /* Config
     /**********************************************************
      */
-    
+
     /**
      * Bit flag composed of bits that indicate which
      * {@link SmileParser.Feature}s are enabled.
@@ -136,12 +135,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * representation  being available via read context)
      */
     protected boolean _nameCopied;
-    
-    /**
-     * ByteArrayBuilder is needed if 'getBinaryValue' is called. If so,
-     * we better reuse it for remainder of content.
-     */
-    protected ByteArrayBuilder _byteArrayBuilder = null;
 
     /**
      * We will hold on to decoded binary data, for duration of
@@ -731,22 +724,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
             _throwInternal();
         }
         _numTypesValid |= NR_BIGDECIMAL;
-    }
-
-    /*
-    /**********************************************************
-    /* Internal/package methods: shared/reusable builders
-    /**********************************************************
-     */
-    
-    public ByteArrayBuilder _getByteArrayBuilder()
-    {
-        if (_byteArrayBuilder == null) {
-            _byteArrayBuilder = new ByteArrayBuilder();
-        } else {
-            _byteArrayBuilder.reset();
-        }
-        return _byteArrayBuilder;
     }
 
     /*
