@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
@@ -220,9 +219,12 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     // in future
     @Override
     protected void _parseNumericValue() throws IOException {
-        VersionUtil.throwInternal();
+        if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            return;
+        }
+        _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
     }
-    
+
     /*
     /**********************************************************************
     /* Overridden methods
