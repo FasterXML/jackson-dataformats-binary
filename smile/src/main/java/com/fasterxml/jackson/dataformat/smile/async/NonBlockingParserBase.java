@@ -59,8 +59,8 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
 
     protected final static int MINOR_VALUE_NUMBER_BIGINT_LEN = 10;
     protected final static int MINOR_VALUE_NUMBER_BIGINT_BODY = 11;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC_LEN = 12;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC_SCALE = 13;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_SCALE = 12;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_LEN = 13;
     protected final static int MINOR_VALUE_NUMBER_BIGDEC_BODY = 14;
 
     protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 15;
@@ -148,7 +148,8 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected int _pending32;
 
     /**
-     * For 64-bit values, we may use this for combining values
+     * Temporary storage for 64-bit values (long, double), secondary storage
+     * for some other things (scale of BigDecimal values)
      */
     protected long _pending64;
 

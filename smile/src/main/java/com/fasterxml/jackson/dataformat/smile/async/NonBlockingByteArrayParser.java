@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -248,10 +249,11 @@ public class NonBlockingByteArrayParser
             return _finishDouble(_pending64, _inputCopyLen);
 
         case MINOR_VALUE_NUMBER_BIGDEC_SCALE:
+            return _finishBigDecimalScale((int) _pending64, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC_LEN:
+            return _finishBigDecimalLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC_BODY:
-//            return _startBigDecimal(_minorState);
-            break;
+            return _finishBigDecimalBody(_pending32, _inputCopyLen);
             
         case MINOR_VALUE_STRING_SHORT_ASCII:
         case MINOR_VALUE_STRING_SHORT_UNICODE:
@@ -1522,146 +1524,9 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final boolean _decode7BitEncoded(int bytesToDecode, int buffered) throws IOException
-    {
-        int ptr = _inputPtr;
-        int avail = _inputEnd - ptr;
-
-        // Leftovers from past round?
-        if (buffered > 0) {
-            // but offline case of incomplete last block
-            if (bytesToDecode < 7) {
-                return _decode7BitEncodedTail(bytesToDecode, buffered);
-            }
-            int needed = 8 - buffered;
-            if (avail < needed) { // not enough to decode, just copy
-                System.arraycopy(_inputBuffer, ptr, _inputCopy, buffered, avail);
-                _inputPtr = ptr+avail;
-                _inputCopyLen = buffered + avail;
-                _pending32 = bytesToDecode;
-                return false;
-            }
-            _inputCopyLen = 0;
-            // yes, got full 8 byte chunk
-            final byte[] copy = _inputCopy;
-            System.arraycopy(_inputBuffer, ptr, copy, buffered, needed);
-            int i1 = (copy[0] << 25) + (copy[1] << 18)
-                    + (copy[2] << 11) + (copy[3] << 4);
-            int x = copy[4];
-            i1 += x >> 3;
-            _byteArrayBuilder.appendFourBytes(i1);
-            i1 = ((x & 0x7) << 21) + (copy[5] << 14)
-                + (copy[6] << 7) + copy[7];
-            _byteArrayBuilder.appendThreeBytes(i1);
-            ptr += needed;
-            bytesToDecode -= 7;
-            avail = _inputEnd - ptr;
-        }
-
-        final byte[] input = _inputBuffer;
-        // And then all full 8-to-7-byte chunks
-        while (bytesToDecode > 6) {
-            if (avail < 8) { // full blocks missing, quit
-                if (avail > 0) {
-                    System.arraycopy(_inputBuffer, ptr, _inputCopy, 0, avail);
-                    ptr += avail;
-                    _inputCopyLen = avail;
-                }
-                _pending32 = bytesToDecode;
-                _inputPtr = ptr;
-                return false;
-            }
-            int i1 = (input[ptr++] << 25)
-                + (input[ptr++] << 18)
-                + (input[ptr++] << 11)
-                + (input[ptr++] << 4);
-            int x = input[ptr++];
-            i1 += x >> 3;
-            _byteArrayBuilder.appendFourBytes(i1);
-            i1 = ((x & 0x7) << 21)
-                + (input[ptr++] << 14)
-                + (input[ptr++] << 7)
-                + input[ptr++];
-            _byteArrayBuilder.appendThreeBytes(i1);
-            bytesToDecode -= 7;
-            avail -= 8;
-        }
-        _inputPtr = ptr;
-        // and finally, tail?
-        if (bytesToDecode > 0) {
-            if (avail == 0) {
-                _pending32 = bytesToDecode;
-                _inputCopyLen = 0;
-                return false;
-            }
-            return _decode7BitEncodedTail(bytesToDecode, 0);
-        }
-        return true;
-    }
-
-    protected final boolean _decode7BitEncodedTail(int bytesToDecode, int buffered) throws IOException
-    {
-        if (bytesToDecode == 0) {
-            return true;
-        }
-        int avail = _inputEnd - _inputPtr;
-        int needed = bytesToDecode + 1 - buffered;
-
-        if (avail < needed) {
-            System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, avail);
-            _inputPtr += avail;
-            _inputCopyLen = buffered + avail;
-            _pending32 = bytesToDecode;
-            return false;
-        }
-        System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, needed);
-        _inputPtr += needed;
-
-        // Handling of full tail is bit different...
-        int value = _inputCopy[0];
-        for (int i = 1; i < bytesToDecode; ++i) {
-            value = (value << 7) + _inputCopy[i];
-            _byteArrayBuilder.append(value >> (7 - i));
-        }
-        // last byte is different, has remaining 1 - 6 bits, right-aligned
-        value <<= bytesToDecode;
-        _byteArrayBuilder.append(value + _inputCopy[bytesToDecode]);
-        _inputCopyLen = 0;
-        return true;
-    }
-
-    private final int _decodeVInt() throws IOException
-    {
-        int ptr = _inputPtr;
-        int value = _inputBuffer[ptr++];
-        if (value < 0) { // 6 bits
-            _inputPtr = ptr;
-            return value & 0x3F;
-        }
-        int i = _inputBuffer[ptr++];
-        if (i >= 0) { // 13 bits
-            value = (value << 7) + i;
-            i = _inputBuffer[ptr++];
-            if (i >= 0) {
-                value = (value << 7) + i;
-                i = _inputBuffer[ptr++];
-                if (i >= 0) {
-                    value = (value << 7) + i;
-                    // and then we must get negative
-                    i = _inputBuffer[ptr++];
-                    if (i >= 0) {
-                        _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
-                    }
-                }
-            }
-        }
-        _inputPtr = ptr;
-        return (value << 6) + (i & 0x3F);
-    }
-
     /*
     /**********************************************************************
-    /* Internal methods: second-level parsing: numbers, integral
+    /* Internal methods: second-level parsing: numbers, floating-point
     /**********************************************************************
      */
 
@@ -1737,52 +1602,70 @@ VersionUtil.throwInternal();
         _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-    
-    protected final JsonToken _startBigDecimal() throws IOException
+
+    private final JsonToken _startBigDecimal() throws IOException
     {
-        // !!! TBI
-        _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
+        _initByteArrayBuilder();
+        if ((_inputPtr + 5) > _inputEnd) {
+            return _finishBigDecimalScale(0, 0);
+        }
+        return _finishBigDecimalLen(_decodeVInt(), 0);
+    }
+
+    private final JsonToken _finishBigDecimalScale(int value, int bytesRead) throws IOException
+    {
+        while (_inputPtr < _inputEnd) {
+            int b = _inputBuffer[_inputPtr++];
+            if (b < 0) { // got it all; these are last 6 bits
+                value = (value << 6) | (b & 0x3F);
+                return _finishBigDecimalLen(value, 0);
+            }
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 5 ) {
+                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+            }
+            value = (value << 7) | b;
+        }
+        _minorState = MINOR_VALUE_NUMBER_BIGDEC_SCALE;
+        _pending32 = value;
+        _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-/*
-    private final void _finishBigDecimal()
-        throws IOException
-    {
-        int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
-        byte[] raw = _read7BitBinaryWithLength();
-        _numberBigDecimal = new BigDecimal(new BigInteger(raw), scale);
-        _numTypesValid = NR_BIGDECIMAL;
-    }
-    
- */
 
-    /*
-    private final int _readUnsignedVInt() throws IOException
+    private final JsonToken _finishBigDecimalLen(int value, int bytesRead) throws IOException
     {
-        int value = 0;
-        while (true) {
-            if (_inputPtr >= _inputEnd) {
-                _loadMoreGuaranteed();
+        while (_inputPtr < _inputEnd) {
+            int b = _inputBuffer[_inputPtr++];
+            if (b < 0) { // got it all; these are last 6 bits
+                value = (value << 6) | (b & 0x3F);
+                return _finishBigDecimalBody(value, 0);
             }
-            int i = _inputBuffer[_inputPtr++];
-            if (i < 0) { // last byte
-                value = (value << 6) + (i & 0x3F);
-                return value;
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 5 ) {
+                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
             }
-            value = (value << 7) + i;
+            value = (value << 7) | b;
         }
+        _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
+        // note! Scale stored here, need _pending32 for byte length
+        _pending64 = value;
+        _inputCopyLen = bytesRead;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-    */
 
-    private final int _fourBytesToInt(int ptr)  throws IOException
+    private final JsonToken _finishBigDecimalBody(int bytesToDecode, int buffered) throws IOException
     {
-        int i = _inputBuffer[ptr++]; // first 7 bits
-        i = (i << 7) + _inputBuffer[ptr++]; // 14 bits
-        i = (i << 7) + _inputBuffer[ptr++]; // 21
-        i = (i << 7) + _inputBuffer[ptr++];
-        return i;
+        if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
+            int scale = (int) _pending64;
+            _numberBigDecimal = new BigDecimal(new BigInteger(_byteArrayBuilder.toByteArray()), scale);
+            _numberType = NumberType.BIG_DECIMAL;
+            _numTypesValid = NR_BIGDECIMAL;
+            return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
+        }
+        _minorState = MINOR_VALUE_NUMBER_BIGDEC_BODY;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-    
+
     /*
     /**********************************************************************
     /* Shared text decoding methods
@@ -1934,7 +1817,159 @@ VersionUtil.throwInternal();
         _textBuffer.setCurrentLength(outPtr);
         return _textBuffer.contentsAsString();
     }
-    
+
+    /*
+    /**********************************************************************
+    /* Low-level decoding of building blocks (vints, 7-bit encoded blocks)
+    /**********************************************************************
+     */
+
+    private final int _fourBytesToInt(int ptr)  throws IOException
+    {
+        int i = _inputBuffer[ptr++]; // first 7 bits
+        i = (i << 7) + _inputBuffer[ptr++]; // 14 bits
+        i = (i << 7) + _inputBuffer[ptr++]; // 21
+        i = (i << 7) + _inputBuffer[ptr++];
+        return i;
+    }
+
+    private final int _decodeVInt() throws IOException
+    {
+        int ptr = _inputPtr;
+        int value = _inputBuffer[ptr++];
+        if (value < 0) { // 6 bits
+            _inputPtr = ptr;
+            return value & 0x3F;
+        }
+        int i = _inputBuffer[ptr++];
+        if (i >= 0) { // 13 bits
+            value = (value << 7) + i;
+            i = _inputBuffer[ptr++];
+            if (i >= 0) {
+                value = (value << 7) + i;
+                i = _inputBuffer[ptr++];
+                if (i >= 0) {
+                    value = (value << 7) + i;
+                    // and then we must get negative
+                    i = _inputBuffer[ptr++];
+                    if (i >= 0) {
+                        _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                    }
+                }
+            }
+        }
+        _inputPtr = ptr;
+        return (value << 6) + (i & 0x3F);
+    }
+
+    private final boolean _decode7BitEncoded(int bytesToDecode, int buffered) throws IOException
+    {
+        int ptr = _inputPtr;
+        int avail = _inputEnd - ptr;
+
+        // Leftovers from past round?
+        if (buffered > 0) {
+            // but offline case of incomplete last block
+            if (bytesToDecode < 7) {
+                return _decode7BitEncodedTail(bytesToDecode, buffered);
+            }
+            int needed = 8 - buffered;
+            if (avail < needed) { // not enough to decode, just copy
+                System.arraycopy(_inputBuffer, ptr, _inputCopy, buffered, avail);
+                _inputPtr = ptr+avail;
+                _inputCopyLen = buffered + avail;
+                _pending32 = bytesToDecode;
+                return false;
+            }
+            _inputCopyLen = 0;
+            // yes, got full 8 byte chunk
+            final byte[] copy = _inputCopy;
+            System.arraycopy(_inputBuffer, ptr, copy, buffered, needed);
+            int i1 = (copy[0] << 25) + (copy[1] << 18)
+                    + (copy[2] << 11) + (copy[3] << 4);
+            int x = copy[4];
+            i1 += x >> 3;
+            _byteArrayBuilder.appendFourBytes(i1);
+            i1 = ((x & 0x7) << 21) + (copy[5] << 14)
+                + (copy[6] << 7) + copy[7];
+            _byteArrayBuilder.appendThreeBytes(i1);
+            ptr += needed;
+            bytesToDecode -= 7;
+            avail = _inputEnd - ptr;
+        }
+
+        final byte[] input = _inputBuffer;
+        // And then all full 8-to-7-byte chunks
+        while (bytesToDecode > 6) {
+            if (avail < 8) { // full blocks missing, quit
+                if (avail > 0) {
+                    System.arraycopy(_inputBuffer, ptr, _inputCopy, 0, avail);
+                    ptr += avail;
+                    _inputCopyLen = avail;
+                }
+                _pending32 = bytesToDecode;
+                _inputPtr = ptr;
+                return false;
+            }
+            int i1 = (input[ptr++] << 25)
+                + (input[ptr++] << 18)
+                + (input[ptr++] << 11)
+                + (input[ptr++] << 4);
+            int x = input[ptr++];
+            i1 += x >> 3;
+            _byteArrayBuilder.appendFourBytes(i1);
+            i1 = ((x & 0x7) << 21)
+                + (input[ptr++] << 14)
+                + (input[ptr++] << 7)
+                + input[ptr++];
+            _byteArrayBuilder.appendThreeBytes(i1);
+            bytesToDecode -= 7;
+            avail -= 8;
+        }
+        _inputPtr = ptr;
+        // and finally, tail?
+        if (bytesToDecode > 0) {
+            if (avail == 0) {
+                _pending32 = bytesToDecode;
+                _inputCopyLen = 0;
+                return false;
+            }
+            return _decode7BitEncodedTail(bytesToDecode, 0);
+        }
+        return true;
+    }
+
+    protected final boolean _decode7BitEncodedTail(int bytesToDecode, int buffered) throws IOException
+    {
+        if (bytesToDecode == 0) {
+            return true;
+        }
+        int avail = _inputEnd - _inputPtr;
+        int needed = bytesToDecode + 1 - buffered;
+
+        if (avail < needed) {
+            System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, avail);
+            _inputPtr += avail;
+            _inputCopyLen = buffered + avail;
+            _pending32 = bytesToDecode;
+            return false;
+        }
+        System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, needed);
+        _inputPtr += needed;
+
+        // Handling of full tail is bit different...
+        int value = _inputCopy[0];
+        for (int i = 1; i < bytesToDecode; ++i) {
+            value = (value << 7) + _inputCopy[i];
+            _byteArrayBuilder.append(value >> (7 - i));
+        }
+        // last byte is different, has remaining 1 - 6 bits, right-aligned
+        value <<= bytesToDecode;
+        _byteArrayBuilder.append(value + _inputCopy[bytesToDecode]);
+        _inputCopyLen = 0;
+        return true;
+    }
+
     /*
     /**********************************************************************
     /* Handling of nested scope, state

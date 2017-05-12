@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
@@ -300,8 +301,8 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         _testBigIntegers(f, input, data, 0, 1);
 
         _testBigIntegers(f, input, data, 1, 100);
-        _testBigIntegers(f, input, data, 1, 3);
-        _testBigIntegers(f, input, data, 1, 1);
+        _testBigIntegers(f, input, data, 2, 3);
+        _testBigIntegers(f, input, data, 3, 1);
     }
 
     private void _testBigIntegers(SmileFactory f, BigInteger[] values,
@@ -331,4 +332,60 @@ System.err.println();
         assertNull(r.nextToken());
         assertTrue(r.isClosed());
     }
+
+    public void testBigDecimals() throws IOException
+    {
+        BigDecimal bigBase = new BigDecimal("1234567890344656736.125");
+        final BigDecimal[] input = new BigDecimal[] {
+                BigDecimal.ZERO,
+                BigDecimal.ONE,
+                BigDecimal.TEN,
+                BigDecimal.valueOf(-999.25),
+                bigBase,
+                bigBase.divide(new BigDecimal("5")),
+                bigBase.add(bigBase),
+                bigBase.multiply(new BigDecimal("1.23")),
+                bigBase.negate()
+        };
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
+        SmileFactory f = F_REQ_HEADERS;
+        JsonGenerator g = f.createGenerator(bytes);
+        g.writeStartArray();
+        for (int i = 0; i < input.length; ++i) {
+            g.writeNumber(input[i]);
+        }
+        g.writeEndArray();
+        g.close();
+        byte[] data = bytes.toByteArray();
+        
+        /*
+        _testBigDecimals(f, input, data, 0, 100);
+        _testBigDecimals(f, input, data, 0, 3);
+        _testBigDecimals(f, input, data, 0, 1);
+
+        _testBigDecimals(f, input, data, 1, 100);
+        _testBigDecimals(f, input, data, 2, 3);
+        _testBigDecimals(f, input, data, 3, 1);
+        */
+    }
+
+    private void _testBigDecimals(SmileFactory f, BigDecimal[] values,
+            byte[] data, int offset, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        // start with "no token"
+        assertNull(r.currentToken());
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        for (int i = 0; i < values.length; ++i) {
+            BigDecimal expValue = values[i];
+//System.err.println("Expect: "+expValue);
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, r.nextToken());
+            assertEquals(expValue, r.getBigDecimalValue());
+            assertEquals(NumberType.BIG_DECIMAL, r.getNumberType());
+        }
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        assertNull(r.nextToken());
+        assertTrue(r.isClosed());
+    }
+
 }
