@@ -374,6 +374,7 @@ public class NonBlockingByteArrayParser
      */
     private final JsonToken _startValue(int ch) throws IOException
     {
+System.err.println("(curr: "+_currToken+") _startValue: ptr = "+(_inputPtr-1)+", end = "+_inputEnd);            
         main_switch:
         switch ((ch >> 5) & 0x7) {
         case 0: // short shared string value reference
@@ -1485,16 +1486,20 @@ VersionUtil.throwInternal();
     {
         _initByteArrayBuilder();
         if ((_inputPtr + 5) > _inputEnd) {
+System.err.println("_startBigInt: NOT enough for length, necessarily ("+_inputPtr+" - "+_inputEnd+")");
             return _finishBigIntLen(0, 0);
         }
+System.err.println("_startBigInt: got enough");
         return _finishBigIntBody(_decodeVInt(), 0);
     }
 
     private final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
     {
+System.err.println("_finishBigIntLen: value = "+value+", bytesRead = "+bytesRead+", ptr "+_inputPtr+" < "+_inputEnd);
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
+System.err.println("_finishBigIntLen: got length = "+value+", ptr "+_inputPtr+" < "+_inputEnd);
                 value = (value << 6) | (b & 0x3F);
                 return _finishBigIntBody(value, 0);
             }
@@ -1512,22 +1517,20 @@ VersionUtil.throwInternal();
 
     private final JsonToken _finishBigIntBody(int bytesToDecode, int buffered) throws IOException
     {
-//System.err.println("_finishBigIntBody: bytes to decode = "+bytesToDecode+", buffered = "+buffered);
         if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
-//System.err.println("_finishBigIntBody -> decoded ok... construct");
             _numberBigInt = new BigInteger(_byteArrayBuilder.toByteArray());
-//System.err.println("_finishBigIntBody -> "+_numberBigInt);
             _numberType = NumberType.BIG_INTEGER;
             _numTypesValid = NR_BIGINT;
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
         }
-//System.err.println("_finishBigIntBody -> NOT_AVAILABLE");
-        _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
-        return JsonToken.NOT_AVAILABLE;
+        _minorState = MINOR_VALUE_NUMBER_BIGINT_BODY;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
     private final boolean _decode7BitEncoded(int bytesToDecode, int buffered) throws IOException
     {
+System.err.println("_decode7BitEncoded: bytesToDecode = "+bytesToDecode+", buffered = "+buffered+", ptr "+_inputPtr+", end "+_inputEnd);
+
         int ptr = _inputPtr;
         int avail = _inputEnd - ptr;
 
@@ -1535,8 +1538,10 @@ VersionUtil.throwInternal();
         if (buffered > 0) {
             // but offline case of incomplete last block
             if (bytesToDecode < 7) {
+System.err.println("_decode7BitEncoded: bytesToDecode < 7, buffered = "+buffered+" -> TAIL");            
                 return _decode7BitEncodedTail(bytesToDecode, buffered);
             }
+System.err.println("_decode7BitEncoded: bytesToDecode < 7, buffered = "+buffered+", no tail yet");            
             int needed = 8 - buffered;
             if (avail < needed) { // not enough to decode, just copy
                 System.arraycopy(_inputBuffer, ptr, _inputCopy, buffered, avail);
@@ -1548,7 +1553,6 @@ VersionUtil.throwInternal();
             // yes, got full 8 byte chunk
             final byte[] copy = _inputCopy;
             System.arraycopy(_inputBuffer, ptr, copy, buffered, needed);
-            ptr += needed;
             int i1 = (copy[0] << 25) + (copy[1] << 18)
                     + (copy[2] << 11) + (copy[3] << 4);
             int x = copy[4];
@@ -1557,17 +1561,25 @@ VersionUtil.throwInternal();
             i1 = ((x & 0x7) << 21) + (copy[5] << 14)
                 + (copy[6] << 7) + copy[7];
             _byteArrayBuilder.appendThreeBytes(i1);
+            ptr += needed;
             bytesToDecode -= 7;
-            avail -= 8;
-            _inputCopyLen = 0;
+            avail = _inputEnd - ptr;
         }
-
+        
         final byte[] input = _inputBuffer;
         // And then all full 8-to-7-byte chunks
         while (bytesToDecode > 6) {
+System.err.println("_decode7BitEncoded: bytesToDecode ("+bytesToDecode+") > 6 (main loop)");         
             if (avail < 8) { // full blocks missing, quit
+                if (avail > 0) {
+                    System.arraycopy(_inputBuffer, ptr, _inputCopy, 0, avail);
+                    ptr += avail;
+                    _inputCopyLen = avail;
+System.err.println("_decode7BitEncoded: copy "+avail+", so copy len now: "+_inputCopyLen);
+                }
                 _pending32 = bytesToDecode;
                 _inputPtr = ptr;
+System.err.println("_decode7BitEncoded: avail("+avail+") < 8, QUIT! ptr = "+_inputPtr+", end = "+_inputEnd+", pending "+_pending32);    
                 return false;
             }
             int i1 = (input[ptr++] << 25)
@@ -1587,10 +1599,13 @@ VersionUtil.throwInternal();
         }
         _inputPtr = ptr;
 
+System.err.println("_decode7BitEncoded: off the main loop,  bytesToDecode now: "+bytesToDecode);  
+        
         // and finally, tail?
         if (bytesToDecode > 0) {
             if (avail == 0) {
                 _pending32 = bytesToDecode;
+                _inputCopyLen = 0;
                 return false;
             }
             return _decode7BitEncodedTail(bytesToDecode, 0);
@@ -1601,19 +1616,23 @@ VersionUtil.throwInternal();
     protected final boolean _decode7BitEncodedTail(int bytesToDecode, int buffered) throws IOException
     {
         if (bytesToDecode == 0) {
-//System.err.println("_decode7BitEncodedTail: bytes to decode = 0 -> SHORT-CIRCUIT");
+System.err.println("_decode7BitEncodedTail: bytes to decode = 0 -> SHORT-CIRCUIT");
             return true;
         }
-//System.err.println("_decode7BitEncodedTail: bytes to decode = "+bytesToDecode+", buffered = "+buffered);
+System.err.println("_decode7BitEncodedTail: bytes to decode = "+bytesToDecode+", buffered = "+buffered);
+if (buffered > 0) {
+    System.err.println("   _decode7BitEncodedTail: buffered #0 == 0x"+Integer.toHexString(_inputCopy[0] & 0xFF));
+}
         int avail = _inputEnd - _inputPtr;
-        int needed = bytesToDecode + 1;
+        int needed = bytesToDecode + 1 - buffered;
 
-//System.err.println("avail = "+avail+", needed = "+needed);
+System.err.println("_decode7BitEncodedTail: avail = "+avail+", needed = "+needed);
         if (avail < needed) {
             System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, avail);
             _inputPtr += avail;
             _inputCopyLen = buffered + avail;
             _pending32 = bytesToDecode;
+System.err.println("_decode7BitEncodedTail: INSUFF buffered, ptr "+_inputPtr+", copyLen "+_inputCopyLen+", left: "+_pending32);
             return false;
         }
         System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, buffered, needed);
@@ -1621,19 +1640,36 @@ VersionUtil.throwInternal();
 
         // Handling of full tail is bit different...
         int value = _inputCopy[0];
-//System.err.println(" value = 0x"+Integer.toHexString(value));
+System.err.println(" value#0 = 0x"+Integer.toHexString(value));
 
         for (int i = 1; i < bytesToDecode; ++i) {
             value = (value << 7) + _inputCopy[i];
-//System.err.println(" append #"+i+" -> 0x"+Integer.toHexString(value >> (7 - i)));
+System.err.println(" append #"+i+" -> 0x"+Integer.toHexString(value >> (7 - i)));
 
             _byteArrayBuilder.append(value >> (7 - i));
         }
         // last byte is different, has remaining 1 - 6 bits, right-aligned
         value <<= bytesToDecode;
         _byteArrayBuilder.append(value + _inputCopy[bytesToDecode]);
-//System.err.println(" append #"+bytesToDecode+" -> 0x"+Integer.toHexString(value + _inputCopy[bytesToDecode]));
+System.err.println(" append #"+bytesToDecode+" -> 0x"+Integer.toHexString(value + _inputCopy[bytesToDecode]));
         return true;
+        
+        /*
+        if (toDecode > 0) {
+            if ((_inputEnd - _inputPtr) < (toDecode+1)) {
+                _loadToHaveAtLeast(toDecode+1);
+            }
+            int value = _inputBuffer[_inputPtr++];
+            for (int i = 1; i < toDecode; ++i) {
+                value = (value << 7) + _inputBuffer[_inputPtr++];
+                result[ptr++] = (byte) (value >> (7 - i));
+            }
+            // last byte is different, has remaining 1 - 6 bits, right-aligned
+            value <<= toDecode;
+            result[ptr] = (byte) (value + _inputBuffer[_inputPtr++]);
+        }
+         */
+        
     }
 
     private final int _decodeVInt() throws IOException

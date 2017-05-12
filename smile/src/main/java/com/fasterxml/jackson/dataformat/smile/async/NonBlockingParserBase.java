@@ -664,7 +664,7 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     protected void _reportInvalidSharedStringValue(int index) throws IOException
     {
         if (_seenStringValues == null) {
-            _reportError("Encountered shared text value reference, even though document header did not declared shared text value references may be included");
+            _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
     }

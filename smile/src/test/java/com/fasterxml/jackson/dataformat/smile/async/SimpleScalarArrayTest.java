@@ -273,12 +273,20 @@ public class SimpleScalarArrayTest extends AsyncTestBase
 
     public void testBigIntegers() throws IOException
     {
+byte[] b = BigInteger.TEN.toByteArray();
+System.err.println("<10>");
+for (int i = 0; i < b.length; ++i) System.err.printf(" #%02d: 0x%2x\n", i, b[i] & 0xFF);
+System.err.println("</10>");
+        
         BigInteger bigBase = BigInteger.valueOf(1234567890344656736L);
         final BigInteger[] input = new BigInteger[] {
-                BigInteger.ONE,
+                /*
                 BigInteger.ZERO,
+                BigInteger.ONE,
                 BigInteger.TEN,
-                bigBase, bigBase.shiftLeft(100),
+                bigBase,
+                */
+                bigBase.shiftLeft(100),
                 bigBase.add(bigBase),
                 bigBase.multiply(BigInteger.valueOf(17)),
                 bigBase.negate()
@@ -294,12 +302,14 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         g.close();
         byte[] data = bytes.toByteArray();
         _testBigIntegers(f, input, data, 0, 100);
-//        _testBigIntegers(f, input, data, 0, 3);
-//        _testBigIntegers(f, input, data, 0, 1);
+/*
+        _testBigIntegers(f, input, data, 0, 3);
+        _testBigIntegers(f, input, data, 0, 1);
 
         _testBigIntegers(f, input, data, 1, 100);
-//        _testBigIntegers(f, input, data, 1, 3);
-//        _testBigIntegers(f, input, data, 1, 1);
+        _testBigIntegers(f, input, data, 1, 3);
+        _testBigIntegers(f, input, data, 1, 1);
+        */
     }
 
     private void _testBigIntegers(SmileFactory f, BigInteger[] values,
@@ -310,7 +320,9 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
         for (int i = 0; i < values.length; ++i) {
+System.err.println("*** EXPECT: "+values[i]+" (length: "+values[i].toByteArray().length+" bytes)");
             assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
+System.err.println("*** -> got EXPECTed? "+r.getBigIntegerValue());
             assertEquals(values[i], r.getBigIntegerValue());
             assertEquals(NumberType.BIG_INTEGER, r.getNumberType());
         }
