@@ -1609,7 +1609,9 @@ VersionUtil.throwInternal();
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishBigDecimalScale(0, 0);
         }
-        return _finishBigDecimalLen(_decodeVInt(), 0);
+        // note! Scale stored here, need _pending32 for byte length
+        _pending64 = _decodeVInt();
+        return _finishBigDecimalLen(0, 0);
     }
 
     private final JsonToken _finishBigDecimalScale(int value, int bytesRead) throws IOException
@@ -1618,7 +1620,8 @@ VersionUtil.throwInternal();
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
                 value = (value << 6) | (b & 0x3F);
-                return _finishBigDecimalLen(value, 0);
+                _pending64 = value;
+                return _finishBigDecimalLen(0, 0);
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1627,7 +1630,8 @@ VersionUtil.throwInternal();
             value = (value << 7) | b;
         }
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_SCALE;
-        _pending32 = value;
+        // note! Scale stored here, need _pending32 for byte length
+        _pending64 = value;
         _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
@@ -1647,8 +1651,7 @@ VersionUtil.throwInternal();
             value = (value << 7) | b;
         }
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
-        // note! Scale stored here, need _pending32 for byte length
-        _pending64 = value;
+        _pending32 = value;
         _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
@@ -1656,8 +1659,10 @@ VersionUtil.throwInternal();
     private final JsonToken _finishBigDecimalBody(int bytesToDecode, int buffered) throws IOException
     {
         if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
-            int scale = (int) _pending64;
-            _numberBigDecimal = new BigDecimal(new BigInteger(_byteArrayBuilder.toByteArray()), scale);
+            // note: scale value is signed, needs zigzag, so:
+            int scale = SmileUtil.zigzagDecode((int) _pending64);
+            BigInteger bigInt = new BigInteger(_byteArrayBuilder.toByteArray());
+            _numberBigDecimal = new BigDecimal(bigInt, scale);
             _numberType = NumberType.BIG_DECIMAL;
             _numTypesValid = NR_BIGDECIMAL;
             return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);

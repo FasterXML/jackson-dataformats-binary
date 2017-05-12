@@ -357,8 +357,7 @@ System.err.println();
         g.writeEndArray();
         g.close();
         byte[] data = bytes.toByteArray();
-        
-        /*
+
         _testBigDecimals(f, input, data, 0, 100);
         _testBigDecimals(f, input, data, 0, 3);
         _testBigDecimals(f, input, data, 0, 1);
@@ -366,7 +365,6 @@ System.err.println();
         _testBigDecimals(f, input, data, 1, 100);
         _testBigDecimals(f, input, data, 2, 3);
         _testBigDecimals(f, input, data, 3, 1);
-        */
     }
 
     private void _testBigDecimals(SmileFactory f, BigDecimal[] values,
@@ -378,7 +376,6 @@ System.err.println();
         assertToken(JsonToken.START_ARRAY, r.nextToken());
         for (int i = 0; i < values.length; ++i) {
             BigDecimal expValue = values[i];
-//System.err.println("Expect: "+expValue);
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, r.nextToken());
             assertEquals(expValue, r.getBigDecimalValue());
             assertEquals(NumberType.BIG_DECIMAL, r.getNumberType());
