@@ -13,9 +13,5 @@ public class DescriptorLoaderTest extends ProtobufTestBase
         ProtobufSchema nps = fds.forType("main1");
         assertNotNull(nps);
     }
-
-        ProtobufSchema schema = nativeSchema.forType("main1");
-        assertNotNull(schema);
-    }
 }
 
