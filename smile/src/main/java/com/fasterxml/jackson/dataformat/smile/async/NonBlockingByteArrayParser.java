@@ -591,6 +591,8 @@ VersionUtil.throwInternal();
                             }
                             _seenNames[_seenNameCount++] = name;
                         }
+                        _parsingContext.setCurrentName(name);
+                        _majorState = MAJOR_OBJECT_VALUE;
                         return (_currToken = JsonToken.FIELD_NAME);
                     }
                     // Nope: need to copy
@@ -598,6 +600,7 @@ VersionUtil.throwInternal();
                     _inputCopyLen = left;
                     if (left > 0) {
                         System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
+                        _inputPtr += left;
                     }
                 }
                 _minorState = MINOR_FIELD_NAME_SHORT_UNICODE;

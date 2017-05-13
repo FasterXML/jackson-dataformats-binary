@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -36,12 +35,14 @@ public class SimpleObjectTest extends AsyncTestBase
         public boolean a, b, ac, abcde, e;
     }
      */
-    
+
+    private final static String UNICODE_SHORT_NAME = "Unicode"+UNICODE_3BYTES+"RlzOk";
+
     public void testBooleans() throws IOException
     {
         final SmileFactory f = new SmileFactory();
         f.enable(SmileParser.Feature.REQUIRE_HEADER);
-        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'ac':true, 'abcde':true, 'e':false }"), true);
+        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'ac':true, '"+UNICODE_SHORT_NAME+"':true, 'e':false }"), true);
         // first, no offsets
         _testBooleans(f, data, 0, 100);
         _testBooleans(f, data, 0, 3);
@@ -74,7 +75,7 @@ public class SimpleObjectTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
-        assertEquals("abcde", r.currentText());
+        assertEquals(UNICODE_SHORT_NAME, r.currentText());
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
