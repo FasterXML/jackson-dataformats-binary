@@ -23,6 +23,8 @@ public abstract class AsyncReaderWrapper
         return _streamReader.getText();
     }
 
+    public JsonParser parser() { return _streamReader; }
+
     public abstract JsonToken nextToken() throws IOException;
 
     public int getIntValue() throws IOException { return _streamReader.getIntValue(); }
