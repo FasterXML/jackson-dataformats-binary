@@ -124,6 +124,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         for (int i = 0; i < values.length; ++i) {
             assertToken(JsonToken.VALUE_STRING, r.nextToken());
             assertEquals(values[i], r.currentText());
+            assertTrue(r.parser().hasTextCharacters());
         }
         assertToken(JsonToken.END_ARRAY, r.nextToken());
 

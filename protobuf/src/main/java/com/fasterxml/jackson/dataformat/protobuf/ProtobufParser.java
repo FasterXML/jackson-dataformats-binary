@@ -261,20 +261,6 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    // Also, we need some numeric constants
-
-    final static BigInteger BI_MIN_INT = BigInteger.valueOf(Integer.MIN_VALUE);
-    final static BigInteger BI_MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
-
-    final static BigInteger BI_MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
-    final static BigInteger BI_MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
-    
-    final static BigDecimal BD_MIN_LONG = new BigDecimal(BI_MIN_LONG);
-    final static BigDecimal BD_MAX_LONG = new BigDecimal(BI_MAX_LONG);
-
-    final static BigDecimal BD_MIN_INT = new BigDecimal(BI_MIN_INT);
-    final static BigDecimal BD_MAX_INT = new BigDecimal(BI_MAX_INT);
-
     /**
      * Bitfield that indicates which numeric representations
      * have been calculated for the current type

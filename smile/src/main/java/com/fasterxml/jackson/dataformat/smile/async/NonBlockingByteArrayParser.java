@@ -75,14 +75,14 @@ public class NonBlockingByteArrayParser
     {
         // Must not have remaining input
         if (_inputPtr < _inputEnd) {
-            throw new IOException("Still have "+(_inputEnd - _inputPtr)+" undecoded bytes, should not call 'feedInput'");
+            _reportError("Still have %d undecoded bytes, should not call 'feedInput'", _inputEnd - _inputPtr);
         }
         if (end < start) {
-            throw new IOException("Input end ("+end+") may not be before start ("+start+")");
+            _reportError("Input end (%d) may not be before start (%d)", end, start);
         }
         // and shouldn't have been marked as end-of-input
         if (_endOfInput) {
-            throw new IOException("Already closed, can not feed more input");
+            _reportError("Already closed, can not feed more input");
         }
         // Time to update pointers first
         _currInputProcessed += _origBufferLen;
@@ -289,15 +289,17 @@ public class NonBlockingByteArrayParser
             return _handleSharedString(_pending32 + (_inputBuffer[_inputPtr++] & 0xFF));
 
         case MINOR_VALUE_BINARY_RAW_LEN:
+            return _finishRawBinaryLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_BINARY_RAW_BODY:
+            return _finishRawBinaryBody(_pending32, _inputCopyLen);
 
         case MINOR_VALUE_BINARY_7BIT_LEN:
+            return _finish7BitBinaryLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_BINARY_7BIT_BODY:
-            break;
+            return _finish7BitBinaryBody(_pending32, _inputCopyLen);
         default:
         }
-        _throwInvalidState("Illegal state when trying to complete token: ");
-        return null;
+        return _throwInvalidState("Illegal state when trying to complete token: ");
     }
 
     /*
@@ -441,7 +443,7 @@ public class NonBlockingByteArrayParser
             case 0x04: // long variable length unicode
                 return _startLongUnicode();
             case 0x08: // binary, 7-bit
-                return _startQuotedBinary(0);
+                return _start7BitBinary();
             case 0x0C: // long shared string
             case 0x0D:
             case 0x0E:
@@ -1199,105 +1201,6 @@ VersionUtil.throwInternal();
 
     /*
     /**********************************************************************
-    /* Internal methods: second-level parsing: Binary
-    /**********************************************************************
-     */
-    
-    protected final JsonToken _startRawBinary() throws IOException
-    {
-        // did not get it all; mark the state so we know where to return:
-//        _tokenIncomplete = true;
-        _minorState = MINOR_VALUE_BINARY_RAW_LEN;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
-    }
-
-/*
-
-    private final void _finishRawBinary() throws IOException
-    {
-        int byteLen = _readUnsignedVInt();
-        _binaryValue = new byte[byteLen];
-        if (_inputPtr >= _inputEnd) {
-            _loadMoreGuaranteed();
-        }
-        int ptr = 0;
-        while (true) {
-            int toAdd = Math.min(byteLen, _inputEnd - _inputPtr);
-            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, ptr, toAdd);
-            _inputPtr += toAdd;
-            ptr += toAdd;
-            byteLen -= toAdd;
-            if (byteLen <= 0) {
-                return;
-            }
-            _loadMoreGuaranteed();
-        }
-    }
- */
-    
-    protected final JsonToken _startQuotedBinary(int substate) throws IOException
-    {
-        // did not get it all; mark the state so we know where to return:
-//        _tokenIncomplete = true;
-        _majorState = MINOR_VALUE_BINARY_7BIT_LEN;
-        _minorState = substate;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
-    }
-    
-    /*
-    private final byte[] _read7BitBinaryWithLength()
-        throws IOException
-    {
-        int byteLen = _readUnsignedVInt();
-        byte[] result = new byte[byteLen];
-        int ptr = 0;
-        int lastOkPtr = byteLen - 7;
-        
-        // first, read all 7-by-8 byte chunks
-        while (ptr <= lastOkPtr) {
-            if ((_inputEnd - _inputPtr) < 8) {
-                _loadToHaveAtLeast(8);
-            }
-            int i1 = (_inputBuffer[_inputPtr++] << 25)
-                + (_inputBuffer[_inputPtr++] << 18)
-                + (_inputBuffer[_inputPtr++] << 11)
-                + (_inputBuffer[_inputPtr++] << 4);
-            int x = _inputBuffer[_inputPtr++];
-            i1 += x >> 3;
-            int i2 = ((x & 0x7) << 21)
-                + (_inputBuffer[_inputPtr++] << 14)
-                + (_inputBuffer[_inputPtr++] << 7)
-                + _inputBuffer[_inputPtr++];
-            // Ok: got our 7 bytes, just need to split, copy
-            result[ptr++] = (byte)(i1 >> 24);
-            result[ptr++] = (byte)(i1 >> 16);
-            result[ptr++] = (byte)(i1 >> 8);
-            result[ptr++] = (byte)i1;
-            result[ptr++] = (byte)(i2 >> 16);
-            result[ptr++] = (byte)(i2 >> 8);
-            result[ptr++] = (byte)i2;
-        }
-        // and then leftovers: n+1 bytes to decode n bytes
-        int toDecode = (result.length - ptr);
-        if (toDecode > 0) {
-            if ((_inputEnd - _inputPtr) < (toDecode+1)) {
-                _loadToHaveAtLeast(toDecode+1);
-            }
-            int value = _inputBuffer[_inputPtr++];
-            for (int i = 1; i < toDecode; ++i) {
-                value = (value << 7) + _inputBuffer[_inputPtr++];
-                result[ptr++] = (byte) (value >> (7 - i));
-            }
-            // last byte is different, has remaining 1 - 6 bits, right-aligned
-            value <<= toDecode;
-            result[ptr] = (byte) (value + _inputBuffer[_inputPtr++]);
-        }
-        return result;
-    }
-     */
-
-    /*
-    /**********************************************************************
     /* Internal methods, UTF8 decoding
     /**********************************************************************
      */
@@ -1676,6 +1579,101 @@ VersionUtil.throwInternal();
 
     /*
     /**********************************************************************
+    /* Internal methods: second-level parsing: Binary
+    /**********************************************************************
+     */
+    
+    protected final JsonToken _startRawBinary() throws IOException
+    {
+        if ((_inputPtr + 5) > _inputEnd) {
+            return _finishRawBinaryLen(0, 0);
+        }
+        final int len = _decodeVInt();
+        _binaryValue = new byte[len];
+        return _finishRawBinaryBody(len, 0);
+    }
+
+    private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
+    {
+        while (_inputPtr < _inputEnd) {
+            int b = _inputBuffer[_inputPtr++];
+            if (b < 0) { // got it all; these are last 6 bits
+                final int len = (value << 6) | (b & 0x3F);
+                _binaryValue = new byte[len];
+                return _finishRawBinaryBody(len, 0);
+            }
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 5 ) {
+                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+            }
+            value = (value << 7) | b;
+        }
+        _minorState = MINOR_VALUE_BINARY_RAW_LEN;
+        _pending32 = value;
+        _inputCopyLen = bytesRead;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+
+    private final JsonToken _finishRawBinaryBody(int totalLen, int offset) throws IOException
+    {
+        int needed = totalLen - offset;
+        int avail = _inputEnd - _inputPtr;
+        if (avail >= needed) {
+            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, offset, needed);
+            _inputPtr += needed;
+            return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
+        }
+        if (avail > 0) {
+            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, offset, avail);
+            _inputPtr += avail;
+        }
+        _pending32 = totalLen;
+        _inputCopyLen = offset+avail;
+        _minorState = MINOR_VALUE_BINARY_RAW_BODY;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+    
+    private final JsonToken _start7BitBinary() throws IOException
+    {
+        _initByteArrayBuilder();
+        if ((_inputPtr + 5) > _inputEnd) {
+            return _finish7BitBinaryLen(0, 0);
+        }
+        return _finish7BitBinaryBody(_decodeVInt(), 0);
+    }
+
+    private final JsonToken _finish7BitBinaryLen(int value, int bytesRead) throws IOException
+    {
+        while (_inputPtr < _inputEnd) {
+            int b = _inputBuffer[_inputPtr++];
+            if (b < 0) { // got it all; these are last 6 bits
+                value = (value << 6) | (b & 0x3F);
+                return _finish7BitBinaryBody(value, 0);
+            }
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 5 ) {
+                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+            }
+            value = (value << 7) | b;
+        }
+        _minorState = MINOR_VALUE_BINARY_7BIT_LEN;
+        _pending32 = value;
+        _inputCopyLen = bytesRead;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+
+    private final JsonToken _finish7BitBinaryBody(int bytesToDecode, int buffered) throws IOException
+    {
+        if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
+            _binaryValue = _byteArrayBuilder.toByteArray();
+            return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
+        }
+        _minorState = MINOR_VALUE_BINARY_7BIT_BODY;
+        return (_currToken = JsonToken.NOT_AVAILABLE);
+    }
+    
+    /*
+    /**********************************************************************
     /* Shared text decoding methods
     /**********************************************************************
      */
@@ -1987,21 +1985,19 @@ VersionUtil.throwInternal();
     private final JsonToken _startArrayScope() throws IOException
     {
         _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
-        int st = MAJOR_ARRAY_ELEMENT;
-        _majorState = st;
-        _majorStateAfterValue = st;
+        _majorState = MAJOR_ARRAY_ELEMENT;
+        _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
         return (_currToken = JsonToken.START_ARRAY);
     }
 
     private final JsonToken _startObjectScope() throws IOException
     {
         _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
-        int st = MAJOR_OBJECT_FIELD;
-        _majorState = st;
-        _majorStateAfterValue = st;
+        _majorState = MAJOR_OBJECT_FIELD;
+        _majorStateAfterValue = MAJOR_OBJECT_FIELD;
         return (_currToken = JsonToken.START_OBJECT);
     }
-    
+
     private final JsonToken _closeArrayScope() throws IOException
     {
         if (!_parsingContext.inArray()) {

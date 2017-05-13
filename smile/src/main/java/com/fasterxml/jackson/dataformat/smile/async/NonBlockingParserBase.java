@@ -382,21 +382,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     /**********************************************************************
      */
 
-    protected final void _checkNumericValue() throws IOException
-    {
-        // Int or float?
-        if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            return;
-        }
-        _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
-    }
-
-    /*
-    /**********************************************************************
-    /* Public API, access to token information, binary
-    /**********************************************************************
-     */
-
     @Override
     public byte[] getBinaryValue(Base64Variant b64variant) throws IOException
     {
@@ -697,7 +682,7 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         _reportInvalidOther(mask);
     }
 
-    protected void _throwInvalidState(String desc)
+    protected <T> T _throwInvalidState(String desc)
     {
         throw new IllegalStateException(desc+": majorState="+_majorState);
     }
