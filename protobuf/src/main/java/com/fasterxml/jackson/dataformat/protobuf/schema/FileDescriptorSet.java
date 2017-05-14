@@ -376,7 +376,7 @@ public class FileDescriptorSet
 
     static class FieldOptions
     {
-        CType ctype; // [default = STRING];
+        public CType ctype; // [default = STRING];
 
         enum CType
         {
@@ -489,6 +489,4 @@ public class FileDescriptorSet
             public int end;
         }
     }
-
-
 }
