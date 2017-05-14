@@ -12,11 +12,7 @@ import java.net.URL;
 
 /**
  * Class used for loading protobuf descriptors (from .desc files
- * or equivalent sources), to construct native schema.
- * <p>
- * Note that proto name argument is optional if (and only if) desired
- * root file is the first file in definition; otherwise an
- * exception will be thrown.
+ * or equivalent sources), to construct FileDescriptorSet.
  */
 public class DescriptorLoader
 {
