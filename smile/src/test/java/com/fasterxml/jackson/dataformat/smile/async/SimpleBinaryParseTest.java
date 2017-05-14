@@ -1,62 +1,51 @@
-package com.fasterxml.jackson.dataformat.smile.parse;
+package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.*;
 
 import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.async.AsyncReaderWrapper;
 
-public class ParserBinaryHandlingTest extends BaseTestForSmile
+public class SimpleBinaryParseTest extends AsyncTestBase
 {
+    private final SmileFactory F_RAW = new SmileFactory(); {
+        F_RAW.disable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
+    }
+    private final SmileFactory F_7BIT = new SmileFactory(); {
+        F_7BIT.enable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
+    }
+
     final static int[] SIZES = new int[] {
-        1, 2, 3, 4, 5, 6,
-        7, 8, 12,
-        100, 350, 1900, 6000, 19000, 65000,
+        1, 2, 3, 4, 5, 7, 11,
+        90, 350, 1900, 6000, 19000, 65000,
         139000
     };
-    
-    public void testRawAsArray() throws IOException
-    {
-        _testBinaryAsArray(true);
-    }
-
-    public void test7BitAsArray() throws IOException
-    {
-        _testBinaryAsArray(false);
-    }
-
-    // Added based on [JACKSON-376]
-    public void testRawAsObject() throws IOException
-    {
-        _testBinaryAsObject(true);
-    }
-
-    // Added based on [JACKSON-376]
-    public void test7BitAsObject() throws IOException
-    {
-        _testBinaryAsObject(false);
-    }
 
     public void testRawAsRootValue() throws IOException {
-        _testBinaryAsRoot(true);
+        _testBinaryAsRoot(F_RAW);
+    }
+
+    public void testRawAsArray() throws IOException {
+        _testBinaryAsArray(F_RAW);
+    }
+
+    public void testRawAsObject() throws IOException {
+        _testBinaryAsObject(F_RAW);
+    }
+    
+    public void test7BitAsArray() throws IOException {
+        _testBinaryAsArray(F_7BIT);
+    }
+
+    public void test7BitAsObject() throws IOException {
+        _testBinaryAsObject(F_7BIT);
     }
 
     public void test7BitAsRootValue() throws IOException {
-        _testBinaryAsRoot(false);
-    }
-
-    // [Issue-17] (streaming binary reads)
-    public void testStreamingRaw() throws IOException {
-        _testStreaming(true);
-    }
-
-    // [Issue-17] (streaming binary reads)
-    public void testStreamingEncoded() throws IOException {
-        _testStreaming(false);
+        _testBinaryAsRoot(F_7BIT);
     }
 
     /*
@@ -65,55 +54,77 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
     /**********************************************************
      */
 
-    private void _testBinaryAsRoot(boolean raw) throws IOException
+    private void _testBinaryAsRoot(SmileFactory f) throws IOException {
+        _testBinaryAsRoot2(f, 1, Integer.MAX_VALUE);
+        _testBinaryAsRoot2(f, 0, 3);
+        _testBinaryAsRoot2(f, 1, 1);
+    }
+
+    private void _testBinaryAsObject(SmileFactory f) throws IOException {
+        _testBinaryAsObject2(f, 1, Integer.MAX_VALUE);
+        _testBinaryAsObject2(f, 0, 3);
+        _testBinaryAsObject2(f, 1, 1);
+    }
+
+    private void _testBinaryAsArray(SmileFactory f) throws IOException {
+//        _testBinaryAsArray2(f, 1, Integer.MAX_VALUE);
+        _testBinaryAsArray2(f, 0, 3);
+        _testBinaryAsArray2(f, 1, 1);
+    }
+
+    /*
+    /**********************************************************
+    /* Helper methods
+    /**********************************************************
+     */
+    
+    private void _testBinaryAsRoot2(SmileFactory f, int offset, int readSize) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw);
         for (int size : SIZES) {
-            byte[] data = _generateData(size);
+            byte[] binary = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
             SmileGenerator g = f.createGenerator(bo);
-            g.writeBinary(data);
+            g.writeBinary(binary);
             g.close();
-            byte[] smile = bo.toByteArray();            
-            
+            byte[] smile = bo.toByteArray();
+
             // and verify
-            SmileParser p = f.createParser(smile);
+            AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
-            assertArrayEquals(data, result);
+            assertArrayEquals(binary, result);
             assertNull(p.nextToken());
             p.close();
 
             // and second time around, skipping
-            p = f.createParser(smile);
+            p = asyncForBytes(f, readSize, smile, offset);
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertNull(p.nextToken());
             p.close();
         }
     }
-
-    private void _testBinaryAsArray(boolean raw) throws IOException
+    
+    private void _testBinaryAsArray2(SmileFactory f, int offset, int readSize) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw);
         for (int size : SIZES) {
-            byte[] data = _generateData(size);
+            byte[] binary = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
             SmileGenerator g = f.createGenerator(bo);
             g.writeStartArray();
-            g.writeBinary(data);
+            g.writeBinary(binary);
             g.writeNumber(1); // just to verify there's no overrun
             g.writeEndArray();
             g.close();
             byte[] smile = bo.toByteArray();            
             
             // and verify
-            SmileParser p = f.createParser(smile);
+            AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+
             byte[] result = p.getBinaryValue();
-            assertArrayEquals(data, result);
+
+            assertArrayEquals(binary, result);
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(1, p.getIntValue());
             assertToken(JsonToken.END_ARRAY, p.nextToken());
@@ -121,7 +132,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             p.close();
 
             // and second time around, skipping
-            p = f.createParser(smile);
+            p = asyncForBytes(f, readSize, smile, offset);
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -130,11 +141,9 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             p.close();
         }
     }
-
-    private void _testBinaryAsObject(boolean raw) throws IOException
+    
+    private void _testBinaryAsObject2(SmileFactory f, int offset, int readSize) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw);
         for (int size : SIZES) {
             byte[] data = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
@@ -144,14 +153,13 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             g.writeBinary(data);
             g.writeEndObject();
             g.close();
-            byte[] smile = bo.toByteArray();            
+            byte[] smile = bo.toByteArray();
             
-            // and verify
-            SmileParser p = f.createParser(smile);
+            AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
-            assertEquals("binary", p.getCurrentName());
+            assertEquals("binary", p.currentName());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
             assertArrayEquals(data, result);
@@ -160,42 +168,10 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             p.close();
 
             // and second time around, skipping
-            p = f.createParser(smile);
+            p = asyncForBytes(f, readSize, smile, offset);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
-            assertToken(JsonToken.END_OBJECT, p.nextToken());
-            assertNull(p.nextToken());
-            p.close();
-        }
-    }
-
-    private void _testStreaming(boolean raw) throws IOException
-    {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw);
-        for (int size : SIZES) {
-            byte[] data = _generateData(size);
-            ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
-            g.writeStartObject();
-            g.writeFieldName("b");
-            g.writeBinary(data);
-            g.writeEndObject();
-            g.close();
-            byte[] smile = bo.toByteArray();            
-            
-            // and verify
-            SmileParser p = f.createParser(smile);
-            assertToken(JsonToken.START_OBJECT, p.nextToken());
-
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
-            assertEquals("b", p.getCurrentName());
-            assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
-            ByteArrayOutputStream result = new ByteArrayOutputStream(size);
-            int gotten = p.readBinaryValue(result);
-            assertEquals(size, gotten);
-            assertArrayEquals(data, result.toByteArray());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
             p.close();

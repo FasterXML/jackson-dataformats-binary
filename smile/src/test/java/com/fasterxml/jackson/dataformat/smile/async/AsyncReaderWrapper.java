@@ -22,6 +22,9 @@ public abstract class AsyncReaderWrapper
     public String currentText() throws IOException {
         return _streamReader.getText();
     }
+    public String currentName() throws IOException {
+        return _streamReader.getCurrentName();
+    }
 
     public JsonParser parser() { return _streamReader; }
 
@@ -33,8 +36,11 @@ public abstract class AsyncReaderWrapper
     public double getDoubleValue() throws IOException { return _streamReader.getDoubleValue(); }
     public BigInteger getBigIntegerValue() throws IOException { return _streamReader.getBigIntegerValue(); }
     public BigDecimal getBigDecimalValue() throws IOException { return _streamReader.getDecimalValue(); }
+    public byte[] getBinaryValue() throws IOException { return _streamReader.getBinaryValue(); }
 
     public NumberType getNumberType() throws IOException { return _streamReader.getNumberType(); }
+
+    public void close() throws IOException { _streamReader.close(); }
 
     public boolean isClosed() {
         return _streamReader.isClosed();

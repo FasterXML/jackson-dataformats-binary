@@ -241,7 +241,7 @@ public class NonBlockingByteArrayParser
         case MINOR_VALUE_NUMBER_BIGINT_LEN:
             return _finishBigIntLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGINT_BODY:
-            return _finishBigIntBody(_pending32, _inputCopyLen);
+            return _finishBigIntBody();
 
         case MINOR_VALUE_NUMBER_FLOAT:
             return _finishFloat(_pending32, _inputCopyLen);
@@ -253,7 +253,7 @@ public class NonBlockingByteArrayParser
         case MINOR_VALUE_NUMBER_BIGDEC_LEN:
             return _finishBigDecimalLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC_BODY:
-            return _finishBigDecimalBody(_pending32, _inputCopyLen);
+            return _finishBigDecimalBody();
             
         case MINOR_VALUE_STRING_SHORT_ASCII:
         case MINOR_VALUE_STRING_SHORT_UNICODE:
@@ -291,12 +291,12 @@ public class NonBlockingByteArrayParser
         case MINOR_VALUE_BINARY_RAW_LEN:
             return _finishRawBinaryLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_BINARY_RAW_BODY:
-            return _finishRawBinaryBody(_pending32, _inputCopyLen);
+            return _finishRawBinaryBody();
 
         case MINOR_VALUE_BINARY_7BIT_LEN:
             return _finish7BitBinaryLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_BINARY_7BIT_BODY:
-            return _finish7BitBinaryBody(_pending32, _inputCopyLen);
+            return _finish7BitBinaryBody();
         default:
         }
         return _throwInvalidState("Illegal state when trying to complete token: ");
@@ -1395,7 +1395,9 @@ VersionUtil.throwInternal();
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishBigIntLen(0, 0);
         }
-        return _finishBigIntBody(_decodeVInt(), 0);
+        _pending32 = _decodeVInt();
+        _inputCopyLen = 0;
+        return _finishBigIntBody();
     }
 
     private final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
@@ -1403,8 +1405,9 @@ VersionUtil.throwInternal();
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                value = (value << 6) | (b & 0x3F);
-                return _finishBigIntBody(value, 0);
+                _pending32 = (value << 6) | (b & 0x3F);
+                _inputCopyLen = 0;
+                return _finishBigIntBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1418,9 +1421,9 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishBigIntBody(int bytesToDecode, int buffered) throws IOException
+    private final JsonToken _finishBigIntBody() throws IOException
     {
-        if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
+        if (_decode7BitEncoded()) { // got it all!
             _numberBigInt = new BigInteger(_byteArrayBuilder.toByteArray());
             _numberType = NumberType.BIG_INTEGER;
             _numTypesValid = NR_BIGINT;
@@ -1547,8 +1550,9 @@ VersionUtil.throwInternal();
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                value = (value << 6) | (b & 0x3F);
-                return _finishBigDecimalBody(value, 0);
+                _pending32 = (value << 6) | (b & 0x3F);
+                _inputCopyLen = 0;
+                return _finishBigDecimalBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1562,9 +1566,9 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishBigDecimalBody(int bytesToDecode, int buffered) throws IOException
+    private final JsonToken _finishBigDecimalBody() throws IOException
     {
-        if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
+        if (_decode7BitEncoded()) { // got it all!
             // note: scale value is signed, needs zigzag, so:
             int scale = SmileUtil.zigzagDecode((int) _pending64);
             BigInteger bigInt = new BigInteger(_byteArrayBuilder.toByteArray());
@@ -1590,7 +1594,9 @@ VersionUtil.throwInternal();
         }
         final int len = _decodeVInt();
         _binaryValue = new byte[len];
-        return _finishRawBinaryBody(len, 0);
+        _pending32 = len;
+        _inputCopyLen = 0;
+        return _finishRawBinaryBody();
     }
 
     private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
@@ -1600,7 +1606,9 @@ VersionUtil.throwInternal();
             if (b < 0) { // got it all; these are last 6 bits
                 final int len = (value << 6) | (b & 0x3F);
                 _binaryValue = new byte[len];
-                return _finishRawBinaryBody(len, 0);
+                _pending32 = len;
+                _inputCopyLen = 0;
+                return _finishRawBinaryBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1614,8 +1622,11 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishRawBinaryBody(int totalLen, int offset) throws IOException
+    private final JsonToken _finishRawBinaryBody() throws IOException
     {
+        int totalLen = _pending32;
+        int offset = _inputCopyLen;
+        
         int needed = totalLen - offset;
         int avail = _inputEnd - _inputPtr;
         if (avail >= needed) {
@@ -1639,7 +1650,9 @@ VersionUtil.throwInternal();
         if ((_inputPtr + 5) > _inputEnd) {
             return _finish7BitBinaryLen(0, 0);
         }
-        return _finish7BitBinaryBody(_decodeVInt(), 0);
+        _pending32 = _decodeVInt();
+        _inputCopyLen = 0;
+        return _finish7BitBinaryBody();
     }
 
     private final JsonToken _finish7BitBinaryLen(int value, int bytesRead) throws IOException
@@ -1647,8 +1660,9 @@ VersionUtil.throwInternal();
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                value = (value << 6) | (b & 0x3F);
-                return _finish7BitBinaryBody(value, 0);
+                _pending32 = (value << 6) | (b & 0x3F);
+                _inputCopyLen = 0;
+                return _finish7BitBinaryBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1662,9 +1676,9 @@ VersionUtil.throwInternal();
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finish7BitBinaryBody(int bytesToDecode, int buffered) throws IOException
+    private final JsonToken _finish7BitBinaryBody() throws IOException
     {
-        if (_decode7BitEncoded(bytesToDecode, buffered)) { // got it all!
+        if (_decode7BitEncoded()) { // got it all!
             _binaryValue = _byteArrayBuilder.toByteArray();
             return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
@@ -1868,8 +1882,11 @@ VersionUtil.throwInternal();
         return (value << 6) + (i & 0x3F);
     }
 
-    private final boolean _decode7BitEncoded(int bytesToDecode, int buffered) throws IOException
+    private final boolean _decode7BitEncoded() throws IOException
     {
+        int bytesToDecode = _pending32;
+        int buffered = _inputCopyLen;
+        
         int ptr = _inputPtr;
         int avail = _inputEnd - ptr;
 
