@@ -98,8 +98,8 @@ public class FileDescriptorSet
         @JsonProperty("package")
         public String packageName;
         public String[] dependency;
-        public long[] public_dependency;
-        public long[] weak_dependency;
+        public int[] public_dependency;
+        public int[] weak_dependency;
         public DescriptorProto[] message_type;
         public EnumDescriptorProto[] enum_type;
         public ServiceDescriptorProto[] service;
@@ -127,8 +127,8 @@ public class FileDescriptorSet
 
         class ExtensionRange
         {
-            public long start;
-            public long end;
+            public int start;
+            public int end;
         }
 
         public ExtensionRange[] extension_range;
@@ -137,6 +137,8 @@ public class FileDescriptorSet
 
         class ReservedRange
         {
+            public int start; // Inclusive.
+            public int end;   // Exclusive.
         }
 
         public ReservedRange[] reserved_range;
@@ -219,42 +221,6 @@ public class FileDescriptorSet
 
     static class FieldDescriptorProto
     {
-        static private Map<Type, DataType> scalarTypeMap = new HashMap();
-        static private Map<Label, FieldElement.Label> labelMap = new HashMap();
-
-        static {
-            scalarTypeMap.put(Type.TYPE_DOUBLE, DataType.ScalarType.DOUBLE);
-            scalarTypeMap.put(Type.TYPE_FLOAT, DataType.ScalarType.FLOAT);
-            scalarTypeMap.put(Type.TYPE_INT64, DataType.ScalarType.INT64);
-            scalarTypeMap.put(Type.TYPE_UINT64, DataType.ScalarType.UINT64);
-            scalarTypeMap.put(Type.TYPE_INT32, DataType.ScalarType.INT32);
-            scalarTypeMap.put(Type.TYPE_FIXED64, DataType.ScalarType.FIXED64);
-            scalarTypeMap.put(Type.TYPE_FIXED32, DataType.ScalarType.FIXED32);
-            scalarTypeMap.put(Type.TYPE_BOOL, DataType.ScalarType.BOOL);
-            scalarTypeMap.put(Type.TYPE_STRING, DataType.ScalarType.STRING);
-            scalarTypeMap.put(Type.TYPE_BYTES, DataType.ScalarType.BYTES);
-            scalarTypeMap.put(Type.TYPE_UINT32, DataType.ScalarType.UINT32);
-            scalarTypeMap.put(Type.TYPE_SFIXED32, DataType.ScalarType.SFIXED32);
-            scalarTypeMap.put(Type.TYPE_SFIXED64, DataType.ScalarType.SFIXED64);
-            scalarTypeMap.put(Type.TYPE_SINT32, DataType.ScalarType.SINT32);
-            scalarTypeMap.put(Type.TYPE_SINT64, DataType.ScalarType.SINT64);
-
-            labelMap.put(Label.LABEL_OPTIONAL, FieldElement.Label.OPTIONAL);
-            labelMap.put(Label.LABEL_REQUIRED, FieldElement.Label.REQUIRED);
-            labelMap.put(Label.LABEL_REPEATED, FieldElement.Label.REPEATED);
-        }
-
-        public String name;
-        public int number;
-        public Label label;
-        public Type type;
-        public String type_name;
-        public String extendee;
-        public String default_value;
-        public long oneof_index;
-        public String json_name;
-        public FieldOptions options;
-
         enum Type
         {
             TYPE_DOUBLE,
@@ -282,6 +248,42 @@ public class FileDescriptorSet
             LABEL_OPTIONAL,
             LABEL_REQUIRED,
             LABEL_REPEATED
+        }
+
+        public String name;
+        public int number;
+        public Label label;
+        public Type type;
+        public String type_name;
+        public String extendee;
+        public String default_value;
+        public int oneof_index;
+        public String json_name;
+        public FieldOptions options;
+
+        static private Map<Type, DataType> scalarTypeMap = new HashMap();
+        static private Map<Label, FieldElement.Label> labelMap = new HashMap();
+
+        static {
+            scalarTypeMap.put(Type.TYPE_DOUBLE, DataType.ScalarType.DOUBLE);
+            scalarTypeMap.put(Type.TYPE_FLOAT, DataType.ScalarType.FLOAT);
+            scalarTypeMap.put(Type.TYPE_INT64, DataType.ScalarType.INT64);
+            scalarTypeMap.put(Type.TYPE_UINT64, DataType.ScalarType.UINT64);
+            scalarTypeMap.put(Type.TYPE_INT32, DataType.ScalarType.INT32);
+            scalarTypeMap.put(Type.TYPE_FIXED64, DataType.ScalarType.FIXED64);
+            scalarTypeMap.put(Type.TYPE_FIXED32, DataType.ScalarType.FIXED32);
+            scalarTypeMap.put(Type.TYPE_BOOL, DataType.ScalarType.BOOL);
+            scalarTypeMap.put(Type.TYPE_STRING, DataType.ScalarType.STRING);
+            scalarTypeMap.put(Type.TYPE_BYTES, DataType.ScalarType.BYTES);
+            scalarTypeMap.put(Type.TYPE_UINT32, DataType.ScalarType.UINT32);
+            scalarTypeMap.put(Type.TYPE_SFIXED32, DataType.ScalarType.SFIXED32);
+            scalarTypeMap.put(Type.TYPE_SFIXED64, DataType.ScalarType.SFIXED64);
+            scalarTypeMap.put(Type.TYPE_SINT32, DataType.ScalarType.SINT32);
+            scalarTypeMap.put(Type.TYPE_SINT64, DataType.ScalarType.SINT64);
+
+            labelMap.put(Label.LABEL_OPTIONAL, FieldElement.Label.OPTIONAL);
+            labelMap.put(Label.LABEL_REQUIRED, FieldElement.Label.REQUIRED);
+            labelMap.put(Label.LABEL_REPEATED, FieldElement.Label.REPEATED);
         }
 
         public DataType getDataType()
@@ -342,6 +344,9 @@ public class FileDescriptorSet
 
         enum OptimizeMode
         {
+            SPEED,
+            CODE_SIZE,
+            LITE_RUNTIME
         }
 
         public OptimizeMode optimize_for; // [default=SPEED];
@@ -431,7 +436,9 @@ public class FileDescriptorSet
 
         enum IdempotencyLevel
         {
-            IDEMPOTENCY_UNKNOWN;
+            IDEMPOTENCY_UNKNOWN,
+            NO_SIDE_EFFECTS,
+            IDEMPOTENT
         }
 
         public IdempotencyLevel idempotency_level; // [default=IDEMPOTENCY_UNKNOWN];
@@ -462,8 +469,8 @@ public class FileDescriptorSet
 
         class Location
         {
-            public long[] path; //  [packed=true];
-            public long[] span; //  [packed=true];
+            public int[] path; //  [packed=true];
+            public int[] span; //  [packed=true];
             public String leading_comments;
             public String trailing_comments;
             public String[] leading_detached_comments;
@@ -478,8 +485,8 @@ public class FileDescriptorSet
         {
             public long[] path; // [packed=true];
             public String source_file;
-            public long begin;
-            public long end;
+            public int begin;
+            public int end;
         }
     }
 
