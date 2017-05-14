@@ -125,7 +125,7 @@ public class FileDescriptorSet
         public DescriptorProto[] nested_type;
         public EnumDescriptorProto[] enum_type;
 
-        class ExtensionRange
+        static class ExtensionRange
         {
             public int start;
             public int end;
@@ -135,7 +135,7 @@ public class FileDescriptorSet
         public OneofDescriptorProto[] oneof_decl;
         public MessageOptions options;
 
-        class ReservedRange
+        static class ReservedRange
         {
             public int start; // Inclusive.
             public int end;   // Exclusive.
@@ -448,7 +448,7 @@ public class FileDescriptorSet
 
     static class UninterpretedOption
     {
-        class NamePart
+        static class NamePart
         {
             public String name_part;
             public boolean is_extension;
@@ -467,7 +467,7 @@ public class FileDescriptorSet
     {
         public Location[] location;
 
-        class Location
+        static class Location
         {
             public int[] path; //  [packed=true];
             public int[] span; //  [packed=true];
@@ -481,7 +481,7 @@ public class FileDescriptorSet
     {
         public Annotation[] annotation;
 
-        class Annotation
+        static class Annotation
         {
             public long[] path; // [packed=true];
             public String source_file;
