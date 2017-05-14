@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
-import com.squareup.protoparser.ProtoFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -10,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * Class used for loading protobuf descriptors (from .desc files
@@ -25,7 +23,6 @@ public class DescriptorLoader
     private final String DESCRIPTOR_PROTO = "/descriptor.proto";
     private ProtobufMapper descriptorMapper;
     private ProtobufSchema descriptorFileSchema;
-    private Map<String, ProtoFile> protoFileMap;
 
     /**
      * Standard loader instance that is usually used for loading descriptor file.

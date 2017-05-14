@@ -160,7 +160,7 @@ public class FileDescriptorSet
                         String typeName = fullyQualifiedtypeName.substring(fullyQualifiedtypeName.indexOf(".", 2) + 1);
                         dataType = DataType.NamedType.create(typeName);
                     } else {
-                        dataType = FieldDescriptorProto.Type.getDataType(type);
+                        dataType = f.getDataType();
                     }
 
                     // build field
@@ -219,70 +219,29 @@ public class FileDescriptorSet
 
     static class FieldDescriptorProto
     {
-        enum Type
-        {
-            TYPE_DOUBLE,
-            TYPE_FLOAT,
-            TYPE_INT64,
-            TYPE_UINT64,
-            TYPE_LONG,
-            TYPE_FIXED64,
-            TYPE_FIXED32,
-            TYPE_BOOL,
-            TYPE_STRING,
-            TYPE_GROUP,
-            TYPE_MESSAGE,
-            TYPE_BYTES,
-            TYPE_UINT32,
-            TYPE_ENUM,
-            TYPE_SFIXED32,
-            TYPE_SFIXED64,
-            TYPE_SINT32,
-            TYPE_SINT64;
-
-            static private Map<Type, DataType> labelMap = new HashMap();
-
-            static {
-                labelMap.put(TYPE_DOUBLE, DataType.ScalarType.DOUBLE);
-                labelMap.put(TYPE_FLOAT, DataType.ScalarType.FLOAT);
-                labelMap.put(TYPE_INT64, DataType.ScalarType.INT64);
-                labelMap.put(TYPE_UINT64, DataType.ScalarType.UINT64);
-//                labelMap.put(TYPE_LONG, DataType.ScalarType.LONG);
-                labelMap.put(TYPE_FIXED64, DataType.ScalarType.FIXED64);
-                labelMap.put(TYPE_FIXED32, DataType.ScalarType.FIXED32);
-                labelMap.put(TYPE_BOOL, DataType.ScalarType.BOOL);
-                labelMap.put(TYPE_STRING, DataType.ScalarType.STRING);
-//                labelMap.put(TYPE_GROUP, DataType.ScalarType.GROUP);
-//                labelMap.put(TYPE_MESSAGE, DataType.ScalarType.MESSAGE);
-                labelMap.put(TYPE_BYTES, DataType.ScalarType.BYTES);
-                labelMap.put(TYPE_UINT32, DataType.ScalarType.UINT32);
-//                labelMap.put(TYPE_ENUM, DataType.ScalarType.ENUM);
-                labelMap.put(TYPE_SFIXED32, DataType.ScalarType.SFIXED32);
-                labelMap.put(TYPE_SFIXED64, DataType.ScalarType.SFIXED64);
-                labelMap.put(TYPE_SINT32, DataType.ScalarType.SINT32);
-                labelMap.put(TYPE_SINT64, DataType.ScalarType.SINT64);
-            }
-
-            static public DataType getDataType(Type type)
-            {
-                return labelMap.get(type);
-            }
-        }
-
-        enum Label
-        {
-            LABEL_OPTIONAL,
-            LABEL_REQUIRED,
-            LABEL_REPEATED
-        }
-
+        static private Map<Type, DataType> scalarTypeMap = new HashMap();
         static private Map<Label, FieldElement.Label> labelMap = new HashMap();
 
         static {
+            scalarTypeMap.put(Type.TYPE_DOUBLE, DataType.ScalarType.DOUBLE);
+            scalarTypeMap.put(Type.TYPE_FLOAT, DataType.ScalarType.FLOAT);
+            scalarTypeMap.put(Type.TYPE_INT64, DataType.ScalarType.INT64);
+            scalarTypeMap.put(Type.TYPE_UINT64, DataType.ScalarType.UINT64);
+            scalarTypeMap.put(Type.TYPE_INT32, DataType.ScalarType.INT32);
+            scalarTypeMap.put(Type.TYPE_FIXED64, DataType.ScalarType.FIXED64);
+            scalarTypeMap.put(Type.TYPE_FIXED32, DataType.ScalarType.FIXED32);
+            scalarTypeMap.put(Type.TYPE_BOOL, DataType.ScalarType.BOOL);
+            scalarTypeMap.put(Type.TYPE_STRING, DataType.ScalarType.STRING);
+            scalarTypeMap.put(Type.TYPE_BYTES, DataType.ScalarType.BYTES);
+            scalarTypeMap.put(Type.TYPE_UINT32, DataType.ScalarType.UINT32);
+            scalarTypeMap.put(Type.TYPE_SFIXED32, DataType.ScalarType.SFIXED32);
+            scalarTypeMap.put(Type.TYPE_SFIXED64, DataType.ScalarType.SFIXED64);
+            scalarTypeMap.put(Type.TYPE_SINT32, DataType.ScalarType.SINT32);
+            scalarTypeMap.put(Type.TYPE_SINT64, DataType.ScalarType.SINT64);
+
             labelMap.put(Label.LABEL_OPTIONAL, FieldElement.Label.OPTIONAL);
             labelMap.put(Label.LABEL_REQUIRED, FieldElement.Label.REQUIRED);
             labelMap.put(Label.LABEL_REPEATED, FieldElement.Label.REPEATED);
-
         }
 
         public String name;
@@ -295,6 +254,40 @@ public class FileDescriptorSet
         public long oneof_index;
         public String json_name;
         public FieldOptions options;
+
+        enum Type
+        {
+            TYPE_DOUBLE,
+            TYPE_FLOAT,
+            TYPE_INT64,
+            TYPE_UINT64,
+            TYPE_INT32,
+            TYPE_FIXED64,
+            TYPE_FIXED32,
+            TYPE_BOOL,
+            TYPE_STRING,
+            TYPE_GROUP,
+            TYPE_MESSAGE,
+            TYPE_BYTES,
+            TYPE_UINT32,
+            TYPE_ENUM,
+            TYPE_SFIXED32,
+            TYPE_SFIXED64,
+            TYPE_SINT32,
+            TYPE_SINT64
+        }
+
+        enum Label
+        {
+            LABEL_OPTIONAL,
+            LABEL_REQUIRED,
+            LABEL_REPEATED
+        }
+
+        public DataType getDataType()
+        {
+            return scalarTypeMap.get(type);
+        }
 
         public FieldElement.Label getLabel()
         {
