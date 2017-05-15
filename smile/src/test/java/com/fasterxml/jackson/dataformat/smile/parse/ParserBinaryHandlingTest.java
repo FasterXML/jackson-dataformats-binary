@@ -49,12 +49,10 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
         _testBinaryAsRoot(false);
     }
 
-    // [Issue-17] (streaming binary reads)
     public void testStreamingRaw() throws IOException {
         _testStreaming(true);
     }
 
-    // [Issue-17] (streaming binary reads)
     public void testStreamingEncoded() throws IOException {
         _testStreaming(false);
     }
@@ -79,6 +77,8 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             
             // and verify
             SmileParser p = f.createParser(smile);
+            assertEquals(raw, p.mayContainRawBinary());
+            
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
             assertArrayEquals(data, result);

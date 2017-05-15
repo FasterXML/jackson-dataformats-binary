@@ -14,43 +14,50 @@ public class NumberParsingTest
 {
     public void testIntsMedium() throws IOException
     {
-    	byte[] data = _smileDoc("255");
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(255, p.getIntValue());
-    	assertEquals("255", p.getText());
-    	data = _smileDoc("-999");
-     p.close();
+        byte[] data = _smileDoc("255");
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(255, p.getIntValue());
+        assertFalse(p.isNaN());
+        assertEquals("255", p.getText());
+        assertEquals(255L, p.getLongValue());
+        assertEquals((float) 255, p.getFloatValue());
+        assertEquals((double) 255, p.getDoubleValue());
+        final BigInteger BI = BigInteger.valueOf(255L);
+        assertEquals(BI, p.getBigIntegerValue());
+        assertEquals(new BigDecimal(BI), p.getDecimalValue());
+        data = _smileDoc("-999");
+        p.close();
 
-    	p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.INT, p.getNumberType());
-    	assertEquals(-999, p.getIntValue());
-    	assertEquals("-999", p.getText());
-     p.close();
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(-999, p.getIntValue());
+        assertEquals("-999", p.getText());
+        p.close();
 
-    	data = _smileDoc("123456789");
-    	p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.INT, p.getNumberType());
-    	assertEquals(123456789, p.getIntValue());
-     p.close();
+        data = _smileDoc("123456789");
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(123456789, p.getIntValue());
+        p.close();
     }
 
     public void testMinMaxInts() throws IOException
     {
-    	byte[] data = _smileDoc(String.valueOf(Integer.MAX_VALUE));
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.INT, p.getNumberType());
-    	assertEquals(Integer.MAX_VALUE, p.getIntValue());
-     p.close();
-    	data = _smileDoc(String.valueOf(Integer.MIN_VALUE));
-    	p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.INT, p.getNumberType());
-    	assertEquals(Integer.MIN_VALUE, p.getIntValue());
-     p.close();
+        byte[] data = _smileDoc(String.valueOf(Integer.MAX_VALUE));
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(Integer.MAX_VALUE, p.getIntValue());
+        p.close();
+        data = _smileDoc(String.valueOf(Integer.MIN_VALUE));
+        p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(Integer.MIN_VALUE, p.getIntValue());
+        p.close();
     }
 
     public void testIntsInObjectSkipping() throws IOException
@@ -94,6 +101,13 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
         assertEquals(l, p.getLongValue());
+
+        assertEquals((double) l, p.getDoubleValue());
+        assertEquals((float) l, p.getFloatValue());
+        final BigInteger BI = BigInteger.valueOf(l);
+        assertEquals(BI, p.getBigIntegerValue());
+        assertEquals(new BigDecimal(BI), p.getDecimalValue());
+
         p.close();
 
         // and skip
@@ -192,9 +206,15 @@ public class NumberParsingTest
 
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-        assertFalse(p.isNaN());
         assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
         assertEquals(value, p.getFloatValue());
+        assertFalse(p.isNaN());
+        assertEquals(Float.valueOf(value), p.getNumberValue());
+
+        assertEquals((double) value, p.getDoubleValue());
+        assertEquals((int) value, p.getIntValue());
+        assertEquals((long) value, p.getLongValue());
+
         p.close();
     }
 
@@ -213,6 +233,12 @@ public class NumberParsingTest
         assertFalse(p.isNaN());
         assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
         assertEquals(value, p.getDoubleValue());
+        assertEquals(Double.valueOf(value), p.getNumberValue());
+
+        assertEquals((float) value, p.getFloatValue());
+        assertEquals((int) value, p.getIntValue());
+        assertEquals((long) value, p.getLongValue());
+        
         p.close();
     }
     
@@ -291,20 +317,20 @@ public class NumberParsingTest
     
     public void testBigInteger() throws IOException
     {
-    	ByteArrayOutputStream bo = new ByteArrayOutputStream();
-    	BigInteger in = new BigInteger(String.valueOf(Long.MIN_VALUE)+"0012575934");
-    	SmileGenerator g = smileGenerator(bo, false);
-    	g.writeNumber(in);
-    	g.close();
-    	byte[] data = bo.toByteArray();
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.BIG_INTEGER, p.getNumberType());
-    	assertEquals(BigInteger.class, p.getNumberValue().getClass());
-    	assertEquals(in, p.getBigIntegerValue());
-    	p.close();
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        BigInteger in = new BigInteger(String.valueOf(Long.MIN_VALUE)+"0012575934");
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeNumber(in);
+        g.close();
+        byte[] data = bo.toByteArray();
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonParser.NumberType.BIG_INTEGER, p.getNumberType());
+        assertEquals(BigInteger.class, p.getNumberValue().getClass());
+        assertEquals(in, p.getBigIntegerValue());
+        p.close();
     	
-    	// second test; verify skipping works
+        // second test; verify skipping works
         bo = new ByteArrayOutputStream();
         g = smileGenerator(bo, false);
         g.writeStartArray();
@@ -322,18 +348,19 @@ public class NumberParsingTest
 
     public void testBigDecimal() throws IOException
     {
-    	ByteArrayOutputStream bo = new ByteArrayOutputStream();
-    	BigDecimal in = new BigDecimal("32599.00001");
-    	SmileGenerator g = smileGenerator(bo, false);
-    	g.writeNumber(in);
-    	g.close();
-    	byte[] data = bo.toByteArray();
-    	SmileParser p = _smileParser(data);
-    	assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-    	assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
-    	assertEquals(BigDecimal.class, p.getNumberValue().getClass());
-    	assertEquals(in, p.getDecimalValue());
-    	p.close();
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        BigDecimal in = new BigDecimal("32599.00001");
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeNumber(in);
+        g.close();
+        byte[] data = bo.toByteArray();
+        SmileParser p = _smileParser(data);
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
+        assertFalse(p.isNaN());
+        assertEquals(BigDecimal.class, p.getNumberValue().getClass());
+        assertEquals(in, p.getDecimalValue());
+        p.close();
 
         // second test; verify skipping works
         bo = new ByteArrayOutputStream();
@@ -349,5 +376,109 @@ public class NumberParsingTest
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-    }    
+    }
+
+    public void testMixedAccessForInts() throws IOException
+    {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeNumber(123);
+        g.writeNumber(123);
+        g.writeNumber(123);
+        g.writeNumber(123);
+
+        final long LONG_VALUE = 100L + Integer.MAX_VALUE;
+        g.writeNumber(LONG_VALUE);
+        g.writeNumber(LONG_VALUE);
+        g.writeNumber(LONG_VALUE);
+        g.writeNumber(LONG_VALUE);
+        g.writeNumber(LONG_VALUE);
+
+        g.writeNumber(BigInteger.TEN);
+        g.writeNumber(BigInteger.TEN);
+        g.writeNumber(BigInteger.TEN);
+        g.writeNumber(BigInteger.TEN);
+        g.writeNumber(BigInteger.TEN);
+
+        g.close();
+        byte[] data = bo.toByteArray();
+        SmileParser p = _smileParser(data);
+
+        // for ints
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(123L, p.getLongValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(123d, p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(123f, p.getFloatValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(Integer.valueOf(123), p.getNumberValue());
+
+        // for longs
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals((double) LONG_VALUE, p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals((float) LONG_VALUE, p.getFloatValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(BigInteger.valueOf(LONG_VALUE), p.getBigIntegerValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(Long.valueOf(LONG_VALUE), p.getNumberValue());
+        // and can't represent as int so:
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        try {
+            p.getIntValue();
+            fail("Should not pass");
+        } catch (JsonParseException e) {
+            verifyException(e, "Numeric value");
+            verifyException(e, "out of range of int");
+        }
+
+        // for BigIntegers
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(10, p.getIntValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(10L, p.getLongValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(10f, p.getFloatValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(10d, p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(BigInteger.valueOf(10L), p.getNumberValue());
+        
+        p.close();
+    }
+
+    public void testMixedAccessForFloats() throws IOException
+    {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+
+        g.writeNumber(2.25d);
+        g.writeNumber(3.25d);
+        g.writeNumber(4.25d);
+
+        g.writeNumber(4.75f);
+        g.writeNumber(5.75f);
+        g.writeNumber(6.75f);
+
+        g.close();
+        byte[] data = bo.toByteArray();
+        SmileParser p = _smileParser(data);
+
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(2, p.getIntValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(3L, p.getLongValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals((float) 4.25d, p.getFloatValue());
+        
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(4, p.getIntValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(5L, p.getLongValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(6.75, p.getDoubleValue());
+
+        p.close();
+    }
 }

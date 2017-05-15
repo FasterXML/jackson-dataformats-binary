@@ -40,15 +40,21 @@ public class TestParserNames extends BaseTestForSmile
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals(name, p.getCurrentName());
+
+        // but also let's verify we can override the name if need be
+        String newName = "fake"+name;
+        p.overrideCurrentName(newName);
+        assertEquals(newName, p.getCurrentName());
+        
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(13, p.getIntValue());
-        assertEquals(name, p.getCurrentName());
+        // and overridden name should stick, too
+        assertEquals(newName, p.getCurrentName());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
     }
 
-    
     private String generateName(int minLen)
     {
         StringBuilder sb = new StringBuilder();

@@ -4,13 +4,12 @@ import java.io.*;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.dataformat.smile.*;
 
-public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
+public abstract class NonBlockingParserBase
     extends SmileParserBase
 {
     /*

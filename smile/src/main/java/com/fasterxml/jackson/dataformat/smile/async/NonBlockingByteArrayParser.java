@@ -23,7 +23,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileUtil;
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_END_OF_STRING;
 
 public class NonBlockingByteArrayParser
-    extends NonBlockingParserBase<ByteArrayFeeder>
+    extends NonBlockingParserBase
     implements ByteArrayFeeder
 {
     /*

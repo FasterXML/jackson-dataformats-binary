@@ -431,14 +431,17 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     @Override // since 2.9
-    public final boolean isNaN() {
+    public final boolean isNaN() throws IOException {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            if ((_numTypesValid & NR_DOUBLE) != 0) {
+            if (_numTypesValid == NR_UNKNOWN) {
+                _parseNumericValue(); // will also check event type
+            }
+            if (_numberType == NumberType.DOUBLE) {
                 // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
                 double d = _numberDouble;
                 return Double.isNaN(d) || Double.isInfinite(d);
             }
-            if ((_numTypesValid & NR_FLOAT) != 0) {
+            if (_numberType == NumberType.FLOAT) {
                 float f = _numberFloat;
                 return Float.isNaN(f) || Float.isInfinite(f);
             }
@@ -534,7 +537,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         // Bounds/range checks would be tricky here, so let's not bother even trying...
         /*
         if (value < -Float.MAX_VALUE || value > MAX_FLOAT_D) {
-            _reportError("Numeric value ("+getText()+") out of range of Java float");
+            _reportError("Numeric value (%s) out of range of Java float", getText());
         }
         */
         return _numberFloat;
@@ -581,7 +584,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             // Let's verify it's lossless conversion by simple roundtrip
             int result = (int) _numberLong;
             if (((long) result) != _numberLong) {
-                _reportError("Numeric value ("+getText()+") out of range of int");
+                _reportError("Numeric value (%s) out of range of int", getText());
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {

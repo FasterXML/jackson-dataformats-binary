@@ -67,7 +67,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     }
 
     private void _testBinaryAsArray(SmileFactory f) throws IOException {
-//        _testBinaryAsArray2(f, 1, Integer.MAX_VALUE);
+        _testBinaryAsArray2(f, 1, Integer.MAX_VALUE);
         _testBinaryAsArray2(f, 0, 3);
         _testBinaryAsArray2(f, 1, 1);
     }
@@ -90,6 +90,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
 
             // and verify
             AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
+            
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
             assertArrayEquals(binary, result);
