@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
+
+import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_END_OF_STRING;
 
 public class NonBlockingByteArrayParser
     extends NonBlockingParserBase<NonBlockingByteArrayFeeder>
@@ -195,9 +198,8 @@ public class NonBlockingByteArrayParser
             return (_currToken = JsonToken.FIELD_NAME);
 
         case MINOR_FIELD_NAME_LONG:
-            // !!! TBI!
-            break;
-        
+            return _finishLongFieldName(_inputCopyLen);
+
         case MINOR_FIELD_NAME_SHORT_ASCII:
         case MINOR_FIELD_NAME_SHORT_UNICODE:
             {
@@ -210,8 +212,8 @@ public class NonBlockingByteArrayParser
                     String name = _findDecodedFromSymbols(_inputCopy, 0, fullLen);
                     if (name == null) {
                         name = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
-                                ? _decodeShortASCII(_inputCopy, 0, fullLen)
-                                : _decodeShortUnicode(_inputCopy, 0, fullLen)
+                                ? _decodeASCIIText(_inputCopy, 0, fullLen)
+                                : _decodeUnicodeText(_inputCopy, 0, fullLen)
                                 ;
                         name = _addDecodedToSymbols(fullLen, name);
                     }
@@ -265,8 +267,8 @@ public class NonBlockingByteArrayParser
                     System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
                     _inputPtr += needed;
                     String text = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
-                            ? _decodeShortASCII(_inputCopy, 0, fullLen)
-                            : _decodeShortUnicode(_inputCopy, 0, fullLen);
+                            ? _decodeASCIIText(_inputCopy, 0, fullLen)
+                            : _decodeUnicodeText(_inputCopy, 0, fullLen);
                     if (_seenStringValueCount >= 0) { // shared text values enabled
                         _addSeenStringValue(text);
                     }
@@ -517,12 +519,7 @@ public class NonBlockingByteArrayParser
                 _majorState = MAJOR_OBJECT_VALUE;
                 return (_currToken = JsonToken.FIELD_NAME);
             case 0x34: // long ASCII/Unicode name
-                _minorState = MINOR_FIELD_NAME_LONG;
-
-                // !!! TODO: Implement !!!
-VersionUtil.throwInternal();
-
-                return (_currToken = JsonToken.FIELD_NAME);
+                return _finishLongFieldName(0);
             }
             break;
         case 1: // short shared, can fully process
@@ -539,14 +536,15 @@ VersionUtil.throwInternal();
         case 2: // short ASCII; possibly doable
             {
                 final int len = 1 + (ch & 0x3f);
-                final int left = _inputEnd - _inputPtr;
+                final int inputPtr = _inputPtr;
+                final int left = _inputEnd - inputPtr;
                 if (len <= left) { // gotcha!
-                    String name = _findDecodedFromSymbols(_inputBuffer, _inputPtr, len);
+                    _inputPtr = inputPtr + len;
+                    String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
                     if (name == null) {
-                        name = _decodeShortASCII(_inputBuffer, _inputPtr, len);
+                        name = _decodeASCIIText(_inputBuffer, inputPtr, len);
                         name = _addDecodedToSymbols(len, name);
                     }
-                    _inputPtr += len;
                     // either way, may need to keep a copy for possible back-ref
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
@@ -562,8 +560,8 @@ VersionUtil.throwInternal();
                 _pending32 = len;
                 _inputCopyLen = left;
                 if (left > 0) {
-                    System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
-                    _inputPtr += left;
+                    _inputPtr = inputPtr + left;
+                    System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
                 }
             }
             _minorState = MINOR_FIELD_NAME_SHORT_ASCII;
@@ -577,33 +575,35 @@ VersionUtil.throwInternal();
                     if (ch == 0x3B) {
                         return _closeObjectScope();
                     }
-                } else {
-                    final int len = ch + 2; // values from 2 to 57...
-                    final int left = _inputEnd - _inputPtr;
-                    if (len <= left) { // gotcha!
-                        String name = _findDecodedFromSymbols(_inputBuffer, _inputPtr, len);
-                        if (name == null) {
-                            name = _decodeShortUnicode(_inputBuffer, _inputPtr, len);
-                            name = _addDecodedToSymbols(len, name);
-                        }
-                        _inputPtr += len;
-                        if (_seenNames != null) {
-                            if (_seenNameCount >= _seenNames.length) {
-                             _seenNames = _expandSeenNames(_seenNames);
-                            }
-                            _seenNames[_seenNameCount++] = name;
-                        }
-                        _parsingContext.setCurrentName(name);
-                        _majorState = MAJOR_OBJECT_VALUE;
-                        return (_currToken = JsonToken.FIELD_NAME);
+                    // error, but let's not worry about that here
+                    break;
+                }
+                final int len = ch + 2; // values from 2 to 57...
+                final int inputPtr = _inputPtr;
+                final int left = _inputEnd - inputPtr;
+                if (len <= left) { // gotcha!
+                    _inputPtr = inputPtr + len;
+                    String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
+                    if (name == null) {
+                        name = _decodeUnicodeText(_inputBuffer, inputPtr, len);
+                        name = _addDecodedToSymbols(len, name);
                     }
-                    // Nope: need to copy
-                    _pending32 = len;
-                    _inputCopyLen = left;
-                    if (left > 0) {
-                        System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
-                        _inputPtr += left;
+                    if (_seenNames != null) {
+                        if (_seenNameCount >= _seenNames.length) {
+                         _seenNames = _expandSeenNames(_seenNames);
+                        }
+                        _seenNames[_seenNameCount++] = name;
                     }
+                    _parsingContext.setCurrentName(name);
+                    _majorState = MAJOR_OBJECT_VALUE;
+                    return (_currToken = JsonToken.FIELD_NAME);
+                }
+                // Nope: need to copy
+                _pending32 = len;
+                _inputCopyLen = left;
+                if (left > 0) {
+                    _inputPtr = inputPtr + left;
+                    System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
                 }
                 _minorState = MINOR_FIELD_NAME_SHORT_UNICODE;
                 return (_currToken = JsonToken.NOT_AVAILABLE);
@@ -615,176 +615,71 @@ VersionUtil.throwInternal();
         return null;
     }
 
-    /*
-    private final String _decodeLongUnicodeName(int[] quads, int byteLen, int quadLen) throws IOException
+    private final JsonToken _finishLongFieldName(int outPtr) throws IOException
     {
-        int lastQuadBytes = byteLen & 3;
+        byte[] srcBuffer = _inputBuffer;
+        byte[] copyBuffer = _inputCopy;
+        int srcPtr = _inputPtr;
 
-        // Ok: must decode UTF-8 chars. No other validation SHOULD be needed (except bounds checks?)
-        // Note: last quad is not correctly aligned (leading zero bytes instead
-        // need to shift a bit, instead of trailing). Only need to shift it
-        // for UTF-8 decoding; need revert for storage (since key will not
-        // be aligned, to optimize lookup speed)
-
-        int lastQuad;
-    
-        if (lastQuadBytes < 4) {
-            lastQuad = quads[quadLen-1];
-            // 8/16/24 bit left shift
-            quads[quadLen-1] = (lastQuad << ((4 - lastQuadBytes) << 3));
-        } else {
-            lastQuad = 0;
-        }
-
-        char[] cbuf = _textBuffer.emptyAndGetCurrentSegment();
-        int cix = 0;
-    
-        for (int ix = 0; ix < byteLen; ) {
-            int ch = quads[ix >> 2]; // current quad, need to shift+mask
-            int byteIx = (ix & 3);
-            ch = (ch >> ((3 - byteIx) << 3)) & 0xFF;
-            ++ix;
-    
-            if (ch > 127) { // multi-byte
-                int needed;
-                if ((ch & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
-                    ch &= 0x1F;
-                    needed = 1;
-                } else if ((ch & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
-                    ch &= 0x0F;
-                    needed = 2;
-                } else if ((ch & 0xF8) == 0xF0) { // 4 bytes; double-char with surrogates and all...
-                    ch &= 0x07;
-                    needed = 3;
-                } else { // 5- and 6-byte chars not valid chars
-                    _reportInvalidInitial(ch);
-                    needed = ch = 1; // never really gets this far
-                }
-                if ((ix + needed) > byteLen) {
-                    _reportInvalidEOF(" in long field name", JsonToken.FIELD_NAME);
-                }
-                
-                // Ok, always need at least one more:
-                int ch2 = quads[ix >> 2]; // current quad, need to shift+mask
-                byteIx = (ix & 3);
-                ch2 = (ch2 >> ((3 - byteIx) << 3));
-                ++ix;
-                
-                if ((ch2 & 0xC0) != 0x080) {
-                    _reportInvalidOther(ch2);
-                }
-                ch = (ch << 6) | (ch2 & 0x3F);
-                if (needed > 1) {
-                    ch2 = quads[ix >> 2];
-                    byteIx = (ix & 3);
-                    ch2 = (ch2 >> ((3 - byteIx) << 3));
-                    ++ix;
-                    
-                    if ((ch2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(ch2);
-                    }
-                    ch = (ch << 6) | (ch2 & 0x3F);
-                    if (needed > 2) { // 4 bytes? (need surrogates on output)
-                        ch2 = quads[ix >> 2];
-                        byteIx = (ix & 3);
-                        ch2 = (ch2 >> ((3 - byteIx) << 3));
-                        ++ix;
-                        if ((ch2 & 0xC0) != 0x080) {
-                            _reportInvalidOther(ch2 & 0xFF);
-                        }
-                        ch = (ch << 6) | (ch2 & 0x3F);
-                    }
-                }
-                if (needed > 2) { // surrogate pair? once again, let's output one here, one later on
-                    ch -= 0x10000; // to normalize it starting with 0x0
-                    if (cix >= cbuf.length) {
-                        cbuf = _textBuffer.expandCurrentSegment();
-                    }
-                    cbuf[cix++] = (char) (0xD800 + (ch >> 10));
-                    ch = 0xDC00 | (ch & 0x03FF);
-                }
-            }
-            if (cix >= cbuf.length) {
-                cbuf = _textBuffer.expandCurrentSegment();
-            }
-            cbuf[cix++] = (char) ch;
-        }
-
-        // Ok. Now we have the character array, and can construct the String
-        String baseName = new String(cbuf, 0, cix);
-        // And finally, un-align if necessary
-        if (lastQuadBytes < 4) {
-            quads[quadLen-1] = lastQuad;
-        }
-        return _symbols.addName(baseName, quads, quadLen);
-    }
-    */
-
-    /*
-    private final void _handleLongFieldName() throws IOException
-    {
-        // First: gather quads we need, looking for end marker
-        final byte[] inBuf = _inputBuffer;
-        int quads = 0;
-        int bytes = 0;
-        int q = 0;
-
+        copy_loop:
         while (true) {
-            if (_inputPtr >= _inputEnd) {
-                _loadMoreGuaranteed();
+            int max = Math.min(_inputEnd - srcPtr, copyBuffer.length - outPtr);
+            final int inputEnd = srcPtr + max;
+
+            while (srcPtr < inputEnd) {
+                byte b = srcBuffer[srcPtr++];
+                if (b == BYTE_MARKER_END_OF_STRING) {
+                    break copy_loop;
+                }
+                copyBuffer[outPtr++] = b;
             }
-            byte b = inBuf[_inputPtr++];
-            if (SmileConstants.BYTE_MARKER_END_OF_STRING == b) {
-                bytes = 0;
-                break;
+            // If end of input, bail out
+            if (srcPtr == _inputEnd) {
+                _inputPtr = srcPtr;
+                _minorState = MINOR_FIELD_NAME_LONG;
+                _inputCopyLen = outPtr;
+                return (_currToken = JsonToken.NOT_AVAILABLE);
             }
-            q = ((int) b) & 0xFF;
-            if (_inputPtr >= _inputEnd) {
-                _loadMoreGuaranteed();
-            }
-            b = inBuf[_inputPtr++];
-            if (SmileConstants.BYTE_MARKER_END_OF_STRING == b) {
-                bytes = 1;
-                break;
-            }
-            q = (q << 8) | (b & 0xFF);
-            if (_inputPtr >= _inputEnd) {
-                _loadMoreGuaranteed();
-            }
-            b = inBuf[_inputPtr++];
-            if (SmileConstants.BYTE_MARKER_END_OF_STRING == b) {
-                bytes = 2;
-                break;
-            }
-            q = (q << 8) | (b & 0xFF);
-            if (_inputPtr >= _inputEnd) {
-                _loadMoreGuaranteed();
-            }
-            b = inBuf[_inputPtr++];
-            if (SmileConstants.BYTE_MARKER_END_OF_STRING == b) {
-                bytes = 3;
-                break;
-            }
-            q = (q << 8) | (b & 0xFF);
-            if (quads >= _quadBuffer.length) {
-                _quadBuffer = _growArrayTo(_quadBuffer, _quadBuffer.length + 256); // grow by 1k
-            }
-            _quadBuffer[quads++] = q;
+            // otherwise increase copy buffer length
+            int oldLen = copyBuffer.length;
+            int incr = Math.min(64000, oldLen >> 1);
+            _inputCopy = copyBuffer = Arrays.copyOf(_inputCopy, oldLen + incr);
+            // and loop again
         }
-        // and if we have more bytes, append those too
-        int byteLen = (quads << 2);
-        if (bytes > 0) {
-            if (quads >= _quadBuffer.length) {
-                _quadBuffer = _growArrayTo(_quadBuffer, _quadBuffer.length + 256);
+
+        // But if we get here, we got it all, only need to create quads etc
+        _inputPtr = srcPtr;
+        int[] quads = _quadBuffer;
+        int qlen = (outPtr + 3) >> 2; // last quad may be partial
+
+        if (quads.length < qlen) {
+            _quadBuffer = quads = Arrays.copyOf(quads, qlen + 16);
+        }
+        int in = 0;
+        int quadCount = 0;
+
+        for (final int inEnd = (outPtr & ~3); in < inEnd; in += 4) {
+            int q = (copyBuffer[in] << 24)
+                    | ((copyBuffer[in+1] & 0xFF) << 16)
+                    | ((copyBuffer[in+2] & 0xFF) << 8)
+                    | (copyBuffer[in+3] & 0xFF);
+            quads[quadCount++] = q;
+        }
+        // and possibly more... ?
+        if (in < outPtr) { // at least 1
+            int q = copyBuffer[in++] & 0xFF;
+            if (in < outPtr) { // at least 2
+                q = (q << 8) | (copyBuffer[in++] & 0xFF);
+                if (in < outPtr) { // 3 (can't be more)
+                    q = (q << 8) | (copyBuffer[in++] & 0xFF);
+                }
             }
-            _quadBuffer[quads++] = q;
-            byteLen += bytes;
+            quads[quadCount++] = q;
         }
         
-        // Know this name already?
-        String name = _symbols.findName(_quadBuffer, quads);
+        String name = _symbols.findName(quads, quadCount);
         if (name == null) {
-            name = _decodeLongUnicodeName(_quadBuffer, byteLen, quads);
+            name = _decodeUnicodeText(copyBuffer, 0, outPtr);
         }
         if (_seenNames != null) {
            if (_seenNameCount >= _seenNames.length) {
@@ -793,9 +688,9 @@ VersionUtil.throwInternal();
            _seenNames[_seenNameCount++] = name;
         }
         _parsingContext.setCurrentName(name);
+        _majorState = MAJOR_OBJECT_VALUE;
+        return (_currToken = JsonToken.FIELD_NAME);
     }
-    */
-
 
     /*
     /**********************************************************************
@@ -805,9 +700,11 @@ VersionUtil.throwInternal();
 
     private final JsonToken _startShortASCII(final int len) throws IOException
     {
-        final int left = _inputEnd - _inputPtr;
+        final int inputPtr = _inputPtr;
+        final int left = _inputEnd - inputPtr;
         if (len <= left) { // gotcha!
-            String text = _decodeShortASCII(len);
+            _inputPtr = inputPtr + len;
+            String text = _decodeASCIIText(_inputBuffer, inputPtr, len);
             if (_seenStringValueCount >= 0) { // shared text values enabled
                 _addSeenStringValue(text);
             }
@@ -817,8 +714,8 @@ VersionUtil.throwInternal();
         _pending32 = len;
         _inputCopyLen = left;
         if (left > 0) {
-            System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
-            _inputPtr += left;
+            _inputPtr = inputPtr + left;
+            System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
         }
         _minorState = MINOR_VALUE_STRING_SHORT_ASCII;
         return (_currToken = JsonToken.NOT_AVAILABLE);
@@ -826,9 +723,11 @@ VersionUtil.throwInternal();
 
     private final JsonToken _startShortUnicode(final int len) throws IOException
     {
-        final int left = _inputEnd - _inputPtr;
+        final int inPtr = _inputPtr;
+        final int left = _inputEnd - inPtr;
         if (len <= left) { // gotcha!
-            String text = _decodeShortUnicode(len);
+            _inputPtr = inPtr + len;
+            String text = _decodeUnicodeText(_inputBuffer, inPtr, len);
             if (_seenStringValueCount >= 0) { // shared text values enabled
                 _addSeenStringValue(text);
             }
@@ -838,8 +737,8 @@ VersionUtil.throwInternal();
         _pending32 = len;
         _inputCopyLen = left;
         if (left > 0) {
-            System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, 0, left);
-            _inputPtr += left;
+            System.arraycopy(_inputBuffer, inPtr, _inputCopy, 0, left);
+            _inputPtr = inPtr + left;
         }
         _minorState = MINOR_VALUE_STRING_SHORT_UNICODE;
         return (_currToken = JsonToken.NOT_AVAILABLE);
@@ -947,6 +846,7 @@ VersionUtil.throwInternal();
                 }
                 _inputPtr = ptr;
                 if (ptr >= _inputEnd) {
+                    _inputCopyLen = 0;
                     break main_loop;
                 }
             }
@@ -1692,6 +1592,7 @@ VersionUtil.throwInternal();
     /**********************************************************************
      */
 
+    /*
     private final String _decodeShortASCII(int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
@@ -1721,8 +1622,9 @@ VersionUtil.throwInternal();
         _textBuffer.setCurrentLength(len);
         return _textBuffer.contentsAsString();
     }
+    */
 
-    private final String _decodeShortASCII(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeASCIIText(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -1749,13 +1651,8 @@ VersionUtil.throwInternal();
         return _textBuffer.contentsAsString();
     }
 
-    /**
-     * Helper method used to decode short Unicode string, length for which actual
-     * length (in bytes) is known
-     * 
-     * @param len Length between 1 and 64
-     */
-    private final String _decodeShortUnicode(int len) throws IOException
+    /*
+    private final String _decodeInputUnicode(int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -1797,8 +1694,15 @@ VersionUtil.throwInternal();
         _textBuffer.setCurrentLength(outPtr);
         return _textBuffer.contentsAsString();
     }
+    */
 
-    private final String _decodeShortUnicode(byte[] inBuf, int inPtr, int len) throws IOException
+    /**
+     * Helper method used to decode short Unicode string, length for which actual
+     * length (in bytes) is known
+     * 
+     * @param len Length between 1 and 64
+     */
+    private final String _decodeUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -1829,7 +1733,7 @@ VersionUtil.throwInternal();
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
+                    _reportError("Invalid byte 0x%02x in short Unicode text block (offset %d)", i & 0xFF, inPtr);
                 }
             }
             outBuf[outPtr++] = (char) i;

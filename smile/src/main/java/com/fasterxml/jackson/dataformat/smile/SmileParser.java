@@ -1672,7 +1672,6 @@ public class SmileParser extends SmileParserBase
             _quadBuffer[quads++] = q;
             byteLen += bytes;
         }
-        
         // Know this name already?
         String name = _symbols.findName(_quadBuffer, quads);
         if (name == null) {

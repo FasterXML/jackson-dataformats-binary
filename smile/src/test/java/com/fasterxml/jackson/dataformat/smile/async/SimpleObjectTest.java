@@ -37,6 +37,10 @@ public class SimpleObjectTest extends AsyncTestBase
      */
 
     private final static String UNICODE_SHORT_NAME = "Unicode"+UNICODE_3BYTES+"RlzOk";
+    private final static String STR0_9 = "0123456789";
+    private final static String UNICODE_LONG_NAME = String.format(
+            "Unicode-"+UNICODE_3BYTES+"-%s-%s-%s-"+UNICODE_2BYTES+"-%s-%s-%s-"+UNICODE_3BYTES+"-%s-%s-%s",
+            STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9);
 
     public void testBooleans() throws IOException
     {
@@ -183,5 +187,47 @@ public class SimpleObjectTest extends AsyncTestBase
         // and end up with "no token" as well
         assertNull(r.nextToken());
         assertTrue(r.isClosed());
+    }
+
+    public void testStrings() throws IOException
+    {
+        final SmileFactory f = new SmileFactory();
+        f.enable(SmileParser.Feature.REQUIRE_HEADER);
+        byte[] data = _smileDoc(aposToQuotes(String.format("{'%s':'%s','%s':'%s'}",
+                UNICODE_SHORT_NAME, UNICODE_LONG_NAME,
+                UNICODE_LONG_NAME, UNICODE_SHORT_NAME)));
+        _testStrings(f, data, 0, 100);
+        _testStrings(f, data, 0, 3);
+        _testStrings(f, data, 0, 1);
+
+        _testStrings(f, data, 1, 100);
+        _testStrings(f, data, 1, 3);
+        _testStrings(f, data, 1, 1);
+    }
+
+    private void _testStrings(SmileFactory f,
+            byte[] data, int offset, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        // start with "no token"
+        assertNull(r.currentToken());
+        assertToken(JsonToken.START_OBJECT, r.nextToken());
+
+        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertEquals(UNICODE_SHORT_NAME, r.currentName());
+        assertEquals(UNICODE_SHORT_NAME, r.currentText());
+        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        // also, should always be accessible this way:
+        assertTrue(r.parser().hasTextCharacters());
+        assertEquals(UNICODE_LONG_NAME, r.currentText());
+
+        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertEquals(UNICODE_LONG_NAME, r.currentName());
+        assertEquals(UNICODE_LONG_NAME, r.currentText());
+        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        assertEquals(UNICODE_SHORT_NAME, r.currentText());
+
+        assertToken(JsonToken.END_OBJECT, r.nextToken());
+        assertNull(r.nextToken());
     }
 }

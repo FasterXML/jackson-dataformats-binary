@@ -608,7 +608,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         _seenStringValues[_seenStringValueCount++] = v;
     }
 
-
     /*
     /**********************************************************
     /* Internal/package methods: shared/reusable builders
@@ -636,17 +635,13 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     /**********************************************************************
      */
 
-    // !!! TODO: remove
-    protected final void _loadMoreGuaranteed() throws IOException {
-        _throwInternal();
-    }
-
     protected void _reportInvalidSharedName(int index) throws IOException
     {
         if (_seenNames == null) {
             _reportError("Encountered shared name reference, even though document header explicitly declared no shared name references are included");
         }
-       _reportError("Invalid shared name reference "+index+"; only got "+_seenNameCount+" names in buffer (invalid content)");
+       _reportError("Invalid shared name reference %d; only got %d names in buffer (invalid content)",
+               index, _seenNameCount);
     }
 
     protected void _reportInvalidSharedStringValue(int index) throws IOException
@@ -654,25 +649,19 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         if (_seenStringValues == null) {
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
-       _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
+       _reportError("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
+               index, _seenStringValueCount);
     }
-    
-    protected void _reportInvalidChar(int c) throws JsonParseException
-    {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
+
+    protected void _reportInvalidChar(int c) throws JsonParseException {
         _reportInvalidInitial(c);
     }
 	
-    protected void _reportInvalidInitial(int mask) throws JsonParseException
-    {
+    protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 	
-    protected void _reportInvalidOther(int mask) throws JsonParseException
-    {
+    protected void _reportInvalidOther(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 	
