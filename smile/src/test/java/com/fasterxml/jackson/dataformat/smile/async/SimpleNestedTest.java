@@ -21,7 +21,7 @@ public class SimpleNestedTest extends AsyncTestBase
 
     public void testStuffInObject() throws Exception
     {
-        byte[] data = _smileDoc(aposToQuotes("{'foobar':[1,2,-999],'other':{ } }"), true);
+        byte[] data = _smileDoc(aposToQuotes("{'foobar':[1,2,-999],'other':{'':null} }"), true);
 
         SmileFactory f = F_REQ_HEADERS;
         _testStuffInObject(f, data, 0, 100);
@@ -55,14 +55,25 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
         assertEquals("other", r.currentName());
         assertToken(JsonToken.START_OBJECT, r.nextToken());
+        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertEquals("", r.currentName());
+        assertToken(JsonToken.VALUE_NULL, r.nextToken());
         assertToken(JsonToken.END_OBJECT, r.nextToken());
         
         assertToken(JsonToken.END_OBJECT, r.nextToken());
+
+        // another twist: close in the middle, verify
+        r = asyncForBytes(f, readSize, data, offset);
+        assertToken(JsonToken.START_OBJECT, r.nextToken());
+        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        r.parser().close();
+        assertTrue(r.parser().isClosed());
+        assertNull(r.parser().nextToken());
     }
 
     public void testStuffInArray() throws Exception
     {
-        byte[] data = _smileDoc(aposToQuotes("[true,{'extraOrdinary':''},[null]]"), true);
+        byte[] data = _smileDoc(aposToQuotes("[true,{'extraOrdinary':''},[null],{'extraOrdinary':23}]"), true);
 
         SmileFactory f = F_REQ_HEADERS;
         _testStuffInArray(f, data, 0, 100);
@@ -94,6 +105,13 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_NULL, r.nextToken());
         assertToken(JsonToken.END_ARRAY, r.nextToken());
 
+        assertToken(JsonToken.START_OBJECT, r.nextToken());
+        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertEquals("extraOrdinary", r.currentName());
+        assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
+        assertEquals(23, r.getIntValue());
+        assertToken(JsonToken.END_OBJECT, r.nextToken());
+        
         assertToken(JsonToken.END_ARRAY, r.nextToken());
     }
 }

@@ -44,36 +44,37 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     
     // // // "Sub-states"
 
-    protected final static int MINOR_HEADER = 1;
+    protected final static int MINOR_HEADER_INITIAL = 1;
+    protected final static int MINOR_HEADER_INLINE = 2;
 
-    protected final static int MINOR_FIELD_NAME_2BYTE = 2;
+    protected final static int MINOR_FIELD_NAME_2BYTE = 3;
 
-    protected final static int MINOR_FIELD_NAME_LONG = 3;
-    protected final static int MINOR_FIELD_NAME_SHORT_ASCII = 4;
-    protected final static int MINOR_FIELD_NAME_SHORT_UNICODE = 5;
+    protected final static int MINOR_FIELD_NAME_LONG = 4;
+    protected final static int MINOR_FIELD_NAME_SHORT_ASCII = 5;
+    protected final static int MINOR_FIELD_NAME_SHORT_UNICODE = 6;
 
-    protected final static int MINOR_VALUE_NUMBER_INT = 6;
-    protected final static int MINOR_VALUE_NUMBER_LONG = 7;
-    protected final static int MINOR_VALUE_NUMBER_FLOAT = 8;
-    protected final static int MINOR_VALUE_NUMBER_DOUBLE = 9;
+    protected final static int MINOR_VALUE_NUMBER_INT = 7;
+    protected final static int MINOR_VALUE_NUMBER_LONG = 8;
+    protected final static int MINOR_VALUE_NUMBER_FLOAT = 9;
+    protected final static int MINOR_VALUE_NUMBER_DOUBLE = 10;
 
-    protected final static int MINOR_VALUE_NUMBER_BIGINT_LEN = 10;
-    protected final static int MINOR_VALUE_NUMBER_BIGINT_BODY = 11;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC_SCALE = 12;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC_LEN = 13;
-    protected final static int MINOR_VALUE_NUMBER_BIGDEC_BODY = 14;
+    protected final static int MINOR_VALUE_NUMBER_BIGINT_LEN = 11;
+    protected final static int MINOR_VALUE_NUMBER_BIGINT_BODY = 12;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_SCALE = 13;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_LEN = 14;
+    protected final static int MINOR_VALUE_NUMBER_BIGDEC_BODY = 15;
 
-    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 15;
-    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 16;
-    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 17;
-    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 18;
-    protected final static int MINOR_VALUE_STRING_SHARED_2BYTE = 19;
+    protected final static int MINOR_VALUE_STRING_SHORT_ASCII = 16;
+    protected final static int MINOR_VALUE_STRING_SHORT_UNICODE = 17;
+    protected final static int MINOR_VALUE_STRING_LONG_ASCII = 18;
+    protected final static int MINOR_VALUE_STRING_LONG_UNICODE = 19;
+    protected final static int MINOR_VALUE_STRING_SHARED_2BYTE = 20;
 
-    protected final static int MINOR_VALUE_BINARY_RAW_LEN = 20;
-    protected final static int MINOR_VALUE_BINARY_RAW_BODY = 21;
+    protected final static int MINOR_VALUE_BINARY_RAW_LEN = 21;
+    protected final static int MINOR_VALUE_BINARY_RAW_BODY = 22;
 
-    protected final static int MINOR_VALUE_BINARY_7BIT_LEN = 22;
-    protected final static int MINOR_VALUE_BINARY_7BIT_BODY = 23;
+    protected final static int MINOR_VALUE_BINARY_7BIT_LEN = 23;
+    protected final static int MINOR_VALUE_BINARY_7BIT_BODY = 24;
 
     /*
     /**********************************************************************
@@ -516,7 +517,16 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         }
         _textBuffer.resetWithString(_seenStringValues[index]);
         return _valueComplete(JsonToken.VALUE_STRING);
-        
+    }
+
+    protected final JsonToken _handleSharedName(int index) throws IOException
+    {
+        if (index >= _seenNameCount) {
+            _reportInvalidSharedName(index);
+        }
+        _parsingContext.setCurrentName(_seenNames[index]);
+        _majorState = MAJOR_OBJECT_VALUE;
+        return (_currToken = JsonToken.FIELD_NAME);
     }
 
     protected final void _addSeenStringValue(String v) throws IOException

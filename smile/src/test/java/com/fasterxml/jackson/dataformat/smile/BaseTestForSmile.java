@@ -118,13 +118,13 @@ public abstract class BaseTestForSmile
         JsonFactory jf = new JsonFactory();
         JsonParser p = jf.createParser(json);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator jg = smileGenerator(out, writeHeader);
+        JsonGenerator g = smileGenerator(out, writeHeader);
     	
         while (p.nextToken() != null) {
-        	jg.copyCurrentEvent(p);
+        	g.copyCurrentEvent(p);
         }
         p.close();
-        jg.close();
+        g.close();
         return out.toByteArray();
     }
 

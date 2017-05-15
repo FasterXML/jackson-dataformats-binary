@@ -183,9 +183,8 @@ public class NonBlockingByteArrayParser
             if (SmileConstants.HEADER_BYTE_1 == ch) { // yes, initial header; should be good
                 // minor state as 0, which is fine
                 _majorState = MAJOR_ROOT;
-                _minorState = MINOR_HEADER;
-                _pending32 = 0;
-                return _finishHeader();
+                _minorState = MINOR_HEADER_INITIAL;
+                return _finishHeader(0);
             }
             if (SmileParser.Feature.REQUIRE_HEADER.enabledIn(_formatFeatures)) {
                 _reportMissingHeader(ch);
@@ -197,9 +196,8 @@ public class NonBlockingByteArrayParser
 
         case MAJOR_ROOT: // 
             if (SmileConstants.HEADER_BYTE_1 == ch) { // looks like a header
-                _minorState = MINOR_HEADER;
-                _pending32 = 0;
-                return _finishHeader();
+                _minorState = MINOR_HEADER_INLINE;
+                return _finishHeader(0);
             }
             return _startValue(ch);
 
@@ -226,19 +224,12 @@ public class NonBlockingByteArrayParser
         // NOTE: caller ensures availability of at least one byte
 
         switch (_minorState) {
-        case MINOR_HEADER:
-            return _finishHeader();
+        case MINOR_HEADER_INITIAL:
+        case MINOR_HEADER_INLINE:
+            return _finishHeader(_pending32);
 
         case MINOR_FIELD_NAME_2BYTE:
-            {
-                int index = _pending32 + (_inputBuffer[_inputPtr++] & 0xFF);
-                if (index >= _seenNameCount) {
-                    _reportInvalidSharedName(index);
-                }
-                _parsingContext.setCurrentName(_seenNames[index]);
-            }
-            _majorState = MAJOR_OBJECT_VALUE;
-            return (_currToken = JsonToken.FIELD_NAME);
+            return _handleSharedName(_pending32 + (_inputBuffer[_inputPtr++] & 0xFF));
 
         case MINOR_FIELD_NAME_LONG:
             return _finishLongFieldName(_inputCopyLen);
@@ -256,7 +247,7 @@ public class NonBlockingByteArrayParser
                     if (name == null) {
                         name = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
                                 ? _decodeASCIIText(_inputCopy, 0, fullLen)
-                                : _decodeUnicodeText(_inputCopy, 0, fullLen)
+                                : _decodeShortUnicodeText(_inputCopy, 0, fullLen)
                                 ;
                         name = _addDecodedToSymbols(fullLen, name);
                     }
@@ -311,7 +302,7 @@ public class NonBlockingByteArrayParser
                     _inputPtr += needed;
                     String text = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
                             ? _decodeASCIIText(_inputCopy, 0, fullLen)
-                            : _decodeUnicodeText(_inputCopy, 0, fullLen);
+                            : _decodeShortUnicodeText(_inputCopy, 0, fullLen);
                     if (_seenStringValueCount >= 0) { // shared text values enabled
                         _addSeenStringValue(text);
                     }
@@ -357,33 +348,38 @@ public class NonBlockingByteArrayParser
      * Helper method that will decode information from a header block that has been
      * detected.
      */
-    protected JsonToken _finishHeader() throws IOException
+    protected JsonToken _finishHeader(int state) throws IOException
     {
-        int ch;
-        switch (_pending32) {
+        int ch = 0;
+        String errorDesc = null;
+        
+        switch (state) {
         case 0:
             if (_inputPtr >= _inputEnd) {
+                _pending32 = state;
                 return (_currToken = JsonToken.NOT_AVAILABLE);
             }
             ch = _inputBuffer[_inputPtr++];
             if (ch!= SmileConstants.HEADER_BYTE_2) {
-                _reportError("Malformed content: signature not valid, starts with 0x3a but followed by 0x"
-                        +Integer.toHexString(ch)+", not 0x29");
+                errorDesc = "Malformed content: signature not valid, starts with 0x3a but followed by 0x%s, not 0x29";
+                break;
             }
-            _pending32 = 1;
+            state = 1;
             // fall through
         case 1:
             if (_inputPtr >= _inputEnd) {
+                _pending32 = state;
                 return (_currToken = JsonToken.NOT_AVAILABLE);
             }
             ch = _inputBuffer[_inputPtr++];
             if (ch != SmileConstants.HEADER_BYTE_3) {
-                _reportError("Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x"
-                        +Integer.toHexString(ch)+", not 0xA");
+                errorDesc = "Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x%s not 0x0A";
+                break;
             }
-            _pending32 = 2;
+            state = 2;
         case 2:
             if (_inputPtr >= _inputEnd) {
+                _pending32 = state;
                 return (_currToken = JsonToken.NOT_AVAILABLE);
             }
             ch = _inputBuffer[_inputPtr++];
@@ -391,7 +387,8 @@ public class NonBlockingByteArrayParser
                 int versionBits = (ch >> 4) & 0x0F;
                 // but failure with version number is fatal, can not ignore
                 if (versionBits != SmileConstants.HEADER_VERSION_0) {
-                    _reportError("Header version number bits (0x"+Integer.toHexString(versionBits)+") indicate unrecognized version; only 0x0 handled by parser");
+                    _reportError("Header version number bits (0x%s) indicate unrecognized version; only 0x0 handled by parser",
+                            Integer.toHexString(versionBits));
                 }
                 // can avoid tracking names, if explicitly disabled
                 if ((ch & SmileConstants.HEADER_BIT_HAS_SHARED_NAMES) == 0) {
@@ -405,15 +402,21 @@ public class NonBlockingByteArrayParser
                 }
                 _mayContainRawBinary = ((ch & SmileConstants.HEADER_BIT_HAS_RAW_BINARY) != 0);
             }
-            break;
+            _majorState = MAJOR_ROOT;
+            _currToken = null;
+
+            // Mild difference here: initial marker not reported separately, but in-line
+            // ones need to be reported as `null` tokens as they are logical document end
+            // markers (although should be collated with actual end markers)
+            if (_minorState == MINOR_HEADER_INLINE) {
+                return null;
+            }
+            // Ok to use recursion in case of initial header, as well:
+            return nextToken();
         default:
-            VersionUtil.throwInternal();
         }
-        _majorState = MAJOR_ROOT;
-        _currToken = null;
-        // Ok to use recursion; not very often used, very unlikely to have a sequence of
-        // headers (although allowed pointless)
-        return nextToken();
+        _reportError(errorDesc, Integer.toHexString(ch));
+        return null;
     }
 
     /**
@@ -520,7 +523,7 @@ public class NonBlockingByteArrayParser
             break;
         }
         // If we get this far, type byte is corrupt
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected value token");
+        _reportError("Invalid type marker byte 0x%02x for expected value token", ch & 0xFF);
         return null;
     }
 
@@ -547,35 +550,20 @@ public class NonBlockingByteArrayParser
             case 0x31:
             case 0x32:
             case 0x33:
-                if (_inputPtr >= _inputEnd) {
+                if (_inputPtr < _inputEnd) {
+                    return _handleSharedName(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
+                }
+                {
                     _minorState = MINOR_FIELD_NAME_2BYTE;
                     _pending32 = (ch & 0x3) << 8;
                     return (_currToken = JsonToken.NOT_AVAILABLE);
                 }
-                {
-                    int index = ((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
-                    if (index >= _seenNameCount) {
-                        _reportInvalidSharedName(index);
-                    }
-                    _parsingContext.setCurrentName(_seenNames[index]);
-                }
-                _majorState = MAJOR_OBJECT_VALUE;
-                return (_currToken = JsonToken.FIELD_NAME);
             case 0x34: // long ASCII/Unicode name
                 return _finishLongFieldName(0);
             }
             break;
         case 1: // short shared, can fully process
-            {
-                int index = (ch & 0x3F);
-                if (index >= _seenNameCount) {
-                    _reportInvalidSharedName(index);
-                }
-                _parsingContext.setCurrentName(_seenNames[index]);
-            }
-            _majorState = MAJOR_OBJECT_VALUE;
-            return (_currToken = JsonToken.FIELD_NAME);
-
+            return _handleSharedName(ch & 0x3F);
         case 2: // short ASCII; possibly doable
             {
                 final int len = 1 + (ch & 0x3f);
@@ -628,7 +616,7 @@ public class NonBlockingByteArrayParser
                     _inputPtr = inputPtr + len;
                     String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
                     if (name == null) {
-                        name = _decodeUnicodeText(_inputBuffer, inputPtr, len);
+                        name = _decodeShortUnicodeText(_inputBuffer, inputPtr, len);
                         name = _addDecodedToSymbols(len, name);
                     }
                     if (_seenNames != null) {
@@ -653,8 +641,7 @@ public class NonBlockingByteArrayParser
             }
         }
         // Other byte values are illegal
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch)
-                +" for expected field name (or END_OBJECT marker)");
+        _reportError("Invalid type marker byte 0x%02x for expected field name (or END_OBJECT marker)", ch & 0xFF);
         return null;
     }
 
@@ -722,7 +709,7 @@ public class NonBlockingByteArrayParser
         
         String name = _symbols.findName(quads, quadCount);
         if (name == null) {
-            name = _decodeUnicodeText(copyBuffer, 0, outPtr);
+            name = _decodeLongUnicodeText(copyBuffer, 0, outPtr);
         }
         if (_seenNames != null) {
            if (_seenNameCount >= _seenNames.length) {
@@ -770,7 +757,7 @@ public class NonBlockingByteArrayParser
         final int left = _inputEnd - inPtr;
         if (len <= left) { // gotcha!
             _inputPtr = inPtr + len;
-            String text = _decodeUnicodeText(_inputBuffer, inPtr, len);
+            String text = _decodeShortUnicodeText(_inputBuffer, inPtr, len);
             if (_seenStringValueCount >= 0) { // shared text values enabled
                 _addSeenStringValue(text);
             }
@@ -918,7 +905,7 @@ public class NonBlockingByteArrayParser
                     _inputCopyLen = 2;
                     break main_loop;
                 }
-                c = _decodeUTF8_3(c, d);
+                c = _decodeUTF8_3(c, d, _inputBuffer[_inputPtr++]);
                 break;
             case 3: // 4-byte UTF
                 if ((_inputPtr + 1) >= _inputEnd) {
@@ -932,7 +919,7 @@ public class NonBlockingByteArrayParser
                     }
                     break main_loop;
                 }
-                c = _decodeUTF8_4(c, d);
+                c = _decodeUTF8_4(c, d, _inputBuffer[_inputPtr++], _inputBuffer[_inputPtr++]);
                 // Let's add first part right away:
                 outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 if (outPtr >= outBuf.length) {
@@ -975,7 +962,7 @@ public class NonBlockingByteArrayParser
         if (_inputCopyLen > 0) {
             // NOTE: first byte stored in `_pending32` and we know we got one more byte for sure
             int next = _inputBuffer[_inputPtr++];
-            switch (codes[_pending32]) {
+            switch (codes[_pending32]) { // type of UTF-8 sequence (length - 1)
             case 1: // 2-byte UTF
                 c = _decodeUTF8_2(_pending32, next);
                 break;
@@ -1018,7 +1005,7 @@ public class NonBlockingByteArrayParser
                     break;
                 case 3:
                 default:
-                    c = _decodeUTF8_4(_pending32, _inputCopy[0], _inputCopy[1], _inputBuffer[_inputPtr++]);
+                    c = _decodeUTF8_4(_pending32, _inputCopy[0], _inputCopy[1], next);
                     break;
                 }
                 // Let's add first part right away:
@@ -1102,7 +1089,7 @@ public class NonBlockingByteArrayParser
                     _inputCopyLen = 2;
                     break main_loop;
                 }
-                c = _decodeUTF8_3(c, d);
+                c = _decodeUTF8_3(c, d, _inputBuffer[_inputPtr++]);
                 break;
             case 3: // 4-byte UTF
                 if ((_inputPtr + 1) >= _inputEnd) {
@@ -1116,7 +1103,7 @@ public class NonBlockingByteArrayParser
                     }
                     break main_loop;
                 }
-                c = _decodeUTF8_4(c, d);
+                c = _decodeUTF8_4(c, d, _inputBuffer[_inputPtr++], _inputBuffer[_inputPtr++]);
                 // Let's add first part right away:
                 outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 if (outPtr >= outBuf.length) {
@@ -1156,20 +1143,6 @@ public class NonBlockingByteArrayParser
         return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
-    private final int _decodeUTF8_3(int c, int d) throws IOException
-    {
-        c &= 0x0F;
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = (c << 6) | (d & 0x3F);
-        int e = _inputBuffer[_inputPtr++];
-        if ((e & 0xC0) != 0x080) {
-            _reportInvalidOther(e & 0xFF, _inputPtr);
-        }
-        return (c << 6) | (e & 0x3F);
-    }
-
     private final int _decodeUTF8_3(int c, int d, int e) throws IOException
     {
         c &= 0x0F;
@@ -1185,24 +1158,6 @@ public class NonBlockingByteArrayParser
 
     // @return Character value <b>minus 0x10000</c>; this so that caller
     //    can readily expand it to actual surrogates
-    private final int _decodeUTF8_4(int c, int d) throws IOException
-    {
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = ((c & 0x07) << 6) | (d & 0x3F);
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        c = (c << 6) | (d & 0x3F);
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
-        }
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
-    }
-
     private final int _decodeUTF8_4(int c, int d, int e, int f) throws IOException
     {
         if ((d & 0xC0) != 0x080) {
@@ -1651,7 +1606,7 @@ public class NonBlockingByteArrayParser
      * 
      * @param len Length between 1 and 64
      */
-    private final String _decodeUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeShortUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -1691,6 +1646,52 @@ public class NonBlockingByteArrayParser
         return _textBuffer.contentsAsString();
     }
 
+    private final String _decodeLongUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
+    {
+        // note: caller ensures we have enough bytes available
+        int outPtr = 0;
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        final int[] codes = SmileConstants.sUtf8UnitLengths;
+        int expandCheck = outBuf.length - 4;
+
+        for (int end = inPtr + len; inPtr < end; ) {
+            int i = inBuf[inPtr++] & 0xFF;
+            int code = codes[i];
+            if (code != 0) {
+                // trickiest one, need surrogate handling
+                switch (code) {
+                case 1:
+                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
+                    break;
+                case 2:
+                    i = ((i & 0x0F) << 12)
+                        | ((inBuf[inPtr++] & 0x3F) << 6)
+                        | (inBuf[inPtr++] & 0x3F);
+                    break;
+                case 3:
+                    i = ((i & 0x07) << 18)
+                    | ((inBuf[inPtr++] & 0x3F) << 12)
+                    | ((inBuf[inPtr++] & 0x3F) << 6)
+                    | (inBuf[inPtr++] & 0x3F);
+                    // note: this is the codepoint value; need to split, too
+                    i -= 0x10000;
+                    outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                    i = 0xDC00 | (i & 0x3FF);
+                    break;
+                default: // invalid
+                    _reportError("Invalid byte 0x%02x in short Unicode text block (offset %d)", i & 0xFF, inPtr);
+                }
+                if (outPtr >= expandCheck) {
+                    outBuf = _textBuffer.expandCurrentSegment();
+                    expandCheck = outBuf.length - 4;
+                }
+            }
+            outBuf[outPtr++] = (char) i;
+        }
+        _textBuffer.setCurrentLength(outPtr);
+        return _textBuffer.contentsAsString();
+    }
+    
     /*
     /**********************************************************************
     /* Low-level decoding of building blocks (vints, 7-bit encoded blocks)

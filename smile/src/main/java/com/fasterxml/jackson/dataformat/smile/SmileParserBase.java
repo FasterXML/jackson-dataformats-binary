@@ -378,6 +378,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final void close() throws IOException {
         if (!_closed) {
             _closed = true;
+            _inputEnd = 0;
             _symbols.release();
             try {
                 _closeInput();
