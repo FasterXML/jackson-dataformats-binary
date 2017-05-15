@@ -22,6 +22,16 @@ public abstract class AsyncReaderWrapper
     public String currentText() throws IOException {
         return _streamReader.getText();
     }
+
+    public String currentTextViaCharacters() throws IOException
+    {
+        char[] ch = _streamReader.getTextCharacters();
+        int start = _streamReader.getTextOffset();
+        int len = _streamReader.getTextLength();
+        return new String(ch, start, len);
+
+    }
+
     public String currentName() throws IOException {
         return _streamReader.getCurrentName();
     }

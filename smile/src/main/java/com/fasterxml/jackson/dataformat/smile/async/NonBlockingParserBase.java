@@ -104,28 +104,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
 
     /*
     /**********************************************************************
-    /* Name/entity parsing state
-    /**********************************************************************
-     */
-
-    /**
-     * Number of complete quads parsed for current name (quads
-     * themselves are stored in {@link #_quadBuffer}).
-     */
-    protected int _quadCount;
-
-    /**
-     * Bytes parsed for the current, incomplete, quad
-     */
-    protected int _currQuad;
-
-    /**
-     * Number of bytes pending/buffered, stored in {@link #_currQuad}
-     */
-    protected int _currQuadBytes = 0;
-
-    /*
-    /**********************************************************************
     /* Other buffering
     /**********************************************************************
      */
@@ -193,12 +171,8 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
      */
 
     @Override
-    public int releaseBuffered(OutputStream out) throws IOException {
-        // 04-May-2017, tatu: Although we may actually kind of have fed input, this
-        //    is not a good way to retrieve it. Should we throw exception?
-        return 0;
-    }
-    
+    public abstract int releaseBuffered(OutputStream out) throws IOException;
+
     @Override
     public Object getInputSource() {
         // since input is "pushed", to traditional source...
@@ -307,60 +281,50 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     @Override
     public char[] getTextCharacters() throws IOException
     {
-        if (_currToken != null) { // null only before/after document
-            switch (_currToken) {                
-            case VALUE_STRING:
-                return _textBuffer.getTextBuffer();
-            case FIELD_NAME:
-                if (!_nameCopied) {
-                    String name = _parsingContext.getCurrentName();
-                    int nameLen = name.length();
-                    if (_nameCopyBuffer == null) {
-                        _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
-                    } else if (_nameCopyBuffer.length < nameLen) {
-                        _nameCopyBuffer = new char[nameLen];
-                    }
-                    name.getChars(0, nameLen, _nameCopyBuffer, 0);
-                    _nameCopied = true;
+        switch (currentTokenId()) {
+        case JsonTokenId.ID_STRING:
+            return _textBuffer.getTextBuffer();
+        case JsonTokenId.ID_FIELD_NAME:
+            if (!_nameCopied) {
+                String name = _parsingContext.getCurrentName();
+                int nameLen = name.length();
+                if (_nameCopyBuffer == null) {
+                    _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
+                } else if (_nameCopyBuffer.length < nameLen) {
+                    _nameCopyBuffer = new char[nameLen];
                 }
-                return _nameCopyBuffer;
-
-                // fall through
-            case VALUE_NUMBER_INT:
-            case VALUE_NUMBER_FLOAT:
-                // TODO: optimize
-                return getNumberValue().toString().toCharArray();
-            case NOT_AVAILABLE:
-                return null;
-            default:
-                return _currToken.asCharArray();
+                name.getChars(0, nameLen, _nameCopyBuffer, 0);
+                _nameCopied = true;
             }
+            return _nameCopyBuffer;
+        case JsonTokenId.ID_NUMBER_INT:
+        case JsonTokenId.ID_NUMBER_FLOAT:
+            return getNumberValue().toString().toCharArray();
+        case JsonTokenId.ID_NO_TOKEN:
+        case JsonTokenId.ID_NOT_AVAILABLE:
+            return null;
+        default:
+            return _currToken.asCharArray();
         }
-        return null;
     }
 
     @Override    
     public int getTextLength() throws IOException
     {
-        if (_currToken != null) { // null only before/after document
-            switch (_currToken) {
-            case VALUE_STRING:
-                return _textBuffer.size();                
-            case FIELD_NAME:
-                return _parsingContext.getCurrentName().length();
-                // fall through
-            case VALUE_NUMBER_INT:
-            case VALUE_NUMBER_FLOAT:
-                // TODO: optimize
-                return getNumberValue().toString().length();
-                
-            case NOT_AVAILABLE:
-                return 0; // or throw exception?
-            default:
-                return _currToken.asCharArray().length;
-            }
+        switch (currentTokenId()) {
+        case JsonTokenId.ID_STRING:
+            return _textBuffer.size();
+        case JsonTokenId.ID_FIELD_NAME:
+            return _parsingContext.getCurrentName().length();
+        case JsonTokenId.ID_NUMBER_INT:
+        case JsonTokenId.ID_NUMBER_FLOAT:
+            return getNumberValue().toString().length();
+        case JsonTokenId.ID_NO_TOKEN:
+        case JsonTokenId.ID_NOT_AVAILABLE:
+            return 0; // or throw exception?
+        default:
+            return _currToken.asCharArray().length;
         }
-        return 0;
     }
 
     @Override
@@ -369,12 +333,7 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
         return 0;
     }
 
-    // !!! TODO: can this be supported reliably?
-    @Override
-    public int getText(Writer w) throws IOException
-    {
-        throw new UnsupportedOperationException();
-    }
+//    public abstract int getText(Writer w) throws IOException;
 
     /*
     /**********************************************************************
@@ -458,17 +417,17 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
             _quad2 = q2;
             return _symbols.findName(q1, q2);
         }
-        return _findDecodedMedium(inBuf, inPtr, len);
+        return _findDecodedLonger(inBuf, inPtr, len);
     }
     
     // Method for locating names longer than 8 bytes (in UTF-8)
-    private final String _findDecodedMedium(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _findDecodedLonger(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // first, need enough buffer to store bytes as ints:
         {
             int bufLen = (len + 3) >> 2;
             if (bufLen > _quadBuffer.length) {
-                _quadBuffer = _growArrayTo(_quadBuffer, bufLen);
+                _quadBuffer = Arrays.copyOf(_quadBuffer, bufLen+4);
             }
         }
         // then decode, full quads first
@@ -494,14 +453,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
             _quadBuffer[offset++] = q;
         }
         return _symbols.findName(_quadBuffer, offset);
-    }
-    
-    private static int[] _growArrayTo(int[] arr, int minSize) {
-        final int size = minSize+4;
-        if (arr == null) {
-            return new int[size];
-        }
-        return Arrays.copyOf(arr, size);
     }
 
     protected final String _addDecodedToSymbols(int len, String name)
@@ -653,26 +604,12 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
                index, _seenStringValueCount);
     }
 
-    protected void _reportInvalidChar(int c) throws JsonParseException {
-        _reportInvalidInitial(c);
-    }
-	
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 	
-    protected void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
-    }
-	
-    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException
-    {
+    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
-        _reportInvalidOther(mask);
-    }
-
-    protected <T> T _throwInvalidState(String desc)
-    {
-        throw new IllegalStateException(desc+": majorState="+_majorState);
+        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 }

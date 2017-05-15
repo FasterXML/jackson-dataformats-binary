@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -100,6 +102,45 @@ public class NonBlockingByteArrayParser
     @Override
     public void endOfInput() {
         _endOfInput = true;
+    }
+
+    /*
+    /**********************************************************************
+    /* Abstract methods/overrides from JsonParser
+    /**********************************************************************
+     */
+
+    /* Implementing these methods efficiently for non-blocking cases would
+     * be complicated; so for now let's just use the default non-optimized
+     * implementation
+     */
+
+//    public boolean nextFieldName(SerializableString str) throws IOException
+//    public String nextTextValue() throws IOException
+//    public int nextIntValue(int defaultValue) throws IOException
+//    public long nextLongValue(long defaultValue) throws IOException
+//    public Boolean nextBooleanValue() throws IOException
+
+    @Override
+    public int releaseBuffered(OutputStream out) throws IOException {
+        int avail = _inputEnd - _inputPtr;
+        if (avail > 0) {
+            out.write(_inputBuffer, _inputPtr, avail);
+        }
+        return avail;
+    }
+    
+    @Override
+    public int getText(Writer w) throws IOException
+    {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsToWriter(w);
+        }
+        if (_currToken == JsonToken.NOT_AVAILABLE) {
+            _reportError("Current token not available: can not call this method");
+        }
+        // otherwise default handling works fine
+        return super.getText(w);
     }
 
     /*
@@ -301,7 +342,7 @@ public class NonBlockingByteArrayParser
             return _finish7BitBinaryBody();
         default:
         }
-        return _throwInvalidState("Illegal state when trying to complete token: ");
+        throw new IllegalStateException("Illegal state when trying to complete token: majorState="+_majorState);
     }
 
     /*
@@ -901,7 +942,7 @@ public class NonBlockingByteArrayParser
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outBuf.length) {
@@ -989,7 +1030,7 @@ public class NonBlockingByteArrayParser
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(_pending32);
+                _reportInvalidInitial(_pending32);
                 c = 0;
             }
             _inputCopyLen = 0; // just for safety
@@ -1085,7 +1126,7 @@ public class NonBlockingByteArrayParser
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outBuf.length) {
@@ -1175,23 +1216,6 @@ public class NonBlockingByteArrayParser
         }
         return ((c << 6) | (f & 0x3F)) - 0x10000;
     }
-
-    /*
-    /**********************************************************************
-    /* Public API, traversal, nextXxxValue/nextFieldName
-    /**********************************************************************
-     */
-
-    /* Implementing these methods efficiently for non-blocking cases would
-     * be complicated; so for now let's just use the default non-optimized
-     * implementation
-     */
-    
-//    public boolean nextFieldName(SerializableString str) throws IOException
-//    public String nextTextValue() throws IOException
-//    public int nextIntValue(int defaultValue) throws IOException
-//    public long nextLongValue(long defaultValue) throws IOException
-//    public Boolean nextBooleanValue() throws IOException
     
     /*
     /**********************************************************************
@@ -1592,38 +1616,6 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    /*
-    private final String _decodeShortASCII(int len) throws IOException
-    {
-        // note: caller ensures we have enough bytes available
-        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-        int outPtr = 0;
-        final byte[] inBuf = _inputBuffer;
-        int inPtr = _inputPtr;
-        
-        // loop unrolling seems to help here:
-        for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-        }
-        int left = (len & 3);
-        if (left > 0) {
-            outBuf[outPtr++] = (char) inBuf[inPtr++];
-            if (left > 1) {
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                if (left > 2) {
-                    outBuf[outPtr++] = (char) inBuf[inPtr++];
-                }
-            }
-        } 
-        _inputPtr = inPtr;
-        _textBuffer.setCurrentLength(len);
-        return _textBuffer.contentsAsString();
-    }
-    */
-
     private final String _decodeASCIIText(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
@@ -1650,51 +1642,6 @@ public class NonBlockingByteArrayParser
         _textBuffer.setCurrentLength(len);
         return _textBuffer.contentsAsString();
     }
-
-    /*
-    private final String _decodeInputUnicode(int len) throws IOException
-    {
-        // note: caller ensures we have enough bytes available
-        int outPtr = 0;
-        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-        int inPtr = _inputPtr;
-        _inputPtr += len;
-        final int[] codes = SmileConstants.sUtf8UnitLengths;
-        final byte[] inBuf = _inputBuffer;
-        for (int end = inPtr + len; inPtr < end; ) {
-            int i = inBuf[inPtr++] & 0xFF;
-            int code = codes[i];
-            if (code != 0) {
-                // trickiest one, need surrogate handling
-                switch (code) {
-                case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
-                    break;
-                case 2:
-                    i = ((i & 0x0F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
-                    break;
-                case 3:
-                    i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
-                    // note: this is the codepoint value; need to split, too
-                    i -= 0x10000;
-                    outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
-                    i = 0xDC00 | (i & 0x3FF);
-                    break;
-                default: // invalid
-                    _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
-                }
-            }
-            outBuf[outPtr++] = (char) i;
-        }
-        _textBuffer.setCurrentLength(outPtr);
-        return _textBuffer.contentsAsString();
-    }
-    */
 
     /**
      * Helper method used to decode short Unicode string, length for which actual

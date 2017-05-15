@@ -6,6 +6,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class SimpleStringArrayTest extends AsyncTestBase
@@ -13,6 +14,9 @@ public class SimpleStringArrayTest extends AsyncTestBase
     private final SmileFactory F_REQ_HEADERS = new SmileFactory();
     {
         F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
+        F_REQ_HEADERS.enable(SmileGenerator.Feature.CHECK_SHARED_NAMES);
+        // allow use of shared Strings too
+        F_REQ_HEADERS.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
     }
 
     private final static String str0to9 = "1234567890";

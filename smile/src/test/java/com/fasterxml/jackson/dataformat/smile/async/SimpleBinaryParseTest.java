@@ -163,6 +163,12 @@ public class SimpleBinaryParseTest extends AsyncTestBase
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
             assertArrayEquals(data, result);
+
+            // also, via different accessor
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream(result.length);
+            assertEquals(result.length, p.parser().readBinaryValue(bytes));
+            assertArrayEquals(data, bytes.toByteArray());
+            
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
             p.close();

@@ -26,7 +26,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     /* Boolean, int, long tests
     /**********************************************************************
      */
-    
+
     public void testBooleans() throws IOException
     {
         byte[] data = _smileDoc("[ true, false, true, true, false ]", true);
@@ -56,11 +56,6 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         _testBooleans(f, data, 1, 100);
         _testBooleans(f, data, 1, 3);
         _testBooleans(f, data, 1, 1);
-
-        // and finally, error case too
-        _testBooleanFail(F_REQ_HEADERS, data, 0, 100);
-        _testBooleanFail(F_REQ_HEADERS, data, 0, 3);
-        _testBooleanFail(F_REQ_HEADERS, data, 0, 1);
     }
 
     private void _testBooleans(SmileFactory f,
@@ -75,23 +70,15 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
         assertToken(JsonToken.VALUE_FALSE, r.nextToken());
+
+        assertEquals("false", r.currentText());
+        assertEquals("false", r.currentTextViaCharacters());
+        
         assertToken(JsonToken.END_ARRAY, r.nextToken());
 
         // and end up with "no token" as well
         assertNull(r.nextToken());
         assertTrue(r.isClosed());
-    }
-
-    private void _testBooleanFail(SmileFactory f,
-            byte[] data, int offset, int readSize) throws IOException
-    {
-        AsyncReaderWrapper r = asyncForBytes(f, 100, data, 0);
-        try {
-            r.nextToken();
-            fail("Should not pass");
-        } catch (JsonParseException e) {
-            verifyException(e, "does not start with Smile format header");
-        }
     }
 
     public void testInts() throws IOException

@@ -46,7 +46,7 @@ public class SimpleObjectTest extends AsyncTestBase
     {
         final SmileFactory f = new SmileFactory();
         f.enable(SmileParser.Feature.REQUIRE_HEADER);
-        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'ac':true, '"+UNICODE_SHORT_NAME+"':true, 'e':false }"), true);
+        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'acdc':true, '"+UNICODE_SHORT_NAME+"':true, 'a1234567':false }"), true);
         // first, no offsets
         _testBooleans(f, data, 0, 100);
         _testBooleans(f, data, 0, 3);
@@ -84,7 +84,7 @@ public class SimpleObjectTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_FALSE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
-        assertEquals("ac", r.currentText());
+        assertEquals("acdc", r.currentText());
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
@@ -92,7 +92,7 @@ public class SimpleObjectTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
-        assertEquals("e", r.currentText());
+        assertEquals("a1234567", r.currentText());
         assertToken(JsonToken.VALUE_FALSE, r.nextToken());
 
         // and for fun let's verify can't access this as number or binary
