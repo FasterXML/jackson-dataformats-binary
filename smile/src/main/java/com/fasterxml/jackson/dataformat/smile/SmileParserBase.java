@@ -20,8 +20,6 @@ import com.fasterxml.jackson.core.util.TextBuffer;
  */
 public abstract class SmileParserBase extends ParserMinimalBase
 {
-    protected final static byte[] NO_BYTES = new byte[0];
-    protected final static int[] NO_INTS = new int[0];
     protected final static String[] NO_STRINGS = new String[0];
 
     /*
@@ -190,7 +188,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Quads used for hash calculation
      */
     protected int _quad1, _quad2, _quad3;
-     
+
     /**
      * Array of recently seen field names, which may be back referenced
      * by later fields.
