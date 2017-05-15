@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;

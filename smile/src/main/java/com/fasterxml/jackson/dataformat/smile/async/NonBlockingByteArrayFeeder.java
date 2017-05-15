@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
+
 public interface NonBlockingByteArrayFeeder extends NonBlockingInputFeeder
 {
      /**

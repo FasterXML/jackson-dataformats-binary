@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
+
 public interface NonBlockingByteBufferFeeder extends NonBlockingInputFeeder
 {
      /**

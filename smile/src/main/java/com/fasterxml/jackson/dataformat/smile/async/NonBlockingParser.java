@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
+import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
+
 /**
  * Mix-in interface used with {@link com.fasterxml.jackson.core.JsonParser},
  * extending it with features needed to process data in non-blocking
