@@ -12,7 +12,6 @@ import com.fasterxml.jackson.dataformat.smile.*;
 
 public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
     extends SmileParserBase
-    implements NonBlockingParser<F>
 {
     /*
     /**********************************************************************
@@ -237,15 +236,6 @@ public abstract class NonBlockingParserBase<F extends NonBlockingInputFeeder>
             _ioContext.releaseReadIOBuffer(b);
         }
     }
-
-    /*
-    /**********************************************************************
-    /* NonBlockParser impl (except for NonBlockingInputFeeder)
-    /**********************************************************************
-     */
-
-    @Override
-    public abstract F getInputFeeder();
 
     /*
     /**********************************************************************

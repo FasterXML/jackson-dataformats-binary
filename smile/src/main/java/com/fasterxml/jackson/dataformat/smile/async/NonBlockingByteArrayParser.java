@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
@@ -22,8 +23,8 @@ import com.fasterxml.jackson.dataformat.smile.SmileUtil;
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_END_OF_STRING;
 
 public class NonBlockingByteArrayParser
-    extends NonBlockingParserBase<NonBlockingByteArrayFeeder>
-    implements NonBlockingByteArrayFeeder
+    extends NonBlockingParserBase<ByteArrayFeeder>
+    implements ByteArrayFeeder
 {
     /*
     /**********************************************************************
@@ -67,7 +68,7 @@ public class NonBlockingByteArrayParser
      */
 
     @Override
-    public NonBlockingByteArrayFeeder getInputFeeder() {
+    public ByteArrayFeeder getNonBlockingInputFeeder() {
         return this;
     }
 
