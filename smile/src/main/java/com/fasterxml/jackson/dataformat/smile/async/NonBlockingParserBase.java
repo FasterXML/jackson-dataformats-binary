@@ -166,6 +166,16 @@ public abstract class NonBlockingParserBase
 
     /*
     /**********************************************************
+    /* Test support
+    /**********************************************************
+     */
+
+    protected ByteQuadsCanonicalizer symbolTableForTests() {
+        return _symbols;
+    }
+
+    /*
+    /**********************************************************
     /* Abstract methods from JsonParser
     /**********************************************************
      */
@@ -449,7 +459,7 @@ public abstract class NonBlockingParserBase
     protected final String _addDecodedToSymbols(int len, String name)
     {
         if (len < 5) {
-            return _symbols.addName(name, _quad1, 0);
+            return _symbols.addName(name, _quad1);
         }
         if (len < 9) {
             return _symbols.addName(name, _quad1, _quad2);

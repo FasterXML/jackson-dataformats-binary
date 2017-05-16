@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class AsyncParserNamesTest extends AsyncTestBase
@@ -24,6 +25,66 @@ public class AsyncParserNamesTest extends AsyncTestBase
         _testWithName(name);
     }
 
+    public void testSymbolTable() throws IOException
+    {
+        final String STR1 = "a";
+
+        byte[] doc = _smileDoc("{ "+quote(STR1)+":1, \"foobar\":2, \"longername\":3 }");
+        SmileFactory f = new SmileFactory();
+        AsyncReaderWrapper p = asyncForBytes(f, 5, doc, 0);
+        final ByteQuadsCanonicalizer symbols1 = ((NonBlockingByteArrayParser) p.parser()).symbolTableForTests();
+        assertEquals(0, symbols1.size());
+     
+        assertEquals(JsonToken.START_OBJECT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        // field names are interned:
+        assertSame(STR1, p.currentName());
+        assertEquals(1, symbols1.size());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertSame("foobar", p.currentName());
+        assertEquals(2, symbols1.size());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertSame("longername", p.currentName());
+        assertEquals(3, symbols1.size());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+        assertEquals(3, symbols1.size());
+        p.close();
+
+        // but let's verify that symbol table gets reused properly
+        p = asyncForBytes(f, 5, doc, 0);
+
+        final ByteQuadsCanonicalizer symbols2 = ((NonBlockingByteArrayParser) p.parser()).symbolTableForTests();
+        // symbol tables are not reused, but contents are:
+        assertNotSame(symbols1, symbols2);
+        assertEquals(3, symbols2.size());
+
+        assertEquals(JsonToken.START_OBJECT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        // field names are interned:
+        assertSame(STR1, p.currentName());
+        assertEquals(3, symbols2.size());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertSame("foobar", p.currentName());
+        assertEquals(3, symbols2.size());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertSame("longername", p.currentName());
+        assertEquals(3, symbols2.size());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+        assertEquals(3, symbols2.size());
+        p.close();
+
+        assertEquals(3, symbols2.size());
+        p.close();
+    }
+
     /*
     /**********************************************************
     /* Helper methods
@@ -34,7 +95,6 @@ public class AsyncParserNamesTest extends AsyncTestBase
     {
         SmileFactory f = new SmileFactory();
         byte[] doc = _smileDoc("{"+quote(name)+":13}");
-        // important: MUST use InputStream to enforce buffer boundaries!
         AsyncReaderWrapper p = asyncForBytes(f, 37, doc, 0);
 
         assertNull(p.currentToken());

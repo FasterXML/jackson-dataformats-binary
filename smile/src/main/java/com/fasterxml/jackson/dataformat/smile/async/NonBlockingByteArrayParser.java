@@ -709,7 +709,7 @@ public class NonBlockingByteArrayParser
         
         String name = _symbols.findName(quads, quadCount);
         if (name == null) {
-            name = _decodeLongUnicodeText(copyBuffer, 0, outPtr);
+            name = _decodeLongUnicodeName(copyBuffer, 0, outPtr);
         }
         if (_seenNames != null) {
            if (_seenNameCount >= _seenNames.length) {
@@ -1646,7 +1646,7 @@ public class NonBlockingByteArrayParser
         return _textBuffer.contentsAsString();
     }
 
-    private final String _decodeLongUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeLongUnicodeName(byte[] inBuf, int inPtr, int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;

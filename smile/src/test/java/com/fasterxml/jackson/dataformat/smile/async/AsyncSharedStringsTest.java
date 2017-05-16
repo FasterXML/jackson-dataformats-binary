@@ -13,15 +13,9 @@ import com.fasterxml.jackson.dataformat.smile.*;
  * efficient reuse of names encountered during parsing.
  * Copied and slightly modified version of `ParserSymbolHandlingTest`
  */
-public class AsyncSymbolHandlingTest
+public class AsyncSharedStringsTest
 	extends AsyncTestBase
 {
-    /*
-    /**********************************************************
-    /* Helper types, constants
-    /**********************************************************
-     */
-    
     private final static String[] SHARED_SYMBOLS = new String[] {
             "g", "J", "v", "B", "S", "JAVA",
             "h", "J", "LARGE", 
@@ -73,7 +67,7 @@ public class AsyncSymbolHandlingTest
         
     /*
     /**********************************************************
-    /* Unit tests
+    /* Test methods
     /**********************************************************
      */
 
