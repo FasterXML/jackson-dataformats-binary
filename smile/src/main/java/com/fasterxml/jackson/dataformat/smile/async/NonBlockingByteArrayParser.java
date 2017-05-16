@@ -1652,7 +1652,9 @@ public class NonBlockingByteArrayParser
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final int[] codes = SmileConstants.sUtf8UnitLengths;
-        int expandCheck = outBuf.length - 4;
+        // since we only check expansion for multi-byte chars, there must be
+        // enough room for remaining bytes as all-ASCII
+        int estSlack = outBuf.length - len - 8;
 
         for (int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
@@ -1681,9 +1683,11 @@ public class NonBlockingByteArrayParser
                 default: // invalid
                     _reportError("Invalid byte 0x%02x in short Unicode text block (offset %d)", i & 0xFF, inPtr);
                 }
-                if (outPtr >= expandCheck) {
+                estSlack -= code;
+                if (estSlack <= 0) {
                     outBuf = _textBuffer.expandCurrentSegment();
-                    expandCheck = outBuf.length - 4;
+                    // and re-adjust: most likely we are now safe but...
+                    estSlack = (outBuf.length - outPtr) - (end - inPtr) - 8;
                 }
             }
             outBuf[outPtr++] = (char) i;
