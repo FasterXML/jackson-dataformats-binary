@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -130,19 +129,6 @@ public class NonBlockingByteArrayParser
             out.write(_inputBuffer, _inputPtr, avail);
         }
         return avail;
-    }
-    
-    @Override
-    public int getText(Writer w) throws IOException
-    {
-        if (_currToken == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(w);
-        }
-        if (_currToken == JsonToken.NOT_AVAILABLE) {
-            _reportError("Current token not available: can not call this method");
-        }
-        // otherwise default handling works fine
-        return super.getText(w);
     }
 
     /*
@@ -340,7 +326,7 @@ public class NonBlockingByteArrayParser
 
     /*
     /**********************************************************************
-    /* Second-level decoding, root level
+    /* Second-level decoding
     /**********************************************************************
      */
 

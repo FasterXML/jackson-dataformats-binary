@@ -164,6 +164,22 @@ public abstract class NonBlockingParserBase
     @Override
     public boolean canParseAsync() { return true; }
 
+    /**
+     * Method called to release internal buffers owned by the base
+     * reader. This may be called along with {@link #_closeInput} (for
+     * example, when explicitly closing this reader instance), or
+     * separately (if need be).
+     */
+    @Override
+    protected void _releaseBuffers2()
+    {
+        byte[] b = _inputCopy;
+        if (b != null) {
+            _inputCopy = null;
+            _ioContext.releaseReadIOBuffer(b);
+        }
+    }
+
     /*
     /**********************************************************
     /* Test support
@@ -229,22 +245,6 @@ public abstract class NonBlockingParserBase
         }
         // other types, no benefit from accessing as char[]
         return false;
-    }
-
-    /**
-     * Method called to release internal buffers owned by the base
-     * reader. This may be called along with {@link #_closeInput} (for
-     * example, when explicitly closing this reader instance), or
-     * separately (if need be).
-     */
-    @Override
-    protected void _releaseBuffers2()
-    {
-        byte[] b = _inputCopy;
-        if (b != null) {
-            _inputCopy = null;
-            _ioContext.releaseReadIOBuffer(b);
-        }
     }
 
     /*
@@ -329,12 +329,22 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public int getTextOffset() throws IOException
-    {
+    public int getTextOffset() throws IOException {
         return 0;
     }
 
-//    public abstract int getText(Writer w) throws IOException;
+    @Override
+    public int getText(Writer w) throws IOException
+    {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            return _textBuffer.contentsToWriter(w);
+        }
+        if (_currToken == JsonToken.NOT_AVAILABLE) {
+            _reportError("Current token not available: can not call this method");
+        }
+        // otherwise default handling works fine
+        return super.getText(w);
+    }
 
     /*
     /**********************************************************************
