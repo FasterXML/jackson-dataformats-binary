@@ -378,6 +378,7 @@ public class SmileFactory extends JsonFactory
     /**
      * @since 2.9
      */
+    @Override
     public NonBlockingByteArrayParser createNonBlockingByteArrayParser() throws IOException {
         IOContext ctxt = _createContext(null, false);
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
