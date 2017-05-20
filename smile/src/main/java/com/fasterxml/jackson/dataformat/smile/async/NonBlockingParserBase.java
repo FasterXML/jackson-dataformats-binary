@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.dataformat.smile.*;
@@ -382,6 +383,68 @@ public abstract class NonBlockingParserBase
 
     /*
     /**********************************************************************
+    /* Handling of nested scope, state
+    /**********************************************************************
+     */
+
+    protected final JsonToken _startArrayScope() throws IOException
+    {
+        _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
+        _majorState = MAJOR_ARRAY_ELEMENT;
+        _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
+        return (_currToken = JsonToken.START_ARRAY);
+    }
+
+    protected final JsonToken _startObjectScope() throws IOException
+    {
+        _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
+        _majorState = MAJOR_OBJECT_FIELD;
+        _majorStateAfterValue = MAJOR_OBJECT_FIELD;
+        return (_currToken = JsonToken.START_OBJECT);
+    }
+
+    protected final JsonToken _closeArrayScope() throws IOException
+    {
+        if (!_parsingContext.inArray()) {
+            _reportMismatchedEndMarker(']', '}');
+        }
+        JsonReadContext ctxt = _parsingContext.getParent();
+        _parsingContext = ctxt;
+        int st;
+        if (ctxt.inObject()) {
+            st = MAJOR_OBJECT_FIELD;
+        } else if (ctxt.inArray()) {
+            st = MAJOR_ARRAY_ELEMENT;
+        } else {
+            st = MAJOR_ROOT;
+        }
+        _majorState = st;
+        _majorStateAfterValue = st;
+        return (_currToken = JsonToken.END_ARRAY);
+    }
+
+    protected final JsonToken _closeObjectScope() throws IOException
+    {
+        if (!_parsingContext.inObject()) {
+            _reportMismatchedEndMarker('}', ']');
+        }
+        JsonReadContext ctxt = _parsingContext.getParent();
+        _parsingContext = ctxt;
+        int st;
+        if (ctxt.inObject()) {
+            st = MAJOR_OBJECT_FIELD;
+        } else if (ctxt.inArray()) {
+            st = MAJOR_ARRAY_ELEMENT;
+        } else {
+            st = MAJOR_ROOT;
+        }
+        _majorState = st;
+        _majorStateAfterValue = st;
+        return (_currToken = JsonToken.END_OBJECT);
+    }
+
+    /*
+    /**********************************************************************
     /* Internal methods, field name parsing
     /**********************************************************************
      */
@@ -605,6 +668,22 @@ public abstract class NonBlockingParserBase
     /* Internal methods, error reporting
     /**********************************************************************
      */
+
+    protected void _reportMissingHeader(int unmaskedFirstByte) throws IOException
+    {
+        String msg;
+        int b = unmaskedFirstByte & 0xFF;
+        // let's speculate on problem a bit, too
+        if (b == '{' || b == '[') {
+            msg = "Input does not start with Smile format header (first byte = 0x"
+                +Integer.toHexString(b & 0xFF)+") -- rather, it starts with '"+((char) b)
+                +"' (plain JSON input?) -- can not parse";
+        } else {
+            msg = "Input does not start with Smile format header (first byte = 0x"
+            +Integer.toHexString(b & 0xFF)+") and parser has REQUIRE_HEADER enabled: can not parse";
+        }
+        throw new JsonParseException(this, msg);
+    }
 
     protected void _reportInvalidSharedName(int index) throws IOException
     {
