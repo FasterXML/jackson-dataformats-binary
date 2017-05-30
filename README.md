@@ -10,6 +10,15 @@ Currently included are:
 * [Protobuf](protobuf/)
 * [Smile](smile/)
 
+## Maven dependency
+```
+<dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformats-binary</artifactId>
+    <version>2.8.6</version>
+</dependency>
+```
+
 ## License
 
 All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
