@@ -6,12 +6,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.VersionUtil;
 
@@ -938,85 +936,18 @@ public class NonBlockingByteArrayParser
 
     private final JsonToken _finishLongUnicode() throws IOException
     {
+        // First things first: did we have partially decoded multi-byte UTF-8 character?
+        if (_inputCopyLen > 0) {
+            if (!_finishPartialUnicodeChar()) {
+                return JsonToken.NOT_AVAILABLE;
+            }
+        }
+
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         int c;
         final byte[] inputBuffer = _inputBuffer;
         char[] outBuf = _textBuffer.getBufferWithoutReset();
         int outPtr = _textBuffer.getCurrentSegmentSize();
-
-        // First things first: did we have partially decoded multi-byte UTF-8 character?
-        if (_inputCopyLen > 0) {
-            // NOTE: first byte stored in `_pending32` and we know we got one more byte for sure
-            int next = _inputBuffer[_inputPtr++];
-            switch (codes[_pending32]) { // type of UTF-8 sequence (length - 1)
-            case 1: // 2-byte UTF
-                c = _decodeUTF8_2(_pending32, next);
-                break;
-            case 2: // 3-byte UTF: did we have one or two bytes?
-                if (_inputCopyLen == 1) {
-                    if (_inputPtr >= _inputEnd) {
-                        _inputCopy[0] = (byte) next;
-                        _inputCopyLen = 2;
-                        return JsonToken.NOT_AVAILABLE;
-                    }
-                    c = _decodeUTF8_3(_pending32, next, _inputBuffer[_inputPtr++]);
-                } else {
-                    c = _decodeUTF8_3(_pending32, _inputCopy[0], next);
-                }
-                break;
-            case 3: // 4-byte UTF; had 1/2/3 bytes, now got 2/3/4
-                switch (_inputCopyLen) {
-                case 1:
-                    if (_inputPtr >= _inputEnd) {
-                        _inputCopy[0] = (byte) next;
-                        _inputCopyLen = 2;
-                        return JsonToken.NOT_AVAILABLE;
-                    }
-                    int i3 = _inputBuffer[_inputPtr++];
-                    if (_inputPtr >= _inputEnd) {
-                        _inputCopy[0] = (byte) next;
-                        _inputCopy[1] = (byte) i3;
-                        _inputCopyLen = 3;
-                        return JsonToken.NOT_AVAILABLE;
-                    }
-                    c = _decodeUTF8_4(_pending32, next, i3, _inputBuffer[_inputPtr++]);
-                    break;
-                case 2:
-                    if (_inputPtr >= _inputEnd) {
-                        _inputCopy[1] = (byte) next;
-                        _inputCopyLen = 3;
-                        return JsonToken.NOT_AVAILABLE;
-                    }
-                    c = _decodeUTF8_4(_pending32, _inputCopy[0], next, _inputBuffer[_inputPtr++]);
-                    break;
-                case 3:
-                default:
-                    c = _decodeUTF8_4(_pending32, _inputCopy[0], _inputCopy[1], next);
-                    break;
-                }
-                // Let's add first part right away:
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
-                if (outPtr >= outBuf.length) {
-                    outBuf = _textBuffer.finishCurrentSegment();
-                    outPtr = 0;
-                }
-                c = 0xDC00 | (c & 0x3FF);
-                // And let the other char output down below
-                break;
-            default:
-                // Is this good enough error message?
-                _reportInvalidInitial(_pending32);
-                c = 0;
-            }
-            _inputCopyLen = 0; // just for safety
-            // Need more room?
-            if (outPtr >= outBuf.length) {
-                outBuf = _textBuffer.finishCurrentSegment();
-                outPtr = 0;
-            }
-            // Ok, let's add char to output:
-            outBuf[outPtr++] = (char) c;
-        }
 
         main_loop:
         while (true) {
@@ -1113,6 +1044,74 @@ public class NonBlockingByteArrayParser
         }
         _textBuffer.setCurrentLength(outPtr);
         return JsonToken.NOT_AVAILABLE;
+    }
+
+    private final boolean _finishPartialUnicodeChar() throws IOException
+    {
+        final int[] codes = SmileConstants.sUtf8UnitLengths;
+        int c;
+
+        // NOTE: first byte stored in `_pending32` and we know we got one more byte for sure
+        int next = _inputBuffer[_inputPtr++];
+        switch (codes[_pending32]) { // type of UTF-8 sequence (length - 1)
+        case 1: // 2-byte UTF
+            c = _decodeUTF8_2(_pending32, next);
+            break;
+        case 2: // 3-byte UTF: did we have one or two bytes?
+            if (_inputCopyLen == 1) {
+                if (_inputPtr >= _inputEnd) {
+                    _inputCopy[0] = (byte) next;
+                    _inputCopyLen = 2;
+                    return false;
+                }
+                c = _decodeUTF8_3(_pending32, next, _inputBuffer[_inputPtr++]);
+            } else {
+                c = _decodeUTF8_3(_pending32, _inputCopy[0], next);
+            }
+            break;
+        case 3: // 4-byte UTF; had 1/2/3 bytes, now got 2/3/4
+            switch (_inputCopyLen) {
+            case 1:
+                if (_inputPtr >= _inputEnd) {
+                    _inputCopy[0] = (byte) next;
+                    _inputCopyLen = 2;
+                    return false;
+                }
+                int i3 = _inputBuffer[_inputPtr++];
+                if (_inputPtr >= _inputEnd) {
+                    _inputCopy[0] = (byte) next;
+                    _inputCopy[1] = (byte) i3;
+                    _inputCopyLen = 3;
+                    return false;
+                }
+                c = _decodeUTF8_4(_pending32, next, i3, _inputBuffer[_inputPtr++]);
+                break;
+            case 2:
+                if (_inputPtr >= _inputEnd) {
+                    _inputCopy[1] = (byte) next;
+                    _inputCopyLen = 3;
+                    return false;
+                }
+                c = _decodeUTF8_4(_pending32, _inputCopy[0], next, _inputBuffer[_inputPtr++]);
+                break;
+            case 3:
+            default:
+                c = _decodeUTF8_4(_pending32, _inputCopy[0], _inputCopy[1], next);
+                break;
+            }
+            // Let's add first part right away:
+            _textBuffer.append((char) (0xD800 | (c >> 10)));
+            c = 0xDC00 | (c & 0x3FF);
+            // And let the other char output down below
+            break;
+        default:
+            // Is this good enough error message?
+            _reportInvalidInitial(_pending32);
+            c = 0;
+        }
+        _inputCopyLen = 0; // just for safety
+        _textBuffer.append((char) c);
+        return true;
     }
 
     /*
