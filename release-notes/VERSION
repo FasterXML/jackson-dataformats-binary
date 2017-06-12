@@ -11,10 +11,10 @@ Modules:
 
 2.9.0 (not yet released)
 
-2.8.9 (not yet released)
+2.8.9 (12-Jun-2017)
 
-#72: (proto) parser fails with /* comment */
-#85: _decode32Bits() bug in ProtobufParser
+#72: (protobuf) parser fails with /* comment */
+#85: (protobuf) _decode32Bits() bug in ProtobufParser
  (reported by marsqing@github)
 
 2.8.8 (05-Apr-2017)
