@@ -57,7 +57,7 @@ public class ParserInteropTest extends CBORTestBase
         p.close();
     }
 
-    // as per [Issue#6], self-describe great for format auto-detection
+    // as per [dataformats-binary#6], self-describe great for format auto-detection
     public void testFormatDetection() throws Exception
     {
         CBORFactory f = cborFactory();

@@ -19,9 +19,6 @@ import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
 public final class CBORParser extends ParserMinimalBase
 {
-    private final static byte[] NO_BYTES = new byte[0];
-    private final static int[] NO_INTS = new int[0];
-
     /**
      * Enumeration that defines all togglable features for CBOR generators.
      */
