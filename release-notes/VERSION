@@ -11,6 +11,11 @@ Modules:
 
 2.9.0 (not yet released)
 
+2.8.9.1 (not yet released)
+
+#94: Should _ensureRoom in ProtobufGenerator.writeString()
+ (reported by marsqing@github)
+
 2.8.9 (12-Jun-2017)
 
 #72: (protobuf) parser fails with /* comment */
