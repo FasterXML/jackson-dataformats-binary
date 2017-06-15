@@ -17,7 +17,7 @@ public class GenerateSchema68Test extends ProtobufTestBase
     {
         public short version;
     }
-    
+
     /*
     /**********************************************************
     /* Test methods
