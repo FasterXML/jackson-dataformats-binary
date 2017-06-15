@@ -31,7 +31,7 @@ public class WriteLongString94Test extends ProtobufTestBase
         ProtobufSchema schema = MAPPER.generateSchemaFor(p.getClass());
         byte[] proto = MAPPER.writer(schema)
                 .writeValueAsBytes(p);
-        assertEquals(13, proto.length);
+        assertEquals(2 * (7995 + 3), proto.length);
 
         TwoStrings result = MAPPER.readerFor(p.getClass())
                 .with(schema)
