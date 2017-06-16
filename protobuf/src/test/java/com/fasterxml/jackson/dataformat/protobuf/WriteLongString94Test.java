@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.protobuf.failing;
+package com.fasterxml.jackson.dataformat.protobuf;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
