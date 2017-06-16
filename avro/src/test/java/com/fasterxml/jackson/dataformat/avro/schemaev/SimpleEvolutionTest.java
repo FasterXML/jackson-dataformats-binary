@@ -179,5 +179,9 @@ public class SimpleEvolutionTest extends AvroTestBase
             verifyException(e, "Data encoded using writer schema");
             verifyException(e, "will or may fail to decode using reader schema");
         }
+
+        // However... should be possible with unsafe alternative
+        AvroSchema risky = srcSchema.withUnsafeReaderSchema(dstSchema);
+        assertNotNull(risky);
     }
 }
