@@ -90,6 +90,28 @@ public class AvroSchema implements FormatSchema
         return Resolving.create(w, r);
     }
 
+    /**
+     * Similar to {@link #withReaderSchema} but will NOT verify compatibility of schemas:
+     * this means that certain problems (such as missing default value for a newly added
+     * field) that would be caught at construction may be surfaced later when using
+     * schema. This is, however, sometimes necessary to work around potential BUT NOT ACTUAL
+     * problems.
+     *
+     * @since 2.9
+     */
+    public AvroSchema withUnsafeReaderSchema(AvroSchema readerSchema)
+        throws JsonProcessingException
+    {
+        Schema w = _writerSchema;
+        Schema r = readerSchema.getAvroSchema();
+
+        if (r.equals(w)) {
+            return this;
+        }
+        w = Schema.applyAliases(w, r);
+        return Resolving.create(w, r);
+    }
+
     @Override
     public String getSchemaType() {
         return TYPE_ID;
