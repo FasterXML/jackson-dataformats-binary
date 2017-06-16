@@ -20,7 +20,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             "    { 'name':'x', 'type':'int' }\n"+
             " ]\n"+
             "}\n");
-    
+
     static String SCHEMA_XY_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint',\n"+
@@ -40,6 +40,16 @@ public class SimpleEvolutionTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
+    static String SCHEMA_XYZ_RENAMED_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'EvolvingPoint2',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'z', 'type':'int', 'default': 99 },\n"+
+            "    { 'name':'y', 'type':'int' },\n"+
+            "    { 'name':'x', 'type':'int' }\n"+
+            " ]\n"+
+            "}\n");
+    
     static class PointXY {
         public int x, y;
 
@@ -174,12 +184,32 @@ public class SimpleEvolutionTest extends AvroTestBase
             srcSchema.withReaderSchema(dstSchema);
             fail("Should not pass");
         } catch (JsonMappingException e) {
-            // 06-Feb-2016, tatu: Extremely lame error message by avro lib. Should consider
+            // 06-Feb-2017, tatu: Extremely lame error message by avro lib. Should consider
             //    rewriting to give some indication of issues...
+            verifyException(e, "Incompatible writer/reader schemas");
             verifyException(e, "Data encoded using writer schema");
             verifyException(e, "will or may fail to decode using reader schema");
         }
 
+        // However... should be possible with unsafe alternative
+        AvroSchema risky = srcSchema.withUnsafeReaderSchema(dstSchema);
+        assertNotNull(risky);
+    }
+
+    public void testFailNameChangeNoAlias() throws Exception
+    {
+        final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XYZ_JSON);
+        final AvroSchema dstSchema = MAPPER.schemaFrom(SCHEMA_XYZ_RENAMED_JSON);
+        try {
+            srcSchema.withReaderSchema(dstSchema);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            // 16-Jun-2017, tatu: As is, names must match, so...
+            verifyException(e, "Incompatible writer/reader schemas");
+            verifyException(e, "root records have different names");
+            verifyException(e, "\"EvolvingPoint\"");
+            verifyException(e, "\"EvolvingPoint2\"");
+        }
         // However... should be possible with unsafe alternative
         AvroSchema risky = srcSchema.withUnsafeReaderSchema(dstSchema);
         assertNotNull(risky);
