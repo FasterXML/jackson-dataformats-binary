@@ -20,6 +20,13 @@ Kenji Noguchi (knoguchi@github)
 * Reported #70 (protobuf), contributed fix: Can't deserialize packed repeated field
  (2.8.9)
 
+marsqing@github
+
+* Reported #85: (protobuf) _decode32Bits() bug in ProtobufParser
+ (2.8.9)
+* Reported #94: (protobuf) Should _ensureRoom in ProtobufGenerator.writeString()
+ (2.8.10)
+
 baharclerode@github:
 
 * Contributed #14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`

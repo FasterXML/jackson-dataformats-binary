@@ -1289,6 +1289,9 @@ public class ProtobufGenerator extends GeneratorBase
     
     protected void _writeLengthPrefixed(byte[] data, int offset, int len) throws IOException
     {
+        // 15-Jun-2017, tatu: [dataformats-binary#94]: need to ensure there is actually
+        //    enough space for simple add; if not, need more checking
+        _ensureRoom(10); // max tag 5 bytes, ditto max length
         int ptr = _writeTag(_currPtr);
         ptr = ProtobufUtil.appendLengthLength(len, _currBuffer, ptr);
 
@@ -1781,7 +1784,7 @@ public class ProtobufGenerator extends GeneratorBase
 
     protected final void _ensureMore() throws IOException
     {
-    // if not, either simple (flush), or 
+        // if not, either simple (flush), or 
         final int start = _currStart;
         final int currLen = _currPtr - start;
         
