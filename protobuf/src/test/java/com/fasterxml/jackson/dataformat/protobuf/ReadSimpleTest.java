@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -211,8 +212,25 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
-    }
 
+        // and, ditto, but skipping
+        p = MAPPER.getFactory().createParser(bytes);
+        p.setSchema(schema);
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        // but only skip first couple, not last
+        assertEquals(input.values[2], p.getText());
+
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
+        assertNull(p.nextToken());
+    }
 
     public void testStringArrayPacked() throws Exception
     {
@@ -268,6 +286,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertFalse(p.hasTextCharacters());
         assertEquals(input.values[0], p.getText());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(input.values[1], p.getText());
@@ -278,6 +297,20 @@ public class ReadSimpleTest extends ProtobufTestBase
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
+
+        // also, for fun: partial read
+        p = MAPPER.getFactory().createParser(bytes);
+        p.setSchema(schema);
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("name", p.getCurrentName());
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        int count = p.releaseBuffered(b);
+        assertEquals(count, b.size());
+        assertEquals(18, count);
+
         p.close();
     }
 

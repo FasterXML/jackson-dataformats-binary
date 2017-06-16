@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
@@ -47,10 +49,46 @@ public class WriteBinaryTest extends ProtobufTestBase
         assertEquals(input.id, result.id);
         assertEquals(input.trailer, result.trailer);
         assertNotNull(result.data);
-        assertEquals(data.length, result.data.length);
 
-        for (int i = 0, len = data.length; i < len; ++i) {
-            if (data[i] != result.data[i]) {
+        _verify(data, result.data);
+
+        // and via JsonParser too
+        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        p.setSchema(schema);
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertFalse(p.hasTextCharacters());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(input.trailer, p.getIntValue());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("data", p.getCurrentName());
+        assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+        _verify(data, p.getBinaryValue());
+        
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
+
+        // and with skipping of binary data
+        p = MAPPER.getFactory().createParser(bytes);
+        p.setSchema(schema);
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(input.trailer, p.nextIntValue(-1));
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
+    }
+
+    private void _verify(byte[] dataExp, byte[] dataAct) {
+        assertEquals(dataExp.length, dataAct.length);
+        for (int i = 0, len = dataExp.length; i < len; ++i) {
+            if (dataExp[i] != dataAct[i]) {
                 fail("Binary data differs at #"+i);
             }
         }

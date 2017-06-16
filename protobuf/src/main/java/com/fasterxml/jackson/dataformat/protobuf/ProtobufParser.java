@@ -2470,37 +2470,37 @@ public class ProtobufParser extends ParserMinimalBase
 
     private void _reportIncompatibleType(ProtobufField field, int wireType) throws JsonParseException
     {
-        _reportErrorF
+        _reportError(String.format
                 ("Incompatible wire type (0x%x) for field '%s': not valid for field of type %s (expected 0x%x)",
-                        wireType, field.name, field.type, field.type.getWireType());
+                        wireType, field.name, field.type, field.type.getWireType()));
     }
 
     private void _reportInvalidLength(int len) throws JsonParseException {
-        _reportErrorF("Invalid length (%d): must be positive number", len);
+        _reportError("Invalid length (%d): must be positive number", len);
     }
 
-    protected void _reportTooLongVInt(int fifth) throws JsonParseException {
-        _reportErrorF("Too long tag VInt: fifth byte 0x%x", fifth);
+    private void _reportTooLongVInt(int fifth) throws JsonParseException {
+        _reportError("Too long tag VInt: fifth byte 0x%x", fifth);
     }
 
-    protected void _reportTooLongVLong(int fifth) throws JsonParseException {
-        _reportErrorF("Too long tag VLong: tenth byte 0x%x", fifth);
+    private void _reportTooLongVLong(int fifth) throws JsonParseException {
+        _reportError("Too long tag VLong: tenth byte 0x%x", fifth);
     }
 
-    protected void _reportInvalidInitial(int mask) throws JsonParseException {
-        _reportErrorF("Invalid UTF-8 start byte 0x%x", mask);
+    private void _reportInvalidInitial(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 start byte 0x%x", mask);
     }
 
-    protected void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportErrorF("Invalid UTF-8 middle byte 0x%x", mask);
+    private void _reportInvalidOther(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 middle byte 0x%x", mask);
     }
 
-    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
+    private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }
 
-    protected void _reportInvalidChar(int c) throws JsonParseException {
+    private void _reportInvalidChar(int c) throws JsonParseException {
         // Either invalid WS or illegal UTF-8 start char
         if (c < ' ') {
             _throwInvalidSpace(c);
