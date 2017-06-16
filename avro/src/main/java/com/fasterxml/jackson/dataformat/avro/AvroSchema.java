@@ -1,8 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
@@ -75,19 +77,48 @@ public class AvroSchema implements FormatSchema
         w = Schema.applyAliases(w, r);
 
         // and then use Avro std lib to validate compatibility
+
+        // 16-Jun-2017, tatu: First, a very common case is for Record names not
+        //   to match; so let's check that first
+        if (r.getType() == w.getType()) {
+            if (!_schemaNamesEqual(w, r)) {
+                throw new JsonMappingException(null, String.format(
+"Incompatible writer/reader schemas: root %ss have different names (\"%s\" vs \"%s\"), no match via aliases",
+r.getType().getName(), w.getFullName(), r.getFullName()));
+            }
+        }
+        
         SchemaPairCompatibility comp;
         try {
             comp = SchemaCompatibility.checkReaderWriterCompatibility(r, w);
         } catch (Exception e) {
             throw new JsonMappingException(null, String.format(
-                    "Failed to resolve given reader/writer schemas, problem: (%s) %s",
+                    "Failed to resolve given writer/reader schemas, problem: (%s) %s",
                     e.getClass().getName(), e.getMessage()));
         }
         if (comp.getType() != SchemaCompatibilityType.COMPATIBLE) {
-            throw new JsonMappingException(null, String.format("Incompatible reader/writer schema: %s",
+            throw new JsonMappingException(null, String.format("Incompatible writer/reader schemas: %s",
                     comp.getDescription()));
         }
         return Resolving.create(w, r);
+    }
+
+    private boolean _schemaNamesEqual(Schema w, Schema r)
+    {
+        final String wname = w.getFullName();
+        final String rname = r.getFullName();
+
+        if ((wname == rname) ||
+                ((wname != null) && wname.equals(rname))) {
+            return true;
+        }
+
+        // but may also have alias. NOTE! Avro lib itself does this, and we rely
+        // on it, but basically only `NamedSchema` do NOT throw exception. But
+        // we have no way of checking -- need to trust other cases bail out before
+        // this (which they do). Unclean but... that's avrolib for you.
+        Set<String> aliases = r.getAliases();
+        return aliases.contains(wname);
     }
 
     /**
