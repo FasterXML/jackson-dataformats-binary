@@ -7,7 +7,7 @@ Project is licensed under [Apache License 2.0](http://www.apache.org/licenses/LI
 
 # Status
 
-Since version 2.6(.7) this module is considered complete and production ready.
+Since version 2.8 this module is considered complete and production ready.
 All Jackson layers (streaming, databind, tree model) are supported.
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-dataformat-ion.svg?branch=master)](https://travis-ci.org/FasterXML/jackson-dataformat-ion)
@@ -21,7 +21,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
-  <version>2.7.9</version>
+  <version>2.8.9</version>
 </dependency>
 ```
 ## Usage
@@ -39,4 +39,4 @@ SomeType otherValue = mapper.readValue(data, SomeType.class);
 
 ## Documentation
 
-See [Wiki](../../wiki) (includes Javadocs)
+See [Wiki](../../../wiki) (includes Javadocs)
