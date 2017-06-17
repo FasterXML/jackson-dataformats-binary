@@ -7,6 +7,7 @@ Currently included are:
 
 * [Avro](avro/)
 * [CBOR](cbor/)
+* [Ion](ion/)
 * [Protobuf](protobuf/)
 * [Smile](smile/)
 
