@@ -1,82 +1,72 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
-
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
+
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 
 /**
  * Class used for loading protobuf descriptors (from .desc files
  * or equivalent sources), to construct FileDescriptorSet.
+ *
+ * @since 2.9
  */
 public class DescriptorLoader
 {
-    private final String DESCRIPTOR_PROTO = "/descriptor.proto";
-    private ProtobufMapper descriptorMapper;
-    private ProtobufSchema descriptorFileSchema;
+    protected final static String DESCRIPTOR_PROTO = "/descriptor.proto";
 
     /**
-     * Standard loader instance that is usually used for loading descriptor file.
+     * Fully configured reader for {@link FileDescriptorSet} objects.
      */
-    public final static DescriptorLoader std = new DescriptorLoader();
+    protected final ObjectReader _reader;
 
-    public DescriptorLoader() {}
+    public DescriptorLoader(ObjectReader reader) {
+        _reader = reader;
+    }
 
+    public static DescriptorLoader construct(ProtobufMapper mapper) throws IOException
+    {
+        ProtobufSchema schema;
+        try (InputStream in = DescriptorLoader.class.getResourceAsStream(DESCRIPTOR_PROTO)) {
+            schema = mapper.schemaLoader().load(in, "FileDescriptorSet");
+        }
+        return new DescriptorLoader(mapper.readerFor(FileDescriptorSet.class)
+                .with(schema));
+    }
+
+    /*
+    /**********************************************************************
+    /* Public API
+    /**********************************************************************
+     */
+
+    public FileDescriptorSet load(URL src) throws IOException
+    {
+        return _reader.readValue(src);
+    }
+
+    public FileDescriptorSet load(File src) throws IOException
+    {
+        return _reader.readValue(src);
+    }
 
     /**
-     * Public API
+     * Note: passed {@link java.io.InputStream} will be closed by this method.
      */
-
-    public FileDescriptorSet load(URL url) throws IOException
-    {
-        return _loadFileDescriptorSet(url.openStream());
-    }
-
-    public FileDescriptorSet load(File f) throws IOException
-    {
-        return _loadFileDescriptorSet(new FileInputStream(f));
-    }
-
     public FileDescriptorSet load(InputStream in) throws IOException
     {
-        return _loadFileDescriptorSet(in);
+        return _reader.readValue(in);
     }
 
-    public FileDescriptorSet fromBytes(byte[] descriptorBytes) throws IOException
+    /**
+     * Note: passed {@link java.io.Reader} will be closed by this method.
+     */
+    public FileDescriptorSet load(Reader r) throws IOException
     {
-        return _loadFileDescriptorSet(new ByteArrayInputStream(descriptorBytes));
-    }
-
-    protected FileDescriptorSet _loadFileDescriptorSet(InputStream in) throws IOException
-    {
-        try {
-            if (descriptorMapper == null) {
-                createDescriptorMapper();
-            }
-            return descriptorMapper.readerFor(FileDescriptorSet.class)
-                                   .with(descriptorFileSchema)
-                                   .readValue(in);
-        }
-        finally {
-            try {
-                in.close();
-            }
-            catch (IOException e) {
-            }
-        }
-    }
-
-    private void createDescriptorMapper() throws IOException
-    {
-        // read Descriptor Proto
-        descriptorMapper = new ProtobufMapper();
-        InputStream in = getClass().getResourceAsStream(DESCRIPTOR_PROTO);
-        descriptorFileSchema = ProtobufSchemaLoader.std.load(in, "FileDescriptorSet");
-        in.close();
+        return _reader.readValue(r);
     }
 }

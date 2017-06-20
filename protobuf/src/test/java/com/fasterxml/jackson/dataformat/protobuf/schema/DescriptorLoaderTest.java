@@ -1,17 +1,14 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
-
 import java.io.InputStream;
-import java.io.StringReader;
+
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 
 public class DescriptorLoaderTest extends ProtobufTestBase
 {
-
-    private final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+    private final ProtobufMapper MAPPER = new ProtobufMapper();
 
     static class Main
     {
@@ -53,7 +50,7 @@ public class DescriptorLoaderTest extends ProtobufTestBase
     public void testParsing() throws Exception
     {
         // create PB binary from known .proto schema
-        ProtobufSchema schema = ProtobufSchemaLoader.std.load(new StringReader(mergedProto));
+        ProtobufSchema schema = MAPPER.schemaLoader().parse(mergedProto);
 
         final ObjectWriter w = MAPPER.writerFor(Main.class).with(schema);
         Other o = new Other(123);
@@ -63,14 +60,14 @@ public class DescriptorLoaderTest extends ProtobufTestBase
 
         // Deserialize the bytes using the descriptor
         // load main.desc descriptor file.  This file was created by protoc - o main.desc main.proto other.proto
-        InputStream in = this.getClass().getResourceAsStream("/main.desc");
-        FileDescriptorSet fds = DescriptorLoader.std.load(in);
-        ProtobufSchema schema2 = fds.forType("Main");
+        FileDescriptorSet fds;
+        try (InputStream in = this.getClass().getResourceAsStream("/main.desc")) {
+            fds = MAPPER.loadDescriptorSet(in);
+        }
+        ProtobufSchema schema2 = fds.schemaFor("Main");
 
         Main t = MAPPER.readerFor(Main.class).with(schema2).readValue(bytes);
         assertNotNull(t);
         assertEquals(123, t.o.f);
-
     }
 }
-

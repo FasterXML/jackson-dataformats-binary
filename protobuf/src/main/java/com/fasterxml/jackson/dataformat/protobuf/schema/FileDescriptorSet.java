@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.squareup.protoparser.DataType;
 import com.squareup.protoparser.EnumConstantElement;
 import com.squareup.protoparser.EnumElement;
@@ -9,38 +11,67 @@ import com.squareup.protoparser.MessageElement;
 import com.squareup.protoparser.OptionElement;
 import com.squareup.protoparser.ProtoFile;
 
-import java.util.HashMap;
-import java.util.Map;
-
-
+/**
+ * @since 2.9
+ */
 public class FileDescriptorSet
 {
-    public FileDescriptorProto[] file;
+    protected FileDescriptorProto[] file;
 
-    public FileDescriptorProto findFileByName(String fileName)
+    // for deserializer
+    protected FileDescriptorSet() { }
+
+    public FileDescriptorSet(FileDescriptorProto[] f) {
+        file = f;
+    }
+
+    // needed to "expose" non-public setter without annotations
+    public FileDescriptorProto[] getFile() { return file; }
+
+    /**
+     * Accessor for finding low-level definition with given name,
+     * if one contained.
+     *
+     * @return Descriptor matching the name, if any; `null` if none
+     */
+    public FileDescriptorProto findDescriptor(String fileName)
     {
         for (FileDescriptorProto fdp : file) {
             if (fdp.name.equals(fileName)) {
                 return fdp;
             }
         }
-        throw new IllegalArgumentException(fileName + " not found");
+        return null;
     }
 
-    public ProtobufSchema forFirstType()
+    /**
+     * Accessor for getting low-level definition with given name, contained
+     * in this descriptor set.
+     * 
+     * @return Descriptor matching the name, if any; `null` if none
+     *
+     * @throws IllegalArgumentException if no descriptor with given name found
+     */
+    public FileDescriptorProto getDescriptor(String fileName)
     {
-        FileDescriptorProto fdp0 = file[0];
-        ProtoFile protoFile = buildProtoFile(fdp0.name);
-        NativeProtobufSchema nps = NativeProtobufSchema.construct(protoFile);
-        return nps.forFirstType();
+        FileDescriptorProto p = findDescriptor(fileName);
+        if (p == null) {
+            throw new IllegalArgumentException(fileName + " not found");
+        }
+        return p;
     }
 
-    public ProtobufSchema forType(String rootTypeName)
+    public ProtobufSchema schemaForFirstType()
+    {
+        ProtoFile protoFile = buildProtoFile(file[0].name);
+        return NativeProtobufSchema.construct(protoFile).forFirstType();
+    }
+
+    public ProtobufSchema schemaFor(String rootTypeName)
     {
         for (FileDescriptorProto fdp : file) {
             for (DescriptorProto dp : fdp.message_type) {
                 if (dp.name.equals(rootTypeName)) {
-                    System.out.println(dp);
                     ProtoFile protoFile = buildProtoFile(fdp.name);
                     NativeProtobufSchema nps = NativeProtobufSchema.construct(protoFile);
                     return nps.forType(rootTypeName);
@@ -52,15 +83,15 @@ public class FileDescriptorSet
 
     private ProtoFile buildProtoFile(String fileName)
     {
-        FileDescriptorProto fdp = findFileByName(fileName);
+        FileDescriptorProto fdp = getDescriptor(fileName);
         ProtoFile.Builder builder = ProtoFile.builder(fdp.name);
         builder.syntax(fdp.getSyntax());
-        builder.packageName(fdp.packageName);
+        builder.packageName(fdp.getPackage());
 
         // dependency file names.
         if (fdp.dependency != null) {
             for (String dependency : fdp.dependency) {
-                FileDescriptorProto dep = findFileByName(dependency);
+                FileDescriptorProto dep = getDescriptor(dependency);
                 for (DescriptorProto dp : dep.message_type) {
                     MessageElement me = dp.buildMessageElement();
                     builder.addType(me);
@@ -90,13 +121,14 @@ public class FileDescriptorSet
         return builder.build();
     }
 
-
     // POJOs for the .desc file Protobuf
-    static class FileDescriptorProto
+    public static class FileDescriptorProto
     {
         public String name;
-        @JsonProperty("package")
-        public String packageName;
+
+        // Need to use different name as `package` is reserved name in Java
+        protected String _package; // 'packageName'
+
         public String[] dependency;
         public int[] public_dependency;
         public int[] weak_dependency;
@@ -115,9 +147,12 @@ public class FileDescriptorSet
             }
             return ProtoFile.Syntax.valueOf(syntax);
         }
+
+        public void setPackage(String p) { _package = p; }
+        public String getPackage() { return _package; }
     }
 
-    static class DescriptorProto
+    public static class DescriptorProto
     {
         public String name;
         public FieldDescriptorProto[] field;
@@ -219,9 +254,9 @@ public class FileDescriptorSet
 
     }
 
-    static class FieldDescriptorProto
+    public static class FieldDescriptorProto
     {
-        enum Type
+        public enum Type
         {
             TYPE_DOUBLE,
             TYPE_FLOAT,
@@ -243,7 +278,7 @@ public class FileDescriptorSet
             TYPE_SINT64
         }
 
-        enum Label
+        public enum Label
         {
             LABEL_OPTIONAL,
             LABEL_REQUIRED,
@@ -261,8 +296,8 @@ public class FileDescriptorSet
         public String json_name;
         public FieldOptions options;
 
-        static private Map<Type, DataType> scalarTypeMap = new HashMap();
-        static private Map<Label, FieldElement.Label> labelMap = new HashMap();
+        static private Map<Type, DataType> scalarTypeMap = new EnumMap<>(Type.class);
+        static private Map<Label, FieldElement.Label> labelMap = new EnumMap<>(Label.class);
 
         static {
             scalarTypeMap.put(Type.TYPE_DOUBLE, DataType.ScalarType.DOUBLE);
@@ -297,34 +332,34 @@ public class FileDescriptorSet
         }
     }
 
-    static class OneofDescriptorProto
+    public static class OneofDescriptorProto
     {
         public String name;
         public OneofOptions options;
     }
 
-    static class EnumDescriptorProto
+    public static class EnumDescriptorProto
     {
         public String name;
         public EnumValueDescriptorProto[] value;
         public EnumOptions options;
     }
 
-    static class EnumValueDescriptorProto
+    public static class EnumValueDescriptorProto
     {
         public String name;
         public int number;
         public EnumValueOptions options;
     }
 
-    static class ServiceDescriptorProto
+    public static class ServiceDescriptorProto
     {
         public String name;
         public MethodDescriptorProto[] method;
         public ServiceOptions options;
     }
 
-    static class MethodDescriptorProto
+    public static class MethodDescriptorProto
     {
         public String name;
         public String input_type;
@@ -334,7 +369,7 @@ public class FileDescriptorSet
         public boolean server_streaming; // [default=false];
     }
 
-    static class FileOptions
+    public static class FileOptions
     {
         public String java_package;
         public String java_outer_classname;
@@ -364,7 +399,7 @@ public class FileDescriptorSet
 //        extensions 1000 to max;
     }
 
-    static class MessageOptions
+    public static class MessageOptions
     {
         public boolean message_set_wire_format; // [default=false];
         public boolean no_standard_descriptor_accessor; // [default=false];
@@ -374,7 +409,7 @@ public class FileDescriptorSet
 //        extensions 1000 to max;
     }
 
-    static class FieldOptions
+    public static class FieldOptions
     {
         public CType ctype; // [default = STRING];
 
@@ -402,13 +437,13 @@ public class FileDescriptorSet
 //        extensions 1000 to max;
     }
 
-    static class OneofOptions
+    public static class OneofOptions
     {
         public UninterpretedOption[] uninterpreted_option;
 //        extensions 1000 to max;
     }
 
-    static class EnumOptions
+    public static class EnumOptions
     {
         public boolean allow_alias;
         public boolean deprecated; // [default=false];
@@ -416,21 +451,21 @@ public class FileDescriptorSet
 //        extensions 1000 to max;
     }
 
-    static class EnumValueOptions
+    public static class EnumValueOptions
     {
         public boolean deprecated; //  [default=false];
         public UninterpretedOption[] uninterpreted_option;
 //        extensions 1000 to max;
     }
 
-    static class ServiceOptions
+    public static class ServiceOptions
     {
         public boolean deprecated; // [default=false];
         public UninterpretedOption[] uninterpreted_option;
 //        extensions 1000 to max;
     }
 
-    static class MethodOptions
+    public static class MethodOptions
     {
         public boolean deprecated; // [default=false];
 
@@ -446,7 +481,7 @@ public class FileDescriptorSet
 //        extensions 1000 to max;
     }
 
-    static class UninterpretedOption
+    public static class UninterpretedOption
     {
         static class NamePart
         {
@@ -463,11 +498,11 @@ public class FileDescriptorSet
         public String aggregate_value;
     }
 
-    static class SourceCodeInfo
+    public static class SourceCodeInfo
     {
         public Location[] location;
 
-        static class Location
+        public static class Location
         {
             public int[] path; //  [packed=true];
             public int[] span; //  [packed=true];
@@ -477,11 +512,12 @@ public class FileDescriptorSet
         }
     }
 
-    static class GeneratedCodeInfo
+    /*
+    private static class GeneratedCodeInfo
     {
-        public Annotation[] annotation;
+        public CodeAnnotation[] annotation;
 
-        static class Annotation
+        public static class CodeAnnotation
         {
             public long[] path; // [packed=true];
             public String source_file;
@@ -489,4 +525,5 @@ public class FileDescriptorSet
             public int end;
         }
     }
+    */
 }
