@@ -1,0 +1,10 @@
+syntax = "proto2";
+package mypackage;
+
+message Main {
+    required Other o = 1;
+}
+
+message Other {
+    required int32 f = 1;
+}
