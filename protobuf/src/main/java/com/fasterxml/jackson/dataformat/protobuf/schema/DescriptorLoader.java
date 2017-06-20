@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 
@@ -24,15 +25,30 @@ public class DescriptorLoader
      */
     protected final ObjectReader _reader;
 
+    /**
+     * @param reader {@link ObjectReader} that is able to read protobuf input
+     *    (that is, must have been created from {@link ProtobufMapper}, or regular
+     *    mapper with {@link com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory}),
+     *    and has been configured with `protoc` definition of `descriptor.proro`
+     */
     public DescriptorLoader(ObjectReader reader) {
         _reader = reader;
     }
 
     public static DescriptorLoader construct(ProtobufMapper mapper) throws IOException
     {
+        return construct(mapper, mapper.schemaLoader());
+    }
+
+    /**
+     * @param mapper {@link ObjectMapper} that can reader protoc content.
+     */
+    public static DescriptorLoader construct(ObjectMapper mapper,
+            ProtobufSchemaLoader schemaLoader) throws IOException
+    {
         ProtobufSchema schema;
         try (InputStream in = DescriptorLoader.class.getResourceAsStream(DESCRIPTOR_PROTO)) {
-            schema = mapper.schemaLoader().load(in, "FileDescriptorSet");
+            schema = schemaLoader.load(in, "FileDescriptorSet");
         }
         return new DescriptorLoader(mapper.readerFor(FileDescriptorSet.class)
                 .with(schema));
