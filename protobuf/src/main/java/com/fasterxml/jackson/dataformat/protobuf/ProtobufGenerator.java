@@ -954,7 +954,7 @@ public class ProtobufGenerator extends GeneratorBase
         // basically, _writeVInt, but very likely to be very short; but if not:
         final int tag = _currField.typedTag;
         int ptr = _currPtr;
-        if (index > 0x7F || tag > 0x7F || (_currPtr + 1) >= _currBuffer.length) {
+        if (index > 0x7F || tag > 0x7F || (ptr + 1) >= _currBuffer.length) {
             _writeVInt(index);
             return;
         }
@@ -969,7 +969,7 @@ public class ProtobufGenerator extends GeneratorBase
         // basically, _writeVInt, but very likely to be very short; but if not:
         final int tag = _currField.typedTag;
         int ptr = _currPtr;
-        if (index > 0x7F || tag > 0x7F || (_currPtr + 1) >= _currBuffer.length) {
+        if (index > 0x7F || tag > 0x7F || (ptr + 1) >= _currBuffer.length) {
             _writeVInt(index);
             return;
         }
