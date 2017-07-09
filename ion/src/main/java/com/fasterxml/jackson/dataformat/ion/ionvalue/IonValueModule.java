@@ -19,11 +19,15 @@ import com.fasterxml.jackson.dataformat.ion.PackageVersion;
 
 import software.amazon.ion.Timestamp;
 
-class IonValueModule extends SimpleModule {
+/**
+ * A module which allows for the direct serialization to and from IonValue fields. The POJO can declare fields of type
+ * IonValue (or a subclass) and the direct value will be provided.
+ */
+public class IonValueModule extends SimpleModule {
 
     private static final long serialVersionUID = 1L;
 
-    IonValueModule() {
+    public IonValueModule() {
         super("IonValueModule", PackageVersion.VERSION);
         addSerializer(new TimestampSerializer());
         addSerializer(new IonValueSerializer());

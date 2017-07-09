@@ -27,8 +27,8 @@ import software.amazon.ion.IonValue;
 /**
  * Supports serializing Ion to POJO and back using the Jackson Ion framework.
  *
- * Direct serialization to and from IonValue fields is supported. The POJO can declare fields subclassing IonValue and
- * the direct value will be provided.
+ * Direct serialization to and from IonValue fields is supported. The POJO can declare fields of type IonValue (or a
+ * subclass) and the direct value will be provided.
  * 
  * Enums are serialized as symbols by default.
  */
