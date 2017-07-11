@@ -19,24 +19,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.JsonLocation;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonStreamContext;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
-import software.amazon.ion.IonList;
-import software.amazon.ion.IonReader;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonType;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.IonWriter;
-import software.amazon.ion.Timestamp;
+
+import software.amazon.ion.*;
 import software.amazon.ion.system.IonSystemBuilder;
 
 /**
@@ -47,17 +35,16 @@ import software.amazon.ion.system.IonSystemBuilder;
 public class IonParser
     extends ParserMinimalBase
 {
-    
     private static final BigInteger LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
     private static final BigInteger LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger INT_MIN_VALUE = BigInteger.valueOf(Integer.MIN_VALUE);
     private static final BigInteger INT_MAX_VALUE = BigInteger.valueOf(Integer.MAX_VALUE);
     
     /*
-     *****************************************************************
-     * Basic configuration
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Basic configuration
+    /*****************************************************************
+     */  
 
     protected final IonReader _reader;
     
@@ -72,10 +59,10 @@ public class IonParser
     private final IonSystem _system;
 
     /*
-     *****************************************************************
-     * State
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* State
+    /*****************************************************************
+     */  
 
     /**
      * Whether this logical parser has been closed or not
@@ -92,12 +79,12 @@ public class IonParser
      * when pointing to field name
      */
     protected JsonToken _valueToken;
-    
+
     /*
-     *****************************************************************
-     * Construction
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Construction
+    /*****************************************************************
+     */  
 
     /**
      * @deprecated use {@link IonFactory#createParser(IonReader) instead}
@@ -139,18 +126,27 @@ public class IonParser
         return PackageVersion.VERSION;
     }
 
+    /*
+    /**********************************************************
+    /* Capability introspection
+    /**********************************************************
+     */
+
+    @Override
+    public boolean requiresCustomCodec() { return false;}
+    
     @Override
     public boolean hasTextCharacters() {
         //This is always false because getText() is more efficient than getTextCharacters().
         // See the javadoc for JsonParser.hasTextCharacters().
         return false;
     }
-    
+
     /*
-     *****************************************************************
-     * JsonParser implementation: state handling
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* JsonParser implementation: state handling
+    /*****************************************************************
+     */  
  
     @Override
     public boolean isClosed() {
@@ -172,13 +168,13 @@ public class IonParser
     }
 
     /*
-     *****************************************************************
-     * JsonParser implementation: Text value access
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* JsonParser implementation: Text value access
+    /*****************************************************************
+     */  
 
     @Override
-    public String getText() throws IOException, JsonParseException
+    public String getText() throws IOException
     {
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
@@ -206,59 +202,59 @@ public class IonParser
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException, JsonParseException {
+    public char[] getTextCharacters() throws IOException {
         String str = getText();
         return (str == null) ? null : str.toCharArray();
     }
 
     @Override
-    public int getTextLength() throws IOException, JsonParseException {
+    public int getTextLength() throws IOException {
         return getText().length();
     }
 
     @Override
-    public int getTextOffset() throws IOException, JsonParseException {
+    public int getTextOffset() throws IOException {
         return 0;
     }
     
     /*
-     *****************************************************************
-     * JsonParser implementation: Numeric value access
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* JsonParser implementation: Numeric value access
+    /*****************************************************************
+     */  
 
     @Override
-    public BigInteger getBigIntegerValue() throws IOException, JsonParseException {
+    public BigInteger getBigIntegerValue() throws IOException {
         return _reader.bigIntegerValue();
     }
 
     @Override
-    public BigDecimal getDecimalValue() throws IOException, JsonParseException {
+    public BigDecimal getDecimalValue() throws IOException {
         return _reader.bigDecimalValue();
     }
 
     @Override
-    public double getDoubleValue() throws IOException, JsonParseException {
+    public double getDoubleValue() throws IOException {
         return _reader.doubleValue();
     }
 
     @Override
-    public float getFloatValue() throws IOException, JsonParseException {
+    public float getFloatValue() throws IOException {
         return (float) _reader.doubleValue();
     }
 
     @Override
-    public int getIntValue() throws IOException, JsonParseException {
+    public int getIntValue() throws IOException {
         return _reader.intValue();
     }
 
     @Override
-    public long getLongValue() throws IOException, JsonParseException {
+    public long getLongValue() throws IOException {
         return _reader.longValue();
     }
 
     @Override
-    public NumberType getNumberType() throws IOException, JsonParseException
+    public NumberType getNumberType() throws IOException
     {
         IonType type = _reader.getType();
         if (type != null) {
@@ -287,7 +283,7 @@ public class IonParser
     }
 
     @Override
-    public Number getNumberValue() throws IOException, JsonParseException {
+    public Number getNumberValue() throws IOException {
         NumberType nt = getNumberType();
         if (nt != null) {
             switch (nt) {
@@ -309,13 +305,13 @@ public class IonParser
     }
     
     /*
-     *****************************************************************
-     * JsonParser implementation: Access to other (non-text/number) values
-     *****************************************************************
-      */  
+    /****************************************************************
+    /* JsonParser implementation: Access to other (non-text/number) values
+    /*****************************************************************
+     */  
     
     @Override
-    public byte[] getBinaryValue(Base64Variant arg0) throws IOException, JsonParseException
+    public byte[] getBinaryValue(Base64Variant arg0) throws IOException
     {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
@@ -345,7 +341,7 @@ public class IonParser
     }
 
     @Override
-    public Object getEmbeddedObject() throws IOException, JsonParseException {
+    public Object getEmbeddedObject() throws IOException {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
             case TIMESTAMP:
@@ -361,10 +357,10 @@ public class IonParser
     }
 
     /*
-     *****************************************************************
-     * JsonParser implementation: traversal
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* JsonParser implementation: traversal
+    /*****************************************************************
+     */  
 
     @Override
     public JsonLocation getCurrentLocation() {
@@ -372,7 +368,7 @@ public class IonParser
     }
 
     @Override
-    public String getCurrentName() throws IOException, JsonParseException {
+    public String getCurrentName() throws IOException {
         return _parsingContext.getCurrentName();
     }
 
@@ -388,7 +384,7 @@ public class IonParser
     }
 
     @Override
-    public JsonToken nextToken() throws IOException, JsonParseException
+    public JsonToken nextToken() throws IOException
     {
         // special case: if we return field name, we know value type, return it:
         if (_currToken == JsonToken.FIELD_NAME) {
@@ -440,7 +436,7 @@ public class IonParser
     }
 
     @Override
-    public JsonParser skipChildren() throws IOException, JsonParseException
+    public JsonParser skipChildren() throws IOException
     {
        if (_currToken != JsonToken.START_OBJECT
             && _currToken != JsonToken.START_ARRAY) {

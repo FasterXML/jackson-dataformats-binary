@@ -14,13 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
@@ -46,23 +43,19 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
         super(typeIdResolver, null);
     }
 
-    private IonGenerator ionGenerator(JsonGenerator g) throws JsonGenerationException {
-        if (g instanceof IonGenerator) {
-            return (IonGenerator) g;
-        }
-        throw new JsonGenerationException("Can only use IonTypeSerializer with IonGenerator", g);
+    @Override
+    public TypeSerializer forProperty(BeanProperty prop) {
+        // We ignore the context information from BeanProperty.
+        return this;
     }
-
+    
     @Override
     public As getTypeInclusion() {
         // !!! 10-Jul-2017, tatu: Should vary appropriately, but...
         return As.PROPERTY;
     }
 
-    @Override
-    public void writeTypePrefixForScalar(Object value, JsonGenerator g) throws IOException {
-    }
-
+    /*
     @Override
     public void writeTypePrefixForObject(Object value, JsonGenerator g) throws IOException {
         TypeIdResolver resolver = getTypeIdResolver();
@@ -78,67 +71,25 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
             }
         }
         g.writeStartObject(); // standard
-    }
+    }*/
 
     @Override
-    public void writeTypePrefixForArray(Object value, JsonGenerator g) throws IOException {
-        g.writeStartArray(); // standard
-    }
-
-    @Override
-    public void writeTypeSuffixForScalar(Object value, JsonGenerator g) throws IOException {
-    }
-
-    @Override
-    public void writeTypeSuffixForObject(Object value, JsonGenerator g) throws IOException {
-        g.writeEndObject(); // standard
-    }
-
-    @Override
-    public void writeTypeSuffixForArray(Object value, JsonGenerator g) throws IOException {
-        g.writeEndArray(); // standard
-    }
-
-    
-    @Override
-    public TypeSerializer forProperty(BeanProperty prop) {
-        // We ignore the context information from BeanProperty.
-        return this;
-    }
-
-    @Override
-    public void writeCustomTypePrefixForScalar(Object value,
-            JsonGenerator g, String typeId) throws IOException {
-        // There is no special prefix or suffix for Ion Annotations. 
-    }
-
-    @Override
-    public void writeCustomTypePrefixForObject(Object value,
-            JsonGenerator g, String typeId) throws IOException {
-        // There is no special prefix or suffix for Ion Annotations. 
-    }
-
-    @Override
-    public void writeCustomTypePrefixForArray(Object value, JsonGenerator g,
-            String typeId) throws IOException {
-        // There is no special prefix or suffix for Ion Annotations. 
-    }
-
-    @Override
-    public void writeCustomTypeSuffixForScalar(Object value,
-            JsonGenerator g, String typeId) throws IOException {
-        // There is no special prefix or suffix for Ion Annotations. 
-    }
-
-    @Override
-    public void writeCustomTypeSuffixForObject(Object value,
-            JsonGenerator g, String typeId) throws IOException {
-        // There is no special prefix or suffix for Ion Annotations. 
-    }
-
-    @Override
-    public void writeCustomTypeSuffixForArray(Object value, JsonGenerator g,
-            String typeId) throws IOException {
-        // There is no special prefix or suffix for Ion Annotations. 
+    protected final void _generateTypeId(WritableTypeId idMetadata) {
+        Object id = idMetadata.id;
+        if (id == null) {
+            final Object value = idMetadata.forValue;
+            TypeIdResolver resolver = getTypeIdResolver();
+            if (resolver instanceof MultipleTypeIdResolver) {
+                id = ((MultipleTypeIdResolver)resolver).idsFromValue(value);
+            } else {
+                Class<?> typeForId = idMetadata.forValueType;
+                if (typeForId == null) {
+                    id = idFromValue(value);
+                } else {
+                    id = idFromValueAndType(value, typeForId);
+                }
+            }
+            idMetadata.id = id;
+        }
     }
 }

@@ -25,11 +25,13 @@ import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
+import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
 import software.amazon.ion.IonType;
@@ -120,10 +122,22 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: write numeric values
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Capability introspection
+    /*****************************************************************
+     */  
+
+    @Override
+    public boolean canWriteTypeId() { return true; }
+
+    @Override
+    public boolean canWriteBinaryNatively() { return true; }
+
+    /*
+    /*****************************************************************
+    /* JsonGenerator implementation: write numeric values
+    /*****************************************************************
+     */  
 
     @Override
     public void writeNumber(int value) throws IOException, JsonGenerationException {
@@ -336,10 +350,10 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * Methods base impl needs
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Methods base impl needs
+    /*****************************************************************
+     */  
     
     @Override
     protected void _releaseBuffers() {
@@ -424,9 +438,48 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * Standard methods
-     *****************************************************************
+    /*****************************************************************
+    /* Support for type ids
+    /*****************************************************************
+     */  
+
+    @Override
+    public void writeTypeId(Object rawId) throws IOException {
+        if (rawId instanceof String[]) {
+            String[] ids = (String[]) rawId;
+            for (String id : ids) {
+                annotateNextValue(id);
+            }
+        } else {
+            annotateNextValue(String.valueOf(rawId));
+        }
+    }
+
+    // default might actually work, but let's straighten it out a bit
+    @Override
+    public WritableTypeId writeTypePrefix(WritableTypeId typeIdDef) throws IOException
+    {
+        final JsonToken valueShape = typeIdDef.valueShape;
+        typeIdDef.wrapperWritten = false;
+        writeTypeId(typeIdDef.id);
+
+        // plus start marker for value, if/as necessary
+        if (valueShape == JsonToken.START_OBJECT) {
+            writeStartObject(typeIdDef.forValue);
+        } else if (valueShape == JsonToken.START_ARRAY) {
+            // should we now set the current object?
+            writeStartArray();
+        }
+        return typeIdDef;
+    }
+
+    // Default impl should work fine here:
+    // public WritableTypeId writeTypeSuffix(WritableTypeId typeIdDef) throws IOException
+
+    /*
+    /*****************************************************************
+    /* Standard methods
+    *****************************************************************
      */  
 
     @Override
@@ -435,9 +488,9 @@ public class IonGenerator
     }
     
     /*
-     *****************************************************************
-     * Internal helper methods
-     *****************************************************************
+    /*****************************************************************
+    /* Internal helper methods
+    /*****************************************************************
      */  
 
     protected void _reportNoRaw() throws IOException {
