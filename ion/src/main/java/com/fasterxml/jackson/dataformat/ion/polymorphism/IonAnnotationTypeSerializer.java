@@ -16,18 +16,21 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
 /**
  * This is a {@link TypeSerializer} that places typing metadata in Ion type annotations. It requires that the underlying
  * {@link JsonGenerator} is actually a {@link com.fasterxml.jackson.dataformat.ion.IonGenerator}.
- *
+ *<p>
  * Type serializers are responsible for handling the preamble and postamble of values, in addition to any possible
  * typing metadata (probably because type metadata can affect the pre/postamble content) -- in other words, once a
  * {@link TypeSerializer} gets involved, serializers skip normal pre/postambles and assume the TypeSerializer will do it
@@ -35,27 +38,12 @@ import com.fasterxml.jackson.dataformat.ion.IonGenerator;
  *
  * @see MultipleTypeIdResolver
  */
-public class IonAnnotationTypeSerializer extends TypeSerializer {
-
-    private final TypeIdResolver typeIdResolver;
+public class IonAnnotationTypeSerializer extends TypeSerializerBase
+{
+//    private final TypeIdResolver typeIdResolver;
 
     IonAnnotationTypeSerializer(TypeIdResolver typeIdResolver) {
-        this.typeIdResolver = typeIdResolver;
-    }
-
-    @Override
-    public JsonTypeInfo.As getTypeInclusion() {
-        return null;
-    }
-
-    @Override
-    public String getPropertyName() {
-        return null;
-    }
-
-    @Override
-    public TypeIdResolver getTypeIdResolver() {
-        return typeIdResolver;
+        super(typeIdResolver, null);
     }
 
     private IonGenerator ionGenerator(JsonGenerator g) throws JsonGenerationException {
@@ -63,6 +51,12 @@ public class IonAnnotationTypeSerializer extends TypeSerializer {
             return (IonGenerator) g;
         }
         throw new JsonGenerationException("Can only use IonTypeSerializer with IonGenerator", g);
+    }
+
+    @Override
+    public As getTypeInclusion() {
+        // !!! 10-Jul-2017, tatu: Should vary appropriately, but...
+        return As.PROPERTY;
     }
 
     @Override
@@ -112,7 +106,6 @@ public class IonAnnotationTypeSerializer extends TypeSerializer {
         return this;
     }
 
-    
     @Override
     public void writeCustomTypePrefixForScalar(Object value,
             JsonGenerator g, String typeId) throws IOException {

@@ -60,10 +60,11 @@ public class IonAnnotationTypeResolverBuilder
      * @param subtypes
      */
     @Override
-    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
+    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType,
+            Collection<NamedType> subtypes) {
         return new IonAnnotationTypeSerializer(typeIdResolver);
     }
-    
+
     /**
      * Creates a Jackson {@link TypeDeserializer}. Unlike type serializers, deserializers are responsible for
      * *all* steps of value deserialization: read type information, find the actual object deserializer, and run it.
