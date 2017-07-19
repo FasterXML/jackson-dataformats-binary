@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.*;
 
 import org.apache.avro.Schema;
@@ -57,12 +58,13 @@ public class TestSimpleGeneration extends AvroTestBase
     /* Tests
     /**********************************************************
      */
-    
+
+    private final AvroMapper MAPPER = newMapper();
+
     public void testBasic() throws Exception
     {
-        AvroMapper mapper = getMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        mapper.acceptJsonFormatVisitor(RootType.class, gen);
+        MAPPER.acceptJsonFormatVisitor(RootType.class, gen);
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
@@ -70,7 +72,7 @@ public class TestSimpleGeneration extends AvroTestBase
         assertNotNull(json);
 
         // And read it back too just for fun
-        AvroSchema s2 = mapper.schemaFrom(json);
+        AvroSchema s2 = MAPPER.schemaFrom(json);
         assertNotNull(s2);
 
 //        System.out.println("Basic schema:\n"+json);
@@ -88,15 +90,14 @@ public class TestSimpleGeneration extends AvroTestBase
 
     public void testEmployee() throws Exception
     {
-        AvroMapper mapper = getMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        mapper.acceptJsonFormatVisitor(Employee.class, gen);
+        MAPPER.acceptJsonFormatVisitor(Employee.class, gen);
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
         String json = schema.getAvroSchema().toString(true);        
         assertNotNull(json);
-        AvroSchema s2 = mapper.schemaFrom(json);
+        AvroSchema s2 = MAPPER.schemaFrom(json);
         assertNotNull(s2);
         
         Employee empl = new Employee();
@@ -106,7 +107,7 @@ public class TestSimpleGeneration extends AvroTestBase
         empl.boss = null;
         
         // So far so good: try producing actual Avro data...
-        byte[] bytes = mapper.writer(schema).writeValueAsBytes(empl);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(empl);
         assertNotNull(bytes);
         
         // and bring it back, too
@@ -120,15 +121,14 @@ public class TestSimpleGeneration extends AvroTestBase
 
     public void testMap() throws Exception
     {
-        AvroMapper mapper = getMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        mapper.acceptJsonFormatVisitor(StringMap.class, gen);
+        MAPPER.acceptJsonFormatVisitor(StringMap.class, gen);
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
         String json = schema.getAvroSchema().toString(true);
         assertNotNull(json);
-        AvroSchema s2 = mapper.schemaFrom(json);
+        AvroSchema s2 = MAPPER.schemaFrom(json);
         assertNotNull(s2);
 
         // should probably verify, maybe... ?
@@ -139,9 +139,8 @@ public class TestSimpleGeneration extends AvroTestBase
     // [Issue#8]
     public void testWithDate() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper(new AvroFactory());
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        mapper.acceptJsonFormatVisitor(WithDate.class, gen);
+        MAPPER.acceptJsonFormatVisitor(WithDate.class, gen);
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
     }
@@ -149,8 +148,7 @@ public class TestSimpleGeneration extends AvroTestBase
     public void testFixed() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        ObjectMapper mapper = new ObjectMapper(new AvroFactory());
-        mapper.acceptJsonFormatVisitor(WithFixedField.class, gen);
+        MAPPER.acceptJsonFormatVisitor(WithFixedField.class, gen);
         Schema generated = gen.getAvroSchema();
         Schema fixedFieldSchema = generated.getField("fixedField").schema();
         assertEquals(Schema.Type.FIXED, fixedFieldSchema.getType());
@@ -159,5 +157,19 @@ public class TestSimpleGeneration extends AvroTestBase
         Schema wrappedFieldSchema = generated.getField("wff").schema();
         assertEquals(Schema.Type.FIXED, wrappedFieldSchema.getType());
         assertEquals(8, wrappedFieldSchema.getFixedSize());
+    }
+
+    // as per [dataformats-binary#98], no can do (unless we start supporting polymorphic
+    // handling or something...)
+    public void testSchemaForUntypedMap() throws Exception
+    {
+        try {
+            MAPPER.schemaFor(Map.class);
+            fail("Not expected to work yet");
+        } catch (InvalidDefinitionException e) {
+            verifyException(e, "\"Any\" type");
+            verifyException(e, "not supported");
+            verifyException(e, "`java.lang.Object`");
+        }
     }
 }

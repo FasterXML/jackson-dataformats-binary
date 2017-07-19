@@ -29,6 +29,8 @@ Modules:
 #69 (avro): Add support for `@AvroEncode` annotation
 #79 (proto): Fix wire type for packed arrays
 #95: Add new method, `withUnsafeReaderSchema` in `AvroSchema` to allow avoiding verification exception
+#98: [Avro] AvroMapper with Map throwing UnsupportedOperationException
+ (reported by coder-hub@github)
 - [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
 2.8.9.1 (not yet released)
