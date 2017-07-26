@@ -8,9 +8,13 @@ import java.util.*;
 
 import org.junit.Assert;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
@@ -24,12 +28,31 @@ public class SmileMapperTest extends BaseTestForSmile
         public BytesBean(byte[] b) { bytes = b; }
     }
 
+    // [dataformats-binary#1711]
+    static class ByteWrapper1711 {
+        private final byte[] val;
+
+        @JsonCreator // (mode=JsonCreator.Mode.DELEGATING)
+        public ByteWrapper1711(byte[] val) {
+            this.val = val;
+        }
+
+        @JsonValue public byte[] getValue() { return val;}
+    }
+
+    static class Wrapper<V> {
+        public V value;
+
+        protected Wrapper() { }
+        public Wrapper(V v) { value = v; }
+    }
+
     /*
     /**********************************************************
     /* Test methods
     /**********************************************************
      */
-    
+
     private final ObjectMapper MAPPER = smileMapper();
 
     public void testBinary() throws IOException
@@ -40,6 +63,29 @@ public class SmileMapperTest extends BaseTestForSmile
         
         assertNotNull(result.bytes);
         Assert.assertArrayEquals(input, result.bytes);
+    }
+
+    // [dataformats-binary#1711]
+    public void testWrappedBinary() throws IOException
+    {
+        byte[] bytes = {1, 2, 3, 4, 5};
+        byte[] smile = MAPPER.writeValueAsBytes(new ByteWrapper1711(bytes));
+        ByteWrapper1711 read = MAPPER.readValue(smile, ByteWrapper1711.class);
+        if (!Arrays.equals(bytes, read.val)) {
+            throw new IllegalStateException("Arrays not equal");
+        }
+
+        // also, verify exception we get if there's no match...
+        smile = MAPPER.writeValueAsBytes(new Wrapper<>(new ByteWrapper1711(bytes)));
+        try {
+            Wrapper<?> ob = MAPPER.readValue(smile, new TypeReference<Wrapper<BytesBean>>() { });
+            Object val = ob.value;
+            fail("Should not pass, Wrapper value should be `BytesBean`, got: "+val.getClass().getName());
+        } catch (MismatchedInputException e) {
+            verifyException(e, "Cannot deserialize value of type");
+            verifyException(e, BytesBean.class.getName());
+            verifyException(e, "incompatible types");
+        }
     }
 
     // UUIDs should be written as binary (starting with 2.3)
