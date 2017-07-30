@@ -41,15 +41,11 @@ abstractions.
       <scope>provided</scope>
     </dependency>
 
-     <!-- and for testing, JUnit is needed; as well as annotations -->
+    <!-- and for testing, JUnit is needed; as well as annotations -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
     </dependency>
   </dependencies>
 
