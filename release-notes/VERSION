@@ -15,25 +15,26 @@ Modules:
 #14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`
  (contributed by baharclerode@github)
 #15 (avro): Add a way to produce "file" style Avro output
+#56 (avro): Replace use of `BinaryDecoder` with direct access
 #57 (avro): Add support for @Stringable annotation
  (contributed by baharclerode@github)
 #59 (avro): Add support for @AvroAlias annotation for Record/Enum name evolution
  (contributed by baharclerode@github)
 #60 (avro): Add support for `@Union` and polymorphic types
  (contributed by baharclerode@github)
-#63: (avro): Implement native `float` handling for parser
-#64: (proto): Implement native `float` handling for parser
+#63 (avro): Implement native `float` handling for parser
+#64 (proto): Implement native `float` handling for parser
 #68 (proto): Getting "type not supported as root type by protobuf" for serialization
   of short and UUID types
  (reported by Eldad R)
 #69 (avro): Add support for `@AvroEncode` annotation
 #79 (proto): Fix wire type for packed arrays
-#95: Add new method, `withUnsafeReaderSchema` in `AvroSchema` to allow avoiding verification exception
-#98: [Avro] AvroMapper with Map throwing UnsupportedOperationException
+#95 (avro): Add new method, `withUnsafeReaderSchema` in `AvroSchema` to allow avoiding verification exception
+#98 (avro): AvroMapper with Map throwing UnsupportedOperationException
  (reported by coder-hub@github)
-- [avro] Upgrade `avro-core` dep from 1.7.7 to 1.8.1
+- (avro): Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
-2.8.9.1 (not yet released)
+2.8.10 (not yet released)
 
 #94: Should _ensureRoom in ProtobufGenerator.writeString()
  (reported by marsqing@github)
