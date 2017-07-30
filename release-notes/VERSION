@@ -9,7 +9,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.0 (not yet released)
+2.9.0 (30-Jul-2017)
 
 #13 (avro): Add support for Avro default values
 #14 (avro): Add support for Avro annotations via `AvroAnnotationIntrospector`
