@@ -9,6 +9,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.1 (not yet released)
+
+#102 (ion): Make IonValueModule public for use outside of IonValueMapper
+
 2.9.0 (30-Jul-2017)
 
 #13 (avro): Add support for Avro default values
