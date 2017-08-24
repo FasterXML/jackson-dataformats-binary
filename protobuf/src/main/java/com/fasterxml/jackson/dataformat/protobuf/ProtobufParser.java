@@ -923,7 +923,6 @@ public class ProtobufParser extends ParserMinimalBase
             // Note: may be null; if so, value needs to be skipped
             _currentField = _currentMessage.field(tag >> 3);
             if (_currentField == null) {
-                _skipUnknownValue(wireType);
                 continue;
             }
             _parsingContext.setCurrentName(_currentField.name);
