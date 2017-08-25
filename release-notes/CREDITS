@@ -26,6 +26,8 @@ marsqing@github
  (2.8.9)
 * Reported #94: (protobuf) Should _ensureRoom in ProtobufGenerator.writeString()
  (2.8.10)
+* Reported #106 (protobuf), contributed fix for: calling _skipUnknownValue() twice
+ (2.8.11 / 2.9.1)
 
 baharclerode@github:
 

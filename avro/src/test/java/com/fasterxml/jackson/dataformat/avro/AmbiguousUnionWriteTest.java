@@ -24,9 +24,9 @@ public class AmbiguousUnionWriteTest extends AvroTestBase
             );
 
     static class StringWrapper {
-        public String value;
+        public Object value;
 
-        public StringWrapper(String v) { value = v; }
+        public StringWrapper(Object v) { value = v; }
         protected StringWrapper() { }
     }
 
@@ -41,9 +41,12 @@ public class AmbiguousUnionWriteTest extends AvroTestBase
     public void testWriteNoAmbiguity() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(SCHEMA_WITH_AMBIGUITY);
+        StringWrapper input = new StringWrapper("foobar");
+        // 23-Aug-2017, tatu: we could trigger exception with this, however:
+//        StringWrapper input = new StringWrapper(new java.util.HashMap<String,Integer>());
         byte[] b = MAPPER.writerFor(StringWrapper.class)
                 .with(schema)
-                .writeValueAsBytes(new StringWrapper("foobar"));
+                .writeValueAsBytes(input);
         StringWrapper output = MAPPER.readerFor(StringWrapper.class)
                 .with(schema)
                 .readValue(b);

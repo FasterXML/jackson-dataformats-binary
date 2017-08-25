@@ -49,13 +49,13 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
     }
 
-    final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
-    
     /*
     /**********************************************************
     /* Test methods
     /**********************************************************
      */
+
+    final ObjectMapper MAPPER = new ProtobufMapper();
 
     public void testReadPointInt() throws Exception
     {
