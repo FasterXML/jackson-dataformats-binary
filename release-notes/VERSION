@@ -13,6 +13,11 @@ Modules:
 
 #95: Add new method, `withUnsafeReaderSchema` in `AvroSchema` to allow avoiding verification exception
 
+2.8.11 (not yet released)
+
+#106: fix calling _skipUnknownValue() twice
+ (reported, contributed fix for by marsqing@github@github)
+
 2.8.10 (24-Aug-2017)
 
 #94: Should _ensureRoom in ProtobufGenerator.writeString()
