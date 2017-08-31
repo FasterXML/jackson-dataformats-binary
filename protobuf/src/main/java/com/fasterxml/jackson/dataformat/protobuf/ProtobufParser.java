@@ -736,6 +736,10 @@ public class ProtobufParser extends ParserMinimalBase
         if ((_currentField == null) || (f = _currentField.nextOrThisIf(id)) == null) {
             f = _currentMessage.field(id);
         }
+        // Note: may be null; if so, value needs to be skipped
+        if (f == null) {
+            return _skipUnknownField(id, wireType);
+        }
         _parsingContext.setCurrentName(f.name);
         if (!f.isValidFor(wireType)) {
             _reportIncompatibleType(f, wireType);
