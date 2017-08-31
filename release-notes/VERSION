@@ -15,8 +15,9 @@ Modules:
 
 2.8.11 (not yet released)
 
-#106: fix calling _skipUnknownValue() twice
+#106: (protobuf) fix calling _skipUnknownValue() twice
  (reported, contributed fix for by marsqing@github@github)
+#108: (protobuf) fix NPE in skip unknown nested key
 
 2.8.10 (24-Aug-2017)
 
