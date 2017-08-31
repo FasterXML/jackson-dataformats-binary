@@ -701,12 +701,16 @@ public class ProtobufParser extends ParserMinimalBase
         int id = (tag >> 3);
 
         ProtobufField f;
-        if ((_currentField == null) || (f = _currentField.nextOrThisIf(id)) == null) {
-            f = _currentMessage.field(id);
-        }
-        // Note: may be null; if so, value needs to be skipped
-        if (f == null) {
-            return _skipUnknownField(id, wireType);
+        if (_currentField != null) {
+            if ((f = _currentField.nextOrThisIf(id)) == null) {
+                if ((f = _currentMessage.field(id)) == null) {
+                    return _skipUnknownField(id, wireType);
+                }
+            }
+        } else {
+            if ((f = _currentMessage.field(id)) == null) {
+                return _skipUnknownField(id, wireType);
+            }
         }
         _parsingContext.setCurrentName(f.name);
         // otherwise quickly validate compatibility
@@ -733,8 +737,24 @@ public class ProtobufParser extends ParserMinimalBase
         int id = (tag >> 3);
 
         ProtobufField f;
+        if (_currentField != null) {
+            if ((f = _currentField.nextOrThisIf(id)) == null) {
+                if ((f = _currentMessage.field(id)) == null) {
+                    return _skipUnknownField(id, wireType);
+                }
+            }
+        } else {
+            if ((f = _currentMessage.field(id)) == null) {
+                return _skipUnknownField(id, wireType);
+            }
+        }
+        
         if ((_currentField == null) || (f = _currentField.nextOrThisIf(id)) == null) {
             f = _currentMessage.field(id);
+        }
+        // Note: may be null; if so, value needs to be skipped
+        if (f == null) {
+            return _skipUnknownField(id, wireType);
         }
         _parsingContext.setCurrentName(f.name);
         if (!f.isValidFor(wireType)) {
