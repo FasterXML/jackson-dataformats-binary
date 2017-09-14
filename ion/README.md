@@ -10,18 +10,13 @@ Project is licensed under [Apache License 2.0](http://www.apache.org/licenses/LI
 Since version 2.8 this module is considered complete and production ready.
 All Jackson layers (streaming, databind, tree model) are supported.
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformat-ion.svg?branch=master)](https://travis-ci.org/FasterXML/jackson-dataformat-ion)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-ion/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-ion/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-ion/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-ion)
-
-
 To use this extension on Maven-based projects, use following dependency:
 
 ```xml
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
-  <version>2.8.9</version>
+  <version>2.9.1</version>
 </dependency>
 ```
 ## Usage
