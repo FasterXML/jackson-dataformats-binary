@@ -36,7 +36,7 @@ public class TestParserNames extends BaseTestForSmile
         byte[] data = _smileDoc("{"+quote(name)+":13}");
         // important: MUST use InputStream to enforce buffer boundaries!
         SmileParser p = _smileParser(new ByteArrayInputStream(data));
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals(name, p.getCurrentName());

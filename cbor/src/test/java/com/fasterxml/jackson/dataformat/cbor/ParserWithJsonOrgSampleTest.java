@@ -53,7 +53,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
         if (!p.hasCurrentToken()) {
             p.nextToken();
         }
-        assertToken(JsonToken.START_OBJECT, p.getCurrentToken()); // main object
+        assertToken(JsonToken.START_OBJECT, p.currentToken()); // main object
         assertEquals("{?}", p.getParsingContext().toString());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Image'

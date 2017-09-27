@@ -97,7 +97,7 @@ public abstract class CBORTestBase
 
     protected void assertToken(JsonToken expToken, JsonParser p)
     {
-        assertToken(expToken, p.getCurrentToken());
+        assertToken(expToken, p.currentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)
@@ -166,7 +166,7 @@ public abstract class CBORTestBase
         String str = p.getText();
 
         if (str.length() !=  actLen) {
-            fail("Internal problem (p.token == "+p.getCurrentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
+            fail("Internal problem (p.token == "+p.currentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
         }
         assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
 

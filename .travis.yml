@@ -1,11 +1,11 @@
 language: java
 
+# Jackson 3.x is Java 8 only so
 jdk:
-  - openjdk7
   - openjdk8
 
 # whitelist
 branches:
   only:
     - master
-    - "2.8"
+    - "2.9"

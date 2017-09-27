@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.InputAccessor;
-import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
@@ -73,16 +71,6 @@ public class ProtobufFactory extends JsonFactory
     @Override
     public String getFormatName() {
         return ProtobufSchema.FORMAT_NAME_PROTOBUF;
-    }
-    
-    /**
-     * Sub-classes need to override this method
-     */
-    @Override
-    public MatchStrength hasFormat(InputAccessor acc) throws IOException
-    {
-        // TODO, if possible... probably isn't?
-        return MatchStrength.INCONCLUSIVE;
     }
 
     /*

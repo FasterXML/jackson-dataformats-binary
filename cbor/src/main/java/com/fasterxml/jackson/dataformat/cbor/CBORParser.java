@@ -295,20 +295,6 @@ public final class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    // Also, we need some numeric constants
-
-    final static BigInteger BI_MIN_INT = BigInteger.valueOf(Integer.MIN_VALUE);
-    final static BigInteger BI_MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
-
-    final static BigInteger BI_MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
-    final static BigInteger BI_MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
-    
-    final static BigDecimal BD_MIN_LONG = new BigDecimal(BI_MIN_LONG);
-    final static BigDecimal BD_MAX_LONG = new BigDecimal(BI_MAX_LONG);
-
-    final static BigDecimal BD_MIN_INT = new BigDecimal(BI_MIN_INT);
-    final static BigDecimal BD_MAX_INT = new BigDecimal(BI_MAX_INT);
-
     // Numeric value holders: multiple fields used for
     // for efficiency
 
@@ -1448,7 +1434,7 @@ public final class CBORParser extends ParserMinimalBase
         }
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // TODO, maybe: support base64 for text?
-            _reportError("Current token ("+getCurrentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         return _binaryValue;
     }
@@ -1470,7 +1456,7 @@ public final class CBORParser extends ParserMinimalBase
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // Todo, maybe: support base64 for text?
-            _reportError("Current token ("+getCurrentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         if (!_tokenIncomplete) { // someone already decoded or read
             if (_binaryValue == null) { // if this method called twice in a row
@@ -1705,7 +1691,7 @@ public final class CBORParser extends ParserMinimalBase
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             return;
         }
-        _reportError("Current token ("+getCurrentToken()+") not numeric, can not use numeric value accessors");
+        _reportError("Current token ("+currentToken()+") not numeric, can not use numeric value accessors");
     }
 
     protected void convertNumberToInt() throws IOException
@@ -2751,11 +2737,11 @@ public final class CBORParser extends ParserMinimalBase
         case 3:
             long l = _decode64Bits();
             if (l < 0 || l > MAX_INT_L) {
-                throw _constructError("Illegal length for "+getCurrentToken()+": "+l);
+                throw _constructError("Illegal length for "+currentToken()+": "+l);
             }
             return (int) l;
         }
-        throw _constructError("Invalid length for "+getCurrentToken()+": 0x"+Integer.toHexString(lowBits));
+        throw _constructError("Invalid length for "+currentToken()+": 0x"+Integer.toHexString(lowBits));
     }
 
     private int _decodeChunkLength(int expType) throws IOException

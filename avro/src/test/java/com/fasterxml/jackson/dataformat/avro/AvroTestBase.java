@@ -309,7 +309,7 @@ public abstract class AvroTestBase extends TestCase
 
     protected void assertToken(JsonToken expToken, JsonParser jp)
     {
-        assertToken(expToken, jp.getCurrentToken());
+        assertToken(expToken, jp.currentToken());
     }
 
     public static void verifyException(Throwable e, String... matches)

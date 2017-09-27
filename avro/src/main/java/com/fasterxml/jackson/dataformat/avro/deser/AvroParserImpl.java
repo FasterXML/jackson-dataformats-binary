@@ -269,7 +269,7 @@ public abstract class AvroParserImpl
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             return;
         }
-        _reportError("Current token ("+getCurrentToken()+") not numeric, can not use numeric value accessors");
+        _reportError("Current token ("+currentToken()+") not numeric, can not use numeric value accessors");
     }
 
     @Override

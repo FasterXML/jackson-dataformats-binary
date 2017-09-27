@@ -49,7 +49,7 @@ import software.amazon.ion.system.IonSystemBuilder;
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
     private final IonValueMapper ionValueMapper = new IonValueMapper(ionSystem,
-            PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+            PropertyNamingStrategy.SNAKE_CASE);
 
     enum ReturnCode {
         Success,

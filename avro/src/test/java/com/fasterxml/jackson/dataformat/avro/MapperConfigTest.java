@@ -75,14 +75,10 @@ public class MapperConfigTest extends AvroTestBase
         ObjectMapper mapper = new ObjectMapper(AVRO_F);
         _testAvroMapperDefaults(mapper);
 
-        // and even with default mapper, may become so, if configred with AvroFactory
         ObjectMapper vanilla = new ObjectMapper();
         assertFalse(vanilla.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
         ObjectReader r = vanilla.reader();
         assertFalse(r.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
-        r = r.with(AVRO_F);
-
-        assertTrue(r.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
     }
 
     public void testDefaultSettingsWithAvroMapper()

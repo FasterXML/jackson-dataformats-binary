@@ -15,7 +15,7 @@ public class ParserLocationTest
         byte[] data = _smileDoc("[ true, null, false, 511 ]", true); // true -> write header
         
         JsonParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         JsonLocation loc = p.getCurrentLocation();
         assertNotNull(loc);
         // first: -1 for "not known", for character-based stuff

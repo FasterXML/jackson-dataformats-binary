@@ -156,7 +156,7 @@ public class NumberParsingTest
                 +Integer.MIN_VALUE+","+Integer.MAX_VALUE+","
                 +Long.MIN_VALUE+", "+Long.MAX_VALUE+" ]");
     	SmileParser p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
+    	assertNull(p.currentToken());
     	assertToken(JsonToken.START_ARRAY, p.nextToken());
 
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());

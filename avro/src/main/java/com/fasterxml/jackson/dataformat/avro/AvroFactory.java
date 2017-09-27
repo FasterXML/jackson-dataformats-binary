@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.InputAccessor;
-import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 
 import com.fasterxml.jackson.dataformat.avro.deser.*;
@@ -145,17 +143,7 @@ public class AvroFactory extends JsonFactory
     public boolean canUseSchema(FormatSchema schema) {
         return (schema instanceof AvroSchema);
     }
-    
-    /**
-     * Sub-classes need to override this method
-     */
-    @Override
-    public MatchStrength hasFormat(InputAccessor acc) throws IOException
-    {
-        // TODO, if possible... probably isn't?
-        return MatchStrength.INCONCLUSIVE;
-    }
-    
+
     /*
     /**********************************************************
     /* Configuration, parser settings

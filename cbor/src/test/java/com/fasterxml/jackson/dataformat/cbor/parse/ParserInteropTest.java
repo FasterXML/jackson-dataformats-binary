@@ -1,11 +1,8 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.DataFormatDetector;
-import com.fasterxml.jackson.core.format.DataFormatMatcher;
-import com.fasterxml.jackson.core.format.MatchStrength;
+
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
@@ -55,41 +52,5 @@ public class ParserInteropTest extends CBORTestBase
         assertEquals(-1, p.getCurrentTag());
 
         p.close();
-    }
-
-    // as per [dataformats-binary#6], self-describe great for format auto-detection
-    public void testFormatDetection() throws Exception
-    {
-        CBORFactory f = cborFactory();
-        // let's try to confuse auto-detector with JSON one too...
-        DataFormatDetector det = new DataFormatDetector(new JsonFactory(), f);
-        det = det.withMinimalMatch(MatchStrength.WEAK_MATCH).withOptimalMatch(MatchStrength.SOLID_MATCH);
-
-        DataFormatMatcher match = det.findFormat(SELF_DESC_PLUS_TRUE);
-        JsonFactory result = match.getMatch();
-        assertNotNull(result);
-        assertEquals("CBOR", match.getMatchedFormatName());
-        assertEquals(MatchStrength.FULL_MATCH, match.getMatchStrength());
-
-        
-        // but there are other ok matches too
-        match = det.findFormat(cborDoc(f, "{\"field\" :\"value\"}"));
-        result = match.getMatch();
-        assertNotNull(result);
-        assertEquals("CBOR", match.getMatchedFormatName());
-        assertEquals(MatchStrength.SOLID_MATCH, match.getMatchStrength());
-
-        match = det.findFormat(cborDoc(f, "true"));
-        result = match.getMatch();
-        assertNotNull(result);
-        assertEquals("CBOR", match.getMatchedFormatName());
-        assertEquals(MatchStrength.SOLID_MATCH, match.getMatchStrength());
-        
-        // and others so-so
-        match = det.findFormat(cborDoc(f, "[ 1, 2, 3 ]"));
-        result = match.getMatch();
-        assertNotNull(result);
-        assertEquals("CBOR", match.getMatchedFormatName());
-        assertEquals(MatchStrength.WEAK_MATCH, match.getMatchStrength());
     }
 }

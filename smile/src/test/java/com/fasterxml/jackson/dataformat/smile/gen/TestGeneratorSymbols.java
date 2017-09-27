@@ -217,7 +217,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         gen.close();
         
         JsonParser parser = factory.createParser(os.toByteArray());
-        assertNull(parser.getCurrentToken());
+        assertNull(parser.currentToken());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals("query", parser.getCurrentName());

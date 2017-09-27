@@ -53,7 +53,7 @@ public class BasicParserTest extends BaseTestForSmile
         }
         SmileParser p = _smileParser(in, true);
         
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertNull(p.getCurrentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertNull(p.getCurrentName());
@@ -73,7 +73,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
         byte[] data = _smileDoc("[ 25.0 ]");
         SmileParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertNull(p.getCurrentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -87,7 +87,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
         byte[] data = _smileDoc("[ \"abc\" ]");
         SmileParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("abc", p.getText());
@@ -107,7 +107,7 @@ public class BasicParserTest extends BaseTestForSmile
         // first, empty key
         byte[] data = _smileDoc("{ \"\":true }");
         SmileParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("", p.getCurrentName());
@@ -124,7 +124,7 @@ public class BasicParserTest extends BaseTestForSmile
         // then empty value
         data = _smileDoc("{ \"abc\":\"\" }");
         p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("abc", p.getCurrentName());
@@ -137,7 +137,7 @@ public class BasicParserTest extends BaseTestForSmile
         // and combinations
         data = _smileDoc("{ \"\":\"\", \"\":\"\" }");
         p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("", p.getCurrentName());
@@ -162,7 +162,7 @@ public class BasicParserTest extends BaseTestForSmile
     	byte[] data = _smileDoc(quote(LONG));
 
     	SmileParser p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
+    	assertNull(p.currentToken());
     	assertToken(JsonToken.VALUE_STRING, p.nextToken());
     	assertEquals(LONG, p.getText());
     	assertNull(p.nextToken());
@@ -180,7 +180,7 @@ public class BasicParserTest extends BaseTestForSmile
         byte[] data = _smileDoc(quote(LONG));
 
         SmileParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(LONG, p.getText());
 
@@ -196,7 +196,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
     	byte[] data = _smileDoc("{\"abc\":13}");
     	SmileParser p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
+    	assertNull(p.currentToken());
 
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -212,7 +212,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
     	byte[] data = _smileDoc("{\"a\":8, \"b\" : [ true ], \"c\" : { }, \"d\":{\"e\":null}}");
     	SmileParser p = _smileParser(data);
-    	assertNull(p.getCurrentToken());
+    	assertNull(p.currentToken());
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
 
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -249,7 +249,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
         byte[] data = _smileDoc("[{\"a\":{\"b\":[1]}}]");
         SmileParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken()); // a
@@ -513,7 +513,7 @@ public class BasicParserTest extends BaseTestForSmile
         if (!p.hasCurrentToken()) {
             p.nextToken();
         }
-        assertToken(JsonToken.START_OBJECT, p.getCurrentToken()); // main object
+        assertToken(JsonToken.START_OBJECT, p.currentToken()); // main object
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Image'
         if (verifyContents) {

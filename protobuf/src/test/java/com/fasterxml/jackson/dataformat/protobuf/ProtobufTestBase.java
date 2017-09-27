@@ -487,7 +487,7 @@ public abstract class ProtobufTestBase extends TestCase
 
     protected void assertToken(JsonToken expToken, JsonParser p)
     {
-        assertToken(expToken, p.getCurrentToken());
+        assertToken(expToken, p.currentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)

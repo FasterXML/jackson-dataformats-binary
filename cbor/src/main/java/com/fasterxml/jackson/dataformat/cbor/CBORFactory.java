@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.InputAccessor;
-import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 
 /**
@@ -148,11 +146,6 @@ public class CBORFactory extends JsonFactory
 
     @Override
     public boolean canUseCharArrays() { return false; }
-    
-    @Override
-    public MatchStrength hasFormat(InputAccessor acc) throws IOException {
-        return CBORParserBootstrapper.hasCBORFormat(acc);
-    }
 
     /*
     /**********************************************************

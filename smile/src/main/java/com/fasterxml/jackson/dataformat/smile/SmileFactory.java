@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.InputAccessor;
-import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
@@ -163,14 +161,6 @@ public class SmileFactory extends JsonFactory
 
     // Defaults work fine for this:
     // public boolean canUseSchema(FormatSchema schema) { }
-
-    /**
-     * Sub-classes need to override this method (as of 1.8)
-     */
-    @Override
-    public MatchStrength hasFormat(InputAccessor acc) throws IOException {
-        return SmileParserBootstrapper.hasSmileFormat(acc);
-    }
 
     /*
     /**********************************************************

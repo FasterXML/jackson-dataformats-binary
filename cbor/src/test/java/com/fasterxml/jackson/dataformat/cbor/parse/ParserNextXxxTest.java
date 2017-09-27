@@ -129,7 +129,7 @@ public class ParserNextXxxTest extends CBORTestBase
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
 
         assertNull(parser.nextFieldName());
-        assertEquals(JsonToken.END_OBJECT, parser.getCurrentToken());
+        assertEquals(JsonToken.END_OBJECT, parser.currentToken());
         assertNull(parser.nextToken());
 
         assertNull(parser.nextBooleanValue());
@@ -214,32 +214,32 @@ public class ParserNextXxxTest extends CBORTestBase
         JsonParser p = f.createParser(DOC);
         final SerializedString NAME = new SerializedString("name");
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.START_OBJECT, p.getCurrentToken());
+        assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertTrue(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.getCurrentName());
         assertEquals(NAME.getValue(), p.getText());
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.VALUE_NUMBER_INT, p.getCurrentToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals("name2", p.getCurrentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals("x", p.getCurrentName());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.VALUE_STRING, p.getCurrentToken());
+        assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.END_OBJECT, p.getCurrentToken());
+        assertToken(JsonToken.END_OBJECT, p.currentToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
 
         p.close();
 
@@ -247,30 +247,30 @@ public class ParserNextXxxTest extends CBORTestBase
         p = f.createParser(DOC);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertFalse(p.nextFieldName(new SerializedString("Nam")));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.getCurrentName());
         assertEquals(NAME.getValue(), p.getText());
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.VALUE_NUMBER_INT, p.getCurrentToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals("name2", p.getCurrentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals("x", p.getCurrentName());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.VALUE_STRING, p.getCurrentToken());
+        assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.END_OBJECT, p.getCurrentToken());
+        assertToken(JsonToken.END_OBJECT, p.currentToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
 
         p.close();
     }
@@ -282,32 +282,32 @@ public class ParserNextXxxTest extends CBORTestBase
         JsonParser p = f.createParser(DOC);
         SerializableString NAME = new SerializedString("name");
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.START_OBJECT, p.getCurrentToken());
+        assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertTrue(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.getCurrentName());
         assertEquals(NAME.getValue(), p.getText());
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.VALUE_NUMBER_INT, p.getCurrentToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals("name2", p.getCurrentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.FIELD_NAME, p.getCurrentToken());
+        assertToken(JsonToken.FIELD_NAME, p.currentToken());
         assertEquals("x", p.getCurrentName());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.VALUE_STRING, p.getCurrentToken());
+        assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
         assertFalse(p.nextFieldName(NAME));
-        assertToken(JsonToken.END_OBJECT, p.getCurrentToken());
+        assertToken(JsonToken.END_OBJECT, p.currentToken());
 
         assertNull(p.nextFieldName());
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
 
         p.close();
     }

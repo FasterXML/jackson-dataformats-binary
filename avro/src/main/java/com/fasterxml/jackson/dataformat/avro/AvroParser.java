@@ -141,11 +141,6 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    protected void _finishString() throws IOException {
-        _reportUnsupportedOperation();
-    }
-
-    @Override
     protected abstract void _closeInput() throws IOException;
 
     /*
