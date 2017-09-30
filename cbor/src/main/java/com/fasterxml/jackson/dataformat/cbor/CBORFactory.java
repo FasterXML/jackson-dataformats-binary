@@ -98,7 +98,6 @@ public class CBORFactory extends JsonFactory
     @Override
     public CBORFactory copy()
     {
-        _checkInvalidCopy(CBORFactory.class);
         // note: as with base class, must NOT copy mapper reference
         return new CBORFactory(this, null);
     }

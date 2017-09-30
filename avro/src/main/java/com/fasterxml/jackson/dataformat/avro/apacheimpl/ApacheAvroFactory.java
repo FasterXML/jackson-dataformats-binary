@@ -38,7 +38,6 @@ public class ApacheAvroFactory extends AvroFactory
     @Override
     public AvroFactory copy()
     {
-        _checkInvalidCopy(ApacheAvroFactory.class);
         return new ApacheAvroFactory(this, null);
     }
 

@@ -85,7 +85,6 @@ public class AvroFactory extends JsonFactory
     @Override
     public AvroFactory copy()
     {
-        _checkInvalidCopy(AvroFactory.class);
         return new AvroFactory(this, null);
     }
 

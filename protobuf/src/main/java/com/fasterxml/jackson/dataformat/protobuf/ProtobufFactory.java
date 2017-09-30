@@ -31,7 +31,6 @@ public class ProtobufFactory extends JsonFactory
     @Override
     public ProtobufFactory copy()
     {
-        _checkInvalidCopy(ProtobufFactory.class);
         return new ProtobufFactory(this, null);
     }
 

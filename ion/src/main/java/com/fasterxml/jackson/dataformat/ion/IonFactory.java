@@ -82,7 +82,6 @@ public class IonFactory extends JsonFactory {
     @Override
     public IonFactory copy()
     {
-        _checkInvalidCopy(IonFactory.class);
         // note: as with base class, must NOT copy mapper reference
         return new IonFactory(this, null);
     }

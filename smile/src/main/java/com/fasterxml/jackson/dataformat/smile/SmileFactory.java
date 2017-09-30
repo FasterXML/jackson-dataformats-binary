@@ -108,11 +108,9 @@ public class SmileFactory extends JsonFactory
         _smileGeneratorFeatures = src._smileGeneratorFeatures;
     }
 
-    // @since 2.1
     @Override
     public SmileFactory copy()
     {
-        _checkInvalidCopy(SmileFactory.class);
         // note: as with base class, must NOT copy mapper reference
         return new SmileFactory(this, null);
     }
