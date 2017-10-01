@@ -139,12 +139,19 @@ public class CBORFactory
 
     @Override
     public boolean canParseAsync() {
-        // 30-Sep-2017, tatu: Not yet, although eminently implementable
+        // 30-Sep-2017, tatu: No async implementation exists yet
         return false;
     }
 
     @Override
-    public boolean canUseCharArrays() { return false; }
+    public Class<CBORParser.Feature> getFormatReadFeatureType() {
+        return CBORParser.Feature.class;
+    }
+
+    @Override
+    public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
+        return CBORGenerator.Feature.class;
+    }
 
     /*
     /**********************************************************
@@ -162,27 +169,6 @@ public class CBORFactory
         return false; // no (mandatory) FormatSchema for cbor
     }
 
-    /*
-    /**********************************************************
-    /* Capability introspection
-    /**********************************************************
-     */
-
-    @Override
-    public boolean canHandleBinaryNatively() {
-        return true;
-    }
-
-    @Override // since 2.6
-    public Class<CBORParser.Feature> getFormatReadFeatureType() {
-        return CBORParser.Feature.class;
-    }
-
-    @Override // since 2.6
-    public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
-        return CBORGenerator.Feature.class;
-    }
-    
     /*
     /**********************************************************
     /* Configuration, parser settings

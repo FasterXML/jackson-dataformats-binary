@@ -92,18 +92,6 @@ public class AvroFactory
 
     /*
     /**********************************************************
-    /* Capability introspection
-    /**********************************************************
-     */
-
-    // Yes, Avro is strictly positional based on schema
-    @Override
-    public boolean requiresPropertyOrdering() {
-        return true;
-    }
-    
-    /*
-    /**********************************************************
     /* Serializable overrides
     /**********************************************************
      */
@@ -128,11 +116,18 @@ public class AvroFactory
         return PackageVersion.VERSION;
     }
 
+    // Yes, Avro is strictly positional based on schema
+    @Override
+    public boolean requiresPropertyOrdering() {
+        return true;
+    }
+
     @Override
     public boolean canParseAsync() {
+        // 30-Sep-2017, tatu: No async implementation exists yet
         return false;
     }
-    
+
     /*
     /**********************************************************
     /* Data format support

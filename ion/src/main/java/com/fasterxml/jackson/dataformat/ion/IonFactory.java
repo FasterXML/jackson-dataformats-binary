@@ -14,24 +14,12 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.CharArrayReader;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
+import java.net.URL;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.base.DecorableTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.util.TextBuffer;
 import com.fasterxml.jackson.dataformat.ion.util.CloseSafeUTF8Writer;
 
 import software.amazon.ion.IonReader;
@@ -45,7 +33,12 @@ import software.amazon.ion.system.IonSystemBuilder;
  * content.
  */
 @SuppressWarnings("resource")
-public class IonFactory extends JsonFactory {
+public class IonFactory
+//30-Sep-2017, tatu: Since Ion can use either textual OR binary format, we have to
+// extend a lower level base class.
+    extends DecorableTSFactory
+    implements java.io.Serializable
+{
     private static final long serialVersionUID = 1L;
 
     public final static String FORMAT_NAME_ION = "AmazonIon";
@@ -86,16 +79,6 @@ public class IonFactory extends JsonFactory {
         return new IonFactory(this, null);
     }
 
-    @Override
-    public Version version() {
-        return PackageVersion.VERSION;
-    }
-
-    @Override
-    public String getFormatName() {
-        return FORMAT_NAME_ION;
-    }
-    
     public void setCreateBinaryWriters(boolean b) {
         _cfgCreateBinaryWriters = b;
     }
@@ -104,108 +87,151 @@ public class IonFactory extends JsonFactory {
         return _cfgCreateBinaryWriters;
     }
 
-    @Override // since 2.3
+    /*                                                                                       
+    /**********************************************************                              
+    /* Basic introspection                                                                  
+    /**********************************************************                              
+     */
+    
+    @Override
+    public Version version() {
+        return PackageVersion.VERSION;
+    }
+
+    @Override
     public boolean canHandleBinaryNatively() {
         // 21-Feb-2017, tatu: I think only support with binary backend
         return _cfgCreateBinaryWriters;
     }
 
-    @Override // since 2.4
-    public boolean canUseCharArrays() {
+    @Override
+    public boolean canParseAsync() {
+        // 30-Sep-2017, tatu: No async implementation exists
+        return false;
+    }
+    
+    /*
+    /**********************************************************
+    /* Data format support
+    /**********************************************************
+     */
+
+    @Override
+    public String getFormatName() {
+        return FORMAT_NAME_ION;
+    }
+
+    @Override
+    public boolean canUseSchema(FormatSchema schema) {
         return false;
     }
 
     /*
-    ***************************************************************
-    * Extended API
-    ***************************************************************
+    /***************************************************************
+    /* Extended API
+    /***************************************************************
      */
 
-    /**
-     * @since 2.7
-     */
     public IonParser createParser(IonReader in) {
         return new IonParser(in, _system, _createContext(in, false), getCodec());
     }
 
-    /**
-     * @since 2.7
-     */
     public IonParser createParser(IonValue value) {
         IonReader in = value.getSystem().newReader(value);
         return new IonParser(in, _system, _createContext(in, true), getCodec());
     }
 
-    /**
-     * @since 2.7
-     */
     public JsonGenerator createGenerator(IonWriter out) {
         return _createGenerator(out, _createContext(out, false), out);
     }
 
-    /**
-     * @deprecated Since 2.7
-     */
-    @Deprecated
-    public IonParser createJsonParser(IonReader in) {
-        return new IonParser(in, _system, _createContext(in, false), getCodec());
-    }
-
-    /**
-     * @deprecated Since 2.7
-     */
-    @Deprecated
-    public IonParser createJsonParser(IonValue value) {
-        IonReader in = value.getSystem().newReader(value);
-        return new IonParser(in, _system, _createContext(in, true), getCodec());
-    }
-
-    /**
-     * @deprecated Since 2.7
-     */
-    @Deprecated
-    public JsonGenerator createJsonGenerator(IonWriter out) {
-        return _createGenerator(out, _createContext(out, false), out);
-    }
-
     /*
-    ***************************************************************
-    * Overridden factory methods
-    ***************************************************************
+    /***************************************************************
+    /* Factory methods: parsers
+    /***************************************************************
      */
 
     @Override
-    protected JsonParser _createParser(InputStream in, IOContext ctxt)
-        throws IOException
-    {
-        IonReader ion = _system.newReader(in);
-        return new IonParser(ion, _system, ctxt, getCodec());
+    public JsonParser createParser(File f) throws IOException {
+        // true, since we create InputStream from File
+        IOContext ctxt = _createContext(f, true);
+        InputStream in = new FileInputStream(f);
+        return _createParser(_decorate(in, ctxt), ctxt);
     }
 
     @Override
-    protected JsonParser _createParser(Reader r, IOContext ctxt)
-        throws IOException
-    {
-        return new IonParser(_system.newReader(r), _system, ctxt, getCodec());
+    public JsonParser createParser(URL url) throws IOException {
+        // true, since we create InputStream from URL
+        IOContext ctxt = _createContext(url, true);
+        InputStream in = _optimizedStreamFromURL(url);
+        return _createParser(_decorate(in, ctxt), ctxt);
     }
 
     @Override
-    protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
-            boolean recyclable) throws IOException
-    {
-        return _createParser(new CharArrayReader(data, offset, len), ctxt);
+    public JsonParser createParser(InputStream in) throws IOException {
+        IOContext ctxt = _createContext(in, false);
+        return _createParser(_decorate(in, ctxt), ctxt);
     }
 
     @Override
-    protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
-        throws IOException
-    {
-        return new IonParser(_system.newReader(data, offset, len), _system, ctxt, getCodec());
+    public JsonParser createParser(Reader r) throws IOException {
+        // false -> we do NOT own Reader (did not create it)
+        IOContext ctxt = _createContext(r, false);
+        return _createParser(_decorate(r, ctxt), ctxt);
     }
 
     @Override
-    public JsonGenerator createGenerator(OutputStream out, JsonEncoding enc)
-        throws IOException
+    public JsonParser createParser(byte[] data) throws IOException {
+        IOContext ctxt = _createContext(data, true);
+        if (_inputDecorator != null) {
+            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
+            if (in != null) {
+                return _createParser(in, ctxt);
+            }
+        }
+        return _createParser(data, 0, data.length, ctxt);
+    }
+
+    @Override
+    public JsonParser createParser(byte[] data, int offset, int len) throws IOException {
+        IOContext ctxt = _createContext(data, true);
+        if (_inputDecorator != null) {
+            InputStream in = _inputDecorator.decorate(ctxt, data, offset, len);
+            if (in != null) {
+                return _createParser(in, ctxt);
+            }
+        }
+        return _createParser(data, offset, len, ctxt);
+    }
+
+    @Override
+    public JsonParser createParser(String content) throws IOException {
+        return createParser(new StringReader(content));
+    }
+
+    @Override
+    public JsonParser createParser(char[] content, int offset, int len) throws IOException {
+        if (_inputDecorator != null) { // easier to just wrap in a Reader than extend InputDecorator
+            return createParser(new CharArrayReader(content, offset, len));
+        }
+        return _createParser(content, offset, len, _createContext(content, true),
+                // important: buffer is NOT recyclable, as it's from caller
+                false);
+    }
+
+    @Override
+    public JsonParser createParser(DataInput in) throws IOException {
+        return _unsupported();
+    }        
+    
+    /*
+    /***************************************************************
+    /* Factory methods: generators
+    /***************************************************************
+     */
+
+    @Override
+    public JsonGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException
     {
         return _createGenerator(out, enc, false);
     }
@@ -229,41 +255,41 @@ public class IonFactory extends JsonFactory {
     }
 
     /*
-    ***************************************************************
-    * Helper methods
-    ***************************************************************
+    /***************************************************************
+    /* Helper methods, parsers
+    /***************************************************************
      */
 
-    @Deprecated
-    protected String _readAll(Reader r, IOContext ctxt) throws IOException
+    private JsonParser _createParser(InputStream in, IOContext ctxt)
+        throws IOException
     {
-        // Let's use Jackson's efficient aggregators... better than JDK defaults
-        TextBuffer tb = ctxt.constructTextBuffer();
-        char[] buf = tb.emptyAndGetCurrentSegment();
-
-        // this gets bit ugly. Blah.
-        int offset = 0;
-
-        main_loop:
-        while (true) {
-            
-            while (offset < buf.length) {
-                int count = r.read(buf, offset, buf.length - offset);
-                if (count < 0) {
-                    break main_loop;
-                }
-                offset += count;
-            }
-            // got full buffer; get another one
-            buf = tb.finishCurrentSegment();
-            offset = 0;
-        }
-        // Ok, last one is incomplete...
-        tb.setCurrentLength(offset);
-        String result = tb.contentsAsString();
-        tb.releaseBuffers();
-        return result;
+        IonReader ion = _system.newReader(in);
+        return new IonParser(ion, _system, ctxt, getCodec());
     }
+
+    private JsonParser _createParser(Reader r, IOContext ctxt)
+        throws IOException
+    {
+        return new IonParser(_system.newReader(r), _system, ctxt, getCodec());
+    }
+
+    private JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
+            boolean recyclable) throws IOException
+    {
+        return _createParser(new CharArrayReader(data, offset, len), ctxt);
+    }
+
+    private JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
+        throws IOException
+    {
+        return new IonParser(_system.newReader(data, offset, len), _system, ctxt, getCodec());
+    }
+
+    /*
+    /***************************************************************
+    /* Helper methods, generators
+    /***************************************************************
+     */
 
     protected IonGenerator _createGenerator(OutputStream out, JsonEncoding enc, boolean isManaged)
          throws IOException
@@ -297,5 +323,5 @@ public class IonFactory extends JsonFactory {
     protected IonGenerator _createGenerator(IonWriter ion, IOContext ctxt, Closeable dst)
     {
         return new IonGenerator(_generatorFeatures, _objectCodec, ion, ctxt, dst);
-    }        
+    }
 }

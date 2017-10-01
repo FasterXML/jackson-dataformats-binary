@@ -16,8 +16,6 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 public abstract class AvroParserImpl
     extends AvroParser
 {
-    protected final static byte[] NO_BYTES = new byte[0];
-
     /*
     /**********************************************************
     /* Other decoding state
@@ -26,15 +24,11 @@ public abstract class AvroParserImpl
 
     /**
      * Index of the union branch that was followed to reach the current token. This is cleared when the next token is read.
-     *
-     * @since 2.9
      */
     protected int _branchIndex;
 
     /**
      * Index of the enum that was read as the current token. This is cleared when the next token is read.
-     *
-     * @since 2.9
      */
     protected int _enumIndex;
 
@@ -43,8 +37,6 @@ public abstract class AvroParserImpl
      *<p>
      * NOTE: base class (`ParserBase`) has other value storage, but since JSON
      * has no distinction between double, float, only includes `float`.
-     *
-     * @since 2.9
      */
     protected float _numberFloat;
 

@@ -58,7 +58,6 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     public void testCapabilities() throws Exception
     {
         assertTrue(CBOR_F.canHandleBinaryNatively());
-        assertFalse(CBOR_F.canUseCharArrays());
         assertEquals(CBORParser.Feature.class, CBOR_F.getFormatReadFeatureType());
         assertEquals(CBORGenerator.Feature.class, CBOR_F.getFormatWriteFeatureType());
     }

@@ -62,14 +62,13 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     public void testCapabilities() throws Exception
     {
         assertTrue(PROTO_F.canHandleBinaryNatively());
-        assertFalse(PROTO_F.canUseCharArrays());
         assertNull(PROTO_F.getFormatReadFeatureType());
         assertNull(PROTO_F.getFormatWriteFeatureType());
     }
 
     public void testInabilityToReadChars() throws Exception
     {
-        final String EXP = "non-byte-based source";
+        final String EXP = "Can not create parser for character-based";
         try {
             PROTO_F.createParser("foo");
             fail();
@@ -96,11 +95,10 @@ public class FactoryPropertiesTest extends ProtobufTestBase
             PROTO_F.createGenerator(new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
-            verifyException(e, "non-byte-based target");
+            verifyException(e, "Can not create generator for character-based");
         }
-        
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
