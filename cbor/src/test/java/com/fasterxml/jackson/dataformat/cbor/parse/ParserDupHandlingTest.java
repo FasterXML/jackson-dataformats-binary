@@ -24,7 +24,7 @@ public class ParserDupHandlingTest extends CBORTestBase
         }
     }
 
-    private void _testSimpleDupsOk(final byte[] doc, JsonFactory f) throws Exception
+    private void _testSimpleDupsOk(final byte[] doc, CBORFactory f) throws Exception
     {
         JsonParser p = f.createParser(doc);
         JsonToken t = p.nextToken();
@@ -34,7 +34,7 @@ public class ParserDupHandlingTest extends CBORTestBase
         p.close();
     }
 
-    private void _testSimpleDupsFail(final byte[] doc, JsonFactory f, String name) throws Exception
+    private void _testSimpleDupsFail(final byte[] doc, CBORFactory f, String name) throws Exception
     {
         JsonParser p = f.createParser(doc);
         JsonToken t = p.nextToken();
@@ -48,5 +48,4 @@ public class ParserDupHandlingTest extends CBORTestBase
         }
         p.close();
     }
-    
 }

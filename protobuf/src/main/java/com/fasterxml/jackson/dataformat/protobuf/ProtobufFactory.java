@@ -66,10 +66,15 @@ public class ProtobufFactory extends JsonFactory
     /* Format detection functionality
     /**********************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return ProtobufSchema.FORMAT_NAME_PROTOBUF;
+    }
+
+    @Override
+    public boolean canUseSchema(FormatSchema schema) {
+        return (schema instanceof ProtobufSchema);
     }
 
     /*

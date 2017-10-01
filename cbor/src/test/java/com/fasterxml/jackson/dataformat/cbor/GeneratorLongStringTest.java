@@ -64,7 +64,7 @@ public class GeneratorLongStringTest extends CBORTestBase
     /**********************************************************
      */
 
-    private void _verifyStrings(JsonFactory f, byte[] input, List<String> strings)
+    private void _verifyStrings(CBORFactory f, byte[] input, List<String> strings)
         throws IOException
     {
         JsonParser p = f.createParser(input);

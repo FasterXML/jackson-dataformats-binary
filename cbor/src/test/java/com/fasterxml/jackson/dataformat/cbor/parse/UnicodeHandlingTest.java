@@ -80,8 +80,8 @@ public class UnicodeHandlingTest extends CBORTestBase
     private CBORParser _parser(byte[] data, boolean throttling) throws IOException
     {
         if (throttling) {
-            return F.createParser(new ThrottledInputStream(data, 3));
+            return (CBORParser) F.createParser(new ThrottledInputStream(data, 3));
         }
-        return F.createParser(data);
+        return (CBORParser) F.createParser(data);
     }
 }

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
-
 // [dataformats-binary#108]
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 {

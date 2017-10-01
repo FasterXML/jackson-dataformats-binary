@@ -65,7 +65,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
 
     public void testInabilityToReadChars() throws Exception
     {
-        final String EXP = "non-byte-based source";
+        final String EXP = "Can not create parser for character-based (not byte-based)";
         try {
             CBOR_F.createParser("foo");
             fail();
@@ -92,11 +92,10 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
             CBOR_F.createGenerator(new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
-            verifyException(e, "non-byte-based target");
+            verifyException(e, "Can not create generator for character-based (not byte-based)");
         }
-        
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
@@ -135,7 +134,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         return bytes.toByteArray();
     }
         
-    protected void _copyDoc(JsonFactory f, byte[] doc, JsonGenerator g) throws IOException
+    protected void _copyDoc(CBORFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
         JsonParser p = f.createParser(doc);
         while (p.nextToken() != null) {

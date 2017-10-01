@@ -5,16 +5,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.CBORParser;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
 @SuppressWarnings("resource")
@@ -82,7 +75,7 @@ public class ParserNumbersTest extends CBORTestBase
                (byte) CBORConstants.PREFIX_TYPE_INT_POS + 26, // uint32, that is, 4 more bytes
                -1, -1, -1, -1
         };
-        CBORParser p = CBOR_F.createParser(input);
+        CBORParser p = (CBORParser) CBOR_F.createParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as `long` because these uint32 values do not fit in Java `int`
         assertEquals(0xFFFFFFFFL, p.getLongValue());
@@ -94,7 +87,7 @@ public class ParserNumbersTest extends CBORTestBase
                 (byte) CBORConstants.PREFIX_TYPE_INT_NEG + 26, // int32, that is, 4 more bytes
                 (byte) 0x80, 0, 0, 0
         };
-        p = CBOR_F.createParser(input);
+        p = (CBORParser) CBOR_F.createParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as `long` because this value won't fit in `int` either
         long exp = -1L + Integer.MIN_VALUE;
@@ -148,7 +141,7 @@ public class ParserNumbersTest extends CBORTestBase
                (byte) CBORConstants.PREFIX_TYPE_INT_POS + 27, // uint64, that is, 8 more bytes
                -1, -1, -1, -1, -1, -1, -1, -1
         };
-        CBORParser p = CBOR_F.createParser(input);
+        CBORParser p = (CBORParser) CBOR_F.createParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as BigInteger
         assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
@@ -163,7 +156,7 @@ public class ParserNumbersTest extends CBORTestBase
                 (byte) 0x80, 0, 0, 0,
                 0, 0, 0, 0
         };
-        p = CBOR_F.createParser(input);
+        p = (CBORParser) CBOR_F.createParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as `long` because this value won't fit in `int` either
         exp = BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.ONE);
@@ -255,7 +248,7 @@ public class ParserNumbersTest extends CBORTestBase
         p.close();
     }
 
-    private void _verifyHalfFloat(JsonFactory f, int i16, double value) throws IOException
+    private void _verifyHalfFloat(CBORFactory f, int i16, double value) throws IOException
     {
         byte[] data = new byte[] {
                 (byte) (CBORConstants.PREFIX_TYPE_MISC + 25),

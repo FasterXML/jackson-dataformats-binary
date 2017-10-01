@@ -34,11 +34,11 @@ public abstract class CBORTestBase
     }
 
     protected CBORParser cborParser(CBORFactory f, byte[] input) throws IOException {
-        return f.createParser(input);
+        return (CBORParser) f.createParser(input);
     }
 
     protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {
-        return f.createParser(in);
+        return (CBORParser) f.createParser(in);
     }
     
     protected ObjectMapper cborMapper() {
@@ -79,7 +79,7 @@ public abstract class CBORTestBase
             ByteArrayOutputStream result)
         throws IOException
     {
-        return f.createGenerator(result, null);
+        return (CBORGenerator) f.createGenerator(result, null);
     }
 
     /*

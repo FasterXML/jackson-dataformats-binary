@@ -83,7 +83,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
 		OutputStream os = new FileOutputStream(output);
 
 		InputStream is = new FileInputStream(input);
-		CBORParser parser = f.createParser(is);
+		CBORParser parser = (CBORParser) f.createParser(is);
 		parser.nextToken();
 		parser.readBinaryValue(null, os);
 

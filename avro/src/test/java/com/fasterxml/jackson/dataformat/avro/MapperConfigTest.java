@@ -31,7 +31,7 @@ public class MapperConfigTest extends AvroTestBase
 
     public void testParserDefaults() throws Exception
     {
-        AvroParser p = AVRO_F.createParser(new byte[0]);
+        AvroParser p = (AvroParser) AVRO_F.createParser(new byte[0]);
         assertTrue(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
         p.disable(AvroParser.Feature.AVRO_BUFFERING);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
@@ -47,7 +47,7 @@ public class MapperConfigTest extends AvroTestBase
     public void testGeneratorDefaults() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        AvroGenerator g = AVRO_F.createGenerator(bytes);
+        AvroGenerator g = (AvroGenerator) AVRO_F.createGenerator(bytes);
         assertTrue(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
         g.disable(AvroGenerator.Feature.AVRO_BUFFERING);
         assertFalse(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));

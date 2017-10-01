@@ -34,7 +34,7 @@ public class GeneratorInteropTest extends CBORTestBase
         CBORFactory f = cborFactory();
         assertFalse(f.isEnabled(CBORGenerator.Feature.WRITE_TYPE_HEADER));
         
-        CBORGenerator gen = f.createGenerator(out);
+        CBORGenerator gen = (CBORGenerator) f.createGenerator(out);
         // First, without feature, we get just a single byte doc
         gen.writeBoolean(true);
         gen.close();
@@ -46,7 +46,7 @@ public class GeneratorInteropTest extends CBORTestBase
         f.enable(CBORGenerator.Feature.WRITE_TYPE_HEADER);
         // but with auto-write
         out = new ByteArrayOutputStream();
-        gen = f.createGenerator(out);
+        gen = (CBORGenerator) f.createGenerator(out);
         // First, without feature, we get just a single byte doc
         gen.writeBoolean(true);
         gen.close();

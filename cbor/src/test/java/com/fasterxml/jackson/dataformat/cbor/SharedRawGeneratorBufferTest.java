@@ -35,7 +35,7 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         
-        CBORGenerator cborGen = cborFactory.createGenerator(bytes);
+        CBORGenerator cborGen = (CBORGenerator) cborFactory.createGenerator(bytes);
         cborGen.writeObject(1);
         cborGen.close();
         bytes.reset();

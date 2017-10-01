@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
-import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
 
 import com.fasterxml.jackson.dataformat.avro.deser.*;
@@ -14,7 +14,9 @@ import com.fasterxml.jackson.dataformat.avro.deser.*;
  *
  * @see com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory
  */
-public class AvroFactory extends JsonFactory
+public class AvroFactory
+    extends BinaryTSFactory
+    implements java.io.Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -111,14 +113,13 @@ public class AvroFactory extends JsonFactory
      * through constructors etc.
      * Also: must be overridden by sub-classes as well.
      */
-    @Override
     protected Object readResolve() {
         return new AvroFactory(this, _objectCodec);
     }
 
     /*                                                                                       
     /**********************************************************                              
-    /* Versioned                                                                             
+    /* Basic introspection                                                                  
     /**********************************************************                              
      */
 
@@ -126,10 +127,15 @@ public class AvroFactory extends JsonFactory
     public Version version() {
         return PackageVersion.VERSION;
     }
+
+    @Override
+    public boolean canParseAsync() {
+        return false;
+    }
     
     /*
     /**********************************************************
-    /* Format detection functionality
+    /* Data format support
     /**********************************************************
      */
     
@@ -232,86 +238,12 @@ public class AvroFactory extends JsonFactory
     public final boolean isEnabled(AvroGenerator.Feature f) {
         return (_avroGeneratorFeatures & f.getMask()) != 0;
     }
-    
-    /*
-    /**********************************************************
-    /* Overridden parser factory methods
-    /**********************************************************
-     */
 
-    @SuppressWarnings("resource")
-    @Override
-    public AvroParser createParser(File f) throws IOException {
-        IOContext ctxt = _createContext(f, true);
-        return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
-    }
-
-    @Override
-    public AvroParser createParser(URL url) throws IOException {
-        IOContext ctxt = _createContext(url, true);
-        return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
-    }
-
-    @Override
-    public AvroParser createParser(InputStream in) throws IOException {
-        IOContext ctxt = _createContext(in, false);
-        return _createParser(_decorate(in, ctxt), ctxt);
-    }
-
-    //public JsonParser createParser(Reader r)
-    
-    @Override
-    public AvroParser createParser(byte[] data) throws IOException {
-        return createParser(data, 0, data.length);
-    }
-    
-    @SuppressWarnings("resource")
-    @Override
-    public AvroParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
-        if (_inputDecorator != null) {
-            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
-            if (in != null) {
-                return _createParser(_decorate(in, ctxt), ctxt);
-            }
-        }
-        return _createParser(data, offset, len, ctxt);
-    }
-
-    /*
-    /**********************************************************
-    /* Overridden generator factory methods
-    /**********************************************************
-     */
-    
-    /**
-     *<p>
-     * note: co-variant return type
-     */
-    @Override
-    public AvroGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
-        return createGenerator(out);
-    }
-
-    /**
-     * Since Avro format always uses UTF-8 internally, no encoding need
-     * to be passed to this method.
-     */
-    @Override
-    public AvroGenerator createGenerator(OutputStream out) throws IOException
-    {
-        // false -> we won't manage the stream unless explicitly directed to
-        IOContext ctxt = _createContext(out, false);
-        return _createGenerator(_decorate(out, ctxt), ctxt);
-    }
-    
     /*
     /******************************************************
-    /* Overridden internal factory methods
+    /* Factory method impls: parsers
     /******************************************************
      */
-
-    //protected IOContext _createContext(Object srcRef, boolean resourceManaged)
 
     /**
      * Overridable factory method that actually instantiates desired
@@ -326,17 +258,6 @@ public class AvroFactory extends JsonFactory
     }
 
     @Override
-    protected JsonParser _createParser(Reader r, IOContext ctxt) throws IOException {
-        return _nonByteSource();
-    }
-
-    @Override
-    protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
-            boolean recyclable) throws IOException {
-        return _nonByteSource();
-    }
-
-    @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
 // !!! 21-Apr-2017, tatu: make configurable
         return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
@@ -344,28 +265,36 @@ public class AvroFactory extends JsonFactory
                 _objectCodec, data, offset, len);
     }
 
-    /**
-     * Overridable factory method that actually instantiates desired
-     * generator.
+    @Override
+    protected JsonParser _createParser(DataInput input, IOContext ctxt)
+            throws IOException {
+        // 30-Sep-2017, tatu: As of now not supported although should be quite possible
+        //    to support
+        return _unsupported();
+    }
+
+    /*
+    /******************************************************
+    /* Factory method impls: generators
+    /******************************************************
      */
-    @Override
-    protected JsonGenerator _createGenerator(Writer out, IOContext ctxt) throws IOException {
-        return _nonByteTarget();
-    }
-
-    //public BufferRecycler _getBufferRecycler()
-
-    @Override
-    protected Writer _createWriter(OutputStream out, JsonEncoding enc, IOContext ctxt) throws IOException {
-        return _nonByteTarget();
-    }
     
+    @Override
+    protected JsonGenerator _createGenerator(OutputStream out,
+            IOContext ctxt) throws IOException {
+        int feats = _avroGeneratorFeatures;
+        AvroGenerator gen = new AvroGenerator(ctxt, _generatorFeatures, feats,
+                _objectCodec, out);
+        return gen;
+    }
+
     /*
     /**********************************************************
     /* Internal methods
     /**********************************************************
      */
-    
+
+    /*
     protected AvroGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException
     {
         int feats = _avroGeneratorFeatures;
@@ -373,12 +302,5 @@ public class AvroFactory extends JsonFactory
                 _objectCodec, out);
         return gen;
     }
-
-    protected <T> T _nonByteSource() throws IOException {
-        throw new UnsupportedOperationException("Can not create parser for character-based (not byte-based) source");
-    }
-
-    protected <T> T _nonByteTarget() throws IOException {
-        throw new UnsupportedOperationException("Can not create generator for character-based (not byte-based) target");
-    }
+    */
 }
