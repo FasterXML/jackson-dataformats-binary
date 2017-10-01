@@ -24,7 +24,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         }
     }
 
-    private void _testSimpleDupsOk(final byte[] doc, JsonFactory f) throws Exception
+    private void _testSimpleDupsOk(final byte[] doc, SmileFactory f) throws Exception
     {
         JsonParser jp = f.createParser(doc);
         JsonToken t = jp.nextToken();
@@ -34,7 +34,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         jp.close();
     }
 
-    private void _testSimpleDupsFail(final byte[] doc, JsonFactory f, String name) throws Exception
+    private void _testSimpleDupsFail(final byte[] doc, SmileFactory f, String name) throws Exception
     {
         JsonParser p = f.createParser(doc);
         JsonToken t = p.nextToken();
@@ -48,5 +48,4 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         }
         p.close();
     }
-    
 }

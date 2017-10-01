@@ -106,7 +106,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         SmileFactory factory = new SmileFactory();
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator generator = factory.createGenerator(out);
+        SmileGenerator generator = (SmileGenerator) factory.createGenerator(out);
         
         generator.writeStartObject();
         
@@ -151,7 +151,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         byte[] data = out.toByteArray();
         
         ByteArrayInputStream in = new ByteArrayInputStream(data);
-        SmileParser parser = factory.createParser(in);
+        SmileParser parser = (SmileParser)factory.createParser(in);
         
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
         

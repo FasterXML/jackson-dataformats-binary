@@ -18,7 +18,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         // boolean requireHeader, boolean writeHeader, boolean writeEndMarker
         final SmileFactory f = smileFactory(false, true, false);
         
-        SmileGenerator generator =  f.createGenerator(byteOut);
+        SmileGenerator generator =  (SmileGenerator) f.createGenerator(byteOut);
         generator.writeStartObject();
         generator.writeFieldName("a");
         generator.writeStartObject();
@@ -43,7 +43,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         byte[] smile = byteOut.toByteArray();
 
         // then read it back; make sure to use InputStream to exercise block boundaries
-        SmileParser p = f.createParser(new ByteArrayInputStream(smile));
+        SmileParser p = (SmileParser) f.createParser(new ByteArrayInputStream(smile));
         assertToken(p.nextToken(), JsonToken.START_OBJECT);
 
         assertToken(p.nextToken(), JsonToken.FIELD_NAME);
@@ -92,7 +92,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         final SmileFactory f = smileFactory(false, true, false);
         f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
         
-        SmileGenerator generator =  f.createGenerator(byteOut);
+        SmileGenerator generator =  (SmileGenerator) f.createGenerator(byteOut);
         generator.writeStartArray();
 
         final int VALUE_COUNT = 300;
@@ -111,7 +111,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         byte[] smile = byteOut.toByteArray();
 
         // then read it back; make sure to use InputStream to exercise block boundaries
-        SmileParser p = f.createParser(new ByteArrayInputStream(smile));
+        SmileParser p = (SmileParser)f.createParser(new ByteArrayInputStream(smile));
         assertToken(p.nextToken(), JsonToken.START_ARRAY);
         for (int i=0; i < VALUE_COUNT; i++) {
             assertToken(p.nextToken(), JsonToken.VALUE_STRING);

@@ -175,7 +175,7 @@ public class TestGenerator extends BaseTestForSmile
         SmileFactory f = smileFactory(false, true, false);
         f.enable(SmileGenerator.Feature.CHECK_SHARED_NAMES);
         f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
-        SmileGenerator gen = f.createGenerator(out);
+        SmileGenerator gen = (SmileGenerator) f.createGenerator(out);
         gen.writeStartObject();
         gen.writeFieldName("foo");
         gen.writeStartObject();
@@ -258,7 +258,7 @@ public class TestGenerator extends BaseTestForSmile
         final HashMap<String, String> data = new HashMap<String,String>();
         data.put("key", "value");
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final SmileGenerator smileGenerator = smileFactory.createGenerator(out);
+        final SmileGenerator smileGenerator = (SmileGenerator) smileFactory.createGenerator(out);
         // NOTE: not optimal way -- should use "gen.writeStartArray()" -- but exposed a problem
         out.write(SmileConstants.TOKEN_LITERAL_START_ARRAY);
         smileObjectMapper.writeValue(smileGenerator, data);
@@ -302,7 +302,7 @@ public class TestGenerator extends BaseTestForSmile
         f.configure(SmileGenerator.Feature.WRITE_HEADER, true);
         f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, shared);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = f.createGenerator(out);
+        SmileGenerator gen = (SmileGenerator) f.createGenerator(out);
         gen.writeStartArray();
         gen.writeString(value);
         gen.writeString(value);

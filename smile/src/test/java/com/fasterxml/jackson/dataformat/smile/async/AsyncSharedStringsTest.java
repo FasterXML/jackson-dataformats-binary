@@ -340,7 +340,7 @@ public class AsyncSharedStringsTest
      */
     public void testIssue562() throws IOException
     {
-        JsonFactory factory = new SmileFactory();
+        SmileFactory factory = new SmileFactory();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         JsonGenerator gen = factory.createGenerator(bos);
         gen.writeStartObject();
@@ -374,7 +374,7 @@ public class AsyncSharedStringsTest
      */
     public void testIssue564() throws Exception
     {
-        JsonFactory factory = new SmileFactory();
+        SmileFactory factory = new SmileFactory();
 
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
         JsonGenerator generator = factory.createGenerator(bos1);
@@ -456,7 +456,7 @@ public class AsyncSharedStringsTest
         // 65 chars/bytes, and not one less, to trigger it
         final String NAME = "Something else that's long enough (65 char) to cause fail: 123456";
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        SmileGenerator gen = factory.createGenerator(bout);
+        SmileGenerator gen = (SmileGenerator) factory.createGenerator(bout);
         gen.writeStartArray();
         gen.writeStartObject();
         gen.writeNullField(NAME);

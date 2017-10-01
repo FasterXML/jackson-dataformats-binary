@@ -383,7 +383,7 @@ public class BasicParserTest extends BaseTestForSmile
             
             // force back-refs off, easier to trigger problem
             f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, false);
-            SmileGenerator gen = f.createGenerator(bytes);
+            SmileGenerator gen = (SmileGenerator) f.createGenerator(bytes);
             
             int count = 0;
             do {
@@ -397,7 +397,7 @@ public class BasicParserTest extends BaseTestForSmile
         
             // and then read back
             byte[] json = bytes.toByteArray();
-            SmileParser p = f.createParser(new ByteArrayInputStream(json, offset, json.length-offset));
+            SmileParser p = (SmileParser) f.createParser(new ByteArrayInputStream(json, offset, json.length-offset));
             int i = 0;
 
             while (i < count) {
@@ -415,7 +415,6 @@ public class BasicParserTest extends BaseTestForSmile
         }
     }
 
-    // [JACKSON-640]: Problem with getTextCharacters/Offset/Length
     public void testCharacters() throws IOException
     {
         // ensure we are using both back-ref types

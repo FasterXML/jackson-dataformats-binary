@@ -83,8 +83,8 @@ public class UnicodeHandlingTest extends BaseTestForSmile
     private SmileParser _parser(byte[] data, boolean throttling) throws IOException
     {
         if (throttling) {
-            return F.createParser(new ThrottledInputStream(data, 3));
+            return (SmileParser)F.createParser(new ThrottledInputStream(data, 3));
         }
-        return F.createParser(data);
+        return (SmileParser)F.createParser(data);
     }
 }

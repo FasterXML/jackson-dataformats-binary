@@ -72,7 +72,6 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     public void testCapabilities() throws Exception
     {
         assertTrue(SMILE_F.canHandleBinaryNatively());
-        assertFalse(SMILE_F.canUseCharArrays());
         assertEquals(SmileParser.Feature.class, SMILE_F.getFormatReadFeatureType());
         assertEquals(SmileGenerator.Feature.class, SMILE_F.getFormatWriteFeatureType());
     }
@@ -109,30 +108,6 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
             verifyException(e, "for character-based");
         }
         
-    }
-
-    // One lesser known feature is the ability to fall back to using JSON...
-    public void testFallbackReadFromJson() throws Exception
-    {
-        SmileFactory f = new SmileFactory();
-        f.delegateToTextual(true);
-        JsonParser p = f.createParser("[ ]");
-        assertToken(JsonToken.START_ARRAY, p.nextToken());
-        p.close();
-    }
-
-    // One lesser known feature is the ability to fall back to using JSON...
-    public void testFallbackWriteAsJson() throws Exception
-    {
-        SmileFactory f = new SmileFactory();
-        f.delegateToTextual(true);
-        StringWriter w = new StringWriter();
-        JsonGenerator g = f.createGenerator(w);
-        g.writeStartArray();
-        g.writeEndArray();
-        g.close();
-
-        assertEquals("[]", w.toString());
     }
 
     // There is one constructor designed for direct generator instantiation,
@@ -188,7 +163,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         return bytes.toByteArray();
     }
         
-    protected void _copyDoc(JsonFactory f, byte[] doc, JsonGenerator g) throws IOException
+    protected void _copyDoc(SmileFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
         JsonParser p = f.createParser(doc);
         while (p.nextToken() != null) {

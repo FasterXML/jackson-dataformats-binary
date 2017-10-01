@@ -83,7 +83,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
         for (int size : SIZES) {
             byte[] binary = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
+            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
             g.writeBinary(binary);
             g.close();
             byte[] smile = bo.toByteArray();
@@ -110,7 +110,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
         for (int size : SIZES) {
             byte[] binary = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
+            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
             g.writeStartArray();
             g.writeBinary(binary);
             g.writeNumber(1); // just to verify there's no overrun
@@ -148,7 +148,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
         for (int size : SIZES) {
             byte[] data = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
+            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
             g.writeStartObject();
             g.writeFieldName("binary");
             g.writeBinary(data);

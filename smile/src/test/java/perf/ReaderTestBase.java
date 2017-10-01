@@ -2,9 +2,9 @@ package perf;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TokenStreamFactory;
 import com.fasterxml.jackson.databind.*;
 
 abstract class ReaderTestBase
@@ -180,7 +180,8 @@ abstract class ReaderTestBase
         return bytes.toByteArray();
     }
 
-    protected static byte[] convert(byte[] input, JsonFactory inputF, JsonFactory outputF)
+    protected static byte[] convert(byte[] input,
+            TokenStreamFactory inputF, TokenStreamFactory outputF)
             throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(input.length);

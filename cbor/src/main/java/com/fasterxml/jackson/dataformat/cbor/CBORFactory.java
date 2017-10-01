@@ -26,7 +26,7 @@ public class CBORFactory
     extends BinaryTSFactory
     implements java.io.Serializable
 {
-	private static final long serialVersionUID = 1; // 2.6
+	private static final long serialVersionUID = 1;
 
     /*
     /**********************************************************

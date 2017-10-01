@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
@@ -24,9 +25,11 @@ import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
  * 
  * @author Tatu Saloranta
  */
-public class SmileFactory extends JsonFactory
+public class SmileFactory
+    extends BinaryTSFactory
+    implements java.io.Serializable
 {
-    private static final long serialVersionUID = 1L; // since 2.6
+    private static final long serialVersionUID = 1L;
 
     /*
     /**********************************************************
@@ -58,17 +61,20 @@ public class SmileFactory extends JsonFactory
     /**********************************************************
      */
 
-    /**
-     * Whether non-supported methods (ones trying to output using
-     * char-based targets like {@link java.io.Writer}, for example)
-     * should be delegated to regular Jackson JSON processing
-     * (if set to true); or throw {@link UnsupportedOperationException}
-     * (if set to false)
-     */
-    protected boolean _cfgDelegateToTextual;
-
     protected int _smileParserFeatures;
     protected int _smileGeneratorFeatures;
+
+    /*
+    /**********************************************************
+    /* Symbol table management
+    /**********************************************************
+     */
+
+    /**
+     * Alternative to the basic symbol table, some stream-based
+     * parsers use different name canonicalization method.
+     */
+    protected final transient ByteQuadsCanonicalizer _byteSymbolCanonicalizer = ByteQuadsCanonicalizer.createRoot();
 
     /*
     /**********************************************************
@@ -94,16 +100,9 @@ public class SmileFactory extends JsonFactory
         _smileGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
     }
 
-    /**
-     * Note: REQUIRES 2.2.1 -- unfortunate intra-patch dep but seems
-     * preferable to just leaving bug be as is
-     * 
-     * @since 2.2.1
-     */
     public SmileFactory(SmileFactory src, ObjectCodec oc)
     {
         super(src, oc);
-        _cfgDelegateToTextual = src._cfgDelegateToTextual;
         _smileParserFeatures = src._smileParserFeatures;
         _smileGeneratorFeatures = src._smileGeneratorFeatures;
     }
@@ -113,10 +112,6 @@ public class SmileFactory extends JsonFactory
     {
         // note: as with base class, must NOT copy mapper reference
         return new SmileFactory(this, null);
-    }
-    
-    public void delegateToTextual(boolean state) {
-        _cfgDelegateToTextual = state;
     }
 
     /*
@@ -130,25 +125,37 @@ public class SmileFactory extends JsonFactory
      * through constructors etc.
      * Also: must be overridden by sub-classes as well.
      */
-    @Override
     protected Object readResolve() {
         return new SmileFactory(this, _objectCodec);
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Capability introspection
+    /**********************************************************
      */
-
+    
     @Override
     public Version version() {
         return PackageVersion.VERSION;
     }
 
+    @Override
+    public boolean canParseAsync() { return true; }
+    
+    @Override
+    public Class<SmileParser.Feature> getFormatReadFeatureType() {
+        return SmileParser.Feature.class;
+    }
+
+    @Override
+    public Class<SmileGenerator.Feature> getFormatWriteFeatureType() {
+        return SmileGenerator.Feature.class;
+    }
+
     /*
     /**********************************************************
-    /* Format detection functionality
+    /* Format support
     /**********************************************************
      */
     
@@ -157,34 +164,11 @@ public class SmileFactory extends JsonFactory
         return FORMAT_NAME_SMILE;
     }
 
-    // Defaults work fine for this:
-    // public boolean canUseSchema(FormatSchema schema) { }
-
-    /*
-    /**********************************************************
-    /* Capability introspection
-    /**********************************************************
-     */
-
     @Override
-    public boolean canUseCharArrays() { return false; }
-
-    @Override
-    public boolean canHandleBinaryNatively() { return true; }
-
-    @Override // since 2.9
-    public boolean canParseAsync() { return true; }
+    public boolean canUseSchema(FormatSchema schema) {
+        return false;
+    }
     
-    @Override // since 2.6
-    public Class<SmileParser.Feature> getFormatReadFeatureType() {
-        return SmileParser.Feature.class;
-    }
-
-    @Override // since 2.6
-    public Class<SmileGenerator.Feature> getFormatWriteFeatureType() {
-        return SmileGenerator.Feature.class;
-    }
-
     /*
     /**********************************************************
     /* Configuration, parser settings
@@ -276,96 +260,13 @@ public class SmileFactory extends JsonFactory
     public final boolean isEnabled(SmileGenerator.Feature f) {
         return (_smileGeneratorFeatures & f.getMask()) != 0;
     }
-    
-    /*
-    /**********************************************************
-    /* Overridden parser factory methods: only override methods
-    /* that can use co-variance (to return SmileParser)
-    /**********************************************************
-     */
-
-    @SuppressWarnings("resource")
-    @Override
-    public SmileParser createParser(File f) throws IOException {
-        IOContext ctxt = _createContext(f, true);
-        return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
-    }
-
-    @Override
-    public SmileParser createParser(URL url) throws IOException {
-        IOContext ctxt = _createContext(url, true);
-        return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
-    }
-
-    @Override
-    public SmileParser createParser(InputStream in) throws IOException {
-        IOContext ctxt = _createContext(in, false);
-        return _createParser(_decorate(in, ctxt), ctxt);
-    }
-
-    @Override
-    public SmileParser createParser(byte[] data) throws IOException {
-        return createParser(data, 0, data.length);
-    }
-    
-    @SuppressWarnings("resource")
-    @Override
-    public SmileParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
-        if (_inputDecorator != null) {
-            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
-            if (in != null) {
-                return _createParser(_decorate(in, ctxt), ctxt);
-            }
-        }
-        return _createParser(data, offset, len, ctxt);
-    }
 
     /*
     /**********************************************************
-    /* Overridden generator factory methods: mostly
-    /* overridden for co-variance (returns SmileGenerator)
+    /* Extended API: async
     /**********************************************************
      */
 
-    /**
-     * Method for constructing {@link JsonGenerator} for generating
-     * Smile-encoded output.
-     *<p>
-     * Since Smile format always uses UTF-8 internally, <code>enc</code>
-     * argument is ignored.
-     */
-    @Override
-    public SmileGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
-        // false -> we won't manage the stream unless explicitly directed to
-        IOContext ctxt = _createContext(out, false);
-        return _createGenerator(_decorate(out, ctxt), ctxt);
-    }
-
-    /**
-     * Method for constructing {@link JsonGenerator} for generating
-     * Smile-encoded output.
-     *<p>
-     * Since Smile format always uses UTF-8 internally, no encoding need
-     * to be passed to this method.
-     */
-    @Override
-    public SmileGenerator createGenerator(OutputStream out) throws IOException {
-        // false -> we won't manage the stream unless explicitly directed to
-        IOContext ctxt = _createContext(out, false);
-        return _createGenerator(_decorate(out, ctxt), ctxt);
-    }
-
-    /*
-    /**********************************************************
-    /* Experimental extended factory method(s) for creating
-    /* non-blocking parsers
-    /**********************************************************
-     */
-
-    /**
-     * @since 2.9
-     */
     @Override
     public NonBlockingByteArrayParser createNonBlockingByteArrayParser() throws IOException {
         IOContext ctxt = _createContext(null, false);
@@ -375,7 +276,7 @@ public class SmileFactory extends JsonFactory
 
     /*
     /******************************************************
-    /* Overridden internal factory methods
+    /* Factory method impls: parsers
     /******************************************************
      */
 
@@ -391,25 +292,6 @@ public class SmileFactory extends JsonFactory
     }
 
     @Override
-    protected JsonParser _createParser(Reader r, IOContext ctxt) throws IOException
-    {
-        if (_cfgDelegateToTextual) {
-            return super._createParser(r, ctxt);
-        }
-        return _nonByteSource();
-    }
-
-    @Override
-    protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
-            boolean recyclable) throws IOException
-    {
-        if (_cfgDelegateToTextual) {
-            return super._createParser(data, offset, len, ctxt, recyclable);
-        }
-        return _nonByteSource();
-    }
-
-    @Override
     protected SmileParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
     {
         return new SmileParserBootstrapper(ctxt, data, offset, len).constructParser(
@@ -418,44 +300,19 @@ public class SmileFactory extends JsonFactory
     }
 
     @Override
-    protected JsonGenerator _createGenerator(Writer out, IOContext ctxt) throws IOException
-    {
-        if (_cfgDelegateToTextual) {
-            return super._createGenerator(out, ctxt);
-        }
-        return _nonByteTarget(); 
-    }
-
-    @Override
-    protected JsonGenerator _createUTF8Generator(OutputStream out, IOContext ctxt) throws IOException {
-        return _createGenerator(out, ctxt);
-    }
-    
-    //public BufferRecycler _getBufferRecycler()
-
-    @Override
-    protected Writer _createWriter(OutputStream out, JsonEncoding enc, IOContext ctxt) throws IOException
-    {
-        if (_cfgDelegateToTextual) {
-            return super._createWriter(out, enc, ctxt);
-        }
-        return _nonByteTarget(); 
+    protected JsonParser _createParser(DataInput input, IOContext ctxt)
+            throws IOException {
+        // 30-Sep-2017, tatu: As of now not supported (but would be possible)
+        return _unsupported();
     }
 
     /*
-    /**********************************************************
-    /* Internal methods
-    /**********************************************************
+    /******************************************************
+    /* Factory method impls: generators
+    /******************************************************
      */
 
-    protected <T> T _nonByteSource() throws IOException {
-        throw new UnsupportedOperationException("Can not create parser for character-based (not byte-based) source");
-    }
-
-    protected <T> T _nonByteTarget() throws IOException {
-        throw new UnsupportedOperationException("Can not create generator for character-based (not byte-based) target");
-    }
-    
+    @Override
     protected SmileGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException
     {
         int feats = _smileGeneratorFeatures;
