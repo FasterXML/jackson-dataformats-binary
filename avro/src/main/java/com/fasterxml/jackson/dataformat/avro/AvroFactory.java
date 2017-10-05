@@ -128,6 +128,16 @@ public class AvroFactory
         return false;
     }
 
+    @Override
+    public Class<AvroParser.Feature> getFormatReadFeatureType() {
+        return AvroParser.Feature.class;
+    }
+
+    @Override
+    public Class<AvroGenerator.Feature> getFormatWriteFeatureType() {
+        return AvroGenerator.Feature.class;
+    }
+
     /*
     /**********************************************************
     /* Data format support
@@ -275,12 +285,14 @@ public class AvroFactory
      */
     
     @Override
-    protected JsonGenerator _createGenerator(OutputStream out,
-            IOContext ctxt) throws IOException {
-        int feats = _avroGeneratorFeatures;
-        AvroGenerator gen = new AvroGenerator(ctxt, _generatorFeatures, feats,
-                _objectCodec, out);
-        return gen;
+    protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            OutputStream out, IOContext ctxt) throws IOException
+    {
+        return new AvroGenerator(ctxt,
+                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                writeCtxt.getFormatWriteFeatures(_avroGeneratorFeatures),
+                _objectCodec, out,
+                (AvroSchema) writeCtxt.getSchema());
     }
 
     /*

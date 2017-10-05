@@ -143,7 +143,12 @@ public class ProtobufFactory
      */
 
     @Override
-    protected ProtobufGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException {
-        return new ProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, out);
+    protected ProtobufGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            OutputStream out, IOContext ctxt) throws IOException
+    {
+        return new ProtobufGenerator(ctxt,
+                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                _objectCodec, out);
     }
 }
+

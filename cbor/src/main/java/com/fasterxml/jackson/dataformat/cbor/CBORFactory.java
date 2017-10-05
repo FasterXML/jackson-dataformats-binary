@@ -309,17 +309,13 @@ public class CBORFactory
      */
     
     @Override
-    protected CBORGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException {
-        return _createCBORGenerator(ctxt,
-                _generatorFeatures, _formatGeneratorFeatures, _objectCodec, out);
-    }
-
-    private final CBORGenerator _createCBORGenerator(IOContext ctxt,
-            int stdFeat, int formatFeat, ObjectCodec codec, OutputStream out) throws IOException
-    {
-        // false -> we won't manage the stream unless explicitly directed to
-        CBORGenerator gen = new CBORGenerator(ctxt, stdFeat, formatFeat, _objectCodec, out);
-        if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(formatFeat)) {
+    protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            OutputStream out, IOContext ctxt) throws IOException {
+        CBORGenerator gen = new CBORGenerator(ctxt,
+                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures),
+                _objectCodec, out);
+        if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatGeneratorFeatures)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
         return gen;

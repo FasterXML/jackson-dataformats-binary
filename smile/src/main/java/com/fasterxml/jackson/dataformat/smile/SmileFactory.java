@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
-import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
@@ -313,25 +312,29 @@ public class SmileFactory
      */
 
     @Override
-    protected SmileGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException
+    protected SmileGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            OutputStream out, IOContext ctxt) throws IOException
     {
-        int feats = _smileGeneratorFeatures;
+        int smileFeatures = _smileGeneratorFeatures;
         /* One sanity check: MUST write header if shared string values setting is enabled,
          * or quoting of binary data disabled.
          * But should we force writing, or throw exception, if settings are in conflict?
          * For now, let's error out...
          */
-        SmileGenerator gen = new SmileGenerator(ctxt, _generatorFeatures, feats, _objectCodec, out);
-        if ((feats & SmileGenerator.Feature.WRITE_HEADER.getMask()) != 0) {
+        SmileGenerator gen = new SmileGenerator(ctxt,
+                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                writeCtxt.getFormatWriteFeatures(smileFeatures),
+                _objectCodec, out);
+        if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {
             gen.writeHeader();
         } else {
-            if ((feats & SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES.getMask()) != 0) {
+            if (SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
                 throw new JsonGenerationException(
                         "Inconsistent settings: WRITE_HEADER disabled, but CHECK_SHARED_STRING_VALUES enabled; can not construct generator"
                         +" due to possible data loss (either enable WRITE_HEADER, or disable CHECK_SHARED_STRING_VALUES to resolve)",
                         gen);
             }
-            if ((feats & SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT.getMask()) == 0) {
+            if (!SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT.enabledIn(smileFeatures)) {
                 throw new JsonGenerationException(
         			"Inconsistent settings: WRITE_HEADER disabled, but ENCODE_BINARY_AS_7BIT disabled; can not construct generator"
         			+" due to possible data loss (either enable WRITE_HEADER, or ENCODE_BINARY_AS_7BIT to resolve)",

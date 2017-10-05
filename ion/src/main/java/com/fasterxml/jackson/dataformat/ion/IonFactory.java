@@ -141,8 +141,9 @@ public class IonFactory
         return new IonParser(in, _system, _createContext(in, true), getCodec());
     }
 
-    public JsonGenerator createGenerator(IonWriter out) {
-        return _createGenerator(out, _createContext(out, false), out);
+    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, IonWriter out) {
+        return _createGenerator(writeCtxt,
+                out, _createContext(out, false), out);
     }
 
     /*
@@ -233,7 +234,8 @@ public class IonFactory
     @Override
     public JsonGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException
     {
-        return _createGenerator(out, enc, false);
+        return _createGenerator(EMPTY_WRITE_CONTEXT,
+                out, enc, false);
     }
 
     @Override
@@ -244,16 +246,46 @@ public class IonFactory
         if (createBinaryWriters()) {
             throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(_system.newTextWriter(out), _createContext(out, false), out);
+        return _createGenerator(EMPTY_WRITE_CONTEXT,
+                _system.newTextWriter(out), _createContext(out, false), out);
     }
 
     @Override
     public JsonGenerator createGenerator(File f, JsonEncoding enc)
         throws IOException
     {
-        return _createGenerator(new FileOutputStream(f), enc, true);
+        return _createGenerator(EMPTY_WRITE_CONTEXT,
+                new FileOutputStream(f), enc, true);
     }
 
+    @Override
+    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
+            OutputStream out, JsonEncoding enc) throws IOException
+    {
+        return _createGenerator(writeCtxt, out, enc, false);
+    }
+
+    @Override
+    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, Writer out)
+        throws IOException
+    {
+         // First things first: no binary writer for Writers:
+        if (createBinaryWriters()) {
+            throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
+        }
+        return _createGenerator(writeCtxt,
+                _system.newTextWriter(out), _createContext(out, false), out);
+    }
+
+    @Override
+    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
+            File f, JsonEncoding enc)
+        throws IOException
+    {
+        return _createGenerator(writeCtxt,
+                new FileOutputStream(f), enc, true);
+    }
+    
     /*
     /***************************************************************
     /* Helper methods, parsers
@@ -291,7 +323,8 @@ public class IonFactory
     /***************************************************************
      */
 
-    protected IonGenerator _createGenerator(OutputStream out, JsonEncoding enc, boolean isManaged)
+    protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            OutputStream out, JsonEncoding enc, boolean isManaged)
          throws IOException
      {
         IonWriter ion;
@@ -317,11 +350,13 @@ public class IonFactory
             ion = _system.newTextWriter(w);
             dst = w;
         }
-        return _createGenerator(ion, ctxt, dst);
+        return _createGenerator(writeCtxt, ion, ctxt, dst);
     }
 
-    protected IonGenerator _createGenerator(IonWriter ion, IOContext ctxt, Closeable dst)
+    protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            IonWriter ion, IOContext ctxt, Closeable dst)
     {
-        return new IonGenerator(_generatorFeatures, _objectCodec, ion, ctxt, dst);
+        return new IonGenerator(writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                _objectCodec, ion, ctxt, dst);
     }
 }

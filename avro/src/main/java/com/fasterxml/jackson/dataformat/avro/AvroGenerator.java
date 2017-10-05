@@ -21,7 +21,7 @@ public class AvroGenerator extends GeneratorBase
      * Enumeration that defines all togglable features for Avro generators
      */
     public enum Feature
-        implements FormatFeature // since 2.7
+        implements FormatFeature
     {
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
@@ -31,8 +31,7 @@ public class AvroGenerator extends GeneratorBase
          * input/output is unbuffered.
          *<p>
          * Enabled by default to preserve the existing behavior.
-         *
-         * @since 2.7
+
          */
         AVRO_BUFFERING(true),
 
@@ -43,8 +42,7 @@ public class AvroGenerator extends GeneratorBase
          * NOTE: reader-side will have to be aware of distinction as well, since possible inclusion
          * of this header is not 100% reliably auto-detectable (while header has distinct marker,
          * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
-         *
-         * @since 2.9
+
          */
         AVRO_FILE_OUTPUT(false)
         ;
@@ -135,7 +133,8 @@ public class AvroGenerator extends GeneratorBase
      */
 
     public AvroGenerator(IOContext ctxt, int jsonFeatures, int avroFeatures,
-            ObjectCodec codec, OutputStream output)
+            ObjectCodec codec, OutputStream output,
+            AvroSchema schema)
         throws IOException
     {
         super(jsonFeatures, codec);
@@ -144,6 +143,7 @@ public class AvroGenerator extends GeneratorBase
         _output = output;
         _avroContext = AvroWriteContext.nullContext();
         _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+        setSchema(schema);
     }
 
     public void setSchema(AvroSchema schema)
@@ -249,19 +249,6 @@ public class AvroGenerator extends GeneratorBase
             enable(f);
         } else {
             disable(f);
-        }
-        return this;
-    }
-
-    @Override
-    public JsonGenerator overrideFormatFeatures(int values, int mask) {
-        int oldF = _formatFeatures;
-        int newF = (_formatFeatures & ~mask) | (values & mask);
-
-        if (oldF != newF) {
-            _formatFeatures = newF;
-            // 22-Oct-2015, tatu: Actually, not way to change buffering details at
-            //   this point. If change needs to be dynamic have to change it
         }
         return this;
     }

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
 import software.amazon.ion.IonDatagram;
 import software.amazon.ion.IonReader;
@@ -148,7 +149,9 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying writer explicitly
      */
     public void writeValue(IonWriter w, Object value) throws IOException {
-        _configAndWriteValue(getFactory().createGenerator(w), value);
+        DefaultSerializerProvider prov = _serializerProvider(getSerializationConfig());
+        _configAndWriteValue(prov,
+                getFactory().createGenerator(prov, w), value);
     }
 
     /**

@@ -327,16 +327,7 @@ public class CBORGenerator extends GeneratorBase
         return _formatFeatures;
     }
 
-    @Override
-    public JsonGenerator overrideStdFeatures(int values, int mask) {
-        int oldState = _features;
-        int newState = (oldState & ~mask) | (values & mask);
-        if (oldState != newState) {
-            _features = newState;
-        }
-        return this;
-    }
-
+    /*
     @Override
     public JsonGenerator overrideFormatFeatures(int values, int mask) {
         int oldState = _formatFeatures;
@@ -347,6 +338,7 @@ public class CBORGenerator extends GeneratorBase
         }
         return this;
     }
+    */
 
     /*
     /**********************************************************

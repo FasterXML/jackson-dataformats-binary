@@ -16,6 +16,8 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import org.junit.Test;
 import org.junit.Before;
+
+import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
@@ -66,7 +68,8 @@ public class IonGeneratorTest {
         this.joiObjectMapper = new IonObjectMapper(factory);
         this.ionSystem = IonSystemBuilder.standard().build();
         this.output = ionSystem.newDatagram();
-        this.joiGenerator = (IonGenerator) factory.createGenerator(ionSystem.newWriter(this.output));
+        this.joiGenerator = (IonGenerator) factory.createGenerator(ObjectWriteContext.empty(),
+                ionSystem.newWriter(this.output));
 
         this.testObjectIon = ionSystem.singleValue(testObjectStr);
         this.testObjectTree = joiObjectMapper.readTree(testObjectStr);

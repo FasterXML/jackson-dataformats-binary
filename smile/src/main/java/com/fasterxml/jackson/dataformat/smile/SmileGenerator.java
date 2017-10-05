@@ -445,12 +445,6 @@ public class SmileGenerator
         return _formatFeatures;
     }
 
-    @Override
-    public JsonGenerator overrideFormatFeatures(int values, int mask) {
-        _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
-        return this;
-    }
-
     /*
     /**********************************************************
     /* Overridden methods, write methods

@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.PrettyPrinter;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -47,10 +48,10 @@ public class IonGenerator
     extends GeneratorBase
 {
     /*
-     *****************************************************************
-     * Basic configuration
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Basic configuration
+    /*****************************************************************
+     */  
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
@@ -63,11 +64,18 @@ public class IonGenerator
      */
     protected final Closeable _destination;
 
+    /**
+     * Object that handles pretty-printing (usually additional
+     * white space to make results more human-readable) during
+     * output. If null, no pretty-printing is done.
+     */
+    protected PrettyPrinter _cfgPrettyPrinter;
+
     /*
-     *****************************************************************
-     * Instantiation
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Instantiation
+    /*****************************************************************
+     */  
 
     public IonGenerator(int features, ObjectCodec codec,
             IonWriter ion, IOContext ctxt, Closeable dst)
@@ -367,6 +375,9 @@ public class IonGenerator
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+msg+", expecting field name");
         }
+        // 05-Oct-2017, tatu: I don't think pretty-printing is supported... is it?
+        
+/*
         // Only additional work needed if we are pretty-printing
         if (_cfgPrettyPrinter != null) {
             // If we have a pretty printer, it knows what to do:
@@ -392,6 +403,7 @@ public class IonGenerator
                 throw new IllegalStateException("Should never occur; status "+status);
             }
         }
+        */
     }
 
     @Override
