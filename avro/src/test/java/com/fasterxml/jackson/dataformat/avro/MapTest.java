@@ -51,9 +51,7 @@ public class MapTest extends AvroTestBase
          * get masked due to auto-close. Hence this trickery.
          */
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
-        MAPPER.writer(schema).writeValue(gen, input);
-        gen.close();
+        MAPPER.writer(schema).writeValue(out, input);
         byte[] bytes = out.toByteArray();
         assertNotNull(bytes);
 
@@ -101,9 +99,7 @@ public class MapTest extends AvroTestBase
         input = new Container();
 
         out = new ByteArrayOutputStream();
-        gen = MAPPER.getFactory().createGenerator(out);
-        MAPPER.writer(schema).writeValue(gen, input);
-        gen.close();
+        MAPPER.writer(schema).writeValue(out, input);
         bytes = out.toByteArray();
         assertNotNull(bytes);
 

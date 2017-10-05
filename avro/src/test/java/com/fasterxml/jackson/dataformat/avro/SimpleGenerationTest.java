@@ -112,24 +112,22 @@ public class SimpleGenerationTest extends AvroTestBase
     @SuppressWarnings("resource")
     public void testIgnoringOfUnknownScalar() throws Exception
     {
-        AvroFactory af = new AvroFactory();
-        ObjectMapper mapper = new ObjectMapper(af);
+        ObjectMapper mapper = newMapper();
         // we can repurpose "Binary" from above for schema
         BinaryAndNumber input = new BinaryAndNumber("Bob", 15);
-        JsonGenerator gen = mapper.getFactory().createGenerator(new ByteArrayOutputStream());
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
         try {
-             mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(gen, input);
+             mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(b, input);
              fail("Should have thrown exception");
         } catch (JsonMappingException e) {
             verifyException(e, "no field named");
         }
 
         // But should be fine if (and only if!) we enable support for skipping
-        af.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
-
-        gen = mapper.getFactory().createGenerator(new ByteArrayOutputStream());
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(b, input);
+        b = new ByteArrayOutputStream();
+        mapper.writer(SCHEMA_WITH_BINARY_JSON)
+            .with(JsonGenerator.Feature.IGNORE_UNKNOWN)
+            .writeValue(b, input);
         byte[] bytes = b.toByteArray();
         assertEquals(6, bytes.length);
 

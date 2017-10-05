@@ -133,7 +133,8 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     public ProtobufGenerator(IOContext ctxt, int jsonFeatures,
-            ObjectCodec codec, OutputStream output)
+            ObjectCodec codec, OutputStream output,
+            ProtobufSchema schema)
         throws IOException
     {
         super(jsonFeatures, codec, BOGUS_WRITE_CONTEXT);
@@ -141,6 +142,7 @@ public class ProtobufGenerator extends GeneratorBase
         _output = output;
         _pbContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
+        setSchema(schema);
     }
 
     public void setSchema(ProtobufSchema schema)

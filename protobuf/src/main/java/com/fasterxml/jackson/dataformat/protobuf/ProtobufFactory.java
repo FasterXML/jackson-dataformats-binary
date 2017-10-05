@@ -148,7 +148,7 @@ public class ProtobufFactory
     {
         return new ProtobufGenerator(ctxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                _objectCodec, out);
+                _objectCodec, out,
+                (ProtobufSchema) writeCtxt.getSchema());
     }
 }
-
