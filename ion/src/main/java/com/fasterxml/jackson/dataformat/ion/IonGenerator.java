@@ -21,15 +21,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
 
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.ObjectWriteContext;
-import com.fasterxml.jackson.core.PrettyPrinter;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
@@ -326,7 +318,9 @@ public class IonGenerator
         _verifyValueWrite("write null");
         _writer.writeNull(ionType);    
     }
-    
+
+    // 06-Oct-2017, tatu: Base impl from `GeneratorBase` should be sufficient
+    /*
     @Override
     public void writeObject(Object pojo) throws IOException, JsonProcessingException
     {
@@ -341,6 +335,7 @@ public class IonGenerator
             _objectCodec.writeValue(this, pojo);
         }
     }
+    */
 
     public void writeValue(IonValue value) throws IOException {
         _verifyValueWrite("write ion value");

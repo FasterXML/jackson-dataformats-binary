@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.failing;
 
 import java.io.ByteArrayOutputStream;
 
@@ -7,6 +7,12 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+// 06-Oct-2017, tatu: Need to implement support for `createGenerator` via ObjectMapper
+//   to allow this test to work.
 
 // for [dataformats-binary#43]
 public class SharedRawGeneratorBufferTest extends CBORTestBase
