@@ -155,54 +155,54 @@ public class IonFactory
     @Override
     public JsonParser createParser(File f) throws IOException {
         // true, since we create InputStream from File
-        IOContext ctxt = _createContext(f, true);
+        IOContext ioCtxt = _createContext(f, true);
         InputStream in = new FileInputStream(f);
-        return _createParser(_decorate(in, ctxt), ctxt);
+        return _createParser(_decorate(ioCtxt, in), ioCtxt);
     }
 
     @Override
     public JsonParser createParser(URL url) throws IOException {
         // true, since we create InputStream from URL
-        IOContext ctxt = _createContext(url, true);
+        IOContext ioCtxt = _createContext(url, true);
         InputStream in = _optimizedStreamFromURL(url);
-        return _createParser(_decorate(in, ctxt), ctxt);
+        return _createParser(_decorate(ioCtxt, in), ioCtxt);
     }
 
     @Override
     public JsonParser createParser(InputStream in) throws IOException {
-        IOContext ctxt = _createContext(in, false);
-        return _createParser(_decorate(in, ctxt), ctxt);
+        IOContext ioCtxt = _createContext(in, false);
+        return _createParser(_decorate(ioCtxt, in), ioCtxt);
     }
 
     @Override
     public JsonParser createParser(Reader r) throws IOException {
         // false -> we do NOT own Reader (did not create it)
-        IOContext ctxt = _createContext(r, false);
-        return _createParser(_decorate(r, ctxt), ctxt);
+        IOContext ioCtxt = _createContext(r, false);
+        return _createParser(_decorate(ioCtxt, r), ioCtxt);
     }
 
     @Override
     public JsonParser createParser(byte[] data) throws IOException {
-        IOContext ctxt = _createContext(data, true);
+        IOContext ioCtxt = _createContext(data, true);
         if (_inputDecorator != null) {
-            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
+            InputStream in = _inputDecorator.decorate(ioCtxt, data, 0, data.length);
             if (in != null) {
-                return _createParser(in, ctxt);
+                return _createParser(in, ioCtxt);
             }
         }
-        return _createParser(data, 0, data.length, ctxt);
+        return _createParser(data, 0, data.length, ioCtxt);
     }
 
     @Override
     public JsonParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
+        IOContext ioCtxt = _createContext(data, true);
         if (_inputDecorator != null) {
-            InputStream in = _inputDecorator.decorate(ctxt, data, offset, len);
+            InputStream in = _inputDecorator.decorate(ioCtxt, data, offset, len);
             if (in != null) {
-                return _createParser(in, ctxt);
+                return _createParser(in, ioCtxt);
             }
         }
-        return _createParser(data, offset, len, ctxt);
+        return _createParser(data, offset, len, ioCtxt);
     }
 
     @Override

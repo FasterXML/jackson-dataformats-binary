@@ -14,13 +14,13 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.reflect.ReflectData;
 
-import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.TokenStreamContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 public abstract class AvroWriteContext
-    extends JsonStreamContext
+    extends TokenStreamContext
 {
     private final static Class<?> CLS_STRING = String.class;
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;

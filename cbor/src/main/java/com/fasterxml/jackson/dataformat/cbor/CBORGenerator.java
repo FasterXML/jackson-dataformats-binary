@@ -1105,7 +1105,7 @@ public class CBORGenerator extends GeneratorBase
         if ((_outputBuffer != null)
                 && isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
             while (true) {
-                JsonStreamContext ctxt = getOutputContext();
+                TokenStreamContext ctxt = getOutputContext();
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {

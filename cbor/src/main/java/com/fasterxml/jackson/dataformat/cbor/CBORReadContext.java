@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.json.DupDetector;
  * to support features needed by CBOR format.
  */
 public final class CBORReadContext
-    extends JsonStreamContext
+    extends TokenStreamContext
 {
     /**
      * Parent context for this context; null for root context.
@@ -29,9 +29,6 @@ public final class CBORReadContext
 
     protected String _currentName;
 
-    /**
-     * @since 2.9
-     */
     protected Object _currentValue;
     
     /*

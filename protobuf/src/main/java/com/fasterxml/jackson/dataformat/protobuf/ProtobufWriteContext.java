@@ -1,11 +1,12 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.TokenStreamContext;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
 public class ProtobufWriteContext
-    extends JsonStreamContext
+    extends TokenStreamContext
 {
     protected final ProtobufWriteContext _parent;
 

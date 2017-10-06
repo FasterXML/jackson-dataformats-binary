@@ -2,22 +2,19 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.TokenStreamContext;
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * We need to use a custom context to be able to carry along
  * Object and array records.
  */
-public abstract class AvroReadContext extends JsonStreamContext
+public abstract class AvroReadContext extends TokenStreamContext
 {
     protected final AvroReadContext _parent;
 
     protected final String _typeId;
 
-    /**
-     * @since 2.9
-     */
     protected Object _currentValue;
 
     /*
