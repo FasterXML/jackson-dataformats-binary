@@ -132,12 +132,13 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    public AvroGenerator(IOContext ctxt, int jsonFeatures, int avroFeatures,
+    public AvroGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+            int jsonFeatures, int avroFeatures,
             ObjectCodec codec, OutputStream output,
             AvroSchema schema)
         throws IOException
     {
-        super(jsonFeatures, codec);
+        super(writeCtxt, jsonFeatures, codec);
         _ioContext = ctxt;
         _formatFeatures = avroFeatures;
         _output = output;
@@ -374,8 +375,8 @@ public class AvroGenerator extends GeneratorBase
     public void writeStartObject(Object forValue) throws IOException {
         _avroContext = _avroContext.createChildObjectContext(forValue);
         _complete = false;
-        if(this._writeContext != null && forValue != null) {
-            this._writeContext.setCurrentValue(forValue);
+        if (this._outputContext != null && forValue != null) {
+            this._outputContext.setCurrentValue(forValue);
         }
 
         this.setCurrentValue(forValue);

@@ -354,9 +354,10 @@ public class IonFactory
     }
 
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            IonWriter ion, IOContext ctxt, Closeable dst)
+            IonWriter ion, IOContext ioCtxt, Closeable dst)
     {
-        return new IonGenerator(writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                _objectCodec, ion, ctxt, dst);
+        return new IonGenerator(writeCtxt, ioCtxt,
+                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                _objectCodec, ion, dst);
     }
 }

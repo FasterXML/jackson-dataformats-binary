@@ -286,9 +286,9 @@ public class AvroFactory
     
     @Override
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            OutputStream out, IOContext ctxt) throws IOException
+            IOContext ioCtxt, OutputStream out) throws IOException
     {
-        return new AvroGenerator(ctxt,
+        return new AvroGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
                 writeCtxt.getFormatWriteFeatures(_avroGeneratorFeatures),
                 _objectCodec, out,

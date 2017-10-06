@@ -144,9 +144,9 @@ public class ProtobufFactory
 
     @Override
     protected ProtobufGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            OutputStream out, IOContext ctxt) throws IOException
+            IOContext ioCtxt, OutputStream out) throws IOException
     {
-        return new ProtobufGenerator(ctxt,
+        return new ProtobufGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
                 _objectCodec, out,
                 (ProtobufSchema) writeCtxt.getSchema());

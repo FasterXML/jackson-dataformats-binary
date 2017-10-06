@@ -313,7 +313,7 @@ public class SmileFactory
 
     @Override
     protected SmileGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            OutputStream out, IOContext ctxt) throws IOException
+            IOContext ioCtxt, OutputStream out) throws IOException
     {
         int smileFeatures = _smileGeneratorFeatures;
         /* One sanity check: MUST write header if shared string values setting is enabled,
@@ -321,7 +321,7 @@ public class SmileFactory
          * But should we force writing, or throw exception, if settings are in conflict?
          * For now, let's error out...
          */
-        SmileGenerator gen = new SmileGenerator(ctxt,
+        SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
                 writeCtxt.getFormatWriteFeatures(smileFeatures),
                 _objectCodec, out);

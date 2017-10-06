@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.core.PrettyPrinter;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
@@ -75,14 +76,16 @@ public class IonGenerator
     /*****************************************************************
     /* Instantiation
     /*****************************************************************
-     */  
+     */
 
-    public IonGenerator(int features, ObjectCodec codec,
-            IonWriter ion, IOContext ctxt, Closeable dst)
+    public IonGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
+            int generatorFeatures,
+            ObjectCodec codec,
+            IonWriter ion, Closeable dst)
     {
-        super(features, codec);
+        super(writeCtxt, generatorFeatures, codec);
         _writer = ion;
-        _ioContext = ctxt;
+        _ioContext = ioCtxt;
         _destination = dst;
     }
 
@@ -371,7 +374,7 @@ public class IonGenerator
     @Override
     protected void _verifyValueWrite(String msg) throws IOException, JsonGenerationException
     {
-        int status = _writeContext.writeValue();
+        int status = _outputContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+msg+", expecting field name");
         }
@@ -393,9 +396,9 @@ public class IonGenerator
                 break;
             case JsonWriteContext.STATUS_OK_AS_IS:
                 // First entry, but of which context?
-                if (_writeContext.inArray()) {
+                if (_outputContext.inArray()) {
                     _cfgPrettyPrinter.beforeArrayValues(this);
-                } else if (_writeContext.inObject()) {
+                } else if (_outputContext.inObject()) {
                     _cfgPrettyPrinter.beforeObjectEntries(this);
                 }
                 break;
@@ -408,20 +411,20 @@ public class IonGenerator
 
     @Override
     public void writeEndArray() throws IOException, JsonGenerationException {
-        _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
     public void writeEndObject() throws IOException, JsonGenerationException {
-        _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
     public void writeFieldName(String value) throws IOException, JsonGenerationException {
-        //This call to _writeContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
-        int status = _writeContext.writeFieldName(value);
+        //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
+        int status = _outputContext.writeFieldName(value);
         if (status == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
@@ -438,14 +441,14 @@ public class IonGenerator
     @Override
     public void writeStartArray() throws IOException, JsonGenerationException {
         _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
-        _writeContext = _writeContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.LIST);
     }
 
     @Override
     public void writeStartObject() throws IOException, JsonGenerationException {
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
-        _writeContext = _writeContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.STRUCT);
     }
 

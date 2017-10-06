@@ -118,7 +118,8 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         IOContext ctxt = new IOContext(f._getBufferRecycler(), "doc", false);
         OutputStream bytes = new ByteArrayOutputStream();
         byte[] buf = new byte[1000];
-        SmileGenerator g = new SmileGenerator(ctxt, 0, 0,
+        SmileGenerator g = new SmileGenerator(ObjectWriteContext.empty(), ctxt,
+                0, 0,
                 null, bytes, buf, 0, false);
         g.writeStartArray();
         g.writeEndArray();

@@ -310,8 +310,8 @@ public class CBORFactory
     
     @Override
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            OutputStream out, IOContext ctxt) throws IOException {
-        CBORGenerator gen = new CBORGenerator(ctxt,
+            IOContext ioCtxt, OutputStream out) throws IOException {
+        CBORGenerator gen = new CBORGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures),
                 _objectCodec, out);
