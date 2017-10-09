@@ -138,30 +138,18 @@ public abstract class NonBlockingParserBase
     /**********************************************************************
      */
 
-    public NonBlockingParserBase(IOContext ctxt, int parserFeatures, int smileFeatures,
+    public NonBlockingParserBase(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);
+        super(readCtxt, ioCtxt, parserFeatures, smileFeatures, sym);
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
-        _inputCopy = ctxt.allocReadIOBuffer(500);
+        _inputCopy = ioCtxt.allocReadIOBuffer(500);
 
         _currToken = null;
         _majorState = MAJOR_INITIAL;
     }
 
-    @Override
-    public ObjectCodec getCodec() {
-        return null;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        throw new UnsupportedOperationException("Can not use ObjectMapper with non-blocking parser");
-    }
-
-    /**
-     * @since 2.9
-     */
     @Override
     public boolean canParseAsync() { return true; }
 

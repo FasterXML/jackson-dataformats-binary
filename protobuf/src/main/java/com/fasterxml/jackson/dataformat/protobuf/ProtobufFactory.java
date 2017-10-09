@@ -21,19 +21,13 @@ public class ProtobufFactory
 
     public ProtobufFactory() { }
 
-    public ProtobufFactory(ObjectCodec codec) {
-        super(codec);
-    }
-
-    protected ProtobufFactory(ProtobufFactory src, ObjectCodec oc)
-    {
-        super(src, oc);
+    protected ProtobufFactory(ProtobufFactory src) {
+        super(src);
     }
 
     @Override
-    public ProtobufFactory copy()
-    {
-        return new ProtobufFactory(this, null);
+    public ProtobufFactory copy(){
+        return new ProtobufFactory(this);
     }
 
     /*
@@ -47,7 +41,7 @@ public class ProtobufFactory
      * through constructors etc.
      */
     protected Object readResolve() {
-        return new ProtobufFactory(this, _objectCodec);
+        return new ProtobufFactory(this);
     }
 
     /*                                                                                       
@@ -114,23 +108,29 @@ public class ProtobufFactory
     }
 
     @Override
-    protected ProtobufParser _createParser(InputStream in, IOContext ctxt) throws IOException
+    protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in) throws IOException
     {
-        byte[] buf = ctxt.allocReadIOBuffer();
-        return new ProtobufParser(ctxt, _parserFeatures,
-                _objectCodec, in, buf, 0, 0, true);
+        byte[] buf = ioCtxt.allocReadIOBuffer();
+        return new ProtobufParser(readCtxt, ioCtxt,
+                readCtxt.getParserFeatures(_parserFeatures),
+                (ProtobufSchema) readCtxt.getSchema(),
+                in, buf, 0, 0, true);
     }
 
     @Override
-    protected ProtobufParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
+    protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            byte[] data, int offset, int len) throws IOException
     {
-        return new ProtobufParser(ctxt, _parserFeatures,
-                _objectCodec, null, data, offset, len, false);
+        return new ProtobufParser(readCtxt, ioCtxt,
+                readCtxt.getParserFeatures(_parserFeatures),
+                (ProtobufSchema) readCtxt.getSchema(),
+                null, data, offset, len, false);
     }
 
     @Override
-    protected JsonParser _createParser(DataInput input, IOContext ctxt)
-            throws IOException {
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            DataInput input) throws IOException {
         // 30-Sep-2017, tatu: As of now not supported although should be quite possible
         //    to support
         return _unsupported();
@@ -148,7 +148,7 @@ public class ProtobufFactory
     {
         return new ProtobufGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                _objectCodec, out,
-                (ProtobufSchema) writeCtxt.getSchema());
+                (ProtobufSchema) writeCtxt.getSchema(),
+                out);
     }
 }

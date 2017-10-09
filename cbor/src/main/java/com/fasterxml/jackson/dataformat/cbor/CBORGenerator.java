@@ -215,8 +215,8 @@ public class CBORGenerator extends GeneratorBase
 
     public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
             int generatorFeatures, int formatFeatures,
-            ObjectCodec codec, OutputStream out) {
-        super(writeCtxt, generatorFeatures, codec);
+            OutputStream out) {
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;
@@ -245,9 +245,10 @@ public class CBORGenerator extends GeneratorBase
      */
     public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
             int generatorFeatures, int formatFeatures,
-            ObjectCodec codec, OutputStream out, byte[] outputBuffer,
-            int offset, boolean bufferRecyclable) {
-        super(writeCtxt, generatorFeatures, codec);
+            OutputStream out, byte[] outputBuffer,
+            int offset, boolean bufferRecyclable)
+    {
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;

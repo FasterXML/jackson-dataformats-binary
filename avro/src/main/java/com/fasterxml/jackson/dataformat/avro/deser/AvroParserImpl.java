@@ -46,23 +46,12 @@ public abstract class AvroParserImpl
     /**********************************************************
      */
 
-    protected AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec)
+    protected AvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures,
+            AvroSchema schema)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
-    }
-
-    @Override
-    public final JsonParser overrideFormatFeatures(int values, int mask) {
-        int oldF = _formatFeatures;
-        int newF = (_formatFeatures & ~mask) | (values & mask);
-
-        if (oldF != newF) {
-            _formatFeatures = newF;
-            // 22-Oct-2015, tatu: Actually, not way to change buffering details at
-            //   this point. If change needs to be dynamic have to change it
-        }
-        return this;
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures);
+        setSchema(schema);
     }
 
     @Override

@@ -133,12 +133,11 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     public ProtobufGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
-            int generatorFeatures,
-            ObjectCodec codec, OutputStream output,
-            ProtobufSchema schema)
+            int generatorFeatures, ProtobufSchema schema,
+            OutputStream output)
         throws IOException
     {
-        super(writeCtxt, generatorFeatures, codec, BOGUS_WRITE_CONTEXT);
+        super(writeCtxt, generatorFeatures, BOGUS_WRITE_CONTEXT);
         _ioContext = ctxt;
         _output = output;
         _pbContext = _rootContext = ProtobufWriteContext.createNullContext();

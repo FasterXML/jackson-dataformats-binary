@@ -106,7 +106,7 @@ public class DataBindWriteTest {
     @Test
     public void testWriteBasicTypes() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper(new IonFactory(null, ion));
+        IonObjectMapper m = new IonObjectMapper(new IonFactory(ion));
 
         assertEquals(ion.newString("foo"), m.writeValueAsIonValue("foo"));
         assertEquals(ion.newBool(true), m.writeValueAsIonValue(true));

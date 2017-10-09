@@ -51,21 +51,17 @@ public class IonFactory
     protected boolean _cfgCreateBinaryWriters = false;
     
     public IonFactory() {
-        this(null);
-    }
-
-    public IonFactory(ObjectCodec mapper) {
-        this(mapper, IonSystemBuilder.standard().build());
+        this(IonSystemBuilder.standard().build());
     }
     
-    public IonFactory(ObjectCodec mapper, IonSystem system) {
-        super(mapper);
+    public IonFactory(IonSystem system) {
+        super();
         _system = system;
     }
 
-    protected IonFactory(IonFactory src, ObjectCodec oc)
+    protected IonFactory(IonFactory src)
     {
-        super(src, oc);
+        super(src);
         // 21-Feb-2017, tatu: Not 100% sure if this should be made copy of
         //    too; for now assume it may be shared.
         _system = src._system;
@@ -76,7 +72,7 @@ public class IonFactory
     public IonFactory copy()
     {
         // note: as with base class, must NOT copy mapper reference
-        return new IonFactory(this, null);
+        return new IonFactory(this);
     }
 
     public void setCreateBinaryWriters(boolean b) {
@@ -132,18 +128,22 @@ public class IonFactory
     /***************************************************************
      */
 
-    public IonParser createParser(IonReader in) {
-        return new IonParser(in, _system, _createContext(in, false), getCodec());
+    public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
+        return new IonParser(readCtxt, _createContext(in, false),
+                readCtxt.getParserFeatures(_parserFeatures),
+                in, _system);
     }
 
-    public IonParser createParser(IonValue value) {
+    public IonParser createParser(ObjectReadContext readCtxt, IonValue value) {
         IonReader in = value.getSystem().newReader(value);
-        return new IonParser(in, _system, _createContext(in, true), getCodec());
+        return new IonParser(readCtxt, _createContext(in, true),
+                readCtxt.getParserFeatures(_parserFeatures),
+                in, _system);
     }
 
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, IonWriter out) {
-        return _createGenerator(writeCtxt,
-                out, _createContext(out, false), out);
+        return _createGenerator(writeCtxt, _createContext(out, false),
+                out, out);
     }
 
     /*
@@ -153,75 +153,77 @@ public class IonFactory
      */
 
     @Override
-    public JsonParser createParser(File f) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, File f) throws IOException {
         // true, since we create InputStream from File
         IOContext ioCtxt = _createContext(f, true);
         InputStream in = new FileInputStream(f);
-        return _createParser(_decorate(ioCtxt, in), ioCtxt);
+        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
     }
 
     @Override
-    public JsonParser createParser(URL url) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, URL url) throws IOException {
         // true, since we create InputStream from URL
         IOContext ioCtxt = _createContext(url, true);
         InputStream in = _optimizedStreamFromURL(url);
-        return _createParser(_decorate(ioCtxt, in), ioCtxt);
+        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
     }
 
     @Override
-    public JsonParser createParser(InputStream in) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, InputStream in) throws IOException {
         IOContext ioCtxt = _createContext(in, false);
-        return _createParser(_decorate(ioCtxt, in), ioCtxt);
+        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
     }
 
     @Override
-    public JsonParser createParser(Reader r) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, Reader r) throws IOException {
         // false -> we do NOT own Reader (did not create it)
         IOContext ioCtxt = _createContext(r, false);
-        return _createParser(_decorate(ioCtxt, r), ioCtxt);
+        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, r));
     }
 
     @Override
-    public JsonParser createParser(byte[] data) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data) throws IOException {
         IOContext ioCtxt = _createContext(data, true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ioCtxt, data, 0, data.length);
             if (in != null) {
-                return _createParser(in, ioCtxt);
+                return _createParser(readCtxt, ioCtxt, in);
             }
         }
-        return _createParser(data, 0, data.length, ioCtxt);
+        return _createParser(readCtxt, ioCtxt, data, 0, data.length);
     }
 
     @Override
-    public JsonParser createParser(byte[] data, int offset, int len) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data, int offset, int len) throws IOException {
         IOContext ioCtxt = _createContext(data, true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ioCtxt, data, offset, len);
             if (in != null) {
-                return _createParser(in, ioCtxt);
+                return _createParser(readCtxt, ioCtxt, in);
             }
         }
-        return _createParser(data, offset, len, ioCtxt);
+        return _createParser(readCtxt, ioCtxt, data, offset, len);
     }
 
     @Override
-    public JsonParser createParser(String content) throws IOException {
-        return createParser(new StringReader(content));
+    public JsonParser createParser(ObjectReadContext readCtxt, String content) throws IOException {
+        return createParser(readCtxt, new StringReader(content));
     }
 
     @Override
-    public JsonParser createParser(char[] content, int offset, int len) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt,
+            char[] content, int offset, int len) throws IOException {
         if (_inputDecorator != null) { // easier to just wrap in a Reader than extend InputDecorator
-            return createParser(new CharArrayReader(content, offset, len));
+            return createParser(readCtxt, new CharArrayReader(content, offset, len));
         }
-        return _createParser(content, offset, len, _createContext(content, true),
+        return _createParser(readCtxt, _createContext(content, true),
+                content, offset, len,
                 // important: buffer is NOT recyclable, as it's from caller
                 false);
     }
 
     @Override
-    public JsonParser createParser(DataInput in) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, DataInput in) throws IOException {
         return _unsupported();
     }        
     
@@ -230,33 +232,6 @@ public class IonFactory
     /* Factory methods: generators
     /***************************************************************
      */
-
-    @Override
-    public JsonGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException
-    {
-        return _createGenerator(EMPTY_WRITE_CONTEXT,
-                out, enc, false);
-    }
-
-    @Override
-    public JsonGenerator createGenerator(Writer out)
-        throws IOException
-    {
-         // First things first: no binary writer for Writers:
-        if (createBinaryWriters()) {
-            throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
-        }
-        return _createGenerator(EMPTY_WRITE_CONTEXT,
-                _system.newTextWriter(out), _createContext(out, false), out);
-    }
-
-    @Override
-    public JsonGenerator createGenerator(File f, JsonEncoding enc)
-        throws IOException
-    {
-        return _createGenerator(EMPTY_WRITE_CONTEXT,
-                new FileOutputStream(f), enc, true);
-    }
 
     @Override
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
@@ -273,8 +248,8 @@ public class IonFactory
         if (createBinaryWriters()) {
             throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(writeCtxt,
-                _system.newTextWriter(out), _createContext(out, false), out);
+        return _createGenerator(writeCtxt, _createContext(out, false),
+                _system.newTextWriter(out), out);
     }
 
     @Override
@@ -292,29 +267,38 @@ public class IonFactory
     /***************************************************************
      */
 
-    private JsonParser _createParser(InputStream in, IOContext ctxt)
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, InputStream in)
         throws IOException
     {
         IonReader ion = _system.newReader(in);
-        return new IonParser(ion, _system, ctxt, getCodec());
+        return new IonParser(readCtxt, ioCtxt,
+                readCtxt.getParserFeatures(_parserFeatures),
+                ion, _system);
     }
 
-    private JsonParser _createParser(Reader r, IOContext ctxt)
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, Reader r)
         throws IOException
     {
-        return new IonParser(_system.newReader(r), _system, ctxt, getCodec());
+        return new IonParser(readCtxt, ioCtxt,
+                readCtxt.getParserFeatures(_parserFeatures),
+                _system.newReader(r), _system);
     }
 
-    private JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            char[] data, int offset, int len,
             boolean recyclable) throws IOException
     {
-        return _createParser(new CharArrayReader(data, offset, len), ctxt);
+        return _createParser(readCtxt, ioCtxt,
+                new CharArrayReader(data, offset, len));
     }
 
-    private JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            byte[] data, int offset, int len)
         throws IOException
     {
-        return new IonParser(_system.newReader(data, offset, len), _system, ctxt, getCodec());
+        return new IonParser(readCtxt, ioCtxt,
+                readCtxt.getParserFeatures(_parserFeatures),
+                _system.newReader(data, offset, len), _system);
     }
 
     /*
@@ -328,12 +312,12 @@ public class IonFactory
          throws IOException
      {
         IonWriter ion;
-        IOContext ctxt = _createContext(out, isManaged);
+        IOContext ioCtxt = _createContext(out, isManaged);
         Closeable dst; // not necessarily same as 'out'...
 
         // Binary writers are simpler: no alternate encodings
         if (createBinaryWriters()) {
-            ctxt.setEncoding(enc);
+            ioCtxt.setEncoding(enc);
             ion = _system.newBinaryWriter(out);
             dst = out;
         } else {
@@ -344,20 +328,21 @@ public class IonFactory
              * In practice we seem to be better off using Jackson's efficient buffering
              * encoder
              */
-            ctxt.setEncoding(enc);
+            ioCtxt.setEncoding(enc);
             // This is bit unfortunate, since out != dst now...
-            Writer w = new CloseSafeUTF8Writer(ctxt, out);
+            Writer w = new CloseSafeUTF8Writer(ioCtxt, out);
             ion = _system.newTextWriter(w);
             dst = w;
         }
-        return _createGenerator(writeCtxt, ion, ctxt, dst);
+        return _createGenerator(writeCtxt, ioCtxt, ion, dst);
     }
 
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            IonWriter ion, IOContext ioCtxt, Closeable dst)
+            IOContext ioCtxt,
+            IonWriter ion, Closeable dst)
     {
         return new IonGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                _objectCodec, ion, dst);
+                ion, dst);
     }
 }

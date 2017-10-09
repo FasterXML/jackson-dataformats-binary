@@ -8,6 +8,7 @@ import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 
@@ -64,12 +65,13 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
     /**********************************************************
      */
     
-    public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec, InputStream in)
+    public ApacheAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures, AvroSchema schema,
+            InputStream in)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = in;
-        _inputBuffer = ctxt.allocReadIOBuffer();
+        _inputBuffer = ioCtxt.allocReadIOBuffer();
         _inputPtr = 0;
         _inputEnd = 0;
         _bufferRecyclable = true;
@@ -78,11 +80,11 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
                 Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
-    public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec,
+    public ApacheAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures, AvroSchema schema,
             byte[] data, int offset, int len)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = null;
         _decoder = ApacheCodecRecycler.decoder(data, offset, len);
     }

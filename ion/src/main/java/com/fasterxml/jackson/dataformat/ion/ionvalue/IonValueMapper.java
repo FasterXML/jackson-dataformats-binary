@@ -54,7 +54,7 @@ public class IonValueMapper extends IonObjectMapper
      *            {@link PropertyNamingStrategy}
      */
     public IonValueMapper(IonSystem ionSystem, PropertyNamingStrategy strategy) {
-        super(new IonFactory(null, ionSystem));
+        super(new IonFactory(ionSystem));
         this.registerModule(new IonValueModule());
         this.registerModule(new EnumAsIonSymbolModule());
         this.setPropertyNamingStrategy(strategy);

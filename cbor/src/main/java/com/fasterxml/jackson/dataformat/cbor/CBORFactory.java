@@ -272,10 +272,13 @@ public class CBORFactory
      * parser.
      */
     @Override
-    protected CBORParser _createParser(InputStream in, IOContext ctxt) throws IOException
+    protected CBORParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in) throws IOException
     {
-        return new CBORParserBootstrapper(ctxt, in).constructParser(_factoryFeatures,
-                _parserFeatures, _formatParserFeatures,
+        return new CBORParserBootstrapper(ioCtxt, in).constructParser(readCtxt,
+                _factoryFeatures,
+                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 _byteSymbolCanonicalizer);
     }
 
@@ -284,15 +287,19 @@ public class CBORFactory
      * parser.
      */
     @Override
-    protected CBORParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
+    protected CBORParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            byte[] data, int offset, int len) throws IOException
     {
-        return new CBORParserBootstrapper(ctxt, data, offset, len).constructParser(
-                _factoryFeatures, _parserFeatures, _formatParserFeatures,
+        return new CBORParserBootstrapper(ioCtxt, data, offset, len).constructParser(readCtxt,
+                _factoryFeatures,
+                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 _byteSymbolCanonicalizer);
     }
 
     @Override
-    protected JsonParser _createParser(DataInput input, IOContext ctxt)
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ctxt,
+            DataInput input)
             throws IOException {
         // 30-Sep-2017, tatu: As of now not supported although should be quite possible
         //    to support
@@ -311,7 +318,7 @@ public class CBORFactory
         CBORGenerator gen = new CBORGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures),
-                _objectCodec, out);
+                out);
         if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatGeneratorFeatures)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }

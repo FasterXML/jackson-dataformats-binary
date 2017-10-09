@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
@@ -44,7 +45,6 @@ public class IonObjectMapper extends ObjectMapper
 
     public IonObjectMapper(IonFactory f) {
         super(f);
-        f.setCodec(this);
         // Use native Ion timestamps for dates
         SimpleModule m = new SimpleModule("IonTimestampModule", PackageVersion.VERSION);
         m.addSerializer(Date.class, new IonTimestampSerializers.IonTimestampJavaDateSerializer());
@@ -93,7 +93,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, Class<T> valueType) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(r), _typeFactory.constructType(valueType));
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, r),
+                _typeFactory.constructType(valueType));
     }
 
     /**
@@ -104,7 +106,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(r), _typeFactory.constructType(valueTypeRef));
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, r),
+                _typeFactory.constructType(valueTypeRef));
     }
 
     /**
@@ -115,7 +119,8 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, JavaType valueType) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(r), valueType);
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, r), valueType);
     }
 
     /**
@@ -123,7 +128,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, Class<T> valueType) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(value), _typeFactory.constructType(valueType));
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, value),
+                _typeFactory.constructType(valueType));
     }
 
     /**
@@ -131,7 +138,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonValue value, TypeReference valueTypeRef) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(value), _typeFactory.constructType(valueTypeRef));
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, value),
+                _typeFactory.constructType(valueTypeRef));
     }
 
     /**
@@ -139,7 +148,8 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, JavaType valueType) throws IOException  {
-        return (T)_readMapAndClose(getFactory().createParser(value), valueType);
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, value), valueType);
     }
 
     /**
@@ -149,7 +159,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying writer explicitly
      */
     public void writeValue(IonWriter w, Object value) throws IOException {
-        DefaultSerializerProvider prov = _serializerProvider(getSerializationConfig());
+        DefaultSerializerProvider prov = _serializerProvider();
         _configAndWriteValue(prov,
                 getFactory().createGenerator(prov, w), value);
     }

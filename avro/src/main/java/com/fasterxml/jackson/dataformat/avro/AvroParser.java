@@ -28,11 +28,8 @@ public abstract class AvroParser extends ParserBase
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
          * data then absolutely necessary.
-         * This affects buffering by underlying `SnakeYAML` codec.
          *<p>
          * Enabled by default to preserve the existing behavior.
-         *
-         * @since 2.7
          */
         AVRO_BUFFERING(true)
         ;
@@ -74,11 +71,6 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
 
-    /**
-     * Codec used for data binding when (if) requested.
-     */
-    protected ObjectCodec _objectCodec;
-
     protected AvroSchema _rootSchema;
 
     protected int _formatFeatures;
@@ -97,31 +89,16 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
 
-    protected AvroParser(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec)
+    protected AvroParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures)
     {
-        super(ctxt, parserFeatures);    
-        _objectCodec = codec;
+        super(readCtxt, ioCtxt, parserFeatures);    
         _formatFeatures = avroFeatures;
         _avroContext = MissingReader.instance;
     }
 
     @Override
-    public ObjectCodec getCodec() {
-        return _objectCodec;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        _objectCodec = c;
-    }
-
-    @Override
     public abstract Object getInputSource();
-
-    // ensure impl defines
-    @Override
-    public abstract JsonParser overrideFormatFeatures(int values, int mask);
 
     /*                                                                                       
     /**********************************************************                              

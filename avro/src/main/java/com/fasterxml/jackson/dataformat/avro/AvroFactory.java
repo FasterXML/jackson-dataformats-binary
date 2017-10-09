@@ -60,11 +60,9 @@ public class AvroFactory
      * and this reuse only works within context of a single
      * factory instance.
      */
-    public AvroFactory() { this(null); }
-
-    public AvroFactory(ObjectCodec oc)
+    public AvroFactory()
     {
-        super(oc);
+        super();
         _avroParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
         _avroGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
 
@@ -77,9 +75,9 @@ public class AvroFactory
         disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT);
     }
 
-    protected AvroFactory(AvroFactory src, ObjectCodec oc)
+    protected AvroFactory(AvroFactory src)
     {
-        super(src, oc);
+        super(src);
         _avroParserFeatures = src._avroParserFeatures;
         _avroGeneratorFeatures = src._avroGeneratorFeatures;
     }
@@ -87,7 +85,7 @@ public class AvroFactory
     @Override
     public AvroFactory copy()
     {
-        return new AvroFactory(this, null);
+        return new AvroFactory(this);
     }
 
     /*
@@ -102,7 +100,7 @@ public class AvroFactory
      * Also: must be overridden by sub-classes as well.
      */
     protected Object readResolve() {
-        return new AvroFactory(this, _objectCodec);
+        return new AvroFactory(this);
     }
 
     /*                                                                                       
@@ -255,24 +253,32 @@ public class AvroFactory
      * parser.
      */
     @Override
-    protected AvroParser _createParser(InputStream in, IOContext ctxt) throws IOException {
+    protected AvroParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in) throws IOException {
 // !!! 21-Apr-2017, tatu: make configurable
-        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
-//        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
-                _objectCodec, in);
+        return new JacksonAvroParserImpl(readCtxt, ioCtxt,
+//              return new ApacheAvroParserImpl(readCtxt, ioCtext,
+                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getFormatReadFeatures(_avroParserFeatures),
+                (AvroSchema) readCtxt.getSchema(),
+                in);
     }
 
     @Override
-    protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
+    protected AvroParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            byte[] data, int offset, int len) throws IOException {
 // !!! 21-Apr-2017, tatu: make configurable
-        return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
-//        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
-                _objectCodec, data, offset, len);
+        return new JacksonAvroParserImpl(readCtxt, ioCtxt,
+//              return new ApacheAvroParserImpl(readCtxt, ioCtext,
+                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getFormatReadFeatures(_avroParserFeatures),
+                (AvroSchema) readCtxt.getSchema(),
+                data, offset, len);
     }
 
     @Override
-    protected JsonParser _createParser(DataInput input, IOContext ctxt)
-            throws IOException {
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            DataInput input) throws IOException {
         // 30-Sep-2017, tatu: As of now not supported although should be quite possible
         //    to support
         return _unsupported();
@@ -291,23 +297,7 @@ public class AvroFactory
         return new AvroGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
                 writeCtxt.getFormatWriteFeatures(_avroGeneratorFeatures),
-                _objectCodec, out,
+                out,
                 (AvroSchema) writeCtxt.getSchema());
     }
-
-    /*
-    /**********************************************************
-    /* Internal methods
-    /**********************************************************
-     */
-
-    /*
-    protected AvroGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException
-    {
-        int feats = _avroGeneratorFeatures;
-        AvroGenerator gen = new AvroGenerator(ctxt, _generatorFeatures, feats,
-                _objectCodec, out);
-        return gen;
-    }
-    */
 }

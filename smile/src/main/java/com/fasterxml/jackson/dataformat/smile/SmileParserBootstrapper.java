@@ -17,10 +17,10 @@ public class SmileParserBootstrapper
     /**********************************************************
      */
 
-    protected final IOContext _context;
+    protected final IOContext _ioContext;
 
     protected final InputStream _in;
-    
+
     /*
     /**********************************************************
     /* Input buffering
@@ -62,7 +62,7 @@ public class SmileParserBootstrapper
 
     public SmileParserBootstrapper(IOContext ctxt, InputStream in)
     {
-        _context = ctxt;
+        _ioContext = ctxt;
         _in = in;
         _inputBuffer = ctxt.allocReadIOBuffer();
         _inputEnd = _inputPtr = 0;
@@ -72,7 +72,7 @@ public class SmileParserBootstrapper
 
     public SmileParserBootstrapper(IOContext ctxt, byte[] inputBuffer, int inputStart, int inputLen)
     {
-        _context = ctxt;
+        _ioContext = ctxt;
         _in = null;
         _inputBuffer = inputBuffer;
         _inputPtr = inputStart;
@@ -82,9 +82,10 @@ public class SmileParserBootstrapper
         _bufferRecyclable = false;
     }
 
-    public SmileParser constructParser(int factoryFeatures,
+    public SmileParser constructParser(ObjectReadContext readCtxt,
+            int factoryFeatures,
             int generalParserFeatures, int smileFeatures,
-            ObjectCodec codec, ByteQuadsCanonicalizer rootByteSymbols)
+            ByteQuadsCanonicalizer rootByteSymbols)
         throws IOException, JsonParseException
     {
         ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
@@ -97,8 +98,8 @@ public class SmileParserBootstrapper
             }
         }
 
-        SmileParser p = new SmileParser(_context, generalParserFeatures, smileFeatures,
-                codec, can, 
+        SmileParser p = new SmileParser(readCtxt, _ioContext, generalParserFeatures, smileFeatures,
+                can, 
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         boolean hadSig = false;
         if (_inputPtr < _inputEnd) { // only false for empty doc

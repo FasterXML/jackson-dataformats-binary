@@ -134,11 +134,11 @@ public class AvroGenerator extends GeneratorBase
 
     public AvroGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
             int jsonFeatures, int avroFeatures,
-            ObjectCodec codec, OutputStream output,
+            OutputStream output,
             AvroSchema schema)
         throws IOException
     {
-        super(writeCtxt, jsonFeatures, codec);
+        super(writeCtxt, jsonFeatures);
         _ioContext = ctxt;
         _formatFeatures = avroFeatures;
         _output = output;

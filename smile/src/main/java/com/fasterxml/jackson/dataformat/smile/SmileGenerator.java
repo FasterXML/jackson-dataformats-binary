@@ -267,9 +267,9 @@ public class SmileGenerator
     
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int generatorFeatures, int smileFeatures,
-            ObjectCodec codec, OutputStream out)
+            OutputStream out)
     {
-        super(writeCtxt, generatorFeatures, codec);
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = smileFeatures;
         _ioContext = ioCtxt;
         _smileBufferRecycler = _smileBufferRecycler();
@@ -308,10 +308,10 @@ public class SmileGenerator
 
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int generatorFeatures, int smileFeatures,
-            ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset,
+            OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(writeCtxt, generatorFeatures, codec);
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = smileFeatures;
         _ioContext = ioCtxt;
         _smileBufferRecycler = _smileBufferRecycler();

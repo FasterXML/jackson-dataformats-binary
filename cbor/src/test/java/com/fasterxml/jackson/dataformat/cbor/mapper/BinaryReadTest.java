@@ -5,9 +5,13 @@ import java.io.*;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectReadContext;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
@@ -93,7 +97,7 @@ public class BinaryReadTest extends CBORTestBase
         raw = MAPPER.writeValueAsBytes(input);
 
         InputStream in = new ThrottledInputStream(raw, 3);
-        JsonParser p = MAPPER.getFactory().createParser(in);
+        JsonParser p = MAPPER.getFactory().createParser(ObjectReadContext.empty(), in);
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         ByteArrayOutputStream bout = new ByteArrayOutputStream(input.length / 3);
         assertEquals(input.length, p.readBinaryValue(bout));
@@ -106,7 +110,7 @@ public class BinaryReadTest extends CBORTestBase
 
         // and finally streaming but skipping
         in = new ThrottledInputStream(raw, 3);
-        p = MAPPER.getFactory().createParser(in);
+        p = MAPPER.getFactory().createParser(ObjectReadContext.empty(), in);
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         assertNull(p.nextToken());
         p.close();

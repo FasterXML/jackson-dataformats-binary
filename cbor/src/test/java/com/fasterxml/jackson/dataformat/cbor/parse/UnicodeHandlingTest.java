@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectReadContext;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
@@ -80,8 +81,8 @@ public class UnicodeHandlingTest extends CBORTestBase
     private CBORParser _parser(byte[] data, boolean throttling) throws IOException
     {
         if (throttling) {
-            return (CBORParser) F.createParser(new ThrottledInputStream(data, 3));
+            return (CBORParser) F.createParser(ObjectReadContext.empty(), new ThrottledInputStream(data, 3));
         }
-        return (CBORParser) F.createParser(data);
+        return (CBORParser) F.createParser(ObjectReadContext.empty(), data);
     }
 }

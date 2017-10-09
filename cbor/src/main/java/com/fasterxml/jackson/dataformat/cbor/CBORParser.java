@@ -65,17 +65,6 @@ public final class CBORParser extends ParserMinimalBase
 
     /*
     /**********************************************************
-    /* Configuration
-    /**********************************************************
-     */
-
-    /**
-     * Codec used for data binding when (if) requested.
-     */
-    protected ObjectCodec _objectCodec;
-
-    /*
-    /**********************************************************
     /* Generic I/O state
     /**********************************************************
      */
@@ -322,14 +311,14 @@ public final class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    public CBORParser(IOContext ctxt, int parserFeatures, int cborFeatures,
-            ObjectCodec codec, ByteQuadsCanonicalizer sym,
+    public CBORParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int cborFeatures,
+            ByteQuadsCanonicalizer sym,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(parserFeatures);
-        _ioContext = ctxt;
-        _objectCodec = codec;
+        super(readCtxt, parserFeatures);
+        _ioContext = ioCtxt;
         _symbols = sym;
 
         _inputStream = in;
@@ -337,23 +326,13 @@ public final class CBORParser extends ParserMinimalBase
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-        _textBuffer = ctxt.constructTextBuffer();
+        _textBuffer = ioCtxt.constructTextBuffer();
         DupDetector dups = JsonParser.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _parsingContext = CBORReadContext.createRootContext(dups);
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
-    }
-
-    @Override
-    public ObjectCodec getCodec() {
-        return _objectCodec;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        _objectCodec = c;
     }
 
     /*                                                                                       

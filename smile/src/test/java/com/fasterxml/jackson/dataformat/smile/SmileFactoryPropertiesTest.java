@@ -58,12 +58,12 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         SmileFactory f = SMILE_F;
         assertNotNull(f.version());
 
-        JsonGenerator g = f.createGenerator(new ByteArrayOutputStream());
+        JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), new ByteArrayOutputStream());
         assertNotNull(g.version());
         assertEquals(f.version(), g.version());
         g.close();
 
-        JsonParser p = f.createParser(_smileDoc(f, SIMPLE_DOC_AS_JSON, true));
+        JsonParser p = f.createParser(ObjectReadContext.empty(), _smileDoc(f, SIMPLE_DOC_AS_JSON, true));
         assertNotNull(p.version());
         assertEquals(f.version(), p.version());
         p.close();
@@ -80,19 +80,19 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     {
         final String EXP = "for character-based";
         try {
-            SMILE_F.createParser("foo");
+            SMILE_F.createParser(ObjectReadContext.empty(), "foo");
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
         }
         try {
-            SMILE_F.createParser("foo".toCharArray());
+            SMILE_F.createParser(ObjectReadContext.empty(), "foo".toCharArray());
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
         }
         try {
-            SMILE_F.createParser(new StringReader("foo"));
+            SMILE_F.createParser(ObjectReadContext.empty(), new StringReader("foo"));
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
@@ -102,7 +102,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     public void testInabilityToWriteChars() throws Exception
     {
         try {
-            SMILE_F.createGenerator(new StringWriter());
+            SMILE_F.createGenerator(ObjectWriteContext.empty(), new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, "for character-based");
@@ -120,7 +120,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         byte[] buf = new byte[1000];
         SmileGenerator g = new SmileGenerator(ObjectWriteContext.empty(), ctxt,
                 0, 0,
-                null, bytes, buf, 0, false);
+                bytes, buf, 0, false);
         g.writeStartArray();
         g.writeEndArray();
         g.close();
@@ -158,7 +158,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     protected byte[] _copyDoc(SmileFactory f, byte[] doc) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bytes);
         _copyDoc(f, doc, g);
         g.close();
         return bytes.toByteArray();
@@ -166,7 +166,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         
     protected void _copyDoc(SmileFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
-        JsonParser p = f.createParser(doc);
+        JsonParser p = f.createParser(ObjectReadContext.empty(), doc);
         while (p.nextToken() != null) {
             g.copyCurrentEvent(p);
         }

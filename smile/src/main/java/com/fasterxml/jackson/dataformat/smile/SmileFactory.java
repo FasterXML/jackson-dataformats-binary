@@ -91,17 +91,14 @@ public class SmileFactory
      * and this reuse only works within context of a single
      * factory instance.
      */
-    public SmileFactory() { this(null); }
-
-    public SmileFactory(ObjectCodec oc) {
-        super(oc);
+    public SmileFactory() {
         _smileParserFeatures = DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
         _smileGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
     }
 
-    public SmileFactory(SmileFactory src, ObjectCodec oc)
+    public SmileFactory(SmileFactory src)
     {
-        super(src, oc);
+        super(src);
         _smileParserFeatures = src._smileParserFeatures;
         _smileGeneratorFeatures = src._smileGeneratorFeatures;
     }
@@ -109,8 +106,7 @@ public class SmileFactory
     @Override
     public SmileFactory copy()
     {
-        // note: as with base class, must NOT copy mapper reference
-        return new SmileFactory(this, null);
+        return new SmileFactory(this);
     }
 
     /*
@@ -125,7 +121,7 @@ public class SmileFactory
      * Also: must be overridden by sub-classes as well.
      */
     protected Object readResolve() {
-        return new SmileFactory(this, _objectCodec);
+        return new SmileFactory(this);
     }
 
     /*
@@ -267,10 +263,14 @@ public class SmileFactory
      */
 
     @Override
-    public NonBlockingByteArrayParser createNonBlockingByteArrayParser() throws IOException {
-        IOContext ctxt = _createContext(null, false);
+    public NonBlockingByteArrayParser createNonBlockingByteArrayParser(ObjectReadContext readCtxt)
+            throws IOException
+    {
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
-        return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can);
+        return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
+                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getFormatReadFeatures(_smileParserFeatures),
+                can);
     }
 
     /*
@@ -283,24 +283,30 @@ public class SmileFactory
      * Overridable factory method that actually instantiates desired parser.
      */
     @Override
-    protected SmileParser _createParser(InputStream in, IOContext ctxt) throws IOException
+    protected SmileParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in) throws IOException
     {
-        SmileParserBootstrapper bs = new SmileParserBootstrapper(ctxt, in);
-        return bs.constructParser(_factoryFeatures, _parserFeatures,
-        		_smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer);
+        return new SmileParserBootstrapper(ioCtxt, in)
+            .constructParser(readCtxt, _factoryFeatures,
+                    readCtxt.getParserFeatures(_parserFeatures),
+                    readCtxt.getFormatReadFeatures(_smileParserFeatures),
+                    _byteSymbolCanonicalizer);
     }
 
     @Override
-    protected SmileParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
+    protected SmileParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            byte[] data, int offset, int len) throws IOException
     {
-        return new SmileParserBootstrapper(ctxt, data, offset, len).constructParser(
-                _factoryFeatures, _parserFeatures, _smileParserFeatures,
-                _objectCodec, _byteSymbolCanonicalizer);
+        return new SmileParserBootstrapper(ioCtxt, data, offset, len)
+            .constructParser(readCtxt, _factoryFeatures,
+                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getFormatReadFeatures(_smileParserFeatures),
+                _byteSymbolCanonicalizer);
     }
 
     @Override
-    protected JsonParser _createParser(DataInput input, IOContext ctxt)
-            throws IOException {
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            DataInput input) throws IOException {
         // 30-Sep-2017, tatu: As of now not supported (but would be possible)
         return _unsupported();
     }
@@ -315,7 +321,7 @@ public class SmileFactory
     protected SmileGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out) throws IOException
     {
-        int smileFeatures = _smileGeneratorFeatures;
+        int smileFeatures = writeCtxt.getFormatWriteFeatures(_smileGeneratorFeatures);
         /* One sanity check: MUST write header if shared string values setting is enabled,
          * or quoting of binary data disabled.
          * But should we force writing, or throw exception, if settings are in conflict?
@@ -323,8 +329,8 @@ public class SmileFactory
          */
         SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                writeCtxt.getFormatWriteFeatures(smileFeatures),
-                _objectCodec, out);
+                smileFeatures,
+                out);
         if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {
             gen.writeHeader();
         } else {

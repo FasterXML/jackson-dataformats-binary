@@ -54,8 +54,6 @@ public class IonParser
      */
     protected final IOContext _ioContext;
 
-    protected ObjectCodec _objectCodec;
-
     private final IonSystem _system;
 
     /*
@@ -90,35 +88,19 @@ public class IonParser
      * @deprecated use {@link IonFactory#createParser(IonReader) instead}
      */
     @Deprecated
-    public IonParser(IonReader r, IOContext ctxt)
+    public IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, IonReader r) {
+        this(readCtxt, ioCtxt, parserFeatures, r, IonSystemBuilder.standard().build());
+    }
+
+    IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, IonReader r, IonSystem system)
     {
-        this(r, ctxt, null);
-    }
-
-    /**
-     * @deprecated use {@link IonFactory#createParser(IonReader) instead}
-     */
-    @Deprecated
-    public IonParser(IonReader r, IOContext ctxt, ObjectCodec codec) {
-        this(r, IonSystemBuilder.standard().build(), ctxt, codec);
-    }
-
-    IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec) {
-        this._reader = r;
-        this._ioContext = ctxt;
-        this._objectCodec = codec;
-        this._parsingContext = JsonReadContext.createRootContext(-1, -1, null);
-        this._system = system;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        _objectCodec = c;
-    }
-
-    @Override
-    public ObjectCodec getCodec() {
-        return _objectCodec;
+        super(readCtxt, parserFeatures);
+        _reader = r;
+        _ioContext = ioCtxt;
+        _parsingContext = JsonReadContext.createRootContext(-1, -1, null);
+        _system = system;
     }
 
     @Override
@@ -132,9 +114,6 @@ public class IonParser
     /**********************************************************
      */
 
-    @Override
-    public boolean requiresCustomCodec() { return false;}
-    
     @Override
     public boolean hasTextCharacters() {
         //This is always false because getText() is more efficient than getTextCharacters().

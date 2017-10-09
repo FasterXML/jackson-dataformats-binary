@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-
+import com.fasterxml.jackson.core.ObjectReadContext;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 abstract class AsyncTestBase extends BaseTestForSmile
@@ -19,7 +19,7 @@ abstract class AsyncTestBase extends BaseTestForSmile
             int bytesPerRead,
             byte[] bytes, int padding) throws IOException
     {
-        return new AsyncReaderWrapperForByteArray(f.createNonBlockingByteArrayParser(),
+        return new AsyncReaderWrapperForByteArray(f.createNonBlockingByteArrayParser(ObjectReadContext.empty()),
                 bytesPerRead, bytes, padding);
     }
 

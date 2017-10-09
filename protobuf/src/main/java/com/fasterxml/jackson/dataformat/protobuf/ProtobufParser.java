@@ -60,11 +60,6 @@ public class ProtobufParser extends ParserMinimalBase
     /* Configuration
     /**********************************************************
      */
-    
-    /**
-     * Codec used for data binding when (if) requested.
-     */
-    protected ObjectCodec _objectCodec;
 
     protected ProtobufSchema _schema;
     
@@ -286,25 +281,26 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    public ProtobufParser(IOContext ctxt, int parserFeatures,
-            ObjectCodec codec,
+    public ProtobufParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, ProtobufSchema schema,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(parserFeatures);
-        _ioContext = ctxt;
-        _objectCodec = codec;
+        super(readCtxt, parserFeatures);
+        _ioContext = ioCtxt;
 
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-        _textBuffer = ctxt.constructTextBuffer();
+        _textBuffer = ioCtxt.constructTextBuffer();
         _parsingContext = ProtobufReadContext.createRootContext();
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
+
+        setSchema(schema);
     }
 
     public void setSchema(ProtobufSchema schema)
@@ -318,16 +314,6 @@ public class ProtobufParser extends ParserMinimalBase
         _schema = schema;
         // start with temporary root...
 //        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);
-    }
-
-    @Override
-    public ObjectCodec getCodec() {
-        return _objectCodec;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        _objectCodec = c;
     }
 
     /*                                                                                       

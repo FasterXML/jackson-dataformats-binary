@@ -57,17 +57,6 @@ public class SmileParser extends SmileParserBase
 
     /*
     /**********************************************************
-    /* Configuration
-    /**********************************************************
-     */
-    
-    /**
-     * Codec used for data binding when (if) requested.
-     */
-    protected ObjectCodec _objectCodec;
-
-    /*
-    /**********************************************************
     /* Input source config, state (from ex StreamBasedParserBase)
     /**********************************************************
      */
@@ -119,30 +108,18 @@ public class SmileParser extends SmileParserBase
     /**********************************************************
      */
 
-    public SmileParser(IOContext ctxt, int parserFeatures, int smileFeatures,
-            ObjectCodec codec,
+    public SmileParser(ObjectReadContext readCtxt, IOContext ctxt,
+            int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);        
-        _objectCodec = codec;
-
+        super(readCtxt, ctxt, parserFeatures, smileFeatures, sym);        
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-    }
-
-    @Override
-    public ObjectCodec getCodec() {
-        return _objectCodec;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        _objectCodec = c;
     }
 
     /**
