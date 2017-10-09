@@ -89,17 +89,15 @@ public class CBORFactory
      * and this reuse only works within context of a single
      * factory instance.
      */
-    public CBORFactory() { this(null); }
-
-    public CBORFactory(ObjectCodec oc) {
-        super(oc);
+    public CBORFactory() {
+        super();
         _formatParserFeatures = DEFAULT_CBOR_PARSER_FEATURE_FLAGS;
         _formatGeneratorFeatures = DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS;
     }
 
-    public CBORFactory(CBORFactory src, ObjectCodec oc)
+    public CBORFactory(CBORFactory src)
     {
-        super(src, oc);
+        super(src);
         _formatParserFeatures = src._formatParserFeatures;
         _formatGeneratorFeatures = src._formatGeneratorFeatures;
     }
@@ -107,8 +105,7 @@ public class CBORFactory
     @Override
     public CBORFactory copy()
     {
-        // note: as with base class, must NOT copy mapper reference
-        return new CBORFactory(this, null);
+        return new CBORFactory(this);
     }
 
     /*
@@ -123,7 +120,7 @@ public class CBORFactory
      * Also: must be overridden by sub-classes as well.
      */
     protected Object readResolve() {
-        return new CBORFactory(this, _objectCodec);
+        return new CBORFactory(this);
     }
 
     /*                                                                                       
@@ -279,7 +276,7 @@ public class CBORFactory
     {
         return new CBORParserBootstrapper(ctxt, in).constructParser(_factoryFeatures,
                 _parserFeatures, _formatParserFeatures,
-                _objectCodec, _byteSymbolCanonicalizer);
+                _byteSymbolCanonicalizer);
     }
 
     /**
@@ -291,7 +288,7 @@ public class CBORFactory
     {
         return new CBORParserBootstrapper(ctxt, data, offset, len).constructParser(
                 _factoryFeatures, _parserFeatures, _formatParserFeatures,
-                _objectCodec, _byteSymbolCanonicalizer);
+                _byteSymbolCanonicalizer);
     }
 
     @Override

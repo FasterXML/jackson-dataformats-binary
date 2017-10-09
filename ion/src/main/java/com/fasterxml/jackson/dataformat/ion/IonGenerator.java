@@ -72,10 +72,9 @@ public class IonGenerator
 
     public IonGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int generatorFeatures,
-            ObjectCodec codec,
             IonWriter ion, Closeable dst)
     {
-        super(writeCtxt, generatorFeatures, codec);
+        super(writeCtxt, generatorFeatures);
         _writer = ion;
         _ioContext = ioCtxt;
         _destination = dst;

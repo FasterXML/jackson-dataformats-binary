@@ -17,7 +17,7 @@ public class CBORParserBootstrapper
     /**********************************************************
      */
 
-    protected final IOContext _context;
+    protected final IOContext _ioContext;
     protected final InputStream _in;
     
     /*
@@ -56,19 +56,19 @@ public class CBORParserBootstrapper
     /**********************************************************
      */
 
-    public CBORParserBootstrapper(IOContext ctxt, InputStream in)
+    public CBORParserBootstrapper(IOContext ioCtxt, InputStream in)
     {
-        _context = ctxt;
+        _ioContext = ioCtxt;
         _in = in;
-        _inputBuffer = ctxt.allocReadIOBuffer();
+        _inputBuffer = ioCtxt.allocReadIOBuffer();
         _inputEnd = _inputPtr = 0;
         _inputProcessed = 0;
         _bufferRecyclable = true;
     }
 
-    public CBORParserBootstrapper(IOContext ctxt, byte[] inputBuffer, int inputStart, int inputLen)
+    public CBORParserBootstrapper(IOContext ioCtxt, byte[] inputBuffer, int inputStart, int inputLen)
     {
-        _context = ctxt;
+        _ioContext = ioCtxt;
         _in = null;
         _inputBuffer = inputBuffer;
         _inputPtr = inputStart;
@@ -80,14 +80,14 @@ public class CBORParserBootstrapper
 
     public CBORParser constructParser(int factoryFeatures,
             int generalParserFeatures, int formatFeatures,
-            ObjectCodec codec, ByteQuadsCanonicalizer rootByteSymbols)
+            ByteQuadsCanonicalizer rootByteSymbols)
         throws IOException, JsonParseException
     {
         ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
         // We just need a single byte to recognize possible "empty" document.
         ensureLoaded(1);
-        CBORParser p = new CBORParser(_context, generalParserFeatures, formatFeatures,
-                codec, can, 
+        CBORParser p = new CBORParser(_ioContext, generalParserFeatures, formatFeatures,
+                can, 
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         if (_inputPtr < _inputEnd) { // only false for empty doc
             ; // anything we should verify? In future, could verify
