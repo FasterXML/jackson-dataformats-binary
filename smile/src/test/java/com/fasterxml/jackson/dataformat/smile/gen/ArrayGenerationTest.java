@@ -3,16 +3,16 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 /**
  * Basic testing for scalar-array write methods added in 2.8.
  */
 public class ArrayGenerationTest extends BaseTestForSmile
 {
-    private final SmileFactory FACTORY = new SmileFactory();
-    
+    private final ObjectMapper MAPPER = smileMapper();
+
     public void testIntArray() throws Exception
     {
         _testIntArray(false);
@@ -101,11 +101,11 @@ public class ArrayGenerationTest extends BaseTestForSmile
             values[i] = i-pre;
         }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator gen = FACTORY.createGenerator(bytes);
+        JsonGenerator gen = MAPPER.createGenerator(bytes);
         gen.writeArray(values, pre, elements);
         gen.close();
 
-        JsonParser p = FACTORY.createParser(bytes.toByteArray());
+        JsonParser p = MAPPER.createParser(bytes.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0; i < elements; ++i) {
             if ((i & 1) == 0) { // alternate
@@ -132,10 +132,10 @@ public class ArrayGenerationTest extends BaseTestForSmile
             values[i] = i-pre;
         }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator gen = FACTORY.createGenerator(bytes);
+        JsonGenerator gen = MAPPER.createGenerator(bytes);
         gen.writeArray(values, pre, elements);
         gen.close();
-        JsonParser p = FACTORY.createParser(bytes.toByteArray());
+        JsonParser p = MAPPER.createParser(bytes.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0; i < elements; ++i) {
             if ((i & 1) == 0) { // alternate
@@ -162,10 +162,10 @@ public class ArrayGenerationTest extends BaseTestForSmile
             values[i] = i-pre;
         }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator gen = FACTORY.createGenerator(bytes);
+        JsonGenerator gen = MAPPER.createGenerator(bytes);
         gen.writeArray(values, pre, elements);
         gen.close();
-        JsonParser p = FACTORY.createParser(bytes.toByteArray());
+        JsonParser p = MAPPER.createParser(bytes.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0; i < elements; ++i) {
             JsonToken t = p.nextToken();

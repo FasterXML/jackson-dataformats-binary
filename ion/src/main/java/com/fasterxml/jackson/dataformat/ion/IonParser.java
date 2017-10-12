@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 
 import software.amazon.ion.*;
-import software.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Implementation of {@link JsonParser} that will use an underlying
@@ -84,16 +83,7 @@ public class IonParser
     /*****************************************************************
      */  
 
-    /**
-     * @deprecated use {@link IonFactory#createParser(IonReader) instead}
-     */
-    @Deprecated
     public IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            int parserFeatures, IonReader r) {
-        this(readCtxt, ioCtxt, parserFeatures, r, IonSystemBuilder.standard().build());
-    }
-
-    IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             int parserFeatures, IonReader r, IonSystem system)
     {
         super(readCtxt, parserFeatures);

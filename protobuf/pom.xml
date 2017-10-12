@@ -67,7 +67,6 @@ abstractions.
         <!--  We will shade proto-parser, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${version.plugin.shade}</version>
         <executions>
           <execution>
             <phase>package</phase>

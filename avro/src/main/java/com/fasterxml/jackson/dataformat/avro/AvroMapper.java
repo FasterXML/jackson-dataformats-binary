@@ -78,7 +78,7 @@ public class AvroMapper extends ObjectMapper
     }
 
     @Override
-    public AvroFactory getFactory() {
+    public AvroFactory tokenStreamFactory() {
         return (AvroFactory) _jsonFactory;
     }
     
@@ -87,8 +87,6 @@ public class AvroMapper extends ObjectMapper
      * POJO type and building schema that contains specified properties.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.5
      */
     public AvroSchema schemaFor(Class<?> type) throws JsonMappingException
     {

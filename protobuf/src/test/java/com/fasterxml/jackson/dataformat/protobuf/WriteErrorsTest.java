@@ -44,7 +44,7 @@ public class WriteErrorsTest extends ProtobufTestBase
 
         // but then not, if we disable checks
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = MAPPER.getFactory().createGenerator(bytes);
+        JsonGenerator g = MAPPER.createGenerator(bytes);
         g.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
         g.setSchema(schema);
 

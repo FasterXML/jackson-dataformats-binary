@@ -79,7 +79,6 @@ public class ParserSymbolHandlingTest
     /**********************************************************
      */
 
-
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;

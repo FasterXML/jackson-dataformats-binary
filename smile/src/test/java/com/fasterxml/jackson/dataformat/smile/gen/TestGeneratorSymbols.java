@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
@@ -142,14 +143,14 @@ public class TestGeneratorSymbols extends BaseTestForSmile
          */
         //Enable string value sharing
         JsonFactory jf = new JsonFactory();
-        JsonParser jp = jf.createParser(json);
+        JsonParser jp = jf.createParser(ObjectReadContext.empty(), json);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileFactory sf = new SmileFactory();
 
         sf.configure(SmileGenerator.Feature.WRITE_HEADER, true);
         sf.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES,true);
         sf.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES,true);
-        JsonGenerator jg = sf.createGenerator(out, null);
+        JsonGenerator jg = sf.createGenerator(ObjectWriteContext.empty(), out, null);
 
         while (jp.nextToken() != null) {
             jg.copyCurrentEvent(jp);
@@ -208,7 +209,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         factory.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        JsonGenerator gen = factory.createGenerator(os);
+        JsonGenerator gen = factory.createGenerator(ObjectWriteContext.empty(), os);
         gen.writeStartObject();
         gen.writeObjectFieldStart("query");
         gen.writeStringField(FIELD_NAME, VALUE);
@@ -216,7 +217,8 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         gen.writeEndObject();
         gen.close();
         
-        JsonParser parser = factory.createParser(os.toByteArray());
+        JsonParser parser = factory.createParser(ObjectReadContext.empty(),
+                os.toByteArray());
         assertNull(parser.currentToken());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());

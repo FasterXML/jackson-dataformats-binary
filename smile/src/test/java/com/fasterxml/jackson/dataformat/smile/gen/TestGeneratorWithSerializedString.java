@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class TestGeneratorWithSerializedString extends BaseTestForSmile
@@ -14,16 +14,17 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
 
     private final SerializedString quotedName = new SerializedString(NAME_WITH_QUOTES);
     private final SerializedString latin1Name = new SerializedString(NAME_WITH_LATIN1);
-    
+
+    private final ObjectMapper MAPPER = smileMapper();
+
     public void testSimple() throws Exception
     {
-        SmileFactory sf = new SmileFactory();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator jgen = sf.createGenerator(out);
-        _writeSimple(jgen);
-        jgen.close();
+        JsonGenerator g = MAPPER.createGenerator(out);
+        _writeSimple(g);
+        g.close();
         byte[] smileB = out.toByteArray();
-        _verifySimple(sf.createParser(smileB));
+        _verifySimple(MAPPER.createParser(smileB));
     }
 
     /*

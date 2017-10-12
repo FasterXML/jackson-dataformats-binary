@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingIterator;
@@ -58,7 +57,7 @@ public class MapTest extends AvroTestBase
         assertEquals(16, bytes.length); // measured to be current exp size
 
         // and then back. Start with streaming
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());

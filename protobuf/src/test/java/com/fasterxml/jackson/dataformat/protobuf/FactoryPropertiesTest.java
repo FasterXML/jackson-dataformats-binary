@@ -4,6 +4,8 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TokenStreamFactory;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -23,8 +25,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
 
     public void testCBORFactorySerializable() throws Exception
     {
-        ProtobufFactory f = new ProtobufFactory();
-        byte[] doc = _writeDoc(f);
+        byte[] doc = _writeDoc(MAPPER);
+        TokenStreamFactory f = MAPPER.tokenStreamFactory();
         assertNotNull(doc);
 
         // Ok: freeze dry factory, thaw, and try to use again:
@@ -33,29 +35,20 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         assertNotNull(f2);
     }
 
-    public void testCBORFactoryCopy() throws Exception
-    {
-        ProtobufFactory f2 = PROTO_F.copy();
-        assertNotNull(f2);
-        // and somewhat functional
-        byte[] doc = _writeDoc(f2);
-        assertNotNull(doc);
-    }
-
     public void testVersions() throws Exception
     {
-        ProtobufFactory f = PROTO_F;
-        assertNotNull(f.version());
+        final Version expV = MAPPER.tokenStreamFactory().version();
+        assertNotNull(expV);
 
-        JsonGenerator g = f.createGenerator(new ByteArrayOutputStream());
+        JsonGenerator g = MAPPER.createGenerator(new ByteArrayOutputStream());
         assertNotNull(g.version());
-        assertEquals(f.version(), g.version());
+        assertEquals(expV, g.version());
         g.close();
 
-        JsonParser p = f.createParser(_writeDoc(f));
+        JsonParser p = MAPPER.createParser(_writeDoc(MAPPER));
         p.setSchema(POINT_SCHEMA);
         assertNotNull(p.version());
-        assertEquals(f.version(), p.version());
+        assertEquals(expV, p.version());
         p.close();
     }
 
@@ -70,19 +63,19 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     {
         final String EXP = "Can not create parser for character-based";
         try {
-            PROTO_F.createParser("foo");
+            MAPPER.createParser("foo");
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
         }
         try {
-            PROTO_F.createParser("foo".toCharArray());
+            MAPPER.createParser("foo".toCharArray());
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
         }
         try {
-            PROTO_F.createParser(new StringReader("foo"));
+            MAPPER.createParser(new StringReader("foo"));
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
@@ -92,7 +85,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     public void testInabilityToWriteChars() throws Exception
     {
         try {
-            PROTO_F.createGenerator(new StringWriter());
+            MAPPER.createGenerator(new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, "Can not create generator for character-based");
@@ -105,12 +98,12 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    private byte[] _writeDoc(ProtobufFactory f) throws IOException {
-        return new ObjectMapper(f).writerFor(Point.class)
+    private byte[] _writeDoc(ObjectMapper m) throws IOException {
+        return m.writerFor(Point.class)
                 .with(POINT_SCHEMA)
                 .writeValueAsBytes(new Point(1, 2));
     }
-
+    
     private byte[] jdkSerialize(Object o) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);

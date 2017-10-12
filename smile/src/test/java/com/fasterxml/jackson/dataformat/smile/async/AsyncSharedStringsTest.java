@@ -71,6 +71,8 @@ public class AsyncSharedStringsTest
     /**********************************************************
      */
 
+    private final ObjectMapper MAPPER = smileMapper();
+
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
@@ -340,9 +342,8 @@ public class AsyncSharedStringsTest
      */
     public void testIssue562() throws IOException
     {
-        SmileFactory factory = new SmileFactory();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        JsonGenerator gen = factory.createGenerator(bos);
+        JsonGenerator gen = MAPPER.createGenerator(bos);
         gen.writeStartObject();
         gen.writeFieldName("z_aaaabbbbccccddddee");
         gen.writeString("end");
@@ -351,7 +352,7 @@ public class AsyncSharedStringsTest
         gen.writeEndObject();
         gen.close();
 
-        JsonParser parser = factory.createParser(bos.toByteArray());
+        JsonParser parser = MAPPER.createParser(bos.toByteArray());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
@@ -374,10 +375,8 @@ public class AsyncSharedStringsTest
      */
     public void testIssue564() throws Exception
     {
-        SmileFactory factory = new SmileFactory();
-
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
-        JsonGenerator generator = factory.createGenerator(bos1);
+        JsonGenerator generator = MAPPER.createGenerator(bos1);
         generator.writeStartObject();
         generator.writeFieldName("query");
         generator.writeStartObject();
@@ -389,7 +388,7 @@ public class AsyncSharedStringsTest
         generator.writeEndObject();
         generator.close();
 
-        JsonParser parser = factory.createParser(bos1.toByteArray());
+        JsonParser parser = MAPPER.createParser(bos1.toByteArray());
         JsonToken token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
@@ -411,7 +410,7 @@ public class AsyncSharedStringsTest
         parser.close();
 
         ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
-        generator = factory.createGenerator(bos2);
+        generator = MAPPER.createGenerator(bos2);
         generator.writeStartObject();
         generator.writeFieldName("query");
         generator.writeStartObject();
@@ -425,7 +424,7 @@ public class AsyncSharedStringsTest
         generator.writeEndObject();
         generator.close();
 
-        parser = factory.createParser(bos2.toByteArray());
+        parser = MAPPER.createParser(bos2.toByteArray());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
@@ -452,11 +451,10 @@ public class AsyncSharedStringsTest
 
     public void testCorruptName34() throws Exception
     {
-        SmileFactory factory = new SmileFactory();
         // 65 chars/bytes, and not one less, to trigger it
         final String NAME = "Something else that's long enough (65 char) to cause fail: 123456";
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        SmileGenerator gen = (SmileGenerator) factory.createGenerator(bout);
+        SmileGenerator gen = (SmileGenerator) MAPPER.createGenerator(bout);
         gen.writeStartArray();
         gen.writeStartObject();
         gen.writeNullField(NAME);
