@@ -226,7 +226,6 @@ public abstract class ScalarDecoder
                 super(name, skipper, typeId);
             }
 
-
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
                 return parser.decodeLongToken();

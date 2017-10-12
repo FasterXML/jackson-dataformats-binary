@@ -379,7 +379,6 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
         int b = buf[ptr++];
         int i = b & 0x7F;
         if (b < 0) {
-            i &= 0x7F;
             b = buf[ptr++];
             i += ((b & 0x7F) << 7);
             if (b < 0) {
@@ -390,18 +389,17 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
                     i += ((b & 0x7F) << 21);
                     if (b < 0) {
                         // Ok 56-bits gone... still going strong!
-                        lo |= (((long) i) << 28);
                         b = buf[ptr++];
-                        i = b & 0x7F;
+                        int inner = b & 0x7F;
                         if (b < 0) {
                             b = buf[ptr++];
-                            if (i < 0) {
+                            if (b < 0) {
                                 _inputPtr = ptr;
                                 _reportInvalidNegative(b);
                             }
-                            i |= (b << 7);
+                            inner |= ((b & 0x1) << 7);
                         }
-                        lo |= (((long) i) << 56);
+                        lo |= (((long) inner) << 56);
                     }
                 }
             }
@@ -1089,17 +1087,19 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
         _currInputProcessed += _inputPtr;
-        if (amount > 0 && _inputPtr > 0) {
-            //_currInputRowStart -= _inputPtr;
-            System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
-            _inputEnd = amount;
-        } else {
-            _inputEnd = 0;
+        if (_inputPtr > 0) {
+            if (amount > 0) {
+                //_currInputRowStart -= _inputPtr;
+                System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
+                _inputEnd = amount;
+            } else {
+                _inputEnd = 0;
+            }
         }
         _inputPtr = 0;
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            _reportError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            _reportError("Needed to read %d bytes, reached end-of-input", minAvailable);
         }
         while (_inputEnd < minAvailable) {
             int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
@@ -1110,7 +1110,8 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
                 if (count == 0) {
                     throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
                 }
-                _reportError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                _reportError("Needed to read %d bytes, missed %d before end-of-input",
+                        minAvailable, minAvailable);
             }
             _inputEnd += count;
         }
