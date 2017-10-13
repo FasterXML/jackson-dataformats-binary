@@ -21,16 +21,17 @@ import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
 
-public class SimpleReadTest {
+public class SimpleReadTest
+{
+    private final IonObjectMapper MAPPER = new IonObjectMapper();
+
     // // // Actual tests; low level
 
     @Test
     public void testSimpleStructRead() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:\"value\",b:42, c:null}");
+        JsonParser jp = MAPPER.createParser("{a:\"value\",b:42, c:null}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("a", jp.getCurrentName());
@@ -48,8 +49,7 @@ public class SimpleReadTest {
     @Test
     public void testSimpleListRead() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("[  12, true, null, \"abc\" ]");
+        JsonParser jp = MAPPER.createParser("[  12, true, null, \"abc\" ]");
         assertEquals(JsonToken.START_ARRAY, jp.nextToken());
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
         assertEquals(12, jp.getIntValue());
@@ -64,8 +64,7 @@ public class SimpleReadTest {
     @Test
     public void testSimpleStructAndArray() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:[\"b\",\"c\"], b:null}");
+        JsonParser jp = MAPPER.createParser("{a:[\"b\",\"c\"], b:null}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("a", jp.getCurrentName());
@@ -86,8 +85,7 @@ public class SimpleReadTest {
     @Test
     public void testMixed() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:[ 1, { b:  13}, \"xyz\" ], c:null, d:true}");
+        JsonParser jp = MAPPER.createParser("{a:[ 1, { b:  13}, \"xyz\" ], c:null, d:true}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.START_ARRAY, jp.nextValue());
         //assertEquals("a", jp.getCurrentName());        
@@ -114,8 +112,7 @@ public class SimpleReadTest {
 
     @Test
     public void testNullIonType() throws IOException {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:\"value\",b:42, c:null.int}");
+        JsonParser jp = MAPPER.createParser("{a:\"value\",b:42, c:null.int}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("a", jp.getCurrentName());

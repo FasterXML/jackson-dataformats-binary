@@ -10,10 +10,15 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 public abstract class CBORTestBase
     extends junit.framework.TestCase
 {
+    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+
+    private final static ObjectMapper CBOR_MAPPER = new ObjectMapper(new CBORFactory());
+    
     /*
     /**********************************************************
     /* Factory methods
@@ -40,7 +45,7 @@ public abstract class CBORTestBase
     protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {
         return (CBORParser) f.createParser(in);
     }
-    
+
     protected ObjectMapper cborMapper() {
         return new ObjectMapper(cborFactory());
     }
@@ -50,23 +55,8 @@ public abstract class CBORTestBase
         return f;
     }
 
-    protected byte[] cborDoc(String json) throws IOException {
-        return cborDoc(cborFactory(), json);
-    }
-
-    protected byte[] cborDoc(CBORFactory cborF, String json) throws IOException
-    {
-        JsonFactory jf = new JsonFactory();
-        JsonParser p = jf.createParser(json);
-        ByteArrayOutputStream out = new ByteArrayOutputStream(json.length());
-        JsonGenerator dest = cborF.createGenerator(out);
-    	
-        while (p.nextToken() != null) {
-            dest.copyCurrentEvent(p);
-        }
-        p.close();
-        dest.close();
-        return out.toByteArray();
+    protected ObjectMapper sharedMapper() {
+        return CBOR_MAPPER;
     }
 
     protected CBORGenerator cborGenerator(ByteArrayOutputStream result)
@@ -82,6 +72,60 @@ public abstract class CBORTestBase
         return (CBORGenerator) f.createGenerator(result, null);
     }
 
+    /*
+    /**********************************************************
+    /* Doc conversion
+    /**********************************************************
+     */
+
+    protected byte[] cborDoc(ObjectMapper cborMapper, String json) throws IOException {
+        return cborDoc(cborMapper.writer(), json);
+    }
+
+    @Deprecated
+    protected byte[] cborDoc(TokenStreamFactory f, String json)
+        throws IOException
+    {
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), out)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+
+    protected byte[] cborDoc(ObjectWriter w, String json)
+        throws IOException
+    {
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = w.createGenerator(out)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+    
+    protected byte[] cborDoc(String json) throws IOException
+    {
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = CBOR_MAPPER.createGenerator(out)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+
+    private void _copy(JsonParser p, JsonGenerator g) throws IOException
+    {
+        while (p.nextToken() != null) {
+          g.copyCurrentEvent(p);
+        }
+    }
+
+    
     /*
     /**********************************************************
     /* Additional assertion methods

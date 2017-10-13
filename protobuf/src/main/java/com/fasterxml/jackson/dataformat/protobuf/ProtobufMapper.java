@@ -60,7 +60,7 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     @Override
-    public ProtobufFactory getFactory() {
+    public ProtobufFactory tokenStreamFactory() {
         return (ProtobufFactory) _jsonFactory;
     }
 

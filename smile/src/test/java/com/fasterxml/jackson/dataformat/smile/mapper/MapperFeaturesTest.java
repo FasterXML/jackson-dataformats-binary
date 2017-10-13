@@ -36,7 +36,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
         ObjectMapper mapper2 = mapper1.copy();
         
         assertNotSame(mapper1, mapper2);
-        assertNotSame(mapper1.getFactory(), mapper2.getFactory());
-        assertEquals(SmileFactory.class, mapper2.getFactory().getClass());
+        assertNotSame(mapper1.tokenStreamFactory(), mapper2.tokenStreamFactory());
+        assertEquals(SmileFactory.class, mapper2.tokenStreamFactory().getClass());
     }
 }

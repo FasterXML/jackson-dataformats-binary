@@ -19,6 +19,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
@@ -59,7 +60,7 @@ public class IonObjectMapper extends ObjectMapper
     }
 
     public void setCreateBinaryWriters(boolean bin) {
-        getFactory().setCreateBinaryWriters(bin);
+        tokenStreamFactory().setCreateBinaryWriters(bin);
     }   
 
     @Override
@@ -74,15 +75,44 @@ public class IonObjectMapper extends ObjectMapper
     }
 
     @Override
-    public IonFactory getFactory() {
+    public IonFactory tokenStreamFactory() {
         return (IonFactory) _jsonFactory;
     }
 
     /*
-     ************************************************************************
-     * Convenience read/write methods for IonReader, IonWriter, and IonValue,
-     * by analogy with the existing convenience methods of ObjectMapper
-     ************************************************************************
+    /************************************************************************
+    /* Additional convenience factory methods for parsers, generators
+    /************************************************************************
+     */
+
+    /**
+     * @since 3.0
+     */
+    public IonParser createParser(IonReader src) {
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (IonParser) ctxt.assignAndReturnParser(tokenStreamFactory().createParser(ctxt, src));
+    }
+
+    /**
+     * @since 3.0
+     */
+    public IonParser createParser(IonValue value) {
+        DefaultDeserializationContext ctxt = createDeserializationContext();
+        return (IonParser) ctxt.assignAndReturnParser(tokenStreamFactory().createParser(ctxt, value));
+    }
+
+    /**
+     * @since 3.0
+     */
+    public IonGenerator createGenerator(IonWriter out) {
+        return (IonGenerator) tokenStreamFactory().createGenerator(_serializerProvider(), out);
+    }
+
+    /*
+    /************************************************************************
+    /* Convenience read/write methods for IonReader, IonWriter, and IonValue,
+    /* by analogy with the existing convenience methods of ObjectMapper
+    /************************************************************************
      */
 
     /**
@@ -94,7 +124,7 @@ public class IonObjectMapper extends ObjectMapper
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, Class<T> valueType) throws IOException {
         DefaultDeserializationContext ctxt = createDeserializationContext();
-        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, r),
+        return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueType));
     }
 
@@ -107,7 +137,7 @@ public class IonObjectMapper extends ObjectMapper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws IOException {
         DefaultDeserializationContext ctxt = createDeserializationContext();
-        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, r),
+        return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueTypeRef));
     }
 
@@ -120,7 +150,7 @@ public class IonObjectMapper extends ObjectMapper
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, JavaType valueType) throws IOException {
         DefaultDeserializationContext ctxt = createDeserializationContext();
-        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, r), valueType);
+        return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r), valueType);
     }
 
     /**
@@ -129,7 +159,7 @@ public class IonObjectMapper extends ObjectMapper
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, Class<T> valueType) throws IOException {
         DefaultDeserializationContext ctxt = createDeserializationContext();
-        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, value),
+        return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueType));
     }
 
@@ -139,7 +169,7 @@ public class IonObjectMapper extends ObjectMapper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonValue value, TypeReference valueTypeRef) throws IOException {
         DefaultDeserializationContext ctxt = createDeserializationContext();
-        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, value),
+        return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueTypeRef));
     }
 
@@ -149,7 +179,7 @@ public class IonObjectMapper extends ObjectMapper
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, JavaType valueType) throws IOException  {
         DefaultDeserializationContext ctxt = createDeserializationContext();
-        return (T)_readMapAndClose(ctxt, getFactory().createParser(ctxt, value), valueType);
+        return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value), valueType);
     }
 
     /**
@@ -161,7 +191,7 @@ public class IonObjectMapper extends ObjectMapper
     public void writeValue(IonWriter w, Object value) throws IOException {
         DefaultSerializerProvider prov = _serializerProvider();
         _configAndWriteValue(prov,
-                getFactory().createGenerator(prov, w), value);
+                tokenStreamFactory().createGenerator(prov, w), value);
     }
 
     /**
@@ -169,7 +199,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     public IonValue writeValueAsIonValue(Object value) throws IOException
     {
-        IonFactory f = getFactory();
+        IonFactory f = tokenStreamFactory();
         IonDatagram container = f._system.newDatagram();
         IonWriter writer = f._system.newWriter(container);
         try {

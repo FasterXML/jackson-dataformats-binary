@@ -21,6 +21,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
@@ -41,7 +42,7 @@ public class SimpleWriteTest
         IonFactory f = new IonFactory();
         f.setCreateBinaryWriters(false);
         StringWriter sw = new StringWriter();
-        JsonGenerator gen = f.createGenerator(sw);
+        JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), sw);
         _writeSimple(gen);
         // now parse and compare
         ionTextCompare(sw.toString());
@@ -54,7 +55,7 @@ public class SimpleWriteTest
         IonFactory f = new IonFactory();
         f.setCreateBinaryWriters(true);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        JsonGenerator gen = f.createGenerator(bos);
+        JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), bos);
         _writeSimple(gen);
         byte[] data = bos.toByteArray();
         assertNotNull(data);
@@ -72,7 +73,7 @@ public class SimpleWriteTest
         IonFactory f = new IonFactory();
         f.setCreateBinaryWriters(false);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         _writeSimple(gen);
         ionTextCompare(out.toString("UTF-8"));
         gen.close();

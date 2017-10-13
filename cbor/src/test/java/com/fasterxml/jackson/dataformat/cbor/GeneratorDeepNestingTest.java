@@ -21,7 +21,7 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     public void testDeeplyNestedMap() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        JsonGenerator gen = MAPPER.createGenerator(out);
         _writeNestedMap(gen, 23);
         gen.close();
         byte[] encoded = out.toByteArray();
@@ -68,7 +68,7 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     public void testDeeplyNestedArray() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        JsonGenerator gen = MAPPER.createGenerator(out);
         _writeNestedArray(gen, 23);
         gen.close();
         byte[] encoded = out.toByteArray();
