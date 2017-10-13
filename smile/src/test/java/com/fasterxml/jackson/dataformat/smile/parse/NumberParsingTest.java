@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class NumberParsingTest
     extends BaseTestForSmile
@@ -15,7 +14,7 @@ public class NumberParsingTest
     public void testIntsMedium() throws IOException
     {
         byte[] data = _smileDoc("255");
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(255, p.getIntValue());
         assertFalse(p.isNaN());
@@ -47,7 +46,7 @@ public class NumberParsingTest
     public void testMinMaxInts() throws IOException
     {
         byte[] data = _smileDoc(String.valueOf(Integer.MAX_VALUE));
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.INT, p.getNumberType());
         assertEquals(Integer.MAX_VALUE, p.getIntValue());
@@ -63,7 +62,7 @@ public class NumberParsingTest
     public void testIntsInObjectSkipping() throws IOException
     {
     	byte[] data = _smileDoc("{\"a\":200,\"b\":200}");
-    	SmileParser p = _smileParser(data);
+    	JsonParser p = _smileParser(data);
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
     	assertEquals("a", p.getCurrentName());
@@ -82,7 +81,7 @@ public class NumberParsingTest
         long l = (long) Integer.MIN_VALUE - 1L;
         byte[] data = _smileDoc(String.valueOf(l), false);
         assertEquals(6, data.length);
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
         assertEquals(l, p.getLongValue());
@@ -121,7 +120,7 @@ public class NumberParsingTest
     {
         long l = Long.MAX_VALUE;
         byte[] data = _smileDoc(String.valueOf(l));
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
         assertEquals(l, p.getLongValue());
@@ -155,7 +154,7 @@ public class NumberParsingTest
         byte[] data = _smileDoc("[ 1, 0, -1, 255, -999, "
                 +Integer.MIN_VALUE+","+Integer.MAX_VALUE+","
                 +Long.MIN_VALUE+", "+Long.MAX_VALUE+" ]");
-    	SmileParser p = _smileParser(data);
+    	JsonParser p = _smileParser(data);
     	assertNull(p.currentToken());
     	assertToken(JsonToken.START_ARRAY, p.nextToken());
 
@@ -204,7 +203,7 @@ public class NumberParsingTest
         byte[] data = bo.toByteArray();
         assertEquals(6, data.length);
 
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
         assertEquals(value, p.getFloatValue());
@@ -228,7 +227,7 @@ public class NumberParsingTest
         byte[] data = bo.toByteArray();
         assertEquals(11, data.length);
 
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertFalse(p.isNaN());
         assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
@@ -265,7 +264,7 @@ public class NumberParsingTest
         // 10 bytes per double, array start, end
 //        assertEquals(2 + values.length * 10, data.length);
 
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (double exp : values) {
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -291,7 +290,7 @@ public class NumberParsingTest
         byte[] data = bo.toByteArray();
 
         // first let's just skip 
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -323,7 +322,7 @@ public class NumberParsingTest
         g.writeNumber(in);
         g.close();
         byte[] data = bo.toByteArray();
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.BIG_INTEGER, p.getNumberType());
         assertEquals(BigInteger.class, p.getNumberValue().getClass());
@@ -354,7 +353,7 @@ public class NumberParsingTest
         g.writeNumber(in);
         g.close();
         byte[] data = bo.toByteArray();
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
         assertFalse(p.isNaN());
@@ -402,7 +401,7 @@ public class NumberParsingTest
 
         g.close();
         byte[] data = bo.toByteArray();
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
 
         // for ints
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -463,7 +462,7 @@ public class NumberParsingTest
 
         g.close();
         byte[] data = bo.toByteArray();
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
 
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(2, p.getIntValue());

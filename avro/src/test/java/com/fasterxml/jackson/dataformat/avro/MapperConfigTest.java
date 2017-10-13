@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.*;
 
 public class MapperConfigTest extends AvroTestBase
 {
-    private final AvroFactory AVRO_F = new AvroFactory();
+    private final AvroMapper MAPPER = getMapper();
 
     private final FormatSchema BOGUS_SCHEMA = new FormatSchema() {
         @Override
@@ -24,14 +24,14 @@ public class MapperConfigTest extends AvroTestBase
 
     public void testFactoryDefaults() throws Exception
     {
-        assertTrue(AVRO_F.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
-        assertTrue(AVRO_F.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
-        assertFalse(AVRO_F.canUseSchema(BOGUS_SCHEMA));
+        assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+        assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
+        assertFalse(MAPPER.tokenStreamFactory().canUseSchema(BOGUS_SCHEMA));
     }
 
     public void testParserDefaults() throws Exception
     {
-        AvroParser p = (AvroParser) AVRO_F.createParser(new byte[0]);
+        AvroParser p = (AvroParser) MAPPER.createParser(new byte[0]);
         assertTrue(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
         p.disable(AvroParser.Feature.AVRO_BUFFERING);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
@@ -47,7 +47,7 @@ public class MapperConfigTest extends AvroTestBase
     public void testGeneratorDefaults() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        AvroGenerator g = (AvroGenerator) AVRO_F.createGenerator(bytes);
+        AvroGenerator g = (AvroGenerator) MAPPER.createGenerator(bytes);
         assertTrue(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
         g.disable(AvroGenerator.Feature.AVRO_BUFFERING);
         assertFalse(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
@@ -68,18 +68,6 @@ public class MapperConfigTest extends AvroTestBase
     /* Defaults: Mapper, related
     /**********************************************************
      */
-    
-    // Test to verify that data format affects default state of order-props-alphabetically
-    public void testDefaultSettingsWithObjectMapper()
-    {
-        ObjectMapper mapper = new ObjectMapper(AVRO_F);
-        _testAvroMapperDefaults(mapper);
-
-        ObjectMapper vanilla = new ObjectMapper();
-        assertFalse(vanilla.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
-        ObjectReader r = vanilla.reader();
-        assertFalse(r.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
-    }
 
     public void testDefaultSettingsWithAvroMapper()
     {

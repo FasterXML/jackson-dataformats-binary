@@ -4,6 +4,7 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -32,12 +33,16 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
 
     public void testFactorySerializable() throws Exception
     {
-        SmileFactory f = new SmileFactory();
-        byte[] doc = _smileDoc(f, SIMPLE_DOC_AS_JSON, true);
+        // Need to handle this in more detail to ensure freeze/thaw'd instances
+        // are used
+        SmileFactory f0 = new SmileFactory();
+        f0.enable(SmileGenerator.Feature.WRITE_HEADER);
+        ObjectMapper m = new ObjectMapper(f0);
+        byte[] doc = _smileDoc(m, SIMPLE_DOC_AS_JSON, true);
         assertNotNull(doc);
 
         // Ok: freeze dry factory, thaw, and try to use again:
-        byte[] frozen = jdkSerialize(f);
+        byte[] frozen = jdkSerialize(m.tokenStreamFactory());
         SmileFactory f2 = jdkDeserialize(frozen);
         assertNotNull(f2);
         byte[] docOut = _copyDoc(f2, doc);
@@ -48,9 +53,20 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     {
         SmileFactory f2 = SMILE_F.copy();
         assertNotNull(f2);
-        // and somewhat functional
-        byte[] doc = _smileDoc(f2, SIMPLE_DOC_AS_JSON, true);
-        assertNotNull(doc);
+
+        // and somewhat functional: do minimal work...
+        byte[] doc = _smileDoc(SIMPLE_DOC_AS_JSON, true);
+
+        SmileParser sp = (SmileParser) f2.createParser(ObjectReadContext.empty(), doc);
+        assertToken(JsonToken.START_OBJECT, sp.nextToken());
+        assertToken(JsonToken.FIELD_NAME, sp.nextToken());
+        sp.close();
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        SmileGenerator sg = (SmileGenerator) f2.createGenerator(ObjectWriteContext.empty(), bytes);
+        sg.writeStartObject();
+        sg.writeEndObject();
+        sg.close();
     }
 
     public void testVersions() throws Exception
@@ -63,7 +79,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertEquals(f.version(), g.version());
         g.close();
 
-        JsonParser p = f.createParser(ObjectReadContext.empty(), _smileDoc(f, SIMPLE_DOC_AS_JSON, true));
+        JsonParser p = f.createParser(ObjectReadContext.empty(), _smileDoc(SIMPLE_DOC_AS_JSON, true));
         assertNotNull(p.version());
         assertEquals(f.version(), p.version());
         p.close();

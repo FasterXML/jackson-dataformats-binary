@@ -59,7 +59,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
         final String quoted = quote(TEXT);
         byte[] data = _smileDoc(quoted);
 
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, 0);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(), readSize, data, 0);
 
         assertToken(JsonToken.VALUE_STRING, r.nextToken());
         assertEquals(TEXT, r.currentText());
@@ -67,7 +67,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
         r.close();
 
         // Then same but skipping
-        r = asyncForBytes(f, readSize, data, 0);
+        r = asyncForBytes(_smileReader(), readSize, data, 0);
         assertToken(JsonToken.VALUE_STRING, r.nextToken());
         assertNull(r.nextToken());
         r.close();
@@ -75,7 +75,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
         // Also, verify that it works as field name
         data = _smileDoc("{"+quoted+":true}");
 
-        r = asyncForBytes(f, readSize, data, 0);
+        r = asyncForBytes(_smileReader(), readSize, data, 0);
         assertToken(JsonToken.START_OBJECT, r.nextToken());
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
         assertEquals(TEXT, r.currentName());
@@ -85,7 +85,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
         r.close();
 
         // and skipping
-        r = asyncForBytes(f, readSize, data, 0);
+        r = asyncForBytes(_smileReader(), readSize, data, 0);
         assertToken(JsonToken.START_OBJECT, r.nextToken());
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());

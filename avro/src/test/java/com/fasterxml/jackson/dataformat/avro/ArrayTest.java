@@ -72,7 +72,7 @@ public class ArrayTest extends AvroTestBase
         //   quite know whether to advance cursor to START_ARRAY or not, and we must
         //   instead prepare things... and use direct bind
 
-        JsonParser p = MAPPER.getFactory().createParser(
+        JsonParser p = MAPPER.createParser(
                 LimitingInputStream.wrap(new ByteArrayInputStream(b.toByteArray()), 123));
         p.setSchema(schema);
 
@@ -120,7 +120,7 @@ public class ArrayTest extends AvroTestBase
         //   quite know whether to advance cursor to START_ARRAY or not, and we must
         //   instead prepare things... and use direct bind
 
-        JsonParser p = MAPPER.getFactory().createParser(b.toByteArray());
+        JsonParser p = MAPPER.createParser(b.toByteArray());
         p.setSchema(schema);
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());

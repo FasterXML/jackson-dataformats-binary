@@ -7,19 +7,12 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.dataformat.smile.*;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 public class SimpleScalarArrayTest extends AsyncTestBase
 {
-    private final SmileFactory F_REQ_HEADERS = new SmileFactory();
-    {
-        F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
-    }
-
-    private final SmileFactory F_NO_HEADERS = new SmileFactory();
-    {
-        F_NO_HEADERS.disable(SmileParser.Feature.REQUIRE_HEADER);
-    }
+    private final ObjectReader REQ_HEADERS = _smileReader(true); // require headers
+    private final ObjectReader NO_HEADERS = _smileReader(false); // do not require headers
 
     /*
     /**********************************************************************
@@ -32,36 +25,34 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         byte[] data = _smileDoc("[ true, false, true, true, false ]", true);
 
         // first: require headers, no offsets
-        SmileFactory f = F_REQ_HEADERS;
-        assertTrue(f.isEnabled(SmileParser.Feature.REQUIRE_HEADER));
+        ObjectReader r = REQ_HEADERS;
 
-        _testBooleans(f, data, 0, 100);
-        _testBooleans(f, data, 0, 3);
-        _testBooleans(f, data, 0, 1);
+        _testBooleans(r, data, 0, 100);
+        _testBooleans(r, data, 0, 3);
+        _testBooleans(r, data, 0, 1);
 
         // then with some offsets:
-        _testBooleans(f, data, 1, 100);
-        _testBooleans(f, data, 1, 3);
-        _testBooleans(f, data, 1, 1);
+        _testBooleans(r, data, 1, 100);
+        _testBooleans(r, data, 1, 3);
+        _testBooleans(r, data, 1, 1);
 
         // also similar but without header
         data = _smileDoc("[ true, false, true, true, false ]", false);
-        f = F_NO_HEADERS;
-        assertFalse(f.isEnabled(SmileParser.Feature.REQUIRE_HEADER));
+        r = NO_HEADERS;
 
-        _testBooleans(f, data, 0, 100);
-        _testBooleans(f, data, 0, 3);
-        _testBooleans(f, data, 0, 1);
+        _testBooleans(r, data, 0, 100);
+        _testBooleans(r, data, 0, 3);
+        _testBooleans(r, data, 0, 1);
 
-        _testBooleans(f, data, 1, 100);
-        _testBooleans(f, data, 1, 3);
-        _testBooleans(f, data, 1, 1);
+        _testBooleans(r, data, 1, 100);
+        _testBooleans(r, data, 1, 3);
+        _testBooleans(r, data, 1, 1);
     }
 
-    private void _testBooleans(SmileFactory f,
+    private void _testBooleans(ObjectReader or,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -91,20 +82,20 @@ public class SimpleScalarArrayTest extends AsyncTestBase
             sb.append(input[i]);
         }
         byte[] data = _smileDoc(sb.append(']').toString(), true);
-        SmileFactory f = F_REQ_HEADERS;
-        _testInts(f, input, data, 0, 100);
-        _testInts(f, input, data, 0, 3);
-        _testInts(f, input, data, 0, 1);
+        ObjectReader r = REQ_HEADERS;
+        _testInts(r, input, data, 0, 100);
+        _testInts(r, input, data, 0, 3);
+        _testInts(r, input, data, 0, 1);
 
-        _testInts(f, input, data, 1, 100);
-        _testInts(f, input, data, 1, 3);
-        _testInts(f, input, data, 1, 1);
+        _testInts(r, input, data, 1, 100);
+        _testInts(r, input, data, 1, 3);
+        _testInts(r, input, data, 1, 1);
     }
 
-    private void _testInts(SmileFactory f, int[] values,
+    private void _testInts(ObjectReader or, int[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -129,8 +120,8 @@ public class SimpleScalarArrayTest extends AsyncTestBase
                 19L * Integer.MIN_VALUE, 27L * Integer.MAX_VALUE,
                 Long.MIN_VALUE, Long.MAX_VALUE };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        SmileFactory f = F_REQ_HEADERS;
-        JsonGenerator g = f.createGenerator(bytes);
+        ObjectReader r = REQ_HEADERS;
+        JsonGenerator g = smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -138,19 +129,19 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         g.writeEndArray();
         g.close();
         byte[] data = bytes.toByteArray();
-        _testLong(f, input, data, 0, 100);
-        _testLong(f, input, data, 0, 3);
-        _testLong(f, input, data, 0, 1);
+        _testLong(r, input, data, 0, 100);
+        _testLong(r, input, data, 0, 3);
+        _testLong(r, input, data, 0, 1);
 
-        _testLong(f, input, data, 1, 100);
-        _testLong(f, input, data, 1, 3);
-        _testLong(f, input, data, 1, 1);
+        _testLong(r, input, data, 1, 100);
+        _testLong(r, input, data, 1, 3);
+        _testLong(r, input, data, 1, 1);
     }
 
-    private void _testLong(SmileFactory f, long[] values,
+    private void _testLong(ObjectReader or, long[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -176,8 +167,8 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     {
         final float[] input = new float[] { 0.0f, 0.25f, -0.5f, 10000.125f, - 99999.075f };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        SmileFactory f = F_REQ_HEADERS;
-        JsonGenerator g = f.createGenerator(bytes);
+        ObjectReader r = REQ_HEADERS;
+        JsonGenerator g = smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -185,19 +176,19 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         g.writeEndArray();
         g.close();
         byte[] data = bytes.toByteArray();
-        _testFloats(f, input, data, 0, 100);
-        _testFloats(f, input, data, 0, 3);
-        _testFloats(f, input, data, 0, 1);
+        _testFloats(r, input, data, 0, 100);
+        _testFloats(r, input, data, 0, 3);
+        _testFloats(r, input, data, 0, 1);
 
-        _testFloats(f, input, data, 1, 100);
-        _testFloats(f, input, data, 1, 3);
-        _testFloats(f, input, data, 1, 1);
+        _testFloats(r, input, data, 1, 100);
+        _testFloats(r, input, data, 1, 3);
+        _testFloats(r, input, data, 1, 1);
     }
 
-    private void _testFloats(SmileFactory f, float[] values,
+    private void _testFloats(ObjectReader or, float[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -216,8 +207,8 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     {
         final double[] input = new double[] { 0.0, 0.25, -0.5, 10000.125, -99999.075 };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        SmileFactory f = F_REQ_HEADERS;
-        JsonGenerator g = f.createGenerator(bytes);
+        ObjectReader r = REQ_HEADERS;
+        JsonGenerator g = smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -225,19 +216,19 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         g.writeEndArray();
         g.close();
         byte[] data = bytes.toByteArray();
-        _testDoubles(f, input, data, 0, 100);
-        _testDoubles(f, input, data, 0, 3);
-        _testDoubles(f, input, data, 0, 1);
+        _testDoubles(r, input, data, 0, 100);
+        _testDoubles(r, input, data, 0, 3);
+        _testDoubles(r, input, data, 0, 1);
 
-        _testDoubles(f, input, data, 1, 100);
-        _testDoubles(f, input, data, 1, 3);
-        _testDoubles(f, input, data, 1, 1);
+        _testDoubles(r, input, data, 1, 100);
+        _testDoubles(r, input, data, 1, 3);
+        _testDoubles(r, input, data, 1, 1);
     }
 
-    private void _testDoubles(SmileFactory f, double[] values,
+    private void _testDoubles(ObjectReader or, double[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -274,8 +265,8 @@ public class SimpleScalarArrayTest extends AsyncTestBase
                 bigBase.negate()
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        SmileFactory f = F_REQ_HEADERS;
-        JsonGenerator g = f.createGenerator(bytes);
+        ObjectReader r = REQ_HEADERS;
+        JsonGenerator g = smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -283,19 +274,19 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         g.writeEndArray();
         g.close();
         byte[] data = bytes.toByteArray();
-        _testBigIntegers(f, input, data, 0, 100);
-        _testBigIntegers(f, input, data, 0, 3);
-        _testBigIntegers(f, input, data, 0, 1);
+        _testBigIntegers(r, input, data, 0, 100);
+        _testBigIntegers(r, input, data, 0, 3);
+        _testBigIntegers(r, input, data, 0, 1);
 
-        _testBigIntegers(f, input, data, 1, 100);
-        _testBigIntegers(f, input, data, 2, 3);
-        _testBigIntegers(f, input, data, 3, 1);
+        _testBigIntegers(r, input, data, 1, 100);
+        _testBigIntegers(r, input, data, 2, 3);
+        _testBigIntegers(r, input, data, 3, 1);
     }
 
-    private void _testBigIntegers(SmileFactory f, BigInteger[] values,
+    private void _testBigIntegers(ObjectReader or, BigInteger[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -335,8 +326,8 @@ System.err.println();
                 bigBase.negate()
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        SmileFactory f = F_REQ_HEADERS;
-        JsonGenerator g = f.createGenerator(bytes);
+        ObjectReader r = REQ_HEADERS;
+        JsonGenerator g = smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -345,19 +336,19 @@ System.err.println();
         g.close();
         byte[] data = bytes.toByteArray();
 
-        _testBigDecimals(f, input, data, 0, 100);
-        _testBigDecimals(f, input, data, 0, 3);
-        _testBigDecimals(f, input, data, 0, 1);
+        _testBigDecimals(r, input, data, 0, 100);
+        _testBigDecimals(r, input, data, 0, 3);
+        _testBigDecimals(r, input, data, 0, 1);
 
-        _testBigDecimals(f, input, data, 1, 100);
-        _testBigDecimals(f, input, data, 2, 3);
-        _testBigDecimals(f, input, data, 3, 1);
+        _testBigDecimals(r, input, data, 1, 100);
+        _testBigDecimals(r, input, data, 2, 3);
+        _testBigDecimals(r, input, data, 3, 1);
     }
 
-    private void _testBigDecimals(SmileFactory f, BigDecimal[] values,
+    private void _testBigDecimals(ObjectReader or, BigDecimal[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(or, readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());

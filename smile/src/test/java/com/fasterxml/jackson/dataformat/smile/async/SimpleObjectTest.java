@@ -40,23 +40,21 @@ public class SimpleObjectTest extends AsyncTestBase
 
     public void testBooleans() throws IOException
     {
-        final SmileFactory f = F_REQ_HEADERS;
         byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'acdc':true, '"+UNICODE_SHORT_NAME+"':true, 'a1234567':false }"), true);
         // first, no offsets
-        _testBooleans(f, data, 0, 100);
-        _testBooleans(f, data, 0, 3);
-        _testBooleans(f, data, 0, 1);
+        _testBooleans(data, 0, 100);
+        _testBooleans(data, 0, 3);
+        _testBooleans(data, 0, 1);
 
         // then with some
-        _testBooleans(f, data, 1, 100);
-        _testBooleans(f, data, 1, 3);
-        _testBooleans(f, data, 1, 1);
+        _testBooleans(data, 1, 100);
+        _testBooleans(data, 1, 3);
+        _testBooleans(data, 1, 1);
     }
 
-    private void _testBooleans(SmileFactory f,
-            byte[] data, int offset, int readSize) throws IOException
+    private void _testBooleans(byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_OBJECT, r.nextToken());
@@ -138,20 +136,19 @@ public class SimpleObjectTest extends AsyncTestBase
         byte[] data = bytes.toByteArray();
 
         // first, no offsets
-        _testNumbers(f, data, 0, 100);
-        _testNumbers(f, data, 0, 3);
-        _testNumbers(f, data, 0, 1);
+        _testNumbers(data, 0, 100);
+        _testNumbers(data, 0, 3);
+        _testNumbers(data, 0, 1);
 
         // then with some
-        _testNumbers(f, data, 1, 100);
-        _testNumbers(f, data, 1, 3);
-        _testNumbers(f, data, 1, 1);
+        _testNumbers(data, 1, 100);
+        _testNumbers(data, 1, 3);
+        _testNumbers(data, 1, 1);
     }
 
-    private void _testNumbers(SmileFactory f,
-            byte[] data, int offset, int readSize) throws IOException
+    private void _testNumbers(byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(), readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_OBJECT, r.nextToken());
@@ -183,6 +180,4 @@ public class SimpleObjectTest extends AsyncTestBase
         assertNull(r.nextToken());
         assertTrue(r.isClosed());
     }
-
-
 }

@@ -76,7 +76,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -109,7 +109,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -184,7 +184,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
 
         // and also verify via streaming
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
@@ -214,7 +214,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
 
         // and, ditto, but skipping
-        p = MAPPER.getFactory().createParser(bytes);
+        p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -272,7 +272,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
 
         // and also verify via streaming
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
@@ -300,7 +300,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
 
         // also, for fun: partial read
-        p = MAPPER.getFactory().createParser(bytes);
+        p = MAPPER.createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 

@@ -5,7 +5,6 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class ParserLocationTest
     extends BaseTestForSmile
@@ -78,7 +77,7 @@ public class ParserLocationTest
         byte[] b = bytes.toByteArray();
         assertEquals(4 + 2 + SIZE, b.length);
 
-        SmileParser p = _smileParser(new ByteArrayInputStream(b));
+        JsonParser p = _smileParser(new ByteArrayInputStream(b));
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         // 4 byte header, start array read, so 4 bytes down:
         assertEquals(5, p.getCurrentLocation().getByteOffset());

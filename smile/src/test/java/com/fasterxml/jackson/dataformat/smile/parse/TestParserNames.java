@@ -5,7 +5,6 @@ import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class TestParserNames extends BaseTestForSmile
 {
@@ -35,7 +34,7 @@ public class TestParserNames extends BaseTestForSmile
     {
         byte[] data = _smileDoc("{"+quote(name)+":13}");
         // important: MUST use InputStream to enforce buffer boundaries!
-        SmileParser p = _smileParser(new ByteArrayInputStream(data));
+        JsonParser p = _smileParser(new ByteArrayInputStream(data));
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());

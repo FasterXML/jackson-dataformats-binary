@@ -3,11 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileConstants;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 public class BasicParserTest extends BaseTestForSmile
@@ -26,7 +22,7 @@ public class BasicParserTest extends BaseTestForSmile
         }
 
         // and then test passing one
-        SmileParser p = _smileParser(data, false);
+        JsonParser p = _smileParser(data, false);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertNull(p.getCurrentName());
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
@@ -51,7 +47,7 @@ public class BasicParserTest extends BaseTestForSmile
         if (throttle) {
             in = new ThrottledInputStream(in, 1);
         }
-        SmileParser p = _smileParser(in, true);
+        JsonParser p = _smileParser(in, true);
         
         assertNull(p.currentToken());
         assertNull(p.getCurrentName());
@@ -72,7 +68,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testIntInArray() throws IOException
     {
         byte[] data = _smileDoc("[ 25.0 ]");
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertNull(p.getCurrentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -86,7 +82,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testArrayWithString() throws IOException
     {
         byte[] data = _smileDoc("[ \"abc\" ]");
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -106,7 +102,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
         // first, empty key
         byte[] data = _smileDoc("{ \"\":true }");
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -161,7 +157,7 @@ public class BasicParserTest extends BaseTestForSmile
     	LONG = LONG + LONG + LONG + LONG;
     	byte[] data = _smileDoc(quote(LONG));
 
-    	SmileParser p = _smileParser(data);
+    	JsonParser p = _smileParser(data);
     	assertNull(p.currentToken());
     	assertToken(JsonToken.VALUE_STRING, p.nextToken());
     	assertEquals(LONG, p.getText());
@@ -179,7 +175,7 @@ public class BasicParserTest extends BaseTestForSmile
         LONG = LONG + LONG + LONG;
         byte[] data = _smileDoc(quote(LONG));
 
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(LONG, p.getText());
@@ -195,7 +191,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testTrivialObject() throws IOException
     {
     	byte[] data = _smileDoc("{\"abc\":13}");
-    	SmileParser p = _smileParser(data);
+    	JsonParser p = _smileParser(data);
     	assertNull(p.currentToken());
 
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -211,7 +207,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testSimpleObject() throws IOException
     {
     	byte[] data = _smileDoc("{\"a\":8, \"b\" : [ true ], \"c\" : { }, \"d\":{\"e\":null}}");
-    	SmileParser p = _smileParser(data);
+    	JsonParser p = _smileParser(data);
     	assertNull(p.currentToken());
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
 
@@ -248,7 +244,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testNestedObject() throws IOException
     {
         byte[] data = _smileDoc("[{\"a\":{\"b\":[1]}}]");
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -280,7 +276,7 @@ public class BasicParserTest extends BaseTestForSmile
         byte[] data = _smileDoc("[" +quote(uc)+"]");
 
         // First, just skipping
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
@@ -327,7 +323,7 @@ public class BasicParserTest extends BaseTestForSmile
         byte[] data = _smileDoc("{" +quote(uc)+":true}");
 
         // First, just skipping
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
@@ -354,7 +350,7 @@ public class BasicParserTest extends BaseTestForSmile
                 (byte) SmileConstants.TOKEN_PREFIX_SHARED_STRING_SHORT,
                 (byte) SmileConstants.TOKEN_LITERAL_END_ARRAY
         };
-        SmileParser p = _smileParser(data);
+        JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         // And now should get an error
         try {
@@ -397,7 +393,7 @@ public class BasicParserTest extends BaseTestForSmile
         
             // and then read back
             byte[] json = bytes.toByteArray();
-            SmileParser p = (SmileParser) f.createParser(new ByteArrayInputStream(json, offset, json.length-offset));
+            JsonParser p = f.createParser(new ByteArrayInputStream(json, offset, json.length-offset));
             int i = 0;
 
             while (i < count) {
@@ -434,7 +430,7 @@ public class BasicParserTest extends BaseTestForSmile
         jgen.writeEndArray();
         jgen.close();
 
-        SmileParser p = _smileParser(bytes.toByteArray());
+        JsonParser p = _smileParser(bytes.toByteArray());
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         String str;
@@ -475,7 +471,7 @@ public class BasicParserTest extends BaseTestForSmile
         out.write(new byte[] { 1, 2, 3 });
         generator.close();
 
-        SmileParser parser = _smileParser(out.toByteArray());
+        JsonParser parser = _smileParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());

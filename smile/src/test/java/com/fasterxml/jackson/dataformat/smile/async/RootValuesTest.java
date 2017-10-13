@@ -37,7 +37,7 @@ public class RootValuesTest extends AsyncTestBase
     private void _testSimpleRootSequence(SmileFactory f,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(), readSize, data, offset);
         assertNull(r.currentToken());
 
         assertToken(JsonToken.START_ARRAY, r.nextToken());

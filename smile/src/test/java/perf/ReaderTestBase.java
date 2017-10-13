@@ -4,7 +4,7 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TokenStreamFactory;
+
 import com.fasterxml.jackson.databind.*;
 
 abstract class ReaderTestBase
@@ -181,12 +181,12 @@ abstract class ReaderTestBase
     }
 
     protected static byte[] convert(byte[] input,
-            TokenStreamFactory inputF, TokenStreamFactory outputF)
-            throws IOException
+            ObjectMapper srcMapper, ObjectMapper dstMapper)
+        throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(input.length);
-        JsonParser p = inputF.createParser(input);
-        JsonGenerator g = outputF.createGenerator(bytes);
+        JsonParser p = srcMapper.createParser(input);
+        JsonGenerator g = dstMapper.createGenerator(bytes);
 
         while (p.nextToken() != null) {
             g.copyCurrentEvent(p);

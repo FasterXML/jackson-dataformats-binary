@@ -6,6 +6,8 @@ import java.util.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 /**
@@ -76,13 +78,12 @@ public class AsyncSharedStringsTest
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
-        
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileParser.Feature.REQUIRE_HEADER, false);
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, false);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, true);
+
+        ObjectReader r = _smileReader(false);
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter(false)
+                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .createGenerator(out);
         gen.writeStartArray();
         Random rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {
@@ -95,7 +96,7 @@ public class AsyncSharedStringsTest
         gen.close();
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(r, 37, smile, 0);
 
         // And verify 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -131,11 +132,10 @@ public class AsyncSharedStringsTest
 
     public void testSharedStringsInArrays() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter()
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(out);
         gen.writeStartArray();
         for (String value : SHARED_SYMBOLS) {
             gen.writeString(value);
@@ -145,7 +145,7 @@ public class AsyncSharedStringsTest
         
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, smile, 0);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (String value : SHARED_SYMBOLS) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -157,10 +157,10 @@ public class AsyncSharedStringsTest
 
     public void testSharedStringsInObject() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter()
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(out);
         gen.writeStartObject();
         for (int i = 0; i < SHARED_SYMBOLS.length; ++i) {
             gen.writeFieldName("a"+i);
@@ -171,7 +171,7 @@ public class AsyncSharedStringsTest
         
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, smile, 0);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         for (int i = 0; i < SHARED_SYMBOLS.length; ++i) {
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -189,7 +189,8 @@ public class AsyncSharedStringsTest
         f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
         
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter().with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(out);
         gen.writeStartObject();
 
         gen.writeFieldName("media");
@@ -228,7 +229,7 @@ public class AsyncSharedStringsTest
         
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, smile, 0);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -497,11 +498,14 @@ public class AsyncSharedStringsTest
     
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, true);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing);
+        ObjectWriter w = _smileWriter(true);
+        if (enableSharing) {
+            w = w.with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        } else {
+            w = w.without(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        }
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = w.createGenerator(out);
         gen.writeStartArray();
         Random rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {
@@ -514,8 +518,7 @@ public class AsyncSharedStringsTest
 
     private void verifyStringValues(byte[] doc, int COUNT) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        AsyncReaderWrapper p = asyncForBytes(f, 37, doc, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, doc, 0);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         Random rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {

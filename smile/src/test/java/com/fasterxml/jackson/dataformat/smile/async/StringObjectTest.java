@@ -36,7 +36,7 @@ public class StringObjectTest extends AsyncTestBase
         f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, sharedNames);
         f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, sharedNames);
         
-        byte[] data = _smileDoc(f, json, true);
+        byte[] data = _smileDoc(json, true);
         _testBasicFieldsNames(f, data, 0, 100);
         _testBasicFieldsNames(f, data, 0, 3);
         _testBasicFieldsNames(f, data, 0, 1);

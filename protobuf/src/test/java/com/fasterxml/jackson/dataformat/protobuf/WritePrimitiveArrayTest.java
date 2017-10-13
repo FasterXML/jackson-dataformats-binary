@@ -243,7 +243,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         throws Exception
     {
         // also via streaming API
-        JsonParser p = MAPPER.getFactory().createParser(doc);
+        JsonParser p = MAPPER.createParser(doc);
         p.setSchema(schema);
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -325,7 +325,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         throws Exception
     {
         // also via streaming API
-        JsonParser p = MAPPER.getFactory().createParser(doc);
+        JsonParser p = MAPPER.createParser(doc);
         p.setSchema(schema);
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -387,7 +387,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         throws Exception
     {
         // also via streaming API
-        JsonParser p = MAPPER.getFactory().createParser(doc);
+        JsonParser p = MAPPER.createParser(doc);
         p.setSchema(schema);
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());

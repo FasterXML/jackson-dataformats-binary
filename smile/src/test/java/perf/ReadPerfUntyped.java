@@ -2,7 +2,6 @@ package perf;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
@@ -21,21 +20,20 @@ public class ReadPerfUntyped extends ReaderTestBase
         }
         byte[] json = readAll(args[0]);
 
-        JsonFactory jf = new JsonFactory();
-        SmileFactory sf = new SmileFactory();
-        ObjectMapper m = new ObjectMapper(sf);
+        final ObjectMapper jsonMapper = new ObjectMapper();
+        final ObjectMapper smileMapper = new ObjectMapper(new SmileFactory());
 
-        byte[] smile = convert(json, jf, sf);
-        
+        byte[] smile = convert(json, jsonMapper, smileMapper);
+
         // Either Object or Map
         final Class<?> UNTYPED = Map.class;
 
-        Object input = m.readValue(smile, UNTYPED);
+        Object input = smileMapper.readValue(smile, UNTYPED);
 
         new ReadPerfUntyped()
             .testFromBytes(
-                m, "JSON-as-Object", input, UNTYPED
-                ,m, "JSON-as-Object2", input, UNTYPED
+                    smileMapper, "JSON-as-Object", input, UNTYPED
+                    ,smileMapper, "JSON-as-Object2", input, UNTYPED
 //               ,m, "JSON-as-Node", input2, JsonNode.class
                 );
     }

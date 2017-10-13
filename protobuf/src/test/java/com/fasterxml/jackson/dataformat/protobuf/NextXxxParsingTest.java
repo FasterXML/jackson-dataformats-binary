@@ -22,7 +22,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         public Strings() { }
         public Strings(String... v) { values = v; }
     }
-    
+
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
     public void testNextFieldAndText() throws Exception
@@ -33,7 +33,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         Strings input = new Strings("Dogs", "like", "Baco\u00F1");
         byte[] bytes = w.writeValueAsBytes(input);
 
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
 
         assertFalse(p.nextFieldName(new SerializedString("values")));
@@ -69,7 +69,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         final Point3 input = new Point3(Integer.MAX_VALUE, -1, Integer.MIN_VALUE);
         byte[] bytes = MAPPER.writer(point3Schema).writeValueAsBytes(input);
 
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(point3Schema);
         assertEquals(-1, p.nextIntValue(-1));
         assertToken(JsonToken.START_OBJECT, p.currentToken());

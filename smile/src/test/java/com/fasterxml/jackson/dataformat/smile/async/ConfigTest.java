@@ -18,7 +18,7 @@ public class ConfigTest extends AsyncTestBase
     public void testAsyncParerDefaults() throws IOException
     {
         byte[] data = _smileDoc("[ true, false ]", true);
-        AsyncReaderWrapper r = asyncForBytes(DEFAULT_F, 100, data, 0);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(), 100, data, 0);
         JsonParser p = r.parser();
 
         assertTrue(p.canParseAsync());

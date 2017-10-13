@@ -5,7 +5,6 @@ import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class AsyncParserNamesTest extends AsyncTestBase
 {
@@ -30,8 +29,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
         final String STR1 = "a";
 
         byte[] doc = _smileDoc("{ "+quote(STR1)+":1, \"foobar\":2, \"longername\":3 }");
-        SmileFactory f = new SmileFactory();
-        AsyncReaderWrapper p = asyncForBytes(f, 5, doc, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 5, doc, 0);
         final ByteQuadsCanonicalizer symbols1 = ((NonBlockingByteArrayParser) p.parser()).symbolTableForTests();
         assertEquals(0, symbols1.size());
      
@@ -55,7 +53,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
         p.close();
 
         // but let's verify that symbol table gets reused properly
-        p = asyncForBytes(f, 5, doc, 0);
+        p = asyncForBytes(_smileReader(), 5, doc, 0);
 
         final ByteQuadsCanonicalizer symbols2 = ((NonBlockingByteArrayParser) p.parser()).symbolTableForTests();
         // symbol tables are not reused, but contents are:
@@ -93,9 +91,8 @@ public class AsyncParserNamesTest extends AsyncTestBase
     
     private void _testWithName(String name) throws IOException
     {
-        SmileFactory f = new SmileFactory();
         byte[] doc = _smileDoc("{"+quote(name)+":13}");
-        AsyncReaderWrapper p = asyncForBytes(f, 37, doc, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, doc, 0);
 
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
