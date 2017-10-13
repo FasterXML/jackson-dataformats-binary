@@ -27,8 +27,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
     
     public void testBinaryWithoutLength() throws Exception
     {
-        final SmileFactory f = new SmileFactory();
-        JsonGenerator g = f.createGenerator(new ByteArrayOutputStream());
+        JsonGenerator g = _smileGenerator(new ByteArrayOutputStream(), true);
         try {
             g.writeBinary(new ByteArrayInputStream(new byte[1]), -1);
             fail("Should have failed");
@@ -60,14 +59,14 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         }
     	
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator g = f.createGenerator(out);
+        JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), out);
         g.writeStartArray();
-    	    g.writeBinary(in, 1);
-    	    g.writeEndArray();
-    	    g.close();
-    	    in.close();
-    	
-        JsonParser p = f.createParser(out.toByteArray());
+        g.writeBinary(in, 1);
+        g.writeEndArray();
+        g.close();
+        in.close();
+
+        JsonParser p = _smileParser(out.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         byte[] b = p.getBinaryValue();
@@ -97,7 +96,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
             JsonGenerator gen;
 
             final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            gen = f.createGenerator(bytes);
+            gen = f.createGenerator(ObjectWriteContext.empty(), bytes);
 
             gen.writeStartArray();
             InputStream data = new ThrottledInputStream(INPUT, chunkSize);
@@ -114,7 +113,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
             } else {
                 in = new ByteArrayInputStream(b2);
             }
-            JsonParser p = f.createParser(in);
+            JsonParser p = _smileParser(in);
             
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());

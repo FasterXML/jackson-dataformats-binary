@@ -10,7 +10,7 @@ import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 public class UnicodeHandlingTest extends BaseTestForSmile
 {
-    private final SmileFactory F = smileFactory(false, true, false);
+    private final SmileFactory F = _smileFactory(false, true, false);
     
     public void testShortUnicodeWithSurrogates() throws IOException
     {

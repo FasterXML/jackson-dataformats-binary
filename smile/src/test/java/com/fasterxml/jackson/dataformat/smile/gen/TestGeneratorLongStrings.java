@@ -4,8 +4,6 @@ import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class TestGeneratorLongStrings extends BaseTestForSmile
@@ -14,12 +12,11 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
     
     public void testLongWithMultiBytes() throws Exception
     {
-        SmileFactory f = new SmileFactory();
         ArrayList<String> strings = new ArrayList<String>();
         Random rnd = new Random(123);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(DOC_LEN);
-        SmileGenerator gen = (SmileGenerator) f.createGenerator(out);
+        JsonGenerator gen = _smileGenerator(out, true);
         gen.writeStartArray();
         
         // Let's create 1M doc, first using Strings
@@ -31,11 +28,11 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         gen.writeEndArray();
         gen.close();
         // Written ok; let's try parsing then
-        _verifyStrings(f, out.toByteArray(), strings);
+        _verifyStrings(out.toByteArray(), strings);
 
         // Then same with char[] 
         out = new ByteArrayOutputStream(DOC_LEN);
-        gen = (SmileGenerator) f.createGenerator(out);
+        gen = _smileGenerator(out, true);
         gen.writeStartArray();
         
         // Let's create 1M doc, first using Strings
@@ -45,7 +42,7 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         }
         gen.writeEndArray();
         gen.close();
-        _verifyStrings(f, out.toByteArray(), strings);
+        _verifyStrings(out.toByteArray(), strings);
     }
 
     /*
@@ -79,9 +76,9 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         return sw.toString();
     }
 
-    private void _verifyStrings(SmileFactory f, byte[] input, List<String> strings) throws IOException
+    private void _verifyStrings(byte[] input, List<String> strings) throws IOException
     {
-        JsonParser p = f.createParser(input);
+        JsonParser p = _smileParser(input);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -91,7 +88,7 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         p.close();
 
         // Second round, using different accessor
-        p = f.createParser(input);
+        p = _smileParser(input);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());

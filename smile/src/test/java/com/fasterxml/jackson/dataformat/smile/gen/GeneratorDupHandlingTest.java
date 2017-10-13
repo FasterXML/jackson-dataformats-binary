@@ -63,7 +63,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
 
     protected JsonGenerator _generator(JsonFactory f) throws IOException
     {
-        return f.createGenerator(new ByteArrayOutputStream());
+        return f.createGenerator(ObjectWriteContext.empty(), new ByteArrayOutputStream());
     }
 
     protected void _writeSimple0(JsonGenerator g, String name) throws IOException

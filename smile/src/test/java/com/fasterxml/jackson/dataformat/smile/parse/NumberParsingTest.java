@@ -196,7 +196,7 @@ public class NumberParsingTest
     public void testFloats() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         float value = 0.37f;
         g.writeNumber(value);
         g.close();
@@ -220,7 +220,7 @@ public class NumberParsingTest
     public void testDoubles() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         double value = -12.0986;
         g.writeNumber(value);
         g.close();
@@ -253,7 +253,7 @@ public class NumberParsingTest
         };
         
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         g.writeStartArray();
         for (double d : values) {
             g.writeNumber(d);
@@ -280,7 +280,7 @@ public class NumberParsingTest
     public void testObjectWithDoubles() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         g.writeStartObject();
         g.writeNumberField("x", 0.5);
         g.writeNumberField("y", 0.01338);
@@ -318,7 +318,7 @@ public class NumberParsingTest
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         BigInteger in = new BigInteger(String.valueOf(Long.MIN_VALUE)+"0012575934");
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         g.writeNumber(in);
         g.close();
         byte[] data = bo.toByteArray();
@@ -331,7 +331,7 @@ public class NumberParsingTest
     	
         // second test; verify skipping works
         bo = new ByteArrayOutputStream();
-        g = smileGenerator(bo, false);
+        g = _smileGenerator(bo, false);
         g.writeStartArray();
         g.writeNumber(in);
         g.writeEndArray();
@@ -349,7 +349,7 @@ public class NumberParsingTest
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         BigDecimal in = new BigDecimal("32599.00001");
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         g.writeNumber(in);
         g.close();
         byte[] data = bo.toByteArray();
@@ -363,7 +363,7 @@ public class NumberParsingTest
 
         // second test; verify skipping works
         bo = new ByteArrayOutputStream();
-        g = smileGenerator(bo, false);
+        g = _smileGenerator(bo, false);
         g.writeStartArray();
         g.writeNumber(in);
         g.writeEndArray();
@@ -380,7 +380,7 @@ public class NumberParsingTest
     public void testMixedAccessForInts() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
         g.writeNumber(123);
         g.writeNumber(123);
         g.writeNumber(123);
@@ -450,7 +450,7 @@ public class NumberParsingTest
     public void testMixedAccessForFloats() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        SmileGenerator g = smileGenerator(bo, false);
+        SmileGenerator g = _smileGenerator(bo, false);
 
         g.writeNumber(2.25d);
         g.writeNumber(3.25d);

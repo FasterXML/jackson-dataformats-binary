@@ -4,7 +4,10 @@ import java.io.*;
 
 import static org.junit.Assert.*;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
@@ -70,13 +73,13 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
         for (int size : SIZES) {
             byte[] data = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
+            SmileGenerator g = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), bo);
             g.writeBinary(data);
             g.close();
             byte[] smile = bo.toByteArray();            
             
             // and verify
-            SmileParser p = (SmileParser)f.createParser(smile);
+            SmileParser p = (SmileParser) _smileParser(smile);
             assertEquals(raw, p.mayContainRawBinary());
             
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
@@ -86,7 +89,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             p.close();
 
             // and second time around, skipping
-            p = (SmileParser) f.createParser(smile);
+            p = (SmileParser) _smileParser(smile);
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertNull(p.nextToken());
             p.close();
@@ -100,7 +103,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
         for (int size : SIZES) {
             byte[] data = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
+            JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bo);
             g.writeStartArray();
             g.writeBinary(data);
             g.writeNumber(1); // just to verify there's no overrun
@@ -109,7 +112,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             byte[] smile = bo.toByteArray();            
             
             // and verify
-            SmileParser p = (SmileParser)f.createParser(smile);
+            JsonParser p = _smileParser(smile);
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
@@ -121,7 +124,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             p.close();
 
             // and second time around, skipping
-            p = (SmileParser)f.createParser(smile);
+            p = _smileParser(smile);
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -138,7 +141,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
         for (int size : SIZES) {
             byte[] data = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
+            JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bo);
             g.writeStartObject();
             g.writeFieldName("binary");
             g.writeBinary(data);
@@ -147,7 +150,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             byte[] smile = bo.toByteArray();            
             
             // and verify
-            SmileParser p = (SmileParser)f.createParser(smile);
+            JsonParser p = _smileParser(smile);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -160,7 +163,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             p.close();
 
             // and second time around, skipping
-            p = (SmileParser)f.createParser(smile);
+            p = _smileParser(smile);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
@@ -177,7 +180,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
         for (int size : SIZES) {
             byte[] data = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = (SmileGenerator) f.createGenerator(bo);
+            JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bo);
             g.writeStartObject();
             g.writeFieldName("b");
             g.writeBinary(data);
@@ -186,7 +189,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             byte[] smile = bo.toByteArray();            
             
             // and verify
-            SmileParser p = (SmileParser)f.createParser(smile);
+            JsonParser p = _smileParser(smile);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
             assertToken(JsonToken.FIELD_NAME, p.nextToken());

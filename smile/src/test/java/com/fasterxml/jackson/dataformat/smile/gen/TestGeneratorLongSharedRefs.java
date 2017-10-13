@@ -3,9 +3,10 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class TestGeneratorLongSharedRefs extends BaseTestForSmile
@@ -16,9 +17,9 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 
         // boolean requireHeader, boolean writeHeader, boolean writeEndMarker
-        final SmileFactory f = smileFactory(false, true, false);
+        final ObjectMapper mapper = smileMapper(false, true, false);
         
-        SmileGenerator generator =  (SmileGenerator) f.createGenerator(byteOut);
+        JsonGenerator generator =  mapper.createGenerator(byteOut);
         generator.writeStartObject();
         generator.writeFieldName("a");
         generator.writeStartObject();
@@ -43,7 +44,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         byte[] smile = byteOut.toByteArray();
 
         // then read it back; make sure to use InputStream to exercise block boundaries
-        SmileParser p = (SmileParser) f.createParser(new ByteArrayInputStream(smile));
+        JsonParser p = _smileParser(new ByteArrayInputStream(smile));
         assertToken(p.nextToken(), JsonToken.START_OBJECT);
 
         assertToken(p.nextToken(), JsonToken.FIELD_NAME);
@@ -89,10 +90,10 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 
         // boolean requireHeader, boolean writeHeader, boolean writeEndMarker
-        final SmileFactory f = smileFactory(false, true, false);
-        f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
-        
-        SmileGenerator generator =  (SmileGenerator) f.createGenerator(byteOut);
+        ObjectMapper mapper = smileMapper(false, true, false);
+        JsonGenerator generator = mapper.writer()
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(byteOut);
         generator.writeStartArray();
 
         final int VALUE_COUNT = 300;
@@ -111,7 +112,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         byte[] smile = byteOut.toByteArray();
 
         // then read it back; make sure to use InputStream to exercise block boundaries
-        SmileParser p = (SmileParser)f.createParser(new ByteArrayInputStream(smile));
+        JsonParser p = _smileParser(new ByteArrayInputStream(smile));
         assertToken(p.nextToken(), JsonToken.START_ARRAY);
         for (int i=0; i < VALUE_COUNT; i++) {
             assertToken(p.nextToken(), JsonToken.VALUE_STRING);

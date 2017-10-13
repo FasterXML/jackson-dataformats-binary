@@ -365,7 +365,7 @@ public class BasicParserTest extends BaseTestForSmile
     // [JACKSON-629]
     public void testNameBoundary() throws IOException
     {
-        SmileFactory f = smileFactory(true, true, false);
+        SmileFactory f = _smileFactory(true, true, false);
         // let's create 3 meg docs
         final int LEN = 3 * 1000 * 1000;
         final String FIELD = "field01"; // important: 7 chars
@@ -379,7 +379,7 @@ public class BasicParserTest extends BaseTestForSmile
             
             // force back-refs off, easier to trigger problem
             f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, false);
-            SmileGenerator gen = (SmileGenerator) f.createGenerator(bytes);
+            JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), bytes);
             
             int count = 0;
             do {
@@ -393,7 +393,7 @@ public class BasicParserTest extends BaseTestForSmile
         
             // and then read back
             byte[] json = bytes.toByteArray();
-            JsonParser p = f.createParser(new ByteArrayInputStream(json, offset, json.length-offset));
+            JsonParser p = _smileParser(new ByteArrayInputStream(json, offset, json.length-offset));
             int i = 0;
 
             while (i < count) {
@@ -419,7 +419,7 @@ public class BasicParserTest extends BaseTestForSmile
         sf.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         
-        JsonGenerator jgen = sf.createGenerator(bytes);
+        JsonGenerator jgen = sf.createGenerator(ObjectWriteContext.empty(), bytes);
         jgen.writeStartArray();
         jgen.writeStartObject();
         jgen.writeStringField("key", "value");
@@ -462,7 +462,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testBufferRelease() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator generator = smileGenerator(out, true);
+        SmileGenerator generator = _smileGenerator(out, true);
         generator.writeStartObject();
         generator.writeStringField("a", "1");
         generator.writeEndObject();

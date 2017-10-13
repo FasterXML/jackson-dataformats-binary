@@ -1,9 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.SequenceInputStream;
+import java.io.*;
 import java.util.*;
 
 import org.junit.Assert;
@@ -17,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class SmileMapperTest extends BaseTestForSmile
 {
@@ -99,7 +95,7 @@ public class SmileMapperTest extends BaseTestForSmile
         assertEquals(uuid, out);
 
         // then verify it comes back as binary
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         assertEquals(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         byte[] b = p.getBinaryValue();
         assertNotNull(b);
@@ -126,9 +122,7 @@ public class SmileMapperTest extends BaseTestForSmile
     // for [dataformat-smile#26]
     public void testIssue26ArrayOutOfBounds() throws Exception
     {
-        SmileFactory f = new SmileFactory();
-        ObjectMapper mapper = new ObjectMapper(new SmileFactory());
-        byte[] buffer = _generateHugeDoc(f);
+        byte[] buffer = _generateHugeDoc();
 
         // split the buffer in two smaller buffers
         int len = 160;
@@ -142,7 +136,7 @@ public class SmileMapperTest extends BaseTestForSmile
         ByteArrayInputStream in2 = new ByteArrayInputStream(buf2);
         SequenceInputStream inputStream = new SequenceInputStream(in1, in2);
 
-        JsonNode jsonNode = mapper.readTree(inputStream);
+        JsonNode jsonNode = smileMapper().readTree(inputStream);
         assertNotNull(jsonNode);
 
         // let's actually verify
@@ -150,10 +144,10 @@ public class SmileMapperTest extends BaseTestForSmile
         assertEquals(26, arr.size());
     }
 
-    private byte[] _generateHugeDoc(SmileFactory f) throws IOException
+    private byte[] _generateHugeDoc() throws IOException
     {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
-        JsonGenerator g = f.createGenerator(b);
+        JsonGenerator g = _smileGenerator(b, true);
         g.writeStartArray();
 
         for (int c = 'a'; c <= 'z'; ++c) {

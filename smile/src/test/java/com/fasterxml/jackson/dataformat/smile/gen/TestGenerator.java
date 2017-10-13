@@ -3,8 +3,11 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectReadContext;
+import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +24,7 @@ public class TestGenerator extends BaseTestForSmile
     {
         // false, no header (or frame marker)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         assertEquals(0, gen.getOutputBuffered());
         gen.writeBoolean(true);
         assertEquals(1, gen.getOutputBuffered());
@@ -31,14 +34,14 @@ public class TestGenerator extends BaseTestForSmile
 
         // false, no header or frame marker
         out = new ByteArrayOutputStream();
-        gen = smileGenerator(out, false);
+        gen = _smileGenerator(out, false);
         gen.writeBoolean(false);
         gen.close();
         _verifyBytes(out.toByteArray(), SmileConstants.TOKEN_LITERAL_FALSE);
 
         // null, no header or frame marker
         out = new ByteArrayOutputStream();
-        gen = smileGenerator(out, false);
+        gen = _smileGenerator(out, false);
         gen.writeNull();
         gen.close();
         _verifyBytes(out.toByteArray(), SmileConstants.TOKEN_LITERAL_NULL);
@@ -46,7 +49,7 @@ public class TestGenerator extends BaseTestForSmile
         // And then with some other combinations:
         // true, but with header
         out = new ByteArrayOutputStream();
-        gen = smileGenerator(out, true);
+        gen = _smileGenerator(out, true);
         gen.writeBoolean(true);
         gen.close();
         
@@ -59,7 +62,7 @@ public class TestGenerator extends BaseTestForSmile
 
         // null, with header and end marker
         out = new ByteArrayOutputStream();
-        gen = smileGenerator(out, true);
+        gen = _smileGenerator(out, true);
         gen.enable(SmileGenerator.Feature.WRITE_END_MARKER);
         gen.writeNull();
         // header (4 bytes) and boolen (1 byte)
@@ -74,7 +77,7 @@ public class TestGenerator extends BaseTestForSmile
     {
     	// First: empty array (2 bytes)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartArray();
         gen.writeEndArray();
         gen.close();
@@ -83,7 +86,7 @@ public class TestGenerator extends BaseTestForSmile
 
         // then simple array with 3 literals
         out = new ByteArrayOutputStream();
-        gen = smileGenerator(out, false);
+        gen = _smileGenerator(out, false);
         gen.writeStartArray();
         gen.writeBoolean(true);
         gen.writeNull();
@@ -94,7 +97,7 @@ public class TestGenerator extends BaseTestForSmile
 
         // and then array containing another array and short String
         out = new ByteArrayOutputStream();
-        gen = smileGenerator(out, false);
+        gen = _smileGenerator(out, false);
         gen.writeStartArray();
         gen.writeStartArray();
         gen.writeEndArray();
@@ -108,7 +111,7 @@ public class TestGenerator extends BaseTestForSmile
     public void testShortAscii() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeString("abc");
         gen.close();
         _verifyBytes(out.toByteArray(), (byte)0x42, (byte) 'a', (byte) 'b', (byte) 'c');
@@ -118,7 +121,7 @@ public class TestGenerator extends BaseTestForSmile
     public void testTrivialObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartObject();
         gen.writeNumberField("a", 6);
         gen.writeEndObject();
@@ -131,7 +134,7 @@ public class TestGenerator extends BaseTestForSmile
     public void test2FieldObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartObject();
         gen.writeNumberField("a", 1);
         gen.writeNumberField("b", 2);
@@ -146,7 +149,7 @@ public class TestGenerator extends BaseTestForSmile
     public void testAnotherObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartObject();
         gen.writeNumberField("a", 8);
         gen.writeFieldName("b");
@@ -172,10 +175,10 @@ public class TestGenerator extends BaseTestForSmile
     public void testObjectWithEmptyKey() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileFactory f = smileFactory(false, true, false);
+        SmileFactory f = _smileFactory(false, true, false);
         f.enable(SmileGenerator.Feature.CHECK_SHARED_NAMES);
         f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
-        SmileGenerator gen = (SmileGenerator) f.createGenerator(out);
+        JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartObject();
         gen.writeFieldName("foo");
         gen.writeStartObject();
@@ -196,7 +199,7 @@ public class TestGenerator extends BaseTestForSmile
     private void _verifyWithEmpty(SmileFactory f, byte[] b, int mode) throws Exception
     {
         // Important: test 3 variants we have for name access:
-        JsonParser p = f.createParser(b);
+        JsonParser p = f.createParser(ObjectReadContext.empty(), b);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         _verifyName(p, mode, "foo");
@@ -258,7 +261,7 @@ public class TestGenerator extends BaseTestForSmile
         final HashMap<String, String> data = new HashMap<String,String>();
         data.put("key", "value");
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final SmileGenerator smileGenerator = (SmileGenerator) smileFactory.createGenerator(out);
+        final SmileGenerator smileGenerator = (SmileGenerator) smileObjectMapper.createGenerator(out);
         // NOTE: not optimal way -- should use "gen.writeStartArray()" -- but exposed a problem
         out.write(SmileConstants.TOKEN_LITERAL_START_ARRAY);
         smileObjectMapper.writeValue(smileGenerator, data);
@@ -273,22 +276,6 @@ public class TestGenerator extends BaseTestForSmile
         assertEquals(1, root.size());
     }
 
-    // [Issue#6], missing overrides for File-backed generator
-    public void testWriteToFile() throws Exception
-    {
-        final SmileFactory smileFactory = new SmileFactory();
-        ObjectMapper mapper = new ObjectMapper(smileFactory);
-        File f = File.createTempFile("test", ".tst");
-        mapper.writeValue(f, Integer.valueOf(3));
-
-        JsonParser jp = smileFactory.createParser(f);
-        assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
-        assertEquals(3, jp.getIntValue());
-        assertNull(jp.nextToken());
-        jp.close();
-        f.delete();
-    }
-    
     /*
     /**********************************************************
     /* Helper methods
@@ -302,7 +289,7 @@ public class TestGenerator extends BaseTestForSmile
         f.configure(SmileGenerator.Feature.WRITE_HEADER, true);
         f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, shared);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = (SmileGenerator) f.createGenerator(out);
+        JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartArray();
         gen.writeString(value);
         gen.writeString(value);

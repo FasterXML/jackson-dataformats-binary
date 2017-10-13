@@ -66,7 +66,7 @@ public class ParserLocationTest
         final int SIZE = COUNT * 7;
         
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(COUNT + 10);
-        SmileGenerator gen = smileGenerator(bytes, true);
+        SmileGenerator gen = _smileGenerator(bytes, true);
         gen.disable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
         gen.writeStartArray();
         for (int i = 0; i < COUNT; ++i) {

@@ -5,9 +5,10 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class SimpleStringArrayTest extends AsyncTestBase
 {
@@ -23,14 +24,9 @@ public class SimpleStringArrayTest extends AsyncTestBase
         LONG_ASCII = sb.toString();
     }
 
-    private final static SmileFactory factoryWithShared() {
-        SmileFactory f = new SmileFactory();
-        f.enable(SmileParser.Feature.REQUIRE_HEADER);
-        f.enable(SmileGenerator.Feature.CHECK_SHARED_NAMES);
-        // allow use of shared Strings too
-        f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
-        return f;
-    }
+    private final ObjectWriter WRITE_SHARED = _smileWriter(true)
+        .withFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
+                SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
 
     public void testShortAsciiStrings() throws IOException
     {
@@ -44,18 +40,17 @@ public class SimpleStringArrayTest extends AsyncTestBase
                 // plus let's do back refs:
                 "Test", "124"
         };
-        SmileFactory f = factoryWithShared();
-        byte[] data = _stringDoc(f, input);
+        byte[] data = _stringDoc(WRITE_SHARED, input);
 
         // first: require headers, no offsets
-        _testStrings(f, input, data, 0, 100);
-        _testStrings(f, input, data, 0, 3);
-        _testStrings(f, input, data, 0, 1);
+        _testStrings(input, data, 0, 100);
+        _testStrings(input, data, 0, 3);
+        _testStrings(input, data, 0, 1);
 
         // then with some offsets:
-        _testStrings(f, input, data, 1, 100);
-        _testStrings(f, input, data, 1, 3);
-        _testStrings(f, input, data, 1, 1);
+        _testStrings(input, data, 1, 100);
+        _testStrings(input, data, 1, 3);
+        _testStrings(input, data, 1, 1);
     }
 
     public void testShortUnicodeStrings() throws IOException
@@ -72,18 +67,17 @@ public class SimpleStringArrayTest extends AsyncTestBase
                 "Test", repeat,
                 "!"
         };
-        SmileFactory f = factoryWithShared();
-        byte[] data = _stringDoc(f, input);
+        byte[] data = _stringDoc(WRITE_SHARED, input);
 
         // first: require headers, no offsets
-        _testStrings(f, input, data, 0, 100);
-        _testStrings(f, input, data, 0, 3);
-        _testStrings(f, input, data, 0, 1);
+        _testStrings(input, data, 0, 100);
+        _testStrings(input, data, 0, 3);
+        _testStrings(input, data, 0, 1);
 
         // then with some offsets:
-        _testStrings(f, input, data, 1, 100);
-        _testStrings(f, input, data, 1, 3);
-        _testStrings(f, input, data, 1, 1);
+        _testStrings(input, data, 1, 100);
+        _testStrings(input, data, 1, 3);
+        _testStrings(input, data, 1, 1);
     }
 
     public void testLongAsciiStrings() throws IOException
@@ -95,18 +89,17 @@ public class SimpleStringArrayTest extends AsyncTestBase
                         str0to9,"",str0to9,str0to9,"...",str0to9),
                 LONG_ASCII
         };
-        SmileFactory f = factoryWithShared();
-        byte[] data = _stringDoc(f, input);
+        byte[] data = _stringDoc(WRITE_SHARED, input);
 
         // first: require headers, no offsets
-        _testStrings(f, input, data, 0, 1);
-        _testStrings(f, input, data, 0, 3);
-        _testStrings(f, input, data, 0, 9000);
+        _testStrings(input, data, 0, 1);
+        _testStrings(input, data, 0, 3);
+        _testStrings(input, data, 0, 9000);
 
         // then with some offsets:
-        _testStrings(f, input, data, 1, 9000);
-        _testStrings(f, input, data, 1, 3);
-        _testStrings(f, input, data, 1, 1);
+        _testStrings(input, data, 1, 9000);
+        _testStrings(input, data, 1, 3);
+        _testStrings(input, data, 1, 1);
     }
 
     public void testLongUnicodeStrings() throws IOException
@@ -123,24 +116,23 @@ public class SimpleStringArrayTest extends AsyncTestBase
                 LONG + "..",
                 LONG + "..."
         };
-        SmileFactory f = factoryWithShared();
-        byte[] data = _stringDoc(f, input);
+        byte[] data = _stringDoc(WRITE_SHARED, input);
 
         // first: require headers, no offsets
-        _testStrings(f, input, data, 0, 9000);
-        _testStrings(f, input, data, 0, 3);
-        _testStrings(f, input, data, 0, 1);
+        _testStrings(input, data, 0, 9000);
+        _testStrings(input, data, 0, 3);
+        _testStrings(input, data, 0, 1);
 
         // then with some offsets:
-        _testStrings(f, input, data, 1, 9000);
-        _testStrings(f, input, data, 1, 3);
-        _testStrings(f, input, data, 1, 1);
+        _testStrings(input, data, 1, 9000);
+        _testStrings(input, data, 1, 3);
+        _testStrings(input, data, 1, 1);
     }
 
-    private void _testStrings(SmileFactory f, String[] values,
+    private void _testStrings(String[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
@@ -159,10 +151,10 @@ public class SimpleStringArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
-    private byte[] _stringDoc(SmileFactory f, String[] input) throws IOException
+    private byte[] _stringDoc(ObjectWriter w, String[] input) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = w.createGenerator(bytes);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeString(input[i]);

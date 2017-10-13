@@ -18,7 +18,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     {
         // false, no header (or frame marker)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartArray();
         gen.writeStartObject();
         gen.writeNumberField("abc", 1);
@@ -46,7 +46,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
             String field = LONG_NAME.substring(0, strLen);
             // false, no header (or frame marker)
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            SmileGenerator gen = smileGenerator(out, false);
+            SmileGenerator gen = _smileGenerator(out, false);
             gen.writeStartArray();
             gen.writeStartObject();
             gen.writeNumberField(field, 1);

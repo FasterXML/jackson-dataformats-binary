@@ -20,11 +20,9 @@ public class ParserNextXxxTest extends BaseTestForSmile
     {
         final int TESTROUNDS = 223;
 
-        final SmileFactory f = new SmileFactory();
-        
         // build the big document to trigger issue
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(2000);
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = _smileGenerator(bytes, true);
         for (int i = 0; i < TESTROUNDS; ++i) {
             g.writeStartObject();
             g.writeNumberField("fieldName", 1);
@@ -70,13 +68,11 @@ public class ParserNextXxxTest extends BaseTestForSmile
 
     public void testNextNameWithLongContent() throws Exception
     {
-        final SmileFactory f = new SmileFactory();
-
         // do 3 meg thingy
         final int SIZE = 3 * 1024 * 1024;
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(SIZE + 20);
 
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = _smileGenerator(bytes, true);
 
         g.writeStartObject();
         Random rnd = new Random(1);

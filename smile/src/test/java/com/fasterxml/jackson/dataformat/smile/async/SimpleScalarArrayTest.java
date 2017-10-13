@@ -121,7 +121,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
                 Long.MIN_VALUE, Long.MAX_VALUE };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         ObjectReader r = REQ_HEADERS;
-        JsonGenerator g = smileGenerator(bytes, true);
+        JsonGenerator g = _smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -168,7 +168,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         final float[] input = new float[] { 0.0f, 0.25f, -0.5f, 10000.125f, - 99999.075f };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         ObjectReader r = REQ_HEADERS;
-        JsonGenerator g = smileGenerator(bytes, true);
+        JsonGenerator g = _smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -208,7 +208,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         final double[] input = new double[] { 0.0, 0.25, -0.5, 10000.125, -99999.075 };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         ObjectReader r = REQ_HEADERS;
-        JsonGenerator g = smileGenerator(bytes, true);
+        JsonGenerator g = _smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -266,7 +266,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         ObjectReader r = REQ_HEADERS;
-        JsonGenerator g = smileGenerator(bytes, true);
+        JsonGenerator g = _smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);
@@ -327,7 +327,7 @@ System.err.println();
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         ObjectReader r = REQ_HEADERS;
-        JsonGenerator g = smileGenerator(bytes, true);
+        JsonGenerator g = _smileGenerator(bytes, true);
         g.writeStartArray();
         for (int i = 0; i < input.length; ++i) {
             g.writeNumber(input[i]);

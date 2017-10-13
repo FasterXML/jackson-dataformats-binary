@@ -104,10 +104,10 @@ public abstract class BaseTestForSmile
     protected ObjectMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        return new ObjectMapper(smileFactory(requireHeader, writeHeader, writeEndMarker));
+        return new ObjectMapper(_smileFactory(requireHeader, writeHeader, writeEndMarker));
     }
     
-    protected SmileFactory smileFactory(boolean requireHeader,
+    protected SmileFactory _smileFactory(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
         SmileFactory f = new SmileFactory();
@@ -122,23 +122,34 @@ public abstract class BaseTestForSmile
         return _smileDoc(json, true);
     }
 
-    protected byte[] _smileDoc(ObjectMapper mapper, String json, boolean writeHeader)
+    protected byte[] _smileDoc(ObjectMapper mapper, String json, boolean writeHeader) throws IOException
+    {
+        ObjectWriter w = mapper.writer();
+        if (writeHeader) {
+            w = w.with(SmileGenerator.Feature.WRITE_HEADER);
+        } else {
+            w = w.without(SmileGenerator.Feature.WRITE_HEADER);
+        }
+        return _smileDoc(w, json);
+    }
+
+    protected byte[] _smileDoc(ObjectWriter w, String json)
         throws IOException
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try (JsonGenerator g = smileGenerator(out, writeHeader)) {
+            try (JsonGenerator g = w.createGenerator(out)) {
                 _copy(p, g);
             }
             return out.toByteArray();
         }
     }
-
+    
     protected byte[] _smileDoc(String json, boolean writeHeader) throws IOException
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try (JsonGenerator g = smileGenerator(out, writeHeader)) {
+            try (JsonGenerator g = _smileGenerator(out, writeHeader)) {
                 _copy(p, g);
             }
             return out.toByteArray();
@@ -152,18 +163,10 @@ public abstract class BaseTestForSmile
         }
     }
 
-    protected SmileGenerator smileGenerator(OutputStream result, boolean addHeader)
+    protected SmileGenerator _smileGenerator(OutputStream result, boolean addHeader)
         throws IOException
     {
         return  (SmileGenerator) _smileWriter(addHeader).createGenerator(result);
-    }
-
-    protected SmileGenerator smileGenerator(SmileFactory f,
-            OutputStream result, boolean addHeader)
-        throws IOException
-    {
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, addHeader);
-        return (SmileGenerator) f.createGenerator(result, null);
     }
 
     protected ObjectWriter _smileWriter() {

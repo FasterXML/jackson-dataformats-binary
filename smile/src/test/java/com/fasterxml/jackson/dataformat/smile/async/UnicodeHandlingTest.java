@@ -9,7 +9,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
 {
     public void testShortUnicodeWithSurrogates() throws IOException
     {
-        final SmileFactory f = smileFactory(false, true, false);
+        final SmileFactory f = _smileFactory(false, true, false);
 
         // first, no buffer boundaries
         _testUnicodeWithSurrogates(f, 28, Integer.MAX_VALUE);
@@ -26,7 +26,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
 
     public void testLongUnicodeWithSurrogates() throws IOException
     {
-        SmileFactory f = smileFactory(false, true, false);
+        SmileFactory f = _smileFactory(false, true, false);
 
         _testUnicodeWithSurrogates(f, 230, Integer.MAX_VALUE);
         _testUnicodeWithSurrogates(f, 700, Integer.MAX_VALUE);

@@ -8,21 +8,9 @@ import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class SimpleObjectTest extends AsyncTestBase
 {
-    private final SmileFactory F_REQ_HEADERS = new SmileFactory();
-    {
-        F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
-    }
-
-    private final SmileFactory F_NO_HEADERS = new SmileFactory();
-    {
-        F_NO_HEADERS.disable(SmileParser.Feature.REQUIRE_HEADER);
-    }
-
     /*
     /**********************************************************************
     /* Test methods
@@ -125,8 +113,7 @@ public class SimpleObjectTest extends AsyncTestBase
     public void testNumbers() throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        SmileFactory f = F_REQ_HEADERS;
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = _smileGenerator(bytes, true);
         g.writeStartObject();
         g.writeNumberField("i1", NUMBER_EXP_I);
         g.writeNumberField("doubley", NUMBER_EXP_D);
@@ -148,7 +135,7 @@ public class SimpleObjectTest extends AsyncTestBase
 
     private void _testNumbers(byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(_smileReader(), readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, offset);
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_OBJECT, r.nextToken());
