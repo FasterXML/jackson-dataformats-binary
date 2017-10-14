@@ -9,7 +9,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.2 (not yet released)
+2.9.2 (14-Oct-2017)
 
 #113 (avro): incorrect deserialization of `long` with new `AvroFactory`
  (reported by LvR@github)
