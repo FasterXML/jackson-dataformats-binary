@@ -2148,7 +2148,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         // but loop beyond
         for (int end = ptr+6; ptr < end; ++ptr) {
-            if (buf[ptr] >= 0) {
+            if (buf[ptr++] >= 0) {
                 _inputPtr = ptr;
                 return;
             }
