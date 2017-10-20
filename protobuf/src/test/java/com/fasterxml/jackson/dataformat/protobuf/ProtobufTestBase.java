@@ -453,6 +453,16 @@ public abstract class ProtobufTestBase extends TestCase
                     ;
         }
     }
+
+    /*
+    /**********************************************************
+    /* Helper constructors
+    /**********************************************************
+     */
+
+    protected ProtobufMapper newObjectMapper() {
+        return new ProtobufMapper();
+    }
     
     /*
     /**********************************************************

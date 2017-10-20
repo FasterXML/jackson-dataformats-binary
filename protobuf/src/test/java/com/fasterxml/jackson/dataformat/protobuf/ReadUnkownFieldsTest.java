@@ -9,20 +9,11 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 public class ReadUnkownFieldsTest extends ProtobufTestBase
 {
     static class OneField {
-
         @JsonProperty(value = "f3", index = 3)
-        private int f3;
+        public int f3;
+    }
 
-        public int getF3() {
-          return f3;
-        }
-
-        public void setF3(int f3) {
-          this.f3 = f3;
-        }
-      }
-
-      static class ThreeField {
+    static class ThreeField {
 
         @JsonProperty(value = "f1", index = 1)
         private int f1;
@@ -64,7 +55,7 @@ public class ReadUnkownFieldsTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
+    private final ProtobufMapper MAPPER = newObjectMapper();
 
     public void testMultipleUnknown() throws Exception
     {
@@ -83,6 +74,6 @@ public class ReadUnkownFieldsTest extends ProtobufTestBase
                 .with(JsonParser.Feature.IGNORE_UNDEFINED)
                 .readValue(in);
 
-        assertEquals(threeField.getF3(), oneField.getF3());
+        assertEquals(threeField.getF3(), oneField.f3);
     }
 }

@@ -79,26 +79,26 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
+    private final ProtobufMapper MAPPER = newObjectMapper();
 
-      public void testMultipleUnknown() throws Exception
-      {
-          MoreNestedField moreNestedField = new MoreNestedField();
-          NestedTwoField nestedTwoField = new NestedTwoField();
-          nestedTwoField.setNested1(1);
-          nestedTwoField.setNested2(2);
-          moreNestedField.setF1(nestedTwoField);
+    public void testMultipleUnknown() throws Exception
+    {
+        MoreNestedField moreNestedField = new MoreNestedField();
+        NestedTwoField nestedTwoField = new NestedTwoField();
+        nestedTwoField.setNested1(1);
+        nestedTwoField.setNested2(2);
+        moreNestedField.setF1(nestedTwoField);
 
-          byte[] in = MAPPER.writerFor(MoreNestedField.class)
-                  .with(MAPPER.generateSchemaFor(MoreNestedField.class))
-                  .writeValueAsBytes(moreNestedField);
+        byte[] in = MAPPER.writerFor(MoreNestedField.class)
+                .with(MAPPER.generateSchemaFor(MoreNestedField.class))
+                .writeValueAsBytes(moreNestedField);
 
-          LessNestedField lesser = MAPPER.readerFor(LessNestedField.class)
-                  .with(MAPPER.generateSchemaFor(LessNestedField.class))
-                  // important: skip through unknown
-                  .with(JsonParser.Feature.IGNORE_UNDEFINED)
-                  .readValue(in);
+        LessNestedField lesser = MAPPER.readerFor(LessNestedField.class)
+                .with(MAPPER.generateSchemaFor(LessNestedField.class))
+                // important: skip through unknown
+                .with(JsonParser.Feature.IGNORE_UNDEFINED)
+                .readValue(in);
 
-          assertEquals(moreNestedField.getF1().getNested2(), lesser.getF1().getNested2());
+        assertEquals(moreNestedField.getF1().getNested2(), lesser.getF1().getNested2());
     }
 }
