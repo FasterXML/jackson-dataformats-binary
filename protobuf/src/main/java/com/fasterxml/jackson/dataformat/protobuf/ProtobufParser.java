@@ -1083,9 +1083,9 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                _skipUnknownField(id, wireType);
-                // may or may not match, but let caller figure it out
-                return null;
+                if (_skipUnknownField(id, wireType) != JsonToken.FIELD_NAME) {
+                    return null;
+                }
             }
             String name = _currentField.name;
             _parsingContext.setCurrentName(name);
