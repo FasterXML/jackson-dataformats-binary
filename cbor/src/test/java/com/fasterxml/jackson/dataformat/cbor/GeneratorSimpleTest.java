@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 import org.junit.Assert;
@@ -398,7 +399,7 @@ public class GeneratorSimpleTest extends CBORTestBase
             targetBytes.toByteArray());
     }
 
-    public void testCopyCurrentSturctureWithTag() throws Exception {
+    public void testCopyCurrentStructureWithTaggedArray() throws Exception {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
         sourceGen.writeNumber(BigDecimal.ONE);
@@ -420,6 +421,26 @@ public class GeneratorSimpleTest extends CBORTestBase
                 0,
                 1,
             },
+            targetBytes.toByteArray());
+    }
+
+
+    public void testCopyCurrentStructureWithTaggedBinary() throws Exception {
+        final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
+        final CBORGenerator sourceGen = cborGenerator(sourceBytes);
+        sourceGen.writeNumber(BigInteger.ZERO);
+        sourceGen.close();
+
+        final ByteArrayOutputStream targetBytes = new ByteArrayOutputStream();
+        final CBORGenerator gen = cborGenerator(targetBytes);
+        final CBORParser cborParser = cborParser(sourceBytes);
+        cborParser.nextToken();
+        gen.copyCurrentStructure(cborParser);
+        gen.close();
+        cborParser.close();
+
+        Assert.assertArrayEquals(
+            sourceBytes.toByteArray(),
             targetBytes.toByteArray());
     }
 }

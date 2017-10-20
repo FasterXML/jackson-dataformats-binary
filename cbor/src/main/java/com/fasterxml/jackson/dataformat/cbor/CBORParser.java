@@ -843,6 +843,7 @@ public final class CBORParser extends ParserMinimalBase
         }
         _numberBigInt = nr;
         _numTypesValid = NR_BIGINT;
+        _tagValue = -1;
         return (_currToken = JsonToken.VALUE_NUMBER_INT);
     }
 
