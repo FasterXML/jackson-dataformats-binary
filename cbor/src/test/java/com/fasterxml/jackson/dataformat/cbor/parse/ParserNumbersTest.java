@@ -13,37 +13,33 @@ import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 @SuppressWarnings("resource")
 public class ParserNumbersTest extends CBORTestBase
 {
-    private final CBORFactory CBOR_F = cborFactory();
-    
     public void testIntValues() throws Exception
     {
         // first, single-byte
-        CBORFactory f = cborFactory();
-        // single byte
-        _verifyInt(f, 13);
-        _verifyInt(f, -19);
+        _verifyInt(13);
+        _verifyInt(-19);
         // two bytes
-        _verifyInt(f, 255);
-        _verifyInt(f, -127);
+        _verifyInt(255);
+        _verifyInt(-127);
         // three
-        _verifyInt(f, 256);
-        _verifyInt(f, 0xFFFF);
-        _verifyInt(f, -300);
-        _verifyInt(f, -0xFFFF);
+        _verifyInt(256);
+        _verifyInt(0xFFFF);
+        _verifyInt(-300);
+        _verifyInt(-0xFFFF);
         // and all 4 bytes
-        _verifyInt(f, 0x7FFFFFFF);
-        _verifyInt(f, -0x7FFF0002);
-        _verifyInt(f, 0x70000000 << 1);
+        _verifyInt(0x7FFFFFFF);
+        _verifyInt(-0x7FFF0002);
+        _verifyInt(0x70000000 << 1);
     }
 
-    private void _verifyInt(CBORFactory f, int value) throws Exception
+    private void _verifyInt(int value) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = cborGenerator(f, out);
+        JsonGenerator gen = cborGenerator(out);
         gen.writeNumber(value);
         gen.close();
 
-        JsonParser p = cborParser(f, out.toByteArray());
+        JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
         assertEquals(value, p.getIntValue());
@@ -54,13 +50,13 @@ public class ParserNumbersTest extends CBORTestBase
         p.close();
 
         // also check that skipping works
-        p = cborParser(f, out.toByteArray());
+        p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
 
         // and finally that throttled test works
-        p = cborParser(f, new ThrottledInputStream(out.toByteArray(), 1));
+        p = cborParser(new ThrottledInputStream(out.toByteArray(), 1));
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -75,7 +71,7 @@ public class ParserNumbersTest extends CBORTestBase
                (byte) CBORConstants.PREFIX_TYPE_INT_POS + 26, // uint32, that is, 4 more bytes
                -1, -1, -1, -1
         };
-        CBORParser p = (CBORParser) CBOR_F.createParser(input);
+        CBORParser p = cborParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as `long` because these uint32 values do not fit in Java `int`
         assertEquals(0xFFFFFFFFL, p.getLongValue());
@@ -87,7 +83,7 @@ public class ParserNumbersTest extends CBORTestBase
                 (byte) CBORConstants.PREFIX_TYPE_INT_NEG + 26, // int32, that is, 4 more bytes
                 (byte) 0x80, 0, 0, 0
         };
-        p = (CBORParser) CBOR_F.createParser(input);
+        p = cborParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as `long` because this value won't fit in `int` either
         long exp = -1L + Integer.MIN_VALUE;
@@ -98,19 +94,19 @@ public class ParserNumbersTest extends CBORTestBase
 
     public void testLongValues() throws Exception
     {
-        _verifyLong(CBOR_F, 1L + Integer.MAX_VALUE);
-        _verifyLong(CBOR_F, Long.MIN_VALUE);
-        _verifyLong(CBOR_F, Long.MAX_VALUE);
-        _verifyLong(CBOR_F, -1L + Integer.MIN_VALUE);
+        _verifyLong(1L + Integer.MAX_VALUE);
+        _verifyLong(Long.MIN_VALUE);
+        _verifyLong(Long.MAX_VALUE);
+        _verifyLong(-1L + Integer.MIN_VALUE);
     }
 
-    private void _verifyLong(CBORFactory f, long value) throws Exception
+    private void _verifyLong(long value) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = cborGenerator(f, out);
+        JsonGenerator gen = cborGenerator(out);
         gen.writeNumber(value);
         gen.close();
-        JsonParser p = cborParser(f, out.toByteArray());
+        JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(value, p.getLongValue());
         assertEquals(NumberType.LONG, p.getNumberType());
@@ -119,13 +115,13 @@ public class ParserNumbersTest extends CBORTestBase
         p.close();
 
         // also check that skipping works
-        p = cborParser(f, out.toByteArray());
+        p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
 
         // and finally that throttled test works
-        p = cborParser(f, new ThrottledInputStream(out.toByteArray(), 1));
+        p = cborParser(new ThrottledInputStream(out.toByteArray(), 1));
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -141,7 +137,7 @@ public class ParserNumbersTest extends CBORTestBase
                (byte) CBORConstants.PREFIX_TYPE_INT_POS + 27, // uint64, that is, 8 more bytes
                -1, -1, -1, -1, -1, -1, -1, -1
         };
-        CBORParser p = (CBORParser) CBOR_F.createParser(input);
+        CBORParser p = cborParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as BigInteger
         assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
@@ -156,7 +152,7 @@ public class ParserNumbersTest extends CBORTestBase
                 (byte) 0x80, 0, 0, 0,
                 0, 0, 0, 0
         };
-        p = (CBORParser) CBOR_F.createParser(input);
+        p = cborParser(input);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as `long` because this value won't fit in `int` either
         exp = BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.ONE);
@@ -167,21 +163,21 @@ public class ParserNumbersTest extends CBORTestBase
 
     public void testDoubleValues() throws Exception
     {
-        _verifyDouble(CBOR_F, 0.25, false);
-        _verifyDouble(CBOR_F, 20.5, false);
-        _verifyDouble(CBOR_F, Double.NaN, true);
-        _verifyDouble(CBOR_F, Double.POSITIVE_INFINITY, true);
-        _verifyDouble(CBOR_F, Double.NEGATIVE_INFINITY, true);
-        _verifyDouble(CBOR_F, -5000.25, false);
+        _verifyDouble(0.25, false);
+        _verifyDouble(20.5, false);
+        _verifyDouble(Double.NaN, true);
+        _verifyDouble(Double.POSITIVE_INFINITY, true);
+        _verifyDouble(Double.NEGATIVE_INFINITY, true);
+        _verifyDouble(-5000.25, false);
     }
 
-    private void _verifyDouble(CBORFactory f, double value, boolean isNaN) throws Exception
+    private void _verifyDouble(double value, boolean isNaN) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = cborGenerator(f, out);
+        JsonGenerator gen = cborGenerator(out);
         gen.writeNumber(value);
         gen.close();
-        JsonParser p = cborParser(f, out.toByteArray());
+        JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         if (NumberType.DOUBLE != p.getNumberType()) {
             fail("Expected `NumberType.DOUBLE`, got "+p.getNumberType()+": "+p.getText());
@@ -193,7 +189,7 @@ public class ParserNumbersTest extends CBORTestBase
         assertNull(p.nextToken());
         
         // also skip
-        p = cborParser(f, out.toByteArray());
+        p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertNull(p.nextToken());
         
@@ -203,34 +199,32 @@ public class ParserNumbersTest extends CBORTestBase
     public void testFloatValues() throws Exception
     {
         // first, single-byte
-        CBORFactory f = cborFactory();
-        // single byte
-        _verifyFloat(f, 0.25, false);
-        _verifyFloat(f, 20.5, false);
-        _verifyFloat(CBOR_F, Float.NaN, true);
-        _verifyFloat(CBOR_F, Float.POSITIVE_INFINITY, true);
-        _verifyFloat(CBOR_F, Float.NEGATIVE_INFINITY, true);
-        _verifyFloat(f, -5000.25, false);
+        _verifyFloat(0.25, false);
+        _verifyFloat(20.5, false);
+        _verifyFloat(Float.NaN, true);
+        _verifyFloat(Float.POSITIVE_INFINITY, true);
+        _verifyFloat(Float.NEGATIVE_INFINITY, true);
+        _verifyFloat(-5000.25, false);
 
         // But then, oddity: 16-bit mini-float
         // Examples from [https://en.wikipedia.org/wiki/Half_precision_floating-point_format]
-        _verifyHalfFloat(f, 0, 0.0);
-        _verifyHalfFloat(f, 0x3C00, 1.0);
-        _verifyHalfFloat(f, 0xC000, -2.0);
-        _verifyHalfFloat(f, 0x7BFF, 65504.0);
-        _verifyHalfFloat(f, 0x7C00, Double.POSITIVE_INFINITY);
-        _verifyHalfFloat(f, 0xFC00, Double.NEGATIVE_INFINITY);
+        _verifyHalfFloat(0, 0.0);
+        _verifyHalfFloat(0x3C00, 1.0);
+        _verifyHalfFloat(0xC000, -2.0);
+        _verifyHalfFloat(0x7BFF, 65504.0);
+        _verifyHalfFloat(0x7C00, Double.POSITIVE_INFINITY);
+        _verifyHalfFloat(0xFC00, Double.NEGATIVE_INFINITY);
 
         // ... can add more, but need bit looser comparison if so
     }
 
-    private void _verifyFloat(CBORFactory f, double value, boolean isNaN) throws Exception
+    private void _verifyFloat(double value, boolean isNaN) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = cborGenerator(f, out);
+        JsonGenerator gen = cborGenerator(out);
         gen.writeNumber((float) value);
         gen.close();
-        JsonParser p = cborParser(f, out.toByteArray());
+        JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         if (NumberType.FLOAT != p.getNumberType()) {
             fail("Expected `NumberType.FLOAT`, got "+p.getNumberType()+": "+p.getText());
@@ -241,14 +235,14 @@ public class ParserNumbersTest extends CBORTestBase
         assertNull(p.nextToken());
 
         // also skip
-        p = cborParser(f, out.toByteArray());
+        p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertNull(p.nextToken());
         
         p.close();
     }
 
-    private void _verifyHalfFloat(CBORFactory f, int i16, double value) throws IOException
+    private void _verifyHalfFloat(int i16, double value) throws IOException
     {
         byte[] data = new byte[] {
                 (byte) (CBORConstants.PREFIX_TYPE_MISC + 25),
@@ -257,7 +251,7 @@ public class ParserNumbersTest extends CBORTestBase
 
         boolean expNaN = Double.isNaN(value) || Double.isInfinite(value);
         
-        JsonParser p = f.createParser(data);
+        JsonParser p = cborParser(data);
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(expNaN, p.isNaN());
         assertEquals(NumberType.FLOAT, p.getNumberType());
@@ -266,7 +260,7 @@ public class ParserNumbersTest extends CBORTestBase
         p.close();
 
         // should be skippable too
-        p = f.createParser(data);
+        p = cborParser(data);
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertNull(p.nextToken());
         p.close();

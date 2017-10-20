@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -15,9 +16,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 public abstract class CBORTestBase
     extends junit.framework.TestCase
 {
-    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+    protected final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-    private final static ObjectMapper CBOR_MAPPER = new ObjectMapper(new CBORFactory());
+    protected final static ObjectMapper CBOR_MAPPER = new ObjectMapper(new CBORFactory());
     
     /*
     /**********************************************************
@@ -28,20 +29,21 @@ public abstract class CBORTestBase
     protected CBORParser cborParser(ByteArrayOutputStream bytes) throws IOException {
         return cborParser(bytes.toByteArray());
     }
-    
+
     protected CBORParser cborParser(byte[] input) throws IOException {
-        return cborParser(cborFactory(), input);
+        return (CBORParser) CBOR_MAPPER.createParser(input);
     }
 
     protected CBORParser cborParser(InputStream in) throws IOException {
-        CBORFactory f = cborFactory();
-        return cborParser(f, in);
+        return (CBORParser) CBOR_MAPPER.createParser(in);
     }
 
+    @Deprecated
     protected CBORParser cborParser(CBORFactory f, byte[] input) throws IOException {
         return (CBORParser) f.createParser(input);
     }
 
+    @Deprecated
     protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {
         return (CBORParser) f.createParser(in);
     }
@@ -59,17 +61,10 @@ public abstract class CBORTestBase
         return CBOR_MAPPER;
     }
 
-    protected CBORGenerator cborGenerator(ByteArrayOutputStream result)
+    protected CBORGenerator cborGenerator(OutputStream result)
         throws IOException
     {
-        return cborGenerator(cborFactory(), result);
-    }
-
-    protected CBORGenerator cborGenerator(CBORFactory f,
-            ByteArrayOutputStream result)
-        throws IOException
-    {
-        return (CBORGenerator) f.createGenerator(result, null);
+        return (CBORGenerator) CBOR_MAPPER.createGenerator(result);
     }
 
     /*
@@ -82,9 +77,9 @@ public abstract class CBORTestBase
         return cborDoc(cborMapper.writer(), json);
     }
 
+    /*
     @Deprecated
-    protected byte[] cborDoc(TokenStreamFactory f, String json)
-        throws IOException
+    protected byte[] cborDoc(TokenStreamFactory f, String json) throws IOException
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -94,6 +89,7 @@ public abstract class CBORTestBase
             return out.toByteArray();
         }
     }
+    */
 
     protected byte[] cborDoc(ObjectWriter w, String json)
         throws IOException
@@ -118,7 +114,7 @@ public abstract class CBORTestBase
         }
     }
 
-    private void _copy(JsonParser p, JsonGenerator g) throws IOException
+    protected void _copy(JsonParser p, JsonGenerator g) throws IOException
     {
         while (p.nextToken() != null) {
           g.copyCurrentEvent(p);

@@ -8,12 +8,16 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GeneratorBinaryTest //extends CBORTestBase
 {
 	final static int SMALL_LENGTH = 100;
 	final static int LARGE_LENGTH = CBORGenerator.BYTE_BUFFER_FOR_OUTPUT + 500;
 
+	private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
+	
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -65,11 +69,10 @@ public class GeneratorBinaryTest //extends CBORTestBase
 
 	private void encodeInCBOR(File inputFile, File outputFile) throws NoSuchAlgorithmException, IOException
 	{
-		CBORFactory f = new CBORFactory();
 		OutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile));
 		InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
 
-		JsonGenerator gen = f.createGenerator(os);
+		JsonGenerator gen = MAPPER.createGenerator(os);
 		gen.writeBinary(is, (int) inputFile.length());
 
 		gen.close();
@@ -79,11 +82,10 @@ public class GeneratorBinaryTest //extends CBORTestBase
 
 	private void decodeFromCborInFile(File input, File output) throws Exception
 	{
-		CBORFactory f = new CBORFactory();
 		OutputStream os = new FileOutputStream(output);
 
 		InputStream is = new FileInputStream(input);
-		CBORParser parser = (CBORParser) f.createParser(is);
+		JsonParser parser = MAPPER.createParser(is);
 		parser.nextToken();
 		parser.readBinaryValue(null, os);
 

@@ -40,6 +40,17 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         assertNotNull(doc);
     }
 
+    private byte[] cborDoc(TokenStreamFactory f, String json) throws IOException
+    {
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), out)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+    
     public void testVersions() throws Exception
     {
         ObjectMapper mapper = sharedMapper();
@@ -129,7 +140,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     private byte[] _copyDoc(CBORFactory f, byte[] doc) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bytes);
         _copyDoc(f, doc, g);
         g.close();
         return bytes.toByteArray();
@@ -137,7 +148,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         
     private void _copyDoc(CBORFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
-        JsonParser p = f.createParser(doc);
+        JsonParser p = f.createParser(ObjectReadContext.empty(), doc);
         while (p.nextToken() != null) {
             g.copyCurrentEvent(p);
         }

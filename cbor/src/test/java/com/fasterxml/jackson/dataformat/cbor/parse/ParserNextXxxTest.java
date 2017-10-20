@@ -5,7 +5,6 @@ import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 
@@ -22,11 +21,9 @@ public class ParserNextXxxTest extends CBORTestBase
     {
         final int TESTROUNDS = 223;
 
-        final CBORFactory f = new CBORFactory();
-        
         // build the big document to trigger issue
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(2000);
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = cborGenerator(bytes);
         for (int i = 0; i < TESTROUNDS; ++i) {
             g.writeStartObject();
             g.writeNumberField("fieldName", 1);
@@ -36,7 +33,7 @@ public class ParserNextXxxTest extends CBORTestBase
         final byte[] DOC = bytes.toByteArray();
         
         SerializableString fieldName = new SerializedString("fieldName");
-        JsonParser parser = f.createParser(DOC);
+        JsonParser parser = cborParser(DOC);
 
         for (int i = 0; i < TESTROUNDS - 1; i++) {
             assertEquals(JsonToken.START_OBJECT, parser.nextToken());
@@ -57,11 +54,10 @@ public class ParserNextXxxTest extends CBORTestBase
 
     public void testIssue38() throws Exception
     {
-        final CBORFactory f = new CBORFactory();
-        byte[] DOC = cborDoc(f, "{\"field\" :\"value\"}");
+        byte[] DOC = cborDoc("{\"field\" :\"value\"}");
         
         SerializableString fieldName = new SerializedString("field");
-        JsonParser parser = f.createParser(DOC);
+        JsonParser parser = cborParser(DOC);
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertTrue(parser.nextFieldName(fieldName));
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
@@ -73,13 +69,11 @@ public class ParserNextXxxTest extends CBORTestBase
 
     public void testNextNameWithLongContent() throws Exception
     {
-        final CBORFactory f = new CBORFactory();
-
         // do 3 meg thingy
         final int SIZE = 3 * 1024 * 1024;
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(SIZE + 20);
 
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = cborGenerator(bytes);
 
         g.writeStartObject();
         Random rnd = new Random(1);
@@ -95,7 +89,7 @@ public class ParserNextXxxTest extends CBORTestBase
         g.close();
         final byte[] DOC = bytes.toByteArray();
     
-        JsonParser parser = f.createParser(DOC);
+        JsonParser parser = cborParser(DOC);
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         rnd = new Random(1);
         for (int i = 0; i < count; ++i) {
@@ -111,11 +105,10 @@ public class ParserNextXxxTest extends CBORTestBase
 
     public void testNextValuesMisc() throws Exception
     {
-        final CBORFactory f = new CBORFactory();
-        byte[] DOC = cborDoc(f, "{\"field\" :\"value\", \"array\" : [ \"foo\", true ] }");
+        byte[] DOC = cborDoc("{\"field\" :\"value\", \"array\" : [ \"foo\", true ] }");
 
         SerializableString fieldName = new SerializedString("field");
-        JsonParser parser = f.createParser(DOC);
+        JsonParser parser = cborParser(DOC);
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertTrue(parser.nextFieldName(fieldName));
 
@@ -141,30 +134,28 @@ public class ParserNextXxxTest extends CBORTestBase
 
     public void testNextTextValue() throws Exception
     {
-        final CBORFactory f = new CBORFactory();
-
-        _testNextTextValue(f, "ascii");
-        _testNextTextValue(f, "Something much longer to ensure short-text handling is not invoked 12345677890");
-        _testNextTextValue(f, "Short but with UTF-8: \u00A9 & \u00E8...");
-        _testNextTextValue(f, "Longer .................................................................. \u30D5...");
+        _testNextTextValue("ascii");
+        _testNextTextValue("Something much longer to ensure short-text handling is not invoked 12345677890");
+        _testNextTextValue("Short but with UTF-8: \u00A9 & \u00E8...");
+        _testNextTextValue("Longer .................................................................. \u30D5...");
     }
 
-    private void _testNextTextValue(CBORFactory f, String textValue) throws Exception
+    private void _testNextTextValue(String textValue) throws Exception
     {
-        _testNextTextValue(f, textValue, 57, false);
-        _testNextTextValue(f, textValue, -2094, true);
-        _testNextTextValue(f, textValue, 0x10000, false);
-        _testNextTextValue(f, textValue, -0x4900FFFF, true);
+        _testNextTextValue(textValue, 57, false);
+        _testNextTextValue(textValue, -2094, true);
+        _testNextTextValue(textValue, 0x10000, false);
+        _testNextTextValue(textValue, -0x4900FFFF, true);
     }
 
     @SuppressWarnings("resource")
-    private void _testNextTextValue(CBORFactory f, String textValue, int intValue, boolean slow)
-            throws Exception
+    private void _testNextTextValue(String textValue, int intValue, boolean slow)
+        throws Exception
     {
         String doc = aposToQuotes(String.format(
                 "['%s',true,{'a':'%s'},%d, 0.5]",
                 textValue, textValue, intValue));
-        InputStream in = new ByteArrayInputStream(cborDoc(f, doc));
+        InputStream in = new ByteArrayInputStream(cborDoc(doc));
         if (slow) {
             // let's force read for every single byte
             in = new ThrottledInputStream(in, 1);
@@ -209,9 +200,8 @@ public class ParserNextXxxTest extends CBORTestBase
 
     private void _testIsNextTokenName1() throws Exception
     {
-        CBORFactory f = new CBORFactory();
-        final byte[] DOC = cborDoc(f, "{\"name\":123,\"name2\":14,\"x\":\"name\"}");
-        JsonParser p = f.createParser(DOC);
+        final byte[] DOC = cborDoc("{\"name\":123,\"name2\":14,\"x\":\"name\"}");
+        JsonParser p = cborParser(DOC);
         final SerializedString NAME = new SerializedString("name");
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
@@ -244,7 +234,7 @@ public class ParserNextXxxTest extends CBORTestBase
         p.close();
 
         // Actually, try again with slightly different sequence...
-        p = f.createParser(DOC);
+        p = cborParser(DOC);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertFalse(p.nextFieldName(new SerializedString("Nam")));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
@@ -277,9 +267,8 @@ public class ParserNextXxxTest extends CBORTestBase
 
     private void _testIsNextTokenName2() throws Exception
     {
-        CBORFactory f = new CBORFactory();
-        final byte[] DOC = cborDoc(f, "{\"name\":123,\"name2\":-9999999999,\"x\":\"name\"}");
-        JsonParser p = f.createParser(DOC);
+        final byte[] DOC = cborDoc("{\"name\":123,\"name2\":-9999999999,\"x\":\"name\"}");
+        JsonParser p = cborParser(DOC);
         SerializableString NAME = new SerializedString("name");
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
