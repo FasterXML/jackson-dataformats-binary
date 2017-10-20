@@ -15,6 +15,7 @@ Modules:
  (contributed by philipa@github)
 #116: (protobuf) Should skip the positive byte which is the last byte of an varint
  (contributed by marsqing@github)
+- (protobuf) Minor fix to skipping with `nextFieldName()`
 
 2.9.2 (14-Oct-2017)
 
