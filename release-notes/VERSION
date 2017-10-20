@@ -9,6 +9,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.3 (not yet released)
+
+#114: copyStructure(): avoid duplicate tags when copying tagged binary.
+ (contributed by philipa@github)
+
 2.9.2 (14-Oct-2017)
 
 #113 (avro): incorrect deserialization of `long` with new `AvroFactory`
