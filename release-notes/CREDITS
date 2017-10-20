@@ -28,6 +28,9 @@ marsqing@github
  (2.8.10)
 * Reported #106 (protobuf), contributed fix for: calling _skipUnknownValue() twice
  (2.8.11 / 2.9.1)
+* Reported #116 (protobuf), contributed fix for: Should skip the positive byte
+  which is the last byte of an varint
+ (2.9.3)
 
 baharclerode@github:
 
@@ -47,3 +50,9 @@ Eldad Rudich (eldadru@github)
 * Reported #68 (proto): Getting "type not supported as root type by protobuf" for serialization
   of short and UUID types
  (2.9.0)
+
+philipa@github
+
+* Reported #114 (cbor), contributed fix for: copyStructure(): avoid duplicate tags
+  when copying tagged binary
+ (2.9.3)
