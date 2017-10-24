@@ -24,7 +24,7 @@ public class SmileGenerator
      * Enumeration that defines all togglable features for Smile generators.
      */
     public enum Feature
-        implements FormatFeature // since 2.7
+        implements FormatFeature
     {
         /**
          * Whether to write 4-byte header sequence when starting output or not.
@@ -562,11 +562,19 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
-    @Override // defined since 2.6.3
+    @Override
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
         _outputContext = _outputContext.createChildArrayContext();
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+    }
+
+    @Override
+    public final void writeStartArray(Object forValue, int size) throws IOException
+    {
+        _verifyValueWrite("start an array");
+        _outputContext = _outputContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -588,15 +596,12 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
-    @Override // since 2.8
+    @Override
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _outputContext.createChildObjectContext();
+        JsonWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
         _outputContext = ctxt;
-        if (forValue != null) {
-            ctxt.setCurrentValue(forValue);
-        }
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     

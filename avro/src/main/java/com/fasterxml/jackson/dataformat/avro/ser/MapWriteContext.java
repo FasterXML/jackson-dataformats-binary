@@ -17,9 +17,10 @@ public final class MapWriteContext
 {
     protected final Map<String,Object> _data;
 
-    public MapWriteContext(AvroWriteContext parent, AvroGenerator generator, Schema schema)
+    public MapWriteContext(AvroWriteContext parent, AvroGenerator generator,
+            Schema schema, Object currValue)
     {
-        super(parent, generator, schema);
+        super(parent, generator, schema, currValue);
         _data = new HashMap<String,Object>();
     }
 
@@ -33,21 +34,20 @@ public final class MapWriteContext
         _expectValue = true;
         return true;
     }
-    
+
     @Override
-    public final AvroWriteContext createChildArrayContext() {
+    public final AvroWriteContext createChildArrayContext(Object currValue) {
         _verifyValueWrite();
         AvroWriteContext child = new ArrayWriteContext(this, _generator,
-                _createArray(_schema.getValueType()));
+                _createArray(_schema.getValueType()), currValue);
         _data.put(_currentName, child.rawValue());
         return child;
     }
 
     @Override
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException
-    {
+    public final AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
         _verifyValueWrite();
-        AvroWriteContext child = _createObjectContext(_schema.getValueType());
+        AvroWriteContext child = _createObjectContext(_schema.getValueType(), currValue);
         _data.put(_currentName, child.rawValue());
         return child;
     }

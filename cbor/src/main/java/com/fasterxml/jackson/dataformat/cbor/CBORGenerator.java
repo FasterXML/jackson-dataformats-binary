@@ -495,11 +495,20 @@ public class CBORGenerator extends GeneratorBase
      * Unlike with JSON, this method is using slightly optimized version since
      * CBOR has a variant that allows embedding length in array start marker.
      */
-	 
+
     @Override
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
         _outputContext = _outputContext.createChildArrayContext();
+        _pushRemainingElements();
+        _currentRemainingElements = elementsToWrite;
+        _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
+    }
+
+    @Override
+    public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
+        _verifyValueWrite("start an array");
+        _outputContext = _outputContext.createChildArrayContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -526,14 +535,10 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    // since 2.8
     public final void writeStartObject(Object forValue) throws IOException {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _outputContext.createChildObjectContext();
+        JsonWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
         _outputContext = ctxt;
-        if (forValue != null) {
-            ctxt.setCurrentValue(forValue);
-        }
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }

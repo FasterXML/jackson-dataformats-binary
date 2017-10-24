@@ -394,7 +394,13 @@ public class ProtobufGenerator extends GeneratorBase
             _startBuffering(_currField.typedTag);
         }
     }
-    
+
+    @Override
+    public final void writeStartArray(Object currValue, int len) throws IOException {
+        writeStartArray();
+        _pbContext.setCurrentValue(currValue);
+    }
+
     @Override
     public final void writeEndArray() throws IOException
     {
@@ -417,6 +423,12 @@ public class ProtobufGenerator extends GeneratorBase
         if (_currField.packed) {
             _finishBuffering();
         }
+    }
+
+    @Override
+    public final void writeStartObject(Object currValue) throws IOException {
+        writeStartObject();
+        _pbContext.setCurrentValue(currValue);
     }
 
     @Override
