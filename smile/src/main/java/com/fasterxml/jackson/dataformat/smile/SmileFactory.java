@@ -283,7 +283,7 @@ public class SmileFactory
      * Overridable factory method that actually instantiates desired parser.
      */
     @Override
-    protected SmileParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             InputStream in) throws IOException
     {
         return new SmileParserBootstrapper(ioCtxt, in)
@@ -294,7 +294,7 @@ public class SmileFactory
     }
 
     @Override
-    protected SmileParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             byte[] data, int offset, int len) throws IOException
     {
         return new SmileParserBootstrapper(ioCtxt, data, offset, len)
@@ -318,7 +318,7 @@ public class SmileFactory
      */
 
     @Override
-    protected SmileGenerator _createGenerator(ObjectWriteContext writeCtxt,
+    protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out) throws IOException
     {
         int smileFeatures = writeCtxt.getFormatWriteFeatures(_smileGeneratorFeatures);
