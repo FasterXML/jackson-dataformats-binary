@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.TokenStreamContext;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
@@ -39,6 +40,9 @@ public abstract class AvroReadContext extends TokenStreamContext
     public abstract JsonToken nextToken() throws IOException;
 
     public abstract String nextFieldName() throws IOException;
+
+    // @since 3.0
+    public abstract int nextFieldName(FieldNameMatcher matcher) throws IOException;
 
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 

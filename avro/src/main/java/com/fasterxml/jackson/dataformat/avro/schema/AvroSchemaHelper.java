@@ -27,8 +27,6 @@ public abstract class AvroSchemaHelper
      * Constant used by native Avro Schemas for indicating more specific
      * physical class of a value; referenced indirectly to reduce direct
      * dependencies to the standard avro library.
-     *
-     * @since 2.8.7
      */
     public static final String AVRO_SCHEMA_PROP_CLASS = SpecificData.CLASS_PROP;
 
@@ -36,8 +34,6 @@ public abstract class AvroSchemaHelper
      * Constant used by native Avro Schemas for indicating more specific
      * physical class of a map key; referenced indirectly to reduce direct
      * dependencies to the standard avro library.
-     *
-     * @since 2.8.7
      */
     public static final String AVRO_SCHEMA_PROP_KEY_CLASS = SpecificData.KEY_CLASS_PROP;
 
@@ -45,14 +41,11 @@ public abstract class AvroSchemaHelper
      * Constant used by native Avro Schemas for indicating more specific
      * physical class of a array element; referenced indirectly to reduce direct
      * dependencies to the standard avro library.
-     *
-     * @since 2.8.8
      */
     public static final String AVRO_SCHEMA_PROP_ELEMENT_CLASS = SpecificData.ELEMENT_PROP;
+
     /**
      * Default stringable classes
-     *
-     * @since 2.8.7
      */
     protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<Class<?>>(Arrays.asList(
             URI.class, URL.class, File.class,
@@ -99,11 +92,11 @@ public abstract class AvroSchemaHelper
         return (pkg == null) ? "" : pkg.getName();
     }
 
-    protected static String getName(JavaType type) {
+    protected static String getTypeName(JavaType type) {
         String name = type.getRawClass().getSimpleName();
         // Alas, some characters not accepted...
-        while (name.indexOf("[]") >= 0) {
-            name = name.replace("[]", "Array");
+        if (name.endsWith("[]")) {
+            name = name.replaceAll("[]", "Array");
         }
         return name;
     }
@@ -180,8 +173,6 @@ public abstract class AvroSchemaHelper
 
     /**
      * Helper method for constructing type-tagged "native" Avro Schema instance.
-     *
-     * @since 2.8.7
      */
     public static Schema typedSchema(Schema.Type nativeType, JavaType javaType) {
         Schema schema = Schema.create(nativeType);
@@ -219,7 +210,7 @@ public abstract class AvroSchemaHelper
      */
     public static Schema initializeRecordSchema(BeanDescription bean) {
         return addAlias(Schema.createRecord(
-            getName(bean.getType()),
+                getTypeName(bean.getType()),
             bean.findClassDescription(),
             getNamespace(bean.getType()),
             bean.getType().isTypeOrSubTypeOf(Throwable.class)
@@ -243,9 +234,9 @@ public abstract class AvroSchemaHelper
      */
     public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
         return addAlias(Schema.createEnum(
-            getName(bean.getType()),
-            bean.findClassDescription(),
-            getNamespace(bean.getType()), values
+                getTypeName(bean.getType()),
+                bean.findClassDescription(),
+                getNamespace(bean.getType()), values
         ), bean);
     }
 

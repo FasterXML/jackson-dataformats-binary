@@ -23,7 +23,7 @@ public abstract class AvroParser extends ParserBase
      * Enumeration that defines all togglable features for Avro parsers.
      */
     public enum Feature
-        implements FormatFeature // since 2.7
+        implements FormatFeature
     {
         /**
          * Feature that can be disabled to prevent Avro from buffering any more

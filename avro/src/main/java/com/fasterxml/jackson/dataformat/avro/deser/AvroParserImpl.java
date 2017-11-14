@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
@@ -63,7 +64,7 @@ public abstract class AvroParserImpl
 
     /*
     /**********************************************************
-    /* Abstract method impls, traversal
+    /* Abstract method impls, traversal, basic
     /**********************************************************
      */
 
@@ -80,6 +81,24 @@ public abstract class AvroParserImpl
         _currToken = t;
         return t;
     }
+
+    /**
+     * Skip to the end of the current structure (array/map/object); This is different
+     * from {@link #skipMap()} and {@link #skipArray()} because it operates at the parser
+     * level instead of at the decoder level and advances the parsing context in addition
+     * to consuming the data from the input.
+     *
+     * @throws IOException If there was an issue advancing through the underlying data stream
+     */
+    public final void skipValue() throws IOException {
+        _avroContext.skipValue(this);
+    }
+    
+    /*
+    /**********************************************************
+    /* Abstract method impls, traversal, names
+    /**********************************************************
+     */
 
     @Override
     public String nextFieldName() throws IOException
@@ -114,23 +133,45 @@ public abstract class AvroParserImpl
     }
 
     @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    {
+        // note: closed-ness check by context, not needed here
+        _numTypesValid = NR_UNKNOWN;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _binaryValue = null;
+
+        int match = _avroContext.nextFieldName(matcher);
+        if (match < 0) { // END_OBJECT, mismatching FIELD_NAME or something else:
+            _currToken = _avroContext.getCurrentToken();
+        }
+        return match;
+        /*
+        String name = _avroContext.nextFieldName();
+        if (name == null) {
+            JsonToken t = _avroContext.getCurrentToken();
+            _currToken = t;
+            if (t == JsonToken.END_OBJECT) {
+                return FieldNameMatcher.MATCH_END_OBJECT;
+            }
+            return FieldNameMatcher.MATCH_ODD_TOKEN;
+        }
+        _currToken = JsonToken.FIELD_NAME;
+        return matcher.matchName(name);
+        */
+    }
+
+    /*
+    /**********************************************************
+    /* Abstract method impls, traversal, values
+    /**********************************************************
+     */
+    
+    @Override
     public abstract String nextTextValue() throws IOException;
 
     @Override
     public final void _initSchema(AvroSchema schema) throws JsonProcessingException {
         _avroContext = new RootReader(this, schema.getReader());
-    }
-
-    /**
-     * Skip to the end of the current structure (array/map/object); This is different
-     * from {@link #skipMap()} and {@link #skipArray()} because it operates at the parser
-     * level instead of at the decoder level and advances the parsing context in addition
-     * to consuming the data from the input.
-     *
-     * @throws IOException If there was an issue advancing through the underlying data stream
-     */
-    public final void skipValue() throws IOException {
-        _avroContext.skipValue(this);
     }
 
     /*

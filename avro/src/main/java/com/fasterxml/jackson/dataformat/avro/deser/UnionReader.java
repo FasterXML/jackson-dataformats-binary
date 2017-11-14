@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 /**
  * Reader used in cases where union contains at least one non-scalar type.
@@ -53,7 +54,13 @@ final class UnionReader extends AvroStructureReader
         nextToken();
         return null;
     }
-    
+
+    @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        nextToken();
+        return FieldNameMatcher.MATCH_ODD_TOKEN;
+    }
+
     @Override
     protected void appendDesc(StringBuilder sb) {
         sb.append('?');

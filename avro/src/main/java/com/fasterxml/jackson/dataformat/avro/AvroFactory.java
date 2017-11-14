@@ -1,11 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
+import java.util.List;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
-
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.InternedNameMatcher;
+import com.fasterxml.jackson.core.sym.SimpleCINameMatcher;
+import com.fasterxml.jackson.core.util.Named;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
 /**
@@ -299,5 +303,28 @@ public class AvroFactory
                 writeCtxt.getFormatWriteFeatures(_avroGeneratorFeatures),
                 out,
                 (AvroSchema) writeCtxt.getSchema());
+    }
+
+    /*
+    /**********************************************************
+    /* Factory methods for helper objects
+    /**********************************************************
+     */
+
+    /**
+     * @param matches Names to match, including both primary names (which should come first)
+     *     and possible aliases (after primary names)
+     * @param propCount Number of primary matches; if less than `matches` rest are aliases
+     * @param caseInsensitive Whether matching should be case-insensitive or not
+     */
+    @Override
+    public FieldNameMatcher constructFieldNameMatcher(List<Named> matches,
+            int propCount, boolean caseInsensitive) {
+        // 13-Nov-2017, tatu: Case-insensitive could perhaps be optimized, but it is
+        //    not trivial; so for now use standard one for it
+        if (caseInsensitive) {
+            return SimpleCINameMatcher.construct(matches);
+        }
+        return InternedNameMatcher.construct(matches);
     }
 }

@@ -189,7 +189,9 @@ public class RecordVisitor
         }
         JsonNode defaultValue = parseJson(prop.getMetadata().getDefaultValue());
         writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
-        Schema.Field field = new Schema.Field(prop.getName(), writerSchema, prop.getMetadata().getDescription(),
+
+        String name = prop.getName();
+        Schema.Field field = new Schema.Field(name, writerSchema, prop.getMetadata().getDescription(),
                 JacksonUtils.toObject(defaultValue));
 
         AvroMeta meta = prop.getAnnotation(AvroMeta.class);
@@ -202,7 +204,6 @@ public class RecordVisitor
                 field.addAlias(pn.getSimpleName());
             }
         }
-
         return field;
     }
 

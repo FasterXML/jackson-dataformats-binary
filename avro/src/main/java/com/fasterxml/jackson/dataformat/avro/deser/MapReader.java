@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 public abstract class MapReader extends AvroStructureReader
 {
@@ -61,6 +62,18 @@ public abstract class MapReader extends AvroStructureReader
             return _currentName;
         }
         return null;
+    }
+
+    @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        JsonToken t = nextToken();
+        if (t == JsonToken.FIELD_NAME) {
+            return matcher.matchName(_currentName);
+        }
+        if (t == JsonToken.END_OBJECT) {
+            return FieldNameMatcher.MATCH_END_OBJECT;
+        }
+        return FieldNameMatcher.MATCH_ODD_TOKEN;
     }
 
     @Override

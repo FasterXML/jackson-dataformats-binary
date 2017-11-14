@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 abstract class RecordReader extends AvroStructureReader
@@ -47,6 +48,13 @@ abstract class RecordReader extends AvroStructureReader
         _state = STATE_DONE;
         _parser.setAvroContext(getParent());
         return (_currToken = JsonToken.END_OBJECT);
+    }
+
+    protected final int _matchAtEndObject() throws IOException
+    {
+        _state = STATE_DONE;
+        _parser.setAvroContext(getParent());
+        return FieldNameMatcher.MATCH_END_OBJECT;
     }
 
     @Override
@@ -153,6 +161,22 @@ abstract class RecordReader extends AvroStructureReader
             }
             return null;
         }
+
+        @Override
+        public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+            if (_state == STATE_NAME) {
+                if (_index < _count) {
+                    String name = _fieldReaders[_index].getName();
+                    _currentName = name;
+                    _state = STATE_VALUE;
+                    _currToken = JsonToken.FIELD_NAME;
+                    return matcher.matchName(name);
+                }
+                return _matchAtEndObject();
+            }
+            nextToken();
+            return FieldNameMatcher.MATCH_ODD_TOKEN;
+        }
     }
 
     public final static class Resolving
@@ -233,6 +257,28 @@ abstract class RecordReader extends AvroStructureReader
                 nextToken();
             }
             return null;
+        }
+
+        @Override
+        public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+            if (_state == STATE_NAME) {
+                while (_index < _count) {
+                    AvroFieldReader r = _fieldReaders[_index];
+                    if (r.isSkipper()) {
+                        ++_index;
+                        r.skipValue(_parser);
+                        continue;
+                    }
+                    String name = r.getName();
+                    _currentName = name;
+                    _state = STATE_VALUE;
+                    _currToken = JsonToken.FIELD_NAME;
+                    return matcher.matchName(name);
+                }
+                return _matchAtEndObject();
+            }
+            nextToken();
+            return FieldNameMatcher.MATCH_ODD_TOKEN;
         }
     }
 }
