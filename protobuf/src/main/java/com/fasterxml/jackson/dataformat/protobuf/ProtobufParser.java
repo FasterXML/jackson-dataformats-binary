@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.TextBuffer;
 import com.fasterxml.jackson.core.util.VersionUtil;
@@ -965,7 +966,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************
-    /* Public API, traversal, nextXxxValue/nextFieldName
+    /* Public API, traversal, optimized: nextFieldName()
     /**********************************************************
      */
 
@@ -1046,6 +1047,10 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _currToken = JsonToken.FIELD_NAME;
             return name.equals(sstr.getValue());
+        }
+        if (_state == STATE_MESSAGE_END) {
+            _currToken = JsonToken.END_OBJECT;
+            return false;
         }
         return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(getCurrentName());
     }
@@ -1130,8 +1135,117 @@ public class ProtobufParser extends ParserMinimalBase
             _currToken = JsonToken.FIELD_NAME;
             return name;
         }
+        if (_state == STATE_MESSAGE_END) {
+            _currToken = JsonToken.END_OBJECT;
+            return null;
+        }
         return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
     }
+
+    @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    {
+        if (_state == STATE_ROOT_KEY) {
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    close();
+                    _currToken = JsonToken.END_OBJECT;
+                    return FieldNameMatcher.MATCH_END_OBJECT;
+                }
+            }
+            int tag = _decodeVInt();
+            // inlined _handleRootKey()
+
+            int wireType = (tag & 0x7);
+            int id = (tag >> 3);
+
+            ProtobufField f = _findField(id);
+            if (f == null) {
+                JsonToken t = _skipUnknownField(id, wireType);
+                if (t != JsonToken.FIELD_NAME) {
+                    return (t == JsonToken.END_OBJECT)
+                            ? FieldNameMatcher.MATCH_END_OBJECT : FieldNameMatcher.MATCH_ODD_TOKEN;
+                }
+                // sub-optimal as skip method already set it, but:
+            }
+            String name = _currentField.name;
+            _parsingContext.setCurrentName(name);
+            if (!_currentField.isValidFor(wireType)) {
+                _reportIncompatibleType(_currentField, wireType);
+            }
+
+            // array?
+            if (_currentField.repeated) {
+                _state = _currentField.packed
+                        ? STATE_ARRAY_START_PACKED : STATE_ARRAY_START;
+            } else {
+                _state = STATE_ROOT_VALUE;
+            }
+            _currToken = JsonToken.FIELD_NAME;
+            return matcher.matchName(name);
+        }
+        if (_state == STATE_NESTED_KEY) {
+            if (_checkEnd()) {
+                _currToken = JsonToken.END_OBJECT;
+                return FieldNameMatcher.MATCH_END_OBJECT;
+            }
+            int tag = _decodeVInt();
+            // inlined '_handleNestedKey()'
+
+            int wireType = (tag & 0x7);
+            int id = (tag >> 3);
+
+            ProtobufField f = _findField(id);
+            if (f == null) {
+                JsonToken t = _skipUnknownField(id, wireType);
+                if (t != JsonToken.FIELD_NAME) {
+                    return (t == JsonToken.END_OBJECT)
+                            ? FieldNameMatcher.MATCH_END_OBJECT : FieldNameMatcher.MATCH_ODD_TOKEN;
+                }
+                // sub-optimal as skip method already set it, but:
+            }
+            final String name = _currentField.name;
+            _parsingContext.setCurrentName(name);
+            if (!_currentField.isValidFor(wireType)) {
+                _reportIncompatibleType(_currentField, wireType);
+            }
+
+            // array?
+            if (_currentField.repeated) {
+                _state = _currentField.packed
+                        ? STATE_ARRAY_START_PACKED : STATE_ARRAY_START;
+            } else {
+                _state = STATE_NESTED_VALUE;
+            }
+            _currToken = JsonToken.FIELD_NAME;
+            return matcher.matchName(name);
+        }
+        if (_state == STATE_MESSAGE_END) {
+            _currToken = JsonToken.END_OBJECT;
+            return FieldNameMatcher.MATCH_END_OBJECT;
+        }
+
+        // 13-Nov-2017, tatu: Can this ever return a field name?
+        return _nextFieldName2(matcher);
+    }
+
+    private int _nextFieldName2(FieldNameMatcher matcher) throws IOException
+    {
+        JsonToken t = nextToken();
+        if (t == JsonToken.FIELD_NAME) {
+            return matcher.matchName(getCurrentName());
+        }
+        if (t == JsonToken.END_OBJECT) {
+            return FieldNameMatcher.MATCH_END_OBJECT;
+        }
+        return FieldNameMatcher.MATCH_ODD_TOKEN;
+    }
+
+    /*
+    /**********************************************************
+    /* Public API, traversal, optimized: nextFieldName()
+    /**********************************************************
+     */
 
     @Override
     public String nextTextValue() throws IOException
