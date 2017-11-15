@@ -6,9 +6,9 @@ import java.util.List;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.sym.CaseInsensitiveNameMatcher;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.sym.InternedNameMatcher;
-import com.fasterxml.jackson.core.sym.SimpleCINameMatcher;
 import com.fasterxml.jackson.core.util.Named;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
@@ -323,8 +323,8 @@ public class AvroFactory
         // 13-Nov-2017, tatu: Case-insensitive could perhaps be optimized, but it is
         //    not trivial; so for now use standard one for it
         if (caseInsensitive) {
-            return SimpleCINameMatcher.construct(matches);
+            return CaseInsensitiveNameMatcher.constructFrom(matches);
         }
-        return InternedNameMatcher.construct(matches);
+        return InternedNameMatcher.constructFrom(matches);
     }
 }
