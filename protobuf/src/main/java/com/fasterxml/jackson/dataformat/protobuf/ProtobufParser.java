@@ -1182,7 +1182,8 @@ public class ProtobufParser extends ParserMinimalBase
                 _state = STATE_ROOT_VALUE;
             }
             _currToken = JsonToken.FIELD_NAME;
-            return matcher.matchName(name);
+            // 15-Nov-2017, tatu: Yes, field names are intern()ed
+            return matcher.matchInternedName(name);
         }
         if (_state == STATE_NESTED_KEY) {
             if (_checkEnd()) {
@@ -1218,7 +1219,8 @@ public class ProtobufParser extends ParserMinimalBase
                 _state = STATE_NESTED_VALUE;
             }
             _currToken = JsonToken.FIELD_NAME;
-            return matcher.matchName(name);
+            // 15-Nov-2017, tatu: Yes, field names are intern()ed
+            return matcher.matchInternedName(name);
         }
         if (_state == STATE_MESSAGE_END) {
             _currToken = JsonToken.END_OBJECT;
@@ -1233,7 +1235,8 @@ public class ProtobufParser extends ParserMinimalBase
     {
         JsonToken t = nextToken();
         if (t == JsonToken.FIELD_NAME) {
-            return matcher.matchName(getCurrentName());
+            // 15-Nov-2017, tatu: Probably intern()ed, but, just in case... if we could have Map
+            return matcher.matchAnyName(getCurrentName());
         }
         if (t == JsonToken.END_OBJECT) {
             return FieldNameMatcher.MATCH_END_OBJECT;
