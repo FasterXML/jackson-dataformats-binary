@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
@@ -877,9 +878,78 @@ public final class CBORParser extends ParserMinimalBase
 
     /*
     /**********************************************************
-    /* Public API, traversal, nextXxxValue/nextFieldName
+    /* Public API, traversal, optimized: nextFieldName
     /**********************************************************
      */
+
+    @Override
+    public String nextFieldName() throws IOException
+    {
+        if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
+            _numTypesValid = NR_UNKNOWN;
+            if (_tokenIncomplete) {
+                _skipIncomplete();
+            }
+            _tokenInputTotal = _currInputProcessed + _inputPtr;
+            _binaryValue = null;
+            _tagValue = -1;
+            // completed the whole Object?
+            if (!_parsingContext.expectMoreValues()) {
+                _parsingContext = _parsingContext.getParent();
+                _currToken = JsonToken.END_OBJECT;
+                return null;
+            }
+            // inlined "_decodeFieldName()"
+
+            if (_inputPtr >= _inputEnd) {
+                loadMoreGuaranteed();
+            }
+            final int ch = _inputBuffer[_inputPtr++];
+            final int type = ((ch >> 5) & 0x7);
+
+            // offline non-String cases, as they are expected to be rare
+            if (type != CBORConstants.MAJOR_TYPE_TEXT) {
+                if (ch == -1) { // end-of-object, common
+                    if (!_parsingContext.hasExpectedLength()) {
+                        _parsingContext = _parsingContext.getParent();
+                        _currToken = JsonToken.END_OBJECT;
+                        return null;
+                    }
+                    _reportUnexpectedBreak();
+                }
+                String name = _decodeNonStringName(ch);
+                _currToken = JsonToken.FIELD_NAME;
+                return name;
+            }
+            final int lenMarker = ch & 0x1F;
+            String name;
+            if (lenMarker <= 23) {
+                if (lenMarker == 0) {
+                    name = "";
+                } else {
+                    name = _findDecodedFromSymbols(lenMarker);
+                    if (name != null) {
+                        _inputPtr += lenMarker;
+                    } else {
+                        name = _decodeShortName(lenMarker);
+                        name = _addDecodedToSymbols(lenMarker, name);
+                    }
+                }
+            } else {
+                final int actualLen = _decodeExplicitLength(lenMarker);
+                if (actualLen < 0) {
+                    name = _decodeChunkedName();
+                } else {
+                    name = _decodeLongerName(actualLen);
+                }
+            }
+            _parsingContext.setCurrentName(name);
+            _currToken = JsonToken.FIELD_NAME;
+            return name;
+        }
+        // otherwise just fall back to default handling; should occur rarely
+        return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+    }
 
     @Override
     public boolean nextFieldName(SerializableString str) throws IOException
@@ -937,74 +1007,86 @@ public final class CBORParser extends ParserMinimalBase
     }
 
     @Override
-    public String nextFieldName() throws IOException
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException
     {
-        if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            _numTypesValid = NR_UNKNOWN;
-            if (_tokenIncomplete) {
-                _skipIncomplete();
-            }
-            _tokenInputTotal = _currInputProcessed + _inputPtr;
-            _binaryValue = null;
-            _tagValue = -1;
-            // completed the whole Object?
-            if (!_parsingContext.expectMoreValues()) {
-                _parsingContext = _parsingContext.getParent();
-                _currToken = JsonToken.END_OBJECT;
-                return null;
-            }
-            // inlined "_decodeFieldName()"
+        // Two parsing modes; can only succeed if expecting field name, so handle that first:
+        if ((_currToken == JsonToken.FIELD_NAME) || !_parsingContext.inObject()) {
+            nextToken();
+            return FieldNameMatcher.MATCH_ODD_TOKEN;
+        }
 
-            if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
-            }
-            final int ch = _inputBuffer[_inputPtr++];
-            final int type = ((ch >> 5) & 0x7);
+        if (_tokenIncomplete) {
+            _skipIncomplete();
+        }
+        _numTypesValid = NR_UNKNOWN;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _binaryValue = null;
+        _tagValue = -1;
+        // completed the whole Object?
+        if (!_parsingContext.expectMoreValues()) {
+            _parsingContext = _parsingContext.getParent();
+            _currToken = JsonToken.END_OBJECT;
+            return FieldNameMatcher.MATCH_END_OBJECT;
+        }
+        // inlined "_decodeFieldName()"
 
-            // offline non-String cases, as they are expected to be rare
-            if (type != CBORConstants.MAJOR_TYPE_TEXT) {
-                if (ch == -1) { // end-of-object, common
-                    if (!_parsingContext.hasExpectedLength()) {
-                        _parsingContext = _parsingContext.getParent();
-                        _currToken = JsonToken.END_OBJECT;
-                        return null;
-                    }
-                    _reportUnexpectedBreak();
+        if (_inputPtr >= _inputEnd) {
+            loadMoreGuaranteed();
+        }
+        final int ch = _inputBuffer[_inputPtr++];
+        final int type = ((ch >> 5) & 0x7);
+
+        // offline non-String cases, as they are expected to be rare
+        if (type != CBORConstants.MAJOR_TYPE_TEXT) {
+            if (ch == -1) { // end-of-object, common
+                if (!_parsingContext.hasExpectedLength()) {
+                    _parsingContext = _parsingContext.getParent();
+                    _currToken = JsonToken.END_OBJECT;
+                    return FieldNameMatcher.MATCH_END_OBJECT;
                 }
-                _decodeNonStringName(ch);
-                _currToken = JsonToken.FIELD_NAME;
-                return getText();
+                _reportUnexpectedBreak();
             }
-            final int lenMarker = ch & 0x1F;
+            String name = _decodeNonStringName(ch);
+            _currToken = JsonToken.FIELD_NAME;
+            /// 15-Nov-2017, tatu: Is this correct? Copied from `nextFieldName()` but...
+            return matcher.matchAnyName(name);
+        }
+        final int lenMarker = ch & 0x1F;
+        if (lenMarker <= 23) {
             String name;
-            if (lenMarker <= 23) {
-                if (lenMarker == 0) {
-                    name = "";
-                } else {
-                    name = _findDecodedFromSymbols(lenMarker);
-                    if (name != null) {
-                        _inputPtr += lenMarker;
-                    } else {
-                        name = _decodeShortName(lenMarker);
-                        name = _addDecodedToSymbols(lenMarker, name);
-                    }
-                }
+            if (lenMarker == 0) {
+                name = "";
             } else {
-                final int actualLen = _decodeExplicitLength(lenMarker);
-                if (actualLen < 0) {
-                    name = _decodeChunkedName();
+                name = _findDecodedFromSymbols(lenMarker);
+                if (name != null) {
+                    _inputPtr += lenMarker;
                 } else {
-                    name = _decodeLongerName(actualLen);
+                    name = _decodeShortName(lenMarker);
+                    name = _addDecodedToSymbols(lenMarker, name);
                 }
             }
             _parsingContext.setCurrentName(name);
             _currToken = JsonToken.FIELD_NAME;
-            return name;
+            return matcher.matchAnyName(name);
         }
-        // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+        final int actualLen = _decodeExplicitLength(lenMarker);
+        String name;
+        if (actualLen < 0) {
+            name = _decodeChunkedName();
+        } else {
+            name = _decodeLongerName(actualLen);
+        }
+        _parsingContext.setCurrentName(name);
+        _currToken = JsonToken.FIELD_NAME;
+        return matcher.matchAnyName(name);
     }
 
+    /*
+    /**********************************************************
+    /* Public API, traversal, optimized: nextXxxValue
+    /**********************************************************
+     */
+    
     @Override
     public String nextTextValue() throws IOException
     {
@@ -2383,7 +2465,7 @@ public final class CBORParser extends ParserMinimalBase
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
      */
-    protected final void _decodeNonStringName(int ch) throws IOException
+    protected final String _decodeNonStringName(int ch) throws IOException
     {
         final int type = ((ch >> 5) & 0x7);
         String name;
@@ -2392,9 +2474,7 @@ public final class CBORParser extends ParserMinimalBase
         } else if (type == CBORConstants.MAJOR_TYPE_INT_NEG) {
             name = _numberToName(ch, true);
         } else if (type == CBORConstants.MAJOR_TYPE_BYTES) {
-            /* 08-Sep-2014, tatu: As per [Issue#5], there are codecs
-             *   (f.ex. Perl module "CBOR::XS") that use Binary data...
-             */
+            //  08-Sep-2014, tatu: There are codecs (f.ex. Perl module "CBOR::XS") that use Binary data...
             final int blen = _decodeExplicitLength(ch & 0x1F);
             byte[] b = _finishBytes(blen);
             // TODO: Optimize, if this becomes commonly used & bottleneck; we have
@@ -2407,8 +2487,9 @@ public final class CBORParser extends ParserMinimalBase
             throw _constructError("Unsupported major type ("+type+") for CBOR Objects, not (yet?) supported, only Strings");
         }
         _parsingContext.setCurrentName(name);
+        return name;
     }
-    
+
     private final String _findDecodedFromSymbols(final int len) throws IOException
     {
         if ((_inputEnd - _inputPtr) < len) {
