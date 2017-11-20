@@ -971,91 +971,6 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public boolean nextFieldName(SerializableString sstr) throws IOException
-    {
-        if (_state == STATE_ROOT_KEY) {
-            if (_inputPtr >= _inputEnd) {
-                if (!loadMore()) {
-                    close();
-                    _currToken = JsonToken.END_OBJECT;
-                    return false;
-                }
-            }
-            int tag = _decodeVInt();
-            // inlined _handleRootKey()
-
-            int wireType = (tag & 0x7);
-            int id = (tag >> 3);
-
-            ProtobufField f = _findField(id);
-            if (f == null) {
-                _skipUnknownField(id, wireType);
-                // may or may not match, but let caller figure it out
-                return false;
-            }
-            String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
-            if (!_currentField.isValidFor(wireType)) {
-                _reportIncompatibleType(_currentField, wireType);
-            }
-
-            // array?
-            if (_currentField.repeated) {
-                if (_currentField.packed) {
-                    _state = STATE_ARRAY_START_PACKED;
-                } else {
-                    _state = STATE_ARRAY_START;
-                }                    
-            } else {
-                _state = STATE_ROOT_VALUE;
-            }
-            _currToken = JsonToken.FIELD_NAME;
-            return name.equals(sstr.getValue());
-        }
-        if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
-                _currToken = JsonToken.END_OBJECT;
-                return false;
-            }
-            int tag = _decodeVInt();
-            // inlined '_handleNestedKey()'
-
-            int wireType = (tag & 0x7);
-            int id = (tag >> 3);
-
-            ProtobufField f = _findField(id);
-            if (f == null) {
-                _skipUnknownField(id, wireType);
-                // may or may not match, but let caller figure it out
-                return false;
-            }
-            final String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
-            if (!_currentField.isValidFor(wireType)) {
-                _reportIncompatibleType(_currentField, wireType);
-            }
-
-            // array?
-            if (_currentField.repeated) {
-                if (_currentField.packed) {
-                    _state = STATE_ARRAY_START_PACKED;
-                } else {
-                    _state = STATE_ARRAY_START;
-                }                    
-            } else {
-                _state = STATE_NESTED_VALUE;
-            }
-            _currToken = JsonToken.FIELD_NAME;
-            return name.equals(sstr.getValue());
-        }
-        if (_state == STATE_MESSAGE_END) {
-            _currToken = JsonToken.END_OBJECT;
-            return false;
-        }
-        return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(getCurrentName());
-    }
-
-    @Override
     public String nextFieldName() throws IOException
     {
         if (_state == STATE_ROOT_KEY) {
@@ -1140,6 +1055,91 @@ public class ProtobufParser extends ParserMinimalBase
             return null;
         }
         return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+    }
+
+    @Override
+    public boolean nextFieldName(SerializableString sstr) throws IOException
+    {
+        if (_state == STATE_ROOT_KEY) {
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    close();
+                    _currToken = JsonToken.END_OBJECT;
+                    return false;
+                }
+            }
+            int tag = _decodeVInt();
+            // inlined _handleRootKey()
+
+            int wireType = (tag & 0x7);
+            int id = (tag >> 3);
+
+            ProtobufField f = _findField(id);
+            if (f == null) {
+                _skipUnknownField(id, wireType);
+                // may or may not match, but let caller figure it out
+                return false;
+            }
+            String name = _currentField.name;
+            _parsingContext.setCurrentName(name);
+            if (!_currentField.isValidFor(wireType)) {
+                _reportIncompatibleType(_currentField, wireType);
+            }
+
+            // array?
+            if (_currentField.repeated) {
+                if (_currentField.packed) {
+                    _state = STATE_ARRAY_START_PACKED;
+                } else {
+                    _state = STATE_ARRAY_START;
+                }                    
+            } else {
+                _state = STATE_ROOT_VALUE;
+            }
+            _currToken = JsonToken.FIELD_NAME;
+            return name.equals(sstr.getValue());
+        }
+        if (_state == STATE_NESTED_KEY) {
+            if (_checkEnd()) {
+                _currToken = JsonToken.END_OBJECT;
+                return false;
+            }
+            int tag = _decodeVInt();
+            // inlined '_handleNestedKey()'
+
+            int wireType = (tag & 0x7);
+            int id = (tag >> 3);
+
+            ProtobufField f = _findField(id);
+            if (f == null) {
+                _skipUnknownField(id, wireType);
+                // may or may not match, but let caller figure it out
+                return false;
+            }
+            final String name = _currentField.name;
+            _parsingContext.setCurrentName(name);
+            if (!_currentField.isValidFor(wireType)) {
+                _reportIncompatibleType(_currentField, wireType);
+            }
+
+            // array?
+            if (_currentField.repeated) {
+                if (_currentField.packed) {
+                    _state = STATE_ARRAY_START_PACKED;
+                } else {
+                    _state = STATE_ARRAY_START;
+                }                    
+            } else {
+                _state = STATE_NESTED_VALUE;
+            }
+            _currToken = JsonToken.FIELD_NAME;
+            return name.equals(sstr.getValue());
+        }
+        if (_state == STATE_MESSAGE_END) {
+            _currToken = JsonToken.END_OBJECT;
+            return false;
+        }
+        return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(getCurrentName());
     }
 
     @Override
