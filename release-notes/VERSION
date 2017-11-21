@@ -16,6 +16,7 @@ Modules:
 #116: (protobuf) Should skip the positive byte which is the last byte of an varint
  (contributed by marsqing@github)
 - (protobuf) Minor fix to skipping with `nextFieldName()`
+- (avro) Fix a typo in SPI Metadata (META-INF/services/com.fasterxml.jackson.core.JsonFactory)
 
 2.9.2 (14-Oct-2017)
 
