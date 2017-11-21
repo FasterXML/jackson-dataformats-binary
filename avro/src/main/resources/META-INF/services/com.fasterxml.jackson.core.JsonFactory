@@ -1,1 +1,1 @@
-src.main.java.com.fasterxml.jackson.dataformat.avro.AvroFactory
+com.fasterxml.jackson.dataformat.avro.AvroFactory
