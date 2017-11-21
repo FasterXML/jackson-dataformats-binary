@@ -109,7 +109,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
+            _currToken = _avroContext.currentToken();
             return null;
         }
         _currToken = JsonToken.FIELD_NAME;
@@ -125,7 +125,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
+            _currToken = _avroContext.currentToken();
             return false;
         }
         _currToken = JsonToken.FIELD_NAME;
@@ -142,13 +142,13 @@ public abstract class AvroParserImpl
 
         int match = _avroContext.nextFieldName(matcher);
         if (match < 0) { // END_OBJECT, mismatching FIELD_NAME or something else:
-            _currToken = _avroContext.getCurrentToken();
+            _currToken = _avroContext.currentToken();
         }
         return match;
         /*
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            JsonToken t = _avroContext.getCurrentToken();
+            JsonToken t = _avroContext.currentToken();
             _currToken = t;
             if (t == JsonToken.END_OBJECT) {
                 return FieldNameMatcher.MATCH_END_OBJECT;

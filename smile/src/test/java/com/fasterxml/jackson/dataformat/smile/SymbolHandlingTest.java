@@ -23,15 +23,15 @@ public class SymbolHandlingTest extends BaseTestForSmile
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
         // field names are interned:
-        assertSame(STR1, p.getCurrentName());
+        assertSame(STR1, p.currentName());
         assertEquals(1, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
-        assertSame("foobar", p.getCurrentName());
+        assertSame("foobar", p.currentName());
         assertEquals(2, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
-        assertSame("longername", p.getCurrentName());
+        assertSame("longername", p.currentName());
         assertEquals(3, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonToken.END_OBJECT, p.nextToken());
@@ -49,15 +49,15 @@ public class SymbolHandlingTest extends BaseTestForSmile
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
         // field names are interned:
-        assertSame(STR1, p.getCurrentName());
+        assertSame(STR1, p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
-        assertSame("foobar", p.getCurrentName());
+        assertSame("foobar", p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
-        assertSame("longername", p.getCurrentName());
+        assertSame("longername", p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonToken.END_OBJECT, p.nextToken());

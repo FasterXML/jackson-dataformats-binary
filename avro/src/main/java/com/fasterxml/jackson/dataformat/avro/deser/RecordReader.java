@@ -34,7 +34,7 @@ abstract class RecordReader extends AvroStructureReader
     public abstract RecordReader newReader(AvroReadContext parent, AvroParserImpl parser);
 
     @Override
-    public String getCurrentName() { return _currentName; }
+    public String currentName() { return _currentName; }
 
     @Override
     public final void skipValue(AvroParserImpl parser) throws IOException {

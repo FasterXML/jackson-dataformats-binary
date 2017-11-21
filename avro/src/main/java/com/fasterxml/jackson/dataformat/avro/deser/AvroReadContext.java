@@ -67,9 +67,9 @@ public abstract class AvroReadContext extends TokenStreamContext
      */
 
     @Override
-    public String getCurrentName() { return null; }
+    public String currentName() { return null; }
 
-    public abstract JsonToken getCurrentToken();
+    public abstract JsonToken currentToken();
     
     @Override
     public final AvroReadContext getParent() { return _parent; }

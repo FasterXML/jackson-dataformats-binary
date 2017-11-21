@@ -383,13 +383,13 @@ public class ProtobufParser extends ParserMinimalBase
      * the current event.
      */
     @Override
-    public String getCurrentName() throws IOException
+    public String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ProtobufReadContext parent = _parsingContext.getParent();
-            return parent.getCurrentName();
+            return parent.currentName();
         }
-        return _parsingContext.getCurrentName();
+        return _parsingContext.currentName();
     }
 
     @Override
@@ -493,7 +493,7 @@ public class ProtobufParser extends ParserMinimalBase
     {
         JsonToken t = nextTokenX();
         if (t == JsonToken.FIELD_NAME) {
-            System.out.print("Field name: "+getCurrentName());
+            System.out.print("Field name: "+currentName());
         } else if (t == JsonToken.VALUE_NUMBER_INT) {
             System.out.print("Int: "+getIntValue());
         } else if (t == JsonToken.VALUE_STRING) {
@@ -1054,7 +1054,7 @@ public class ProtobufParser extends ParserMinimalBase
             _currToken = JsonToken.END_OBJECT;
             return null;
         }
-        return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+        return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
     }
 
     @Override
@@ -1139,7 +1139,7 @@ public class ProtobufParser extends ParserMinimalBase
             _currToken = JsonToken.END_OBJECT;
             return false;
         }
-        return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(getCurrentName());
+        return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(currentName());
     }
 
     @Override
@@ -1236,7 +1236,7 @@ public class ProtobufParser extends ParserMinimalBase
         JsonToken t = nextToken();
         if (t == JsonToken.FIELD_NAME) {
             // 15-Nov-2017, tatu: Probably intern()ed, but, just in case... if we could have Map
-            return matcher.matchAnyName(getCurrentName());
+            return matcher.matchAnyName(currentName());
         }
         if (t == JsonToken.END_OBJECT) {
             return FieldNameMatcher.MATCH_END_OBJECT;
@@ -1393,7 +1393,7 @@ public class ProtobufParser extends ParserMinimalBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
             return getNumberValue().toString();
@@ -1412,7 +1412,7 @@ public class ProtobufParser extends ParserMinimalBase
             case VALUE_STRING:
                 return _textBuffer.getTextBuffer();
             case FIELD_NAME:
-                return _parsingContext.getCurrentName().toCharArray();
+                return _parsingContext.currentName().toCharArray();
                 // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -1436,7 +1436,7 @@ public class ProtobufParser extends ParserMinimalBase
             case VALUE_STRING:
                 return _textBuffer.size();                
             case FIELD_NAME:
-                return _parsingContext.getCurrentName().length();
+                return _parsingContext.currentName().length();
                 // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -1504,7 +1504,7 @@ public class ProtobufParser extends ParserMinimalBase
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _parsingContext.currentName();
             writer.write(n);
             return n.length();
         }

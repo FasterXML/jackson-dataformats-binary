@@ -180,7 +180,7 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
             return _textBuffer.contentsAsString();
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _avroContext.getCurrentName();
+            return _avroContext.currentName();
         }
         if (t != null) {
             if (t.isNumeric()) {
@@ -199,7 +199,7 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _avroContext.getCurrentName();
+            String n = _avroContext.currentName();
             writer.write(n);
             return n.length();
         }

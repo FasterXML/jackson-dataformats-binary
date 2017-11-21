@@ -149,7 +149,7 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
             return _textValue;
         }
         if (_currToken == JsonToken.FIELD_NAME) {
-            return _avroContext.getCurrentName();
+            return _avroContext.currentName();
         }
         if (_currToken != null) {
             if (_currToken.isScalarValue()) {
@@ -160,7 +160,7 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
         return null;
     }
 
-    @Override // since 2.8
+    @Override
     public int getText(Writer writer) throws IOException
     {
         JsonToken t = _currToken;
@@ -169,7 +169,7 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
             return _textValue.length();
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _parsingContext.currentName();
             writer.write(n);
             return n.length();
         }

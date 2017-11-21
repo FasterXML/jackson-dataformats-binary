@@ -357,13 +357,13 @@ public class AsyncSharedStringsTest
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("z_aaaabbbbccccddddee", parser.getCurrentName());
+        assertEquals("z_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("end", parser.getText());
 
         // This one fails...
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("a_aaaabbbbccccddddee", parser.getCurrentName());
+        assertEquals("a_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("start", parser.getText());
 
@@ -394,17 +394,17 @@ public class AsyncSharedStringsTest
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("term", parser.getCurrentName());
+        assertEquals("term", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.getCurrentName());
+        assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
         assertEquals("foo", parser.getText());
@@ -430,19 +430,19 @@ public class AsyncSharedStringsTest
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("term", parser.getCurrentName());
+        assertEquals("term", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
         // here we fail..., seems to be a problem with field caching factory level???
         // since we get the field name of the previous (bos1) document field value (withou the 2)
-        assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.getCurrentName());
+        assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
         assertEquals("bar", parser.getText());
@@ -479,7 +479,7 @@ public class AsyncSharedStringsTest
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals(JsonTokenId.ID_FIELD_NAME, parser.getCurrentTokenId());
-        assertEquals(NAME, parser.getCurrentName());
+        assertEquals(NAME, parser.currentName());
 
         assertToken(JsonToken.VALUE_NULL, parser.nextToken());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());

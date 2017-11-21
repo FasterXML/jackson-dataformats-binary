@@ -675,7 +675,7 @@ public class SmileParser extends SmileParserBase
             // wouldn't fit in buffer, just fall back to default processing
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
+        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(currentName());
     }
 
     @Override
@@ -684,7 +684,7 @@ public class SmileParser extends SmileParserBase
         // Two parsing modes; can only succeed if expecting field name, if not offline:
         if ((_currToken == JsonToken.FIELD_NAME) || !_parsingContext.inObject()) {
             // otherwise just fall back to default handling; should occur rarely
-            return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+            return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
         }
         if (_tokenIncomplete) {
             _skipIncomplete();
@@ -727,7 +727,7 @@ public class SmileParser extends SmileParserBase
             case 0x34: // long ASCII/Unicode name
                 _handleLongFieldName();
                 _currToken = JsonToken.FIELD_NAME;
-                return getCurrentName();
+                return currentName();
             }
             break;
         case 1: // short shared, can fully process
@@ -853,7 +853,7 @@ public class SmileParser extends SmileParserBase
                 _handleLongFieldName();
                 _currToken = JsonToken.FIELD_NAME;
                 // 15-Nov-2017, tatu: Can't be sure it's intern()ed so:
-                return matcher.matchAnyName(getCurrentName());
+                return matcher.matchAnyName(currentName());
             }
             break;
         case 1: // short shared, can fully process
@@ -1120,7 +1120,7 @@ public class SmileParser extends SmileParserBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _parsingContext.currentName();
         }
         if (t.isNumeric()) { // TODO: optimize?
             return getNumberValue().toString();
@@ -1140,7 +1140,7 @@ public class SmileParser extends SmileParserBase
             }
             if (_currToken == JsonToken.FIELD_NAME) {
                 if (!_nameCopied) {
-                    String name = _parsingContext.getCurrentName();
+                    String name = _parsingContext.currentName();
                     int nameLen = name.length();
                     if (_nameCopyBuffer == null) {
                         _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
@@ -1171,7 +1171,7 @@ public class SmileParser extends SmileParserBase
                 return _textBuffer.size();                
             }
             if (_currToken == JsonToken.FIELD_NAME) {
-                return _parsingContext.getCurrentName().length();
+                return _parsingContext.currentName().length();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
                     || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
@@ -1235,7 +1235,7 @@ public class SmileParser extends SmileParserBase
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _parsingContext.currentName();
             writer.write(n);
             return n.length();
         }

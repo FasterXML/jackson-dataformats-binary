@@ -59,14 +59,14 @@ public class BinaryDataTest extends AvroTestBase
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("filename", p.getCurrentName());
+        assertEquals("filename", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("data", p.getCurrentName());
+        assertEquals("data", p.currentName());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         // skip, don't read!
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("size", p.getCurrentName());
+        assertEquals("size", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(result.size, p.getLongValue());
         assertEquals((int) result.size, p.getIntValue());

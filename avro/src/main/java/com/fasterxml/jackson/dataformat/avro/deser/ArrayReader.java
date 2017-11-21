@@ -48,9 +48,9 @@ public abstract class ArrayReader extends AvroStructureReader
     }
 
     @Override
-    public String getCurrentName() {
+    public String currentName() {
         if (_currentName == null) {
-            _currentName = _parent.getCurrentName();
+            _currentName = _parent.currentName();
         }
         return _currentName;
     }

@@ -44,7 +44,7 @@ public abstract class MapReader extends AvroStructureReader
     public abstract MapReader newReader(AvroReadContext parent, AvroParserImpl parser);
 
     @Override
-    public String getCurrentName() { return _currentName; }
+    public String currentName() { return _currentName; }
 
     @Override
     public abstract JsonToken nextToken() throws IOException;

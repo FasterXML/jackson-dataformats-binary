@@ -233,7 +233,7 @@ public class TestGenerator extends BaseTestForSmile
             assertTrue(p.nextFieldName(new SerializedString(exp)));
         }
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals(exp, p.getCurrentName());
+        assertEquals(exp, p.currentName());
     }
     
     /**

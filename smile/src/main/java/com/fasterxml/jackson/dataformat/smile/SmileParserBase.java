@@ -342,12 +342,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * the current event.
      */
     @Override
-    public final String getCurrentName() throws IOException
+    public final String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            return _parsingContext.getParent().getCurrentName();
+            return _parsingContext.getParent().currentName();
         }
-        return _parsingContext.getCurrentName();
+        return _parsingContext.currentName();
     }
 
     @Override

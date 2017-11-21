@@ -65,11 +65,11 @@ public class NumberParsingTest
     	JsonParser p = _smileParser(data);
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("a", p.getCurrentName());
+    	assertEquals("a", p.currentName());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	// let's NOT access value, forcing skipping
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("b", p.getCurrentName());
+    	assertEquals("b", p.currentName());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	// let's NOT access value, forcing skipping
     	assertToken(JsonToken.END_OBJECT, p.nextToken());

@@ -44,7 +44,7 @@ public class MissingReader extends AvroReadContext
     }
 
     @Override
-    public JsonToken getCurrentToken() {
+    public JsonToken currentToken() {
         return null;
     }
 

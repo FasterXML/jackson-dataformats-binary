@@ -20,7 +20,7 @@ abstract class KeyValueContext extends AvroWriteContext
     }
 
     @Override
-    public final String getCurrentName() { return _currentName; }
+    public final String currentName() { return _currentName; }
 
     @Override
     public boolean canClose() {

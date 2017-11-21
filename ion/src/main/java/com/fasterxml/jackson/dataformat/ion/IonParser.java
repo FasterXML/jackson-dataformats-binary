@@ -148,7 +148,7 @@ public class IonParser
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
             case FIELD_NAME:
-                return getCurrentName();
+                return currentName();
             case VALUE_STRING:
                 return _reader.stringValue();
             case VALUE_NUMBER_INT:
@@ -337,8 +337,8 @@ public class IonParser
     }
 
     @Override
-    public String getCurrentName() throws IOException {
-        return _parsingContext.getCurrentName();
+    public String currentName() throws IOException {
+        return _parsingContext.currentName();
     }
 
     @Override

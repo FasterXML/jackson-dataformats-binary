@@ -259,7 +259,7 @@ public abstract class NonBlockingParserBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
             // TODO: optimize?
@@ -276,7 +276,7 @@ public abstract class NonBlockingParserBase
             return _textBuffer.getTextBuffer();
         case JsonTokenId.ID_FIELD_NAME:
             if (!_nameCopied) {
-                String name = _parsingContext.getCurrentName();
+                String name = _parsingContext.currentName();
                 int nameLen = name.length();
                 if (_nameCopyBuffer == null) {
                     _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
@@ -305,7 +305,7 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_STRING:
             return _textBuffer.size();
         case JsonTokenId.ID_FIELD_NAME:
-            return _parsingContext.getCurrentName().length();
+            return _parsingContext.currentName().length();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
             return getNumberValue().toString().length();

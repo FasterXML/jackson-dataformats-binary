@@ -64,7 +64,7 @@ public class WriteBinaryTest extends ProtobufTestBase
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(input.trailer, p.getIntValue());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("data", p.getCurrentName());
+        assertEquals("data", p.currentName());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         _verify(data, p.getBinaryValue());
         

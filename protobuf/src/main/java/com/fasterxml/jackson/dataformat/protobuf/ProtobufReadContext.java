@@ -139,7 +139,7 @@ public final class ProtobufReadContext
      */
 
     @Override
-    public String getCurrentName() { return _currentName; }
+    public String currentName() { return _currentName; }
 
     @Override
     public ProtobufReadContext getParent() { return _parent; }

@@ -249,10 +249,10 @@ public abstract class AvroParser extends ParserBase
 
     @Override
     public abstract int getText(Writer writer) throws IOException;
-    
+
     @Override
-    public String getCurrentName() throws IOException {
-        return _avroContext.getCurrentName();
+    public String currentName() throws IOException {
+        return _avroContext.currentName();
     }
 
     @Override

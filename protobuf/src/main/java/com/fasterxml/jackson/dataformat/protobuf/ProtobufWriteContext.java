@@ -23,9 +23,6 @@ public class ProtobufWriteContext
      */
     protected ProtobufField _field;
 
-    /**
-     * @since 2.5
-     */
     protected Object _currentValue;
 
     /*
@@ -105,7 +102,7 @@ public class ProtobufWriteContext
     public final ProtobufWriteContext getParent() { return _parent; }
     
     @Override
-    public String getCurrentName() {
+    public String currentName() {
         return ((_type == TYPE_OBJECT) && (_field != null)) ? _field.name : null;
     }
 

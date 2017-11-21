@@ -130,7 +130,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertNull(p.nextTextValue());
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("a", p.getCurrentName());
+        assertEquals("a", p.currentName());
         assertEquals(textValue, p.nextTextValue());
         assertNull(p.nextTextValue());
         assertToken(JsonToken.END_OBJECT, p.currentToken());
@@ -162,7 +162,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertTrue(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals(NAME.getValue(), p.getCurrentName());
+        assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
@@ -170,12 +170,12 @@ public class ParserNextXxxTest extends BaseTestForSmile
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("name2", p.getCurrentName());
+        assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("x", p.getCurrentName());
+        assertEquals("x", p.currentName());
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
@@ -193,7 +193,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertFalse(p.nextFieldName(new SerializedString("Nam")));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals(NAME.getValue(), p.getCurrentName());
+        assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
@@ -201,12 +201,12 @@ public class ParserNextXxxTest extends BaseTestForSmile
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("name2", p.getCurrentName());
+        assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("x", p.getCurrentName());
+        assertEquals("x", p.currentName());
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
@@ -229,7 +229,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertTrue(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals(NAME.getValue(), p.getCurrentName());
+        assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
@@ -237,12 +237,12 @@ public class ParserNextXxxTest extends BaseTestForSmile
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("name2", p.getCurrentName());
+        assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("x", p.getCurrentName());
+        assertEquals("x", p.currentName());
 
         assertFalse(p.nextFieldName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());

@@ -117,7 +117,7 @@ public final class CBORReadContext
      */
 
     @Override
-    public String getCurrentName() { return _currentName; }
+    public String currentName() { return _currentName; }
 
     @Override
     public CBORReadContext getParent() { return _parent; }

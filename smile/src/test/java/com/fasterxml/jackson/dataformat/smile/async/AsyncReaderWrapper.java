@@ -45,9 +45,9 @@ public abstract class AsyncReaderWrapper
         }
         return str;
     }
-    
+
     public String currentName() throws IOException {
-        return _streamReader.getCurrentName();
+        return _streamReader.currentName();
     }
 
     public JsonParser parser() { return _streamReader; }

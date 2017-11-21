@@ -42,7 +42,7 @@ public abstract class AvroStructureReader
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
     @Override
-    public final JsonToken getCurrentToken() {
+    public final JsonToken currentToken() {
         return _currToken;
     }
     

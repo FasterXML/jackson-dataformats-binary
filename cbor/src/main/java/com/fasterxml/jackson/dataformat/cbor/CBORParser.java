@@ -436,13 +436,13 @@ public final class CBORParser extends ParserMinimalBase
      * the current event.
      */
     @Override
-    public String getCurrentName() throws IOException
+    public String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             CBORReadContext parent = _parsingContext.getParent();
-            return parent.getCurrentName();
+            return parent.currentName();
         }
-        return _parsingContext.getCurrentName();
+        return _parsingContext.currentName();
     }
 
     @Override
@@ -862,7 +862,7 @@ public final class CBORParser extends ParserMinimalBase
     }
     
     // base impl is fine:
-    //public String getCurrentName() throws IOException
+    //public String currentName() throws IOException
 
     /**
      * Method for forcing full read of current token, even if it might otherwise
@@ -948,7 +948,7 @@ public final class CBORParser extends ParserMinimalBase
             return name;
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+        return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
     }
 
     @Override
@@ -1003,7 +1003,7 @@ public final class CBORParser extends ParserMinimalBase
 
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
+        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(currentName());
     }
 
     @Override
@@ -1370,7 +1370,7 @@ public final class CBORParser extends ParserMinimalBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
             return getNumberValue().toString();
@@ -1389,7 +1389,7 @@ public final class CBORParser extends ParserMinimalBase
                 return _textBuffer.getTextBuffer();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
-                return _parsingContext.getCurrentName().toCharArray();
+                return _parsingContext.currentName().toCharArray();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
                     || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
@@ -1411,7 +1411,7 @@ public final class CBORParser extends ParserMinimalBase
                 return _textBuffer.size();                
             }
             if (_currToken == JsonToken.FIELD_NAME) {
-                return _parsingContext.getCurrentName().length();
+                return _parsingContext.currentName().length();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
                     || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
@@ -1467,7 +1467,7 @@ public final class CBORParser extends ParserMinimalBase
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _parsingContext.currentName();
             writer.write(n);
             return n.length();
         }

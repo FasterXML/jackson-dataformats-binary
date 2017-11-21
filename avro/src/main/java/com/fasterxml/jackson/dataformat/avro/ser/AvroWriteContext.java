@@ -114,7 +114,7 @@ public abstract class AvroWriteContext
     public final AvroWriteContext getParent() { return _parent; }
 
     @Override
-    public String getCurrentName() { return null; }
+    public String currentName() { return null; }
 
     /*
     /**********************************************************
