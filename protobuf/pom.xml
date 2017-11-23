@@ -7,7 +7,7 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-protobuf</artifactId>
-  <name>Jackson dataformat: protobuf</name>
+  <name>Jackson dataformat: Protobuf</name>
   <packaging>bundle</packaging>
   <description>Support for reading and writing protobuf-encoded data via Jackson
 abstractions.
