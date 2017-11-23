@@ -38,16 +38,6 @@ public abstract class CBORTestBase
         return (CBORParser) CBOR_MAPPER.createParser(in);
     }
 
-    @Deprecated
-    protected CBORParser cborParser(CBORFactory f, byte[] input) throws IOException {
-        return (CBORParser) f.createParser(input);
-    }
-
-    @Deprecated
-    protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {
-        return (CBORParser) f.createParser(in);
-    }
-
     protected ObjectMapper cborMapper() {
         return new ObjectMapper(cborFactory());
     }

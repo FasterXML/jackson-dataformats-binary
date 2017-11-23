@@ -1,17 +1,12 @@
-package com.fasterxml.jackson.dataformat.cbor.failing;
+package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.core.*;
-
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-
-// 06-Oct-2017, tatu: Need to implement support for `createGenerator` via ObjectMapper
-//   to allow this test to work.
 
 // for [dataformats-binary#43]
 public class SharedRawGeneratorBufferTest extends CBORTestBase
@@ -34,19 +29,18 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
     {
         String data = "{\"x\":\"" + generate(5000) + "\"}";
         RawBean bean = new RawBean(data);
-        JsonFactory factory = new JsonFactory();
-        CBORFactory cborFactory = new CBORFactory();
+
+        ObjectMapper cborMapper = cborMapper();
+        ObjectMapper jsonMapper = new ObjectMapper();
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         
-        CBORGenerator cborGen = (CBORGenerator) cborFactory.createGenerator(ObjectWriteContext.empty(),
-                bytes);
+        CBORGenerator cborGen = (CBORGenerator) cborMapper.createGenerator(bytes);
         cborGen.writeObject(1);
         cborGen.close();
         bytes.reset();
 
-        JsonGenerator jsonGen = factory.createGenerator(ObjectWriteContext.empty(),
-                bytes);
+        JsonGenerator jsonGen = jsonMapper.createGenerator(bytes);
         jsonGen.writeObject(bean);
         jsonGen.close();
 
