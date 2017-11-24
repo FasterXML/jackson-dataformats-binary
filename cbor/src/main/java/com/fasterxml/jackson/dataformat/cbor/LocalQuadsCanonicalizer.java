@@ -112,7 +112,7 @@ public final class LocalQuadsCanonicalizer
         _tertiaryStart = _secondaryStart + (_secondaryStart >> 1); // right after secondary
         _tertiaryShift = _calcTertiaryShift(sz);
         _spilloverEnd = _hashArea.length - sz; // start AND end the same, at 7/8, initially
-        _longNameOffset = _hashSize; // and start of long name area is at end of initial area (to be expanded)
+        _longNameOffset = _hashArea.length; // and start of long name area is at end of initial area (to be expanded)
 
         _names = new String[sz * 2];
     }
@@ -209,11 +209,11 @@ public final class LocalQuadsCanonicalizer
         int value = b[offset++] & 0xFF;
         switch (bytes) {
         case 4:
-            value = (value << 8) | (b[offset]++ & 0xFF);
+            value = (value << 8) | (b[offset++] & 0xFF);
         case 3:
-            value = (value << 8) | (b[offset]++ & 0xFF);
+            value = (value << 8) | (b[offset++] & 0xFF);
         case 2:
-            value = (value << 8) | (b[offset]++ & 0xFF);
+            value = (value << 8) | (b[offset++] & 0xFF);
         }
         return value;
     }
@@ -301,7 +301,7 @@ public final class LocalQuadsCanonicalizer
         offset = _spilloverEnd;
         _spilloverEnd += 4;
 
-//System.err.printf(" SPIll-over at x%X; start x%X; end x%X, hash %X\n", offset, _spilloverStart(), _hashArea.length, (hash & 0x7F));
+//System.err.printf("SPILL-OVER, hash 0x%08x, prim offset %d, long-offset %d, new spill-over end %d\n", hash, _calcOffset(hash), offset, _spilloverEnd);
         
         // one caveat: in the unlikely event if spill-over filling up,
         // check if that could be considered a DoS attack; handle appropriately
@@ -319,6 +319,8 @@ public final class LocalQuadsCanonicalizer
     private int _appendLongName(int[] quads, int qlen)
     {
         int start = _longNameOffset;
+
+//System.err.printf("_appendLongName, qlen %d, long-offset: %d\n", qlen, start);
         
         // note: at this point we must already be shared. But may not have enough space
         if ((start + qlen) > _hashArea.length) {
@@ -407,11 +409,12 @@ public final class LocalQuadsCanonicalizer
     public String findName(int q1)
     {
         int offset = _calcOffset(calcHash(q1));
+//System.err.printf("findName(0x%08x) -> hash 0x%08x, offset 0x%08x\n", q1, calcHash(q1), offset);
+
         // first: primary match?
         final int[] hashArea = _hashArea;
 
         int len = hashArea[offset+3];
-
         if (len == 1) {
             if (hashArea[offset] == q1) {
                 return _names[offset >> 2];
@@ -775,6 +778,18 @@ public final class LocalQuadsCanonicalizer
         return hash;
     }
 
+    @Override
+    public String toString() {
+        int pri = primaryCount();
+        int sec = secondaryCount();
+        int tert = tertiaryCount();
+        int spill = spilloverCount();
+        int total = totalCount();
+        return String.format("[%s: size=%d, hashSize=%d, %d/%d/%d/%d pri/sec/ter/spill (=%s), total:%d]",
+                getClass().getName(), _count, _hashSize,
+                pri, sec, tert, spill, (pri+sec+tert+spill), total);
+    }
+    
     /*
     /**********************************************************
     /* Helper methods
