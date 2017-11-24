@@ -100,23 +100,21 @@ public final class LocalQuadsCanonicalizer
      * Constructor used for creating per-<code>JsonFactory</code> "root"
      * symbol tables: ones used for merging and sharing common symbols
      * 
-     * @param sz Initial primary hash area size
-     * @param intern Whether Strings contained should be {@link String#intern}ed
-     * @param seed Random seed valued used to make it more difficult to cause
-     *   collisions (used for collision-based DoS attacks).
+     * @param entryCount Number of Strings to contain
+     * @param sz Size of logical hash area
      */
-    private LocalQuadsCanonicalizer(int sz) {
+    private LocalQuadsCanonicalizer(int entryCount, int sz) {
         _count = 0;
-        _hashSize = sz << 3; // 8x, 4 ints per entry for main area, then sec/ter and spill over
-        _hashArea = new int[_hashSize];
+        _hashSize = sz; // 8x, 4 ints per entry for main area, then sec/ter and spill over
+        _hashArea = new int[sz << 3];
 
-        _secondaryStart = _hashSize << 2; // right after primary area (at 50%)
+        _secondaryStart = sz << 2; // right after primary area (at 50%)
         _tertiaryStart = _secondaryStart + (_secondaryStart >> 1); // right after secondary
         _tertiaryShift = _calcTertiaryShift(sz);
-        _spilloverEnd = _hashSize - sz; // start AND end the same, at 7/8, initially
+        _spilloverEnd = _hashArea.length - sz; // start AND end the same, at 7/8, initially
         _longNameOffset = _hashSize; // and start of long name area is at end of initial area (to be expanded)
 
-        _names = new String[sz];
+        _names = new String[sz * 2];
     }
 
     static int _calcTertiaryShift(int primarySlots)
@@ -141,7 +139,8 @@ public final class LocalQuadsCanonicalizer
      * Factory method to call to create a symbol table instance with a
      * randomized seed value.
      */
-    public static LocalQuadsCanonicalizer createEmpty(int sz) {
+    public static LocalQuadsCanonicalizer createEmpty(int entryCount) {
+        int sz = entryCount;
         // Sanity check: let's now allow hash sizes below certain minimum value. This is size in entries
         if (sz < MIN_HASH_SIZE) {
             sz = MIN_HASH_SIZE;
@@ -155,7 +154,7 @@ public final class LocalQuadsCanonicalizer
                 sz = curr;
             }
         }
-        return new LocalQuadsCanonicalizer(sz);
+        return new LocalQuadsCanonicalizer(entryCount, sz);
     }
 
     /*
@@ -168,31 +167,40 @@ public final class LocalQuadsCanonicalizer
         byte[] ch = name.getBytes(StandardCharsets.UTF_8);
         int len = ch.length;
 
-        if (len <= 4) {
-            return addName(name, _decodeLast(ch, 0, len));
+        if (len <= 12) {
+            if (len <= 4) {
+                return addName(name, _decodeLast(ch, 0, len));
+            }
+            int q1 = _decodeFull(ch, 0);
+            if (len <= 8) {
+                return addName(name, q1, _decodeLast(ch, 4, len-4));
+            }
+            return addName(name, q1, _decodeFull(ch, 4), _decodeLast(ch, 8, len-8));
         }
-        int q1 = _decodeFull(ch, 0);
-        if (len <= 8) {
-            return addName(name, q1, _decodeLast(ch, 4, len-4));
-        }
-        int[] buf = new int[(len + 3) >> 2];
-        buf[0] = q1;
-        buf[1] = _decodeFull(ch, 4);
-        int in = 8;
-        int out = 2;
-        int left = len - 8;
-
-        for (; left > 4; left -= 4) {
-            buf[out++] = _decodeFull(ch, in);
-            in += 4;
-        }
-        buf[out++] = _decodeLast(ch, in, left);
-        return addName(name, buf, buf.length);
+        int[] quads = quads(name);
+        return addName(name, quads, quads.length);
     }
 
+    public static int[] quads(String name) {
+        final byte[] b = name.getBytes(StandardCharsets.UTF_8);
+        final int len = b.length;
+        int[] buf = new int[(len + 3) >> 2];
+
+        int in = 0;
+        int out = 0;
+        int left = len;
+
+        for (; left > 4; left -= 4) {
+            buf[out++] = _decodeFull(b, in);
+            in += 4;
+        }
+        buf[out++] = _decodeLast(b, in, left);
+        return buf;
+    }
+    
     private final static int _decodeFull(byte[] b, int offset) {
         return (b[offset] << 24) + ((b[offset+1] & 0xFF) << 16)
-                + ((b[offset+2] & 0xFF) << 8) + (b[offset+2] & 0xFF);
+                + ((b[offset+2] & 0xFF) << 8) + (b[offset+3] & 0xFF);
     }
 
     private final static int _decodeLast(byte[] b, int offset, int bytes) {
@@ -210,7 +218,7 @@ public final class LocalQuadsCanonicalizer
         return value;
     }
 
-    public String addName(String name, int q1) {
+    private String addName(String name, int q1) {
         int offset = _findOffsetForAdd(calcHash(q1));
         _hashArea[offset] = q1;
         _hashArea[offset+3] = 1;
@@ -219,9 +227,8 @@ public final class LocalQuadsCanonicalizer
         return name;
     }
 
-    public String addName(String name, int q1, int q2) {
-        int hash = (q2 == 0) ? calcHash(q1) : calcHash(q1, q2);
-        int offset = _findOffsetForAdd(hash);
+    private String addName(String name, int q1, int q2) {
+        int offset = _findOffsetForAdd(calcHash(q1, q2));
         _hashArea[offset] = q1;
         _hashArea[offset+1] = q2;
         _hashArea[offset+3] = 2;
@@ -230,41 +237,35 @@ public final class LocalQuadsCanonicalizer
         return name;
     }
 
-    public String addName(String name, int[] q, int qlen)
-    {
-        int offset;
-        
-        switch (qlen) {
-        case 1: {
-                offset = _findOffsetForAdd(calcHash(q[0]));
-                _hashArea[offset] = q[0];
-                _hashArea[offset+3] = 1;
-            }
-            break;
-        case 2: {
-                offset = _findOffsetForAdd(calcHash(q[0], q[1]));
-                _hashArea[offset] = q[0];
-                _hashArea[offset+1] = q[1];
-                _hashArea[offset+3] = 2;
-            }
-            break;
-        case 3: {
-                offset = _findOffsetForAdd(calcHash(q[0], q[1], q[2]));
-                _hashArea[offset] = q[0];
-                _hashArea[offset+1] = q[1];
-                _hashArea[offset+2] = q[2];
-                _hashArea[offset+3] = 3;
-            }
-            break;
-        default:
-            final int hash = calcHash(q, qlen);
-            offset = _findOffsetForAdd(hash);
+    private String addName(String name, int q1, int q2, int q3) {
+        int offset = _findOffsetForAdd(calcHash(q1, q2, q3));
+        _hashArea[offset] = q1;
+        _hashArea[offset+1] = q2;
+        _hashArea[offset+2] = q3;
+        _hashArea[offset+3] = 3;
+        _names[offset >> 2] = name;
+        ++_count;
+        return name;
+    }
 
-            _hashArea[offset] = hash;
-            int longStart = _appendLongName(q, qlen);
-            _hashArea[offset+1] = longStart;
-            _hashArea[offset+3] = qlen;
+    private String addName(String name, int[] q, int qlen)
+    {
+        switch (qlen) {
+        case 1:
+            return addName(name, q[0]);
+        case 2:
+            return addName(name, q[0], q[1]);
+        case 3:
+            return addName(name, q[0], q[1], q[2]);
         }
+        final int hash = calcHash(q, qlen);
+        int offset = _findOffsetForAdd(hash);
+
+        _hashArea[offset] = hash;
+        int longStart = _appendLongName(q, qlen);
+        _hashArea[offset+1] = longStart;
+        _hashArea[offset+3] = qlen;
+
         // plus add the actual String
         _names[offset >> 2] = name;
 
@@ -440,7 +441,6 @@ public final class LocalQuadsCanonicalizer
         int offset = _calcOffset(calcHash(q1, q2));
 
         final int[] hashArea = _hashArea;
-
         int len = hashArea[offset+3];
 
         if (len == 2) {
