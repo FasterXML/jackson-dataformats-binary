@@ -11,6 +11,13 @@ public final class LocalQuadsCanonicalizer
 {
     private final static int MIN_HASH_SIZE = 8;
 
+    // Limit to 32k entries as well as 32k-int (i.e. 128kb) strings so that both
+    // size and offset (in string table) can be encoded in a single int.
+
+    public final static int MAX_ENTRIES = 0x7FFF;
+
+    private final static int MAX_LENGTH_IN_QUADS = 0x7FFF;
+
     /*
     /**********************************************************
     /* First, main hash area info
@@ -103,7 +110,9 @@ public final class LocalQuadsCanonicalizer
      * @param entryCount Number of Strings to contain
      * @param sz Size of logical hash area
      */
-    private LocalQuadsCanonicalizer(int entryCount, int sz) {
+    private LocalQuadsCanonicalizer(int entryCount, int sz)
+    {
+        
         _count = 0;
         _hashSize = sz; // 8x, 4 ints per entry for main area, then sec/ter and spill over
         _hashArea = new int[sz << 3];
@@ -114,6 +123,9 @@ public final class LocalQuadsCanonicalizer
         _spilloverEnd = _hashArea.length - sz; // start AND end the same, at 7/8, initially
         _longNameOffset = _hashArea.length; // and start of long name area is at end of initial area (to be expanded)
 
+        // 25-Nov-2017, tatu: Earlier version used hash offsets here, requiring bigger size, but
+        //    after refactor, only need exact number of slots
+//        _names = new String[entryCount];
         _names = new String[sz * 2];
     }
 
@@ -122,24 +134,19 @@ public final class LocalQuadsCanonicalizer
         // first: we only get 1/4 of slots of primary, to divide
         int tertSlots = (primarySlots) >> 2;
         // default is for buckets of 4 slots (each 4 ints, i.e. 1 << 4)
-        if (tertSlots < 64) {
-            return 4;
-        }
-        if (tertSlots <= 256) { // buckets of 8 slots (up to 256 == 32 x 8)
-            return 5;
-        }
-        if (tertSlots <= 1024) { // buckets of 16 slots (up to 1024 == 64 x 16)
-            return 6;
-        }
+        if (tertSlots < 64) return 4;
+        // buckets of 8 slots (up to 256 == 32 x 8)
+        if (tertSlots <= 256) return 5;
+        // buckets of 16 slots (up to 1024 == 64 x 16)
+        if (tertSlots <= 1024) return 6;
         // and biggest buckets have 32 slots
         return 7;
     }
 
-    /**
-     * Factory method to call to create a symbol table instance with a
-     * randomized seed value.
-     */
     public static LocalQuadsCanonicalizer createEmpty(int entryCount) {
+        if (entryCount > MAX_ENTRIES) {
+            throw new IllegalArgumentException("Maximum entry count ("+MAX_ENTRIES+") exceeded: "+entryCount);
+        }
         int sz = entryCount;
         // Sanity check: let's now allow hash sizes below certain minimum value. This is size in entries
         if (sz < MIN_HASH_SIZE) {
@@ -156,7 +163,7 @@ public final class LocalQuadsCanonicalizer
         }
         return new LocalQuadsCanonicalizer(entryCount, sz);
     }
-
+    
     /*
     /**********************************************************
     /* API, mutators
@@ -258,6 +265,9 @@ public final class LocalQuadsCanonicalizer
         case 3:
             return addName(name, q[0], q[1], q[2]);
         }
+        if (qlen > MAX_LENGTH_IN_QUADS) {
+            throw new IllegalArgumentException("Maximum name length in quads ("+MAX_LENGTH_IN_QUADS+") exceeded: "+qlen);
+        }
         final int hash = calcHash(q, qlen);
         int offset = _findOffsetForAdd(hash);
 
@@ -299,20 +309,20 @@ public final class LocalQuadsCanonicalizer
         }
         // and if even tertiary full, append at the end of spill area
         offset = _spilloverEnd;
+
+        // 25-Nov-2017, tatu: One potential problem: we may even fill the overflow area.
+        //    Seems very unlikely as instances are created for bounded name sets, but
+        //    for correctness need to catch. If we must, we can handle this by resizing
+        //    hash areas etc, but let's cross that bridge if we ever get there
+        final int end = (_hashSize << 3);
+        if (_spilloverEnd >= end) {
+            throw new IllegalStateException("Internal error: Overflow with "+_count+" entries (hash size of "+_hashSize+")");
+        }
+        
         _spilloverEnd += 4;
 
 //System.err.printf("SPILL-OVER, hash 0x%08x, prim offset %d, long-offset %d, new spill-over end %d\n", hash, _calcOffset(hash), offset, _spilloverEnd);
         
-        // one caveat: in the unlikely event if spill-over filling up,
-        // check if that could be considered a DoS attack; handle appropriately
-        // (NOTE: approximate for now; we could verify details if that becomes necessary)
-        /* 31-Jul-2015, tatu: Note that spill-over area does NOT end at end of array,
-         *   since "long names" area follows. Instead, need to calculate from hash size.
-         */
-        final int end = (_hashSize << 3);
-        if (_spilloverEnd >= end) {
-            // !!! TODO
-        }
         return offset;
     }
 
@@ -436,7 +446,7 @@ public final class LocalQuadsCanonicalizer
         }
 
         // tertiary lookup & spillovers best to offline
-        return _findSecondary(offset, q1);
+        return _findTertiary(offset, q1);
     }
 
     public String findName(int q1, int q2)
@@ -465,7 +475,7 @@ public final class LocalQuadsCanonicalizer
         } else if (len == 0) { // empty slot? Short-circuit if no more spillovers
             return null;
         }
-        return _findSecondary(offset, q1, q2);
+        return _findTertiary(offset, q1, q2);
     }
 
     public String findName(int q1, int q2, int q3)
@@ -493,7 +503,7 @@ public final class LocalQuadsCanonicalizer
         } else if (len == 0) { // empty slot? Short-circuit if no more spillovers
             return null;
         }
-        return _findSecondary(offset, q1, q2, q3);
+        return _findTertiary(offset, q1, q2, q3);
     }
 
     public String findName(int[] q, int qlen)
@@ -538,9 +548,9 @@ public final class LocalQuadsCanonicalizer
                 return _names[offset2 >> 2];
             }
         }
-        return _findSecondary(offset, hash, q, qlen);
+        return _findTertiary(offset, hash, q, qlen);
     }
-    
+
     private final int _calcOffset(int hash)
     {
         int ix = hash & (_hashSize-1);
@@ -554,7 +564,7 @@ public final class LocalQuadsCanonicalizer
     /**********************************************************
      */
 
-    private String _findSecondary(int origOffset, int q1)
+    private String _findTertiary(int origOffset, int q1)
     {
         // tertiary area division is dynamic. First; its size is N/4 compared to
         // primary hash size; and offsets are for 4 int slots. So to get to logical
@@ -583,7 +593,7 @@ public final class LocalQuadsCanonicalizer
         return null;
     }
 
-    private String _findSecondary(int origOffset, int q1, int q2)
+    private String _findTertiary(int origOffset, int q1, int q2)
     {
         int offset = _tertiaryStart + ((origOffset >> (_tertiaryShift + 2)) << _tertiaryShift);
         final int[] hashArea = _hashArea;
@@ -606,7 +616,7 @@ public final class LocalQuadsCanonicalizer
         return null;
     }
 
-    private String _findSecondary(int origOffset, int q1, int q2, int q3)
+    private String _findTertiary(int origOffset, int q1, int q2, int q3)
     {
         int offset = _tertiaryStart + ((origOffset >> (_tertiaryShift + 2)) << _tertiaryShift);
         final int[] hashArea = _hashArea;
@@ -630,7 +640,7 @@ public final class LocalQuadsCanonicalizer
         return null;
     }
 
-    private String _findSecondary(int origOffset, int hash, int[] q, int qlen)
+    private String _findTertiary(int origOffset, int hash, int[] q, int qlen)
     {
         int offset = _tertiaryStart + ((origOffset >> (_tertiaryShift + 2)) << _tertiaryShift);
         final int[] hashArea = _hashArea;
