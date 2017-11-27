@@ -125,8 +125,7 @@ public final class LocalQuadsCanonicalizer
 
         // 25-Nov-2017, tatu: Earlier version used hash offsets here, requiring bigger size, but
         //    after refactor, only need exact number of slots
-//        _names = new String[entryCount];
-        _names = new String[sz * 2];
+        _names = new String[entryCount];
     }
 
     static int _calcTertiaryShift(int primarySlots)
@@ -144,9 +143,6 @@ public final class LocalQuadsCanonicalizer
     }
 
     public static LocalQuadsCanonicalizer createEmpty(int entryCount) {
-        if (entryCount > MAX_ENTRIES) {
-            throw new IllegalArgumentException("Maximum entry count ("+MAX_ENTRIES+") exceeded: "+entryCount);
-        }
         int sz = entryCount;
         // Sanity check: let's now allow hash sizes below certain minimum value. This is size in entries
         if (sz < MIN_HASH_SIZE) {
@@ -184,74 +180,34 @@ public final class LocalQuadsCanonicalizer
             }
             return addName(name, q1, _decodeFull(ch, 4), _decodeLast(ch, 8, len-8));
         }
-        int[] quads = quads(name);
+        int[] quads = _quads(name);
         return addName(name, quads, quads.length);
-    }
-
-    public static int[] quads(String name) {
-        final byte[] b = name.getBytes(StandardCharsets.UTF_8);
-        final int len = b.length;
-        int[] buf = new int[(len + 3) >> 2];
-
-        int in = 0;
-        int out = 0;
-        int left = len;
-
-        for (; left > 4; left -= 4) {
-            buf[out++] = _decodeFull(b, in);
-            in += 4;
-        }
-        buf[out++] = _decodeLast(b, in, left);
-        return buf;
-    }
-    
-    private final static int _decodeFull(byte[] b, int offset) {
-        return (b[offset] << 24) + ((b[offset+1] & 0xFF) << 16)
-                + ((b[offset+2] & 0xFF) << 8) + (b[offset+3] & 0xFF);
-    }
-
-    private final static int _decodeLast(byte[] b, int offset, int bytes) {
-        // 22-Nov-2017, tatu: Padding apparently not used with fully binary field names,
-        //     unlike with JSON. May or may not want to change this in future.
-        int value = b[offset++] & 0xFF;
-        switch (bytes) {
-        case 4:
-            value = (value << 8) | (b[offset++] & 0xFF);
-        case 3:
-            value = (value << 8) | (b[offset++] & 0xFF);
-        case 2:
-            value = (value << 8) | (b[offset++] & 0xFF);
-        }
-        return value;
     }
 
     private String addName(String name, int q1) {
         int offset = _findOffsetForAdd(calcHash(q1));
+        _names[_count] = name;
         _hashArea[offset] = q1;
-        _hashArea[offset+3] = 1;
-        _names[offset >> 2] = name;
-        ++_count;
+        _hashArea[offset+3] = _lengthAndIndex(1); // increases _count
         return name;
     }
 
     private String addName(String name, int q1, int q2) {
         int offset = _findOffsetForAdd(calcHash(q1, q2));
+        _names[_count] = name;
         _hashArea[offset] = q1;
         _hashArea[offset+1] = q2;
-        _hashArea[offset+3] = 2;
-        _names[offset >> 2] = name;
-        ++_count;
+        _hashArea[offset+3] = _lengthAndIndex(2); // increases _count
         return name;
     }
 
     private String addName(String name, int q1, int q2, int q3) {
         int offset = _findOffsetForAdd(calcHash(q1, q2, q3));
+        _names[_count] = name;
         _hashArea[offset] = q1;
         _hashArea[offset+1] = q2;
         _hashArea[offset+2] = q3;
-        _hashArea[offset+3] = 3;
-        _names[offset >> 2] = name;
-        ++_count;
+        _hashArea[offset+3] = _lengthAndIndex(3); // increases _count
         return name;
     }
 
@@ -265,21 +221,16 @@ public final class LocalQuadsCanonicalizer
         case 3:
             return addName(name, q[0], q[1], q[2]);
         }
-        if (qlen > MAX_LENGTH_IN_QUADS) {
-            throw new IllegalArgumentException("Maximum name length in quads ("+MAX_LENGTH_IN_QUADS+") exceeded: "+qlen);
-        }
         final int hash = calcHash(q, qlen);
         int offset = _findOffsetForAdd(hash);
 
+
         _hashArea[offset] = hash;
+        _names[_count] = name;
         int longStart = _appendLongName(q, qlen);
         _hashArea[offset+1] = longStart;
-        _hashArea[offset+3] = qlen;
+        _hashArea[offset+3] = _lengthAndIndex(qlen); // increases _count
 
-        // plus add the actual String
-        _names[offset >> 2] = name;
-
-        ++_count;
         return name;
     }
 
@@ -309,7 +260,7 @@ public final class LocalQuadsCanonicalizer
         }
         // and if even tertiary full, append at the end of spill area
         offset = _spilloverEnd;
-
+        
         // 25-Nov-2017, tatu: One potential problem: we may even fill the overflow area.
         //    Seems very unlikely as instances are created for bounded name sets, but
         //    for correctness need to catch. If we must, we can handle this by resizing
@@ -419,32 +370,28 @@ public final class LocalQuadsCanonicalizer
     public String findName(int q1)
     {
         int offset = _calcOffset(calcHash(q1));
-//System.err.printf("findName(0x%08x) -> hash 0x%08x, offset 0x%08x\n", q1, calcHash(q1), offset);
 
         // first: primary match?
         final int[] hashArea = _hashArea;
 
-        int len = hashArea[offset+3];
-        if (len == 1) {
+        int lenAndIndex = hashArea[offset+3];
+        if ((lenAndIndex & 0xFFFF) == 1) {
             if (hashArea[offset] == q1) {
-                return _names[offset >> 2];
+                return _names[lenAndIndex >> 16];
             }
-        } else if (len == 0) { // empty slot; unlikely but avoid further lookups if so
+        } else if (lenAndIndex == 0) { // empty slot; unlikely but avoid further lookups if so
             return null;
         }
         // secondary? single slot shared by N/2 primaries
         int offset2 = _secondaryStart + ((offset >> 3) << 2);
-
-        len = hashArea[offset2+3];
-
-        if (len == 1) {
+        lenAndIndex = hashArea[offset2+3];
+        if ((lenAndIndex & 0xFFFF) == 1) {
             if (hashArea[offset2] == q1) {
-                return _names[offset2 >> 2];
+                return _names[lenAndIndex >> 16];
             }
-        } else if (len == 0) { // empty slot; unlikely but avoid further lookups if so
+        } else if (lenAndIndex == 0) { // empty slot; unlikely but avoid further lookups if so
             return null;
         }
-
         // tertiary lookup & spillovers best to offline
         return _findTertiary(offset, q1);
     }
@@ -454,25 +401,23 @@ public final class LocalQuadsCanonicalizer
         int offset = _calcOffset(calcHash(q1, q2));
 
         final int[] hashArea = _hashArea;
-        int len = hashArea[offset+3];
+        int lenAndIndex = hashArea[offset+3];
 
-        if (len == 2) {
+        if ((lenAndIndex & 0xFFFF) == 2) {
             if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1])) {
-                return _names[offset >> 2];
+                return _names[lenAndIndex >> 16];
             }
-        } else if (len == 0) { // empty slot; unlikely but avoid further lookups if so
+        } else if (lenAndIndex == 0) { // empty slot; unlikely but avoid further lookups if so
             return null;
         }
         // secondary?
         int offset2 = _secondaryStart + ((offset >> 3) << 2);
-
-        len = hashArea[offset2+3];
-
-        if (len == 2) {
+        lenAndIndex = hashArea[offset2+3];
+        if ((lenAndIndex & 0xFFFF) == 2) {
             if ((q1 == hashArea[offset2]) && (q2 == hashArea[offset2+1])) {
-                return _names[offset2 >> 2];
+                return _names[lenAndIndex >> 16];
             }
-        } else if (len == 0) { // empty slot? Short-circuit if no more spillovers
+        } else if (lenAndIndex == 0) { // empty slot? Short-circuit if no more spillovers
             return null;
         }
         return _findTertiary(offset, q1, q2);
@@ -482,25 +427,23 @@ public final class LocalQuadsCanonicalizer
     {
         int offset = _calcOffset(calcHash(q1, q2, q3));
         final int[] hashArea = _hashArea;
-        int len = hashArea[offset+3];
+        final int lenAndIndex = hashArea[offset+3];
 
-        if (len == 3) {
+        if ((lenAndIndex & 0xFFFF) == 3) {
             if ((q1 == hashArea[offset]) && (hashArea[offset+1] == q2) && (hashArea[offset+2] == q3)) {
-                return _names[offset >> 2];
+                return _names[lenAndIndex >> 16];
             }
-        } else if (len == 0) { // empty slot; unlikely but avoid further lookups if so
+        } else if (lenAndIndex == 0) { // empty slot; unlikely but avoid further lookups if so
             return null;
         }
         // secondary?
         int offset2 = _secondaryStart + ((offset >> 3) << 2);
-
-        len = hashArea[offset2+3];
-
-        if (len == 3) {
+        final int lenAndIndex2 = hashArea[offset2+3];
+        if ((lenAndIndex & 0xFFFF) == 3) {
             if ((q1 == hashArea[offset2]) && (hashArea[offset2+1] == q2) && (hashArea[offset2+2] == q3)) {
-                return _names[offset2 >> 2];
+                return _names[lenAndIndex2 >> 16];
             }
-        } else if (len == 0) { // empty slot? Short-circuit if no more spillovers
+        } else if (lenAndIndex2 == 0) { // empty slot? Short-circuit if no more spillovers
             return null;
         }
         return _findTertiary(offset, q1, q2, q3);
@@ -527,25 +470,24 @@ public final class LocalQuadsCanonicalizer
         int offset = _calcOffset(hash);
 
         final int[] hashArea = _hashArea;
-
-        final int len = hashArea[offset+3];
+        final int lenAndIndex = hashArea[offset+3];
         
-        if ((hash == hashArea[offset]) && (len == qlen)) {
+        if ((hash == hashArea[offset]) && ((lenAndIndex & 0xFFFF) == qlen)) {
             // probable but not guaranteed: verify
             if (_verifyLongName(q, qlen, hashArea[offset+1])) {
-                return _names[offset >> 2];
+                return _names[lenAndIndex >> 16];
             }
         }
-        if (len == 0) { // empty slot; unlikely but avoid further lookups if so
+        if (lenAndIndex == 0) { // empty slot; unlikely but avoid further lookups if so
             return null;
         }
         // secondary?
         int offset2 = _secondaryStart + ((offset >> 3) << 2);
 
-        final int len2 = hashArea[offset2+3];
-        if ((hash == hashArea[offset2]) && (len2 == qlen)) {
+        final int lenAndIndex2 = hashArea[offset2+3];
+        if ((hash == hashArea[offset2]) && ((lenAndIndex2 & 0xFFFF) == qlen)) {
             if (_verifyLongName(q, qlen, hashArea[offset2+1])) {
-                return _names[offset2 >> 2];
+                return _names[lenAndIndex2 >> 16];
             }
         }
         return _findTertiary(offset, hash, q, qlen);
@@ -574,11 +516,11 @@ public final class LocalQuadsCanonicalizer
         final int[] hashArea = _hashArea;
         final int bucketSize = (1 << _tertiaryShift);
         for (int end = offset + bucketSize; offset < end; offset += 4) {
-            int len = hashArea[offset+3];
-            if ((q1 == hashArea[offset]) && (1 == len)) {
-                return _names[offset >> 2];
+            int lenAndIndex = hashArea[offset+3];
+            if ((q1 == hashArea[offset]) && (1 == (lenAndIndex & 0xFFFF))) {
+                return _names[lenAndIndex >> 16];
             }
-            if (len == 0) {
+            if (lenAndIndex == 0) {
                 return null;
             }
         }
@@ -586,8 +528,11 @@ public final class LocalQuadsCanonicalizer
         // shared spillover starts at 7/8 of the main hash area
         // (which is sized at 2 * _hashSize), so:
         for (offset = _spilloverStart(); offset < _spilloverEnd; offset += 4) {
-            if ((q1 == hashArea[offset]) && (1 == hashArea[offset+3])) {
-                return _names[offset >> 2];
+            if (q1 == hashArea[offset]) {
+                int lenAndIndex = hashArea[offset+3];
+                if (1 == (lenAndIndex & 0xFFFF)) {
+                    return _names[lenAndIndex >> 16];
+                }
             }
         }
         return null;
@@ -600,17 +545,20 @@ public final class LocalQuadsCanonicalizer
 
         final int bucketSize = (1 << _tertiaryShift);
         for (int end = offset + bucketSize; offset < end; offset += 4) {
-            int len = hashArea[offset+3];
-            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (2 == len)) {
-                return _names[offset >> 2];
+            int lenAndIndex = hashArea[offset+3];
+            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (2 == (lenAndIndex & 0xFFFF))) {
+                return _names[lenAndIndex >> 16];
             }
-            if (len == 0) {
+            if (lenAndIndex == 0) {
                 return null;
             }
         }
         for (offset = _spilloverStart(); offset < _spilloverEnd; offset += 4) {
-            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (2 == hashArea[offset+3])) {
-                return _names[offset >> 2];
+            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1])) {
+                int lenAndIndex = hashArea[offset+3];
+                if (2 == (lenAndIndex & 0xFFFF)) {
+                    return _names[lenAndIndex >> 16];
+                }
             }
         }
         return null;
@@ -623,18 +571,21 @@ public final class LocalQuadsCanonicalizer
 
         final int bucketSize = (1 << _tertiaryShift);
         for (int end = offset + bucketSize; offset < end; offset += 4) {
-            int len = hashArea[offset+3];
-            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (q3 == hashArea[offset+2]) && (3 == len)) {
-                return _names[offset >> 2];
+            int lenAndIndex = hashArea[offset+3];
+            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (q3 == hashArea[offset+2])
+                    && (3 == (lenAndIndex & 0xFFFF))) {
+                return _names[lenAndIndex >> 16];
             }
-            if (len == 0) {
+            if (lenAndIndex == 0) {
                 return null;
             }
         }
         for (offset = _spilloverStart(); offset < _spilloverEnd; offset += 4) {
-            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (q3 == hashArea[offset+2])
-                    && (3 == hashArea[offset+3])) {
-                return _names[offset >> 2];
+            if ((q1 == hashArea[offset]) && (q2 == hashArea[offset+1]) && (q3 == hashArea[offset+2])) {
+                int lenAndIndex = hashArea[offset+3];
+                if (3 == (lenAndIndex & 0xFFFF)) {
+                    return _names[lenAndIndex >> 16];
+                }
             }
         }
         return null;
@@ -647,20 +598,22 @@ public final class LocalQuadsCanonicalizer
 
         final int bucketSize = (1 << _tertiaryShift);
         for (int end = offset + bucketSize; offset < end; offset += 4) {
-            int len = hashArea[offset+3];
-            if ((hash == hashArea[offset]) && (qlen == len)) {
+            int lenAndIndex = hashArea[offset+3];
+            if ((hash == hashArea[offset]) && (qlen == (lenAndIndex & 0xFFFF))) {
                 if (_verifyLongName(q, qlen, hashArea[offset+1])) {
-                    return _names[offset >> 2];
+                    return _names[lenAndIndex >> 16];
                 }
             }
-            if (len == 0) {
+            if (lenAndIndex == 0) {
                 return null;
             }
         }
         for (offset = _spilloverStart(); offset < _spilloverEnd; offset += 4) {
-            if ((hash == hashArea[offset]) && (qlen == hashArea[offset+3])) {
-                if (_verifyLongName(q, qlen, hashArea[offset+1])) {
-                    return _names[offset >> 2];
+            if (hash == hashArea[offset]) {
+                int lenAndIndex = hashArea[offset+3];
+                if ((qlen == (lenAndIndex & 0xFFFF))
+                        && _verifyLongName(q, qlen, hashArea[offset+1])) {
+                    return _names[lenAndIndex >> 16];
                 }
             }
         }
@@ -806,10 +759,60 @@ public final class LocalQuadsCanonicalizer
     /**********************************************************
      */
 
+    public static int[] _quads(String name) {
+        final byte[] b = name.getBytes(StandardCharsets.UTF_8);
+        final int len = b.length;
+        int[] buf = new int[(len + 3) >> 2];
+
+        int in = 0;
+        int out = 0;
+        int left = len;
+
+        for (; left > 4; left -= 4) {
+            buf[out++] = _decodeFull(b, in);
+            in += 4;
+        }
+        buf[out++] = _decodeLast(b, in, left);
+        return buf;
+    }
+
+    private static int _decodeFull(byte[] b, int offset) {
+        return (b[offset] << 24) + ((b[offset+1] & 0xFF) << 16)
+                + ((b[offset+2] & 0xFF) << 8) + (b[offset+3] & 0xFF);
+    }
+
+    private static int _decodeLast(byte[] b, int offset, int bytes) {
+        // 22-Nov-2017, tatu: Padding apparently not used with fully binary field names,
+        //     unlike with JSON. May or may not want to change this in future.
+        int value = b[offset++] & 0xFF;
+        switch (bytes) {
+        case 4:
+            value = (value << 8) | (b[offset++] & 0xFF);
+        case 3:
+            value = (value << 8) | (b[offset++] & 0xFF);
+        case 2:
+            value = (value << 8) | (b[offset++] & 0xFF);
+        }
+        return value;
+    }
+
+    private int _lengthAndIndex(int qlen) {
+        if (qlen > MAX_LENGTH_IN_QUADS) {
+            throw new IllegalArgumentException("Maximum name length in quads ("+MAX_LENGTH_IN_QUADS+") exceeded: "+qlen);
+        }
+        // count as Most-Significant-Word (16-bits); length LSB
+        if (_count == MAX_ENTRIES) {
+            throw new IllegalArgumentException("Maximum entry count ("+MAX_ENTRIES+") reached, can not add more entries");
+        }
+        int enc = (_count << 16) | qlen;
+        ++_count;
+        return enc;
+    }
+
     /**
      * Helper method that calculates start of the spillover area
      */
-    private final int _spilloverStart() {
+    private int _spilloverStart() {
         // we'll need slot at 1.75x of hashSize, but with 4-ints per slot.
         // So basically multiply by 7 (i.e. shift to multiply by 8 subtract 1)
         int offset = _hashSize;
