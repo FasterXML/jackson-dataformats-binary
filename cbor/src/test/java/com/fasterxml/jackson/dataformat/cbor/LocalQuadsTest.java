@@ -95,53 +95,48 @@ public class LocalQuadsTest extends CBORTestBase
     private void _testMatching(List<String> names)
     {
         LocalQuadsCanonicalizer matcher = _construct(names);
-// !!! TEST
-//        for (int i = 0; i < names.size(); ++i) {
-        for (int i = 800; i < names.size(); ++i) {
-            String name = names.get(i);
-            if (name != null) {
-                _expectMatch(matcher, names, i);
-                // but not with suffix
-                _expectNonMatch(matcher, name+"FOOBAR");
-            }
+        for (int i = 0; i < names.size(); ++i) {
+            _expectMatch(matcher, names, i);
+            // but not with suffix
+            _expectNonMatch(matcher, names.get(i)+"FOOBAR");
         }
     }
 
     private LocalQuadsCanonicalizer _construct(List<String> names)
     {
-        LocalQuadsCanonicalizer matcher = LocalQuadsCanonicalizer.createEmpty(names.size());
-        for (String name : names) {
-            matcher.addName(name);
-        }
-        return matcher;
+        // note: strings MUST be intern()ed already
+        return LocalQuadsCanonicalizer.construct(names);
     }
-    
+
     private void _expectMatch(LocalQuadsCanonicalizer matcher, List<String> names, int index)
     {     
         String name = names.get(index);
-        if (name != null) {
-            _expectMatch(matcher, names, index, name);
-        }
+        _expectMatch(matcher, names, index, name);
     }
 
     private void _expectMatch(LocalQuadsCanonicalizer matcher, List<String> names, int index,
             String name)
     {
-        String match = _match(matcher, name);
-        if (!name.equals(match)) {
-            fail("Should have found '"+name+"' (index #"+index+" of total of "+names.size()+"), didn't");
+        int match = _match(matcher, name);
+        if (match != index) {
+            fail("Should have found '"+name+"' (index #"+index+" of total of "+names.size()+"), didn't: got "+match);
+        }
+        // secondary: needs to work via backup-lookup
+        int match2 = matcher.matchAnyName(name);
+        if (match2 != index) {
+            fail("Should have found '"+name+"' (index #"+index+" of total of "+names.size()+") via String lookup: instead got "+match2);
         }
     }
 
     private void _expectNonMatch(LocalQuadsCanonicalizer matcher, String name)
     {
-        String match = _match(matcher, name);
-        if (match != null) {
-            fail("Should NOT have any-matched '"+name+"'; did match with '"+match+"'");
+       int match = _match(matcher, name);
+        if (match != -1) {
+            fail("Should NOT have any-matched '"+name+"'; did match as: "+match);
         }
     }
 
-    private String _match(LocalQuadsCanonicalizer matcher, String name)
+    private int _match(LocalQuadsCanonicalizer matcher, String name)
     {
         int[] quads = LocalQuadsCanonicalizer._quads(name);
         switch (quads.length) {
