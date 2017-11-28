@@ -1068,26 +1068,29 @@ public final class CBORParser extends ParserMinimalBase
         return _nextFieldDecodeAndAdd(matcher, lenMarker);
     }
 
-    private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws IOException
+    private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int len) throws IOException
     {
         // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
         String name;
-        switch (lenMarker >> 2) {
-        case 0:
+        final int qlen = (len + 3) >> 2;
+        switch (qlen) {
+        case 1:
             name = _symbols.findName(_quad1);
             break;
-        case 1:
+        case 2:
             name = _symbols.findName(_quad1, _quad2);
             break;
-        case 2:
+        case 3:
             name = _symbols.findName(_quad1, _quad2, _quad3);
             break;
         default:
-            name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
+            name = _symbols.findName(_quadBuffer, qlen);
         }
         if (name == null) {
-            name = _decodeShortName(lenMarker);
-            name = _addDecodedToSymbols(lenMarker, name);
+            name = _decodeShortName(len);
+            name = _addDecodedToSymbols(len, name);
+        } else {
+            _inputPtr += len;
         }
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class SmileMapperTest extends BaseTestForSmile
+public class MapperSimpleReadTest extends BaseTestForSmile
 {
     static class BytesBean {
         public byte[] bytes;
