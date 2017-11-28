@@ -41,7 +41,11 @@ public abstract class CBORTestBase
     protected ObjectMapper cborMapper() {
         return new ObjectMapper(cborFactory());
     }
-    
+
+    protected ObjectMapper jsonMapper() {
+        return new ObjectMapper(new JsonFactory());
+    }
+
     protected CBORFactory cborFactory() {
         CBORFactory f = new CBORFactory();
         return f;

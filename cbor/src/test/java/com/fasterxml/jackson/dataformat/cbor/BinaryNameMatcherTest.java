@@ -100,7 +100,6 @@ public class BinaryNameMatcherTest extends CBORTestBase
     private void _testMatching(List<String> names)
     {
         BinaryNameMatcher matcher = _construct(names);
-System.err.println("MATCHer: "+matcher);
         for (int i = 0; i < names.size(); ++i) {
             _expectMatch(matcher, names, i);
             // but not with suffix
