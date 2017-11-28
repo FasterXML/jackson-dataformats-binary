@@ -1062,7 +1062,6 @@ public final class CBORParser extends ParserMinimalBase
             final String name = matcher.nameLookup()[match];
             _parsingContext.setCurrentName(name);
             _currToken = JsonToken.FIELD_NAME;
-//            return matcher.matchAnyName(name);
             return match;
         }
         // but if not matched by matcher we got, need to still decode
@@ -1145,7 +1144,6 @@ public final class CBORParser extends ParserMinimalBase
             }
             _quad1 = q;
             return matcher.matchByQuad(q);
-//          return _symbols.findName(q);
         }
 
         final byte[] inBuf = _inputBuffer;
@@ -1172,7 +1170,6 @@ public final class CBORParser extends ParserMinimalBase
             _quad1 = q1;
             _quad2 = q2;
             return matcher.matchByQuad(q1, q2);
-//            return _symbols.findName(q1, q2);
         }
 
         int q2 = (inBuf[inPtr++] & 0xFF);
@@ -1196,7 +1193,6 @@ public final class CBORParser extends ParserMinimalBase
             _quad2 = q2;
             _quad3 = q3;
             return matcher.matchByQuad(q1, q2, q3);
-//          return _symbols.findName(q1, q2, q3);
         }
         return _nextFieldFromSymbolsLong(matcher, len, q1, q2);
     }

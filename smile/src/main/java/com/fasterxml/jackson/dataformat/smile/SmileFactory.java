@@ -1,11 +1,16 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
+import java.util.List;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.sym.BinaryNameMatcher;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.util.Named;
+
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
 /**
@@ -348,5 +353,16 @@ public class SmileFactory
             }
         }
         return gen;
+    }
+
+    /*
+    /******************************************************
+    /* Other factory methods
+    /******************************************************
+     */
+
+    @Override
+    public FieldNameMatcher constructFieldNameMatcher(List<Named> matches, boolean alreadyInterned) {
+        return BinaryNameMatcher.constructFrom(matches, alreadyInterned);
     }
 }

@@ -871,65 +871,238 @@ public class SmileParser extends SmileParserBase
         case 2: // short ASCII
             {
                 int len = 1 + (ch & 0x3f);
-                String name = _findDecodedFromSymbols(len);
-                if (name != null) {
+                int match = _nextFieldOptimized(matcher, len);
+                if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
-                } else {
-                    name = _decodeShortAsciiName(len);
-                    name = _addDecodedToSymbols(len, name);
-                }
-                if (_seenNames != null) {
-                    if (_seenNameCount >= _seenNames.length) {
-                        _seenNames = _expandSeenNames(_seenNames);
+                    final String name = matcher.nameLookup()[match];
+                    _parsingContext.setCurrentName(name);
+                    if (_seenNames != null) {
+                        if (_seenNameCount >= _seenNames.length) {
+                            _seenNames = _expandSeenNames(_seenNames);
+                        }
+                        _seenNames[_seenNameCount++] = name;
                     }
-                    _seenNames[_seenNameCount++] = name;
+                    _currToken = JsonToken.FIELD_NAME;
+                    return match;
                 }
-                _currToken = JsonToken.FIELD_NAME;
-                _parsingContext.setCurrentName(name);
-                // 15-Nov-2017, tatu: Can't be sure it's intern()ed so:
-                return matcher.matchAnyName(name);
+                return _nextFieldAsciiDecodeAndAdd(matcher, len);
             }
         case 3: // short Unicode
             // all valid, except for 0xFF
             ch &= 0x3F;
-            {
-                if (ch > 0x37) {
-                    if (ch == 0x3B) {
-                        if (!_parsingContext.inObject()) {
-                            _reportMismatchedEndMarker('}', ']');
-                        }
-                        _parsingContext = _parsingContext.getParent();
-                        _currToken = JsonToken.END_OBJECT;
-                        return FieldNameMatcher.MATCH_END_OBJECT;
+            if (ch > 0x37) {
+                if (ch == 0x3B) {
+                    if (!_parsingContext.inObject()) {
+                        _reportMismatchedEndMarker('}', ']');
                     }
-                } else {
-                    final int len = ch + 2; // values from 2 to 57...
-                    String name = _findDecodedFromSymbols(len);
-                    if (name != null) {
-                        _inputPtr += len;
-                    } else {
-                        name = _decodeShortUnicodeName(len);
-                        name = _addDecodedToSymbols(len, name);
-                    }
+                    _parsingContext = _parsingContext.getParent();
+                    _currToken = JsonToken.END_OBJECT;
+                    return FieldNameMatcher.MATCH_END_OBJECT;
+                }
+                break;
+            } else {
+                final int len = ch + 2; // values from 2 to 57...
+                int match = _nextFieldOptimized(matcher, len);
+                if (match >= 0) { // gotcha! (expected case)
+                    _inputPtr += len;
+                    final String name = matcher.nameLookup()[match];
+                    _parsingContext.setCurrentName(name);
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
-                         _seenNames = _expandSeenNames(_seenNames);
+                            _seenNames = _expandSeenNames(_seenNames);
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
-                    _parsingContext.setCurrentName(name);
                     _currToken = JsonToken.FIELD_NAME;
-                    // 15-Nov-2017, tatu: Can't be sure it's intern()ed so:
-                    return matcher.matchAnyName(name);
+                    return match;
                 }
+                return _nextFieldUnicodeDecodeAndAdd(matcher, len);
             }
-            break;
         }
         // Other byte values are illegal
         _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
         return FieldNameMatcher.MATCH_ODD_TOKEN; // never gets here
     }
 
+    private final int _nextFieldOptimized(FieldNameMatcher matcher, int len) throws IOException
+    {
+        if ((_inputEnd - _inputPtr) < len) {
+            _loadToHaveAtLeast(len);
+        }
+        // First: maybe we already have this name decoded?
+        if (len < 5) {
+            int inPtr = _inputPtr;
+            final byte[] inBuf = _inputBuffer;
+            int q = inBuf[inPtr] & 0xFF;
+            if (len > 1) {
+                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                if (len > 2) {
+                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                    if (len > 3) {
+                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                    }
+                }
+            }
+            _quad1 = q;
+            return matcher.matchByQuad(q);
+        }
+
+        final byte[] inBuf = _inputBuffer;
+        int inPtr = _inputPtr;
+
+        // First quadbyte is easy
+        int q1 = (inBuf[inPtr++] & 0xFF);
+        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        
+        if (len < 9) {
+            int q2 = (inBuf[inPtr++] & 0xFF);
+            int left = len - 5;
+            if (left > 0) {
+                q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
+                if (left > 1) {
+                    q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
+                    if (left > 2) {
+                        q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
+                    }
+                }
+            }
+            _quad1 = q1;
+            _quad2 = q2;
+            return matcher.matchByQuad(q1, q2);
+        }
+
+        int q2 = (inBuf[inPtr++] & 0xFF);
+        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+
+        if (len < 13) {
+            int q3 = (inBuf[inPtr++] & 0xFF);
+            int left = len - 9;
+            if (left > 0) {
+                q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
+                if (left > 1) {
+                    q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
+                    if (left > 2) {
+                        q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
+                    }
+                }
+            }
+            _quad1 = q1;
+            _quad2 = q2;
+            _quad3 = q3;
+            return matcher.matchByQuad(q1, q2, q3);
+        }
+        return _nextFieldFromSymbolsLong(matcher, len, q1, q2);
+    }
+
+    /**
+     * Method for locating names longer than 8 bytes (in UTF-8)
+     */
+    private final int _nextFieldFromSymbolsLong(FieldNameMatcher matcher, 
+            int len, int q1, int q2) throws IOException
+    {
+        // first, need enough buffer to store bytes as ints:
+        {
+            int bufLen = (len + 3) >> 2;
+            if (bufLen > _quadBuffer.length) {
+                _quadBuffer = _growArrayTo(_quadBuffer, bufLen);
+            }
+        }
+        _quadBuffer[0] = q1;
+        _quadBuffer[1] = q2;
+        
+        // then decode, full quads first
+        int offset = 2;
+        int inPtr = _inputPtr+8;
+        len -= 8;
+        
+        final byte[] inBuf = _inputBuffer;
+        do {
+            int q = (inBuf[inPtr++] & 0xFF);
+            q = (q << 8) | inBuf[inPtr++] & 0xFF;
+            q = (q << 8) | inBuf[inPtr++] & 0xFF;
+            q = (q << 8) | inBuf[inPtr++] & 0xFF;
+            _quadBuffer[offset++] = q;
+        } while ((len -= 4) > 3);
+        // and then leftovers
+        if (len > 0) {
+            int q = inBuf[inPtr] & 0xFF;
+            if (len > 1) {
+                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                if (len > 2) {
+                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
+                }
+            }
+            _quadBuffer[offset++] = q;
+        }
+        return matcher.matchByQuad(_quadBuffer, offset);
+    }
+
+    private int _nextFieldAsciiDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws IOException
+    {
+        String name;
+        switch (lenMarker >> 2) {
+        case 0:
+            name = _symbols.findName(_quad1);
+            break;
+        case 1:
+            name = _symbols.findName(_quad1, _quad2);
+            break;
+        case 2:
+            name = _symbols.findName(_quad1, _quad2, _quad3);
+            break;
+        default:
+            name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
+        }
+        if (name == null) {
+            name = _decodeShortAsciiName(lenMarker);
+            name = _addDecodedToSymbols(lenMarker, name);
+        }
+        if (_seenNames != null) {
+            if (_seenNameCount >= _seenNames.length) {
+                _seenNames = _expandSeenNames(_seenNames);
+            }
+            _seenNames[_seenNameCount++] = name;
+        }
+        _parsingContext.setCurrentName(name);
+        _currToken = JsonToken.FIELD_NAME;
+        return FieldNameMatcher.MATCH_UNKNOWN_NAME;
+    }
+
+    private int _nextFieldUnicodeDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws IOException
+    {
+        String name;
+        switch (lenMarker >> 2) {
+        case 0:
+            name = _symbols.findName(_quad1);
+            break;
+        case 1:
+            name = _symbols.findName(_quad1, _quad2);
+            break;
+        case 2:
+            name = _symbols.findName(_quad1, _quad2, _quad3);
+            break;
+        default:
+            name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
+        }
+        if (name == null) {
+            name = _decodeShortUnicodeName(lenMarker);
+            name = _addDecodedToSymbols(lenMarker, name);
+        }
+        if (_seenNames != null) {
+            if (_seenNameCount >= _seenNames.length) {
+                _seenNames = _expandSeenNames(_seenNames);
+            }
+            _seenNames[_seenNameCount++] = name;
+        }
+        _parsingContext.setCurrentName(name);
+        _currToken = JsonToken.FIELD_NAME;
+        return FieldNameMatcher.MATCH_UNKNOWN_NAME;
+    }
+    
     /*
     /**********************************************************
     /* Optimized traversal: scalars
