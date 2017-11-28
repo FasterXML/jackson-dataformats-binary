@@ -1,11 +1,14 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.*;
+import java.util.List;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.util.Named;
 
 /**
  * Factory used for constructing {@link CBORParser} and {@link CBORGenerator}
@@ -323,5 +326,18 @@ public class CBORFactory
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
         return gen;
+    }
+
+    /*
+    /******************************************************
+    /* Other factory methods
+    /******************************************************
+     */
+
+    @Override
+    public FieldNameMatcher constructFieldNameMatcher(List<Named> matches, boolean alreadyInterned) {
+        // 15-Nov-2017, tatu: Base implementation that is likely to work fine for
+        //    most if not all implementations as it is more difficult to optimize
+        return BinaryNameMatcher.constructFrom(matches, alreadyInterned);
     }
 }

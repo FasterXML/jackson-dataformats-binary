@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.util.Named;
  * Simplified static symbol table used instead of global quad-based canonicalizer
  * when we have smaller set of symbols (like properties of a POJO class).
  */
-public final class LocalQuadsCanonicalizer
+public final class BinaryNameMatcher
     extends SimpleNameMatcher
 {
     private static final long serialVersionUID = 1L;
@@ -109,9 +109,9 @@ public final class LocalQuadsCanonicalizer
      * @param entryCount Number of Strings to contain
      * @param sz Size of logical hash area
      */
-    private LocalQuadsCanonicalizer(SimpleNameMatcher matcher, int hashSize)
+    private BinaryNameMatcher(SimpleNameMatcher matcher, String[] nameLookup, int hashSize)
     {
-        super(matcher);
+        super(matcher, nameLookup);
         _count = 0;
         _hashSize = hashSize; // 8x, 4 ints per entry for main area, then sec/ter and spill over
         _hashArea = new int[hashSize << 3];
@@ -143,18 +143,18 @@ public final class LocalQuadsCanonicalizer
     /**********************************************************
      */
 
-    public static LocalQuadsCanonicalizer constructFrom(List<Named> symbols,
+    public static BinaryNameMatcher constructFrom(List<Named> symbols,
             boolean alreadyInterned)
     {
         return construct(stringsFromNames(symbols, alreadyInterned));
     }
 
-    public static LocalQuadsCanonicalizer construct(List<String> symbols)
+    public static BinaryNameMatcher construct(List<String> symbols)
     {
         // Two-step process: since we need backup string-based lookup (when matching
         // current name, buffered etc etc), start with that
         SimpleNameMatcher base = SimpleNameMatcher.construct(symbols);
-        
+
         int sz = symbols.size();
         // Sanity check: let's now allow hash sizes below certain minimum value. This is size in entries
         if (sz < MIN_HASH_SIZE) {
@@ -169,7 +169,8 @@ public final class LocalQuadsCanonicalizer
                 sz = curr;
             }
         }
-        LocalQuadsCanonicalizer matcher = new LocalQuadsCanonicalizer(base, sz);
+        String[] lookup = symbols.toArray(new String[symbols.size()]);
+        BinaryNameMatcher matcher = new BinaryNameMatcher(base, lookup, sz);
         for (String name : symbols) {
             matcher.addName(name);
         }
@@ -271,9 +272,10 @@ public final class LocalQuadsCanonicalizer
                 return offset2;
             }
         }
+
         // and if even tertiary full, append at the end of spill area
         offset = _spilloverEnd;
-        
+
         // 25-Nov-2017, tatu: One potential problem: we may even fill the overflow area.
         //    Seems very unlikely as instances are created for bounded name sets, but
         //    for correctness need to catch. If we must, we can handle this by resizing
@@ -373,7 +375,8 @@ public final class LocalQuadsCanonicalizer
     /**********************************************************
      */
 
-    public int findName(int q1)
+    @Override
+    public int matchByQuad(int q1)
     {
         int offset = _calcOffset(calcHash(q1));
 
@@ -402,7 +405,8 @@ public final class LocalQuadsCanonicalizer
         return _findTertiary(offset, q1);
     }
 
-    public int findName(int q1, int q2)
+    @Override
+    public int matchByQuad(int q1, int q2)
     {
         int offset = _calcOffset(calcHash(q1, q2));
 
@@ -429,12 +433,12 @@ public final class LocalQuadsCanonicalizer
         return _findTertiary(offset, q1, q2);
     }
 
-    public int findName(int q1, int q2, int q3)
+    @Override
+    public int matchByQuad(int q1, int q2, int q3)
     {
         int offset = _calcOffset(calcHash(q1, q2, q3));
         final int[] hashArea = _hashArea;
         final int lenAndIndex = hashArea[offset+3];
-
         if ((lenAndIndex & 0xFFFF) == 3) {
             if ((q1 == hashArea[offset]) && (hashArea[offset+1] == q2) && (hashArea[offset+2] == q3)) {
                 return lenAndIndex >> 16;
@@ -442,10 +446,11 @@ public final class LocalQuadsCanonicalizer
         } else if (lenAndIndex == 0) { // empty slot; unlikely but avoid further lookups if so
             return -1;
         }
+
         // secondary?
         int offset2 = _secondaryStart + ((offset >> 3) << 2);
         final int lenAndIndex2 = hashArea[offset2+3];
-        if ((lenAndIndex & 0xFFFF) == 3) {
+        if ((lenAndIndex2 & 0xFFFF) == 3) {
             if ((q1 == hashArea[offset2]) && (hashArea[offset2+1] == q2) && (hashArea[offset2+2] == q3)) {
                 return lenAndIndex2 >> 16;
             }
@@ -455,7 +460,8 @@ public final class LocalQuadsCanonicalizer
         return _findTertiary(offset, q1, q2, q3);
     }
 
-    public int findName(int[] q, int qlen)
+    @Override
+    public int matchByQuad(int[] q, int qlen)
     {
         // This version differs significantly, because longer names do not fit within cell.
         // Rather, they contain hash in main slot, and offset+length to extension area
@@ -463,11 +469,11 @@ public final class LocalQuadsCanonicalizer
         if (qlen < 4) { // another sanity check
             switch (qlen) {
             case 3:
-                return findName(q[0], q[1], q[2]);
+                return matchByQuad(q[0], q[1], q[2]);
             case 2:
-                return findName(q[0], q[1]);
+                return matchByQuad(q[0], q[1]);
             case 1:
-                return findName(q[0]);
+                return matchByQuad(q[0]);
             default: // if 0 ever passed
                 return -1;
             }
@@ -574,7 +580,6 @@ public final class LocalQuadsCanonicalizer
     {
         int offset = _tertiaryStart + ((origOffset >> (_tertiaryShift + 2)) << _tertiaryShift);
         final int[] hashArea = _hashArea;
-
         final int bucketSize = (1 << _tertiaryShift);
         for (int end = offset + bucketSize; offset < end; offset += 4) {
             int lenAndIndex = hashArea[offset+3];

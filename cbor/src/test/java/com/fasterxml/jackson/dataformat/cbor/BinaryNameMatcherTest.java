@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class LocalQuadsTest extends CBORTestBase
+public class BinaryNameMatcherTest extends CBORTestBase
 {
     public void testSmallMatching()
     {
@@ -16,6 +16,7 @@ public class LocalQuadsTest extends CBORTestBase
 
     public void testMediumMatching()
     {
+        /*
         _testMatching("a", "bcd", "Fittipaldi", "goober");
 
         // then bit larger
@@ -23,6 +24,10 @@ public class LocalQuadsTest extends CBORTestBase
 
         _testMatching("a", "b", "c", "d", "E", "f", "G", "h");
         _testMatching("a", "b", "d", "E", "f", "G");
+        */
+
+        _testMatching("areaNames", "audienceSubCategoryNames", "blockNames", "seatCategoryNames", "subTopicNames",
+                "subjectNames", "topicNames", "topicSubTopics", "venueNames", "events", "performances");
     }
 
     public void testLargeMatching()
@@ -61,7 +66,7 @@ public class LocalQuadsTest extends CBORTestBase
             int prim, int sec, int ter,
             int expSpills)
     {
-        LocalQuadsCanonicalizer quads = _construct(names);
+        BinaryNameMatcher quads = _construct(names);
         assertEquals(names.size(), quads.totalCount());
 
         assertEquals("Primary count not matching", prim, quads.primaryCount());
@@ -94,7 +99,8 @@ public class LocalQuadsTest extends CBORTestBase
 
     private void _testMatching(List<String> names)
     {
-        LocalQuadsCanonicalizer matcher = _construct(names);
+        BinaryNameMatcher matcher = _construct(names);
+System.err.println("MATCHer: "+matcher);
         for (int i = 0; i < names.size(); ++i) {
             _expectMatch(matcher, names, i);
             // but not with suffix
@@ -102,19 +108,19 @@ public class LocalQuadsTest extends CBORTestBase
         }
     }
 
-    private LocalQuadsCanonicalizer _construct(List<String> names)
+    private BinaryNameMatcher _construct(List<String> names)
     {
         // note: strings MUST be intern()ed already
-        return LocalQuadsCanonicalizer.construct(names);
+        return BinaryNameMatcher.construct(names);
     }
 
-    private void _expectMatch(LocalQuadsCanonicalizer matcher, List<String> names, int index)
+    private void _expectMatch(BinaryNameMatcher matcher, List<String> names, int index)
     {     
         String name = names.get(index);
         _expectMatch(matcher, names, index, name);
     }
 
-    private void _expectMatch(LocalQuadsCanonicalizer matcher, List<String> names, int index,
+    private void _expectMatch(BinaryNameMatcher matcher, List<String> names, int index,
             String name)
     {
         int match = _match(matcher, name);
@@ -128,7 +134,7 @@ public class LocalQuadsTest extends CBORTestBase
         }
     }
 
-    private void _expectNonMatch(LocalQuadsCanonicalizer matcher, String name)
+    private void _expectNonMatch(BinaryNameMatcher matcher, String name)
     {
        int match = _match(matcher, name);
         if (match != -1) {
@@ -136,18 +142,18 @@ public class LocalQuadsTest extends CBORTestBase
         }
     }
 
-    private int _match(LocalQuadsCanonicalizer matcher, String name)
+    private int _match(BinaryNameMatcher matcher, String name)
     {
-        int[] quads = LocalQuadsCanonicalizer._quads(name);
+        int[] quads = BinaryNameMatcher._quads(name);
         switch (quads.length) {
         case 1:
-            return matcher.findName(quads[0]);
+            return matcher.matchByQuad(quads[0]);
         case 2:
-            return matcher.findName(quads[0], quads[1]);
+            return matcher.matchByQuad(quads[0], quads[1]);
         case 3:
-            return matcher.findName(quads[0], quads[1], quads[2]);
+            return matcher.matchByQuad(quads[0], quads[1], quads[2]);
         default:
-            return matcher.findName(quads, quads.length);
+            return matcher.matchByQuad(quads, quads.length);
         }
     }
 }

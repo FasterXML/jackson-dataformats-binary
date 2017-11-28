@@ -1056,23 +1056,43 @@ public final class CBORParser extends ParserMinimalBase
         if (lenMarker == 0) {
             return _nextFieldNameEmpty(matcher);
         }
-        String name = _nextFieldFromSymbols(matcher, lenMarker);
-        if (name == null) {
-            return _nextFieldDecodeAndAdd(matcher, lenMarker);
+        int match = _nextFieldOptimized(matcher, lenMarker);
+        if (match >= 0) { // gotcha! (expected case)
+            _inputPtr += lenMarker;
+            final String name = matcher.nameLookup()[match];
+            _parsingContext.setCurrentName(name);
+            _currToken = JsonToken.FIELD_NAME;
+//            return matcher.matchAnyName(name);
+            return match;
         }
-        _inputPtr += lenMarker;
-        _parsingContext.setCurrentName(name);
-        _currToken = JsonToken.FIELD_NAME;
-        return matcher.matchAnyName(name);
+        // but if not matched by matcher we got, need to still decode
+        return _nextFieldDecodeAndAdd(matcher, lenMarker);
     }
 
     private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws IOException
     {
-        String name = _decodeShortName(lenMarker);
-        name = _addDecodedToSymbols(lenMarker, name);
+        // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
+        String name;
+        switch (lenMarker >> 2) {
+        case 0:
+            name = _symbols.findName(_quad1);
+            break;
+        case 1:
+            name = _symbols.findName(_quad1, _quad2);
+            break;
+        case 2:
+            name = _symbols.findName(_quad1, _quad2, _quad3);
+            break;
+        default:
+            name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
+        }
+        if (name == null) {
+            name = _decodeShortName(lenMarker);
+            name = _addDecodedToSymbols(lenMarker, name);
+        }
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;
-        return matcher.matchAnyName(name);
+        return FieldNameMatcher.MATCH_UNKNOWN_NAME;
     }
 
     private int _nextFieldNameNonText(FieldNameMatcher matcher, int ch) throws IOException
@@ -1104,7 +1124,7 @@ public final class CBORParser extends ParserMinimalBase
         return matcher.matchAnyName(name);
     }
 
-    private final String _nextFieldFromSymbols(FieldNameMatcher matcher, final int len) throws IOException
+    private final int _nextFieldOptimized(FieldNameMatcher matcher, final int len) throws IOException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -1124,7 +1144,8 @@ public final class CBORParser extends ParserMinimalBase
                 }
             }
             _quad1 = q;
-            return _symbols.findName(q);
+            return matcher.matchByQuad(q);
+//          return _symbols.findName(q);
         }
 
         final byte[] inBuf = _inputBuffer;
@@ -1150,7 +1171,8 @@ public final class CBORParser extends ParserMinimalBase
             }
             _quad1 = q1;
             _quad2 = q2;
-            return _symbols.findName(q1, q2);
+            return matcher.matchByQuad(q1, q2);
+//            return _symbols.findName(q1, q2);
         }
 
         int q2 = (inBuf[inPtr++] & 0xFF);
@@ -1173,7 +1195,8 @@ public final class CBORParser extends ParserMinimalBase
             _quad1 = q1;
             _quad2 = q2;
             _quad3 = q3;
-            return _symbols.findName(q1, q2, q3);
+            return matcher.matchByQuad(q1, q2, q3);
+//          return _symbols.findName(q1, q2, q3);
         }
         return _nextFieldFromSymbolsLong(matcher, len, q1, q2);
     }
@@ -1181,7 +1204,7 @@ public final class CBORParser extends ParserMinimalBase
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
-    private final String _nextFieldFromSymbolsLong(FieldNameMatcher matcher, 
+    private final int _nextFieldFromSymbolsLong(FieldNameMatcher matcher, 
             int len, int q1, int q2) throws IOException
     {
         // first, need enough buffer to store bytes as ints:
@@ -1218,7 +1241,8 @@ public final class CBORParser extends ParserMinimalBase
             }
             _quadBuffer[offset++] = q;
         }
-        return _symbols.findName(_quadBuffer, offset);
+        return matcher.matchByQuad(_quadBuffer, offset);
+//        return _symbols.findName(_quadBuffer, offset);
     }
 
     /*
