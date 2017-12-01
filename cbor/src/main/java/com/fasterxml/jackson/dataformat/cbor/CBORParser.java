@@ -685,7 +685,8 @@ public final class CBORParser extends ParserMinimalBase
                     {
                         int v = _decode32Bits();
                         if (v < 0) {
-                            _numberLong = ((long) v) + -1L;
+                            long unsignedBase = (long) v & 0xFFFFFFFFL;
+                            _numberLong = -unsignedBase - 1L;
                             _numTypesValid = NR_LONG;
                         } else {
                             _numberInt = -v - 1;
@@ -700,7 +701,8 @@ public final class CBORParser extends ParserMinimalBase
                             _numberLong = -l - 1L;
                             _numTypesValid = NR_LONG;
                         } else {
-                            _numberBigInt = _bigNegative(l);
+                            BigInteger unsignedBase = _bigPositive(l);
+                            _numberBigInt = unsignedBase.negate().subtract(BigInteger.ONE);
                             _numTypesValid = NR_BIGINT;
                         }
                     }
@@ -1158,7 +1160,8 @@ public final class CBORParser extends ParserMinimalBase
                     {
                         int v = _decode32Bits();
                         if (v < 0) {
-                            _numberLong = ((long) v) + -1L;
+                            long unsignedBase = (long) v & 0xFFFFFFFFL;
+                            _numberLong = -unsignedBase - 1L;
                             _numTypesValid = NR_LONG;
                         } else {
                             _numberInt = -v - 1;
@@ -1173,7 +1176,8 @@ public final class CBORParser extends ParserMinimalBase
                         _numberLong = l;
                         _numTypesValid = NR_LONG;
                     } else {
-                        _numberBigInt = _bigNegative(l);
+                        BigInteger unsignedBase = _bigPositive(l);
+                        _numberBigInt = unsignedBase.negate().subtract(BigInteger.ONE);
                         _numTypesValid = NR_BIGINT;
                     }
                 }
