@@ -364,5 +364,13 @@ public class SmileFactory
     @Override
     public FieldNameMatcher constructFieldNameMatcher(List<Named> matches, boolean alreadyInterned) {
         return BinaryNameMatcher.constructFrom(matches, alreadyInterned);
+        /*
+        BinaryNameMatcher m = BinaryNameMatcher.constructFrom(matches, alreadyInterned);
+        System.err.println("DEBUG: matcher == "+m);
+        for (Named n : matches) {
+            System.err.println(" '"+n.getName()+"'");
+        }
+        return m;
+        */
     }
 }
