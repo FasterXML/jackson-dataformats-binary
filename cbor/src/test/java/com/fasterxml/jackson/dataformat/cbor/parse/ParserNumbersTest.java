@@ -21,7 +21,7 @@ import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
 public class ParserNumbersTest extends CBORTestBase
 {
     private final CBORFactory CBOR_F = cborFactory();
-    
+
     public void testIntValues() throws Exception
     {
         // first, single-byte
@@ -101,6 +101,17 @@ public class ParserNumbersTest extends CBORTestBase
         assertEquals(exp, p.getLongValue());
         assertEquals(NumberType.LONG, p.getNumberType());
         p.close();
+
+        // and, combined, a negative number where the mantissa overflows a signed int32
+        input = new byte[] {
+                (byte) CBORConstants.PREFIX_TYPE_INT_NEG + 26, // int32, that is, 4 more bytes
+                -1, -1, -1, -1
+        };
+        p = cborParser(input);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(-1L - 0xFFFFFFFFL, p.getLongValue());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        p.close();
     }
 
     public void testLongValues() throws Exception
@@ -170,6 +181,21 @@ public class ParserNumbersTest extends CBORTestBase
         assertEquals(exp, p.getBigIntegerValue());
         assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
         p.close();
+
+        // and, combined, a negative number where the mantissa overflows a signed int32
+        input = new byte[] {
+                (byte) CBORConstants.PREFIX_TYPE_INT_NEG + 27, // int32, that is, 4 more bytes
+                -1, -1, -1, -1, -1, -1, -1, -1
+        };
+        p = cborParser(input);
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        exp = BigInteger.valueOf(Long.MAX_VALUE).shiftLeft(1)
+                .add(BigInteger.ONE)
+                .negate()
+                .subtract(BigInteger.ONE);
+        assertEquals(exp, p.getBigIntegerValue());
+        assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
+        p.close();
     }
 
     public void testDoubleValues() throws Exception
@@ -198,15 +224,15 @@ public class ParserNumbersTest extends CBORTestBase
         assertEquals((float) value, p.getFloatValue());
 
         assertNull(p.nextToken());
-        
+
         // also skip
         p = cborParser(f, out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertNull(p.nextToken());
-        
+
         p.close();
     }
-    
+
     public void testFloatValues() throws Exception
     {
         // first, single-byte
@@ -251,7 +277,7 @@ public class ParserNumbersTest extends CBORTestBase
         p = cborParser(f, out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertNull(p.nextToken());
-        
+
         p.close();
     }
 
@@ -263,7 +289,7 @@ public class ParserNumbersTest extends CBORTestBase
         };
 
         boolean expNaN = Double.isNaN(value) || Double.isInfinite(value);
-        
+
         JsonParser p = f.createParser(data);
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(expNaN, p.isNaN());
