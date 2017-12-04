@@ -56,3 +56,7 @@ philipa@github
 * Reported #114 (cbor), contributed fix for: copyStructure(): avoid duplicate tags
   when copying tagged binary
  (2.9.3)
+
+Jacek Lach (JacekLach@github)
+* Reported #124: Invalid value returned for negative int32 where the absolute value is > 2^31 - 1
+ (2.9.3)
