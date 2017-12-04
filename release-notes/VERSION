@@ -15,6 +15,8 @@ Modules:
  (contributed by philipa@github)
 #116: (protobuf) Should skip the positive byte which is the last byte of an varint
  (contributed by marsqing@github)
+#124: Invalid value returned for negative int32 where the absolute value is > 2^31 - 1
+ (repoted by Jacek L)
 - (protobuf) Minor fix to skipping with `nextFieldName()`
 - (avro) Fix a typo in SPI Metadata (META-INF/services/com.fasterxml.jackson.core.JsonFactory)
 

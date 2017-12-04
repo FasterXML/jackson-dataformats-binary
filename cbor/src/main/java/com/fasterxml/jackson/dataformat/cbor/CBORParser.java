@@ -701,8 +701,7 @@ public final class CBORParser extends ParserMinimalBase
                             _numberLong = -l - 1L;
                             _numTypesValid = NR_LONG;
                         } else {
-                            BigInteger unsignedBase = _bigPositive(l);
-                            _numberBigInt = unsignedBase.negate().subtract(BigInteger.ONE);
+                            _numberBigInt = _bigNegative(l);
                             _numTypesValid = NR_BIGINT;
                         }
                     }
@@ -1176,8 +1175,7 @@ public final class CBORParser extends ParserMinimalBase
                         _numberLong = l;
                         _numTypesValid = NR_LONG;
                     } else {
-                        BigInteger unsignedBase = _bigPositive(l);
-                        _numberBigInt = unsignedBase.negate().subtract(BigInteger.ONE);
+                        _numberBigInt = _bigNegative(l);
                         _numTypesValid = NR_BIGINT;
                     }
                 }
@@ -3145,6 +3143,8 @@ public final class CBORParser extends ParserMinimalBase
     }
 
     private final BigInteger _bigNegative(long l) {
-        return BigInteger.valueOf(l).subtract(BigInteger.ONE);
+        // 03-Dec-2017, tatu: [dataformats-binary#149] Careful with overflow
+        BigInteger unsignedBase = _bigPositive(l);
+        return unsignedBase.negate().subtract(BigInteger.ONE);
     }
 }
