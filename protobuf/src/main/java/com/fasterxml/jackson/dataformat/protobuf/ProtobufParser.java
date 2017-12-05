@@ -911,10 +911,10 @@ public class ProtobufParser extends ParserMinimalBase
         }
         while (true) {
             _skipUnknownValue(wireType);
+            if (_checkEnd()) {
+                return (_currToken = JsonToken.END_OBJECT);
+            }
             if (_state == STATE_NESTED_KEY) {
-                if (_checkEnd()) {
-                    return (_currToken = JsonToken.END_OBJECT);
-                }
                 if (_inputPtr >= _inputEnd) {
                     loadMoreGuaranteed();
                 }
