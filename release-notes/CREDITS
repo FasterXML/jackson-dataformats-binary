@@ -29,3 +29,5 @@ marsqing@github
  (2.8.10)
 * Reported #106, contributed fix for: calling _skipUnknownValue() twice
  (2.8.11 / 2.9.1)
+* Reported #126, contributed fix for: always call checkEnd() when skip unknown field
+ (2.8.11 / 2.9.3)
