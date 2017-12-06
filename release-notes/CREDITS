@@ -31,6 +31,8 @@ marsqing@github
 * Reported #116 (protobuf), contributed fix for: Should skip the positive byte
   which is the last byte of an varint
  (2.9.3)
+* Reported #126, contributed fix for: always call checkEnd() when skip unknown field
+ (2.8.11 / 2.9.3)
 
 baharclerode@github:
 
