@@ -924,10 +924,12 @@ public class ProtobufParser extends ParserMinimalBase
         }
         while (true) {
             _skipUnknownValue(wireType);
+            // 05-Dec-2017, tatu: as per [#126] seems like we need to check this not just for
+            //    STATE_NESTED_KEY but for arrays too at least?
+            if (_checkEnd()) {
+                return (_currToken = JsonToken.END_OBJECT);
+            }
             if (_state == STATE_NESTED_KEY) {
-                if (_checkEnd()) {
-                    return (_currToken = JsonToken.END_OBJECT);
-                }
                 if (_inputPtr >= _inputEnd) {
                     loadMoreGuaranteed();
                 }
