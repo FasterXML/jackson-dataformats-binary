@@ -7,8 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
+
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
@@ -73,22 +74,20 @@ public class SchemaGenTest extends ProtobufTestBase
     /**********************************************************
      */
 
-	public void testWithNestedClass() throws Exception {
-		ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
-		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
-		mapper.acceptJsonFormatVisitor(WithNestedClass.class, gen);
-		ProtobufSchema schemaWrapper = gen.getGeneratedSchema();
+	private final ProtobufMapper MAPPER = new ProtobufMapper();
+
+	public void testWithNestedClass() throws Exception
+	{
+		ProtobufSchema schemaWrapper = MAPPER.generateSchemaFor(WithNestedClass.class);
 
 		assertNotNull(schemaWrapper);
 
 		// System.out.println(schemaWrapper.getSource().toString());
 	}
 
-	public void testWithIndexAnnotation() throws Exception {
-		ObjectMapper mapper = new ProtobufMapper();
-		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
-		mapper.acceptJsonFormatVisitor(WithIndexAnnotation.class, gen);
-		ProtobufSchema schemaWrapper = gen.getGeneratedSchema();
+	public void testWithIndexAnnotation() throws Exception
+	{
+         ProtobufSchema schemaWrapper = MAPPER.generateSchemaFor(WithIndexAnnotation.class);
 
 		assertNotNull(schemaWrapper);
 
@@ -102,10 +101,10 @@ public class SchemaGenTest extends ProtobufTestBase
 	}
 
 	public void testSelfRefPojoGenProtobufSchema() throws Exception {
-		ObjectMapper mapper = new ProtobufMapper();
+	    ProtobufMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
 		mapper.acceptJsonFormatVisitor(Employee.class, gen);
-		ProtobufSchema schemaWrapper = gen.getGeneratedSchema();
+		ProtobufSchema schemaWrapper = mapper.generateSchemaFor(Employee.class);
 
 		assertNotNull(schemaWrapper);
 
