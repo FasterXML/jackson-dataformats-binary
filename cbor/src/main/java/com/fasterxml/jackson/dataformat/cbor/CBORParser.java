@@ -1058,15 +1058,15 @@ public final class CBORParser extends ParserMinimalBase
             return _nextFieldNameEmpty(matcher);
         }
         int match = _nextFieldOptimized(matcher, lenMarker);
-        if (match >= 0) { // gotcha! (expected case)
-            _inputPtr += lenMarker;
-            final String name = matcher.nameLookup()[match];
-            _parsingContext.setCurrentName(name);
-            _currToken = JsonToken.FIELD_NAME;
-            return match;
+        if (match < 0) { // miss...
+            // but if not matched by matcher we got, need to still decode
+            return _nextFieldDecodeAndAdd(matcher, lenMarker);
         }
-        // but if not matched by matcher we got, need to still decode
-        return _nextFieldDecodeAndAdd(matcher, lenMarker);
+        _inputPtr += lenMarker;
+        final String name = matcher.nameLookup()[match];
+        _parsingContext.setCurrentName(name);
+        _currToken = JsonToken.FIELD_NAME;
+        return match;
     }
 
     private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int len) throws IOException
@@ -1095,7 +1095,8 @@ public final class CBORParser extends ParserMinimalBase
         }
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;
-        return FieldNameMatcher.MATCH_UNKNOWN_NAME;
+        // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
+        return matcher.matchAnyName(name);
     }
 
     private int _nextFieldNameNonText(FieldNameMatcher matcher, int ch) throws IOException

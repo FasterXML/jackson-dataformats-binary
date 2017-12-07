@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor.failing;
+package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
