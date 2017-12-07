@@ -345,7 +345,6 @@ public class CBORFactory
 
     @Override
     public FieldNameMatcher constructCIFieldNameMatcher(List<Named> matches, boolean alreadyInterned) {
-        return SimpleNameMatcher.constructCaseInsensitive(matches, alreadyInterned);
-//        return BinaryNameMatcher.constructCaseInsensitive(matches, alreadyInterned);
+        return BinaryNameMatcher.constructCaseInsensitive(matches, alreadyInterned);
     }
 }
