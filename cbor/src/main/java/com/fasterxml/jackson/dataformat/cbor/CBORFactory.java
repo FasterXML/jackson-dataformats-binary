@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.BinaryNameMatcher;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
-import com.fasterxml.jackson.core.sym.SimpleNameMatcher;
 import com.fasterxml.jackson.core.util.Named;
 
 /**
@@ -338,8 +337,6 @@ public class CBORFactory
 
     @Override
     public FieldNameMatcher constructFieldNameMatcher(List<Named> matches, boolean alreadyInterned) {
-        // 15-Nov-2017, tatu: Base implementation that is likely to work fine for
-        //    most if not all implementations as it is more difficult to optimize
         return BinaryNameMatcher.constructFrom(matches, alreadyInterned);
     }
 
