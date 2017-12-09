@@ -975,36 +975,36 @@ public final class CBORParser extends ParserMinimalBase
             // fine; require room for up to 2-byte marker, data itself
             int ptr = _inputPtr;
             if ((ptr + byteLen + 1) < _inputEnd) {
-	            final int ch = _inputBuffer[ptr++];
-	            // only handle usual textual type
-	            if (((ch >> 5) & 0x7) == CBORConstants.MAJOR_TYPE_TEXT) { 
-		            int lenMarker = ch & 0x1F;
-		            if (lenMarker <= 24) {
-			            if (lenMarker == 23) {
-			            	lenMarker = _inputBuffer[ptr++] & 0xFF;
-			            }
-			            if (lenMarker == byteLen) {
-			            	int i = 0;
-			            	while (true) {
-			            		if (i == lenMarker) {
-		                            _inputPtr = ptr+i;
-		                            _parsingContext.setCurrentName(str.getValue());
-		                            _currToken = JsonToken.FIELD_NAME;
-		                            return true;
-			            		}
-			            		if (nameBytes[i] != _inputBuffer[ptr+i]) {
-			            			break;
-			            		}
-			            		++i;
-			            	}
-		            }
-	            }
+                final int ch = _inputBuffer[ptr++];
+                // only handle usual textual type
+                if (((ch >> 5) & 0x7) == CBORConstants.MAJOR_TYPE_TEXT) {
+                    int lenMarker = ch & 0x1F;
+                    if (lenMarker <= 24) {
+                        if (lenMarker == 23) {
+                            lenMarker = _inputBuffer[ptr++] & 0xFF;
+                        }
+                        if (lenMarker == byteLen) {
+                            int i = 0;
+                            while (true) {
+                                if (i == lenMarker) {
+                                    _inputPtr = ptr+i;
+                                    _parsingContext.setCurrentName(str.getValue());
+                                    _currToken = JsonToken.FIELD_NAME;
+                                    return true;
+                                }
+                                if (nameBytes[i] != _inputBuffer[ptr+i]) {
+                                    break;
+                                }
+                                ++i;
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(currentName());
+        String name = nextFieldName();
+        return (name != null) && str.getValue().equals(name);
     }
 
     @Override
