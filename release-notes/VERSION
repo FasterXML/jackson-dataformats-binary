@@ -9,7 +9,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.3 (not yet released)
+2.9.3 (09-Dec-2017)
 
 #114: (cbor) copyStructure(): avoid duplicate tags when copying tagged binary.
  (contributed by philipa@github)
