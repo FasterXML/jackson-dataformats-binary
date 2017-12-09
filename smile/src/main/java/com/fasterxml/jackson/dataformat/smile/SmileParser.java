@@ -732,8 +732,7 @@ public class SmileParser extends SmileParserBase
                     {
                         int len = 1 + (ch & 0x3f);
                         if (len == byteLen) {
-                            int i = 0;
-                            for (; i < len; ++i) {
+                            for (int i = 0; i < len; ++i) {
                                 if (nameBytes[i] != _inputBuffer[ptr+i]) {
                                     break main_switch;
                                 }
