@@ -6,11 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class TreeNodesTest extends BaseTestForSmile
 {
-    private final ObjectMapper MAPPER = new ObjectMapper(new SmileFactory());
+    private final ObjectMapper MAPPER = newSmileMapper();
 
     public void testSimple() throws Exception
     {

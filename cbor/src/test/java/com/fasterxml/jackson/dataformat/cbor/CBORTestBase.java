@@ -16,6 +16,34 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 public abstract class CBORTestBase
     extends junit.framework.TestCase
 {
+    // From JSON specification, sample doc...
+    protected final static int SAMPLE_SPEC_VALUE_WIDTH = 800;
+    protected final static int SAMPLE_SPEC_VALUE_HEIGHT = 600;
+    protected final static String SAMPLE_SPEC_VALUE_TITLE = "View from 15th Floor";
+    protected final static String SAMPLE_SPEC_VALUE_TN_URL = "http://www.example.com/image/481989943";
+    protected final static int SAMPLE_SPEC_VALUE_TN_HEIGHT = 125;
+    protected final static String SAMPLE_SPEC_VALUE_TN_WIDTH = "100";
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID1 = 116;
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID2 = 943;
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID3 = 234;
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;    
+
+    protected final static String SAMPLE_DOC_JSON_SPEC = 
+            "{\n"
+            +"  \"Image\" : {\n"
+            +"    \"Width\" : "+SAMPLE_SPEC_VALUE_WIDTH+",\n"
+            +"    \"Height\" : "+SAMPLE_SPEC_VALUE_HEIGHT+","
+            +"\"Title\" : \""+SAMPLE_SPEC_VALUE_TITLE+"\",\n"
+            +"    \"Thumbnail\" : {\n"
+            +"      \"Url\" : \""+SAMPLE_SPEC_VALUE_TN_URL+"\",\n"
+            +"\"Height\" : "+SAMPLE_SPEC_VALUE_TN_HEIGHT+",\n"
+            +"      \"Width\" : \""+SAMPLE_SPEC_VALUE_TN_WIDTH+"\"\n"
+            +"    },\n"
+            +"    \"IDs\" : ["+SAMPLE_SPEC_VALUE_TN_ID1+","+SAMPLE_SPEC_VALUE_TN_ID2+","+SAMPLE_SPEC_VALUE_TN_ID3+","+SAMPLE_SPEC_VALUE_TN_ID4+"]\n"
+            +"  }"
+            +"}"
+            ;
+
     protected final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     protected final static ObjectMapper CBOR_MAPPER = new ObjectMapper(new CBORFactory());
