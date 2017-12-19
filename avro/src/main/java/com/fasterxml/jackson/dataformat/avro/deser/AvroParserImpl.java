@@ -129,7 +129,11 @@ public abstract class AvroParserImpl
             return false;
         }
         _currToken = JsonToken.FIELD_NAME;
-        return name.equals(sstr.getValue());
+        String toMatch = sstr.getValue();
+        if (toMatch == name) {
+            return true;
+        }
+        return toMatch.equals(sstr);
     }
 
     @Override
