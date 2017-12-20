@@ -38,11 +38,6 @@ public final class RootReader extends AvroReadContext
     }
 
     @Override
-    public JsonToken currentToken() {
-        return null;
-    }
-
-    @Override
     public void appendDesc(StringBuilder sb) {
         sb.append("/");
     }

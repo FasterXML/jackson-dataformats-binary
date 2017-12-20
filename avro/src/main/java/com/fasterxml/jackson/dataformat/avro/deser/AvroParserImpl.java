@@ -145,23 +145,16 @@ public abstract class AvroParserImpl
         _binaryValue = null;
 
         int match = _avroContext.nextFieldName(matcher);
+        // 20-Dec-2017, tatu: not sure check would be any faster
+        _currToken = _avroContext.currentToken();
+/*
         if (match < 0) { // END_OBJECT, mismatching FIELD_NAME or something else:
             _currToken = _avroContext.currentToken();
+        } else {
+            _currToken = JsonToken.FIELD_NAME;
         }
+*/
         return match;
-        /*
-        String name = _avroContext.nextFieldName();
-        if (name == null) {
-            JsonToken t = _avroContext.currentToken();
-            _currToken = t;
-            if (t == JsonToken.END_OBJECT) {
-                return FieldNameMatcher.MATCH_END_OBJECT;
-            }
-            return FieldNameMatcher.MATCH_ODD_TOKEN;
-        }
-        _currToken = JsonToken.FIELD_NAME;
-        return matcher.matchName(name);
-        */
     }
 
     /*

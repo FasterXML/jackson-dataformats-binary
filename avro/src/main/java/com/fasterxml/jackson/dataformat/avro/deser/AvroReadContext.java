@@ -16,6 +16,8 @@ public abstract class AvroReadContext extends TokenStreamContext
 
     protected final String _typeId;
 
+    protected JsonToken _currToken;
+
     protected Object _currentValue;
 
     /*
@@ -69,7 +71,9 @@ public abstract class AvroReadContext extends TokenStreamContext
     @Override
     public String currentName() { return null; }
 
-    public abstract JsonToken currentToken();
+    public final JsonToken currentToken() {
+        return _currToken;
+    }
     
     @Override
     public final AvroReadContext getParent() { return _parent; }
