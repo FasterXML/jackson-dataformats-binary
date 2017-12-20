@@ -829,7 +829,7 @@ public class SmileParser extends SmileParserBase
             case 0x20: // empty String as name, legal if unusual
                 _currToken = JsonToken.FIELD_NAME;
                 _parsingContext.setCurrentName("");
-                return matcher.matchInternedName("");
+                return matcher.matchName("");
             case 0x30: // long shared
             case 0x31:
             case 0x32:
@@ -845,14 +845,12 @@ public class SmileParser extends SmileParserBase
                     String name = _seenNames[index];
                     _parsingContext.setCurrentName(name);
                     _currToken = JsonToken.FIELD_NAME;
-                    // 15-Nov-2017, tatu: Can't be sure it's intern()ed so:
-                    return matcher.matchAnyName(name);
+                    return matcher.matchName(name);
                 }
             case 0x34: // long ASCII/Unicode name
                 _handleLongFieldName();
                 _currToken = JsonToken.FIELD_NAME;
-                // 15-Nov-2017, tatu: Can't be sure it's intern()ed so:
-                return matcher.matchAnyName(currentName());
+                return matcher.matchName(currentName());
             }
             break;
         case 1: // short shared, can fully process
@@ -864,8 +862,7 @@ public class SmileParser extends SmileParserBase
                 String name = _seenNames[index];
                 _parsingContext.setCurrentName(name);
                 _currToken = JsonToken.FIELD_NAME;
-                // 15-Nov-2017, tatu: Can't be sure it's intern()ed so:
-                return matcher.matchAnyName(name);
+                return matcher.matchName(name);
             }
         case 2: // short ASCII
             {
@@ -1072,7 +1069,7 @@ public class SmileParser extends SmileParserBase
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
-        return matcher.matchAnyName(name);
+        return matcher.matchName(name);
     }
 
     private int _nextFieldUnicodeDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws IOException
@@ -1104,7 +1101,7 @@ public class SmileParser extends SmileParserBase
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
-        return matcher.matchAnyName(name);
+        return matcher.matchName(name);
     }
 
     /*

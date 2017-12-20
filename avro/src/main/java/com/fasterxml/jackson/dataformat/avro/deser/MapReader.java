@@ -69,7 +69,7 @@ public abstract class MapReader extends AvroStructureReader
         JsonToken t = nextToken();
         if (t == JsonToken.FIELD_NAME) {
             // 15-Nov-2017, tatu: Non interned key names
-            return matcher.matchAnyName(_currentName);
+            return matcher.matchName(_currentName);
         }
         if (t == JsonToken.END_OBJECT) {
             return FieldNameMatcher.MATCH_END_OBJECT;

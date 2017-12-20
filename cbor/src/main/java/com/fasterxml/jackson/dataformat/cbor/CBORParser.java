@@ -1091,7 +1091,7 @@ public final class CBORParser extends ParserMinimalBase
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
-        return matcher.matchAnyName(name);
+        return matcher.matchName(name);
     }
 
     private int _nextFieldNameNonText(FieldNameMatcher matcher, int ch) throws IOException
@@ -1099,14 +1099,14 @@ public final class CBORParser extends ParserMinimalBase
         String name = _decodeNonStringName(ch); // NOTE: sets current name too
         _currToken = JsonToken.FIELD_NAME;
         /// 15-Nov-2017, tatu: Is this correct? Copied from `nextFieldName()` but...
-        return matcher.matchAnyName(name);
+        return matcher.matchName(name);
     }
 
     // For presumable rare case of ""
     private int _nextFieldNameEmpty(FieldNameMatcher matcher) throws IOException {
         _parsingContext.setCurrentName("");
         _currToken = JsonToken.FIELD_NAME;
-        return matcher.matchInternedName("");
+        return matcher.matchName("");
     }
 
     private int _nextFieldNameLong(FieldNameMatcher matcher, int lenMarker) throws IOException
@@ -1120,7 +1120,7 @@ public final class CBORParser extends ParserMinimalBase
         }
         _parsingContext.setCurrentName(name);
         _currToken = JsonToken.FIELD_NAME;
-        return matcher.matchAnyName(name);
+        return matcher.matchName(name);
     }
 
     private final int _nextFieldOptimized(FieldNameMatcher matcher, final int len) throws IOException

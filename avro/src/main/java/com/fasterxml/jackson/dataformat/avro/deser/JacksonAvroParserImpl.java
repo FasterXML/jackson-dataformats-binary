@@ -74,7 +74,7 @@ public final class JacksonAvroParserImpl extends AvroParserImpl
     /* Life-cycle
     /**********************************************************
      */
-    
+
     public JacksonAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
             int parserFeatures, int avroFeatures, AvroSchema schema,
             InputStream in)

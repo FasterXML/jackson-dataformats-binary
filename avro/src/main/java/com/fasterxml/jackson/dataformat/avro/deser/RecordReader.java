@@ -170,8 +170,7 @@ abstract class RecordReader extends AvroStructureReader
                     _currentName = name;
                     _state = STATE_VALUE;
                     _currToken = JsonToken.FIELD_NAME;
-                    // 15-Nov-2017, tatu: Yes, they are intern()ed
-                    return matcher.matchInternedName(name);
+                    return matcher.matchName(name);
                 }
                 return _matchAtEndObject();
             }
@@ -274,8 +273,7 @@ abstract class RecordReader extends AvroStructureReader
                     _currentName = name;
                     _state = STATE_VALUE;
                     _currToken = JsonToken.FIELD_NAME;
-                    // 15-Nov-2017, tatu: Yes, should be intern()ed right?
-                    return matcher.matchInternedName(name);
+                    return matcher.matchName(name);
                 }
                 return _matchAtEndObject();
             }
