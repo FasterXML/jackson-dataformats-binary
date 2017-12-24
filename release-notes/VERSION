@@ -13,7 +13,7 @@ Modules:
 
 #95: Add new method, `withUnsafeReaderSchema` in `AvroSchema` to allow avoiding verification exception
 
-2.8.11 (not yet released)
+2.8.11 (24-Dec-2017)
 
 #106: (protobuf) fix calling _skipUnknownValue() twice
  (reported, contributed fix for by marsqing@github@github)
