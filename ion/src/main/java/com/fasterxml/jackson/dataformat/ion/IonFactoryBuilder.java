@@ -20,7 +20,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
     }
 
     @Override
-    protected IonFactory build() {
+    public IonFactory build() {
         // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
         return new IonFactory(this);
     }

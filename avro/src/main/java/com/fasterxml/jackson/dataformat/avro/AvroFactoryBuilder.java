@@ -20,7 +20,7 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     }
 
     @Override
-    protected AvroFactory build() {
+    public AvroFactory build() {
         // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
         return new AvroFactory(this);
     }

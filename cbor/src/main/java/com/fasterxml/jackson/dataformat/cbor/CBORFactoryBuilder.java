@@ -20,7 +20,7 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
     }
 
     @Override
-    protected CBORFactory build() {
+    public CBORFactory build() {
         // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
         return new CBORFactory(this);
     }
