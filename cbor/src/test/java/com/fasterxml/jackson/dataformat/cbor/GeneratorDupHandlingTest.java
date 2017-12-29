@@ -7,19 +7,19 @@ import com.fasterxml.jackson.core.*;
 public class GeneratorDupHandlingTest extends CBORTestBase
 {
     public void testSimpleDupsEagerlyBytes() throws Exception {
-        _testSimpleDups(false, new JsonFactory());
+        _testSimpleDups(false, new CBORFactory());
     }
 
     // Testing ability to enable checking after construction of
     // generator, not just via JsonFactory
     public void testSimpleDupsLazilyBytes() throws Exception {
-        final JsonFactory f = new JsonFactory();
+        final CBORFactory f = new CBORFactory();
         assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));
         _testSimpleDups(true, f);
     }
 
     @SuppressWarnings("resource")
-    protected void _testSimpleDups(boolean lazySetting, JsonFactory f)
+    protected void _testSimpleDups(boolean lazySetting, TokenStreamFactory f)
         throws Exception
     {
         // First: fine, when not checking
@@ -60,7 +60,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         }
     }
 
-    protected JsonGenerator _generator(JsonFactory f) throws IOException
+    protected JsonGenerator _generator(TokenStreamFactory f) throws IOException
     {
         return f.createGenerator(ObjectWriteContext.empty(),
                 new ByteArrayOutputStream());

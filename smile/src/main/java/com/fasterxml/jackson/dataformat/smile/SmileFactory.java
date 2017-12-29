@@ -18,7 +18,7 @@ import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
  * instances; both of which handle
  * <a href="http://wiki.fasterxml.com/SmileFormat">Smile</a> encoded data.
  *<p>
- * Extends {@link JsonFactory} mostly so that users can actually use it in place
+ * Extends {@link TokenStreamFactory} mostly so that users can actually use it in place
  * of regular non-Smile factory instances.
  *<p>
  * Note on using non-byte-based sources/targets (char based, like
@@ -106,6 +106,28 @@ public class SmileFactory
         super(src);
         _smileParserFeatures = src._smileParserFeatures;
         _smileGeneratorFeatures = src._smileGeneratorFeatures;
+    }
+
+    /**
+     * Constructors used by {@link SmileFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected SmileFactory(SmileFactoryBuilder b) {
+        super(b);
+    }
+
+    @Override
+    public SmileFactoryBuilder rebuild() {
+        return new SmileFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link SmileFactory} instances with
+     * different configuration.
+     */
+    public static SmileFactoryBuilder builder() {
+        return new SmileFactoryBuilder();
     }
 
     @Override

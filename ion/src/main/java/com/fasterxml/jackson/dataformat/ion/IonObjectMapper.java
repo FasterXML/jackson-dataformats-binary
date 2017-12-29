@@ -33,8 +33,7 @@ import software.amazon.ion.IonWriter;
 
 /**
  * Specialization of {@link ObjectMapper} that will set underlying
- * {@link com.fasterxml.jackson.core.JsonFactory}
- * to be an instance of {@link IonFactory}.
+ * factory to be an instance of {@link IonFactory}.
  */
 public class IonObjectMapper extends ObjectMapper
 {    

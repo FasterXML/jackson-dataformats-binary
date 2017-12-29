@@ -29,7 +29,7 @@ import software.amazon.ion.IonWriter;
 import software.amazon.ion.system.IonSystemBuilder;
 
 /**
- * Sub-class of {@link JsonFactory} that will work on Ion content, instead of JSON
+ * Sub-class of {@link TokenStreamFactory} that will work on Ion content, instead of JSON
  * content.
  */
 @SuppressWarnings("resource")
@@ -66,6 +66,30 @@ public class IonFactory
         //    too; for now assume it may be shared.
         _system = src._system;
         _cfgCreateBinaryWriters = src._cfgCreateBinaryWriters;
+    }
+
+    /**
+     * Constructors used by {@link IonFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected IonFactory(IonFactoryBuilder b) {
+        super(b);
+        // !!! 28-Dec-2017, tatu: need to figure out how it ought to work...
+        _system = IonSystemBuilder.standard().build();
+    }
+
+    @Override
+    public IonFactoryBuilder rebuild() {
+        return new IonFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link IonFactory} instances with
+     * different configuration.
+     */
+    public static IonFactoryBuilder builder() {
+        return new IonFactoryBuilder();
     }
 
     @Override

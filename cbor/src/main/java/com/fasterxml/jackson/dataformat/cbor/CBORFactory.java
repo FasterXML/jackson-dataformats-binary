@@ -17,9 +17,6 @@ import com.fasterxml.jackson.core.util.Named;
  * <a href="https://www.rfc-editor.org/info/rfc7049">CBOR</a>
  * encoded data.
  *<p>
- * Extends {@link JsonFactory} mostly so that users can actually use it in place
- * of regular non-CBOR factory instances.
- *<p>
  * Note on using non-byte-based sources/targets (char based, like
  * {@link java.io.Reader} and {@link java.io.Writer}): these can not be
  * used for CBOR documents; attempt will throw exception.
@@ -104,6 +101,28 @@ public class CBORFactory
         super(src);
         _formatParserFeatures = src._formatParserFeatures;
         _formatGeneratorFeatures = src._formatGeneratorFeatures;
+    }
+
+    /**
+     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected CBORFactory(CBORFactoryBuilder b) {
+        super(b);
+    }
+
+    @Override
+    public CBORFactoryBuilder rebuild() {
+        return new CBORFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link CBORFactory} instances with
+     * different configuration.
+     */
+    public static CBORFactoryBuilder builder() {
+        return new CBORFactoryBuilder();
     }
 
     @Override

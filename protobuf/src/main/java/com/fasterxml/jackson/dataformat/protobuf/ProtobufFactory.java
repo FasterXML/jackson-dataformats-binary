@@ -5,6 +5,7 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class ProtobufFactory
@@ -23,6 +24,28 @@ public class ProtobufFactory
 
     protected ProtobufFactory(ProtobufFactory src) {
         super(src);
+    }
+
+    /**
+     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected ProtobufFactory(ProtobufFactoryBuilder b) {
+        super(b);
+    }
+
+    @Override
+    public ProtobufFactoryBuilder rebuild() {
+        return new ProtobufFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link ProtobufFactory} instances with
+     * different configuration.
+     */
+    public static ProtobufFactoryBuilder builder() {
+        return new ProtobufFactoryBuilder();
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
 /**
- * Default {@link JsonFactory} implementation for encoding/decoding Avro
+ * Default {@link TokenStreamFactory} implementation for encoding/decoding Avro
  * content, uses native Jackson encoder/decoder.
  *
  * @see com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory
@@ -81,9 +81,31 @@ public class AvroFactory
         _avroGeneratorFeatures = src._avroGeneratorFeatures;
     }
 
-    @Override
-    public AvroFactory copy()
+    /**
+     * Constructors used by {@link YAMLFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected AvroFactory(AvroFactoryBuilder b)
     {
+        super(b);
+    }
+
+    @Override
+    public AvroFactoryBuilder rebuild() {
+        return new AvroFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link AvroFactory} instances with
+     * different configuration.
+     */
+    public static AvroFactoryBuilder builder() {
+        return new AvroFactoryBuilder();
+    }
+
+    @Override
+    public AvroFactory copy() {
         return new AvroFactory(this);
     }
 

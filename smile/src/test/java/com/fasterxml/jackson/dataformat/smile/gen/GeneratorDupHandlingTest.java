@@ -4,23 +4,24 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class GeneratorDupHandlingTest extends BaseTestForSmile
 {
     public void testSimpleDupsEagerlyBytes() throws Exception {
-        _testSimpleDups(false, new JsonFactory());
+        _testSimpleDups(false, new SmileFactory());
     }
 
     // Testing ability to enable checking after construction of
     // generator, not just via JsonFactory
     public void testSimpleDupsLazilyBytes() throws Exception {
-        final JsonFactory f = new JsonFactory();
+        final SmileFactory f = new SmileFactory();
         assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));
         _testSimpleDups(true, f);
     }
 
     @SuppressWarnings("resource")
-    protected void _testSimpleDups(boolean lazySetting, JsonFactory f)
+    protected void _testSimpleDups(boolean lazySetting, TokenStreamFactory f)
         throws Exception
     {
         // First: fine, when not checking
@@ -61,7 +62,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         }
     }
 
-    protected JsonGenerator _generator(JsonFactory f) throws IOException
+    protected JsonGenerator _generator(TokenStreamFactory f) throws IOException
     {
         return f.createGenerator(ObjectWriteContext.empty(), new ByteArrayOutputStream());
     }
