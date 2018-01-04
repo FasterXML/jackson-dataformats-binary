@@ -16,8 +16,6 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.dataformat.ion.EnumAsIonSymbolModule;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
@@ -31,48 +29,31 @@ import software.amazon.ion.IonValue;
  * subclass) and the direct value will be provided.
  * 
  * Enums are serialized as symbols by default.
+ *
+ * @deprecated Since 3.0: use basic {@link IonObjectMapper} with properly configured {@link IonFactory} and module(s)
  */
+@Deprecated
 public class IonValueMapper extends IonObjectMapper
 {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Constructor which provides a mapper with a null {@link PropertyNamingStrategy}.
-     *
-     * @param ionSystem
-     */
     public IonValueMapper(IonSystem ionSystem) {
-        this(ionSystem, null);
+        super(IonFactory.builderForTextualWriters().withSystem(ionSystem).build());
     }
 
-    /**
-     * Constructor that provides an override on the default Constructor for the PropertyNamingStrategy.
-     *
-     * @param ionSystem
-     * @param strategy
-     *            Strategy Jackson uses for mapping POJO field names to Json/Ion field names
-     *            {@link PropertyNamingStrategy}
-     */
-    public IonValueMapper(IonSystem ionSystem, PropertyNamingStrategy strategy) {
-        super(new IonFactory(ionSystem));
-        this.registerModule(new IonValueModule());
-        this.registerModule(new EnumAsIonSymbolModule());
-        this.setPropertyNamingStrategy(strategy);
-    }
-
+    @Deprecated // use `readValue(IonValue, Class)` instead
     public <T> T parse(IonValue value, Class<T> clazz) throws IOException {
         if (value == null) {
             return null;
         }
-
         return this.readValue(value, clazz);
     }
 
-    public <T> IonValue serialize(T o) throws IOException {
+    @Deprecated // use `writeValueAsIonValue(Object)` instead
+    public IonValue serialize(Object o) throws IOException {
         if (o == null) {
             return null;
         }
-
         return this.writeValueAsIonValue(o);
     }
 }

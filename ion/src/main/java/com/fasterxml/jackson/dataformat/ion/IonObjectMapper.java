@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueModule;
 
 import software.amazon.ion.IonDatagram;
 import software.amazon.ion.IonReader;
@@ -45,22 +46,25 @@ public class IonObjectMapper extends ObjectMapper
 
     public IonObjectMapper(IonFactory f) {
         super(f);
+
+        // !!! 04-Jan-2018, tatu: needs to be reworked in future; may remain a module
+        
         // Use native Ion timestamps for dates
         SimpleModule m = new SimpleModule("IonTimestampModule", PackageVersion.VERSION);
         m.addSerializer(Date.class, new IonTimestampSerializers.IonTimestampJavaDateSerializer());
         m.addSerializer(java.sql.Date.class, new IonTimestampSerializers.IonTimestampSQLDateSerializer());
         m.addDeserializer(Date.class, new IonTimestampDeserializers.IonTimestampJavaDateDeserializer());
         m.addDeserializer(java.sql.Date.class, new IonTimestampDeserializers.IonTimestampSQLDateDeserializer());
+
+        // 04-Jan-2017, tatu: demoted from `IonValueMapper`
+        this.registerModule(new IonValueModule());
+        this.registerModule(new EnumAsIonSymbolModule());
         registerModule(m);
     }
 
     protected IonObjectMapper(IonObjectMapper src) {
         super(src);
     }
-
-    public void setCreateBinaryWriters(boolean bin) {
-        tokenStreamFactory().setCreateBinaryWriters(bin);
-    }   
 
     @Override
     public ObjectMapper copy() {
@@ -157,6 +161,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, Class<T> valueType) throws IOException {
+        if (value == null) {
+            return null;
+        }
         DefaultDeserializationContext ctxt = createDeserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueType));
@@ -167,6 +174,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonValue value, TypeReference valueTypeRef) throws IOException {
+        if (value == null) {
+            return null;
+        }
         DefaultDeserializationContext ctxt = createDeserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueTypeRef));
@@ -177,6 +187,9 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, JavaType valueType) throws IOException  {
+        if (value == null) {
+            return null;
+        }
         DefaultDeserializationContext ctxt = createDeserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value), valueType);
     }
@@ -198,6 +211,14 @@ public class IonObjectMapper extends ObjectMapper
      */
     public IonValue writeValueAsIonValue(Object value) throws IOException
     {
+        // 04-Jan-2017, tatu: Bit of incompatiblity wrt 2.x handling: should this result in
+        //   Java `null`, or Ion null marker? For now, choose latter
+/*        
+        if (value == null) {
+            return null;
+        }
+        */
+
         IonFactory f = tokenStreamFactory();
         IonDatagram container = f._system.newDatagram();
         IonWriter writer = f._system.newWriter(container);

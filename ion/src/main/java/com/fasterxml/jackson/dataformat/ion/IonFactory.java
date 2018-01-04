@@ -39,33 +39,52 @@ public class IonFactory
     extends DecorableTSFactory
     implements java.io.Serializable
 {
+    /*
+    /**********************************************************
+    /* Constants
+    /**********************************************************
+     */
+
     private static final long serialVersionUID = 1L;
 
     public final static String FORMAT_NAME_ION = "AmazonIon";
 
-    final IonSystem _system;
+    /**
+     * Default setting for binary vs textual output: defaulting to textual.
+     */
+    final static boolean DEFAULT_CREATE_BINARY = false;
+
+    /*
+    /**********************************************************
+    /* Configuration
+    /**********************************************************
+     */
 
     /**
-     * Whether we will produce binary or text Ion writers: default is textual.
+     * Whether we will produce binary (true) or textual (false) Ion writers.
      */
-    protected boolean _cfgCreateBinaryWriters = false;
-    
+    protected final boolean _cfgBinaryWriters;
+
+    protected final IonSystem _system;
+
+    /*
+    /**********************************************************************
+    /* Life-cycle
+    /**********************************************************************
+     */
+
     public IonFactory() {
-        this(IonSystemBuilder.standard().build());
-    }
-    
-    public IonFactory(IonSystem system) {
-        super();
-        _system = system;
+        _cfgBinaryWriters = DEFAULT_CREATE_BINARY;
+        _system = IonSystemBuilder.standard().build();
     }
 
     protected IonFactory(IonFactory src)
     {
         super(src);
+        _cfgBinaryWriters = src._cfgBinaryWriters;
         // 21-Feb-2017, tatu: Not 100% sure if this should be made copy of
         //    too; for now assume it may be shared.
         _system = src._system;
-        _cfgCreateBinaryWriters = src._cfgCreateBinaryWriters;
     }
 
     /**
@@ -75,8 +94,8 @@ public class IonFactory
      */
     protected IonFactory(IonFactoryBuilder b) {
         super(b);
-        // !!! 28-Dec-2017, tatu: need to figure out how it ought to work...
-        _system = IonSystemBuilder.standard().build();
+        _cfgBinaryWriters = b.willCreateBinaryWriters();
+        _system = b.ionSystem();
     }
 
     @Override
@@ -85,11 +104,35 @@ public class IonFactory
     }
 
     /**
-     * Main factory method to use for constructing {@link IonFactory} instances with
-     * different configuration.
+     * Method for creating {@link IonFactory} that will
+     * create binary (not textual) writers.
      */
-    public static IonFactoryBuilder builder() {
-        return new IonFactoryBuilder();
+    public static IonFactory forBinaryWriters() {
+        return new IonFactoryBuilder(true).build();
+    }
+
+    /**
+     * Method for creating {@link IonFactoryBuilder} initialized with settings to
+     * create binary (not textual) writers.
+     */
+    public static IonFactoryBuilder builderForBinaryWriters() {
+        return new IonFactoryBuilder(true);
+    }
+    
+    /**
+     * Method for creating {@link IonFactory} that will
+     * create textual (not binary) writers.
+     */
+    public static IonFactory forTextualWriters() {
+        return new IonFactoryBuilder(false).build();
+    }
+
+    /**
+     * Method for creating {@link IonFactoryBuilder} initialized with settings to
+     * create textual (not binary) writers.
+     */
+    public static IonFactoryBuilder builderForTextualWriters() {
+        return new IonFactoryBuilder(false);
     }
 
     @Override
@@ -97,14 +140,6 @@ public class IonFactory
     {
         // note: as with base class, must NOT copy mapper reference
         return new IonFactory(this);
-    }
-
-    public void setCreateBinaryWriters(boolean b) {
-        _cfgCreateBinaryWriters = b;
-    }
-
-    public boolean createBinaryWriters() {
-        return _cfgCreateBinaryWriters;
     }
 
     /*                                                                                       
@@ -121,7 +156,7 @@ public class IonFactory
     @Override
     public boolean canHandleBinaryNatively() {
         // 21-Feb-2017, tatu: I think only support with binary backend
-        return _cfgCreateBinaryWriters;
+        return _cfgBinaryWriters;
     }
 
     @Override
@@ -269,8 +304,8 @@ public class IonFactory
         throws IOException
     {
          // First things first: no binary writer for Writers:
-        if (createBinaryWriters()) {
-            throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
+        if (_cfgBinaryWriters) {
+            throw new UnsupportedOperationException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
         return _createGenerator(writeCtxt, _createContext(out, false),
                 _system.newTextWriter(out), out);
@@ -284,7 +319,7 @@ public class IonFactory
         return _createGenerator(writeCtxt,
                 new FileOutputStream(f), enc, true);
     }
-    
+
     /*
     /***************************************************************
     /* Helper methods, parsers
@@ -340,7 +375,7 @@ public class IonFactory
         Closeable dst; // not necessarily same as 'out'...
 
         // Binary writers are simpler: no alternate encodings
-        if (createBinaryWriters()) {
+        if (_cfgBinaryWriters) {
             ioCtxt.setEncoding(enc);
             ion = _system.newBinaryWriter(out);
             dst = out;
@@ -348,10 +383,8 @@ public class IonFactory
             if (enc != JsonEncoding.UTF8) { // not sure if non-UTF-8 encodings would be legal...
                 throw new IOException("Ion only supports UTF-8 encoding, can not use "+enc);
             }
-            /* In theory Ion package could take some advantage of getting OutputStream.
-             * In practice we seem to be better off using Jackson's efficient buffering
-             * encoder
-             */
+            // In theory Ion package could take some advantage of getting OutputStream.
+            // In practice we seem to be better off using Jackson's efficient buffering encoder
             ioCtxt.setEncoding(enc);
             // This is bit unfortunate, since out != dst now...
             Writer w = new CloseSafeUTF8Writer(ioCtxt, out);

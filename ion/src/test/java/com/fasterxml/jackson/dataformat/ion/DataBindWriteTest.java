@@ -69,13 +69,16 @@ public class DataBindWriteTest {
         expectedArray.add(list);
     }
 
-    // // Test methods
-    
+    /*
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
+     */
+   
     @Test
     public void testSimpleObjectWriteText() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper();
-        m.setCreateBinaryWriters(false);
+        IonObjectMapper m = new IonObjectMapper(IonFactory.forTextualWriters());
         // now parse it using IonLoader and compare
         IonDatagram loadedDatagram = ion.newLoader().load(m.writeValueAsString(new MyBean()));
         assertEquals(expectedMyBean, loadedDatagram);
@@ -106,7 +109,9 @@ public class DataBindWriteTest {
     @Test
     public void testWriteBasicTypes() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper(new IonFactory(ion));
+        IonObjectMapper m = new IonObjectMapper(IonFactory.builderForTextualWriters()
+                .withSystem(ion)
+                .build());
 
         assertEquals(ion.newString("foo"), m.writeValueAsIonValue("foo"));
         assertEquals(ion.newBool(true), m.writeValueAsIonValue(true));
@@ -117,8 +122,7 @@ public class DataBindWriteTest {
     @Test
     public void testIntArrayWriteText() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper();
-        m.setCreateBinaryWriters(false);
+        IonObjectMapper m = new IonObjectMapper(IonFactory.forTextualWriters());
         IonDatagram loadedDatagram = ion.newLoader().load(m.writeValueAsString(new int[] { 1, 2, 3 } ));
         assertEquals(expectedArray, loadedDatagram);
     }
@@ -136,8 +140,7 @@ public class DataBindWriteTest {
 
     private byte[] _writeAsBytes(Object ob) throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
-        m.setCreateBinaryWriters(true);
+        IonObjectMapper m = new IonObjectMapper(IonFactory.forBinaryWriters());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         m.writeValue(out, ob);
         return out.toByteArray();

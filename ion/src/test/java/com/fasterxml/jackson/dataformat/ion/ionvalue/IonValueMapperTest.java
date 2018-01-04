@@ -14,25 +14,24 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+
 import org.junit.Test;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.databind.*;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
+import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 
@@ -42,14 +41,14 @@ import software.amazon.ion.IonValue;
 import software.amazon.ion.Timestamp;
 import software.amazon.ion.system.IonSystemBuilder;
 
-/**
- * Test of the {@link IonValueMapper} parser.
- */
 @SuppressWarnings("deprecation")
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
-    private final IonValueMapper ionValueMapper = new IonValueMapper(ionSystem,
-            PropertyNamingStrategy.SNAKE_CASE);
+    private final IonObjectMapper ionValueMapper = new IonObjectMapper(
+            IonFactory.builderForTextualWriters().withSystem(ionSystem).build());
+    {
+        ionValueMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+    }
 
     enum ReturnCode {
         Success,
@@ -67,34 +66,6 @@ public class IonValueMapperTest {
         public Timestamp someTime;
     }
 
-    @Test
-    public void testNull() throws Exception {
-        assertNull(ionValueMapper.parse(null, TestPojo1.class));
-        assertNull(ionValueMapper.serialize(null));
-    }
-
-    @Test
-    public void testPojo1() throws Exception {
-        String value = "{" +
-                "my_string:\"yes\"," +
-                "my_symbol:yes," +
-                "does_this_work:false," +
-                "some_other_name:5," +
-                "im_an_enum:Success," +
-                "some_time:2010-01-01T06:00:00Z" +
-                "}";
-
-        TestPojo1 t = ionValueMapper.parse(ionSystem.singleValue(value), TestPojo1.class);
-        assertEquals("yes", t.myString);
-        assertEquals("yes", t.mySymbol);
-        assertEquals(false, t.doesThisWork);
-        assertEquals(5, t.iHaveSomeOtherName);
-        assertEquals(ReturnCode.Success, t.imAnEnum);
-        assertEquals(Timestamp.valueOf("2010-01-01T06:00:00Z"), t.someTime);
-
-        assertRoundTrip(value, TestPojo1.class);
-    }
-
     public static class SexpWrapper {
         IonSexp sexp;
 
@@ -106,27 +77,10 @@ public class IonValueMapperTest {
             return sexp;
         }
     }
-
     public static class TestPojo2 {
         public IonValue rawValue;
         public IonSexp rawSexp;
         public SexpWrapper wrappedSexp;
-    }
-
-    @Test
-    public void testPojo2() throws Exception {
-        String value = "{" +
-                "raw_value:{this:that}," +
-                "raw_sexp:(this that)," +
-                "wrapped_sexp:{sexp:(other)}," +
-                "}";
-
-        TestPojo2 t = ionValueMapper.parse(ionSystem.singleValue(value), TestPojo2.class);
-        assertEquals(ionSystem.singleValue("{this:that}"), t.rawValue);
-        assertEquals(ionSystem.singleValue("(this that)"), t.rawSexp);
-        assertEquals(ionSystem.singleValue("(other)"), t.wrappedSexp.sexp);
-
-        assertRoundTrip(value, TestPojo2.class);
     }
 
     /**
@@ -149,6 +103,68 @@ public class IonValueMapperTest {
         }
     }
 
+    public static class TestPojo4 {
+        public String number;
+    }
+
+    public static class TestPojo5 {
+        public String number;
+        public List<IonSexp> value;
+    }
+
+    /*
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
+     */
+    
+    @Test
+    public void testNull() throws Exception {
+        assertNull(ionValueMapper.readValue((IonValue) null, TestPojo1.class));
+
+        // 04-Jan-2017, tatu: Bit of incompatiblity wrt 2.x handling: should this result in
+        //   Java `null`, or Ion null marker? For now, choose latter
+//        assertNull(ionValueMapper.writeValueAsIonValue(null));
+    }
+
+    @Test
+    public void testPojo1() throws Exception {
+        String value = "{" +
+                "my_string:\"yes\"," +
+                "my_symbol:yes," +
+                "does_this_work:false," +
+                "some_other_name:5," +
+                "im_an_enum:Success," +
+                "some_time:2010-01-01T06:00:00Z" +
+                "}";
+
+        TestPojo1 t = ionValueMapper.readValue(ionSystem.singleValue(value), TestPojo1.class);
+        assertEquals("yes", t.myString);
+        assertEquals("yes", t.mySymbol);
+        assertEquals(false, t.doesThisWork);
+        assertEquals(5, t.iHaveSomeOtherName);
+        assertEquals(ReturnCode.Success, t.imAnEnum);
+        assertEquals(Timestamp.valueOf("2010-01-01T06:00:00Z"), t.someTime);
+
+        assertRoundTrip(value, TestPojo1.class);
+    }
+
+    @Test
+    public void testPojo2() throws Exception {
+        String value = "{" +
+                "raw_value:{this:that}," +
+                "raw_sexp:(this that)," +
+                "wrapped_sexp:{sexp:(other)}," +
+                "}";
+
+        TestPojo2 t = ionValueMapper.readValue(ionSystem.singleValue(value), TestPojo2.class);
+        assertEquals(ionSystem.singleValue("{this:that}"), t.rawValue);
+        assertEquals(ionSystem.singleValue("(this that)"), t.rawSexp);
+        assertEquals(ionSystem.singleValue("(other)"), t.wrappedSexp.sexp);
+
+        assertRoundTrip(value, TestPojo2.class);
+    }
+
     @Test
     public void testPojo3WithOpenContent() throws Exception {
         String value = "{" +
@@ -157,16 +173,12 @@ public class IonValueMapperTest {
                 "another_random_struct:{yikes:scared}," +
                 "}";
 
-        TestPojo3 t = ionValueMapper.parse(ionSystem.singleValue(value), TestPojo3.class);
+        TestPojo3 t = ionValueMapper.readValue(ionSystem.singleValue(value), TestPojo3.class);
         assertEquals(1, t.expected);
         assertEquals(ionSystem.singleValue("(boo!)"), t.any().get("something_unexpected"));
         assertEquals(ionSystem.singleValue("{yikes:scared}"), t.any().get("another_random_struct"));
 
         assertRoundTrip(value, TestPojo3.class);
-    }
-
-    public static class TestPojo4 {
-        public String number;
     }
 
     @Test
@@ -179,12 +191,6 @@ public class IonValueMapperTest {
         assertNotNull(test);
         assertNotNull(test.number);
         assertEquals("Random", test.number);
-    }
-
-
-    public static class TestPojo5 {
-        public String number;
-        public List<IonSexp> value;
     }
 
     @Test
@@ -204,8 +210,8 @@ public class IonValueMapperTest {
 
     private void assertRoundTrip(String ion, Class<?> clazz) throws IOException {
         IonValue expected = ionSystem.singleValue(ion);
-        Object o = ionValueMapper.parse(expected, clazz);
-        IonValue actual = ionValueMapper.serialize(o);
+        Object o = ionValueMapper.readValue(expected, clazz);
+        IonValue actual = ionValueMapper.writeValueAsIonValue(o);
         assertEquals(expected, actual);
     }
 }

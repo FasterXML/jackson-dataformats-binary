@@ -93,6 +93,40 @@ public class DataBindRoundtripTest
         public String getValue() { return value; }
     }
     
+    enum RoundTrippers {
+        BINARY {
+            @Override
+            Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException {
+//                m.setCreateBinaryWriters(true);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                m.writeValue(out, bean);
+                byte[] data = out.toByteArray();
+                return m.readValue(data, 0, data.length, Bean.class);
+            }
+        },
+        TEXT {
+            @Override
+            Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException {
+//                m.setCreateBinaryWriters(false);
+                String str = m.writeValueAsString(bean);
+                return m.readValue(str, Bean.class);
+            }
+        },
+        ION {
+            @Override
+            Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException {
+                return m.readValue(m.writeValueAsIonValue(bean), Bean.class);
+            }
+        };
+        abstract Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException;
+    }
+
+    /*
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
+     */
+    
     @Test
     public void testSimple() throws IOException
     {
@@ -106,7 +140,7 @@ public class DataBindRoundtripTest
                "testSymbol",
                TestEnum.B,
                BigInteger.valueOf(Integer.MAX_VALUE + 42L));
-        doTests(bean, new IonObjectMapper());
+        doTests(bean);
     }
     
     @Test
@@ -114,36 +148,20 @@ public class DataBindRoundtripTest
     {
         Bean bean = new Bean();
         bean.bigInt = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.TEN);
-        IonObjectMapper mapper = new IonObjectMapper();
-        doTests(bean, mapper);
+        doTests(bean);
     }
     @Test
     public void testSmallBigInt() throws IOException
     {
         Bean bean = new Bean();
         bean.bigInt = BigInteger.valueOf(42);
-        IonObjectMapper mapper = new IonObjectMapper();
-        doTests(bean, mapper);
+        doTests(bean);
     }
     
     @Test
     public void testNullFields() throws IOException
     {
-        doTests(new Bean(), new IonObjectMapper());
-    }
-    
-    private void doTests(Bean bean, IonObjectMapper mapper) throws IOException
-    {
-        for (RoundTrippers rt : RoundTrippers.values()) {
-            try
-            {
-                _testRoundTrip(bean, rt, mapper);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Failure during RoundTrippers."+rt.name(), e);
-            }
-        }
+        doTests(new Bean());
     }
 
     @SuppressWarnings("rawtypes")
@@ -178,33 +196,21 @@ public class DataBindRoundtripTest
         assertEquals("yellow",subbean.getValue());
         
     }
-    
-    enum RoundTrippers {
-        BINARY {
-            @Override
-            Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException {
-                m.setCreateBinaryWriters(true);
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                m.writeValue(out, bean);
-                byte[] data = out.toByteArray();
-                return m.readValue(data, 0, data.length, Bean.class);
+
+    private void doTests(Bean bean) throws IOException
+    {
+        for (RoundTrippers rt : RoundTrippers.values()) {
+            IonFactory f = (rt == RoundTrippers.BINARY)
+                    ? IonFactory.builderForBinaryWriters().build()
+                    : IonFactory.builderForTextualWriters().build()
+            ;
+            IonObjectMapper mapper = new IonObjectMapper(f);
+            try {
+                _testRoundTrip(bean, rt, mapper);
+            } catch (Exception e) {
+                throw new RuntimeException("Failure during RoundTrippers."+rt.name(), e);
             }
-        },
-        TEXT {
-            @Override
-            Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException {
-                m.setCreateBinaryWriters(false);
-                String str = m.writeValueAsString(bean);
-                return m.readValue(str, Bean.class);
-            }
-        },
-        ION {
-            @Override
-            Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException {
-                return m.readValue(m.writeValueAsIonValue(bean), Bean.class);
-            }
-        };
-        abstract Bean roundTrip(IonObjectMapper m, Bean bean) throws IOException;
+        }
     }
 
     private void _testRoundTrip(Bean bean, RoundTrippers rt, IonObjectMapper m) throws IOException

@@ -39,8 +39,7 @@ public class SimpleWriteTest
     @Test
     public void testSimpleStructWriteText() throws Exception
     {
-        IonFactory f = new IonFactory();
-        f.setCreateBinaryWriters(false);
+        IonFactory f = IonFactory.builderForTextualWriters().build();
         StringWriter sw = new StringWriter();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), sw);
         _writeSimple(gen);
@@ -52,8 +51,7 @@ public class SimpleWriteTest
     @Test
     public void testSimpleStructWriteBinary() throws Exception
     {
-        IonFactory f = new IonFactory();
-        f.setCreateBinaryWriters(true);
+        IonFactory f = IonFactory.builderForBinaryWriters().build();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), bos);
         _writeSimple(gen);
@@ -70,8 +68,7 @@ public class SimpleWriteTest
     @Test
     public void testSimpleStructWriteTextViaOutputStream() throws Exception
     {
-        IonFactory f = new IonFactory();
-        f.setCreateBinaryWriters(false);
+        IonFactory f = IonFactory.builderForTextualWriters().build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         _writeSimple(gen);

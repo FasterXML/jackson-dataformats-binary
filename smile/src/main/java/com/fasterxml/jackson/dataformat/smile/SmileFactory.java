@@ -68,12 +68,12 @@ public class SmileFactory
     /**
      * Bitmask for {@link SmileParser.Feature}s enabled
      */
-    protected int _formatParserFeatures;
+    protected final int _formatParserFeatures;
 
     /**
      * Bitmask for {@link SmileGenerator.Feature}s enabled
      */
-    protected int _formatGeneratorFeatures;
+    protected final int _formatGeneratorFeatures;
 
     /*
     /**********************************************************

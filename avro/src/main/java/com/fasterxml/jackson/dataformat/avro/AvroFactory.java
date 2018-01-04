@@ -39,9 +39,9 @@ public class AvroFactory
     /**********************************************************
      */
 
-    protected int _formatParserFeatures;
+    protected final int _formatParserFeatures;
 
-    protected int _formatGeneratorFeatures;
+    protected final int _formatGeneratorFeatures;
     
     /*
     /**********************************************************
@@ -172,12 +172,6 @@ public class AvroFactory
     public Class<AvroGenerator.Feature> getFormatWriteFeatureType() {
         return AvroGenerator.Feature.class;
     }
-
-    @Deprecated // since 3.0
-    public AvroFactory enable(AvroGenerator.Feature f) {
-        _formatGeneratorFeatures |= f.getMask();
-        return this;
-    }    
 
     /*
     /**********************************************************

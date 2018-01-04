@@ -38,7 +38,6 @@ import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeResolverBuilder;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.MultipleTypeIdResolver;
@@ -48,8 +47,122 @@ import software.amazon.ion.IonType;
 import software.amazon.ion.IonValue;
 import software.amazon.ion.system.IonSystemBuilder;
 
-public class PolymorphicRoundtripTest {
+public class PolymorphicRoundtripTest
+{
+    static class Bean {
+        public String field;
+        public ChildBean child;
 
+        public Bean() {
+        }
+
+        public Bean(String field, ChildBean child) {
+            this.field = field;
+            this.child = child;
+        }
+    }
+
+    @JsonTypeResolver(IonAnnotationTypeResolverBuilder.class)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class ChildBean {
+        public String someField;
+
+        public ChildBean() {
+        }
+
+        public ChildBean(String someField) {
+            this.someField = someField;
+        }
+    }
+
+    static class ChildBeanSub extends ChildBean {
+        public String extraField;
+        public java.util.Date uDate;
+        public java.sql.Date sDate;
+        public IonValue dynamicData;
+        
+        public ChildBeanSub() {
+        }
+
+        public ChildBeanSub(String someField, String extraField) {
+            super(someField);
+            this.extraField = extraField;
+        }
+        
+        public ChildBeanSub(String someField, String extraField, java.util.Date uDate, java.sql.Date sDate, 
+                IonValue dynamicData) {
+            super(someField);
+            this.extraField = extraField;
+            this.uDate = uDate;
+            this.sDate = sDate;
+            this.dynamicData = dynamicData;
+        }
+    }
+
+    class IonAnnotationModule extends SimpleModule {
+          private static final long serialVersionUID = 1L;
+
+          IonAnnotationModule() {
+            super("IonAnnotationMod", Version.unknownVersion());
+        }
+
+        @Override
+        public void setupModule(SetupContext context) {
+            IonAnnotationIntrospector introspector = new ClassNameIonAnnotationIntrospector();
+            context.appendAnnotationIntrospector(introspector);
+        }
+    }
+
+    // For testing, use Jackson's classname TypeIdResolver
+    class ClassNameIonAnnotationIntrospector extends IonAnnotationIntrospector {
+          private static final long serialVersionUID = 1L;
+
+          ClassNameIonAnnotationIntrospector() {
+            super(resolveAllTypes);
+        }
+
+        @Override
+        protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType) {
+            if (null != preferredTypeId) {
+                return new MultipleClassNameIdResolver(baseType, config.getTypeFactory());
+            } else {
+                return new ClassNameIdResolver(baseType, config.getTypeFactory());
+            }
+        }
+    }
+
+    // Extends Jackson's ClassNameIdResolver to add superclass names, recursively
+    class MultipleClassNameIdResolver extends ClassNameIdResolver implements MultipleTypeIdResolver {
+
+        MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory) {
+            super(baseType, typeFactory);
+        }
+
+        @Override
+        public String[] idsFromValue(Object value) {
+            List<String> ids = new ArrayList<String>();
+            Class<?> cls = value.getClass();
+            while (null != cls) {
+                ids.add(super.idFromValueAndType(value, cls));
+                cls = cls.getSuperclass();
+            }
+            return ids.toArray(new String[0]);
+        }
+
+        @Override
+        public String selectId(String[] ids) {
+            if (ids.length == 0) {
+                return null;
+            }
+            for (String id : ids) {
+                if (preferredTypeId.equals(id)) {
+                    return preferredTypeId;
+                }
+            }
+            return ids[0];
+        }
+    }
+    
     /**
      * Because of the method of configuring stuff Jackson, the alternative to making these (ugly) member variables is
      * to make them arguments to the IonAnnotationModule's construction, where they would then get passed through as
@@ -66,6 +179,12 @@ public class PolymorphicRoundtripTest {
         resolveAllTypes = false;
         preferredTypeId = null;
     }
+
+    /*
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
+     */
 
     @Test
     public void testSimple() throws IOException {
@@ -205,136 +324,4 @@ public class PolymorphicRoundtripTest {
         Assert.assertEquals("Date result not the same as serialized value.", uDate, deserializedSub.uDate);
         Assert.assertEquals("Date result not the same as serialized value.", sDate, deserializedSub.sDate);        
     }
-    
-    @Test
-    public void testPolymorphicTypeWithIonValue() throws IOException{
-        resolveAllTypes = true;
-        IonValue dynamicData = ionSystem.newString("dynamic");
-        Bean original = new Bean("parent_field", 
-                new ChildBeanSub("child_field", "extra_field", null, null, dynamicData));
-        
-        IonObjectMapper mapper = new IonValueMapper(ionSystem);
-        mapper.registerModule(new IonAnnotationModule());
-        
-        // roundtrip
-        String serialized = mapper.writeValueAsString(original);
-        Bean deserialized = mapper.readValue(serialized, Bean.class);
-        ChildBeanSub deserializedSub = (ChildBeanSub)deserialized.child;
-        Assert.assertEquals("Dynamic data not the same as serialized IonValue.", dynamicData, deserializedSub.dynamicData);
-    }
-
-    static class Bean {
-        public String field;
-        public ChildBean child;
-
-        public Bean() {
-        }
-
-        public Bean(String field, ChildBean child) {
-            this.field = field;
-            this.child = child;
-        }
-    }
-
-    @JsonTypeResolver(IonAnnotationTypeResolverBuilder.class)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class ChildBean {
-        public String someField;
-
-        public ChildBean() {
-        }
-
-        public ChildBean(String someField) {
-            this.someField = someField;
-        }
-    }
-
-    static class ChildBeanSub extends ChildBean {
-        public String extraField;
-        public java.util.Date uDate;
-        public java.sql.Date sDate;
-        public IonValue dynamicData;
-        
-        public ChildBeanSub() {
-        }
-
-        public ChildBeanSub(String someField, String extraField) {
-            super(someField);
-            this.extraField = extraField;
-        }
-        
-        public ChildBeanSub(String someField, String extraField, java.util.Date uDate, java.sql.Date sDate, 
-                IonValue dynamicData) {
-            super(someField);
-            this.extraField = extraField;
-            this.uDate = uDate;
-            this.sDate = sDate;
-            this.dynamicData = dynamicData;
-        }
-    }
-
-    class IonAnnotationModule extends SimpleModule {
-		private static final long serialVersionUID = 1L;
-
-		IonAnnotationModule() {
-            super("IonAnnotationMod", Version.unknownVersion());
-        }
-
-        @Override
-        public void setupModule(SetupContext context) {
-            IonAnnotationIntrospector introspector = new ClassNameIonAnnotationIntrospector();
-            context.appendAnnotationIntrospector(introspector);
-        }
-    }
-
-    // For testing, use Jackson's classname TypeIdResolver
-    class ClassNameIonAnnotationIntrospector extends IonAnnotationIntrospector {
-		private static final long serialVersionUID = 1L;
-
-		ClassNameIonAnnotationIntrospector() {
-            super(resolveAllTypes);
-        }
-
-        @Override
-        protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType) {
-            if (null != preferredTypeId) {
-                return new MultipleClassNameIdResolver(baseType, config.getTypeFactory());
-            } else {
-                return new ClassNameIdResolver(baseType, config.getTypeFactory());
-            }
-        }
-    }
-
-    // Extends Jackson's ClassNameIdResolver to add superclass names, recursively
-    class MultipleClassNameIdResolver extends ClassNameIdResolver implements MultipleTypeIdResolver {
-
-        MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory) {
-            super(baseType, typeFactory);
-        }
-
-        @Override
-        public String[] idsFromValue(Object value) {
-            List<String> ids = new ArrayList<String>();
-            Class<?> cls = value.getClass();
-            while (null != cls) {
-                ids.add(super.idFromValueAndType(value, cls));
-                cls = cls.getSuperclass();
-            }
-            return ids.toArray(new String[0]);
-        }
-
-        @Override
-        public String selectId(String[] ids) {
-            if (ids.length == 0) {
-                return null;
-            }
-            for (String id : ids) {
-                if (preferredTypeId.equals(id)) {
-                    return preferredTypeId;
-                }
-            }
-            return ids[0];
-        }
-    }
-
 }
