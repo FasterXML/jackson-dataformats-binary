@@ -110,6 +110,8 @@ public class CBORFactory
      */
     protected CBORFactory(CBORFactoryBuilder b) {
         super(b);
+        _formatParserFeatures = b.formatParserFeaturesMask();
+        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
 
     @Override
@@ -189,87 +191,11 @@ public class CBORFactory
         return false; // no (mandatory) FormatSchema for cbor
     }
 
-    /*
-    /**********************************************************
-    /* Configuration, parser settings
-    /**********************************************************
-     */
-
-    /**
-     * Method for enabling or disabling specified parser feature
-     * (check {@link CBORParser.Feature} for list of features)
-     */
-    public final CBORFactory configure(CBORParser.Feature f, boolean state)
-    {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-    /**
-     * Method for enabling specified parser feature
-     * (check {@link CBORParser.Feature} for list of features)
-     */
-    public CBORFactory enable(CBORParser.Feature f) {
-        _formatParserFeatures |= f.getMask();
-        return this;
-    }
-
-    /**
-     * Method for disabling specified parser features
-     * (check {@link CBORParser.Feature} for list of features)
-     */
-    public CBORFactory disable(CBORParser.Feature f) {
-        _formatParserFeatures &= ~f.getMask();
-        return this;
-    }
-
     /**
      * Checked whether specified parser feature is enabled.
      */
     public final boolean isEnabled(CBORParser.Feature f) {
         return (_formatParserFeatures & f.getMask()) != 0;
-    }
-
-    /*
-    /**********************************************************
-    /* Configuration, generator settings
-    /**********************************************************
-     */
-
-    /**
-     * Method for enabling or disabling specified generator feature
-     * (check {@link CBORGenerator.Feature} for list of features)
-     */
-    public final CBORFactory configure(CBORGenerator.Feature f, boolean state) {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-
-    /**
-     * Method for enabling specified generator features
-     * (check {@link CBORGenerator.Feature} for list of features)
-     */
-    public CBORFactory enable(CBORGenerator.Feature f) {
-        _formatGeneratorFeatures |= f.getMask();
-        return this;
-    }
-
-    /**
-     * Method for disabling specified generator feature
-     * (check {@link CBORGenerator.Feature} for list of features)
-     */
-    public CBORFactory disable(CBORGenerator.Feature f) {
-        _formatGeneratorFeatures &= ~f.getMask();
-        return this;
     }
 
     /**

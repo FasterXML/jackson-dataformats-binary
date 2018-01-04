@@ -45,15 +45,15 @@ public class GeneratorInteropTest extends CBORTestBase
             CBORConstants.BYTE_TRUE
         });
 
-        f.enable(CBORGenerator.Feature.WRITE_TYPE_HEADER);
+        f = f.rebuild()
+                .with(CBORGenerator.Feature.WRITE_TYPE_HEADER)
+                .build();
         // but with auto-write
         out = new ByteArrayOutputStream();
         gen = (CBORGenerator) f.createGenerator(ObjectWriteContext.empty(), out);
         // First, without feature, we get just a single byte doc
         gen.writeBoolean(true);
         gen.close();
-
-        
         
         _verifyBytes(out.toByteArray(), TYPE_DESC_AND_TRUE);
     }
