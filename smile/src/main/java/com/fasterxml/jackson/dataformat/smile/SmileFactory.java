@@ -65,8 +65,15 @@ public class SmileFactory
     /**********************************************************
      */
 
-    protected int _smileParserFeatures;
-    protected int _smileGeneratorFeatures;
+    /**
+     * Bitmask for {@link SmileParser.Feature}s enabled
+     */
+    protected int _formatParserFeatures;
+
+    /**
+     * Bitmask for {@link SmileGenerator.Feature}s enabled
+     */
+    protected int _formatGeneratorFeatures;
 
     /*
     /**********************************************************
@@ -97,15 +104,15 @@ public class SmileFactory
      * factory instance.
      */
     public SmileFactory() {
-        _smileParserFeatures = DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
-        _smileGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
+        _formatParserFeatures = DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
+        _formatGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
     }
 
     public SmileFactory(SmileFactory src)
     {
         super(src);
-        _smileParserFeatures = src._smileParserFeatures;
-        _smileGeneratorFeatures = src._smileGeneratorFeatures;
+        _formatParserFeatures = src._formatParserFeatures;
+        _formatGeneratorFeatures = src._formatGeneratorFeatures;
     }
 
     /**
@@ -115,6 +122,8 @@ public class SmileFactory
      */
     protected SmileFactory(SmileFactoryBuilder b) {
         super(b);
+        _formatParserFeatures = b.formatParserFeaturesMask();
+        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
 
     @Override
@@ -175,6 +184,20 @@ public class SmileFactory
         return SmileGenerator.Feature.class;
     }
 
+    /**
+     * Check whether specified generator feature is enabled.
+     */
+    public final boolean isEnabled(SmileGenerator.Feature f) {
+        return (_formatGeneratorFeatures & f.getMask()) != 0;
+    }
+
+    /**
+     * Checked whether specified parser feature is enabled.
+     */
+    public final boolean isEnabled(SmileParser.Feature f) {
+        return (_formatParserFeatures & f.getMask()) != 0;
+    }
+
     /*
     /**********************************************************
     /* Format support
@@ -190,98 +213,6 @@ public class SmileFactory
     public boolean canUseSchema(FormatSchema schema) {
         return false;
     }
-    
-    /*
-    /**********************************************************
-    /* Configuration, parser settings
-    /**********************************************************
-     */
-
-    /**
-     * Method for enabling or disabling specified parser feature
-     * (check {@link SmileParser.Feature} for list of features)
-     */
-    public final SmileFactory configure(SmileParser.Feature f, boolean state)
-    {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-    /**
-     * Method for enabling specified parser feature
-     * (check {@link SmileParser.Feature} for list of features)
-     */
-    public SmileFactory enable(SmileParser.Feature f) {
-        _smileParserFeatures |= f.getMask();
-        return this;
-    }
-
-    /**
-     * Method for disabling specified parser features
-     * (check {@link SmileParser.Feature} for list of features)
-     */
-    public SmileFactory disable(SmileParser.Feature f) {
-        _smileParserFeatures &= ~f.getMask();
-        return this;
-    }
-
-    /**
-     * Checked whether specified parser feature is enabled.
-     */
-    public final boolean isEnabled(SmileParser.Feature f) {
-        return (_smileParserFeatures & f.getMask()) != 0;
-    }
-
-    /*
-    /**********************************************************
-    /* Configuration, generator settings
-    /**********************************************************
-     */
-
-    /**
-     * Method for enabling or disabling specified generator feature
-     * (check {@link SmileGenerator.Feature} for list of features)
-     *
-     * @since 1.2
-     */
-    public final SmileFactory configure(SmileGenerator.Feature f, boolean state) {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-
-    /**
-     * Method for enabling specified generator features
-     * (check {@link SmileGenerator.Feature} for list of features)
-     */
-    public SmileFactory enable(SmileGenerator.Feature f) {
-        _smileGeneratorFeatures |= f.getMask();
-        return this;
-    }
-
-    /**
-     * Method for disabling specified generator feature
-     * (check {@link SmileGenerator.Feature} for list of features)
-     */
-    public SmileFactory disable(SmileGenerator.Feature f) {
-        _smileGeneratorFeatures &= ~f.getMask();
-        return this;
-    }
-
-    /**
-     * Check whether specified generator feature is enabled.
-     */
-    public final boolean isEnabled(SmileGenerator.Feature f) {
-        return (_smileGeneratorFeatures & f.getMask()) != 0;
-    }
 
     /*
     /**********************************************************
@@ -296,7 +227,7 @@ public class SmileFactory
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
                 readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_smileParserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 can);
     }
 
@@ -316,7 +247,7 @@ public class SmileFactory
         return new SmileParserBootstrapper(ioCtxt, in)
             .constructParser(readCtxt, _factoryFeatures,
                     readCtxt.getParserFeatures(_parserFeatures),
-                    readCtxt.getFormatReadFeatures(_smileParserFeatures),
+                    readCtxt.getFormatReadFeatures(_formatParserFeatures),
                     _byteSymbolCanonicalizer);
     }
 
@@ -327,7 +258,7 @@ public class SmileFactory
         return new SmileParserBootstrapper(ioCtxt, data, offset, len)
             .constructParser(readCtxt, _factoryFeatures,
                 readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_smileParserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 _byteSymbolCanonicalizer);
     }
 
@@ -348,7 +279,7 @@ public class SmileFactory
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out) throws IOException
     {
-        int smileFeatures = writeCtxt.getFormatWriteFeatures(_smileGeneratorFeatures);
+        int smileFeatures = writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures);
         /* One sanity check: MUST write header if shared string values setting is enabled,
          * or quoting of binary data disabled.
          * But should we force writing, or throw exception, if settings are in conflict?

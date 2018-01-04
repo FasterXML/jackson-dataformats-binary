@@ -35,8 +35,9 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     {
         // Need to handle this in more detail to ensure freeze/thaw'd instances
         // are used
-        SmileFactory f0 = new SmileFactory();
-        f0.enable(SmileGenerator.Feature.WRITE_HEADER);
+        SmileFactory f0 = SmileFactory.builder()
+                .with(SmileGenerator.Feature.WRITE_HEADER)
+                .build();
         ObjectMapper m = new ObjectMapper(f0);
         byte[] doc = _smileDoc(m, SIMPLE_DOC_AS_JSON, true);
         assertNotNull(doc);

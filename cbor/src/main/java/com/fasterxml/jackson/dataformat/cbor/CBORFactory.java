@@ -59,8 +59,8 @@ public class CBORFactory
     /**********************************************************
      */
 
-    protected int _formatParserFeatures;
-    protected int _formatGeneratorFeatures;
+    protected final int _formatParserFeatures;
+    protected final int _formatGeneratorFeatures;
 
     /*
     /**********************************************************
@@ -128,8 +128,7 @@ public class CBORFactory
     }
 
     @Override
-    public CBORFactory copy()
-    {
+    public CBORFactory copy() {
         return new CBORFactory(this);
     }
 

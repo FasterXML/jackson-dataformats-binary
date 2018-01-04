@@ -145,11 +145,12 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         JsonFactory jf = new JsonFactory();
         JsonParser jp = jf.createParser(ObjectReadContext.empty(), json);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileFactory sf = new SmileFactory();
 
-        sf.configure(SmileGenerator.Feature.WRITE_HEADER, true);
-        sf.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES,true);
-        sf.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES,true);
+        SmileFactory sf = SmileFactory.builder()
+            .with(SmileGenerator.Feature.WRITE_HEADER)
+            .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+            .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .build();
         JsonGenerator jg = sf.createGenerator(ObjectWriteContext.empty(), out, null);
 
         while (jp.nextToken() != null) {
@@ -205,9 +206,9 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         final String FIELD_NAME = "dossier.domaine.supportsDeclaratifsForES.SupportDeclaratif.reference";
         final String VALUE = "11111";
         
-        SmileFactory factory = new SmileFactory();
-        factory.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames);
-
+        SmileFactory factory = SmileFactory.builder()
+                .set(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames)
+                .build();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         JsonGenerator gen = factory.createGenerator(ObjectWriteContext.empty(), os);
         gen.writeStartObject();

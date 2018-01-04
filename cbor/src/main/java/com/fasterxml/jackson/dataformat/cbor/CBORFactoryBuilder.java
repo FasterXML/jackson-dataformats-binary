@@ -72,6 +72,10 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         return _this();
     }
 
+    public CBORFactoryBuilder set(CBORParser.Feature f, boolean state) {
+        return state ? with(f) : without(f);
+    }
+
     // // // Generator features
 
     public CBORFactoryBuilder with(CBORGenerator.Feature f) {
@@ -98,6 +102,10 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
             _formatGeneratorFeatures &= ~f.getMask();
         }
         return _this();
+    }
+
+    public CBORFactoryBuilder set(CBORGenerator.Feature f, boolean state) {
+        return state ? with(f) : without(f);
     }
     
     // // // Accessors

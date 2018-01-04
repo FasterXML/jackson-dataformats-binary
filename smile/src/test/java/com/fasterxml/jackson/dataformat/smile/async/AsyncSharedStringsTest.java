@@ -185,9 +185,6 @@ public class AsyncSharedStringsTest
 
     public void testSharedStringsMixed() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-        
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = _smileWriter().with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
@@ -307,8 +304,9 @@ public class AsyncSharedStringsTest
 
     public void testDataBindingAndShared() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
+        SmileFactory f = SmileFactory.builder()
+            .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .build();
         MediaItem item = new MediaItem();
         Content c = new Content();
         c.uri = "g";

@@ -140,9 +140,6 @@ public class ParserSymbolHandlingTest
 
     public void testSharedStringsInArrays() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = MAPPER.writer()
                 .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
@@ -313,8 +310,9 @@ public class ParserSymbolHandlingTest
 
     public void testDataBindingAndShared() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
+        SmileFactory f = SmileFactory.builder()
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .build();
         MediaItem item = new MediaItem();
         Content c = new Content();
         c.uri = "g";
@@ -496,9 +494,11 @@ public class ParserSymbolHandlingTest
     
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, true);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing);
+        SmileFactory f = SmileFactory.builder()
+                .with(SmileGenerator.Feature.WRITE_HEADER)
+                .set(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing)
+                .build();
+
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartArray();

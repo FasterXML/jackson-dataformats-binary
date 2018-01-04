@@ -6,7 +6,6 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
@@ -47,8 +46,9 @@ public class GeneratorBinaryTest extends BaseTestForSmile
     private void _testStreamingBinaryPartly(boolean rawBinary, boolean throttle)
             throws Exception
     {
-        final SmileFactory f = new SmileFactory();
-        f.configure(Feature.ENCODE_BINARY_AS_7BIT, rawBinary);
+        final SmileFactory f = SmileFactory.builder()
+                .set(Feature.ENCODE_BINARY_AS_7BIT, rawBinary)
+                .build();
 
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
         InputStream in;
@@ -88,9 +88,9 @@ public class GeneratorBinaryTest extends BaseTestForSmile
 
     private void _testStreamingBinary(boolean rawBinary, boolean throttle) throws Exception
     {
-        final SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !rawBinary);
-        
+        final SmileFactory f = SmileFactory.builder()
+                .set(Feature.ENCODE_BINARY_AS_7BIT, !rawBinary)
+                .build();
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
         for (int chunkSize : new int[] { 1, 2, 3, 4, 7, 11, 29, 5000 }) {
             JsonGenerator gen;

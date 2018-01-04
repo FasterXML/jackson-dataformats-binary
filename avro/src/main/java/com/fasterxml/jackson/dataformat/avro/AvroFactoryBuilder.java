@@ -73,6 +73,10 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
         return _this();
     }
 
+    public AvroFactoryBuilder set(AvroParser.Feature f, boolean state) {
+        return state ? with(f) : without(f);
+    }
+
     // // // Generator features
 
     public AvroFactoryBuilder with(AvroGenerator.Feature f) {
@@ -99,6 +103,10 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
             _formatGeneratorFeatures &= ~f.getMask();
         }
         return _this();
+    }
+
+    public AvroFactoryBuilder set(AvroGenerator.Feature f, boolean state) {
+        return state ? with(f) : without(f);
     }
 
     // // // Accessors

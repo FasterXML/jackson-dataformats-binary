@@ -175,9 +175,10 @@ public class TestGenerator extends BaseTestForSmile
     public void testObjectWithEmptyKey() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileFactory f = _smileFactory(false, true, false);
-        f.enable(SmileGenerator.Feature.CHECK_SHARED_NAMES);
-        f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        SmileFactory f = _smileFactory(false, true, false).rebuild()
+                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .build();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartObject();
         gen.writeFieldName("foo");
@@ -254,9 +255,10 @@ public class TestGenerator extends BaseTestForSmile
 
     public void testWithMap() throws Exception
     {
-        final SmileFactory smileFactory = new SmileFactory();
-        smileFactory.disable(SmileGenerator.Feature.WRITE_HEADER);
-        smileFactory.disable(SmileParser.Feature.REQUIRE_HEADER);
+        final SmileFactory smileFactory = SmileFactory.builder()
+                .without(SmileGenerator.Feature.WRITE_HEADER)
+                .without(SmileParser.Feature.REQUIRE_HEADER)
+                .build();
         final ObjectMapper smileObjectMapper = new ObjectMapper(smileFactory);
         final HashMap<String, String> data = new HashMap<String,String>();
         data.put("key", "value");
@@ -284,10 +286,11 @@ public class TestGenerator extends BaseTestForSmile
 
     private byte[] writeRepeatedString(boolean shared, String value) throws Exception
     {
-        SmileFactory f = new SmileFactory();
         // need header to enable shared string values
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, true);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, shared);
+        SmileFactory f = SmileFactory.builder()
+                .with(SmileGenerator.Feature.WRITE_HEADER)
+                .set(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, shared)
+                .build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartArray();

@@ -26,8 +26,8 @@ public class FileFormatTest extends AvroTestBase
         empl.emails = new String[] { "bob@aol.com", "bobby@gmail.com" };
         empl.boss = null;
 
-        ObjectMapper mapper = new ObjectMapper(af);
-        af.enable(AvroGenerator.Feature.AVRO_FILE_OUTPUT);
+        ObjectMapper mapper = new ObjectMapper(af.rebuild()
+                .with(AvroGenerator.Feature.AVRO_FILE_OUTPUT).build());
 
         AvroSchema schema = getEmployeeSchema();
         byte[] bytes = mapper.writer(schema).writeValueAsBytes(empl);

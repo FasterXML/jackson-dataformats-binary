@@ -100,23 +100,23 @@ public abstract class BaseTestForSmile
     protected ObjectMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }
-    
+
     protected ObjectMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
         return new ObjectMapper(_smileFactory(requireHeader, writeHeader, writeEndMarker));
     }
-    
+
     protected SmileFactory _smileFactory(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileParser.Feature.REQUIRE_HEADER, requireHeader);
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader);
-        f.configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
-        return f;
+        return SmileFactory.builder()
+                .set(SmileParser.Feature.REQUIRE_HEADER, requireHeader)
+                .set(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
+                .set(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker)
+                .build();
     }
-    
+
     protected byte[] _smileDoc(String json) throws IOException
     {
         return _smileDoc(json, true);

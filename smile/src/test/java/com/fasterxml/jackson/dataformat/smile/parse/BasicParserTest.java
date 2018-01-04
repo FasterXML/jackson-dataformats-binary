@@ -366,6 +366,8 @@ public class BasicParserTest extends BaseTestForSmile
     public void testNameBoundary() throws IOException
     {
         SmileFactory f = _smileFactory(true, true, false);
+        f = f.rebuild().without(SmileGenerator.Feature.CHECK_SHARED_NAMES).build();
+
         // let's create 3 meg docs
         final int LEN = 3 * 1000 * 1000;
         final String FIELD = "field01"; // important: 7 chars
@@ -378,7 +380,6 @@ public class BasicParserTest extends BaseTestForSmile
             }
             
             // force back-refs off, easier to trigger problem
-            f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, false);
             JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), bytes);
             
             int count = 0;
@@ -414,9 +415,10 @@ public class BasicParserTest extends BaseTestForSmile
     public void testCharacters() throws IOException
     {
         // ensure we are using both back-ref types
-        SmileFactory sf = new SmileFactory();
-        sf.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, true);
-        sf.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
+        SmileFactory sf = SmileFactory.builder()
+                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .build();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
         
         JsonGenerator jgen = sf.createGenerator(ObjectWriteContext.empty(), bytes);
