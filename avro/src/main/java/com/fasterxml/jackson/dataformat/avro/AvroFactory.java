@@ -39,9 +39,9 @@ public class AvroFactory
     /**********************************************************
      */
 
-    protected int _avroParserFeatures;
+    protected int _formatParserFeatures;
 
-    protected int _avroGeneratorFeatures;
+    protected int _formatGeneratorFeatures;
     
     /*
     /**********************************************************
@@ -62,8 +62,8 @@ public class AvroFactory
     public AvroFactory()
     {
         super();
-        _avroParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
-        _avroGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
+        _formatParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
+        _formatGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
 
         /* 04-Mar-2013, tatu: Content auto-closing is unfortunately a feature
          *    that works poorly with Avro error reporting, and generally
@@ -77,8 +77,8 @@ public class AvroFactory
     protected AvroFactory(AvroFactory src)
     {
         super(src);
-        _avroParserFeatures = src._avroParserFeatures;
-        _avroGeneratorFeatures = src._avroGeneratorFeatures;
+        _formatParserFeatures = src._formatParserFeatures;
+        _formatGeneratorFeatures = src._formatGeneratorFeatures;
     }
 
     /**
@@ -89,6 +89,8 @@ public class AvroFactory
     protected AvroFactory(AvroFactoryBuilder b)
     {
         super(b);
+        _formatParserFeatures = b.formatParserFeaturesMask();
+        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
 
     @Override
@@ -147,6 +149,20 @@ public class AvroFactory
         return false;
     }
 
+    /**
+     * Checked whether specified parser feature is enabled.
+     */
+    public final boolean isEnabled(AvroParser.Feature f) {
+        return (_formatParserFeatures & f.getMask()) != 0;
+    }
+
+    /**
+     * Check whether specified generator feature is enabled.
+     */
+    public final boolean isEnabled(AvroGenerator.Feature f) {
+        return (_formatGeneratorFeatures & f.getMask()) != 0;
+    }
+
     @Override
     public Class<AvroParser.Feature> getFormatReadFeatureType() {
         return AvroParser.Feature.class;
@@ -157,12 +173,18 @@ public class AvroFactory
         return AvroGenerator.Feature.class;
     }
 
+    @Deprecated // since 3.0
+    public AvroFactory enable(AvroGenerator.Feature f) {
+        _formatGeneratorFeatures |= f.getMask();
+        return this;
+    }    
+
     /*
     /**********************************************************
     /* Data format support
     /**********************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return FORMAT_NAME_AVRO;
@@ -171,96 +193,6 @@ public class AvroFactory
     @Override
     public boolean canUseSchema(FormatSchema schema) {
         return (schema instanceof AvroSchema);
-    }
-
-    /*
-    /**********************************************************
-    /* Configuration, parser settings
-    /**********************************************************
-     */
-
-    /**
-     * Method for enabling or disabling specified parser feature
-     * (check {@link AvroParser.Feature} for list of features)
-     */
-    public final AvroFactory configure(AvroParser.Feature f, boolean state)
-    {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-    /**
-     * Method for enabling specified parser feature
-     * (check {@link AvroParser.Feature} for list of features)
-     */
-    public AvroFactory enable(AvroParser.Feature f) {
-        _avroParserFeatures |= f.getMask();
-        return this;
-    }
-
-    /**
-     * Method for disabling specified parser features
-     * (check {@link AvroParser.Feature} for list of features)
-     */
-    public AvroFactory disable(AvroParser.Feature f) {
-        _avroParserFeatures &= ~f.getMask();
-        return this;
-    }
-
-    /**
-     * Checked whether specified parser feature is enabled.
-     */
-    public final boolean isEnabled(AvroParser.Feature f) {
-        return (_avroParserFeatures & f.getMask()) != 0;
-    }
-
-    /*
-    /**********************************************************
-    /* Configuration, generator settings
-    /**********************************************************
-     */
-
-    /**
-     * Method for enabling or disabling specified generator feature
-     * (check {@link AvroGenerator.Feature} for list of features)
-     */
-    public final AvroFactory configure(AvroGenerator.Feature f, boolean state) {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
-
-    /**
-     * Method for enabling specified generator features
-     * (check {@link AvroGenerator.Feature} for list of features)
-     */
-    public AvroFactory enable(AvroGenerator.Feature f) {
-        _avroGeneratorFeatures |= f.getMask();
-        return this;
-    }
-
-    /**
-     * Method for disabling specified generator feature
-     * (check {@link AvroGenerator.Feature} for list of features)
-     */
-    public AvroFactory disable(AvroGenerator.Feature f) {
-        _avroGeneratorFeatures &= ~f.getMask();
-        return this;
-    }
-
-    /**
-     * Check whether specified generator feature is enabled.
-     */
-    public final boolean isEnabled(AvroGenerator.Feature f) {
-        return (_avroGeneratorFeatures & f.getMask()) != 0;
     }
 
     /*
@@ -280,7 +212,7 @@ public class AvroFactory
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
 //              return new ApacheAvroParserImpl(readCtxt, ioCtext,
                 readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_avroParserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 in);
     }
@@ -292,7 +224,7 @@ public class AvroFactory
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
 //              return new ApacheAvroParserImpl(readCtxt, ioCtext,
                 readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_avroParserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 data, offset, len);
     }
@@ -317,7 +249,7 @@ public class AvroFactory
     {
         return new AvroGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                writeCtxt.getFormatWriteFeatures(_avroGeneratorFeatures),
+                writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures),
                 out,
                 (AvroSchema) writeCtxt.getSchema());
     }

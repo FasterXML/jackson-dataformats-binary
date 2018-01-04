@@ -43,7 +43,7 @@ public class ApacheAvroFactory extends AvroFactory
             InputStream in) throws IOException {
         return new ApacheAvroParserImpl(readCtxt, ioCtxt,
                 readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_avroParserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 in);
     }
@@ -53,7 +53,7 @@ public class ApacheAvroFactory extends AvroFactory
             byte[] data, int offset, int len) throws IOException {
         return new ApacheAvroParserImpl(readCtxt, ioCtxt,
                 readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_avroParserFeatures),
+                readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 data, offset, len);
     }

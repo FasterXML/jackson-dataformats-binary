@@ -42,7 +42,6 @@ public class AvroGenerator extends GeneratorBase
          * NOTE: reader-side will have to be aware of distinction as well, since possible inclusion
          * of this header is not 100% reliably auto-detectable (while header has distinct marker,
          * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
-
          */
         AVRO_FILE_OUTPUT(false)
         ;

@@ -11,13 +11,43 @@ import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
  */
 public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFactoryBuilder>
 {
-    public AvroFactoryBuilder() {
-        super();
+    /*
+    /**********************************************************
+    /* Configuration
+    /**********************************************************
+     */
+
+    /**
+     * Set of {@link FromXmlParser.Feature}s enabled, as bitmask.
+     */
+    protected int _formatParserFeatures;
+
+    /**
+     * Set of {@link ToXmlGenerator.Feature}s enabled, as bitmask.
+     */
+    protected int _formatGeneratorFeatures;
+
+    /*
+    /**********************************************************
+    /* Life cycle
+    /**********************************************************
+     */
+
+    protected AvroFactoryBuilder() {
+        _formatParserFeatures = AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
+        _formatGeneratorFeatures = AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
     }
 
     public AvroFactoryBuilder(AvroFactory base) {
         super(base);
+        _formatParserFeatures = base._formatParserFeatures;
+        _formatGeneratorFeatures = base._formatGeneratorFeatures;
     }
+
+    // // // Accessors
+
+    public int formatParserFeaturesMask() { return _formatParserFeatures; }
+    public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
 
     @Override
     public AvroFactory build() {
