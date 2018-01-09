@@ -28,6 +28,12 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
      */
     protected int _formatGeneratorFeatures;
 
+    /**
+     * Flag that is set if Apache Avro lib's decoder is to be used for decoding;
+     * `false` to use Jackson native Avro decoder.
+     */
+    protected boolean _useApacheLibDecoder;
+
     /*
     /**********************************************************
     /* Life cycle
@@ -35,8 +41,14 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
      */
 
     protected AvroFactoryBuilder() {
+        // default is to use native Jackson Avro decoder
+        this(false);
+    }
+
+    protected AvroFactoryBuilder(boolean useApacheDecoder) {
         _formatParserFeatures = AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
         _formatGeneratorFeatures = AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
+        _useApacheLibDecoder = useApacheDecoder;
     }
 
     public AvroFactoryBuilder(AvroFactory base) {
@@ -45,6 +57,30 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
         _formatGeneratorFeatures = base._formatGeneratorFeatures;
     }
 
+    @Override
+    public AvroFactory build() {
+        // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
+        return new AvroFactory(this);
+    }
+
+    /*
+    /**********************************************************
+    /* Accessors
+    /**********************************************************
+     */
+
+    public int formatParserFeaturesMask() { return _formatParserFeatures; }
+    public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
+
+    public boolean useApacheLibDecoder() { return _useApacheLibDecoder; }
+
+    /*
+    /**********************************************************
+    /* Mutators
+    /**********************************************************
+     */
+    
+    
     // // // Parser features
 
     public AvroFactoryBuilder with(AvroParser.Feature f) {
@@ -107,16 +143,5 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
 
     public AvroFactoryBuilder set(AvroGenerator.Feature f, boolean state) {
         return state ? with(f) : without(f);
-    }
-
-    // // // Accessors
-
-    public int formatParserFeaturesMask() { return _formatParserFeatures; }
-    public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
-
-    @Override
-    public AvroFactory build() {
-        // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
-        return new AvroFactory(this);
     }
 }

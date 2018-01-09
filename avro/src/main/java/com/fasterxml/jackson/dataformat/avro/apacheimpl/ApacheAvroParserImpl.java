@@ -10,11 +10,10 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
-import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 
 /**
- * Implementation class that exposes additional internal API
- * to be used as callbacks by {@link AvroReadContext} implementations.
+ * Parser implementation that uses decoder from Apache Avro lib,
+ * instead of Jackson native Avro decoder.
  */
 public final class ApacheAvroParserImpl extends AvroParserImpl
 {
@@ -75,7 +74,6 @@ public final class ApacheAvroParserImpl extends AvroParserImpl
         _inputPtr = 0;
         _inputEnd = 0;
         _bufferRecyclable = true;
-
         _decoder = ApacheCodecRecycler.decoder(in,
                 Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }

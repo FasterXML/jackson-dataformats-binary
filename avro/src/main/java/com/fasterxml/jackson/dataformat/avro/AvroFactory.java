@@ -5,13 +5,12 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroParserImpl;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
 /**
  * Default {@link TokenStreamFactory} implementation for encoding/decoding Avro
  * content, uses native Jackson encoder/decoder.
- *
- * @see com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory
  */
 public class AvroFactory
     extends BinaryTSFactory
@@ -39,9 +38,21 @@ public class AvroFactory
     /**********************************************************
      */
 
+    /**
+     * Set of {@link AvroParser.Feature}s enabled, as bitmask.
+     */
     protected final int _formatParserFeatures;
 
+    /**
+     * Set of {@link AvroGenerator.Feature}s enabled, as bitmask.
+     */
     protected final int _formatGeneratorFeatures;
+
+    /**
+     * Flag that is set if Apache Avro lib's decoder is to be used for decoding;
+     * `false` to use Jackson native Avro decoder.
+     */
+    protected boolean _useApacheLibDecoder;
     
     /*
     /**********************************************************
@@ -79,6 +90,7 @@ public class AvroFactory
         super(src);
         _formatParserFeatures = src._formatParserFeatures;
         _formatGeneratorFeatures = src._formatGeneratorFeatures;
+        _useApacheLibDecoder = src._useApacheLibDecoder;
     }
 
     /**
@@ -91,6 +103,7 @@ public class AvroFactory
         super(b);
         _formatParserFeatures = b.formatParserFeaturesMask();
         _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
+        _useApacheLibDecoder = b.useApacheLibDecoder();
     }
 
     @Override
@@ -99,13 +112,35 @@ public class AvroFactory
     }
 
     /**
-     * Main factory method to use for constructing {@link AvroFactory} instances with
-     * different configuration.
+     * Main factory method to use for constructing a builder for creating
+     * {@link AvroFactory} instances with different configuration.
+     * Builder is initialized to defaults and this is equivalent to calling
+     * {@link #builderWithNativeDecoder}.
      */
     public static AvroFactoryBuilder builder() {
         return new AvroFactoryBuilder();
     }
 
+    /**
+     * Main factory method to use for constructing a builder for creating
+     * {@link AvroFactory} instances with different configuration,
+     * initialized to use Apache Avro library codec for decoding content
+     * (instead of Jackson native decoder).
+     */
+    public static AvroFactoryBuilder builderWithApacheDecoder() {
+        return new AvroFactoryBuilder(true);
+    }
+
+    /**
+     * Main factory method to use for constructing a builder for creating
+     * {@link AvroFactory} instances with different configuration,
+     * initialized to use Jackson antive codec for decoding content
+     * (instead of Apache Avro library decoder).
+     */
+    public static AvroFactoryBuilder builderWithNativeDecoder() {
+        return new AvroFactoryBuilder(false);
+    }
+    
     @Override
     public AvroFactory copy() {
         return new AvroFactory(this);
@@ -201,10 +236,16 @@ public class AvroFactory
      */
     @Override
     protected AvroParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            InputStream in) throws IOException {
-// !!! 21-Apr-2017, tatu: make configurable
+            InputStream in) throws IOException
+    {
+        if (_useApacheLibDecoder) {
+          return new ApacheAvroParserImpl(readCtxt, ioCtxt,
+                  readCtxt.getParserFeatures(_parserFeatures),
+                  readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                  (AvroSchema) readCtxt.getSchema(),
+                  in);
+        }
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
-//              return new ApacheAvroParserImpl(readCtxt, ioCtext,
                 readCtxt.getParserFeatures(_parserFeatures),
                 readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 (AvroSchema) readCtxt.getSchema(),
@@ -213,10 +254,16 @@ public class AvroFactory
 
     @Override
     protected AvroParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            byte[] data, int offset, int len) throws IOException {
-// !!! 21-Apr-2017, tatu: make configurable
+            byte[] data, int offset, int len) throws IOException
+    {
+        if (_useApacheLibDecoder) {
+            return new ApacheAvroParserImpl(readCtxt, ioCtxt,
+                    readCtxt.getParserFeatures(_parserFeatures),
+                    readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                    (AvroSchema) readCtxt.getSchema(),
+                    data, offset, len);
+        }
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
-//              return new ApacheAvroParserImpl(readCtxt, ioCtext,
                 readCtxt.getParserFeatures(_parserFeatures),
                 readCtxt.getFormatReadFeatures(_formatParserFeatures),
                 (AvroSchema) readCtxt.getSchema(),

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 /**
- * Implementation class that exposes additional internal API
+ * Implementation base class that exposes additional internal API
  * to be used as callbacks by {@link AvroReadContext} implementations.
  */
 public abstract class AvroParserImpl

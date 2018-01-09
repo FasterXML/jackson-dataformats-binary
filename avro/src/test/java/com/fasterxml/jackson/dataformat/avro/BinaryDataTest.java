@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
@@ -26,9 +25,9 @@ public class BinaryDataTest extends AvroTestBase
         public long size;
     }
 
-    private final AvroMapper AVRO_JACKSON_MAPPER =  new AvroMapper(new AvroFactory());
-    private final AvroMapper AVRO_APACHE_MAPPER =  new AvroMapper(new ApacheAvroFactory());
-    
+    private final AvroMapper AVRO_JACKSON_MAPPER = newMapper();
+    private final AvroMapper AVRO_APACHE_MAPPER =  newApacheMapper();
+
     public void testAvroSchemaGenerationWithJackson() throws Exception
     {
         _testAvroSchemaGenerationWithJackson(AVRO_JACKSON_MAPPER);

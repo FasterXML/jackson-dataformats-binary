@@ -10,8 +10,7 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 /**
- * Implementation class that exposes additional internal API
- * to be used as callbacks by {@link AvroReadContext} implementations.
+ * Parser implementation that uses native Jackson avro decoder.
  */
 public final class JacksonAvroParserImpl extends AvroParserImpl
 {

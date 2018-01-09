@@ -289,8 +289,12 @@ public abstract class AvroTestBase extends TestCase
         return _sharedMapper;
     }
 
-    protected AvroMapper newMapper() {
+    protected static AvroMapper newMapper() {
         return new AvroMapper();
+    }
+
+    protected static AvroMapper newApacheMapper() {
+        return new AvroMapper(AvroFactory.builderWithApacheDecoder().build());
     }
     
     protected byte[] toAvro(Employee empl) throws IOException {

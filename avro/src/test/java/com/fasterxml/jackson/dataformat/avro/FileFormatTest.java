@@ -7,15 +7,14 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 
 // for [dataformats-binary#15]
 public class FileFormatTest extends AvroTestBase
 {
     public void testFileFormatOutput() throws Exception
     {
-        _testFileFormatOutput(new AvroFactory());
-        _testFileFormatOutput(new ApacheAvroFactory());
+        _testFileFormatOutput(AvroFactory.builderWithNativeDecoder().build());
+        _testFileFormatOutput(AvroFactory.builderWithApacheDecoder().build());
     }
 
     private void _testFileFormatOutput(AvroFactory af) throws Exception

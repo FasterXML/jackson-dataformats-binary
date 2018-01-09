@@ -12,9 +12,9 @@ import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFactoryBuilder>
 {
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -28,9 +28,9 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
     protected int _formatGeneratorFeatures;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected CBORFactoryBuilder() {
