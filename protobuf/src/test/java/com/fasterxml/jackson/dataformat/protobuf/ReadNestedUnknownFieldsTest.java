@@ -150,8 +150,9 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     // [dataformats-binary#126]
     public void testCheckEndAfterSkip() throws Exception
     {
-        ProtobufMapper mapper = new ProtobufMapper();
-        mapper.enable(JsonParser.Feature.IGNORE_UNDEFINED);
+        ProtobufMapper mapper = new ProtobufMapper(ProtobufFactory.builder()
+                .with(JsonParser.Feature.IGNORE_UNDEFINED)
+                .build());
         ProtobufSchema schema = MAPPER.generateSchemaFor(Outer.class);
         ProtobufSchema schemaV2 = MAPPER.generateSchemaFor(OuterV2.class);
 

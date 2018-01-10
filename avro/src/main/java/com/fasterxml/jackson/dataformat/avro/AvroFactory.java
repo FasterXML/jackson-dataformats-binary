@@ -72,17 +72,11 @@ public class AvroFactory
      */
     public AvroFactory()
     {
-        super();
+        // 09-Jan-2017, tatu: We must actually create and pass builder to be able to change
+        //    one of JsonGenerator.Featuers (See builder for details)
+        super(new AvroFactoryBuilder());
         _formatParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
         _formatGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
-
-        /* 04-Mar-2013, tatu: Content auto-closing is unfortunately a feature
-         *    that works poorly with Avro error reporting, and generally
-         *    manages to replace actual failure with a bogus one when
-         *    missing "END_OBJECT"s (etc) are called. So let's default
-         *    it to disabled, unlike for most JsonFactory sub-types.
-         */
-        disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT);
     }
 
     protected AvroFactory(AvroFactory src)

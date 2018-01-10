@@ -1109,7 +1109,7 @@ public class CBORGenerator extends GeneratorBase
     public void close() throws IOException {
         // First: let's see that we still have buffers...
         if ((_outputBuffer != null)
-                && isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+                && isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT)) {
             while (true) {
                 TokenStreamContext ctxt = getOutputContext();
                 if (ctxt.inArray()) {

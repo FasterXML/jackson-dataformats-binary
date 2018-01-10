@@ -341,12 +341,11 @@ public class ReadSimpleTest extends ProtobufTestBase
     public void testSkipUnknown() throws Exception
     {
         // Important: write Point3, read regular Point
-        ProtobufMapper mapper = new ProtobufMapper();
-
+        ProtobufMapper mapper = new ProtobufMapper(ProtobufFactory.builder()
+                .with(JsonParser.Feature.IGNORE_UNDEFINED).build());
         ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
         ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);
 
-        mapper.enable(JsonParser.Feature.IGNORE_UNDEFINED);
         
         final Point3 input = new Point3(1, 2, 3);
         byte[] stuff = mapper.writerFor(Point3.class)

@@ -333,7 +333,7 @@ public class ProtobufGenerator extends GeneratorBase
     public void close() throws IOException
     {
         super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT)) {
             ProtobufWriteContext ctxt;
             while ((ctxt = _pbContext) != null) {
                 if (ctxt.inArray()) {

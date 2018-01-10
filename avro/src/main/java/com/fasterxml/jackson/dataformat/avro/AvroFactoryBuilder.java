@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
 
@@ -7,6 +8,10 @@ import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
  * {@link com.fasterxml.jackson.core.TokenStreamFactory.TSFBuilder}
  * implementation for constructing {@link AvroFactory}
  * instances.
+ *<p>
+ * Note: one of standard features, {@link com.fasterxml.jackson.core.JsonGenerator.Feature#AUTO_CLOSE_CONTENT},
+ * is disabled by default, as it does not play well with error handling. It may be
+ * forcibly enabled (if there is ever reason to do so), just defaults to {@code false}.
  *
  * @since 3.0
  */
@@ -46,9 +51,17 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     }
 
     protected AvroFactoryBuilder(boolean useApacheDecoder) {
+        super();
         _formatParserFeatures = AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
         _formatGeneratorFeatures = AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
         _useApacheLibDecoder = useApacheDecoder;
+
+        // 04-Mar-2013, tatu: Content auto-closing is unfortunately a feature
+        //    that works poorly with Avro error reporting, and generally
+        //    manages to replace actual failure with a bogus one when
+        //    missing "END_OBJECT"s (etc) are called. So let's default
+        //    it to disabled, unlike for most JsonFactory sub-types.
+        _generatorFeatures &= ~JsonGenerator.Feature.AUTO_CLOSE_CONTENT.getMask();
     }
 
     public AvroFactoryBuilder(AvroFactory base) {

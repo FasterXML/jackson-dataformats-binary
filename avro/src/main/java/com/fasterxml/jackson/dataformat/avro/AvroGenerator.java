@@ -299,7 +299,7 @@ public class AvroGenerator extends GeneratorBase
     public void close() throws IOException
     {
         super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT)) {
             AvroWriteContext ctxt;
             while ((ctxt = _avroContext) != null) {
                 if (ctxt.inArray()) {
