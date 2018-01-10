@@ -150,7 +150,8 @@ public class SimpleGenerationTest extends AvroTestBase
         }
 
         // But should be fine if (and only if!) we enable support for skipping
-        af.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        af = af.rebuild().with(JsonGenerator.Feature.IGNORE_UNKNOWN).build();
+        mapper = new ObjectMapper(af);
         byte[] bytes = mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValueAsBytes(input);
         assertEquals(6, bytes.length);
 

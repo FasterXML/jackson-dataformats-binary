@@ -90,20 +90,21 @@ public class ApacheAvroInteropUtil {
      * implemented here.
      */
     private static final ReflectData PATCHED_AVRO_REFLECT_DATA = new ReflectData() {
-        @SuppressWarnings({"unchecked", "SuspiciousMethodCalls", "rawtypes"})
+        @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
-        protected Schema createSchema(Type type, Map<String, Schema> names) {
-        /* Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String
-         * keys. To persist and look up type variable information, we watch for ParameterizedTypes, TypeVariables, and Classes with
-         * generic superclasses to extract type variable information and store it in the map. This allows full type variable resolution
-         * when building a schema from reflection data.
-         */
+        protected Schema createSchema(Type type, Map<String, Schema> names0) {
+            /* Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String
+             * keys. To persist and look up type variable information, we watch for ParameterizedTypes, TypeVariables, and Classes with
+             * generic superclasses to extract type variable information and store it in the map. This allows full type variable resolution
+             * when building a schema from reflection data.
+             */
+            Map<Object, Schema> names = (Map<Object, Schema>)(Map<?, Schema>) names0;
             if (type instanceof ParameterizedType) {
                 TypeVariable<?>[] genericParameters = ((Class<?>) ((ParameterizedType) type).getRawType()).getTypeParameters();
                 if (genericParameters.length > 0) {
                     Type[] boundParameters = ((ParameterizedType) type).getActualTypeArguments();
                     for (int i = 0; i < boundParameters.length; i++) {
-                        ((Map) names).put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names)));
+                        names.put(genericParameters[i], createSchema(boundParameters[i], new HashMap<String,Schema>(names0)));
                     }
                 }
             }
@@ -115,7 +116,7 @@ public class ApacheAvroInteropUtil {
                 if (genericParameters.length > 0) {
                     Type[] boundParameters = ((ParameterizedType) ((Class<?>) type).getGenericSuperclass()).getActualTypeArguments();
                     for (int i = 0; i < boundParameters.length; i++) {
-                        ((Map) names).put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names)));
+                        names.put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names0)));
                     }
                 }
             }
@@ -127,7 +128,7 @@ public class ApacheAvroInteropUtil {
                 }
                 // someone fed us an unbound type variable, just fall through to the default behavior
             }
-            return super.createSchema(type, names);
+            return super.createSchema(type, names0);
         }
 
         /*
