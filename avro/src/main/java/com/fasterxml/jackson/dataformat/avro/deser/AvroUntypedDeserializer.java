@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.KeyDeserializer;
-import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -25,7 +24,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
  */
 public class AvroUntypedDeserializer
     extends UntypedObjectDeserializer
-    implements ResolvableDeserializer
 {
     private static final long serialVersionUID = 1L;
 
