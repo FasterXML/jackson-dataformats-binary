@@ -67,10 +67,14 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
 
     @Override
     protected JavaType _handleUnknownTypeId(DeserializationContext ctxt, String typeId)
-        throws IOException {
+        throws IOException
+    {
+        // 29-Jan-2018, tatu: No idea why this was added in 2.x.
+        /*
         if (ctxt.hasValueDeserializerFor(_baseType, null)) {
             return _baseType;
         }
+        */
         return super._handleUnknownTypeId(ctxt, typeId);
     }
 }
