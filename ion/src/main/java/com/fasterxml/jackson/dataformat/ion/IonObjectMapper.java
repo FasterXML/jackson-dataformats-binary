@@ -79,7 +79,7 @@ public class IonObjectMapper extends ObjectMapper
 
     @Override
     public IonFactory tokenStreamFactory() {
-        return (IonFactory) _jsonFactory;
+        return (IonFactory) _streamFactory;
     }
 
     /*
