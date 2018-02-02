@@ -147,7 +147,6 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
     public void testUnknownHandlingIgnoreWithHandler() throws Exception
     {
         ObjectMapper mapper = smileMapper();
-        mapper.clearProblemHandlers();
         mapper.addHandler(new MyHandler());
         TestBean result = mapper.readValue(_smileDoc(JSON_UNKNOWN_FIELD), TestBean.class);
         assertNotNull(result);
@@ -163,7 +162,6 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
     public void testUnknownHandlingIgnoreWithHandlerAndObjectReader() throws Exception
     {
         ObjectMapper mapper = smileMapper();
-        mapper.clearProblemHandlers();
         TestBean result = mapper.readerFor(TestBean.class)
         		.withHandler(new MyHandler()).readValue(_smileDoc(JSON_UNKNOWN_FIELD));
         assertNotNull(result);
