@@ -35,7 +35,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
             g1 = _generator(f);            
             g1.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
         } else {
-            f = f.rebuild().with(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION).build();
+            f = f.rebuild().enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION).build();
             g1 = _generator(f);            
         }
         try {
