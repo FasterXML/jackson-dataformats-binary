@@ -9,7 +9,7 @@ import com.fasterxml.jackson.dataformat.smile.*;
 public class RootValuesTest extends AsyncTestBase
 {
     private final SmileFactory F_REQ_HEADERS = SmileFactory.builder()
-            .with(SmileParser.Feature.REQUIRE_HEADER)
+            .enable(SmileParser.Feature.REQUIRE_HEADER)
             .build();
 
     public void testSimpleRootSequence() throws Exception

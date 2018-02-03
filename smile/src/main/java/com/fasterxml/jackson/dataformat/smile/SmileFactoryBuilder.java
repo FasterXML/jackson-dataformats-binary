@@ -46,12 +46,12 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
 
     // // // Parser features
 
-    public SmileFactoryBuilder with(SmileParser.Feature f) {
+    public SmileFactoryBuilder enable(SmileParser.Feature f) {
         _formatParserFeatures |= f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder with(SmileParser.Feature first, SmileParser.Feature... other) {
+    public SmileFactoryBuilder enable(SmileParser.Feature first, SmileParser.Feature... other) {
         _formatParserFeatures |= first.getMask();
         for (SmileParser.Feature f : other) {
             _formatParserFeatures |= f.getMask();
@@ -59,12 +59,12 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
         return _this();
     }
 
-    public SmileFactoryBuilder without(SmileParser.Feature f) {
+    public SmileFactoryBuilder disable(SmileParser.Feature f) {
         _formatParserFeatures &= ~f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder without(SmileParser.Feature first, SmileParser.Feature... other) {
+    public SmileFactoryBuilder disable(SmileParser.Feature first, SmileParser.Feature... other) {
         _formatParserFeatures &= ~first.getMask();
         for (SmileParser.Feature f : other) {
             _formatParserFeatures &= ~f.getMask();
@@ -72,18 +72,18 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
         return _this();
     }
 
-    public SmileFactoryBuilder set(SmileParser.Feature f, boolean state) {
-        return state ? with(f) : without(f);
+    public SmileFactoryBuilder configure(SmileParser.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
     }
     
     // // // Generator features
 
-    public SmileFactoryBuilder with(SmileGenerator.Feature f) {
+    public SmileFactoryBuilder enable(SmileGenerator.Feature f) {
         _formatGeneratorFeatures |= f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder with(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
+    public SmileFactoryBuilder enable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
         _formatGeneratorFeatures |= first.getMask();
         for (SmileGenerator.Feature f : other) {
             _formatGeneratorFeatures |= f.getMask();
@@ -91,12 +91,12 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
         return _this();
     }
 
-    public SmileFactoryBuilder without(SmileGenerator.Feature f) {
+    public SmileFactoryBuilder disable(SmileGenerator.Feature f) {
         _formatGeneratorFeatures &= ~f.getMask();
         return _this();
     }
     
-    public SmileFactoryBuilder without(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
+    public SmileFactoryBuilder disable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
         _formatGeneratorFeatures &= ~first.getMask();
         for (SmileGenerator.Feature f : other) {
             _formatGeneratorFeatures &= ~f.getMask();
@@ -104,8 +104,8 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
         return _this();
     }
 
-    public SmileFactoryBuilder set(SmileGenerator.Feature f, boolean state) {
-        return state ? with(f) : without(f);
+    public SmileFactoryBuilder configure(SmileGenerator.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
     }
 
     // // // Accessors

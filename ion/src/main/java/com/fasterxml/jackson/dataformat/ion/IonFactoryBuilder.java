@@ -60,7 +60,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
         return this;
     }
 
-    public IonFactoryBuilder withSystem(IonSystem system) {
+    public IonFactoryBuilder ionSystem(IonSystem system) {
         _system = system;
         return this;
     }

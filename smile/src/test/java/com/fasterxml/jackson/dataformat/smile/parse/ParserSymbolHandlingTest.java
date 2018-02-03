@@ -311,7 +311,7 @@ public class ParserSymbolHandlingTest
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
                 .build();
         MediaItem item = new MediaItem();
         Content c = new Content();
@@ -495,8 +495,8 @@ public class ParserSymbolHandlingTest
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .with(SmileGenerator.Feature.WRITE_HEADER)
-                .set(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing)
+                .enable(SmileGenerator.Feature.WRITE_HEADER)
+                .configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing)
                 .build();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);

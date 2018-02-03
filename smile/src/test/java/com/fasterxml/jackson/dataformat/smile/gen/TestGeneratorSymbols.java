@@ -147,9 +147,9 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         SmileFactory sf = SmileFactory.builder()
-            .with(SmileGenerator.Feature.WRITE_HEADER)
-            .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
-            .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .enable(SmileGenerator.Feature.WRITE_HEADER,
+                    SmileGenerator.Feature.CHECK_SHARED_NAMES,
+                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
             .build();
         JsonGenerator jg = sf.createGenerator(ObjectWriteContext.empty(), out, null);
 
@@ -207,7 +207,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         final String VALUE = "11111";
         
         SmileFactory factory = SmileFactory.builder()
-                .set(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames)
+                .configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames)
                 .build();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         JsonGenerator gen = factory.createGenerator(ObjectWriteContext.empty(), os);

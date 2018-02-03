@@ -69,7 +69,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
     private void _testBinaryAsRoot(boolean raw) throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .set(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
+                .configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
                 .build();
         for (int size : SIZES) {
             byte[] data = _generateData(size);
@@ -100,7 +100,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
     private void _testBinaryAsArray(boolean raw) throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-            .set(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
+            .configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
             .build();
         for (int size : SIZES) {
             byte[] data = _generateData(size);
@@ -139,7 +139,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
     private void _testBinaryAsObject(boolean raw) throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .set(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
+                .configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
                 .build();
         for (int size : SIZES) {
             byte[] data = _generateData(size);
@@ -179,7 +179,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
     private void _testStreaming(boolean raw) throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .set(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
+                .configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !raw)
                 .build();
         for (int size : SIZES) {
             byte[] data = _generateData(size);

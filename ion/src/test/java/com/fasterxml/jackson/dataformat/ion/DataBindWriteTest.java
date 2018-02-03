@@ -110,7 +110,7 @@ public class DataBindWriteTest {
     public void testWriteBasicTypes() throws Exception
     {
         IonObjectMapper m = new IonObjectMapper(IonFactory.builderForTextualWriters()
-                .withSystem(ion)
+                .ionSystem(ion)
                 .build());
 
         assertEquals(ion.newString("foo"), m.writeValueAsIonValue("foo"));

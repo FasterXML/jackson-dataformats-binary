@@ -342,7 +342,7 @@ public class ReadSimpleTest extends ProtobufTestBase
     {
         // Important: write Point3, read regular Point
         ProtobufMapper mapper = new ProtobufMapper(ProtobufFactory.builder()
-                .with(JsonParser.Feature.IGNORE_UNDEFINED).build());
+                .enable(JsonParser.Feature.IGNORE_UNDEFINED).build());
         ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
         ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);
 

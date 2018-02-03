@@ -305,7 +305,7 @@ public class AsyncSharedStringsTest
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-            .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
             .build();
         MediaItem item = new MediaItem();
         Content c = new Content();

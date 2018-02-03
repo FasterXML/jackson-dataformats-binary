@@ -46,12 +46,12 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
 
     // // // Parser features
 
-    public CBORFactoryBuilder with(CBORParser.Feature f) {
+    public CBORFactoryBuilder enable(CBORParser.Feature f) {
         _formatParserFeatures |= f.getMask();
         return _this();
     }
 
-    public CBORFactoryBuilder with(CBORParser.Feature first, CBORParser.Feature... other) {
+    public CBORFactoryBuilder enable(CBORParser.Feature first, CBORParser.Feature... other) {
         _formatParserFeatures |= first.getMask();
         for (CBORParser.Feature f : other) {
             _formatParserFeatures |= f.getMask();
@@ -59,12 +59,12 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         return _this();
     }
 
-    public CBORFactoryBuilder without(CBORParser.Feature f) {
+    public CBORFactoryBuilder disable(CBORParser.Feature f) {
         _formatParserFeatures &= ~f.getMask();
         return _this();
     }
 
-    public CBORFactoryBuilder without(CBORParser.Feature first, CBORParser.Feature... other) {
+    public CBORFactoryBuilder disable(CBORParser.Feature first, CBORParser.Feature... other) {
         _formatParserFeatures &= ~first.getMask();
         for (CBORParser.Feature f : other) {
             _formatParserFeatures &= ~f.getMask();
@@ -72,18 +72,18 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         return _this();
     }
 
-    public CBORFactoryBuilder set(CBORParser.Feature f, boolean state) {
-        return state ? with(f) : without(f);
+    public CBORFactoryBuilder configure(CBORParser.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
     }
 
     // // // Generator features
 
-    public CBORFactoryBuilder with(CBORGenerator.Feature f) {
+    public CBORFactoryBuilder enable(CBORGenerator.Feature f) {
         _formatGeneratorFeatures |= f.getMask();
         return _this();
     }
 
-    public CBORFactoryBuilder with(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
+    public CBORFactoryBuilder enable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
         _formatGeneratorFeatures |= first.getMask();
         for (CBORGenerator.Feature f : other) {
             _formatGeneratorFeatures |= f.getMask();
@@ -91,12 +91,12 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         return _this();
     }
 
-    public CBORFactoryBuilder without(CBORGenerator.Feature f) {
+    public CBORFactoryBuilder disable(CBORGenerator.Feature f) {
         _formatGeneratorFeatures &= ~f.getMask();
         return _this();
     }
     
-    public CBORFactoryBuilder without(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
+    public CBORFactoryBuilder disable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
         _formatGeneratorFeatures &= ~first.getMask();
         for (CBORGenerator.Feature f : other) {
             _formatGeneratorFeatures &= ~f.getMask();
@@ -104,8 +104,8 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         return _this();
     }
 
-    public CBORFactoryBuilder set(CBORGenerator.Feature f, boolean state) {
-        return state ? with(f) : without(f);
+    public CBORFactoryBuilder configure(CBORGenerator.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
     }
     
     // // // Accessors

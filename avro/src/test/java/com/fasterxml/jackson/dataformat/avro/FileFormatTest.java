@@ -26,7 +26,7 @@ public class FileFormatTest extends AvroTestBase
         empl.boss = null;
 
         ObjectMapper mapper = new ObjectMapper(af.rebuild()
-                .with(AvroGenerator.Feature.AVRO_FILE_OUTPUT).build());
+                .configure(AvroGenerator.Feature.AVRO_FILE_OUTPUT, true).build());
 
         AvroSchema schema = getEmployeeSchema();
         byte[] bytes = mapper.writer(schema).writeValueAsBytes(empl);

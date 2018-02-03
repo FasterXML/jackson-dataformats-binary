@@ -111,9 +111,9 @@ public abstract class BaseTestForSmile
             boolean writeHeader, boolean writeEndMarker)
     {
         return SmileFactory.builder()
-                .set(SmileParser.Feature.REQUIRE_HEADER, requireHeader)
-                .set(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
-                .set(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker)
+                .configure(SmileParser.Feature.REQUIRE_HEADER, requireHeader)
+                .configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
+                .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker)
                 .build();
     }
 

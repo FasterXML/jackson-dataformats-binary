@@ -176,8 +176,8 @@ public class TestGenerator extends BaseTestForSmile
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileFactory f = _smileFactory(false, true, false).rebuild()
-                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .enable(SmileGenerator.Feature.CHECK_SHARED_NAMES,
+                        SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
                 .build();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartObject();
@@ -256,8 +256,8 @@ public class TestGenerator extends BaseTestForSmile
     public void testWithMap() throws Exception
     {
         final SmileFactory smileFactory = SmileFactory.builder()
-                .without(SmileGenerator.Feature.WRITE_HEADER)
-                .without(SmileParser.Feature.REQUIRE_HEADER)
+                .disable(SmileGenerator.Feature.WRITE_HEADER)
+                .disable(SmileParser.Feature.REQUIRE_HEADER)
                 .build();
         final ObjectMapper smileObjectMapper = new ObjectMapper(smileFactory);
         final HashMap<String, String> data = new HashMap<String,String>();
@@ -288,8 +288,8 @@ public class TestGenerator extends BaseTestForSmile
     {
         // need header to enable shared string values
         SmileFactory f = SmileFactory.builder()
-                .with(SmileGenerator.Feature.WRITE_HEADER)
-                .set(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, shared)
+                .enable(SmileGenerator.Feature.WRITE_HEADER)
+                .configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, shared)
                 .build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);

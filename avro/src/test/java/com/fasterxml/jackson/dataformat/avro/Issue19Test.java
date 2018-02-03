@@ -75,12 +75,12 @@ public class Issue19Test extends AvroTestBase
         EventLog input = new EventLog(9999, (byte) sampleEvents.size(), sampleEvents, sampleProblems);
 
         AvroMapper mapper = new AvroMapper(AvroFactory.builder()
-                .with(JsonGenerator.Feature.IGNORE_UNKNOWN)
+                .enable(JsonGenerator.Feature.IGNORE_UNKNOWN)
                 .build());
         mapper
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .setVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)
             .setVisibility(PropertyAccessor.GETTER, Visibility.NONE)
-            .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
             ;
 
         // First, see if we can generate schema, use that:

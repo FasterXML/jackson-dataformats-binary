@@ -38,7 +38,7 @@ public class IonValueMapper extends IonObjectMapper
     private static final long serialVersionUID = 1L;
 
     public IonValueMapper(IonSystem ionSystem) {
-        super(IonFactory.builderForTextualWriters().withSystem(ionSystem).build());
+        super(IonFactory.builderForTextualWriters().ionSystem(ionSystem).build());
     }
 
     @Deprecated // use `readValue(IonValue, Class)` instead

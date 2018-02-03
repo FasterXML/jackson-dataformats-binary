@@ -46,7 +46,7 @@ public class GeneratorInteropTest extends CBORTestBase
         });
 
         f = f.rebuild()
-                .with(CBORGenerator.Feature.WRITE_TYPE_HEADER)
+                .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
                 .build();
         // but with auto-write
         out = new ByteArrayOutputStream();

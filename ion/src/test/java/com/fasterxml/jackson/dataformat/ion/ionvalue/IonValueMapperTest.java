@@ -45,7 +45,7 @@ import software.amazon.ion.system.IonSystemBuilder;
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
     private final IonObjectMapper ionValueMapper = new IonObjectMapper(
-            IonFactory.builderForTextualWriters().withSystem(ionSystem).build());
+            IonFactory.builderForTextualWriters().ionSystem(ionSystem).build());
     {
         ionValueMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }

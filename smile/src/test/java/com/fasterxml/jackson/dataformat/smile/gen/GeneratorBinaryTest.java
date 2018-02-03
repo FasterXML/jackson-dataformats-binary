@@ -47,7 +47,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
             throws Exception
     {
         final SmileFactory f = SmileFactory.builder()
-                .set(Feature.ENCODE_BINARY_AS_7BIT, rawBinary)
+                .configure(Feature.ENCODE_BINARY_AS_7BIT, rawBinary)
                 .build();
 
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
@@ -89,7 +89,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
     private void _testStreamingBinary(boolean rawBinary, boolean throttle) throws Exception
     {
         final SmileFactory f = SmileFactory.builder()
-                .set(Feature.ENCODE_BINARY_AS_7BIT, !rawBinary)
+                .configure(Feature.ENCODE_BINARY_AS_7BIT, !rawBinary)
                 .build();
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
         for (int chunkSize : new int[] { 1, 2, 3, 4, 7, 11, 29, 5000 }) {

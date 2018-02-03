@@ -15,7 +15,7 @@ public class NumberCoercing32Test extends CBORTestBase
     public void testPrimitiveTypeInvariance() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper(CBORFactory.builder()
-                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
                 .build());
         Map<String, Object> map = new HashMap<>();
         map.put("longField", 1L);
