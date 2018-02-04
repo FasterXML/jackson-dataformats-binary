@@ -7,23 +7,43 @@ import java.io.InputStream;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
  * Convenience {@link AvroMapper}, which is mostly similar to simply
  * constructing a mapper with {@link AvroFactory}, but also adds little
  * bit of convenience around {@link AvroSchema} generation.
- * 
- * @since 2.5
  */
 public class AvroMapper extends ObjectMapper
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Avro backend.
+     *
+     * @since 3.0
+     */
+    public static class Builder extends MapperBuilder<AvroMapper, Builder>
+    {
+        public Builder(AvroFactory f) {
+            super(f);
+        }
+
+        @Override
+        public AvroMapper build() {
+            return new AvroMapper(this);
+        }
+    }
+
+    /*
+    /**********************************************************************
+    /* Life-cycle
+    /**********************************************************************
+     */
+    
     /**
      * Constructor that will construct mapper with standard {@link AvroFactory}
      * as codec, and will also register {@link AvroModule}.
@@ -37,8 +57,7 @@ public class AvroMapper extends ObjectMapper
      * as well as register standard {@link AvroModule} (with default settings).
      */
     public AvroMapper(AvroFactory f) {
-        super(f);
-        registerModule(new AvroModule());
+        this(new Builder(f));
     }
 
     /**
@@ -61,17 +80,26 @@ public class AvroMapper extends ObjectMapper
         registerModules(modules);
     }
 
-    protected AvroMapper(ObjectMapper src) {
-        super(src);
+    public AvroMapper(Builder b) {
+        super(b);
+        registerModule(new AvroModule());
     }
 
-    @Override
-    public AvroMapper copy()
-    {
-        _checkInvalidCopy(AvroMapper.class);
-        return new AvroMapper(this);
+    @SuppressWarnings("unchecked")
+    public static Builder builder() {
+        return new Builder(new AvroFactory());
     }
 
+    public static Builder builder(AvroFactory streamFactory) {
+        return new Builder(streamFactory);
+    }
+
+    /*
+    /**********************************************************************
+    /* Basic accessor overrides
+    /**********************************************************************
+     */
+    
     @Override
     public Version version() {
         return PackageVersion.VERSION;
@@ -81,7 +109,13 @@ public class AvroMapper extends ObjectMapper
     public AvroFactory tokenStreamFactory() {
         return (AvroFactory) _streamFactory;
     }
-    
+
+    /*
+    /**********************************************************************
+    /* Schema introspection
+    /**********************************************************************
+     */
+
     /**
      * Factory method for constructing {@link AvroSchema} by introspecting given
      * POJO type and building schema that contains specified properties.
@@ -113,8 +147,6 @@ public class AvroMapper extends ObjectMapper
      * and once done (successfully or not), closing the stream.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.6
      */
     public AvroSchema schemaFrom(InputStream in) throws IOException
     {
@@ -131,8 +163,6 @@ public class AvroMapper extends ObjectMapper
      * encoded JSON representation.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.6
      */
     public AvroSchema schemaFrom(String schemaAsString) throws IOException
     {
@@ -145,8 +175,6 @@ public class AvroMapper extends ObjectMapper
      * encoded JSON representation.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.6
      */
     public AvroSchema schemaFrom(File schemaFile) throws IOException
     {

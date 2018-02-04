@@ -176,8 +176,9 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      */
     public void testUnknownHandlingIgnoreWithFeature() throws Exception
     {
-        ObjectMapper mapper = smileMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper mapper = smileMapperBuilder()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
         TestBean result = null;
         try {
             result = mapper.readValue(_smileDoc(JSON_UNKNOWN_FIELD), TestBean.class);

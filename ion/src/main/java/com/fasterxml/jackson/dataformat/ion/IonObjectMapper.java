@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.MapperBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -40,13 +41,40 @@ public class IonObjectMapper extends ObjectMapper
 {    
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Avro backend.
+     *
+     * @since 3.0
+     */
+    public static class Builder extends MapperBuilder<IonObjectMapper, Builder>
+    {
+        public Builder(IonFactory f) {
+            super(f);
+        }
+
+        @Override
+        public IonObjectMapper build() {
+            return new IonObjectMapper(this);
+        }
+    }
+    
+    /*
+    /**********************************************************************
+    /* Life-cycle
+    /**********************************************************************
+     */
+    
     public IonObjectMapper() {
         this(new IonFactory());
     }
 
     public IonObjectMapper(IonFactory f) {
-        super(f);
+        this(new Builder(f));
+    }
 
+    public IonObjectMapper(Builder b) {
+        super(b);
         // !!! 04-Jan-2018, tatu: needs to be reworked in future; may remain a module
         
         // Use native Ion timestamps for dates
@@ -62,15 +90,20 @@ public class IonObjectMapper extends ObjectMapper
         registerModule(m);
     }
 
-    protected IonObjectMapper(IonObjectMapper src) {
-        super(src);
+    @SuppressWarnings("unchecked")
+    public static Builder builder() {
+        return new Builder(new IonFactory());
     }
 
-    @Override
-    public ObjectMapper copy() {
-        _checkInvalidCopy(IonObjectMapper.class);
-        return new IonObjectMapper(this);
+    public static Builder builder(IonFactory streamFactory) {
+        return new Builder(streamFactory);
     }
+
+    /*
+    /**********************************************************************
+    /* Basic accessor overrides
+    /**********************************************************************
+     */
 
     @Override
     public Version version() {

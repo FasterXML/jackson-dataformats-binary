@@ -97,6 +97,10 @@ public abstract class BaseTestForSmile
         return smileMapper(false);
     }
     
+    protected ObjectMapper.Builder smileMapperBuilder() {
+        return ObjectMapper.builder(_smileFactory(false, false, false));
+    }
+
     protected ObjectMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }

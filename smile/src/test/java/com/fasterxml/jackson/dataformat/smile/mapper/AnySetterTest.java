@@ -243,15 +243,17 @@ public class AnySetterTest extends BaseTestForSmile
 
     public void testIgnored() throws Exception
     {
-        ObjectMapper mapper = smileMapper();
-        mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        ObjectMapper mapper = smileMapperBuilder()
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
         _testIgnorals(mapper);
     }
 
     public void testIgnoredPart2() throws Exception
     {
-        ObjectMapper mapper = smileMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        ObjectMapper mapper = smileMapperBuilder()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
         _testIgnorals(mapper);
     }
 

@@ -6,8 +6,10 @@ import java.io.InputStream;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
@@ -19,20 +21,36 @@ public class ProtobufMapper extends ObjectMapper
 {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Avro backend.
+     *
+     * @since 3.0
+     */
+    public static class Builder extends MapperBuilder<ProtobufMapper, Builder>
+    {
+        public Builder(ProtobufFactory f) {
+            super(f);
+        }
+
+        @Override
+        public ProtobufMapper build() {
+            return new ProtobufMapper(this);
+        }
+    }
+    
     protected ProtobufSchemaLoader _schemaLoader = ProtobufSchemaLoader.std;
 
     /**
      * Lazily constructed instance of {@link DescriptorLoader}, used for loading
      * structured protoc definitions from multiple files.
-     *
-     * @since 2.9
      */
     protected DescriptorLoader _descriptorLoader;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public ProtobufMapper() {
@@ -43,17 +61,25 @@ public class ProtobufMapper extends ObjectMapper
         super(f);
     }
 
-    protected ProtobufMapper(ProtobufMapper src) {
-        super(src);
-    }
-    
-    @Override
-    public ProtobufMapper copy()
-    {
-        _checkInvalidCopy(ProtobufMapper.class);
-        return new ProtobufMapper(this);
+    public ProtobufMapper(Builder b) {
+        super(b);
     }
 
+    @SuppressWarnings("unchecked")
+    public static Builder builder() {
+        return new Builder(new ProtobufFactory());
+    }
+
+    public static Builder builder(ProtobufFactory streamFactory) {
+        return new Builder(streamFactory);
+    }
+
+    /*
+    /**********************************************************************
+    /* Basic accessor overrides
+    /**********************************************************************
+     */
+    
     @Override
     public Version version() {
         return PackageVersion.VERSION;
@@ -65,9 +91,9 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Schema access, single protoc source
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -87,8 +113,6 @@ public class ProtobufMapper extends ObjectMapper
      * Convenience method for constructing protoc definition that matches
      * given Java type. Uses {@link ProtobufSchemaGenerator} for
      * generation.
-     *
-     * @since 2.8
      */
     public ProtobufSchema generateSchemaFor(JavaType type) throws JsonMappingException
     {
@@ -101,8 +125,6 @@ public class ProtobufMapper extends ObjectMapper
      * Convenience method for constructing protoc definition that matches
      * given Java type. Uses {@link ProtobufSchemaGenerator} for
      * generation.
-     *
-     * @since 2.8
      */
     public ProtobufSchema generateSchemaFor(Class<?> type) throws JsonMappingException
     {
@@ -112,28 +134,19 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Schema access, FileDescriptorSets (since 2.9)
-    /**********************************************************
+    /**********************************************************************
      */
 
-    /**
-     * @since 2.9
-     */
     public FileDescriptorSet loadDescriptorSet(URL src) throws IOException {
         return descriptorLoader().load(src);
     }
 
-    /**
-     * @since 2.9
-     */
     public FileDescriptorSet loadDescriptorSet(File src) throws IOException {
         return descriptorLoader().load(src);
     }
 
-    /**
-     * @since 2.9
-     */
     public FileDescriptorSet loadDescriptorSet(InputStream src) throws IOException {
         return descriptorLoader().load(src);
     }
@@ -141,8 +154,6 @@ public class ProtobufMapper extends ObjectMapper
     /**
      * Accessors that may be used instead of convenience <code>loadDescriptorSet</code>
      * methods, if alternate sources need to be used.
-     *
-     * @since 2.9
      */
     public synchronized DescriptorLoader descriptorLoader() throws IOException
     {

@@ -74,11 +74,11 @@ public class Issue19Test extends AvroTestBase
 
         EventLog input = new EventLog(9999, (byte) sampleEvents.size(), sampleEvents, sampleProblems);
 
-        AvroMapper mapper = new AvroMapper(AvroFactory.builder()
+        AvroMapper mapper = AvroMapper.builder()
                 .enable(JsonGenerator.Feature.IGNORE_UNKNOWN)
-                .build());
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .build();
         mapper
-            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .setVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)
             .setVisibility(PropertyAccessor.GETTER, Visibility.NONE)
             ;

@@ -40,10 +40,9 @@ public class CaseInsensitiveDeserTest extends BaseTestForSmile
     /********************************************************
      */
 
-    private final ObjectMapper INSENSITIVE_MAPPER = smileMapper();
-    {
-        INSENSITIVE_MAPPER.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES);
-    }
+    private final ObjectMapper INSENSITIVE_MAPPER = smileMapperBuilder()
+            .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+            .build();
 
     // [databind#566]
     public void testCaseInsensitiveDeserialization() throws Exception

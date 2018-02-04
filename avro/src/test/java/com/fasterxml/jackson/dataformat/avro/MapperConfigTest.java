@@ -78,12 +78,6 @@ public class MapperConfigTest extends AvroTestBase
         AvroMapper mapper = new AvroMapper();
         assertNotNull(mapper.version());
 
-        _testAvroMapperDefaults(mapper);
-        _testAvroMapperDefaults(mapper.copy());
-    }
-    
-    protected void _testAvroMapperDefaults(ObjectMapper mapper)
-    {
         // should be defaulting to sort-alphabetically, due to Avro format requiring ordering
         assertTrue(mapper.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
 

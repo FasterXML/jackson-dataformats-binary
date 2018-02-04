@@ -71,6 +71,10 @@ public abstract class CBORTestBase
         return new ObjectMapper(cborFactory());
     }
 
+    protected ObjectMapper.Builder cborMapperBuilder() {
+        return ObjectMapper.builder(cborFactory());
+    }
+    
     protected ObjectMapper jsonMapper() {
         return new ObjectMapper(new JsonFactory());
     }

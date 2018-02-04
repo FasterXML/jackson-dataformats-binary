@@ -179,8 +179,9 @@ public class UnknownPropertyDeserTest
      */
     public void testUnknownHandlingIgnoreWithFeature() throws Exception
     {
-        ObjectMapper mapper = cborMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper mapper = cborMapperBuilder()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .build();
         TestBean result = null;
         try {
             result = mapper.readValue(cborDoc(JSON_UNKNOWN_FIELD), TestBean.class);

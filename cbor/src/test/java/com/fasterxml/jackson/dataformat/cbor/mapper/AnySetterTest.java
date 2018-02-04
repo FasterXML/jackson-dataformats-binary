@@ -243,15 +243,17 @@ public class AnySetterTest extends CBORTestBase
 
     public void testIgnored() throws Exception
     {
-        ObjectMapper mapper = cborMapper();
-        mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        ObjectMapper mapper = cborMapperBuilder()
+            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
         _testIgnorals(mapper);
     }
 
     public void testIgnoredPart2() throws Exception
     {
-        ObjectMapper mapper = cborMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        ObjectMapper mapper = cborMapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
         _testIgnorals(mapper);
     }
 
