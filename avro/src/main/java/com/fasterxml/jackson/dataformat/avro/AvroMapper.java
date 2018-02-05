@@ -9,6 +9,7 @@ import org.apache.avro.Schema;
 import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
@@ -35,6 +36,60 @@ public class AvroMapper extends ObjectMapper
         @Override
         public AvroMapper build() {
             return new AvroMapper(this);
+        }
+
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        public Builder enable(AvroParser.Feature... features) {
+            for (AvroParser.Feature f : features) {
+                _formatParserFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(AvroParser.Feature... features) {
+            for (AvroParser.Feature f : features) {
+                _formatParserFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(AvroParser.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatParserFeatures |= feature.getMask();
+            } else {
+                _formatParserFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
+        public Builder enable(AvroGenerator.Feature... features) {
+            for (AvroGenerator.Feature f : features) {
+                _formatGeneratorFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(AvroGenerator.Feature... features) {
+            for (AvroGenerator.Feature f : features) {
+                _formatGeneratorFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(AvroGenerator.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatGeneratorFeatures |= feature.getMask();
+            } else {
+                _formatGeneratorFeatures &= ~feature.getMask();
+            }
+            return this;
         }
     }
 
@@ -66,7 +121,7 @@ public class AvroMapper extends ObjectMapper
      * only register {@link AvroModule} if it's included as argument.
      */
     public AvroMapper(Module... modules) {
-        super(new AvroFactory());
+        this(new AvroFactory());
         registerModules(modules);
     }
 
@@ -76,7 +131,7 @@ public class AvroMapper extends ObjectMapper
      * only register {@link AvroModule} if it's included as argument.
      */
     public AvroMapper(AvroFactory f, Module... modules) {
-        super(f);
+        this(f);
         registerModules(modules);
     }
 

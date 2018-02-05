@@ -173,16 +173,6 @@ public class SmileFactory
 
     @Override
     public boolean canParseAsync() { return true; }
-    
-    @Override
-    public Class<SmileParser.Feature> getFormatReadFeatureType() {
-        return SmileParser.Feature.class;
-    }
-
-    @Override
-    public Class<SmileGenerator.Feature> getFormatWriteFeatureType() {
-        return SmileGenerator.Feature.class;
-    }
 
     /**
      * Check whether specified generator feature is enabled.
@@ -214,6 +204,22 @@ public class SmileFactory
         return false;
     }
 
+    @Override
+    public Class<SmileParser.Feature> getFormatReadFeatureType() {
+        return SmileParser.Feature.class;
+    }
+
+    @Override
+    public Class<SmileGenerator.Feature> getFormatWriteFeatureType() {
+        return SmileGenerator.Feature.class;
+    }
+
+    @Override
+    public int getFormatParserFeatures() { return _formatParserFeatures; }
+
+    @Override
+    public int getFormatGeneratorFeatures() { return _formatGeneratorFeatures; }
+    
     /*
     /**********************************************************
     /* Extended API: async

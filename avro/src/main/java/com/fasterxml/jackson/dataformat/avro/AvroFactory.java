@@ -192,16 +192,6 @@ public class AvroFactory
         return (_formatGeneratorFeatures & f.getMask()) != 0;
     }
 
-    @Override
-    public Class<AvroParser.Feature> getFormatReadFeatureType() {
-        return AvroParser.Feature.class;
-    }
-
-    @Override
-    public Class<AvroGenerator.Feature> getFormatWriteFeatureType() {
-        return AvroGenerator.Feature.class;
-    }
-
     /*
     /**********************************************************
     /* Data format support
@@ -217,6 +207,22 @@ public class AvroFactory
     public boolean canUseSchema(FormatSchema schema) {
         return (schema instanceof AvroSchema);
     }
+
+    @Override
+    public Class<AvroParser.Feature> getFormatReadFeatureType() {
+        return AvroParser.Feature.class;
+    }
+
+    @Override
+    public Class<AvroGenerator.Feature> getFormatWriteFeatureType() {
+        return AvroGenerator.Feature.class;
+    }
+    
+    @Override
+    public int getFormatParserFeatures() { return _formatParserFeatures; }
+
+    @Override
+    public int getFormatGeneratorFeatures() { return _formatGeneratorFeatures; }
 
     /*
     /******************************************************

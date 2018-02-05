@@ -90,19 +90,6 @@ public class ProtobufFactory
         return false;
     }
 
-    // No format-specific configuration, yet:
-/*    
-    @Override
-    public Class<? extends FormatFeature> getFormatReadFeatureType() {
-        return null;
-    }
-
-    @Override
-    public Class<? extends FormatFeature> getFormatWriteFeatureType() {
-        return null;
-    }
-*/
-
     /*
     /**********************************************************
     /* Format detection functionality
@@ -119,6 +106,26 @@ public class ProtobufFactory
         return (schema instanceof ProtobufSchema);
     }
 
+
+    // No format-specific configuration, yet:
+/*    
+    @Override
+    public Class<? extends FormatFeature> getFormatReadFeatureType() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends FormatFeature> getFormatWriteFeatureType() {
+        return null;
+    }
+*/
+    
+    @Override
+    public int getFormatParserFeatures() { return 0; }
+
+    @Override
+    public int getFormatGeneratorFeatures() { return 0; }
+    
     /*
     /******************************************************
     /* Factory methods: parsers

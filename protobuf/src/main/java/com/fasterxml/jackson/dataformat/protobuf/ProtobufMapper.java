@@ -9,8 +9,8 @@ import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.MapperBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -58,7 +58,7 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     public ProtobufMapper(ProtobufFactory f) {
-        super(f);
+        this(new Builder(f));
     }
 
     public ProtobufMapper(Builder b) {

@@ -37,8 +37,15 @@ public class MapperConfigTest extends AvroTestBase
     {
         AvroParser p = (AvroParser) MAPPER.createParser(new byte[0]);
         assertTrue(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
-        p.disable(AvroParser.Feature.AVRO_BUFFERING);
+        p.close();
+
+        AvroMapper mapper = AvroMapper.builder()
+                .disable(AvroParser.Feature.AVRO_BUFFERING)
+                .build();
+        p = (AvroParser) mapper.createParser(new byte[0]);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+        p.close();
+
         try {
             p.setSchema(BOGUS_SCHEMA);
             fail("Should not pass!");
@@ -53,9 +60,14 @@ public class MapperConfigTest extends AvroTestBase
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         AvroGenerator g = (AvroGenerator) MAPPER.createGenerator(bytes);
         assertTrue(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
-        g.disable(AvroGenerator.Feature.AVRO_BUFFERING);
+        g.close();
+
+        AvroMapper mapper = AvroMapper.builder()
+                .disable(AvroGenerator.Feature.AVRO_BUFFERING)
+                .build();
+        g = (AvroGenerator) mapper.createGenerator(bytes);
         assertFalse(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
-        
+
         try {
             g.setSchema(BOGUS_SCHEMA);
             fail("Should not pass!");
@@ -63,8 +75,6 @@ public class MapperConfigTest extends AvroTestBase
             verifyException(e, "Can not use FormatSchema of type ");
         }
         g.close();
-
-        
     }
 
     /*

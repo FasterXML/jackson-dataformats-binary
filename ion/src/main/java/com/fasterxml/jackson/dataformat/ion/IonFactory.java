@@ -181,6 +181,12 @@ public class IonFactory
         return false;
     }
 
+    @Override
+    public int getFormatParserFeatures() { return 0; }
+
+    @Override
+    public int getFormatGeneratorFeatures() { return 0; }
+    
     /*
     /***************************************************************
     /* Extended API

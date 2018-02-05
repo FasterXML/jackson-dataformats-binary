@@ -164,16 +164,6 @@ public class CBORFactory
         return false;
     }
 
-    @Override
-    public Class<CBORParser.Feature> getFormatReadFeatureType() {
-        return CBORParser.Feature.class;
-    }
-
-    @Override
-    public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
-        return CBORGenerator.Feature.class;
-    }
-
     /*
     /**********************************************************
     /* Data format support
@@ -190,6 +180,22 @@ public class CBORFactory
         return false; // no (mandatory) FormatSchema for cbor
     }
 
+    @Override
+    public Class<CBORParser.Feature> getFormatReadFeatureType() {
+        return CBORParser.Feature.class;
+    }
+
+    @Override
+    public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
+        return CBORGenerator.Feature.class;
+    }
+    
+    @Override
+    public int getFormatParserFeatures() { return _formatParserFeatures; }
+
+    @Override
+    public int getFormatGeneratorFeatures() { return _formatGeneratorFeatures; }
+    
     /**
      * Checked whether specified parser feature is enabled.
      */
