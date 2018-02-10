@@ -18,7 +18,6 @@ public class ObjectIdTest extends BaseTestForSmile
         D d = new D();
         d.next = d;
 
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         byte[] smile = mapper.writeValueAsBytes(d);
 
         D de = mapper.readValue(smile, D.class);

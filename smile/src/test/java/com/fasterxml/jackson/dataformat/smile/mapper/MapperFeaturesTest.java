@@ -19,8 +19,9 @@ public class MapperFeaturesTest extends BaseTestForSmile
     // Let's ensure indentation doesn't break anything (should be NOP)
     public void testIndent() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper(new SmileFactory());
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        ObjectMapper mapper = ObjectMapper.builder(new SmileFactory())
+                .configure(SerializationFeature.INDENT_OUTPUT, true)
+                .build();
         Bean bean = new Bean();
         bean.value = 42;
         

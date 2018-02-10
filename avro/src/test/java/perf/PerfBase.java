@@ -14,7 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.avro.AvroFactory;
+
+import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 abstract class PerfBase
@@ -115,8 +116,9 @@ abstract class PerfBase
     
     protected PerfBase()
     {
-        avroMapper =  new ObjectMapper(new AvroFactory());
-        avroMapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+        avroMapper = AvroMapper.builder()
+                .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
+                .build();
         itemSchema = itemSchema();
         itemReader = avroMapper
                 .readerFor(MediaItem.class)

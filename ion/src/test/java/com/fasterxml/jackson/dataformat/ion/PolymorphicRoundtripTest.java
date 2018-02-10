@@ -263,10 +263,11 @@ public class PolymorphicRoundtripTest
     @Test
     public void testWithIonDate() throws IOException {
         resolveAllTypes = true;
-        ObjectMapper mapper = new IonObjectMapper()
-            .registerModule(new IonAnnotationModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        
+        ObjectMapper mapper = IonObjectMapper.builder()
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
+        mapper.registerModule(new IonAnnotationModule());
+
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
         java.sql.Date sDate = new java.sql.Date(etime);
@@ -285,9 +286,10 @@ public class PolymorphicRoundtripTest
     @Test
     public void testWithDateAsTimestamp() throws IOException {
         resolveAllTypes = true;
-        ObjectMapper ionDateMapper = new IonObjectMapper()
-            .registerModule(new IonAnnotationModule())
-            .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        ObjectMapper ionDateMapper = IonObjectMapper.builder()
+                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
+        ionDateMapper.registerModule(new IonAnnotationModule());
         
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
@@ -313,8 +315,9 @@ public class PolymorphicRoundtripTest
         Bean original = new Bean("parent_field", 
                 new ChildBeanSub("child_field", "extra_field", uDate, sDate, null));
         
-        IonObjectMapper mapper = new IonObjectMapper();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        IonObjectMapper mapper = IonObjectMapper.builder()
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         mapper.registerModule(new IonAnnotationModule());
         
         // roundtrip

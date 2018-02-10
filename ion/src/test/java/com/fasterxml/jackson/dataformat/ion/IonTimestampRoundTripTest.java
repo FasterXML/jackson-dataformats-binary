@@ -39,8 +39,9 @@ public class IonTimestampRoundTripTest {
     @Test
     public void testDateRoundTrip() throws JsonGenerationException, JsonMappingException, IOException {
         Date date = new Date();
-        IonObjectMapper m = new IonObjectMapper();
-        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        IonObjectMapper m = IonObjectMapper.builder()
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         
         String val = m.writeValueAsString(date);
         IonLoader loader = ionSystem.newLoader();
@@ -57,9 +58,9 @@ public class IonTimestampRoundTripTest {
     @Test
     public void testMillisCompatibility() throws JsonGenerationException, JsonMappingException, IOException {
         Date date = new Date();
-        IonObjectMapper m = new IonObjectMapper();
-        
-        m.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        IonObjectMapper m = IonObjectMapper.builder()
+                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         
         String val = m.writeValueAsString(date);
         Date returned = m.readValue(val, Date.class);
@@ -77,8 +78,9 @@ public class IonTimestampRoundTripTest {
     public void testNonJoiCompatibility() throws JsonGenerationException, JsonMappingException, IOException {
         Date date = new Date();
         ObjectMapper nonJoiMillis = new ObjectMapper();
-        ObjectMapper nonJoiM = new ObjectMapper();
-        nonJoiM.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        ObjectMapper nonJoiM = ObjectMapper.builder()
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         IonObjectMapper joiM = new IonObjectMapper();
         
         String dateInMillis = nonJoiMillis.writeValueAsString(date);

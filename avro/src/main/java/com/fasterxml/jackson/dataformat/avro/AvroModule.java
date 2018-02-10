@@ -102,7 +102,7 @@ public class AvroModule extends Module
     protected void _addDeserializers(SetupContext context) {
         // Override untyped deserializer to one that checks for type information in the schema before going to default handling
         SimpleDeserializers desers = new SimpleDeserializers();
-        desers.addDeserializer(Object.class, AvroUntypedDeserializer.construct(context.getTypeFactory()));
+        desers.addDeserializer(Object.class, AvroUntypedDeserializer.construct(context.typeFactory()));
         context.addDeserializers(desers);
     }
 

@@ -44,11 +44,10 @@ import software.amazon.ion.system.IonSystemBuilder;
 @SuppressWarnings("deprecation")
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
-    private final IonObjectMapper ionValueMapper = new IonObjectMapper(
-            IonFactory.builderForTextualWriters().ionSystem(ionSystem).build());
-    {
-        ionValueMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-    }
+    private final IonFactory ionF = IonFactory.builderForTextualWriters().ionSystem(ionSystem).build();
+    private final IonObjectMapper ionValueMapper = IonObjectMapper.builder(ionF)
+            .propertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+            .build();
 
     enum ReturnCode {
         Success,
