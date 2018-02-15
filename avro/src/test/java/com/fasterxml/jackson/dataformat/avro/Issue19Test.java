@@ -77,11 +77,10 @@ public class Issue19Test extends AvroTestBase
         AvroMapper mapper = AvroMapper.builder()
                 .enable(JsonGenerator.Feature.IGNORE_UNKNOWN)
                 .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .changeDefaultVisibility(vc ->
+                    vc.withVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)
+                    .withVisibility(PropertyAccessor.GETTER, Visibility.NONE))
                 .build();
-        mapper
-            .setVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)
-            .setVisibility(PropertyAccessor.GETTER, Visibility.NONE)
-            ;
 
         // First, see if we can generate schema, use that:
         AvroSchema schema = mapper.schemaFor(EventLog.class);

@@ -68,7 +68,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public Object findDeserializer(Annotated am) {
+    public Object findDeserializer(MapperConfig<?> config, Annotated am) {
         AvroEncode ann = _findAnnotation(am, AvroEncode.class);
         if (ann != null) {
             return new CustomEncodingDeserializer<>((CustomEncoding<?>)ClassUtil.createInstance(ann.using(), true));
@@ -123,7 +123,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public Object findSerializer(Annotated a) {
+    public Object findSerializer(MapperConfig<?> config, Annotated a) {
         if (a.hasAnnotation(Stringable.class)) {
             return ToStringSerializer.class;
         }
