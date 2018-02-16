@@ -51,20 +51,38 @@ public class IonObjectMapper extends ObjectMapper
     {
         public Builder(IonFactory f) {
             super(f);
+
+            // 04-Jan-2017, tatu: demoted from `IonValueMapper`
+            addModule(new IonValueModule());
+            addModule(new EnumAsIonSymbolModule());
+
+            // !!! 04-Jan-2018, tatu: needs to be reworked in future; may remain a module
+            // Use native Ion timestamps for dates
+            SimpleModule m = new SimpleModule("IonTimestampModule", PackageVersion.VERSION);
+            m.addSerializer(Date.class, new IonTimestampSerializers.IonTimestampJavaDateSerializer());
+            m.addSerializer(java.sql.Date.class, new IonTimestampSerializers.IonTimestampSQLDateSerializer());
+            m.addDeserializer(Date.class, new IonTimestampDeserializers.IonTimestampJavaDateDeserializer());
+            m.addDeserializer(java.sql.Date.class, new IonTimestampDeserializers.IonTimestampSQLDateDeserializer());
+            addModule(m);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public IonObjectMapper build() {
-            return new IonObjectMapper(this);
+            IonObjectMapper m = new IonObjectMapper(this);
+            if (_modules != null) {
+                m.registerModules(_modules.values());
+            }
+            return m;
         }
     }
-    
+
     /*
     /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
-    
+
     public IonObjectMapper() {
         this(new IonFactory());
     }
@@ -75,19 +93,6 @@ public class IonObjectMapper extends ObjectMapper
 
     public IonObjectMapper(Builder b) {
         super(b);
-        // !!! 04-Jan-2018, tatu: needs to be reworked in future; may remain a module
-        
-        // Use native Ion timestamps for dates
-        SimpleModule m = new SimpleModule("IonTimestampModule", PackageVersion.VERSION);
-        m.addSerializer(Date.class, new IonTimestampSerializers.IonTimestampJavaDateSerializer());
-        m.addSerializer(java.sql.Date.class, new IonTimestampSerializers.IonTimestampSQLDateSerializer());
-        m.addDeserializer(Date.class, new IonTimestampDeserializers.IonTimestampJavaDateDeserializer());
-        m.addDeserializer(java.sql.Date.class, new IonTimestampDeserializers.IonTimestampSQLDateDeserializer());
-
-        // 04-Jan-2017, tatu: demoted from `IonValueMapper`
-        this.registerModule(new IonValueModule());
-        this.registerModule(new EnumAsIonSymbolModule());
-        registerModule(m);
     }
 
     @SuppressWarnings("unchecked")

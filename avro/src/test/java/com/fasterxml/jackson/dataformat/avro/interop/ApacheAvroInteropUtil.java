@@ -17,7 +17,6 @@ import org.apache.avro.reflect.ReflectData;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroModule;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
 import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
@@ -82,7 +81,7 @@ public class ApacheAvroInteropUtil {
         }
     };
 
-    private static final AvroMapper MAPPER = new AvroMapper(new AvroModule());
+    private static final AvroMapper MAPPER = new AvroMapper();
 
     /*
      * Special subclass of ReflectData that knows how to resolve and bind generic types. This saves us much pain of
@@ -90,7 +89,7 @@ public class ApacheAvroInteropUtil {
      * implemented here.
      */
     private static final ReflectData PATCHED_AVRO_REFLECT_DATA = new ReflectData() {
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings({"unchecked" })
         @Override
         protected Schema createSchema(Type type, Map<String, Schema> names0) {
             /* Note, we abuse the fact that we can stick whatever we want into "names" and it won't interfere as long as we don't use String

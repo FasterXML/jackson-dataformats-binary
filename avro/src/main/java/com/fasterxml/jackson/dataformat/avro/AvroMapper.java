@@ -33,9 +33,14 @@ public class AvroMapper extends ObjectMapper
             super(f);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public AvroMapper build() {
-            return new AvroMapper(this);
+            AvroMapper m = new AvroMapper(this);
+            if (_modules != null) {
+                m.registerModules(_modules.values());
+            }
+            return m;
         }
 
         /*
@@ -113,26 +118,6 @@ public class AvroMapper extends ObjectMapper
      */
     public AvroMapper(AvroFactory f) {
         this(new Builder(f));
-    }
-
-    /**
-     * Constructor that will construct mapper with standard {@link AvroFactory}
-     * as codec, and register given modules but nothing else (that is, will
-     * only register {@link AvroModule} if it's included as argument.
-     */
-    public AvroMapper(Module... modules) {
-        this(new AvroFactory());
-        registerModules(modules);
-    }
-
-    /**
-     * Constructor that will construct mapper with specified {@link AvroFactory}
-     * as codec, and register given modules but nothing else (that is, will
-     * only register {@link AvroModule} if it's included as argument.
-     */
-    public AvroMapper(AvroFactory f, Module... modules) {
-        this(f);
-        registerModules(modules);
     }
 
     public AvroMapper(Builder b) {

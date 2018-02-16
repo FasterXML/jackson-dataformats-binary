@@ -33,12 +33,17 @@ public class ProtobufMapper extends ObjectMapper
             super(f);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public ProtobufMapper build() {
-            return new ProtobufMapper(this);
+            ProtobufMapper m = new ProtobufMapper(this);
+            if (_modules != null) {
+                m.registerModules(_modules.values());
+            }
+            return m;
         }
     }
-    
+
     protected ProtobufSchemaLoader _schemaLoader = ProtobufSchemaLoader.std;
 
     /**
