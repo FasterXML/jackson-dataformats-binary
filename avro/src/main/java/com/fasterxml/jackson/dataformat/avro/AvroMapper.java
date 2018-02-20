@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
@@ -33,14 +34,9 @@ public class AvroMapper extends ObjectMapper
             super(f);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
-        public AvroMapper build() {
-            AvroMapper m = new AvroMapper(this);
-            if (_modules != null) {
-                m.registerModules(_modules.values());
-            }
-            return m;
+        public AvroMapper _constructMapper(MapperBuilderState state) {
+            return new AvroMapper(this);
         }
 
         /*
@@ -121,8 +117,7 @@ public class AvroMapper extends ObjectMapper
     }
 
     public AvroMapper(Builder b) {
-        super(b);
-        registerModule(new AvroModule());
+        super(b.addModule(new AvroModule()));
     }
 
     @SuppressWarnings("unchecked")

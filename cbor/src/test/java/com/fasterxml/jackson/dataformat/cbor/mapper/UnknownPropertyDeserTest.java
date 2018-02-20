@@ -149,8 +149,9 @@ public class UnknownPropertyDeserTest
      */
     public void testUnknownHandlingIgnoreWithHandler() throws Exception
     {
-        ObjectMapper mapper = cborMapper();
-        mapper.addHandler(new MyHandler());
+        ObjectMapper mapper = cborMapperBuilder()
+                .addHandler(new MyHandler())
+                .build();
         TestBean result = mapper.readValue(cborDoc(JSON_UNKNOWN_FIELD), TestBean.class);
         assertNotNull(result);
         assertEquals(1, result._a);
@@ -280,14 +281,15 @@ public class UnknownPropertyDeserTest
 
     public void testIssue987() throws Exception
     {
-        ObjectMapper mapper = cborMapper();
-        mapper.addHandler(new DeserializationProblemHandler() {
-            @Override
-            public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
-                p.skipChildren();
-                return true;
-            }
-        });
+        ObjectMapper mapper = cborMapperBuilder()
+                .addHandler(new DeserializationProblemHandler() {
+                @Override
+                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
+                    p.skipChildren();
+                    return true;
+                }
+                })
+                .build();
 
         byte[] input = cborDoc("[{\"aProperty\":\"x\",\"unknown\":{\"unknown\":{}}}]");
         List<Bean987> deserializedList = mapper.readValue(input,

@@ -84,7 +84,6 @@ public class AvroModule extends Module
         _addSerializers(context);
     }
 
-    // since 2.9
     protected void _addIntrospector(SetupContext context) {
         if (_intr != null) {
             // insert (instead of append) to have higher precedence
@@ -92,13 +91,11 @@ public class AvroModule extends Module
         }
     }
 
-    // since 2.9
     protected void _addModifiers(SetupContext context) {
         // 08-Mar-2016, tatu: to fix [dataformat-avro#35], need to prune 'schema' property:
-        context.addBeanSerializerModifier(new AvroSerializerModifier());
+        context.addSerializerModifier(new AvroSerializerModifier());
     }
 
-    // since 2.9
     protected void _addDeserializers(SetupContext context) {
         // Override untyped deserializer to one that checks for type information in the schema before going to default handling
         SimpleDeserializers desers = new SimpleDeserializers();

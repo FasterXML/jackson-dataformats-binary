@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -33,14 +35,9 @@ public class ProtobufMapper extends ObjectMapper
             super(f);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
-        public ProtobufMapper build() {
-            ProtobufMapper m = new ProtobufMapper(this);
-            if (_modules != null) {
-                m.registerModules(_modules.values());
-            }
-            return m;
+        public ProtobufMapper _constructMapper(MapperBuilderState state) {
+            return new ProtobufMapper(this);
         }
     }
 

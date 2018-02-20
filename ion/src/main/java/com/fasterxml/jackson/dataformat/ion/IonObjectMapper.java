@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
@@ -66,14 +67,9 @@ public class IonObjectMapper extends ObjectMapper
             addModule(m);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
-        public IonObjectMapper build() {
-            IonObjectMapper m = new IonObjectMapper(this);
-            if (_modules != null) {
-                m.registerModules(_modules.values());
-            }
-            return m;
+        public IonObjectMapper _constructMapper(MapperBuilderState state) {
+            return new IonObjectMapper(this);
         }
     }
 

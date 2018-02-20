@@ -146,8 +146,9 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      */
     public void testUnknownHandlingIgnoreWithHandler() throws Exception
     {
-        ObjectMapper mapper = smileMapper();
-        mapper.addHandler(new MyHandler());
+        ObjectMapper mapper = smileMapperBuilder()
+                .addHandler(new MyHandler())
+                .build();
         TestBean result = mapper.readValue(_smileDoc(JSON_UNKNOWN_FIELD), TestBean.class);
         assertNotNull(result);
         assertEquals(1, result._a);
@@ -277,14 +278,15 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
 
     public void testIssue987() throws Exception
     {
-        ObjectMapper mapper = smileMapper();
-        mapper.addHandler(new DeserializationProblemHandler() {
+        ObjectMapper mapper = smileMapperBuilder()
+                .addHandler(new DeserializationProblemHandler() {
             @Override
             public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
                 p.skipChildren();
                 return true;
             }
-        });
+                })
+                .build();
 
         byte[] input = _smileDoc("[{\"aProperty\":\"x\",\"unknown\":{\"unknown\":{}}}]");
         List<Bean987> deserializedList = mapper.readValue(input,
