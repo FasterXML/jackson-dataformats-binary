@@ -189,8 +189,9 @@ public class PolymorphicRoundtripTest
     @Test
     public void testSimple() throws IOException {
         Bean original = new Bean("parent_field", new ChildBean("child_field"));
-        IonObjectMapper mapper = new IonObjectMapper();
-        mapper.registerModule(new IonAnnotationModule());
+        IonObjectMapper mapper = IonObjectMapper.builder()
+                .addModule(new IonAnnotationModule())
+                .build();
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
 
@@ -201,8 +202,9 @@ public class PolymorphicRoundtripTest
     @Test
     public void testSubclass() throws IOException {
         Bean original = new Bean("parent_field", new ChildBeanSub("child_field", "extended_field"));
-        IonObjectMapper mapper = new IonObjectMapper();
-        mapper.registerModule(new IonAnnotationModule());
+        IonObjectMapper mapper = IonObjectMapper.builder()
+                .addModule(new IonAnnotationModule())
+                .build();
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
 
@@ -217,8 +219,9 @@ public class PolymorphicRoundtripTest
         resolveAllTypes = true;
 
         Bean original = new Bean("parent_field", new ChildBean("child_field"));
-        IonObjectMapper mapper = new IonObjectMapper();
-        mapper.registerModule(new IonAnnotationModule());
+        IonObjectMapper mapper = IonObjectMapper.builder()
+                .addModule(new IonAnnotationModule())
+                .build();
         String serialized = mapper.writeValueAsString(original);
         Object obj = mapper.readValue(serialized, Object.class);
         assertTrue(obj instanceof Bean);
@@ -233,8 +236,9 @@ public class PolymorphicRoundtripTest
         preferredTypeId = "no match"; // setting non-null so that multiple type ids get serialized
 
         Bean original = new Bean("parent_field", new ChildBeanSub("child_field", "extended_field"));
-        IonObjectMapper mapper = new IonObjectMapper();
-        mapper.registerModule(new IonAnnotationModule());
+        IonObjectMapper mapper = IonObjectMapper.builder()
+                .addModule(new IonAnnotationModule())
+                .build();
         String serialized = mapper.writeValueAsString(original);
 
         // first, try deserializing with no preferred type id (no matching one, anyway). We expect the first type id
@@ -264,10 +268,9 @@ public class PolymorphicRoundtripTest
     public void testWithIonDate() throws IOException {
         resolveAllTypes = true;
         ObjectMapper mapper = IonObjectMapper.builder()
+                .addModule(new IonAnnotationModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
-        mapper.registerModule(new IonAnnotationModule());
-
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
         java.sql.Date sDate = new java.sql.Date(etime);
@@ -287,10 +290,9 @@ public class PolymorphicRoundtripTest
     public void testWithDateAsTimestamp() throws IOException {
         resolveAllTypes = true;
         ObjectMapper ionDateMapper = IonObjectMapper.builder()
+                .addModule(new IonAnnotationModule())
                 .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
-        ionDateMapper.registerModule(new IonAnnotationModule());
-        
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
         java.sql.Date sDate = new java.sql.Date(etime);
@@ -317,9 +319,8 @@ public class PolymorphicRoundtripTest
         
         IonObjectMapper mapper = IonObjectMapper.builder()
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .addModule(new IonAnnotationModule())
                 .build();
-        mapper.registerModule(new IonAnnotationModule());
-        
         // roundtrip
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
