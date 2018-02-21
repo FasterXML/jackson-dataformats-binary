@@ -39,11 +39,8 @@ public class AvroModule extends Module
     protected final static AvroAnnotationIntrospector INTR
            = new AvroAnnotationIntrospector();
 
-    /**
-     * @since 2.9
-     */
     protected AnnotationIntrospector _intr = INTR;
-    
+
     public AvroModule() { }
 
     @Override
@@ -62,8 +59,6 @@ public class AvroModule extends Module
     
     /**
      * Fluent method that configures this module instance 
-     *
-     * @since 2.9
      */
     public AvroModule withAnnotationIntrospector(AnnotationIntrospector intr) {
         _intr = intr;
@@ -103,7 +98,6 @@ public class AvroModule extends Module
         context.addDeserializers(desers);
     }
 
-    // since 2.9
     protected void _addSerializers(SetupContext context) {
         SimpleSerializers sers = new SimpleSerializers();
         sers.addSerializer(new SchemaSerializer());
