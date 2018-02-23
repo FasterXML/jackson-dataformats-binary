@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 
 import software.amazon.ion.IonSexp;
 import software.amazon.ion.IonSystem;
@@ -182,9 +181,10 @@ public class IonValueMapperTest {
 
     @Test
     public void testPojo4WithSexpInArrayIgnored() throws Exception {
-        IonObjectMapper mapper = new IonValueMapper(ionSystem);
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
+        IonObjectMapper mapper = IonObjectMapper.builder(ionF)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .propertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+                .build();
         String value = "{value:[([])], number:\"Random\"}";
         TestPojo4 test = mapper.readValue(ionSystem.singleValue(value), TestPojo4.class);
         assertNotNull(test);
@@ -192,13 +192,12 @@ public class IonValueMapperTest {
         assertEquals("Random", test.number);
     }
 
-    // 16-Feb-2018, tatu: Not 100% sure why it fails after changes to the way Module registration
-    //     occurs (at `jackson-databind`) level
-    /*
     @Test
     public void testPojo5WithSexpInArray() throws Exception {
-        IonObjectMapper mapper = new IonValueMapper(ionSystem);
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        IonObjectMapper mapper = IonObjectMapper.builder(ionF)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .propertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+                .build();
 
         String value = "{value:[([blah])], number:\"Random\"}";
         TestPojo5 test = mapper.readValue(ionSystem.singleValue(value), TestPojo5.class);
@@ -209,7 +208,6 @@ public class IonValueMapperTest {
 
         assertRoundTrip(value, TestPojo5.class);
     }
-    */
 
     private void assertRoundTrip(String ion, Class<?> clazz) throws IOException {
         IonValue expected = ionSystem.singleValue(ion);
