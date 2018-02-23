@@ -132,6 +132,14 @@ public class CBORFactory
         return new CBORFactory(this);
     }
 
+    /**
+     * Instances are immutable so just return `this`
+     */
+    @Override
+    public TokenStreamFactory snapshot() {
+        return this;
+    }
+
     /*
     /**********************************************************
     /* Serializable overrides

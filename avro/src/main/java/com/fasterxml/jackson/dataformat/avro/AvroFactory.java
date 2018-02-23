@@ -140,6 +140,14 @@ public class AvroFactory
         return new AvroFactory(this);
     }
 
+    /**
+     * Instances are immutable so just return `this`
+     */
+    @Override
+    public TokenStreamFactory snapshot() {
+        return this;
+    }
+    
     /*
     /**********************************************************
     /* Serializable overrides

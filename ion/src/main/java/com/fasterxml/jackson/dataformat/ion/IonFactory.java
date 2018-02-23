@@ -136,12 +136,18 @@ public class IonFactory
     }
 
     @Override
-    public IonFactory copy()
-    {
-        // note: as with base class, must NOT copy mapper reference
+    public IonFactory copy() {
         return new IonFactory(this);
     }
 
+    /**
+     * Instances are immutable so just return `this`
+     */
+    @Override
+    public TokenStreamFactory snapshot() {
+        return this;
+    }
+    
     /*                                                                                       
     /**********************************************************                              
     /* Basic introspection                                                                  

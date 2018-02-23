@@ -53,6 +53,14 @@ public class ProtobufFactory
         return new ProtobufFactory(this);
     }
 
+    /**
+     * Instances are immutable so just return `this`
+     */
+    @Override
+    public TokenStreamFactory snapshot() {
+        return this;
+    }
+    
     /*
     /**********************************************************
     /* Serializable overrides

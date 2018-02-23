@@ -140,11 +140,18 @@ public class SmileFactory
     }
 
     @Override
-    public SmileFactory copy()
-    {
+    public SmileFactory copy() {
         return new SmileFactory(this);
     }
 
+    /**
+     * Instances are immutable so just return `this`
+     */
+    @Override
+    public TokenStreamFactory snapshot() {
+        return this;
+    }
+    
     /*
     /**********************************************************
     /* Serializable overrides
@@ -154,7 +161,6 @@ public class SmileFactory
     /**
      * Method that we need to override to actually make restoration go
      * through constructors etc.
-     * Also: must be overridden by sub-classes as well.
      */
     protected Object readResolve() {
         return new SmileFactory(this);
