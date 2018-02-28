@@ -35,6 +35,11 @@ public class AvroMapper extends ObjectMapper
             addModule(new AvroModule());
         }
 
+        public Builder(StateImpl state) {
+            super(state);
+            // no need to add module, should come by default
+        }
+        
         @Override
         public AvroMapper build() {
             return new AvroMapper(this);
@@ -43,7 +48,7 @@ public class AvroMapper extends ObjectMapper
         @Override
         protected MapperBuilderState _saveState() {
             // nothing extra, just format features
-            return new MapperBuilderState(this);
+            return new StateImpl(this);
         }
         
         /*
@@ -98,6 +103,23 @@ public class AvroMapper extends ObjectMapper
                 _formatGeneratorFeatures &= ~feature.getMask();
             }
             return this;
+        }
+
+        protected static class StateImpl extends MapperBuilderState
+            implements java.io.Serializable // important!
+        {
+            private static final long serialVersionUID = 3L;
+    
+            public StateImpl(Builder src) {
+                super(src);
+            }
+    
+            // We also need actual instance of state as base class can not implement logic
+             // for reinstating mapper (via mapper builder) from state.
+            @Override
+            protected Object readResolve() {
+                return new Builder(this).build();
+            }
         }
     }
 

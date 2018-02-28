@@ -34,6 +34,10 @@ public class ProtobufMapper extends ObjectMapper
             super(f);
         }
 
+        public Builder(StateImpl state) {
+            super(state);
+        }
+
         @Override
         public ProtobufMapper build() {
             return new ProtobufMapper(this);
@@ -41,7 +45,24 @@ public class ProtobufMapper extends ObjectMapper
 
         @Override
         protected MapperBuilderState _saveState() {
-            return new MapperBuilderState(this);
+            return new StateImpl(this);
+        }
+
+        protected static class StateImpl extends MapperBuilderState
+            implements java.io.Serializable // important!
+        {
+            private static final long serialVersionUID = 3L;
+    
+            public StateImpl(Builder src) {
+                super(src);
+            }
+    
+            // We also need actual instance of state as base class can not implement logic
+             // for reinstating mapper (via mapper builder) from state.
+            @Override
+            protected Object readResolve() {
+                return new Builder(this).build();
+            }
         }
     }
 
