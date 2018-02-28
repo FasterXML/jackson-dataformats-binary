@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
@@ -58,7 +59,8 @@ public class IonObjectMapper extends ObjectMapper
 
             // !!! 04-Jan-2018, tatu: needs to be reworked in future; may remain a module
             // Use native Ion timestamps for dates
-            SimpleModule m = new SimpleModule("IonTimestampModule", PackageVersion.VERSION);
+            SimpleModule m = new SimpleModule("IonTimestampModule", PackageVersion.VERSION,
+                    "IonTimestampModule");
             m.addSerializer(Date.class, new IonTimestampSerializers.IonTimestampJavaDateSerializer());
             m.addSerializer(java.sql.Date.class, new IonTimestampSerializers.IonTimestampSQLDateSerializer());
             m.addDeserializer(Date.class, new IonTimestampDeserializers.IonTimestampJavaDateDeserializer());
@@ -69,6 +71,11 @@ public class IonObjectMapper extends ObjectMapper
         @Override
         public IonObjectMapper build() {
             return new IonObjectMapper(this);
+        }
+
+        @Override
+        protected MapperBuilderState _saveState() {
+            return new MapperBuilderState(this);
         }
     }
 
