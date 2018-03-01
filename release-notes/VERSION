@@ -9,6 +9,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.5 (not yet released)
+
+#128 (protobuf) Fix skip unknown WireType.FIXED_64BIT value bug
+ (reported, contributed fix for by marsqing@github@github)
+
 2.9.4 (24-Jan-2018)
 
 No changes since 2.9.3
@@ -58,7 +63,7 @@ No changes since 2.9.3
  (reported by coder-hub@github)
 - (avro): Upgrade `avro-core` dep from 1.7.7 to 1.8.1
 
-2.8.11 (not yet released)
+2.8.11 (24-Dec-2017)
 
 #106: (protobuf) fix calling _skipUnknownValue() twice
  (reported, contributed fix for by marsqing@github@github)
