@@ -38,10 +38,9 @@ import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
  * the {@link #toString()} method. </li>
  * <li>{@link Union @Union} - Alias for <code>JsonSubTypes</code></li>
  * </ul>
- *
- * @since 2.9
  */
 public class AvroAnnotationIntrospector extends AnnotationIntrospector
+    implements java.io.Serializable
 {
     private static final long serialVersionUID = 1L;
 

@@ -31,11 +31,12 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroUntypedDeserializer;
  *    of {@link java.lang.Object}.
  *  </li>
  *</ul>
- *
- * @since 2.5
  */
 public class AvroModule extends Module
+    implements java.io.Serializable
 {
+    private static final long serialVersionUID = 3L;
+
     protected final static AvroAnnotationIntrospector INTR
            = new AvroAnnotationIntrospector();
 
