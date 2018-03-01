@@ -1003,7 +1003,7 @@ public class ProtobufParser extends ParserMinimalBase
             _skipBytes(4);
             break;
         case WireType.FIXED_64BIT:
-            _skipBytes(64);
+            _skipBytes(8);
             break;
         case WireType.LENGTH_PREFIXED:
             int len = _decodeLength();
