@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.JsonToken;
  * Context used at root level; basically just a container
  * over actual {@link AvroStructureReader}.
  */
-public final class RootReader extends AvroReadContext
+public class RootReader extends AvroReadContext
 {
     private final AvroParserImpl _parser;
     private final AvroStructureReader _valueReader;

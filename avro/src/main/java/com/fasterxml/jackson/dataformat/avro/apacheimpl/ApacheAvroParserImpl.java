@@ -15,7 +15,7 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
  * Implementation class that exposes additional internal API
  * to be used as callbacks by {@link AvroReadContext} implementations.
  */
-public final class ApacheAvroParserImpl extends AvroParserImpl
+public class ApacheAvroParserImpl extends AvroParserImpl
 {
     /*
     /**********************************************************

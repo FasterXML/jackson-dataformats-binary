@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.io.IOContext;
  * Implementation class that exposes additional internal API
  * to be used as callbacks by {@link AvroReadContext} implementations.
  */
-public final class JacksonAvroParserImpl extends AvroParserImpl
+public class JacksonAvroParserImpl extends AvroParserImpl
 {
     /**
      * Additionally we can combine UTF-8 decoding info into similar
