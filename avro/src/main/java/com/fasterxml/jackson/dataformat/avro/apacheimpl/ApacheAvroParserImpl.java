@@ -15,7 +15,7 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
  * Parser implementation that uses decoder from Apache Avro lib,
  * instead of Jackson native Avro decoder.
  */
-public final class ApacheAvroParserImpl extends AvroParserImpl
+public class ApacheAvroParserImpl extends AvroParserImpl
 {
     /*
     /**********************************************************

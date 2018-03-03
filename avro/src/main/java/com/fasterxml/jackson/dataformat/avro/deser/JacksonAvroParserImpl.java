@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 /**
  * Parser implementation that uses native Jackson avro decoder.
  */
-public final class JacksonAvroParserImpl extends AvroParserImpl
+public class JacksonAvroParserImpl extends AvroParserImpl
 {
     /**
      * Additionally we can combine UTF-8 decoding info into similar

@@ -18,7 +18,7 @@ import com.fasterxml.jackson.core.util.TextBuffer;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
-public final class CBORParser extends ParserMinimalBase
+public class CBORParser extends ParserMinimalBase
 {
     /**
      * Enumeration that defines all togglable features for CBOR generators.

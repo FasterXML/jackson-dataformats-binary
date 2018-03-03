@@ -13,6 +13,8 @@ Modules:
 
 #128 (protobuf) Fix skip unknown WireType.FIXED_64BIT value bug
  (reported, contributed fix for by marsqing@github@github)
+#129 (cbor) Remove "final" modifier from `CBORParser`
+ (suggested by jinzha@github)
 
 2.9.4 (24-Jan-2018)
 
