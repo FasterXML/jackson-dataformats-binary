@@ -14,10 +14,12 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -51,15 +53,6 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
         this.resolveAllTypes = resolveAllTypes;
     }
 
-    protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType) {
-        return null;
-    }
-
-    protected boolean shouldResolveType(AnnotatedClass ac) {
-        JsonTypeResolver typeResolverAnn = ac.getAnnotation(JsonTypeResolver.class);
-        return null != typeResolverAnn && IonAnnotationTypeResolverBuilder.class.equals(typeResolverAnn.value());
-    }
-
     /**
      * Provides a {@link TypeResolverBuilder} if the {@link AnnotatedClass} is enabled for type resolving, and a
      * {@link TypeIdResolver} can be instantiated.
@@ -76,7 +69,9 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
      * @return a type resolver builder that reads and writes Ion type annotations, or null
      */
     @Override
-    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, AnnotatedClass ac, JavaType baseType) {
+    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
+            Annotated ac, JavaType baseType, JsonTypeInfo.Value typeInfo)
+    {
         if (baseType.isArrayType() || baseType.isContainerType() || baseType.isPrimitive()) {
             // Ion type annotations are not useful for these data types
             return null;
@@ -101,6 +96,15 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
                 return typeResolverBuilder;
             }
         }
-        return super.findTypeResolver(config, ac, baseType); // Nop probably returns null ;D
+        return super.findTypeResolver(config, ac, baseType, typeInfo); // Nop probably returns null ;D
+    }
+
+    protected boolean shouldResolveType(Annotated ac) {
+        JsonTypeResolver typeResolverAnn = ac.getAnnotation(JsonTypeResolver.class);
+        return null != typeResolverAnn && IonAnnotationTypeResolverBuilder.class.equals(typeResolverAnn.value());
+    }
+
+    protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType) {
+        return null;
     }
 }
