@@ -175,11 +175,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
         //    latter since Avro support for "untyped" values is otherwise difficult.
         //    This seems to work for now, but maybe needs more work in future...
         if (baseType.isJavaLangObject() || (_getUnionTypes(ann) != null)) {
-            TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
-            if (typeInfo != null) {
-                resolver = resolver.defaultImpl(typeInfo.getDefaultImpl());
-            }
-            return resolver;
+            return AvroTypeResolverBuilder.construct(typeInfo);
         }
         return null;
     }

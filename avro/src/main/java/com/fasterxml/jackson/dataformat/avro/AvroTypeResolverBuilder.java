@@ -16,13 +16,22 @@ import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 /**
  * @since 2.9
  */
-public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
+public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
+{
+    protected AvroTypeResolverBuilder(JsonTypeInfo.Value config) {
+        super(config);
+    }
 
-    public AvroTypeResolverBuilder() {
-        super(JsonTypeInfo.Id.CUSTOM, // could be NONE, but there is type discriminator in Avro...
-                JsonTypeInfo.As.PROPERTY, // N/A for custom
-                "@class" // similarly, N/A
-                );
+    public static AvroTypeResolverBuilder construct(JsonTypeInfo.Value config) {
+        if (config == null) {
+            config = JsonTypeInfo.Value.construct(JsonTypeInfo.Id.CUSTOM, // could be NONE, but there is type discriminator in Avro...
+                    JsonTypeInfo.As.PROPERTY, // N/A for custom
+                    "@class", // similarly, N/A
+                    null, // defaultImpl
+                    false); // id visible
+        }
+        // no use for annotation info, at this point?
+        return new AvroTypeResolverBuilder(config);
     }
 
     @Override
@@ -37,7 +46,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
             Collection<NamedType> subtypes)
     {
         Class<?> rawDefault = getDefaultImpl();
-        JavaType defaultImpl = (rawDefault == null) ? null : 
+        JavaType defaultImpl = (rawDefault == null) ? null :
             config.constructType(rawDefault);
         return new AvroTypeDeserializer(baseType,
                 idResolver(config, baseType, subtypes, true, true),
