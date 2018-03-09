@@ -47,7 +47,8 @@ public class IonAnnotationTypeResolverBuilder
     private boolean typeIdVisible;
 
     // So that it can be instantiated from annotation
-    protected IonAnnotationTypeResolverBuilder() { }
+    protected IonAnnotationTypeResolverBuilder() {
+    }
 
     protected IonAnnotationTypeResolverBuilder(Class<?> defaultImpl,
             TypeIdResolver idResolver) {
@@ -97,13 +98,16 @@ public class IonAnnotationTypeResolverBuilder
             defaultImpl = settings.getDefaultImpl();
             typeIdVisible = settings.getIdVisible();
         }
-        typeIdResolver = res;
+        // 09-Mar-2018, tatu: Temporary check, should not be needed in future:
+        if (res != null) {
+            typeIdResolver = res;
+        }
         return this;
     }
 
     @Override
     public IonAnnotationTypeResolverBuilder defaultImpl(Class<?> di) {
-        this.defaultImpl = di;
+        defaultImpl = di;
         return this;
     }
 }

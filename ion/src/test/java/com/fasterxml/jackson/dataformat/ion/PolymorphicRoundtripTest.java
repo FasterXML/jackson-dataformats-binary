@@ -201,10 +201,10 @@ public class PolymorphicRoundtripTest
 
     @Test
     public void testSubclass() throws IOException {
-        Bean original = new Bean("parent_field", new ChildBeanSub("child_field", "extended_field"));
         IonObjectMapper mapper = IonObjectMapper.builder()
                 .addModule(new IonAnnotationModule())
                 .build();
+        Bean original = new Bean("parent_field", new ChildBeanSub("child_field", "extended_field"));
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
 
