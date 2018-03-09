@@ -17,6 +17,7 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -43,8 +44,21 @@ public class IonAnnotationTypeResolverBuilder
     /**
      * Whether type id should be exposed to deserializers or not
      */
-    private boolean typeIdVisible = false;
+    private boolean typeIdVisible;
 
+    protected IonAnnotationTypeResolverBuilder(Class<?> defaultImpl,
+            TypeIdResolver idResolver) {
+        this.defaultImpl = defaultImpl;
+        typeIdVisible = false;
+        typeIdResolver = idResolver;
+    }
+
+    public static IonAnnotationTypeResolverBuilder construct(JavaType baseType,
+            JsonTypeInfo.Value typeInfo, TypeIdResolver idResolver)
+    {
+        return new IonAnnotationTypeResolverBuilder(baseType.getRawClass(), idResolver);
+    }
+    
     @Override
     public Class<?> getDefaultImpl() {
         return defaultImpl;
@@ -82,9 +96,11 @@ public class IonAnnotationTypeResolverBuilder
     }
 
     @Override
-    public IonAnnotationTypeResolverBuilder init(JsonTypeInfo.Id idType, TypeIdResolver res) {
-        typeIdResolver = res;
-        return this;
+    public IonAnnotationTypeResolverBuilder init(JsonTypeInfo.Value settings,
+            TypeIdResolver res) {
+        defaultImpl = settings.getDefaultImpl();
+        typeIdVisible = settings.getIdVisible();
+        return null;
     }
 
     @Override

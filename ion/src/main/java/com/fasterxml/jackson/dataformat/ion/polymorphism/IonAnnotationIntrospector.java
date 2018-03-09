@@ -15,6 +15,7 @@
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
@@ -89,11 +90,7 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
             // If we still haven't found one, we can't move forward.
             if (null != typeIdResolver) {
                 typeIdResolver.init(baseType);
-
-                TypeResolverBuilder<?> typeResolverBuilder = new IonAnnotationTypeResolverBuilder();
-                typeResolverBuilder.init(/* ignored */ null, typeIdResolver);
-                typeResolverBuilder.defaultImpl(baseType.getRawClass());
-                return typeResolverBuilder;
+                return IonAnnotationTypeResolverBuilder.construct(baseType, typeInfo, typeIdResolver);
             }
         }
         return super.findTypeResolver(config, ac, baseType, typeInfo); // Nop probably returns null ;D
