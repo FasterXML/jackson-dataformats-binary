@@ -45,8 +45,10 @@ public class RecordVisitor
         _type = type;
         _schemas = schemas;
         // Check if the schema for this record is overridden
-        BeanDescription bean = getProvider().getConfig().introspectDirectClassAnnotations(_type);
-        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
+        SerializationConfig config = p.getConfig();
+        BeanDescription bean = config.introspectDirectClassAnnotations(_type);
+        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(config,
+                bean.getClassInfo());
         AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
