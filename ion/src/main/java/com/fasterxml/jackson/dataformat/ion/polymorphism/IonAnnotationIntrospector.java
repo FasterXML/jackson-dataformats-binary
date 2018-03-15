@@ -69,6 +69,10 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
      * @param baseType a JavaType representing the same class
      * @return a type resolver builder that reads and writes Ion type annotations, or null
      */
+
+    // 14-Mar-2018, tatu: Unfortunately not 100% sure how to translate 2.x code to 3.x
+    /*
+    
     @Override
     public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
             Annotated ac, JavaType baseType, JsonTypeInfo.Value typeInfo)
@@ -95,6 +99,7 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
         }
         return super.findTypeResolver(config, ac, baseType, typeInfo); // Nop probably returns null ;D
     }
+    */
 
     protected boolean shouldResolveType(Annotated ac) {
         JsonTypeResolver typeResolverAnn = ac.getAnnotation(JsonTypeResolver.class);

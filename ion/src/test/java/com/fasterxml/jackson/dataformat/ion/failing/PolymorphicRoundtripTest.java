@@ -12,7 +12,7 @@
  * language governing permissions and limitations under the License.
  */
 
-package com.fasterxml.jackson.dataformat.ion;
+package com.fasterxml.jackson.dataformat.ion.failing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

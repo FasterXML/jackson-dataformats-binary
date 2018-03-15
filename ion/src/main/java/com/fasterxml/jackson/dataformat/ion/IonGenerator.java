@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.type.WritableTypeId;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
 import software.amazon.ion.IonType;
 import software.amazon.ion.IonValue;
@@ -202,7 +201,7 @@ public class IonGenerator
      *
      * @param annotation a type annotation
      * 
-     * @see IonAnnotationTypeSerializer
+     * @see com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer
      */
     public void annotateNextValue(String annotation) {
         // We're not calling _verifyValueWrite because this doesn't actually write anything -- writing happens upon
