@@ -174,7 +174,7 @@ public class RecordVisitor
                     if (prov == null) {
                         throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
                     }
-                    ser = prov.findValueSerializer(prop.getType(), prop);
+                    ser = prov.findPrimaryPropertySerializer(prop.getType(), prop);
                 }
                 VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
                 ser.acceptJsonFormatVisitor(visitor, prop.getType());
