@@ -5,6 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.dataformat.avro.AvroDate;
+import com.fasterxml.jackson.dataformat.avro.AvroDecimal;
+import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
+import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
+import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
+import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
@@ -156,27 +163,65 @@ public class RecordVisitor
             if (fixedSize != null) {
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
             } else {
-                JsonSerializer<?> ser = null;
+                AvroDecimal decimal = prop.getAnnotation(AvroDecimal.class);
+                if(decimal!= null) {
+                    LogicalTypes.Decimal d = LogicalTypes.decimal(decimal.precision(), decimal.scale());
+                    writerSchema = d
+                        .addToSchema(Schema.create(Type.BYTES));
+                    d.validate(writerSchema);
+                } else {
+                    AvroTimestampMillisecond timestampMillisecond = prop.getAnnotation(AvroTimestampMillisecond.class);
+                    if(timestampMillisecond != null) {
+                        writerSchema = LogicalTypes.timestampMillis()
+                            .addToSchema(Schema.create(Type.LONG));
+                    } else {
+                        AvroTimestampMicrosecond timestampMicrosecond = prop.getAnnotation(AvroTimestampMicrosecond.class);
+                        if(timestampMicrosecond!=null){
+                            writerSchema = LogicalTypes.timestampMicros()
+                                .addToSchema(Schema.create(Type.LONG));
+                        } else {
+                            AvroDate date = prop.getAnnotation(AvroDate.class);
+                            if(date!=null){
+                                writerSchema = LogicalTypes.date()
+                                    .addToSchema(Schema.create(Type.INT));
+                            } else {
+                                AvroTimeMillisecond timeMillisecond = prop.getAnnotation(AvroTimeMillisecond.class);
+                                if(timeMillisecond!=null) {
+                                    writerSchema = LogicalTypes.timeMillis()
+                                        .addToSchema(Schema.create(Type.INT));
+                                } else {
+                                    AvroTimeMicrosecond timeMicrosecond = prop.getAnnotation(AvroTimeMicrosecond.class);
+                                    if(timeMicrosecond!=null) {
+                                        writerSchema = LogicalTypes.timeMicros()
+                                            .addToSchema(Schema.create(Type.LONG));
+                                    } else {
+                                        JsonSerializer<?> ser = null;
 
-                // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
-                if (prop instanceof BeanPropertyWriter) {
-                    BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
-                    ser = bpw.getSerializer();
-                    /*
-                     * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
-                     */
-                    optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
-                }
-                final SerializerProvider prov = getProvider();
-                if (ser == null) {
-                    if (prov == null) {
-                        throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                                        // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
+                                        if (prop instanceof BeanPropertyWriter) {
+                                            BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
+                                            ser = bpw.getSerializer();
+                                            /*
+                                             * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
+                                             */
+                                            optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
+                                        }
+                                        final SerializerProvider prov = getProvider();
+                                        if (ser == null) {
+                                            if (prov == null) {
+                                                throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                                            }
+                                            ser = prov.findValueSerializer(prop.getType(), prop);
+                                        }
+                                        VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
+                                        ser.acceptJsonFormatVisitor(visitor, prop.getType());
+                                        writerSchema = visitor.getAvroSchema();
+                                    }
+                                }
+                            }
+                        }
                     }
-                    ser = prov.findValueSerializer(prop.getType(), prop);
                 }
-                VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
-                ser.acceptJsonFormatVisitor(visitor, prop.getType());
-                writerSchema = visitor.getAvroSchema();
             }
 
             /* 23-Nov-2012, tatu: Actually let's also assume that primitive type values
