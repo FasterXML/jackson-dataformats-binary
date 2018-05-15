@@ -12,15 +12,29 @@ import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaParseException;
+import org.junit.Assert;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 public class TestLogicalTypes extends AvroTestBase {
 
-  static class DecimalType {
+  static class BytesDecimalType {
     @JsonProperty(required = true)
     @AvroDecimal(precision = 5)
+    public BigDecimal value;
+  }
+
+  static class FixedNoNameDecimalType {
+    @JsonProperty(required = true)
+    @AvroDecimal(precision = 5, schemaType = Schema.Type.FIXED)
+    public BigDecimal value;
+  }
+
+  static class FixedDecimalType {
+    @JsonProperty(required = true)
+    @AvroDecimal(precision = 5, schemaType = Schema.Type.FIXED, typeName = "foo", typeNamespace = "com.fasterxml.jackson.dataformat.avro.schema", fixedSize = 8)
     public BigDecimal value;
   }
 
@@ -72,11 +86,34 @@ public class TestLogicalTypes extends AvroTestBase {
     field.schema().getLogicalType().validate(field.schema());
   }
 
-  public void testDecimalType() throws JsonMappingException {
-    AvroSchema avroSchema = getSchema(DecimalType.class);
+  public void testFixedNoNameDecimalType() throws JsonMappingException {
+    try {
+      AvroSchema avroSchema = getSchema(FixedNoNameDecimalType.class);
+      Schema schema = avroSchema.getAvroSchema();
+      Schema.Field field = schema.getField("value");
+      assertLogicalType(field, Schema.Type.BYTES, "decimal");
+      assertEquals(5, field.schema().getObjectProp("precision"));
+      assertEquals(0, field.schema().getObjectProp("scale"));
+      Assert.fail("SchemaParseException should have been thrown");
+    } catch (SchemaParseException ex) {
+
+    }
+  }
+
+  public void testBytesDecimalType() throws JsonMappingException {
+    AvroSchema avroSchema = getSchema(BytesDecimalType.class);
     Schema schema = avroSchema.getAvroSchema();
     Schema.Field field = schema.getField("value");
     assertLogicalType(field, Schema.Type.BYTES, "decimal");
+    assertEquals(5, field.schema().getObjectProp("precision"));
+    assertEquals(0, field.schema().getObjectProp("scale"));
+  }
+
+  public void testFixedDecimalType() throws JsonMappingException {
+    AvroSchema avroSchema = getSchema(FixedDecimalType.class);
+    Schema schema = avroSchema.getAvroSchema();
+    Schema.Field field = schema.getField("value");
+    assertLogicalType(field, Schema.Type.FIXED, "decimal");
     assertEquals(5, field.schema().getObjectProp("precision"));
     assertEquals(0, field.schema().getObjectProp("scale"));
   }
