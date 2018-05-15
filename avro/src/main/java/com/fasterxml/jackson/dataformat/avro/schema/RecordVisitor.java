@@ -166,8 +166,19 @@ public class RecordVisitor
                 AvroDecimal decimal = prop.getAnnotation(AvroDecimal.class);
                 if(decimal!= null) {
                     LogicalTypes.Decimal d = LogicalTypes.decimal(decimal.precision(), decimal.scale());
-                    writerSchema = d
-                        .addToSchema(Schema.create(Type.BYTES));
+                    Schema s;
+                    if(Type.BYTES == decimal.schemaType()) {
+                        s = Schema.create(Type.BYTES);
+                    } else if(Type.FIXED == decimal.schemaType()) {
+                        s = Schema.createFixed(decimal.typeName(),
+                            null,
+                            decimal.typeNamespace(),
+                            decimal.fixedSize()
+                        );
+                    } else {
+                        throw new IllegalStateException("Avro schema type must be BYTES or FIXED.");
+                    }
+                    writerSchema = d.addToSchema(s);
                     d.validate(writerSchema);
                 } else {
                     AvroTimestampMillisecond timestampMillisecond = prop.getAnnotation(AvroTimestampMillisecond.class);
