@@ -14,7 +14,6 @@ import java.util.Map;
 import lombok.Data;
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Stringable;
-import org.apache.avro.specific.SpecificData;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
@@ -26,8 +25,8 @@ import static org.junit.Assume.assumeTrue;
 /**
  * Tests support for using classes marked {@link Stringable @Stringable} as map keys. These classes must have a constructor which accepts a
  * single string as an argument, and their {@link #toString()} must return a serialized version of the object that can be passed back into
- * the constructor to recreate it. In addition, Avro considers the following classes {@link SpecificData#stringableClasses} stringable by
- * default}:
+ * the constructor to recreate it. In addition, Avro considers the following classes
+ * stringable (see {code SpecificData.stringableClasses()}) by default:
  * <ul>
  * <li>{@link File}</li>
  * <li>{@link BigInteger}</li>

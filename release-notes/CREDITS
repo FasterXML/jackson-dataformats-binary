@@ -60,5 +60,11 @@ philipa@github
  (2.9.3)
 
 Jacek Lach (JacekLach@github)
+
 * Reported #124: Invalid value returned for negative int32 where the absolute value is > 2^31 - 1
  (2.9.3)
+
+Leo Wang (wanglingsong@github)
+
+* Reported #135: Infinite sequence of `END_OBJECT` tokens returned at end of streaming read
+ (2.9.6)

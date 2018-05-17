@@ -9,6 +9,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.6 (not yet released)
+
+#135: Infinite sequence of `END_OBJECT` tokens returned at end of streaming read
+ (reported by Leo W)
+
 2.9.5 (26-Feb-2018)
 
 #128 (protobuf) Fix skip unknown WireType.FIXED_64BIT value bug
