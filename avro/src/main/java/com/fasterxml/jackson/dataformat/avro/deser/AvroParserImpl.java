@@ -562,6 +562,17 @@ public abstract class AvroParserImpl
 
     /*
     /**********************************************************
+    /* Methods for AvroReadContext implementations: decimals
+    /**********************************************************
+     */
+
+    public abstract JsonToken decodeBytesDecimal(int scale) throws IOException;
+    public abstract void skipBytesDecimal() throws IOException;
+    public abstract JsonToken decodeFixedDecimal(int scale, int size) throws IOException;
+    public abstract void skipFixedDecimal(int size) throws IOException;
+
+    /*
+    /**********************************************************
     /* Methods for AvroReadContext impls, other
     /**********************************************************
      */

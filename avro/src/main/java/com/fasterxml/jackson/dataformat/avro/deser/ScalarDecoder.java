@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonToken;
@@ -543,6 +544,102 @@ public abstract class ScalarDecoder
             @Override
             public void skipValue(AvroParserImpl parser) throws IOException {
                 parser.skipFixed(_size);
+            }
+        }
+    }
+
+    protected final static class FixedDecimalReader extends ScalarDecoder {
+        private final int _scale;
+        private final int _size;
+
+        public FixedDecimalReader(int scale, int size) {
+            _scale = scale;
+            _size = size;
+        }
+
+        @Override
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeFixedDecimal(_scale, _size);
+        }
+
+        @Override
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipFixedDecimal(_size);
+        }
+
+        @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(BigDecimal.class);
+        }
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper, getTypeId(), _scale, _size);
+        }
+
+        private final static class FR extends AvroFieldReader {
+            private final int _scale;
+            private final int _size;
+            public FR(String name, boolean skipper, String typeId, int scale, int size) {
+                super(name, skipper, typeId);
+                _scale = scale;
+                _size = size;
+            }
+
+            @Override
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeFixedDecimal(_scale, _size);
+            }
+
+            @Override
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipFixedDecimal(_size);
+            }
+        }
+    }
+
+    protected final static class BytesDecimalReader extends ScalarDecoder {
+        private final int _scale;
+
+        public BytesDecimalReader(int scale) {
+            _scale = scale;
+        }
+
+        @Override
+        public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
+            return parser.decodeBytesDecimal(_scale);
+        }
+
+        @Override
+        protected void skipValue(AvroParserImpl parser) throws IOException {
+            parser.skipBytesDecimal();
+        }
+
+        @Override
+        public String getTypeId() {
+            return AvroSchemaHelper.getTypeId(BigDecimal.class);
+        }
+
+        @Override
+        public AvroFieldReader asFieldReader(String name, boolean skipper) {
+            return new FR(name, skipper, getTypeId(), _scale);
+        }
+
+        private final static class FR extends AvroFieldReader {
+            private final int _scale;
+            public FR(String name, boolean skipper, String typeId, int scale) {
+                super(name, skipper, typeId);
+                _scale = scale;
+            }
+
+            @Override
+            public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
+                return parser.decodeBytesDecimal(_scale);
+            }
+
+            @Override
+            public void skipValue(AvroParserImpl parser) throws IOException {
+                parser.skipFloat();
             }
         }
     }

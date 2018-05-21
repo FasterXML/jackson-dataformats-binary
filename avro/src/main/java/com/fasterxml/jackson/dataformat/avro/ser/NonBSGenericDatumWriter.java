@@ -1,86 +1,36 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
-import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.io.Encoder;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+
 /**
  * Need to sub-class to prevent encoder from crapping on writing an optional
  * Enum value (see [dataformat-avro#12])
- * 
+ *
  * @since 2.5
  */
 public class NonBSGenericDatumWriter<D>
 	extends GenericDatumWriter<D>
 {
+    private static final GenericData GENERIC_DATA = GenericData.get();
+
     private final static Class<?> CLS_STRING = String.class;
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
     private final static Class<?> CLS_BIG_INTEGER = BigInteger.class;
+    private final static Conversions.DecimalConversion DECIMAL_CONVERSION = new Conversions.DecimalConversion();
 
-    private final GenericData genericData;
 
     public NonBSGenericDatumWriter(Schema root) {
-	    super(root);
-	    genericData = GenericData.get();
-
-        Map<String, Conversion<?>> conversions = new HashMap<>();
-	    if(Type.RECORD == root.getType()) {
-	        for(Schema.Field field:root.getFields()) {
-	            Schema fieldSchema;
-
-	            if(Type.UNION == field.schema().getType()) {
-	                fieldSchema = AvroWriteContext.resolveUnionType(field.schema(), null);
-                } else {
-	                fieldSchema = field.schema();
-                }
-	            if(null==fieldSchema.getLogicalType()) {
-	                continue;
-                }
-                String logicalTypeName = fieldSchema.getLogicalType().getName();
-	            if(conversions.containsKey(logicalTypeName)){
-	                continue;
-                }
-                switch (logicalTypeName) {
-                    case "decimal":
-                        conversions.put(logicalTypeName, new Conversions.DecimalConversion());
-                        break;
-                    case "date":
-                        conversions.put(logicalTypeName, new TimeConversions.DateConversion());
-                        break;
-                    case "time-millis":
-                        conversions.put(logicalTypeName, new TimeConversions.TimeConversion());
-                        break;
-                    case "time-micros":
-                        conversions.put(logicalTypeName, new TimeConversions.TimeMicrosConversion());
-                        break;
-                    case "timestamp-millis":
-                        conversions.put(logicalTypeName, new TimeConversions.TimestampConversion());
-                        break;
-                    case "timestamp-micros":
-                        conversions.put(logicalTypeName, new TimeConversions.TimestampMicrosConversion());
-                        break;
-                        default:
-                            throw new UnsupportedOperationException(
-                                String.format("%s is not a supported logical type.", logicalTypeName)
-                            );
-                }
-            }
-            for(Conversion<?> conversion: conversions.values()) {
-	            genericData.addLogicalTypeConversion(conversion);
-            }
-        }
+	super(root);
     }
 
     @Override
@@ -108,7 +58,30 @@ public class NonBSGenericDatumWriter<D>
             }
             break;
         case ENUM:
-            super.writeWithoutConversion(schema, genericData.createEnum(datum.toString(), schema), out);
+            super.writeWithoutConversion(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
+            return;
+        case FIXED:
+            if(null!=schema.getLogicalType() && "decimal".equals(schema.getLogicalType().getName())) {
+                super.writeWithoutConversion(
+                    schema,
+                    DECIMAL_CONVERSION.toFixed(((BigDecimal) datum), schema, schema.getLogicalType()),
+                    out
+                );
+                return;
+            }
+            super.writeWithoutConversion(schema, datum, out);
+            return;
+        case BYTES:
+            //TODO: This is ugly and I don't like the string check.
+            if(null!=schema.getLogicalType() && "decimal".equals(schema.getLogicalType().getName())) {
+                super.writeWithoutConversion(
+                    schema,
+                    DECIMAL_CONVERSION.toBytes(((BigDecimal) datum), schema, schema.getLogicalType()),
+                    out
+                );
+                return;
+            }
+            super.writeWithoutConversion(schema, datum, out);
             return;
         case INT:
             if (datum.getClass() == CLS_STRING) {
@@ -151,7 +124,7 @@ public class NonBSGenericDatumWriter<D>
             ((EncodedDatum) datum).write(out);
             return;
         }
-//        super.writeWithoutConversion(schema, datum, out);
-        super.write(schema, datum, out);
+        super.writeWithoutConversion(schema, datum, out);
+//        super.write(schema, datum, out);
     }
 }

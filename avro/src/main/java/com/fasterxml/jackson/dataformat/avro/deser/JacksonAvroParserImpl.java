@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -991,6 +993,32 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     @Override
     public int decodeEnum() throws IOException {
         return (_enumIndex = decodeInt());
+    }
+
+    @Override
+    public JsonToken decodeBytesDecimal(int scale) throws IOException {
+        decodeBytes();
+        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numTypesValid = NR_BIGDECIMAL;
+        return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    @Override
+    public void skipBytesDecimal() throws IOException {
+        skipBytes();
+    }
+
+    @Override
+    public JsonToken decodeFixedDecimal(int scale, int size) throws IOException {
+        decodeFixed(size);
+        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numTypesValid = NR_BIGDECIMAL;
+        return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    @Override
+    public void skipFixedDecimal(int size) throws IOException {
+        skipFixed(size);
     }
 
     @Override

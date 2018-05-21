@@ -372,6 +372,26 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         return (_enumIndex = _decoder.readEnum());
     }
 
+    @Override
+    public JsonToken decodeBytesDecimal(int scale) throws IOException {
+        return null;
+    }
+
+    @Override
+    public void skipBytesDecimal() throws IOException {
+
+    }
+
+    @Override
+    public JsonToken decodeFixedDecimal(int scale, int size) throws IOException {
+        return null;
+    }
+
+    @Override
+    public void skipFixedDecimal(int size) throws IOException {
+
+    }
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext impls, other
