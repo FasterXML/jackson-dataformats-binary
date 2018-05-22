@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import org.apache.avro.io.BinaryDecoder;
 
@@ -374,22 +376,28 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public JsonToken decodeBytesDecimal(int scale) throws IOException {
-        return null;
+        decodeBytes();
+        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numTypesValid = NR_BIGDECIMAL;
+        return JsonToken.VALUE_NUMBER_FLOAT;
     }
 
     @Override
     public void skipBytesDecimal() throws IOException {
-
+        skipBytes();
     }
 
     @Override
     public JsonToken decodeFixedDecimal(int scale, int size) throws IOException {
-        return null;
+        decodeFixed(size);
+        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numTypesValid = NR_BIGDECIMAL;
+        return JsonToken.VALUE_NUMBER_FLOAT;
     }
 
     @Override
     public void skipFixedDecimal(int size) throws IOException {
-
+        skipFixed(size);
     }
 
     /*

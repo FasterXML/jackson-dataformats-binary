@@ -26,6 +26,8 @@ public class TimestampMicrosTest extends LogicalTypeTestCase<TimestampMicrosTest
     }
   }
 
+  static final Date VALUE = new Date(1526943920123L);
+
   @Override
   protected Class<RequiredTimestampMicros> dataClass() {
     return RequiredTimestampMicros.class;
@@ -44,12 +46,12 @@ public class TimestampMicrosTest extends LogicalTypeTestCase<TimestampMicrosTest
   @Override
   protected RequiredTimestampMicros testData() {
     RequiredTimestampMicros v = new RequiredTimestampMicros();
-    v.value = new Date(1526943920123L);
+    v.value = VALUE;
     return v;
   }
 
   @Override
   protected Object convertedValue() {
-    return 1526943920123L * 1000L;
+    return VALUE.getTime() * 1000L;
   }
 }

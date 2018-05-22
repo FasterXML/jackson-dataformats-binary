@@ -43,7 +43,7 @@ public class FixedDecimalTest extends LogicalTypeTestCase<FixedDecimalTest.Fixed
     public BigDecimal value;
 
     @Override
-    BigDecimal value() {
+    public BigDecimal value() {
       return this.value;
     }
   }

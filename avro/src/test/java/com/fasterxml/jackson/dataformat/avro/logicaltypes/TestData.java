@@ -1,5 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.logicaltypes;
 
-abstract class TestData<T> {
-  abstract T value();
+public abstract class TestData<T> {
+  public abstract T value();
 }

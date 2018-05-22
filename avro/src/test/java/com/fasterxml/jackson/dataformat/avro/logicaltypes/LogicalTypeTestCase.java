@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.logicaltypes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroMicroTimeModule;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import junit.framework.TestCase;
 import org.apache.avro.Schema;
@@ -48,6 +49,11 @@ public abstract class LogicalTypeTestCase<T extends TestData> extends TestCase {
     this.logicalType = logicalType();
 
     System.out.println(recordSchema.toString(true));
+    configure(this.mapper);
+  }
+
+  protected void configure(AvroMapper mapper) {
+
   }
 
   public void testSchemaType() {

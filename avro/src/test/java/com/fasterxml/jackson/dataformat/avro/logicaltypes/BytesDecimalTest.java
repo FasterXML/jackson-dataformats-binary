@@ -43,7 +43,7 @@ public class BytesDecimalTest extends LogicalTypeTestCase<BytesDecimalTest.Bytes
     public BigDecimal value;
 
     @Override
-    BigDecimal value() {
+    public BigDecimal value() {
       return this.value;
     }
   }
