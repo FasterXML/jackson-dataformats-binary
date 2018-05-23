@@ -2,7 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.avro.UnresolvedUnionException;
 import org.apache.avro.reflect.Nullable;
@@ -87,9 +89,12 @@ public class UnionTest extends InteropTestBase {
     public static class PetShop {
         public List<Animal> pets;
 
+        public Map<String, Animal> specialPets;
+
         protected PetShop() { }
         public PetShop(Animal... p) {
             pets = Arrays.asList(p);
+            specialPets = new HashMap<>();
         }
 
         @Override
@@ -97,7 +102,8 @@ public class UnionTest extends InteropTestBase {
             if (o.getClass() == getClass()) {
                 PetShop other = (PetShop) o;
                 if (pets == null) return other.pets == null;
-                else return pets.equals(other.pets);
+                if (specialPets == null) return other.specialPets == null;
+                else return pets.equals(other.pets) && specialPets.equals(other.specialPets);
             }
             return false;
         }
@@ -136,6 +142,17 @@ public class UnionTest extends InteropTestBase {
     @Test
     public void testListWithInterfaceUnion() throws IOException {
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
+        //
+        PetShop result = roundTrip(shop);
+        //
+        assertThat(result).isEqualTo(shop);
+    }
+
+    @Test
+    public void testMapWithInterfaceUnion() throws IOException {
+        PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
+        shop.specialPets.put("pet1", new Cat("siamese"));
+        shop.specialPets.put("pet2", new Dog(6));
         //
         PetShop result = roundTrip(shop);
         //

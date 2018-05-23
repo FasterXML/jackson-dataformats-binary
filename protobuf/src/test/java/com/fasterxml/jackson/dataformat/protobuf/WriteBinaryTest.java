@@ -26,7 +26,7 @@ public class WriteBinaryTest extends ProtobufTestBase
             this.trailer = trailer;
         }
     }
-    
+
     /*
     /**********************************************************
     /* Test methods

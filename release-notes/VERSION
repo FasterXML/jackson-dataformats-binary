@@ -9,12 +9,19 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.6 (not yet released)
+
+#135: (protobuf) Infinite sequence of `END_OBJECT` tokens returned at end of streaming read
+ (reported by Leo W)
+#136: (avro) Fix MapWriteContext not correctly resolving union values
+ (contributed by baharclerode@github)
+
 2.9.5 (26-Feb-2018)
 
 #128 (protobuf) Fix skip unknown WireType.FIXED_64BIT value bug
  (reported, contributed fix for by marsqing@github@github)
 #129 (cbor) Remove "final" modifier from `CBORParser`
- (suggested by jinzha@github)
+  (suggested by jinzha@github)
 
 2.9.4 (24-Jan-2018)
 

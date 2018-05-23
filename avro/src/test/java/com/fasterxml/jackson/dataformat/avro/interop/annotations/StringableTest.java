@@ -27,6 +27,7 @@ import static org.junit.Assume.assumeTrue;
  * single string as an argument, and their {@link #toString()} must return a serialized version of the object that can be passed back into
  * the constructor to recreate it. In addition, Avro considers the following classes
  *  {@code SpecificData.stringableClasses} stringable by default:
+ *
  * <ul>
  * <li>{@link File}</li>
  * <li>{@link BigInteger}</li>

@@ -647,8 +647,9 @@ public class ProtobufParser extends ParserMinimalBase
             }
 
         case STATE_MESSAGE_END: // occurs if we end with array
+            close(); // sets state to STATE_CLOSED
             return (_currToken = JsonToken.END_OBJECT);
-            
+
         case STATE_CLOSED:
             return null;
 

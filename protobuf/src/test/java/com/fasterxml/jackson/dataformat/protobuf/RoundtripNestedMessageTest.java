@@ -2,8 +2,10 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -95,11 +97,25 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
         }
     }
 
-    @Test
+    // [dataformats-binary#135]: endless END_OBJECT at end of doc
+    @JsonPropertyOrder({ "name", "age", "emails", "boss" })
+    static class Employee135 {
+        public int age;
+ 
+        public String[] emails;
+    }
+
+    /*
+    /**********************************************************
+    /* Test methods
+    /**********************************************************
+     */
+
+    private final ProtobufMapper MAPPER = new ProtobufMapper();
+
     public void testNestedRoundtrip() throws IOException
     {
        TestObject testClass = new TestObject();
-       ProtobufMapper om = new ProtobufMapper();
        ProtobufSchema s = ProtobufSchemaLoader.std.parse(PROTO);
        testClass.a = VALUE_A;
        testClass.b = new TestSub();
@@ -109,14 +125,53 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
        testClass.b.d = new TestSubSub();
        testClass.b.d.a = VALUE_SUB_A;
 
-       byte[] proto = om.writer(s)
+       byte[] proto = MAPPER.writer(s)
                .writeValueAsBytes(testClass);
-        TestObject res = om.readerFor(TestObject.class).with(s)
+        TestObject res = MAPPER.readerFor(TestObject.class).with(s)
                .readValue(proto);
 
-       Assert.assertEquals(VALUE_A, res.a);
-       Assert.assertEquals(VALUE_C, res.b.c);
-       Assert.assertEquals(VALUE_B, res.b.b);
-       Assert.assertEquals(VALUE_SUB_A, res.b.d.a);
+       assertEquals(VALUE_A, res.a);
+       assertEquals(VALUE_C, res.b.c);
+       assertEquals(VALUE_B, res.b.b);
+       assertEquals(VALUE_SUB_A, res.b.d.a);
+    }
+
+    // [dataformats-binary#135]: endless END_OBJECT at end of doc
+    public void testIssue135() throws Exception
+    {
+        String protobuf_str = "message Employee {\n"
+                + " required int32 age = 1;\n"
+                + " repeated string emails = 3;\n"
+                + "}\n";
+        final ProtobufSchema schema = MAPPER.schemaLoader().parse(protobuf_str);
+
+        Employee135 empl = new Employee135();
+        empl.age = 30;
+        empl.emails = new String[]{"foo@gmail.com"};
+
+        byte[] protobufData = MAPPER.writer(schema)
+                .writeValueAsBytes(empl);
+
+        JsonParser p = new ProtobufFactory().createParser(protobufData);
+        p.setSchema(schema);
+
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("age", p.currentName());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(30, p.getIntValue());
+
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("emails", p.currentName());
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("foo@gmail.com", p.getText());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+
+        assertNull(p.nextToken());
+        p.close();
     }
 }
