@@ -53,6 +53,14 @@ public final class MapWriteContext
     }
 
     @Override
+    public final AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+        _verifyValueWrite();
+        AvroWriteContext child = _createObjectContext(_schema.getValueType(), currValue);
+        _data.put(_currentName, child.rawValue());
+        return child;
+    }
+
+    @Override
     public void writeValue(Object value) {
         _verifyValueWrite();
         _data.put(_currentName, value);
