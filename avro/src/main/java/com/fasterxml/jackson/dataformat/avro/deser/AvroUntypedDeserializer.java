@@ -46,7 +46,7 @@ public class AvroUntypedDeserializer
         JavaType obType = ctxt.constructType(Object.class);
         // 26-Sep-2017, tatu: I think this is wrong, but has been that way for a while
         //    so won't change quite yet
-        _typeDeserializer = ctxt.getConfig().findTypeDeserializer(obType);
+        _typeDeserializer = ctxt.findTypeDeserializer(obType);
     }
 
     @Override
