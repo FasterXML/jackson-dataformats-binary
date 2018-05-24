@@ -25,8 +25,7 @@ public abstract class BaseTimeJsonSerializer<T> extends JsonSerializer<T> {
     final long output;
     switch (this.resolution) {
       case MICROSECONDS:
-        output = TimeUnit.SECONDS.toMicros(instant.getEpochSecond()) +
-            TimeUnit.NANOSECONDS.toMicros(instant.getNano());
+        output = TimeUnit.MILLISECONDS.toMicros(instant.toEpochMilli());
         break;
       case MILLISECONDS:
         output = instant.toEpochMilli();
