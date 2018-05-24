@@ -11,6 +11,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
 public class TimestampMicrosOffsetDateTimeTest extends LogicalTypeTestCase<TimestampMicrosOffsetDateTimeTest.TestCase> {
+  static final OffsetDateTime VALUE = OffsetDateTime.ofInstant(
+      Instant.ofEpochMilli(1526955327123L),
+      ZoneId.of("UTC")
+  );
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -25,11 +30,6 @@ public class TimestampMicrosOffsetDateTimeTest extends LogicalTypeTestCase<Times
   protected String logicalType() {
     return "timestamp-micros";
   }
-
-  static final OffsetDateTime VALUE = OffsetDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
 
   @Override
   protected TestCase testData() {

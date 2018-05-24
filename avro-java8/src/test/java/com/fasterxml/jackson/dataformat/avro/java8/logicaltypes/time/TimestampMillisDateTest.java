@@ -10,6 +10,8 @@ import org.apache.avro.Schema;
 import java.util.Date;
 
 public class TimestampMillisDateTest extends LogicalTypeTestCase<TimestampMillisDateTest.TestCase> {
+  static final Date VALUE = new Date(1526955327123L);
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -24,8 +26,6 @@ public class TimestampMillisDateTest extends LogicalTypeTestCase<TimestampMillis
   protected String logicalType() {
     return "timestamp-millis";
   }
-
-  static final Date VALUE = new Date(1526955327123L);
 
   @Override
   protected TestCase testData() {

@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class TimestampMicrosDateTest extends LogicalTypeTestCase<TimestampMicrosDateTest.TestCase> {
+  static final Date VALUE = new Date(1526955327123L);
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -24,8 +26,6 @@ public class TimestampMicrosDateTest extends LogicalTypeTestCase<TimestampMicros
   protected String logicalType() {
     return "timestamp-micros";
   }
-
-  static final Date VALUE = new Date(1526955327123L);
 
   @Override
   protected TestCase testData() {

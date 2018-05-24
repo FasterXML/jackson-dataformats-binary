@@ -11,6 +11,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public class TimestampMillisLocalDateTimeTest extends LogicalTypeTestCase<TimestampMillisLocalDateTimeTest.TestCase> {
+  static final LocalDateTime VALUE = LocalDateTime.ofInstant(
+      Instant.ofEpochMilli(1526955327123L),
+      ZoneId.of("UTC")
+  );
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -25,11 +30,6 @@ public class TimestampMillisLocalDateTimeTest extends LogicalTypeTestCase<Timest
   protected String logicalType() {
     return "timestamp-millis";
   }
-
-  static final LocalDateTime VALUE = LocalDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
 
   @Override
   protected TestCase testData() {

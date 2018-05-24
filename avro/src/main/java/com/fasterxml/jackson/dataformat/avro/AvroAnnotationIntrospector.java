@@ -17,9 +17,12 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroDecimalDeserializer;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroUUIDDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroBytesDecimalSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampSerializer;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroFixedDecimalSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroUUIDSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 import org.apache.avro.reflect.AvroAlias;
@@ -32,6 +35,7 @@ import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.reflect.Union;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -85,6 +89,13 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
     AvroEncode ann = _findAnnotation(a, AvroEncode.class);
     if (ann != null) {
       return new CustomEncodingDeserializer<>((CustomEncoding<?>) ClassUtil.createInstance(ann.using(), true));
+    }
+
+    AvroDecimal decimal = _findAnnotation(a, AvroDecimal.class);
+    if (decimal != null) {
+      if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
+        return new AvroDecimalDeserializer(decimal.scale());
+      }
     }
 
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
@@ -162,6 +173,21 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
     AvroEncode ann = _findAnnotation(a, AvroEncode.class);
     if (ann != null) {
       return new CustomEncodingSerializer<>((CustomEncoding<?>) ClassUtil.createInstance(ann.using(), true));
+    }
+    AvroDecimal decimal = _findAnnotation(a, AvroDecimal.class);
+    if (decimal != null) {
+      if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
+        switch (decimal.schemaType()) {
+          case BYTES:
+            return new AvroBytesDecimalSerializer(decimal.scale());
+          case FIXED:
+            return new AvroFixedDecimalSerializer(decimal.scale(), decimal.fixedSize());
+          default:
+            throw new UnsupportedOperationException(
+                String.format("%s is not a supported type for the logical type 'decimal'", decimal.schemaType())
+            );
+        }
+      }
     }
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
     if (timestampMillisecond != null) {

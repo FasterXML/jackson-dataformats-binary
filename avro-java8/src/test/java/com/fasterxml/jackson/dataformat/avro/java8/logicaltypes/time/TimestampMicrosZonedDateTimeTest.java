@@ -3,18 +3,21 @@ package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
 import com.fasterxml.jackson.dataformat.avro.java8.AvroJavaTimeModule;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class TimestampMicrosZonedDateTimeTest extends LogicalTypeTestCase<TimestampMicrosZonedDateTimeTest.TestCase> {
+  static final ZonedDateTime VALUE = ZonedDateTime.ofInstant(
+      Instant.ofEpochMilli(1526955327123L),
+      ZoneId.of("UTC")
+  );
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -29,11 +32,6 @@ public class TimestampMicrosZonedDateTimeTest extends LogicalTypeTestCase<Timest
   protected String logicalType() {
     return "timestamp-micros";
   }
-
-  static final ZonedDateTime VALUE = ZonedDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
 
   @Override
   protected TestCase testData() {

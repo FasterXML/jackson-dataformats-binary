@@ -61,26 +61,7 @@ public class NonBSGenericDatumWriter<D>
             super.writeWithoutConversion(schema, GENERIC_DATA.createEnum(datum.toString(), schema), out);
             return;
         case FIXED:
-            if(null!=schema.getLogicalType() && "decimal".equals(schema.getLogicalType().getName())) {
-                super.writeWithoutConversion(
-                    schema,
-                    DECIMAL_CONVERSION.toFixed(((BigDecimal) datum), schema, schema.getLogicalType()),
-                    out
-                );
-                return;
-            }
-            super.writeWithoutConversion(schema, datum, out);
-            return;
         case BYTES:
-            //TODO: This is ugly and I don't like the string check.
-            if(null!=schema.getLogicalType() && "decimal".equals(schema.getLogicalType().getName())) {
-                super.writeWithoutConversion(
-                    schema,
-                    DECIMAL_CONVERSION.toBytes(((BigDecimal) datum), schema, schema.getLogicalType()),
-                    out
-                );
-                return;
-            }
             super.writeWithoutConversion(schema, datum, out);
             return;
         case INT:

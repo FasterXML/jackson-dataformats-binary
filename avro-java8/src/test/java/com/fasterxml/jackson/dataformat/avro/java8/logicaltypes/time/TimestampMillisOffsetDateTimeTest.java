@@ -10,9 +10,13 @@ import org.apache.avro.Schema;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class TimestampMillisOffsetDateTimeTest extends LogicalTypeTestCase<TimestampMillisOffsetDateTimeTest.TestCase> {
+  static final OffsetDateTime VALUE = OffsetDateTime.ofInstant(
+      Instant.ofEpochMilli(1526955327123L),
+      ZoneId.of("UTC")
+  );
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -27,11 +31,6 @@ public class TimestampMillisOffsetDateTimeTest extends LogicalTypeTestCase<Times
   protected String logicalType() {
     return "timestamp-millis";
   }
-
-  static final OffsetDateTime VALUE = OffsetDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
 
   @Override
   protected TestCase testData() {
