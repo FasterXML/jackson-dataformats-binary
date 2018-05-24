@@ -16,11 +16,15 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroDateDateDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimeDeserializer;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampDeserializer;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroDecimalDeserializer;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroUUIDDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroBytesDecimalSerializer;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroDateDateSerializer;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimeSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroFixedDecimalSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroUUIDSerializer;
@@ -97,7 +101,18 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
         return new AvroDecimalDeserializer(decimal.scale());
       }
     }
-
+    AvroTimeMillisecond timeMillisecond = _findAnnotation(a, AvroTimeMillisecond.class);
+    if (timeMillisecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimeDeserializer.MILLIS;
+      }
+    }
+    AvroTimeMicrosecond timeMicrosecond = _findAnnotation(a, AvroTimeMicrosecond.class);
+    if (timeMicrosecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimeDeserializer.MICROS;
+      }
+    }
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
     if (timestampMillisecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
@@ -116,7 +131,12 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
         return AvroUUIDDeserializer.INSTANCE;
       }
     }
-
+    AvroDate avroDate = _findAnnotation(a, AvroDate.class);
+    if (avroDate != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateDateDeserializer.INSTANCE;
+      }
+    }
     return null;
   }
 
@@ -189,6 +209,19 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
         }
       }
     }
+    AvroTimeMillisecond timeMillisecond = _findAnnotation(a, AvroTimeMillisecond.class);
+    if (timeMillisecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimeSerializer.MILLIS;
+      }
+    }
+    AvroTimeMicrosecond timeMicrosecond = _findAnnotation(a, AvroTimeMicrosecond.class);
+    if (timeMicrosecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimeSerializer.MICROS;
+      }
+    }
+
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
     if (timestampMillisecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
@@ -207,7 +240,12 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
         return AvroUUIDSerializer.INSTANCE;
       }
     }
-
+    AvroDate avroDate = _findAnnotation(a, AvroDate.class);
+    if (avroDate != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateDateSerializer.INSTANCE;
+      }
+    }
     return null;
   }
 
