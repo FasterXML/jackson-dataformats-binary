@@ -1,9 +1,9 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroMicroTimeModule;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import com.fasterxml.jackson.dataformat.avro.java8.AvroJavaTimeModule;
 import junit.framework.TestCase;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -26,15 +26,19 @@ public abstract class LogicalTypeTestCase<T extends TestData> extends TestCase {
   protected String logicalType;
 
   protected abstract Class<T> dataClass();
+
   protected abstract Schema.Type schemaType();
+
   protected abstract String logicalType();
+
   protected abstract T testData();
+
   protected abstract Object convertedValue();
 
 
   @Override
   protected void setUp() throws Exception {
-    this.mapper = new AvroMapper();
+    this.mapper = new AvroMapper(new AvroJavaTimeModule());
     this.dataClass = dataClass();
 
     this.avroSchema = mapper.schemaFor(this.dataClass);
@@ -61,8 +65,8 @@ public abstract class LogicalTypeTestCase<T extends TestData> extends TestCase {
   }
 
   public void testLogicalType() {
-    assertNotNull("schema.getLogicalType() should not return null",this.schema.getLogicalType());
-    assertEquals("schema.getLogicalType().getName() does not match.",this.logicalType, this.schema.getLogicalType().getName());
+    assertNotNull("schema.getLogicalType() should not return null", this.schema.getLogicalType());
+    assertEquals("schema.getLogicalType().getName() does not match.", this.logicalType, this.schema.getLogicalType().getName());
   }
 
   byte[] serialize(T expected) throws JsonProcessingException {
@@ -83,7 +87,7 @@ public abstract class LogicalTypeTestCase<T extends TestData> extends TestCase {
     final byte[] actualbytes = serialize(expected);
     final Object convertedValue = convertedValue();
     byte[] expectedBytes;
-    try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       BinaryEncoder encoder = EncoderFactory.get().directBinaryEncoder(outputStream, null);
       GenericData.Record record = new GenericData.Record(this.recordSchema);
       record.put("value", convertedValue);

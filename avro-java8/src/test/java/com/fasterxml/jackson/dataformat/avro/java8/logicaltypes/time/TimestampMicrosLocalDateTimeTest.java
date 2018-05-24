@@ -1,19 +1,20 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes.time;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroMicroTimeModule;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.LogicalTypeTestCase;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.TestData;
+import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
+import com.fasterxml.jackson.dataformat.avro.java8.AvroJavaTimeModule;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 
-public class TimeMillisLocalDateTimeTest extends LogicalTypeTestCase<TimeMillisLocalDateTimeTest.TestCase> {
+public class TimestampMicrosLocalDateTimeTest extends LogicalTypeTestCase<TimestampMicrosLocalDateTimeTest.TestCase> {
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -26,7 +27,7 @@ public class TimeMillisLocalDateTimeTest extends LogicalTypeTestCase<TimeMillisL
 
   @Override
   protected String logicalType() {
-    return "timestamp-millis";
+    return "timestamp-micros";
   }
 
   static final LocalDateTime VALUE = LocalDateTime.ofInstant(
@@ -43,17 +44,18 @@ public class TimeMillisLocalDateTimeTest extends LogicalTypeTestCase<TimeMillisL
 
   @Override
   protected Object convertedValue() {
-    return 1526955327123L;
+    Instant instant = VALUE.toInstant(ZoneOffset.UTC);
+    return (TimeUnit.SECONDS.toMicros(instant.getEpochSecond()) + TimeUnit.NANOSECONDS.toMicros(instant.getNano()));
   }
 
   @Override
   protected void configure(AvroMapper mapper) {
-
+    mapper.registerModule(new AvroJavaTimeModule());
   }
 
   static class TestCase extends TestData<LocalDateTime> {
     @JsonProperty(required = true)
-    @AvroTimestampMillisecond
+    @AvroTimestampMicrosecond
     LocalDateTime value;
 
     @Override

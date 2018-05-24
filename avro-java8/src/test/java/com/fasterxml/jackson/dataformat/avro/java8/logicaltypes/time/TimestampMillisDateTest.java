@@ -1,19 +1,15 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes.time;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroMicroTimeModule;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.LogicalTypeTestCase;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.TestData;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.Date;
 
-public class TimeMillisZonedDateTimeTest extends LogicalTypeTestCase<TimeMillisZonedDateTimeTest.TestCase> {
+public class TimestampMillisDateTest extends LogicalTypeTestCase<TimestampMillisDateTest.TestCase> {
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -29,10 +25,7 @@ public class TimeMillisZonedDateTimeTest extends LogicalTypeTestCase<TimeMillisZ
     return "timestamp-millis";
   }
 
-  static final LocalDateTime VALUE = LocalDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
+  static final Date VALUE = new Date(1526955327123L);
 
   @Override
   protected TestCase testData() {
@@ -51,13 +44,13 @@ public class TimeMillisZonedDateTimeTest extends LogicalTypeTestCase<TimeMillisZ
 
   }
 
-  static class TestCase extends TestData<LocalDateTime> {
+  static class TestCase extends TestData<Date> {
     @JsonProperty(required = true)
     @AvroTimestampMillisecond
-    LocalDateTime value;
+    Date value;
 
     @Override
-    public LocalDateTime value() {
+    public Date value() {
       return this.value;
     }
   }

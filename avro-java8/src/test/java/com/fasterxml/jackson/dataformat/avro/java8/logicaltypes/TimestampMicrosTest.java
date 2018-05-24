@@ -1,16 +1,9 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
-import junit.framework.TestCase;
-import org.apache.avro.Conversions;
 import org.apache.avro.Schema;
-import org.apache.avro.data.TimeConversions;
 
-import java.io.IOException;
 import java.util.Date;
 
 public class TimestampMicrosTest extends LogicalTypeTestCase<TimestampMicrosTest.RequiredTimestampMicros> {

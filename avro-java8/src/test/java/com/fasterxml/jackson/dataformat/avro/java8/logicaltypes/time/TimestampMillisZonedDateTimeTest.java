@@ -1,20 +1,16 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes.time;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroMicroTimeModule;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.LogicalTypeTestCase;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.TestData;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-public class TimeMillisOffsetDateTimeTest extends LogicalTypeTestCase<TimeMillisOffsetDateTimeTest.TestCase> {
+public class TimestampMillisZonedDateTimeTest extends LogicalTypeTestCase<TimestampMillisZonedDateTimeTest.TestCase> {
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -45,11 +41,6 @@ public class TimeMillisOffsetDateTimeTest extends LogicalTypeTestCase<TimeMillis
   @Override
   protected Object convertedValue() {
     return 1526955327123L;
-  }
-
-  @Override
-  protected void configure(AvroMapper mapper) {
-
   }
 
   static class TestCase extends TestData<ZonedDateTime> {

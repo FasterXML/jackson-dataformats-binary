@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.avro.AvroDecimal;
@@ -7,17 +7,17 @@ import org.apache.avro.Schema;
 
 import java.math.BigDecimal;
 
-public class BytesDecimalTest extends LogicalTypeTestCase<BytesDecimalTest.BytesDecimal> {
+public class FixedDecimalTest extends LogicalTypeTestCase<FixedDecimalTest.FixedDecimal> {
   static final BigDecimal VALUE = BigDecimal.valueOf(123456, 3);
 
   @Override
-  protected Class<BytesDecimal> dataClass() {
-    return BytesDecimal.class;
+  protected Class<FixedDecimal> dataClass() {
+    return FixedDecimal.class;
   }
 
   @Override
   protected Schema.Type schemaType() {
-    return Schema.Type.BYTES;
+    return Schema.Type.FIXED;
   }
 
   @Override
@@ -26,20 +26,20 @@ public class BytesDecimalTest extends LogicalTypeTestCase<BytesDecimalTest.Bytes
   }
 
   @Override
-  protected BytesDecimal testData() {
-    BytesDecimal v = new BytesDecimal();
+  protected FixedDecimal testData() {
+    FixedDecimal v = new FixedDecimal();
     v.value = VALUE;
     return v;
   }
 
   @Override
   protected Object convertedValue() {
-    return new Conversions.DecimalConversion().toBytes(VALUE, this.schema, this.schema.getLogicalType());
+    return new Conversions.DecimalConversion().toFixed(VALUE, this.schema, this.schema.getLogicalType());
   }
 
-  static class BytesDecimal extends TestData<BigDecimal> {
+  static class FixedDecimal extends TestData<BigDecimal> {
     @JsonProperty(required = true)
-    @AvroDecimal(precision = 3, scale = 3)
+    @AvroDecimal(precision = 3, scale = 3, fixedSize = 8, typeNamespace = "com.foo.example", typeName = "Decimal", schemaType = Schema.Type.FIXED)
     public BigDecimal value;
 
     @Override
@@ -47,4 +47,5 @@ public class BytesDecimalTest extends LogicalTypeTestCase<BytesDecimalTest.Bytes
       return this.value;
     }
   }
+
 }

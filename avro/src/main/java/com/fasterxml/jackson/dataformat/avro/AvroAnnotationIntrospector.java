@@ -16,9 +16,14 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampMicrosDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampMillisDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroUUIDDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampMicrosSerializer;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampMillisSerializer;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroUUIDSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
-import com.fasterxml.jackson.dataformat.avro.ser.TimestampMillisecondSerializers;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.AvroDefault;
 import org.apache.avro.reflect.AvroEncode;
@@ -29,13 +34,11 @@ import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.reflect.Union;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Adds support for the following annotations from the Apache Avro implementation:
@@ -80,11 +83,31 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
   }
 
   @Override
-  public Object findDeserializer(Annotated am) {
-    AvroEncode ann = _findAnnotation(am, AvroEncode.class);
+  public Object findDeserializer(Annotated a) {
+    AvroEncode ann = _findAnnotation(a, AvroEncode.class);
     if (ann != null) {
       return new CustomEncodingDeserializer<>((CustomEncoding<?>) ClassUtil.createInstance(ann.using(), true));
     }
+
+    AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
+    if (timestampMillisecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimestampMillisDeserializer.INSTANCE;
+      }
+    }
+    AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
+    if (timestampMicrosecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimestampMicrosDeserializer.INSTANCE;
+      }
+    }
+    AvroUUID avroUUID = _findAnnotation(a, AvroUUID.class);
+    if (avroUUID != null) {
+      if (a.getRawType().isAssignableFrom(UUID.class)) {
+        return AvroUUIDDeserializer.INSTANCE;
+      }
+    }
+
     return null;
   }
 
@@ -145,16 +168,19 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
     if (timestampMillisecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
-        return TimestampMillisecondSerializers.DATE;
+        return AvroDateTimestampMillisSerializer.INSTANCE;
       }
-      if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
-        return TimestampMillisecondSerializers.LOCAL_DATE_TIME;
+    }
+    AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
+    if (timestampMicrosecond != null) {
+      if (a.getRawType().isAssignableFrom(Date.class)) {
+        return AvroDateTimestampMicrosSerializer.INSTANCE;
       }
-      if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
-        return TimestampMillisecondSerializers.ZONED_DATE_TIME;
-      }
-      if(a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
-        return TimestampMillisecondSerializers.OFFSET_DATE_TIME;
+    }
+    AvroUUID avroUUID = _findAnnotation(a, AvroUUID.class);
+    if (avroUUID != null) {
+      if (a.getRawType().isAssignableFrom(UUID.class)) {
+        return AvroUUIDSerializer.INSTANCE;
       }
     }
 
