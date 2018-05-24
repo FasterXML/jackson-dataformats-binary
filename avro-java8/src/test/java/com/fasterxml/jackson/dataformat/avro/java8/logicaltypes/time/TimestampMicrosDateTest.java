@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class TimestampMicrosDateTest extends LogicalTypeTestCase<TimestampMicrosDateTest.TestCase> {
   @Override
@@ -35,7 +36,7 @@ public class TimestampMicrosDateTest extends LogicalTypeTestCase<TimestampMicros
 
   @Override
   protected Object convertedValue() {
-    return 1526955327123L * 1000L;
+    return TimeUnit.MILLISECONDS.toMicros(VALUE.getTime());
   }
 
   static class TestCase extends TestData<Date> {

@@ -16,12 +16,10 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
-import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampMicrosDeserializer;
-import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampMillisDeserializer;
+import com.fasterxml.jackson.dataformat.avro.deser.AvroDateTimestampDeserializer;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroUUIDDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
-import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampMicrosSerializer;
-import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampMillisSerializer;
+import com.fasterxml.jackson.dataformat.avro.ser.AvroDateTimestampSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroUUIDSerializer;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 import org.apache.avro.reflect.AvroAlias;
@@ -92,13 +90,13 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
     if (timestampMillisecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampMillisDeserializer.INSTANCE;
+        return AvroDateTimestampDeserializer.MILLIS;
       }
     }
     AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
     if (timestampMicrosecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampMicrosDeserializer.INSTANCE;
+        return AvroDateTimestampDeserializer.MICROS;
       }
     }
     AvroUUID avroUUID = _findAnnotation(a, AvroUUID.class);
@@ -168,13 +166,13 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
     AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
     if (timestampMillisecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampMillisSerializer.INSTANCE;
+        return AvroDateTimestampSerializer.MILLIS;
       }
     }
     AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
     if (timestampMicrosecond != null) {
       if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampMicrosSerializer.INSTANCE;
+        return AvroDateTimestampSerializer.MICROS;
       }
     }
     AvroUUID avroUUID = _findAnnotation(a, AvroUUID.class);
