@@ -17,6 +17,7 @@
     <module>cbor</module>
     <module>smile</module>
     <module>avro</module>
+    <module>avro-java8</module>
     <module>protobuf</module>
     <module>ion</module>
   </modules>

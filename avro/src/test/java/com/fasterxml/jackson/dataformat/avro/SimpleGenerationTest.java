@@ -98,13 +98,13 @@ public class SimpleGenerationTest extends AvroTestBase
     public void testBinaryOk() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper(new AvroFactory());
-        Binary bin = new Binary("LocalDateTimeSerializer", new byte[] { 1, 2, 3, 4 });
+        Binary bin = new Binary("Foo", new byte[] { 1, 2, 3, 4 });
         byte[] bytes = mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValueAsBytes(bin);
         assertEquals(9, bytes.length);
         assertNotNull(bytes);
         Binary output = mapper.reader(SCHEMA_WITH_BINARY_JSON).forType(Binary.class).readValue(bytes);
         assertNotNull(output);
-        assertEquals("LocalDateTimeSerializer", output.name);
+        assertEquals("Foo", output.name);
         assertNotNull(output.value);
         Assert.assertArrayEquals(bin.value, output.value);
     }

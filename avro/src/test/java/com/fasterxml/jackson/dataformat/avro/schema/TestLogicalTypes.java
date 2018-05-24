@@ -11,12 +11,15 @@ import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
+import com.fasterxml.jackson.dataformat.avro.AvroUUID;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.junit.Assert;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 public class TestLogicalTypes extends AvroTestBase {
 
@@ -66,6 +69,12 @@ public class TestLogicalTypes extends AvroTestBase {
     @AvroDate
     @JsonProperty(required = true)
     public Date value;
+  }
+
+  static class UUIDType {
+    @AvroUUID
+    @JsonProperty(required = true)
+    public UUID value;
   }
 
   AvroSchema getSchema(Class<?> cls) throws JsonMappingException {
@@ -151,5 +160,12 @@ public class TestLogicalTypes extends AvroTestBase {
     Schema schema = avroSchema.getAvroSchema();
     Schema.Field field = schema.getField("value");
     assertLogicalType(field, Schema.Type.INT, "date");
+  }
+
+  public void testUUIDType() throws JsonMappingException {
+    AvroSchema avroSchema = getSchema(UUIDType.class);
+    Schema schema = avroSchema.getAvroSchema();
+    Schema.Field field = schema.getField("value");
+    assertLogicalType(field, Schema.Type.STRING, "uuid");
   }
 }

@@ -1,20 +1,16 @@
-package com.fasterxml.jackson.dataformat.avro.logicaltypes.time;
+package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroMicroTimeModule;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.LogicalTypeTestCase;
-import com.fasterxml.jackson.dataformat.avro.logicaltypes.TestData;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
+import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 
-public class TimeMillisDateTest extends LogicalTypeTestCase<TimeMillisDateTest.TestCase> {
+public class TimestampMillisLocalDateTimeTest extends LogicalTypeTestCase<TimestampMillisLocalDateTimeTest.TestCase> {
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -30,7 +26,10 @@ public class TimeMillisDateTest extends LogicalTypeTestCase<TimeMillisDateTest.T
     return "timestamp-millis";
   }
 
-  static final Date VALUE = new Date(1526955327123L);
+  static final LocalDateTime VALUE = LocalDateTime.ofInstant(
+      Instant.ofEpochMilli(1526955327123L),
+      ZoneId.of("UTC")
+  );
 
   @Override
   protected TestCase testData() {
@@ -44,18 +43,13 @@ public class TimeMillisDateTest extends LogicalTypeTestCase<TimeMillisDateTest.T
     return 1526955327123L;
   }
 
-  @Override
-  protected void configure(AvroMapper mapper) {
-
-  }
-
-  static class TestCase extends TestData<Date> {
+  static class TestCase extends TestData<LocalDateTime> {
     @JsonProperty(required = true)
     @AvroTimestampMillisecond
-    Date value;
+    LocalDateTime value;
 
     @Override
-    public Date value() {
+    public LocalDateTime value() {
       return this.value;
     }
   }

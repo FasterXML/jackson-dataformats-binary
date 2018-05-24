@@ -2,12 +2,10 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.util.*;
 
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.util.internal.JacksonUtils;
-
-import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
-import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 /**
  * Helper class used for constructing a hierarchic reader for given
@@ -15,14 +13,14 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
  */
 public abstract class AvroReaderFactory
 {
-    protected final static ScalarDecoder READER_BOOLEAN = new BooleanDecoder();
-    protected final static ScalarDecoder READER_BYTES = new BytesDecoder();
-    protected final static ScalarDecoder READER_DOUBLE = new DoubleReader();
-    protected final static ScalarDecoder READER_FLOAT = new FloatReader();
-    protected final static ScalarDecoder READER_INT = new IntReader();
-    protected final static ScalarDecoder READER_LONG = new LongReader();
-    protected final static ScalarDecoder READER_NULL = new NullReader();
-    protected final static ScalarDecoder READER_STRING = new StringReader();
+    protected final static ScalarDecoder READER_BOOLEAN = new ScalarDecoder.BooleanDecoder();
+    protected final static ScalarDecoder READER_BYTES = new ScalarDecoder.BytesDecoder();
+    protected final static ScalarDecoder READER_DOUBLE = new ScalarDecoder.DoubleReader();
+    protected final static ScalarDecoder READER_FLOAT = new ScalarDecoder.FloatReader();
+    protected final static ScalarDecoder READER_INT = new ScalarDecoder.IntReader();
+    protected final static ScalarDecoder READER_LONG = new ScalarDecoder.LongReader();
+    protected final static ScalarDecoder READER_NULL = new ScalarDecoder.NullReader();
+    protected final static ScalarDecoder READER_STRING = new ScalarDecoder.StringReader();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -60,7 +58,7 @@ public abstract class AvroReaderFactory
         case BYTES:
             if(type.getLogicalType() != null && "decimal".equals(type.getLogicalType().getName())) {
                 LogicalTypes.Decimal decimal = (LogicalTypes.Decimal) type.getLogicalType();
-                return new BytesDecimalReader(
+                return new ScalarDecoder.BytesDecimalReader(
                     decimal.getScale()
                 );
             }
@@ -68,21 +66,21 @@ public abstract class AvroReaderFactory
         case DOUBLE: 
             return READER_DOUBLE;
         case ENUM: 
-            return new EnumDecoder(AvroSchemaHelper.getFullName(type), type.getEnumSymbols());
+            return new ScalarDecoder.EnumDecoder(AvroSchemaHelper.getFullName(type), type.getEnumSymbols());
         case FIXED:
             if(type.getLogicalType() != null && "decimal".equals(type.getLogicalType().getName())) {
                 LogicalTypes.Decimal decimal = (LogicalTypes.Decimal) type.getLogicalType();
-                return new FixedDecimalReader(
+                return new ScalarDecoder.FixedDecimalReader(
                     decimal.getScale(),
                     type.getFixedSize()
                 );
             }
-            return new FixedDecoder(type.getFixedSize(), AvroSchemaHelper.getFullName(type));
+            return new ScalarDecoder.FixedDecoder(type.getFixedSize(), AvroSchemaHelper.getFullName(type));
         case FLOAT: 
             return READER_FLOAT;
         case INT:
             if (AvroSchemaHelper.getTypeId(type) != null) {
-                return new IntReader(AvroSchemaHelper.getTypeId(type));
+                return new ScalarDecoder.IntReader(AvroSchemaHelper.getTypeId(type));
             }
             return READER_INT;
         case LONG: 
@@ -91,7 +89,7 @@ public abstract class AvroReaderFactory
             return READER_NULL;
         case STRING:
             if (AvroSchemaHelper.getTypeId(type) != null) {
-                return new StringReader(AvroSchemaHelper.getTypeId(type));
+                return new ScalarDecoder.StringReader(AvroSchemaHelper.getTypeId(type));
             }
             return READER_STRING;
         case UNION:
@@ -110,7 +108,7 @@ public abstract class AvroReaderFactory
                     }
                     readers[i++] = reader;
                 }
-                return new ScalarUnionDecoder(readers);
+                return new ScalarDecoder.ScalarUnionDecoder(readers);
             }
         case ARRAY: // ok to call just can't handle
         case MAP:

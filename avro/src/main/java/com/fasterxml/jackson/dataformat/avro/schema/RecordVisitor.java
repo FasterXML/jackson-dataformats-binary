@@ -11,6 +11,7 @@ import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
+import com.fasterxml.jackson.dataformat.avro.AvroUUID;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -206,27 +207,34 @@ public class RecordVisitor
                                         writerSchema = LogicalTypes.timeMicros()
                                             .addToSchema(Schema.create(Type.LONG));
                                     } else {
-                                        JsonSerializer<?> ser = null;
+                                        AvroUUID avroUUID = prop.getAnnotation(AvroUUID.class);
 
-                                        // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
-                                        if (prop instanceof BeanPropertyWriter) {
-                                            BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
-                                            ser = bpw.getSerializer();
-                                            /*
-                                             * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
-                                             */
-                                            optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
-                                        }
-                                        final SerializerProvider prov = getProvider();
-                                        if (ser == null) {
-                                            if (prov == null) {
-                                                throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                                        if(avroUUID != null) {
+                                            writerSchema = LogicalTypes.uuid()
+                                                .addToSchema(Schema.create(Type.STRING));
+                                        } else {
+                                            JsonSerializer<?> ser = null;
+
+                                            // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
+                                            if (prop instanceof BeanPropertyWriter) {
+                                                BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
+                                                ser = bpw.getSerializer();
+                                                /*
+                                                 * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
+                                                 */
+                                                optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                                             }
-                                            ser = prov.findValueSerializer(prop.getType(), prop);
+                                            final SerializerProvider prov = getProvider();
+                                            if (ser == null) {
+                                                if (prov == null) {
+                                                    throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                                                }
+                                                ser = prov.findValueSerializer(prop.getType(), prop);
+                                            }
+                                            VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
+                                            ser.acceptJsonFormatVisitor(visitor, prop.getType());
+                                            writerSchema = visitor.getAvroSchema();
                                         }
-                                        VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
-                                        ser.acceptJsonFormatVisitor(visitor, prop.getType());
-                                        writerSchema = visitor.getAvroSchema();
                                     }
                                 }
                             }
