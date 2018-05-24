@@ -11,6 +11,8 @@ import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
 public class TimeMillisLocalTimeTest extends LogicalTypeTestCase<TimeMillisLocalTimeTest.TestCase> {
+  static final LocalTime VALUE = LocalTime.of(3, 3, 14);
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -25,8 +27,6 @@ public class TimeMillisLocalTimeTest extends LogicalTypeTestCase<TimeMillisLocal
   protected String logicalType() {
     return "time-millis";
   }
-
-  static final LocalTime VALUE = LocalTime.of(3, 3, 14);
 
   @Override
   protected TestCase testData() {

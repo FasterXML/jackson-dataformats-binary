@@ -15,6 +15,11 @@ import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
 public class TimestampMicrosLocalDateTimeTest extends LogicalTypeTestCase<TimestampMicrosLocalDateTimeTest.TestCase> {
+  static final LocalDateTime VALUE = LocalDateTime.ofInstant(
+      Instant.ofEpochMilli(1526955327123L),
+      ZoneId.of("UTC")
+  );
+
   @Override
   protected Class<TestCase> dataClass() {
     return TestCase.class;
@@ -29,11 +34,6 @@ public class TimestampMicrosLocalDateTimeTest extends LogicalTypeTestCase<Timest
   protected String logicalType() {
     return "timestamp-micros";
   }
-
-  static final LocalDateTime VALUE = LocalDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
 
   @Override
   protected TestCase testData() {

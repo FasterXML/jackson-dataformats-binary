@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.java8;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.dataformat.avro.AvroAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.avro.AvroDate;
 import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
@@ -25,7 +26,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
-class AvroJavaTimeAnnotationIntrospector extends AnnotationIntrospector {
+class AvroJavaTimeAnnotationIntrospector extends AvroAnnotationIntrospector {
   static final AvroJavaTimeAnnotationIntrospector INSTANCE = new AvroJavaTimeAnnotationIntrospector();
 
   @Override
