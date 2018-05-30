@@ -1,5 +1,4 @@
-Project: jackson-datatypes-binary
-Modules:
+Project: jackson-datatypes-binaryModules:
   jackson-dataformat-avro
   jackson-dataformat-cbor
   jackson-dataformat-protobuf
@@ -11,6 +10,8 @@ Modules:
 
 2.9.6 (not yet released)
 
+#93: (cbor) `CBORParser` does not accept "undefined value"
+ (reported by mbaril@github)
 #135: (protobuf) Infinite sequence of `END_OBJECT` tokens returned at end of streaming read
  (reported by Leo W)
 #136: (avro) Fix MapWriteContext not correctly resolving union values

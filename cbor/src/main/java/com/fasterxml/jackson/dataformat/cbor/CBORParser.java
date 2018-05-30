@@ -720,6 +720,9 @@ public class CBORParser extends ParserMinimalBase
                 return (_currToken = JsonToken.VALUE_TRUE);
             case 22:
                 return (_currToken = JsonToken.VALUE_NULL);
+            case 23:
+                return (_currToken = _decodeUndefinedValue());
+                
             case 25: // 16-bit float... 
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
                 {
@@ -1435,6 +1438,10 @@ public class CBORParser extends ParserMinimalBase
             case 22:
                 _currToken = JsonToken.VALUE_NULL;
                 return null;
+            case 23:
+                _currToken = _decodeUndefinedValue();
+                return null;
+
             case 25: // 16-bit float... 
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
                 {
@@ -3091,6 +3098,20 @@ public class CBORParser extends ParserMinimalBase
         long l2 = i2;
         l2 = (l2 << 32) >>> 32;
         return (l1 << 32) + l2;
+    }
+
+    /**
+     * Helper method to encapsulate details of handling of mysterious `undefined` value
+     * that is allowed to be used as something encoder could not handle (as per spec),
+     * whatever the heck that should be.
+     * Current definition for 2.9 is that we will be return {@link JsonToken#VALUE_NULL}, but
+     * for later versions it is likely that we will alternatively allow decoding as
+     * {@link JsonToken#VALUE_EMBEDDED_OBJECT} with "embedded value" of `null`.
+     *
+     * @since 2.9.6
+     */
+    protected JsonToken _decodeUndefinedValue() throws IOException {
+        return JsonToken.VALUE_NULL;
     }
 
     /*
