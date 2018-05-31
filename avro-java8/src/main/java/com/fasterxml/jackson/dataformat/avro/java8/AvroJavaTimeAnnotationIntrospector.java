@@ -1,14 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro.java8;
 
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.dataformat.avro.AvroAnnotationIntrospector;
-import com.fasterxml.jackson.dataformat.avro.AvroDate;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.java8.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.dataformat.avro.java8.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.dataformat.avro.java8.deser.LocalTimeDeserializer;
@@ -31,103 +26,94 @@ class AvroJavaTimeAnnotationIntrospector extends AvroAnnotationIntrospector {
 
   @Override
   public Object findSerializer(Annotated a) {
-    AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
-    if (null != timestampMillisecond) {
-      if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
-        return LocalDateTimeSerializer.MILLIS;
-      }
-      if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
-        return OffsetDateTimeSerializer.MILLIS;
-      }
-      if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
-        return ZonedDateTimeSerializer.MILLIS;
-      }
-    }
-
-    AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
-    if (null != timestampMicrosecond) {
-      if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
-        return LocalDateTimeSerializer.MICROS;
-      }
-      if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
-        return OffsetDateTimeSerializer.MICROS;
-      }
-      if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
-        return ZonedDateTimeSerializer.MICROS;
-      }
-    }
-
-    AvroDate date = _findAnnotation(a, AvroDate.class);
-    if (null != date) {
-      if (a.getRawType().isAssignableFrom(LocalDate.class)) {
-        return LocalDateSerializer.INSTANCE;
-      }
-    }
-
-    AvroTimeMillisecond timeMillisecond = _findAnnotation(a, AvroTimeMillisecond.class);
-    if (null != timeMillisecond) {
-      if (a.getRawType().isAssignableFrom(LocalTime.class)) {
-        return LocalTimeSerializer.MILLIS;
-      }
-    }
-
-    AvroTimeMicrosecond timeMicrosecond = _findAnnotation(a, AvroTimeMicrosecond.class);
-    if (null != timeMicrosecond) {
-      if (a.getRawType().isAssignableFrom(LocalTime.class)) {
-        return LocalTimeSerializer.MICROS;
+    AvroType logicalType = _findAnnotation(a, AvroType.class);
+    if (null != logicalType) {
+      switch (logicalType.logicalType()) {
+        case TIMESTAMP_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
+            return LocalDateTimeSerializer.MILLIS;
+          }
+          if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
+            return OffsetDateTimeSerializer.MILLIS;
+          }
+          if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
+            return ZonedDateTimeSerializer.MILLIS;
+          }
+          break;
+        case TIMESTAMP_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
+            return LocalDateTimeSerializer.MICROS;
+          }
+          if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
+            return OffsetDateTimeSerializer.MICROS;
+          }
+          if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
+            return ZonedDateTimeSerializer.MICROS;
+          }
+          break;
+        case DATE:
+          if (a.getRawType().isAssignableFrom(LocalDate.class)) {
+            return LocalDateSerializer.INSTANCE;
+          }
+          break;
+        case TIME_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(LocalTime.class)) {
+            return LocalTimeSerializer.MILLIS;
+          }
+          break;
+        case TIME_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(LocalTime.class)) {
+            return LocalTimeSerializer.MICROS;
+          }
+          break;
       }
     }
 
     return super.findSerializer(a);
-
   }
 
   @Override
   public Object findDeserializer(Annotated a) {
-    AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
-    if (null != timestampMillisecond) {
-      if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
-        return LocalDateTimeDeserializer.MILLIS;
-      }
-      if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
-        return OffsetDateTimeDeserializer.MILLIS;
-      }
-      if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
-        return ZonedDateTimeDeserializer.MILLIS;
-      }
-    }
-
-    AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
-    if (null != timestampMicrosecond) {
-      if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
-        return LocalDateTimeDeserializer.MICROS;
-      }
-      if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
-        return OffsetDateTimeDeserializer.MICROS;
-      }
-      if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
-        return ZonedDateTimeDeserializer.MICROS;
-      }
-    }
-
-    AvroDate date = _findAnnotation(a, AvroDate.class);
-    if (null != date) {
-      if (a.getRawType().isAssignableFrom(LocalDate.class)) {
-        return LocalDateDeserializer.INSTANCE;
-      }
-    }
-
-    AvroTimeMillisecond timeMillisecond = _findAnnotation(a, AvroTimeMillisecond.class);
-    if (null != timeMillisecond) {
-      if (a.getRawType().isAssignableFrom(LocalTime.class)) {
-        return LocalTimeDeserializer.MILLIS;
-      }
-    }
-
-    AvroTimeMicrosecond timeMicrosecond = _findAnnotation(a, AvroTimeMicrosecond.class);
-    if (null != timeMicrosecond) {
-      if (a.getRawType().isAssignableFrom(LocalTime.class)) {
-        return LocalTimeDeserializer.MICROS;
+    AvroType logicalType = _findAnnotation(a, AvroType.class);
+    if (null != logicalType) {
+      switch (logicalType.logicalType()) {
+        case TIMESTAMP_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
+            return LocalDateTimeDeserializer.MILLIS;
+          }
+          if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
+            return OffsetDateTimeDeserializer.MILLIS;
+          }
+          if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
+            return ZonedDateTimeDeserializer.MILLIS;
+          }
+          break;
+        case TIMESTAMP_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(LocalDateTime.class)) {
+            return LocalDateTimeDeserializer.MICROS;
+          }
+          if (a.getRawType().isAssignableFrom(OffsetDateTime.class)) {
+            return OffsetDateTimeDeserializer.MICROS;
+          }
+          if (a.getRawType().isAssignableFrom(ZonedDateTime.class)) {
+            return ZonedDateTimeDeserializer.MICROS;
+          }
+          break;
+        case DATE:
+          if (a.getRawType().isAssignableFrom(LocalDate.class)) {
+            return LocalDateDeserializer.INSTANCE;
+          }
+          break;
+        case TIME_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(LocalTime.class)) {
+            return LocalTimeDeserializer.MILLIS;
+          }
+          break;
+        case TIME_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(LocalTime.class)) {
+            return LocalTimeDeserializer.MICROS;
+          }
+          break;
       }
     }
 

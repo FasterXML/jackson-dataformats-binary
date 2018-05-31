@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
@@ -47,7 +47,7 @@ public class TimeMicrosLocalTimeTest extends LogicalTypeTestCase<TimeMicrosLocal
 
   static class TestCase extends TestData<LocalTime> {
     @JsonProperty(required = true)
-    @AvroTimeMicrosecond
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIME_MICROSECOND)
     LocalTime value;
 
     @Override

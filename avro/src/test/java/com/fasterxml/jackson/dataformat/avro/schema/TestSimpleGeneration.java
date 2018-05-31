@@ -31,6 +31,27 @@ public class TestSimpleGeneration extends AvroTestBase
         public Date date;
     }
 
+    static class WithAvroTypeFixed {
+        @JsonProperty(required = true)
+        @AvroType(typeName = "FixedFieldBytes", fixedSize = 4, schemaType = Schema.Type.FIXED)
+        public byte[] fixedField;
+
+        @JsonProperty(value = "wff", required = true)
+        @AvroType(typeName = "WrappedFixedFieldBytes", fixedSize = 8, schemaType = Schema.Type.FIXED)
+        public WithFixedField.WrappedByteArray wrappedFixedField;
+
+        void setValue(byte[] bytes) {
+            this.fixedField = bytes;
+        }
+
+        static class WrappedByteArray {
+            @JsonValue
+            public ByteBuffer getBytes() {
+                return null;
+            }
+        }
+    }
+
     static class WithFixedField {
         @JsonProperty(required = true)
         @AvroFixedSize(typeName = "FixedFieldBytes", size = 4)
@@ -158,6 +179,19 @@ public class TestSimpleGeneration extends AvroTestBase
         assertEquals(8, wrappedFieldSchema.getFixedSize());
     }
 
+    public void testFixedAvroType() throws Exception
+    {
+        AvroSchemaGenerator gen = new AvroSchemaGenerator();
+        MAPPER.acceptJsonFormatVisitor(WithAvroTypeFixed.class, gen);
+        Schema generated = gen.getAvroSchema();
+        Schema fixedFieldSchema = generated.getField("fixedField").schema();
+        assertEquals(Schema.Type.FIXED, fixedFieldSchema.getType());
+        assertEquals(4, fixedFieldSchema.getFixedSize());
+
+        Schema wrappedFieldSchema = generated.getField("wff").schema();
+        assertEquals(Schema.Type.FIXED, wrappedFieldSchema.getType());
+        assertEquals(8, wrappedFieldSchema.getFixedSize());
+    }
     // as per [dataformats-binary#98], no can do (unless we start supporting polymorphic
     // handling or something...)
     public void testSchemaForUntypedMap() throws Exception

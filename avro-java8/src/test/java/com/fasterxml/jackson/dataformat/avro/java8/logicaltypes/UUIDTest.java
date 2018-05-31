@@ -1,12 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.avro.AvroDecimal;
-import com.fasterxml.jackson.dataformat.avro.AvroUUID;
-import org.apache.avro.Conversions;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import org.apache.avro.Schema;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 public class UUIDTest extends LogicalTypeTestCase<UUIDTest.UUIDTestCase> {
@@ -41,7 +38,7 @@ public class UUIDTest extends LogicalTypeTestCase<UUIDTest.UUIDTestCase> {
 
   static class UUIDTestCase extends TestData<UUID> {
     @JsonProperty(required = true)
-    @AvroUUID
+    @AvroType(schemaType = Schema.Type.STRING, logicalType = AvroType.LogicalType.UUID)
     public UUID value;
 
     @Override

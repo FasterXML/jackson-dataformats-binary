@@ -5,13 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.dataformat.avro.AvroDate;
-import com.fasterxml.jackson.dataformat.avro.AvroDecimal;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
-import com.fasterxml.jackson.dataformat.avro.AvroUUID;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -44,9 +38,9 @@ public class RecordVisitor
     protected final boolean _overridden;
 
     protected Schema _avroSchema;
-    
+
     protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
-    
+
     public RecordVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
     {
         super(p);
@@ -83,7 +77,7 @@ public class RecordVisitor
         }
         schemas.addSchema(type, _avroSchema);
     }
-    
+
     @Override
     public Schema builtAvroSchema() {
         if (!_overridden) {
@@ -98,7 +92,7 @@ public class RecordVisitor
     /* JsonObjectFormatVisitor implementation
     /**********************************************************
      */
-    
+
     @Override
     public void property(BeanProperty writer) throws JsonMappingException
     {
@@ -150,7 +144,7 @@ public class RecordVisitor
     /* Internal methods
     /**********************************************************************
      */
-    
+
     protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional) throws JsonMappingException
     {
         Schema writerSchema;
@@ -160,86 +154,80 @@ public class RecordVisitor
             Schema.Parser parser = new Schema.Parser();
             writerSchema = parser.parse(schemaOverride.value());
         } else {
-            AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
-            if (fixedSize != null) {
-                writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
-            } else {
-                AvroDecimal decimal = prop.getAnnotation(AvroDecimal.class);
-                if(decimal!= null) {
-                    LogicalTypes.Decimal d = LogicalTypes.decimal(decimal.precision(), decimal.scale());
-                    Schema s;
-                    if(Type.BYTES == decimal.schemaType()) {
-                        s = Schema.create(Type.BYTES);
-                    } else if(Type.FIXED == decimal.schemaType()) {
-                        s = Schema.createFixed(decimal.typeName(),
-                            null,
-                            decimal.typeNamespace(),
-                            decimal.fixedSize()
-                        );
-                    } else {
-                        throw new IllegalStateException("Avro schema type must be BYTES or FIXED.");
-                    }
-                    writerSchema = d.addToSchema(s);
-                    d.validate(writerSchema);
+            AvroType type = prop.getAnnotation(AvroType.class);
+
+            if(null != type) {
+                if(type.schemaType() == Type.FIXED) {
+                    writerSchema = Schema.createFixed(type.typeName(),
+                        null,
+                        type.typeNamespace(),
+                        type.fixedSize()
+                    );
                 } else {
-                    AvroTimestampMillisecond timestampMillisecond = prop.getAnnotation(AvroTimestampMillisecond.class);
-                    if(timestampMillisecond != null) {
+                    writerSchema = Schema.create(type.schemaType());
+                }
+                switch (type.logicalType()) {
+                    case NONE:
+                        break;
+                    case DATE:
+                        writerSchema = LogicalTypes.date()
+                            .addToSchema(writerSchema);
+                        break;
+                    case UUID:
+                        writerSchema = LogicalTypes.uuid()
+                            .addToSchema(writerSchema);
+                        break;
+                    case DECIMAL:
+                        writerSchema = LogicalTypes.decimal(type.precision(), type.scale())
+                            .addToSchema(writerSchema);
+                        break;
+                    case TIME_MICROSECOND:
+                        writerSchema = LogicalTypes.timeMicros()
+                            .addToSchema(writerSchema);
+                        break;
+                    case TIME_MILLISECOND:
+                        writerSchema = LogicalTypes.timeMillis()
+                            .addToSchema(writerSchema);
+                        break;
+                    case TIMESTAMP_MICROSECOND:
+                        writerSchema = LogicalTypes.timestampMicros()
+                            .addToSchema(writerSchema);
+                        break;
+                    case TIMESTAMP_MILLISECOND:
                         writerSchema = LogicalTypes.timestampMillis()
-                            .addToSchema(Schema.create(Type.LONG));
-                    } else {
-                        AvroTimestampMicrosecond timestampMicrosecond = prop.getAnnotation(AvroTimestampMicrosecond.class);
-                        if(timestampMicrosecond!=null){
-                            writerSchema = LogicalTypes.timestampMicros()
-                                .addToSchema(Schema.create(Type.LONG));
-                        } else {
-                            AvroDate date = prop.getAnnotation(AvroDate.class);
-                            if(date!=null){
-                                writerSchema = LogicalTypes.date()
-                                    .addToSchema(Schema.create(Type.INT));
-                            } else {
-                                AvroTimeMillisecond timeMillisecond = prop.getAnnotation(AvroTimeMillisecond.class);
-                                if(timeMillisecond!=null) {
-                                    writerSchema = LogicalTypes.timeMillis()
-                                        .addToSchema(Schema.create(Type.INT));
-                                } else {
-                                    AvroTimeMicrosecond timeMicrosecond = prop.getAnnotation(AvroTimeMicrosecond.class);
-                                    if(timeMicrosecond!=null) {
-                                        writerSchema = LogicalTypes.timeMicros()
-                                            .addToSchema(Schema.create(Type.LONG));
-                                    } else {
-                                        AvroUUID avroUUID = prop.getAnnotation(AvroUUID.class);
+                            .addToSchema(writerSchema);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException(
+                            String.format("%s is not a supported logical type.", type.logicalType())
+                        );
+                }
+            } else {
+                AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
+                if (fixedSize != null) {
+                    writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
+                } else {
+                    JsonSerializer<?> ser = null;
 
-                                        if(avroUUID != null) {
-                                            writerSchema = LogicalTypes.uuid()
-                                                .addToSchema(Schema.create(Type.STRING));
-                                        } else {
-                                            JsonSerializer<?> ser = null;
-
-                                            // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
-                                            if (prop instanceof BeanPropertyWriter) {
-                                                BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
-                                                ser = bpw.getSerializer();
-                                                /*
-                                                 * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
-                                                 */
-                                                optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
-                                            }
-                                            final SerializerProvider prov = getProvider();
-                                            if (ser == null) {
-                                                if (prov == null) {
-                                                    throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
-                                                }
-                                                ser = prov.findValueSerializer(prop.getType(), prop);
-                                            }
-                                            VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
-                                            ser.acceptJsonFormatVisitor(visitor, prop.getType());
-                                            writerSchema = visitor.getAvroSchema();
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
+                    if (prop instanceof BeanPropertyWriter) {
+                        BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
+                        ser = bpw.getSerializer();
+                        /*
+                         * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
+                         */
+                        optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                     }
+                    final SerializerProvider prov = getProvider();
+                    if (ser == null) {
+                        if (prov == null) {
+                            throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                        }
+                        ser = prov.findValueSerializer(prop.getType(), prop);
+                    }
+                    VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
+                    ser.acceptJsonFormatVisitor(visitor, prop.getType());
+                    writerSchema = visitor.getAvroSchema();
                 }
             }
 

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
@@ -46,7 +46,7 @@ public class TimestampMicrosOffsetDateTimeTest extends LogicalTypeTestCase<Times
 
   static class TestCase extends TestData<OffsetDateTime> {
     @JsonProperty(required = true)
-    @AvroTimestampMicrosecond
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MICROSECOND)
     OffsetDateTime value;
 
     @Override

@@ -95,46 +95,38 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
       return new CustomEncodingDeserializer<>((CustomEncoding<?>) ClassUtil.createInstance(ann.using(), true));
     }
 
-    AvroDecimal decimal = _findAnnotation(a, AvroDecimal.class);
-    if (decimal != null) {
-      if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
-        return new AvroDecimalDeserializer(decimal.scale());
-      }
-    }
-    AvroTimeMillisecond timeMillisecond = _findAnnotation(a, AvroTimeMillisecond.class);
-    if (timeMillisecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimeDeserializer.MILLIS;
-      }
-    }
-    AvroTimeMicrosecond timeMicrosecond = _findAnnotation(a, AvroTimeMicrosecond.class);
-    if (timeMicrosecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimeDeserializer.MICROS;
-      }
-    }
-    AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
-    if (timestampMillisecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampDeserializer.MILLIS;
-      }
-    }
-    AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
-    if (timestampMicrosecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampDeserializer.MICROS;
-      }
-    }
-    AvroUUID avroUUID = _findAnnotation(a, AvroUUID.class);
-    if (avroUUID != null) {
-      if (a.getRawType().isAssignableFrom(UUID.class)) {
-        return AvroUUIDDeserializer.INSTANCE;
-      }
-    }
-    AvroDate avroDate = _findAnnotation(a, AvroDate.class);
-    if (avroDate != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateDateDeserializer.INSTANCE;
+    AvroType logicalType = _findAnnotation(a, AvroType.class);
+
+    if(null != logicalType) {
+      switch (logicalType.logicalType()) {
+        case DECIMAL:
+          if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
+            return new AvroDecimalDeserializer(logicalType.scale());
+          }
+        case TIME_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimeDeserializer.MILLIS;
+          }
+        case TIMESTAMP_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimestampDeserializer.MILLIS;
+          }
+        case TIME_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimeDeserializer.MICROS;
+          }
+        case TIMESTAMP_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimestampDeserializer.MICROS;
+          }
+        case UUID:
+          if (a.getRawType().isAssignableFrom(UUID.class)) {
+            return AvroUUIDDeserializer.INSTANCE;
+          }
+        case DATE:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateDateDeserializer.INSTANCE;
+          }
       }
     }
     return null;
@@ -194,58 +186,52 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector {
     if (ann != null) {
       return new CustomEncodingSerializer<>((CustomEncoding<?>) ClassUtil.createInstance(ann.using(), true));
     }
-    AvroDecimal decimal = _findAnnotation(a, AvroDecimal.class);
-    if (decimal != null) {
-      if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
-        switch (decimal.schemaType()) {
-          case BYTES:
-            return new AvroBytesDecimalSerializer(decimal.scale());
-          case FIXED:
-            return new AvroFixedDecimalSerializer(decimal.scale(), decimal.fixedSize());
-          default:
-            throw new UnsupportedOperationException(
-                String.format("%s is not a supported type for the logical type 'decimal'", decimal.schemaType())
-            );
-        }
+    AvroType logicalType = _findAnnotation(a, AvroType.class);
+    
+    if(null != logicalType) {
+      switch (logicalType.logicalType()) {
+        case DECIMAL:
+          switch (logicalType.schemaType()) {
+            case FIXED:
+              if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
+                return new AvroFixedDecimalSerializer(logicalType.scale(), logicalType.fixedSize());
+              }
+            case BYTES:
+              if (a.getRawType().isAssignableFrom(BigDecimal.class)) {
+                return new AvroBytesDecimalSerializer(logicalType.scale());
+              }
+            default:
+              throw new UnsupportedOperationException(
+                  String.format("%s is not a supported type for the logical type 'decimal'", logicalType.schemaType())
+              );
+          }
+        case TIME_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimeSerializer.MILLIS;
+          }
+        case TIMESTAMP_MILLISECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimestampSerializer.MILLIS;
+          }
+        case TIME_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimeSerializer.MICROS;
+          }
+        case TIMESTAMP_MICROSECOND:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateTimestampSerializer.MICROS;
+          }
+        case UUID:
+          if (a.getRawType().isAssignableFrom(UUID.class)) {
+            return AvroUUIDSerializer.INSTANCE;
+          }
+        case DATE:
+          if (a.getRawType().isAssignableFrom(Date.class)) {
+            return AvroDateDateSerializer.INSTANCE;
+          }
       }
     }
-    AvroTimeMillisecond timeMillisecond = _findAnnotation(a, AvroTimeMillisecond.class);
-    if (timeMillisecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimeSerializer.MILLIS;
-      }
-    }
-    AvroTimeMicrosecond timeMicrosecond = _findAnnotation(a, AvroTimeMicrosecond.class);
-    if (timeMicrosecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimeSerializer.MICROS;
-      }
-    }
-
-    AvroTimestampMillisecond timestampMillisecond = _findAnnotation(a, AvroTimestampMillisecond.class);
-    if (timestampMillisecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampSerializer.MILLIS;
-      }
-    }
-    AvroTimestampMicrosecond timestampMicrosecond = _findAnnotation(a, AvroTimestampMicrosecond.class);
-    if (timestampMicrosecond != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateTimestampSerializer.MICROS;
-      }
-    }
-    AvroUUID avroUUID = _findAnnotation(a, AvroUUID.class);
-    if (avroUUID != null) {
-      if (a.getRawType().isAssignableFrom(UUID.class)) {
-        return AvroUUIDSerializer.INSTANCE;
-      }
-    }
-    AvroDate avroDate = _findAnnotation(a, AvroDate.class);
-    if (avroDate != null) {
-      if (a.getRawType().isAssignableFrom(Date.class)) {
-        return AvroDateDateSerializer.INSTANCE;
-      }
-    }
+    
     return null;
   }
 

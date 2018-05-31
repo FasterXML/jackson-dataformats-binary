@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.avro.AvroDate;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
@@ -46,7 +46,7 @@ public class DateLocalDateTest extends LogicalTypeTestCase<DateLocalDateTest.Tes
 
   static class TestCase extends TestData<LocalDate> {
     @JsonProperty(required = true)
-    @AvroDate
+    @AvroType(schemaType = Schema.Type.INT, logicalType = AvroType.LogicalType.DATE)
     LocalDate value;
 
     @Override

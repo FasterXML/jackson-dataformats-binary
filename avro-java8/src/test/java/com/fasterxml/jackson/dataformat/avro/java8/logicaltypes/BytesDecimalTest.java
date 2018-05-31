@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.avro.AvroDecimal;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import org.apache.avro.Conversions;
 import org.apache.avro.Schema;
 
@@ -39,7 +39,7 @@ public class BytesDecimalTest extends LogicalTypeTestCase<BytesDecimalTest.Bytes
 
   static class BytesDecimal extends TestData<BigDecimal> {
     @JsonProperty(required = true)
-    @AvroDecimal(precision = 3, scale = 3)
+    @AvroType(precision = 3, scale = 3, schemaType = Schema.Type.BYTES, logicalType = AvroType.LogicalType.DECIMAL)
     public BigDecimal value;
 
     @Override

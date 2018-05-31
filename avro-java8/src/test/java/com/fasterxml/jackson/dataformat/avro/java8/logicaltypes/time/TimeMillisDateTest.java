@@ -1,13 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -51,7 +50,8 @@ public class TimeMillisDateTest extends LogicalTypeTestCase<TimeMillisDateTest.T
 
   static class TestCase extends TestData<Date> {
     @JsonProperty(required = true)
-    @AvroTimeMillisecond
+    @AvroType(schemaType = Schema.Type.INT, logicalType = AvroType.LogicalType.TIME_MILLISECOND)
+
     Date value;
 
     @Override
