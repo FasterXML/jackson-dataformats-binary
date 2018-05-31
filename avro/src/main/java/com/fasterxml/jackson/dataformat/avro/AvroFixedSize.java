@@ -10,6 +10,7 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
+@Deprecated
 public @interface AvroFixedSize {
     /**
      * The name of the type in the generated schema

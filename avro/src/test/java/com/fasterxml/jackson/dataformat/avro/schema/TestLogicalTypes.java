@@ -2,17 +2,10 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.avro.AvroDate;
-import com.fasterxml.jackson.dataformat.avro.AvroDecimal;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimeMillisecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMillisecond;
-import com.fasterxml.jackson.dataformat.avro.AvroUUID;
-import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.junit.Assert;
@@ -25,61 +18,67 @@ public class TestLogicalTypes extends AvroTestBase {
 
   static class BytesDecimalType {
     @JsonProperty(required = true)
-    @AvroDecimal(precision = 5)
+    @AvroType(schemaType = Schema.Type.BYTES, logicalType = AvroType.LogicalType.DECIMAL, precision = 5)
     public BigDecimal value;
   }
 
   static class FixedNoNameDecimalType {
     @JsonProperty(required = true)
-    @AvroDecimal(precision = 5, schemaType = Schema.Type.FIXED)
+    @AvroType(precision = 5, schemaType = Schema.Type.FIXED, logicalType = AvroType.LogicalType.DECIMAL)
     public BigDecimal value;
   }
 
   static class FixedDecimalType {
     @JsonProperty(required = true)
-    @AvroDecimal(precision = 5, schemaType = Schema.Type.FIXED, typeName = "foo", typeNamespace = "com.fasterxml.jackson.dataformat.avro.schema", fixedSize = 8)
+    @AvroType(precision = 5,
+        schemaType = Schema.Type.FIXED,
+        typeName = "foo",
+        typeNamespace = "com.fasterxml.jackson.dataformat.avro.schema",
+        fixedSize = 8,
+        logicalType = AvroType.LogicalType.DECIMAL
+    )
     public BigDecimal value;
   }
 
   static class TimestampMillisecondsType {
-    @AvroTimestampMillisecond
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MILLISECOND)
     @JsonProperty(required = true)
     public Date value;
   }
 
   static class TimeMillisecondsType {
-    @AvroTimeMillisecond
+    @AvroType(schemaType = Schema.Type.INT, logicalType = AvroType.LogicalType.TIME_MILLISECOND)
     @JsonProperty(required = true)
     public Date value;
   }
 
   static class TimestampMicrosecondsType {
-    @AvroTimestampMicrosecond
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MICROSECOND)
     @JsonProperty(required = true)
     public Date value;
   }
 
   static class TimeMicrosecondsType {
-    @AvroTimeMicrosecond
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIME_MICROSECOND)
     @JsonProperty(required = true)
     public Date value;
   }
-  
+
   static class DateType {
-    @AvroDate
+    @AvroType(schemaType = Schema.Type.INT, logicalType = AvroType.LogicalType.DATE)
     @JsonProperty(required = true)
     public Date value;
   }
 
   static class UUIDType {
-    @AvroUUID
+    @AvroType(schemaType = Schema.Type.STRING, logicalType = AvroType.LogicalType.UUID)
     @JsonProperty(required = true)
     public UUID value;
   }
 
   AvroSchema getSchema(Class<?> cls) throws JsonMappingException {
     AvroMapper avroMapper = new AvroMapper();
-    AvroSchemaGenerator avroSchemaGenerator=new AvroSchemaGenerator();
+    AvroSchemaGenerator avroSchemaGenerator = new AvroSchemaGenerator();
     avroMapper.acceptJsonFormatVisitor(cls, avroSchemaGenerator);
     AvroSchema schema = avroSchemaGenerator.getGeneratedSchema();
     assertNotNull("Schema should not be null.", schema);
@@ -154,7 +153,7 @@ public class TestLogicalTypes extends AvroTestBase {
     Schema.Field field = schema.getField("value");
     assertLogicalType(field, Schema.Type.LONG, "time-micros");
   }
-  
+
   public void testDateType() throws JsonMappingException {
     AvroSchema avroSchema = getSchema(DateType.class);
     Schema schema = avroSchema.getAvroSchema();

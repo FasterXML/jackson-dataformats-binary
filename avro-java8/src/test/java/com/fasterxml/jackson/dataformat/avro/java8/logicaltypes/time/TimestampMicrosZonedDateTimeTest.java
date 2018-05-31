@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroTimestampMicrosecond;
 import com.fasterxml.jackson.dataformat.avro.java8.AvroJavaTimeModule;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
@@ -52,7 +52,7 @@ public class TimestampMicrosZonedDateTimeTest extends LogicalTypeTestCase<Timest
 
   static class TestCase extends TestData<ZonedDateTime> {
     @JsonProperty(required = true)
-    @AvroTimestampMicrosecond
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MICROSECOND)
     ZonedDateTime value;
 
     @Override
