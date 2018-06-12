@@ -8,7 +8,7 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.6 (not yet released)
+2.9.6 (12-Jun-2018)
 
 #93: (cbor) `CBORParser` does not accept "undefined value"
  (reported by mbaril@github)
