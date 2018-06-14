@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
 /**
  * This is a {@link TypeSerializer} that places typing metadata in Ion type annotations. It requires that the underlying

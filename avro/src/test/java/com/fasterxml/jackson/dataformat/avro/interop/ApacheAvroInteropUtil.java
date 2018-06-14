@@ -106,22 +106,26 @@ public class ApacheAvroInteropUtil {
                         ((Map) names).put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names)));
                     }
                 }
-            }
-            if (type instanceof Class<?> && ((Class<?>) type).getSuperclass() != null && !Enum.class.isAssignableFrom((Class<?>) type)) {
-                // Raw class may extend a generic superclass
-                // extract all the type bindings and add them to the map so they can be returned by the next block
-                // Interfaces shouldn't matter here because interfaces can't have fields and avro only looks at fields.
-                TypeVariable<?>[] genericParameters = ((Class<?>) type).getSuperclass().getTypeParameters();
-                if (genericParameters.length > 0) {
-                    Type[] boundParameters = ((ParameterizedType) ((Class<?>) type).getGenericSuperclass()).getActualTypeArguments();
-                    for (int i = 0; i < boundParameters.length; i++) {
-                        ((Map) names).put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names)));
+            } else if (type instanceof Class<?>) {
+                Class<?> cls = (Class<?>) type;
+                if (cls.getSuperclass() != null && !Enum.class.isAssignableFrom(cls)) {
+                    // Raw class may extend a generic superclass
+                    // extract all the type bindings and add them to the map so they can be returned by the next block
+                    // Interfaces shouldn't matter here because interfaces can't have fields and avro only looks at fields.
+                    TypeVariable<?>[] genericParameters = cls.getSuperclass().getTypeParameters();
+                    if (genericParameters.length > 0) {
+                        Type[] boundParameters = ((ParameterizedType) cls.getGenericSuperclass()).getActualTypeArguments();
+                        for (int i = 0; i < boundParameters.length; i++) {
+                            ((Map) names).put(genericParameters[i], createSchema(boundParameters[i], new HashMap<>(names)));
+                        }
                     }
                 }
-            }
-            if (type instanceof TypeVariable) {
+            } else if (type instanceof TypeVariable) {
                 // Should only get here by recursion normally; names should be populated with the schema for this type variable by a
                 // previous stack frame
+                /* 14-Jun-2018, tatu: This is 99.9% certainly wrong; IDE gives warnings and
+                 *   it just... doesn't fly. Either keys are NOT Strings or...
+                 */
                 if (names.containsKey(type)) {
                     return names.get(type);
                 }

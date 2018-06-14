@@ -58,7 +58,7 @@ public class IonFactory extends JsonFactory {
     protected boolean _cfgCreateBinaryWriters = false;
     
     public IonFactory() {
-        this(null);
+        this((ObjectCodec) null);
     }
 
     public IonFactory(ObjectCodec mapper) {
@@ -77,6 +77,54 @@ public class IonFactory extends JsonFactory {
         //    too; for now assume it may be shared.
         _system = src._system;
         _cfgCreateBinaryWriters = src._cfgCreateBinaryWriters;
+    }
+
+    /**
+     * Constructors used by {@link IonFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected IonFactory(IonFactoryBuilder b) {
+        super(b, false);
+        _cfgCreateBinaryWriters = b.willCreateBinaryWriters();
+        _system = b.ionSystem();
+    }
+
+    @Override
+    public IonFactoryBuilder rebuild() {
+        return new IonFactoryBuilder(this);
+    }
+
+    /**
+     * Method for creating {@link IonFactory} that will
+     * create binary (not textual) writers.
+     */
+    public static IonFactory forBinaryWriters() {
+        return new IonFactoryBuilder(true).build();
+    }
+
+    /**
+     * Method for creating {@link IonFactoryBuilder} initialized with settings to
+     * create binary (not textual) writers.
+     */
+    public static IonFactoryBuilder builderForBinaryWriters() {
+        return new IonFactoryBuilder(true);
+    }
+    
+    /**
+     * Method for creating {@link IonFactory} that will
+     * create textual (not binary) writers.
+     */
+    public static IonFactory forTextualWriters() {
+        return new IonFactoryBuilder(false).build();
+    }
+
+    /**
+     * Method for creating {@link IonFactoryBuilder} initialized with settings to
+     * create textual (not binary) writers.
+     */
+    public static IonFactoryBuilder builderForTextualWriters() {
+        return new IonFactoryBuilder(false);
     }
 
     @Override

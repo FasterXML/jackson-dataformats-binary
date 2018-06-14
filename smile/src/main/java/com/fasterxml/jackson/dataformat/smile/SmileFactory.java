@@ -88,7 +88,7 @@ public class SmileFactory extends JsonFactory
      * and this reuse only works within context of a single
      * factory instance.
      */
-    public SmileFactory() { this(null); }
+    public SmileFactory() { this((ObjectCodec) null); }
 
     public SmileFactory(ObjectCodec oc) {
         super(oc);
@@ -110,7 +110,30 @@ public class SmileFactory extends JsonFactory
         _smileGeneratorFeatures = src._smileGeneratorFeatures;
     }
 
-    // @since 2.1
+    /**
+     * Constructors used by {@link SmileFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected SmileFactory(SmileFactoryBuilder b) {
+        super(b, false);
+        _smileParserFeatures = b.formatParserFeaturesMask();
+        _smileGeneratorFeatures = b.formatGeneratorFeaturesMask();
+    }
+
+    @Override
+    public SmileFactoryBuilder rebuild() {
+        return new SmileFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link SmileFactory} instances with
+     * different configuration.
+     */
+    public static SmileFactoryBuilder builder() {
+        return new SmileFactoryBuilder();
+    }
+
     @Override
     public SmileFactory copy()
     {

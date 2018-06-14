@@ -16,8 +16,6 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 public abstract class AvroParserImpl
     extends AvroParser
 {
-    protected final static byte[] NO_BYTES = new byte[0];
-
     /*
     /**********************************************************
     /* Other decoding state

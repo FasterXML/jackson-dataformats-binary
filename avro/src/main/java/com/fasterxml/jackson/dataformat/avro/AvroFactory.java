@@ -43,7 +43,15 @@ public class AvroFactory extends JsonFactory
     protected int _avroParserFeatures;
 
     protected int _avroGeneratorFeatures;
-    
+
+    /**
+     * Flag that is set if Apache Avro lib's decoder is to be used for decoding;
+     * `false` to use Jackson native Avro decoder.
+     *
+     * @since 2.9
+     */
+    protected boolean _useApacheLibDecoder;
+
     /*
     /**********************************************************
     /* Factory construction, configuration
@@ -60,7 +68,13 @@ public class AvroFactory extends JsonFactory
      * and this reuse only works within context of a single
      * factory instance.
      */
-    public AvroFactory() { this(null); }
+    public AvroFactory() {
+        // 09-Jan-2017, tatu: We must actually create and pass builder to be able to change
+        //    one of JsonGenerator.Features (See builder for details)
+        super(new AvroFactoryBuilder(), false);
+        _avroParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
+        _avroGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
+    }
 
     public AvroFactory(ObjectCodec oc)
     {
@@ -82,6 +96,54 @@ public class AvroFactory extends JsonFactory
         super(src, oc);
         _avroParserFeatures = src._avroParserFeatures;
         _avroGeneratorFeatures = src._avroGeneratorFeatures;
+    }
+
+    /**
+     * Constructors used by {@link YAMLFactoryBuilder} for instantiation.
+     *
+     * @since 2.9
+     */
+    protected AvroFactory(AvroFactoryBuilder b)
+    {
+        super(b, false);
+        _avroParserFeatures = b.formatParserFeaturesMask();
+        _avroGeneratorFeatures = b.formatGeneratorFeaturesMask();
+        _useApacheLibDecoder = b.useApacheLibDecoder();
+    }
+
+    @Override
+    public AvroFactoryBuilder rebuild() {
+        return new AvroFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing a builder for creating
+     * {@link AvroFactory} instances with different configuration.
+     * Builder is initialized to defaults and this is equivalent to calling
+     * {@link #builderWithNativeDecoder}.
+     */
+    public static AvroFactoryBuilder builder() {
+        return new AvroFactoryBuilder();
+    }
+
+    /**
+     * Main factory method to use for constructing a builder for creating
+     * {@link AvroFactory} instances with different configuration,
+     * initialized to use Apache Avro library codec for decoding content
+     * (instead of Jackson native decoder).
+     */
+    public static AvroFactoryBuilder builderWithApacheDecoder() {
+        return new AvroFactoryBuilder(true);
+    }
+
+    /**
+     * Main factory method to use for constructing a builder for creating
+     * {@link AvroFactory} instances with different configuration,
+     * initialized to use Jackson antive codec for decoding content
+     * (instead of Apache Avro library decoder).
+     */
+    public static AvroFactoryBuilder builderWithNativeDecoder() {
+        return new AvroFactoryBuilder(false);
     }
 
     @Override

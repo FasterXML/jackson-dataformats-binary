@@ -30,6 +30,28 @@ public class ProtobufFactory extends JsonFactory
         super(src, oc);
     }
 
+    /**
+     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     *
+     * @since 2.9
+     */
+    protected ProtobufFactory(ProtobufFactoryBuilder b) {
+        super(b, false);
+    }
+
+    @Override
+    public ProtobufFactoryBuilder rebuild() {
+        return new ProtobufFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link ProtobufFactory} instances with
+     * different configuration.
+     */
+    public static ProtobufFactoryBuilder builder() {
+        return new ProtobufFactoryBuilder();
+    }
+
     @Override
     public ProtobufFactory copy()
     {

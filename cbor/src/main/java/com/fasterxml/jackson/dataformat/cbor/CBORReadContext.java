@@ -154,6 +154,7 @@ public final class CBORReadContext
      * @return Location pointing to the point where the context
      *   start marker was found
      */
+    @Override
     public JsonLocation getStartLocation(Object srcRef) {
         // not much we can tell
         return new JsonLocation(srcRef, 1L, -1, -1);

@@ -76,7 +76,7 @@ public class CBORFactory extends JsonFactory
      * and this reuse only works within context of a single
      * factory instance.
      */
-    public CBORFactory() { this(null); }
+    public CBORFactory() { this((ObjectCodec) null); }
 
     public CBORFactory(ObjectCodec oc) {
         super(oc);
@@ -95,6 +95,30 @@ public class CBORFactory extends JsonFactory
         super(src, oc);
         _formatParserFeatures = src._formatParserFeatures;
         _formatGeneratorFeatures = src._formatGeneratorFeatures;
+    }
+
+    /**
+     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected CBORFactory(CBORFactoryBuilder b) {
+        super(b, false);
+        _formatParserFeatures = b.formatParserFeaturesMask();
+        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
+    }
+
+    @Override
+    public CBORFactoryBuilder rebuild() {
+        return new CBORFactoryBuilder(this);
+    }
+
+    /**
+     * Main factory method to use for constructing {@link CBORFactory} instances with
+     * different configuration.
+     */
+    public static CBORFactoryBuilder builder() {
+        return new CBORFactoryBuilder();
     }
 
     @Override
