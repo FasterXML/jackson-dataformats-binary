@@ -33,7 +33,12 @@ public class MapperConfigTest extends AvroTestBase
     {
         AvroParser p = AVRO_F.createParser(new byte[0]);
         assertTrue(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
-        p.disable(AvroParser.Feature.AVRO_BUFFERING);
+        p.close();
+
+        AvroFactory f = AvroFactory.builder()
+                .disable(AvroParser.Feature.AVRO_BUFFERING)
+                .build();
+        p = f.createParser(new byte[0]);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
         try {
             p.setSchema(BOGUS_SCHEMA);
@@ -49,7 +54,12 @@ public class MapperConfigTest extends AvroTestBase
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         AvroGenerator g = AVRO_F.createGenerator(bytes);
         assertTrue(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
-        g.disable(AvroGenerator.Feature.AVRO_BUFFERING);
+        g.close();
+
+        AvroFactory f = AvroFactory.builder()
+                .disable(AvroGenerator.Feature.AVRO_BUFFERING)
+                .build();
+        g = f.createGenerator(bytes);
         assertFalse(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
 
         try {
@@ -59,8 +69,6 @@ public class MapperConfigTest extends AvroTestBase
             ; // finel
         }
         g.close();
-
-        
     }
 
     /*

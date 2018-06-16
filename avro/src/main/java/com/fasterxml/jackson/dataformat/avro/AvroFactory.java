@@ -74,6 +74,7 @@ public class AvroFactory extends JsonFactory
         super(new AvroFactoryBuilder(), false);
         _avroParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
         _avroGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
+        _useApacheLibDecoder = false;
     }
 
     public AvroFactory(ObjectCodec oc)
@@ -81,6 +82,7 @@ public class AvroFactory extends JsonFactory
         super(oc);
         _avroParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
         _avroGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
+        _useApacheLibDecoder = false;
 
         /* 04-Mar-2013, tatu: Content auto-closing is unfortunately a feature
          *    that works poorly with Avro error reporting, and generally
@@ -96,6 +98,7 @@ public class AvroFactory extends JsonFactory
         super(src, oc);
         _avroParserFeatures = src._avroParserFeatures;
         _avroGeneratorFeatures = src._avroGeneratorFeatures;
+        _useApacheLibDecoder = src._useApacheLibDecoder;
     }
 
     /**
