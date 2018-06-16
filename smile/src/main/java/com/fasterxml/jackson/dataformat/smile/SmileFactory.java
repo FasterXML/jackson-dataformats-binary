@@ -265,6 +265,11 @@ public class SmileFactory extends JsonFactory
         return (_smileParserFeatures & f.getMask()) != 0;
     }
 
+    @Override
+    public int getFormatParserFeatures() {
+        return _smileParserFeatures;
+    }
+
     /*
     /**********************************************************
     /* Configuration, generator settings
@@ -311,7 +316,12 @@ public class SmileFactory extends JsonFactory
     public final boolean isEnabled(SmileGenerator.Feature f) {
         return (_smileGeneratorFeatures & f.getMask()) != 0;
     }
-    
+
+    @Override
+    public int getFormatGeneratorFeatures() {
+        return _smileGeneratorFeatures;
+    }
+
     /*
     /**********************************************************
     /* Overridden parser factory methods: only override methods

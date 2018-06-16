@@ -244,6 +244,11 @@ public class CBORFactory extends JsonFactory
         return (_formatParserFeatures & f.getMask()) != 0;
     }
 
+    @Override
+    public int getFormatParserFeatures() {
+        return _formatParserFeatures;
+    }
+
     /*
     /**********************************************************
     /* Configuration, generator settings
@@ -287,6 +292,11 @@ public class CBORFactory extends JsonFactory
      */
     public final boolean isEnabled(CBORGenerator.Feature f) {
         return (_formatGeneratorFeatures & f.getMask()) != 0;
+    }
+
+    @Override
+    public int getFormatGeneratorFeatures() {
+        return _formatGeneratorFeatures;
     }
 
     /*

@@ -263,6 +263,11 @@ public class AvroFactory extends JsonFactory
         return (_avroParserFeatures & f.getMask()) != 0;
     }
 
+    @Override
+    public int getFormatParserFeatures() {
+        return _avroParserFeatures;
+    }
+
     /*
     /**********************************************************
     /* Configuration, generator settings
@@ -307,7 +312,12 @@ public class AvroFactory extends JsonFactory
     public final boolean isEnabled(AvroGenerator.Feature f) {
         return (_avroGeneratorFeatures & f.getMask()) != 0;
     }
-    
+
+    @Override
+    public int getFormatGeneratorFeatures() {
+        return _avroGeneratorFeatures;
+    }
+
     /*
     /**********************************************************
     /* Overridden parser factory methods
