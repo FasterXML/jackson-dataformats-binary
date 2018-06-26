@@ -21,7 +21,7 @@ public class EnumTest extends AvroTestBase
         public String gender;
     }
 
-    private final AvroMapper MAPPER = new AvroMapper();
+    private final AvroMapper MAPPER = newMapper();
     
     public void testSimple() throws Exception
     {

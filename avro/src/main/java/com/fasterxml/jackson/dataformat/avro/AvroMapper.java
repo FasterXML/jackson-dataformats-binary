@@ -7,10 +7,13 @@ import java.io.InputStream;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.dataformat.avro.AvroMapper.Builder;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
@@ -22,7 +25,77 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
  */
 public class AvroMapper extends ObjectMapper
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
+
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Avro backend.
+     *
+     * @since 2.10
+     */
+    public static class Builder extends MapperBuilder<AvroMapper, Builder>
+    {
+        protected final AvroFactory _streamFactory; // since 2.10
+
+        public Builder(AvroMapper m) {
+            super(m);
+            _streamFactory = m.getFactory();
+        }
+
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        public Builder enable(AvroParser.Feature... features) {
+            for (AvroParser.Feature f : features) {
+                _streamFactory.enable(f);
+            }
+            return this;
+        }
+
+        public Builder disable(AvroParser.Feature... features) {
+            for (AvroParser.Feature f : features) {
+                _streamFactory.disable(f);
+            }
+            return this;
+        }
+
+        public Builder configure(AvroParser.Feature f, boolean state)
+        {
+            if (state) {
+                _streamFactory.enable(f);
+            } else {
+                _streamFactory.disable(f);
+            }
+            return this;
+        }
+
+        public Builder enable(AvroGenerator.Feature... features) {
+            for (AvroGenerator.Feature f : features) {
+                _streamFactory.enable(f);
+            }
+            return this;
+        }
+
+        public Builder disable(AvroGenerator.Feature... features) {
+            for (AvroGenerator.Feature f : features) {
+                _streamFactory.disable(f);
+            }
+            return this;
+        }
+
+        public Builder configure(AvroGenerator.Feature f, boolean state)
+        {
+            if (state) {
+                _streamFactory.enable(f);
+            } else {
+                _streamFactory.disable(f);
+            }
+            return this;
+        }
+    }
 
     /**
      * Constructor that will construct mapper with standard {@link AvroFactory}
@@ -63,6 +136,25 @@ public class AvroMapper extends ObjectMapper
 
     protected AvroMapper(ObjectMapper src) {
         super(src);
+    }
+
+    /**
+     * @since 2.10
+     */
+    public static AvroMapper.Builder xmlBuilder() {
+        return new AvroMapper.Builder(new AvroMapper());
+    }
+
+    /**
+     * @since 2.10
+     */
+    @SuppressWarnings("unchecked")
+    public static AvroMapper.Builder builder() {
+        return new AvroMapper.Builder(new AvroMapper());
+    }
+
+    public static Builder builder(AvroFactory streamFactory) {
+        return new AvroMapper.Builder(new AvroMapper(streamFactory));
     }
 
     @Override

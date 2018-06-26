@@ -37,8 +37,8 @@ public class NumberTest extends AvroTestBase
         }
     }
 
-    private final AvroMapper MAPPER = new AvroMapper();
-    
+    private final AvroMapper MAPPER = newMapper();
+
     // for [dataformat-avro#41]
     public void testNumberType() throws Exception
     {

@@ -8,7 +8,7 @@ public class OptionalEnumTest extends AvroTestBase
         public Gender gender;
     }
 
-    private final AvroMapper MAPPER = new AvroMapper();
+    private final AvroMapper MAPPER = newMapper();
     
     // [dataformat-avro#12]
     public void testEnumViaGeneratedSchema() throws Exception

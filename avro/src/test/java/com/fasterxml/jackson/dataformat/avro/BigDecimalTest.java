@@ -20,7 +20,7 @@ public class BigDecimalTest extends AvroTestBase
     }
 
     public void testSerializeBigDecimal() throws Exception {
-        AvroMapper mapper = new AvroMapper();
+        AvroMapper mapper = newMapper();
         AvroSchema schema = mapper.schemaFor(NamedAmount.class);
 
         byte[] bytes = mapper.writer(schema)

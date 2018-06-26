@@ -290,7 +290,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     protected AvroMapper newMapper() {
-        return new AvroMapper();
+        return AvroMapper.builder().build();
     }
     
     protected byte[] toAvro(Employee empl) throws IOException {

@@ -26,8 +26,8 @@ public class BinaryDataTest extends AvroTestBase
         public long size;
     }
 
-    private final AvroMapper AVRO_JACKSON_MAPPER =  new AvroMapper(new AvroFactory());
-    private final AvroMapper AVRO_APACHE_MAPPER =  new AvroMapper(new ApacheAvroFactory());
+    private final AvroMapper AVRO_JACKSON_MAPPER =  AvroMapper.builder(new AvroFactory()).build();
+    private final AvroMapper AVRO_APACHE_MAPPER =  AvroMapper.builder(new ApacheAvroFactory()).build();
     
     public void testAvroSchemaGenerationWithJackson() throws Exception
     {

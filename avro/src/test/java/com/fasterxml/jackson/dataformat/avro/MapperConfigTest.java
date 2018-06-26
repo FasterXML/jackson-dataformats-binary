@@ -80,10 +80,11 @@ public class MapperConfigTest extends AvroTestBase
     // Test to verify that data format affects default state of order-props-alphabetically
     public void testDefaultSettingsWithObjectMapper()
     {
-        ObjectMapper mapper = new ObjectMapper(AVRO_F);
+        ObjectMapper mapper = AvroMapper.builder(AVRO_F).build();
         _testAvroMapperDefaults(mapper);
 
-        // and even with default mapper, may become so, if configred with AvroFactory
+        // and even with default mapper, may become so if configured with AvroFactory
+        // 26-Jun-2018, tatu: NOTE! 2.x only -- 3.x will not allow mix-n-matching
         ObjectMapper vanilla = new ObjectMapper();
         assertFalse(vanilla.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
         ObjectReader r = vanilla.reader();
@@ -95,7 +96,7 @@ public class MapperConfigTest extends AvroTestBase
 
     public void testDefaultSettingsWithAvroMapper()
     {
-        AvroMapper mapper = new AvroMapper();
+        AvroMapper mapper = AvroMapper.builder().build();
         assertNotNull(mapper.version());
 
         _testAvroMapperDefaults(mapper);
