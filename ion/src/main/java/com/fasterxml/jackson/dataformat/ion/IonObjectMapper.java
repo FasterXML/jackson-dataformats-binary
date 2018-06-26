@@ -40,11 +40,11 @@ import software.amazon.ion.IonWriter;
  */
 public class IonObjectMapper extends ObjectMapper
 {    
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
     /**
      * Base implementation for "Vanilla" {@link ObjectMapper}, used with
-     * Avro backend.
+     * ION backend.
      *
      * @since 3.0
      */

@@ -20,11 +20,11 @@ import com.fasterxml.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerat
 
 public class ProtobufMapper extends ObjectMapper
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
     /**
      * Base implementation for "Vanilla" {@link ObjectMapper}, used with
-     * Avro backend.
+     * Protobuf backend.
      *
      * @since 3.0
      */
