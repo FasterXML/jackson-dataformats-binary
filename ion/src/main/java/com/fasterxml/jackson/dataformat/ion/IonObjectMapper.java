@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import software.amazon.ion.IonDatagram;
@@ -36,6 +37,26 @@ import software.amazon.ion.IonWriter;
 public class IonObjectMapper extends ObjectMapper
 {    
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Avro backend.
+     *
+     * @since 2.10
+     */
+    public static class Builder extends MapperBuilder<IonObjectMapper, Builder>
+    {
+        
+        public Builder(IonObjectMapper m) {
+            super(m);
+        }
+    }
+
+    /*
+    /**********************************************************************
+    /* Life-cycle
+    /**********************************************************************
+     */
 
     public IonObjectMapper() {
         this(new IonFactory());
@@ -57,15 +78,24 @@ public class IonObjectMapper extends ObjectMapper
         super(src);
     }
 
-    public void setCreateBinaryWriters(boolean bin) {
-        getFactory().setCreateBinaryWriters(bin);
-    }   
+    @SuppressWarnings("unchecked")
+    public static Builder builder() {
+        return new Builder(new IonObjectMapper());
+    }
+
+    public static Builder builder(IonFactory streamFactory) {
+        return new Builder(new IonObjectMapper(streamFactory));
+    }
 
     @Override
     public ObjectMapper copy() {
         _checkInvalidCopy(IonObjectMapper.class);
         return new IonObjectMapper(this);
     }
+
+    public void setCreateBinaryWriters(boolean bin) {
+        getFactory().setCreateBinaryWriters(bin);
+    }   
 
     @Override
     public Version version() {

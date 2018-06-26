@@ -106,7 +106,8 @@ public class DataBindWriteTest {
     @Test
     public void testWriteBasicTypes() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper(new IonFactory(null, ion));
+        IonObjectMapper m = IonObjectMapper.builder(new IonFactory(null, ion))
+                .build();
 
         assertEquals(ion.newString("foo"), m.writeValueAsIonValue("foo"));
         assertEquals(ion.newBool(true), m.writeValueAsIonValue(true));
@@ -117,8 +118,8 @@ public class DataBindWriteTest {
     @Test
     public void testIntArrayWriteText() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper();
-        m.setCreateBinaryWriters(false);
+        IonObjectMapper m = IonObjectMapper.builder(IonFactory.forTextualWriters())
+                .build();
         IonDatagram loadedDatagram = ion.newLoader().load(m.writeValueAsString(new int[] { 1, 2, 3 } ));
         assertEquals(expectedArray, loadedDatagram);
     }
@@ -136,8 +137,8 @@ public class DataBindWriteTest {
 
     private byte[] _writeAsBytes(Object ob) throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
-        m.setCreateBinaryWriters(true);
+        IonObjectMapper m = IonObjectMapper.builder(IonFactory.forBinaryWriters())
+                .build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         m.writeValue(out, ob);
         return out.toByteArray();

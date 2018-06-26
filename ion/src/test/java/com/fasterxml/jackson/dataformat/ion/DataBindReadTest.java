@@ -45,7 +45,7 @@ public class DataBindReadTest {
     @Test
     public void testSimple() throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.builder().build();
         MyBean bean = m.readValue("{a: \"...\", \"b\" : 39, blob:{{SGVsbG8h}} }", MyBean.class);
         assertEquals("...", bean.a);
         assertEquals(39, bean.b);
@@ -62,11 +62,11 @@ public class DataBindReadTest {
         assertEquals(2, bean.b);
         
     }
-    
+
     @Test
     public void testJsonIgnoreProperty() throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.builder().build();
         MyBean bean = m.readValue("{a: \"...\", ignore:{x:\"y\"}, \"b\" : 39 }", MyBean.class);
         assertEquals("...", bean.a);
         assertEquals(39, bean.b);
@@ -79,7 +79,7 @@ public class DataBindReadTest {
     @Test
     public void testFromIon() throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.builder().build();
         IonSystem ion = IonSystemBuilder.standard().build();
         IonValue value = ion.singleValue("{payload: {'a': bc, b : '14' }}");
         MyBean bean = m.readValue(((IonStruct) value).get("payload"), MyBean.class);
@@ -94,7 +94,7 @@ public class DataBindReadTest {
     @Test
     public void testBasicTypes() throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.builder().build();
         IonSystem ion = IonSystemBuilder.standard().build();
         assertNull(m.readValue(ion.newNull(), Object.class));
         assertEquals("foo", m.readValue(ion.newString("foo"), String.class));
@@ -108,7 +108,7 @@ public class DataBindReadTest {
     @Test
     public void testMultipleReads() throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.builder().build();
         IonSystem ion = IonSystemBuilder.standard().build();
 
         IonReader reader = ion.newReader("[foo, bar, baz]");

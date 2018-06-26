@@ -63,7 +63,7 @@ public class IonGeneratorTest {
     public void setUp() throws Exception {
         final IonFactory factory = new IonFactory(); 
 
-        this.joiObjectMapper = new IonObjectMapper(factory);
+        this.joiObjectMapper = IonObjectMapper.builder(factory).build();
         this.ionSystem = IonSystemBuilder.standard().build();
         this.output = ionSystem.newDatagram();
         this.joiGenerator = (IonGenerator) factory.createGenerator(ionSystem.newWriter(this.output));
