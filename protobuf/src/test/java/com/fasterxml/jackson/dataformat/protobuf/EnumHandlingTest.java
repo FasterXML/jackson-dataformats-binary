@@ -35,7 +35,7 @@ public class EnumHandlingTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
+    final ProtobufMapper MAPPER = newObjectMapper();
 
     public void testBigEnum() throws Exception
     {

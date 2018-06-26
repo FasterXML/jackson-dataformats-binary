@@ -18,7 +18,7 @@ public class WriteLongString94Test extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
+    final ProtobufMapper MAPPER = newObjectMapper();
 
     // [dataformats-binary#94]
     public void testLongerStrings() throws Exception {

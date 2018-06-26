@@ -8,8 +8,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
@@ -74,7 +72,7 @@ public class SchemaGenTest extends ProtobufTestBase
     /**********************************************************
      */
 
-	private final ProtobufMapper MAPPER = new ProtobufMapper();
+	private final ProtobufMapper MAPPER = newObjectMapper();
 
 	public void testWithNestedClass() throws Exception
 	{
@@ -101,10 +99,9 @@ public class SchemaGenTest extends ProtobufTestBase
 	}
 
 	public void testSelfRefPojoGenProtobufSchema() throws Exception {
-	    ProtobufMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
-		mapper.acceptJsonFormatVisitor(Employee.class, gen);
-		ProtobufSchema schemaWrapper = mapper.generateSchemaFor(Employee.class);
+		MAPPER.acceptJsonFormatVisitor(Employee.class, gen);
+		ProtobufSchema schemaWrapper = MAPPER.generateSchemaFor(Employee.class);
 
 		assertNotNull(schemaWrapper);
 
@@ -117,10 +114,10 @@ public class SchemaGenTest extends ProtobufTestBase
 
 		Employee empl = buildEmployee();
 
-		byte[] byteMsg = mapper.writer(schemaWrapper).writeValueAsBytes(empl);
+		byte[] byteMsg = MAPPER.writer(schemaWrapper).writeValueAsBytes(empl);
 		// System.out.println(byteMsg);
 		ProtobufSchema schema = ProtobufSchemaLoader.std.parse(protoFile);
-		Employee newEmpl = mapper.readerFor(Employee.class).with(schema).readValue(byteMsg);
+		Employee newEmpl = MAPPER.readerFor(Employee.class).with(schema).readValue(byteMsg);
 
 		// System.out.println(newEmpl);
 		assertEquals(empl.name, newEmpl.name);
@@ -130,9 +127,8 @@ public class SchemaGenTest extends ProtobufTestBase
 	}
 
 	public void testComplexPojoGenProtobufSchema() throws Exception {
-		ObjectMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
-		mapper.acceptJsonFormatVisitor(MediaItem.class, gen);
+		MAPPER.acceptJsonFormatVisitor(MediaItem.class, gen);
 		ProtobufSchema schemaWrapper = gen.getGeneratedSchema();
 		assertNotNull(schemaWrapper);
 
@@ -141,19 +137,18 @@ public class SchemaGenTest extends ProtobufTestBase
 
 		MediaItem mediaItem = MediaItem.buildItem();
 
-		byte[] byteMsg = mapper.writerFor(MediaItem.class).with(schemaWrapper).writeValueAsBytes(mediaItem);
+		byte[] byteMsg = MAPPER.writerFor(MediaItem.class).with(schemaWrapper).writeValueAsBytes(mediaItem);
 		// System.out.println(byteMsg);
 		ProtobufSchema schema = ProtobufSchemaLoader.std.parse(protoFile);
-		MediaItem deserMediaItem = mapper.readerFor(MediaItem.class).with(schema).readValue(byteMsg);
+		MediaItem deserMediaItem = MAPPER.readerFor(MediaItem.class).with(schema).readValue(byteMsg);
 
 		// System.out.println(deserMediaItem);
 		assertEquals(mediaItem, deserMediaItem);
 	}
 
 	public void testSimplePojoGenProtobufSchema() throws Exception {
-		ObjectMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
-		mapper.acceptJsonFormatVisitor(RootType.class, gen);
+		MAPPER.acceptJsonFormatVisitor(RootType.class, gen);
 		ProtobufSchema schemaWrapper = gen.getGeneratedSchema();
 
 		assertNotNull(schemaWrapper);
@@ -163,10 +158,10 @@ public class SchemaGenTest extends ProtobufTestBase
 
 		RootType rType = buildRootType();
 
-		byte[] msg = mapper.writerFor(RootType.class).with(schemaWrapper).writeValueAsBytes(rType);
+		byte[] msg = MAPPER.writerFor(RootType.class).with(schemaWrapper).writeValueAsBytes(rType);
 		// System.out.println(msg);
 		ProtobufSchema schema = ProtobufSchemaLoader.std.parse(protoFile);
-		RootType parsedRootType = mapper.readerFor(RootType.class).with(schema).readValue(msg);
+		RootType parsedRootType = MAPPER.readerFor(RootType.class).with(schema).readValue(msg);
 
 		// System.out.println(parsedRootType);
 		assertEquals(rType.name, parsedRootType.name);

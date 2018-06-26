@@ -6,9 +6,12 @@ import java.io.InputStream;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper.Builder;
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -18,6 +21,19 @@ import com.fasterxml.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerat
 public class ProtobufMapper extends ObjectMapper
 {
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Protobuf backend.
+     *
+     * @since 2.10
+     */
+    public static class Builder extends MapperBuilder<ProtobufMapper, Builder>
+    {
+        public Builder(ProtobufMapper m) {
+            super(m);
+        }
+    }
 
     protected ProtobufSchemaLoader _schemaLoader = ProtobufSchemaLoader.std;
 
@@ -46,7 +62,22 @@ public class ProtobufMapper extends ObjectMapper
     protected ProtobufMapper(ProtobufMapper src) {
         super(src);
     }
-    
+
+    /**
+     * @since 2.10
+     */
+    @SuppressWarnings("unchecked")
+    public static ProtobufMapper.Builder builder() {
+        return new Builder(new ProtobufMapper());
+    }
+
+    /**
+     * @since 2.10
+     */
+    public static Builder builder(ProtobufFactory streamFactory) {
+        return new Builder(new ProtobufMapper(streamFactory));
+    }
+
     @Override
     public ProtobufMapper copy()
     {

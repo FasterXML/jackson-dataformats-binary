@@ -453,7 +453,17 @@ public abstract class ProtobufTestBase extends TestCase
                     ;
         }
     }
-    
+
+    /*
+    /**********************************************************
+    /* Factory methods
+    /**********************************************************
+     */
+
+    protected ProtobufMapper newObjectMapper() {
+        return ProtobufMapper.builder().build();
+    }
+
     /*
     /**********************************************************
     /* Additional assertion methods

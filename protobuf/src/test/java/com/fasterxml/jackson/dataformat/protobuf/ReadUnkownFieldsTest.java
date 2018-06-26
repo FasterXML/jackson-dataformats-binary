@@ -64,21 +64,21 @@ public class ReadUnkownFieldsTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
-
     public void testMultipleUnknown() throws Exception
     {
+        final ProtobufMapper mapper = newObjectMapper();
+
         ThreeField threeField = new ThreeField();
         threeField.setF1(1);
         threeField.setF2(2);
         threeField.setF3(3);
 
-        ProtobufSchema schemaWith3 = MAPPER.generateSchemaFor(ThreeField.class);
-        byte[] in = MAPPER.writer(schemaWith3)
+        ProtobufSchema schemaWith3 = mapper.generateSchemaFor(ThreeField.class);
+        byte[] in = mapper.writer(schemaWith3)
                 .writeValueAsBytes(threeField);
 
-        ProtobufSchema schemaWith1 = MAPPER.generateSchemaFor(OneField.class);
-        OneField oneField = MAPPER.readerFor(OneField.class).with(schemaWith1)
+        ProtobufSchema schemaWith1 = mapper.generateSchemaFor(OneField.class);
+        OneField oneField = mapper.readerFor(OneField.class).with(schemaWith1)
                 // important: skip through unknown
                 .with(JsonParser.Feature.IGNORE_UNDEFINED)
                 .readValue(in);

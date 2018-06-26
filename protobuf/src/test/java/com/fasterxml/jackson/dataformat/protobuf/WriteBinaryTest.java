@@ -33,7 +33,7 @@ public class WriteBinaryTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = new ProtobufMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     public void testSimpleBinary() throws Exception
     {

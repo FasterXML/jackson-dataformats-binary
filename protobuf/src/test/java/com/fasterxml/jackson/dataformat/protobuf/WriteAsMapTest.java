@@ -32,7 +32,7 @@ public class WriteAsMapTest extends ProtobufTestBase
 
     public void testWriteAsMap() throws Exception
     {
-        ObjectMapper mapper = new ProtobufMapper();
+        ObjectMapper mapper = newObjectMapper();
 
         NativeProtobufSchema fileSchema = ProtobufSchemaLoader.std.parseNative(PROTOC);
         ProtobufSchema schema = fileSchema.forType("Person");

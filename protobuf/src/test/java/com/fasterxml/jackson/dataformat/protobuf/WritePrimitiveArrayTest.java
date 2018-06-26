@@ -116,16 +116,14 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         }
     }
 
-    final ObjectMapper MAPPER = new ProtobufMapper();
-
-    public WritePrimitiveArrayTest() throws Exception { }
-
     /*
     /**********************************************************
     /* Test methods, int arrays
     /**********************************************************
      */
 
+    final ObjectMapper MAPPER = newObjectMapper();
+    
     public void testVIntArraySparse() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse(PROTOC_INT_ARRAY_SPARSE));
