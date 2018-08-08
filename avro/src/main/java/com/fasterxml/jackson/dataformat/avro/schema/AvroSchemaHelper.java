@@ -53,6 +53,13 @@ public abstract class AvroSchemaHelper
             String.class
     ));
 
+    /** Cause a class to be treated as though it had an {@link Stringable}
+     * annotation. 
+     */
+     public static void addStringable(Class c) {
+       STRINGABLE_CLASSES.add(c);
+     }
+
     /**
      * Checks if a given type is "Stringable", that is one of the default
      * {@code STRINGABLE_CLASSES}, is an {@code Enum},
