@@ -6,11 +6,12 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.*;
-
+import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
+import org.apache.avro.reflect.AvroDefault;
 
 public class TestSimpleGeneration extends AvroTestBase
 {
@@ -51,7 +52,37 @@ public class TestSimpleGeneration extends AvroTestBase
             }
         }
     }
-    
+
+    static class WithDefaults {
+        @AvroDefault("null")
+        public String avro;
+        @JsonProperty(defaultValue = "null")
+        public String json;
+        public String noDefault;
+        public int simpleInt;
+        public Integer integer;
+
+        public void setAvro(String avro) {
+            this.avro = avro;
+        }
+
+        public void setJson(String json) {
+            this.json = json;
+        }
+
+        public void setNoDefault(String noDefault) {
+            this.noDefault = noDefault;
+        }
+
+        public void setSimpleInt(int simpleInt) {
+            this.simpleInt = simpleInt;
+        }
+
+        public void setInteger(Integer integer) {
+            this.integer = integer;
+        }
+    }
+
     /*
     /**********************************************************
     /* Tests
@@ -170,5 +201,29 @@ public class TestSimpleGeneration extends AvroTestBase
             verifyException(e, "not supported");
             verifyException(e, "`java.lang.Object`");
         }
+    }
+
+    public void testDefaultValues() throws JsonMappingException {
+        AvroSchemaGenerator gen = new AvroSchemaGenerator();
+        MAPPER.acceptJsonFormatVisitor(WithDefaults.class, gen);
+        Schema schema = gen.getAvroSchema();
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("avro").defaultVal());
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("json").defaultVal());
+        assertNull(schema.getField("noDefault").defaultVal());
+        assertNull(schema.getField("simpleInt").defaultVal());
+        assertNull(schema.getField("integer").defaultVal());
+    }
+
+    public void testEnabledDefaultValues() throws JsonMappingException {
+        AvroMapper mapper = new AvroMapper(AvroFactory.builder().enable(AvroGenerator.Feature.AVRO_DEFAULT_ENABLED).build());
+        AvroSchemaGenerator gen = new AvroSchemaGenerator();
+        mapper.acceptJsonFormatVisitor(WithDefaults.class, gen);
+        Schema schema = gen.getAvroSchema();
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("avro").defaultVal());
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("json").defaultVal());
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("noDefault").defaultVal());
+        assertNull(schema.getField("simpleInt").defaultVal());
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("integer").defaultVal());
+
     }
 }
