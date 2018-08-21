@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.avro.*;
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroDefault;
+import org.apache.avro.reflect.AvroName;
 
 public class TestSimpleGeneration extends AvroTestBase
 {
@@ -61,6 +62,8 @@ public class TestSimpleGeneration extends AvroTestBase
         public String noDefault;
         public int simpleInt;
         public Integer integer;
+        @JsonProperty(required = true)
+        public String required;
 
         public void setAvro(String avro) {
             this.avro = avro;
@@ -80,6 +83,10 @@ public class TestSimpleGeneration extends AvroTestBase
 
         public void setInteger(Integer integer) {
             this.integer = integer;
+        }
+
+        public void setRequired(String required) {
+            this.required = required;
         }
     }
 
@@ -212,6 +219,7 @@ public class TestSimpleGeneration extends AvroTestBase
         assertNull(schema.getField("noDefault").defaultVal());
         assertNull(schema.getField("simpleInt").defaultVal());
         assertNull(schema.getField("integer").defaultVal());
+        assertNull(schema.getField("required").defaultVal());
     }
 
     public void testEnabledDefaultValues() throws JsonMappingException {
@@ -224,6 +232,6 @@ public class TestSimpleGeneration extends AvroTestBase
         assertEquals(JsonProperties.NULL_VALUE, schema.getField("noDefault").defaultVal());
         assertNull(schema.getField("simpleInt").defaultVal());
         assertEquals(JsonProperties.NULL_VALUE, schema.getField("integer").defaultVal());
-
+        assertNull(schema.getField("required").defaultVal());
     }
 }

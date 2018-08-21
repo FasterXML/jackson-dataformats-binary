@@ -205,7 +205,8 @@ public class RecordVisitor
             }
         }
         JsonNode defaultValue = parseJson(prop.getMetadata().getDefaultValue());
-        if(isDefaultsEnabled && defaultValue == null && !prop.getType().isPrimitive()) {
+        if(isDefaultsEnabled && defaultValue == null
+                && writerSchema.getType() == Type.UNION && writerSchema.getIndexNamed(Type.NULL.getName()) != null) {
             defaultValue = NullNode.getInstance();
         }
         writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
