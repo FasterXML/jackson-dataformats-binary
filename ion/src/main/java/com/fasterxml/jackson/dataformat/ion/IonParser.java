@@ -276,6 +276,8 @@ public class IonParser
                 } else {
                     return NumberType.INT;
                 }
+            case FLOAT:
+                return NumberType.DOUBLE;
             default:
             }
         }

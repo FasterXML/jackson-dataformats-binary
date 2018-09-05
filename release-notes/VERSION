@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.7 (not yet released)
+
+#142: (ion) `IonParser.getNumberType()` returns `null` for `IonType.FLOAT`
+ (contributed by Michael M)
+
 2.9.6 (12-Jun-2018)
 
 #93: (cbor) `CBORParser` does not accept "undefined value"

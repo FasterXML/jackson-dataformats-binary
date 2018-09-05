@@ -20,10 +20,13 @@ import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 
 import org.junit.Assert;
+
+import software.amazon.ion.IonReader;
 import software.amazon.ion.IonSystem;
 import software.amazon.ion.IonValue;
 import software.amazon.ion.system.IonSystemBuilder;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import org.junit.Test;
 
@@ -53,6 +56,23 @@ public class IonParserTest
         IonValue ionDecimal = ion.newDecimal(Double.MAX_VALUE);
         IonParser floatParser = new IonFactory().createParser(ionDecimal);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
+        Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
+    }
+
+    @Test
+    public void testFloatType() throws IOException
+    {
+        final byte[] data =  "{ score:0.291e0 }".getBytes();
+        IonSystem ion = IonSystemBuilder.standard().build();
+        final IonValue ionFloat = ion.newFloat(Float.MAX_VALUE);
+        IonReader reader = ionFloat.getSystem().newReader(data, 0, data.length);
+        // Find the object
+        reader.next();
+        // Step into the object
+        reader.stepIn();
+        // Step next.
+        reader.next();
+        final IonParser floatParser = new IonFactory().createParser(reader);
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
     }
 }
