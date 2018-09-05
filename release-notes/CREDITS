@@ -68,3 +68,8 @@ Leo Wang (wanglingsong@github)
 
 * Reported #135: Infinite sequence of `END_OBJECT` tokens returned at end of streaming read
  (2.9.6)
+
+Michael Milkin (mmilkin@github)
+* Reported, Contributed fix for #142: (ion) `IonParser.getNumberType()` returns `null`
+  for `IonType.FLOAT`
+ (2.9.7)
