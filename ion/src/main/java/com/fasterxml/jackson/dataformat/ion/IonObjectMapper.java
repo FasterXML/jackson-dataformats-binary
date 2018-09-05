@@ -40,13 +40,12 @@ public class IonObjectMapper extends ObjectMapper
 
     /**
      * Base implementation for "Vanilla" {@link ObjectMapper}, used with
-     * Avro backend.
+     * Ion backend.
      *
      * @since 2.10
      */
     public static class Builder extends MapperBuilder<IonObjectMapper, Builder>
     {
-        
         public Builder(IonObjectMapper m) {
             super(m);
         }
