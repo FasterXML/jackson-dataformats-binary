@@ -8,7 +8,7 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.7 (not yet released)
+2.9.7 (19-Sep-2018)
 
 #142: (ion) `IonParser.getNumberType()` returns `null` for `IonType.FLOAT`
  (contributed by Michael M)
