@@ -100,7 +100,7 @@ public class IonParser
 
     /*
     /**********************************************************
-    /* Capability introspection
+    /* Capability, config introspection
     /**********************************************************
      */
 
@@ -109,6 +109,11 @@ public class IonParser
         //This is always false because getText() is more efficient than getTextCharacters().
         // See the javadoc for JsonParser.hasTextCharacters().
         return false;
+    }
+
+    @Override
+    public IonReader getInputSource() {
+        return _reader;
     }
 
     /*
