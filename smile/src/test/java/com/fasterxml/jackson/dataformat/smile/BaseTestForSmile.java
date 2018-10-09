@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public abstract class BaseTestForSmile
     extends junit.framework.TestCase
@@ -89,26 +90,26 @@ public abstract class BaseTestForSmile
         return r;
     }
 
-    protected ObjectMapper newSmileMapper() {
-        return new ObjectMapper(new SmileFactory());
+    protected SmileMapper newSmileMapper() {
+        return new SmileMapper(new SmileFactory());
     }
 
-    protected ObjectMapper smileMapper() {
+    protected SmileMapper smileMapper() {
         return smileMapper(false);
     }
     
-    protected ObjectMapper.Builder smileMapperBuilder() {
-        return ObjectMapper.builder(_smileFactory(false, false, false));
+    protected SmileMapper.Builder smileMapperBuilder() {
+        return SmileMapper.builder(_smileFactory(false, false, false));
     }
 
-    protected ObjectMapper smileMapper(boolean requireHeader) {
+    protected SmileMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }
 
-    protected ObjectMapper smileMapper(boolean requireHeader,
+    protected SmileMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        return new ObjectMapper(_smileFactory(requireHeader, writeHeader, writeEndMarker));
+        return new SmileMapper(_smileFactory(requireHeader, writeHeader, writeEndMarker));
     }
 
     protected SmileFactory _smileFactory(boolean requireHeader,

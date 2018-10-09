@@ -22,11 +22,11 @@ tree model)
 
   <dependencies>
 
-    <!-- and for testing we need databind-->
+    <!-- We need databind for testing, but also as optional dep for SmileMapper -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

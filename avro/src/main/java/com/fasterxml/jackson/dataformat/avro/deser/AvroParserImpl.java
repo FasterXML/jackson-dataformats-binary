@@ -133,7 +133,7 @@ public abstract class AvroParserImpl
         if (toMatch == name) {
             return true;
         }
-        return toMatch.equals(sstr);
+        return toMatch.equals(name);
     }
 
     @Override

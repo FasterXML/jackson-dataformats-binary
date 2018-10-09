@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public abstract class CBORTestBase
     extends junit.framework.TestCase
@@ -47,8 +48,8 @@ public abstract class CBORTestBase
 
     protected final static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-    protected final static ObjectMapper CBOR_MAPPER = new ObjectMapper(new CBORFactory());
-    
+    protected final static CBORMapper CBOR_MAPPER = new CBORMapper(new CBORFactory());
+
     /*
     /**********************************************************
     /* Factory methods
@@ -67,14 +68,14 @@ public abstract class CBORTestBase
         return (CBORParser) CBOR_MAPPER.createParser(in);
     }
 
-    protected ObjectMapper cborMapper() {
-        return new ObjectMapper(cborFactory());
+    protected CBORMapper cborMapper() {
+        return new CBORMapper(cborFactory());
     }
 
-    protected ObjectMapper.Builder cborMapperBuilder() {
-        return ObjectMapper.builder(cborFactory());
+    protected CBORMapper.Builder cborMapperBuilder() {
+        return CBORMapper.builder(cborFactory());
     }
-    
+
     protected ObjectMapper jsonMapper() {
         return new ObjectMapper(new JsonFactory());
     }
