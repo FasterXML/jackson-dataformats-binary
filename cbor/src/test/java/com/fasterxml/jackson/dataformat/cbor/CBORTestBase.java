@@ -9,7 +9,7 @@ import java.util.Random;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public abstract class CBORTestBase
     extends junit.framework.TestCase
@@ -41,8 +41,8 @@ public abstract class CBORTestBase
         return f.createParser(in);
     }
     
-    protected ObjectMapper cborMapper() {
-        return new ObjectMapper(cborFactory());
+    protected CBORMapper cborMapper() {
+        return new CBORMapper(cborFactory());
     }
     
     protected CBORFactory cborFactory() {

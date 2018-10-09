@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public abstract class BaseTestForSmile
     extends junit.framework.TestCase
@@ -79,20 +80,20 @@ public abstract class BaseTestForSmile
         return f.createParser(in);
     }
     
-    protected ObjectMapper smileMapper() {
+    protected SmileMapper smileMapper() {
         return smileMapper(false);
     }
     
-    protected ObjectMapper smileMapper(boolean requireHeader) {
+    protected SmileMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }
     
-    protected ObjectMapper smileMapper(boolean requireHeader,
+    protected SmileMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        return new ObjectMapper(smileFactory(requireHeader, writeHeader, writeEndMarker));
+        return new SmileMapper(smileFactory(requireHeader, writeHeader, writeEndMarker));
     }
-    
+
     protected SmileFactory smileFactory(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
