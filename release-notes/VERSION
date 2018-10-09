@@ -12,6 +12,8 @@ Project: jackson-datatypes-binaryModules:
 
 #142: (ion) `IonParser.getNumberType()` returns `null` for `IonType.FLOAT`
  (contributed by Michael M)
+#150: Add `CBORMapper`
+#151: Add `SmileMapper`
 
 2.9.6 (12-Jun-2018)
 
