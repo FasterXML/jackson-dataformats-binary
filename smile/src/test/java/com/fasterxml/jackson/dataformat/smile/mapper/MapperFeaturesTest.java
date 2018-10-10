@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.mapper;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public class MapperFeaturesTest extends BaseTestForSmile
 {
@@ -19,7 +20,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
     // Let's ensure indentation doesn't break anything (should be NOP)
     public void testIndent() throws Exception
     {
-        ObjectMapper mapper = ObjectMapper.builder(new SmileFactory())
+        ObjectMapper mapper = SmileMapper.builder(new SmileFactory())
                 .configure(SerializationFeature.INDENT_OUTPUT, true)
                 .build();
         Bean bean = new Bean();

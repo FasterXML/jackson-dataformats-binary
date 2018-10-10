@@ -9,8 +9,6 @@ import com.fasterxml.jackson.dataformat.cbor.PackageVersion;
 
 /**
  * Specialized {@link ObjectMapper} to use with CBOR format backend.
- *
- * @since 2.10
  */
 public class CBORMapper extends ObjectMapper
 {
@@ -78,13 +76,18 @@ public class CBORMapper extends ObjectMapper
         super(b);
     }
 
-    @SuppressWarnings("unchecked")
     public static Builder builder() {
         return new Builder(new CBORFactory());
     }
 
     public static Builder builder(CBORFactory streamFactory) {
         return new Builder(streamFactory);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Builder rebuild() {
+        return new Builder((Builder.StateImpl) _savedBuilderState);
     }
 
     /*

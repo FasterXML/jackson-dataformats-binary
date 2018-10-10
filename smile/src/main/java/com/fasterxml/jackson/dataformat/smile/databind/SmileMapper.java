@@ -8,9 +8,7 @@ import com.fasterxml.jackson.dataformat.smile.PackageVersion;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 /**
- * Specialized {@link ObjectMapper} to use with CBOR format backend.
- *
- * @since 2.10
+ * Specialized {@link ObjectMapper} to use with Smile format backend.
  */
 public class SmileMapper extends ObjectMapper
 {
@@ -19,8 +17,6 @@ public class SmileMapper extends ObjectMapper
     /**
      * Base implementation for "Vanilla" {@link ObjectMapper}, used with
      * Smile backend.
-     *
-     * @since 2.10
      */
     public static class Builder extends MapperBuilder<SmileMapper, Builder>
     {
@@ -78,13 +74,18 @@ public class SmileMapper extends ObjectMapper
         super(b);
     }
 
-    @SuppressWarnings("unchecked")
     public static Builder builder() {
         return new Builder(new SmileFactory());
     }
 
     public static Builder builder(SmileFactory streamFactory) {
         return new Builder(streamFactory);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Builder rebuild() {
+        return new Builder((Builder.StateImpl) _savedBuilderState);
     }
 
     /*

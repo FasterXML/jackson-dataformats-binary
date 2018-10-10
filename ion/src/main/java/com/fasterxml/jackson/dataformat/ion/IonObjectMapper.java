@@ -119,13 +119,18 @@ public class IonObjectMapper extends ObjectMapper
         super(b);
     }
 
-    @SuppressWarnings("unchecked")
     public static Builder builder() {
         return new Builder(new IonFactory());
     }
 
     public static Builder builder(IonFactory streamFactory) {
         return new Builder(streamFactory);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Builder rebuild() {
+        return new Builder((Builder.StateImpl) _savedBuilderState);
     }
 
     /*

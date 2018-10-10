@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import software.amazon.ion.IonDatagram;
@@ -75,10 +76,10 @@ public class IonTimestampRoundTripTest {
      * @throws IOException
      */
     @Test
-    public void testNonJoiCompatibility() throws JsonGenerationException, JsonMappingException, IOException {
+    public void testNonJoiCompatibility() throws IOException {
         Date date = new Date();
-        ObjectMapper nonJoiMillis = new ObjectMapper();
-        ObjectMapper nonJoiM = ObjectMapper.builder()
+        ObjectMapper nonJoiMillis = new JsonMapper();
+        ObjectMapper nonJoiM = JsonMapper.builder()
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
         IonObjectMapper joiM = new IonObjectMapper();

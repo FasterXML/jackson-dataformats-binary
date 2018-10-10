@@ -149,13 +149,18 @@ public class AvroMapper extends ObjectMapper
         super(b);
     }
 
-    @SuppressWarnings("unchecked")
     public static Builder builder() {
         return new Builder(new AvroFactory());
     }
 
     public static Builder builder(AvroFactory streamFactory) {
         return new Builder(streamFactory);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Builder rebuild() {
+        return new AvroMapper.Builder((Builder.StateImpl) _savedBuilderState);
     }
 
     /*
