@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public abstract class CBORTestBase
@@ -46,7 +47,7 @@ public abstract class CBORTestBase
             +"}"
             ;
 
-    protected final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+    protected final static JsonMapper JSON_MAPPER = new JsonMapper();
 
     protected final static CBORMapper CBOR_MAPPER = new CBORMapper(new CBORFactory());
 
