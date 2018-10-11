@@ -19,7 +19,7 @@ public class AvroFactory
     private static final long serialVersionUID = 1L;
 
     public final static String FORMAT_NAME_AVRO = "avro";
-    
+
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
@@ -37,16 +37,6 @@ public class AvroFactory
     /* Configuration
     /**********************************************************
      */
-
-    /**
-     * Set of {@link AvroParser.Feature}s enabled, as bitmask.
-     */
-    protected final int _formatParserFeatures;
-
-    /**
-     * Set of {@link AvroGenerator.Feature}s enabled, as bitmask.
-     */
-    protected final int _formatGeneratorFeatures;
 
     /**
      * Flag that is set if Apache Avro lib's decoder is to be used for decoding;
@@ -75,15 +65,11 @@ public class AvroFactory
         // 09-Jan-2017, tatu: We must actually create and pass builder to be able to change
         //    one of JsonGenerator.Featuers (See builder for details)
         super(new AvroFactoryBuilder());
-        _formatParserFeatures = DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
-        _formatGeneratorFeatures = DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
     }
 
     protected AvroFactory(AvroFactory src)
     {
         super(src);
-        _formatParserFeatures = src._formatParserFeatures;
-        _formatGeneratorFeatures = src._formatGeneratorFeatures;
         _useApacheLibDecoder = src._useApacheLibDecoder;
     }
 
@@ -95,8 +81,6 @@ public class AvroFactory
     protected AvroFactory(AvroFactoryBuilder b)
     {
         super(b);
-        _formatParserFeatures = b.formatParserFeaturesMask();
-        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
         _useApacheLibDecoder = b.useApacheLibDecoder();
     }
 
@@ -225,12 +209,6 @@ public class AvroFactory
     public Class<AvroGenerator.Feature> getFormatWriteFeatureType() {
         return AvroGenerator.Feature.class;
     }
-    
-    @Override
-    public int getFormatParserFeatures() { return _formatParserFeatures; }
-
-    @Override
-    public int getFormatGeneratorFeatures() { return _formatGeneratorFeatures; }
 
     /*
     /******************************************************

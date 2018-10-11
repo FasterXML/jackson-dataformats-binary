@@ -61,22 +61,6 @@ public class SmileFactory
 
     /*
     /**********************************************************
-    /* Configuration
-    /**********************************************************
-     */
-
-    /**
-     * Bitmask for {@link SmileParser.Feature}s enabled
-     */
-    protected final int _formatParserFeatures;
-
-    /**
-     * Bitmask for {@link SmileGenerator.Feature}s enabled
-     */
-    protected final int _formatGeneratorFeatures;
-
-    /*
-    /**********************************************************
     /* Symbol table management
     /**********************************************************
      */
@@ -104,15 +88,12 @@ public class SmileFactory
      * factory instance.
      */
     public SmileFactory() {
-        _formatParserFeatures = DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
-        _formatGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
+        super(DEFAULT_SMILE_PARSER_FEATURE_FLAGS, DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS);
     }
 
     public SmileFactory(SmileFactory src)
     {
         super(src);
-        _formatParserFeatures = src._formatParserFeatures;
-        _formatGeneratorFeatures = src._formatGeneratorFeatures;
     }
 
     /**
@@ -122,8 +103,6 @@ public class SmileFactory
      */
     protected SmileFactory(SmileFactoryBuilder b) {
         super(b);
-        _formatParserFeatures = b.formatParserFeaturesMask();
-        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
 
     @Override

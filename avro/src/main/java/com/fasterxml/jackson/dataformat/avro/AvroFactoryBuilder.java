@@ -24,16 +24,6 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
      */
 
     /**
-     * Set of {@link AvroParser.Feature}s enabled, as bitmask.
-     */
-    protected int _formatParserFeatures;
-
-    /**
-     * Set of {@link AvroGenerator.Feature}s enabled, as bitmask.
-     */
-    protected int _formatGeneratorFeatures;
-
-    /**
      * Flag that is set if Apache Avro lib's decoder is to be used for decoding;
      * `false` to use Jackson native Avro decoder.
      */
@@ -51,9 +41,8 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     }
 
     protected AvroFactoryBuilder(boolean useApacheDecoder) {
-        super();
-        _formatParserFeatures = AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS;
-        _formatGeneratorFeatures = AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS;
+        super(AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS,
+                AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS);
         _useApacheLibDecoder = useApacheDecoder;
 
         // 04-Mar-2013, tatu: Content auto-closing is unfortunately a feature
@@ -66,8 +55,6 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
 
     public AvroFactoryBuilder(AvroFactory base) {
         super(base);
-        _formatParserFeatures = base._formatParserFeatures;
-        _formatGeneratorFeatures = base._formatGeneratorFeatures;
     }
 
     @Override
@@ -82,9 +69,6 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     /**********************************************************
      */
 
-    public int formatParserFeaturesMask() { return _formatParserFeatures; }
-    public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
-
     public boolean useApacheLibDecoder() { return _useApacheLibDecoder; }
 
     /*
@@ -92,32 +76,31 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     /* Mutators
     /**********************************************************
      */
-    
-    
+
     // // // Parser features
 
     public AvroFactoryBuilder enable(AvroParser.Feature f) {
-        _formatParserFeatures |= f.getMask();
+        _formatReadFeatures |= f.getMask();
         return _this();
     }
 
     public AvroFactoryBuilder enable(AvroParser.Feature first, AvroParser.Feature... other) {
-        _formatParserFeatures |= first.getMask();
+        _formatReadFeatures |= first.getMask();
         for (AvroParser.Feature f : other) {
-            _formatParserFeatures |= f.getMask();
+            _formatReadFeatures |= f.getMask();
         }
         return _this();
     }
 
     public AvroFactoryBuilder disable(AvroParser.Feature f) {
-        _formatParserFeatures &= ~f.getMask();
+        _formatReadFeatures &= ~f.getMask();
         return _this();
     }
 
     public AvroFactoryBuilder disable(AvroParser.Feature first, AvroParser.Feature... other) {
-        _formatParserFeatures &= ~first.getMask();
+        _formatReadFeatures &= ~first.getMask();
         for (AvroParser.Feature f : other) {
-            _formatParserFeatures &= ~f.getMask();
+            _formatReadFeatures &= ~f.getMask();
         }
         return _this();
     }
@@ -129,27 +112,27 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     // // // Generator features
 
     public AvroFactoryBuilder enable(AvroGenerator.Feature f) {
-        _formatGeneratorFeatures |= f.getMask();
+        _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
     public AvroFactoryBuilder enable(AvroGenerator.Feature first, AvroGenerator.Feature... other) {
-        _formatGeneratorFeatures |= first.getMask();
+        _formatWriteFeatures |= first.getMask();
         for (AvroGenerator.Feature f : other) {
-            _formatGeneratorFeatures |= f.getMask();
+            _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
     public AvroFactoryBuilder disable(AvroGenerator.Feature f) {
-        _formatGeneratorFeatures &= ~f.getMask();
+        _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
     
     public AvroFactoryBuilder disable(AvroGenerator.Feature first, AvroGenerator.Feature... other) {
-        _formatGeneratorFeatures &= ~first.getMask();
+        _formatWriteFeatures &= ~first.getMask();
         for (AvroGenerator.Feature f : other) {
-            _formatGeneratorFeatures &= ~f.getMask();
+            _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }

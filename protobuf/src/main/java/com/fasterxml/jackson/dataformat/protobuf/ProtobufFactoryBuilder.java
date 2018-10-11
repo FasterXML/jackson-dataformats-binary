@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 public class ProtobufFactoryBuilder extends DecorableTSFBuilder<ProtobufFactory, ProtobufFactoryBuilder>
 {
     public ProtobufFactoryBuilder() {
-        super();
+        super(0, 0);
     }
 
     public ProtobufFactoryBuilder(ProtobufFactory base) {

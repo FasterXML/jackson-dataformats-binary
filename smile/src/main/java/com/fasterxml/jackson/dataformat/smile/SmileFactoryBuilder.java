@@ -13,61 +13,43 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
 {
     /*
     /**********************************************************
-    /* Configuration
-    /**********************************************************
-     */
-
-    /**
-     * Set of {@link SmileParser.Feature}s enabled, as bitmask.
-     */
-    protected int _formatParserFeatures;
-
-    /**
-     * Set of {@link SmileGenerator.Feature}s enabled, as bitmask.
-     */
-    protected int _formatGeneratorFeatures;
-
-    /*
-    /**********************************************************
     /* Life cycle
     /**********************************************************
      */
 
     protected SmileFactoryBuilder() {
-        _formatParserFeatures = SmileFactory.DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
-        _formatGeneratorFeatures = SmileFactory.DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
+        super(SmileFactory.DEFAULT_SMILE_PARSER_FEATURE_FLAGS,
+                SmileFactory.DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS);
     }
 
     public SmileFactoryBuilder(SmileFactory base) {
         super(base);
-        _formatParserFeatures = base._formatParserFeatures;
-        _formatGeneratorFeatures = base._formatGeneratorFeatures;
     }
 
     // // // Parser features
 
     public SmileFactoryBuilder enable(SmileParser.Feature f) {
-        _formatParserFeatures |= f.getMask();
+        _formatReadFeatures |= f.getMask();
         return _this();
     }
 
     public SmileFactoryBuilder enable(SmileParser.Feature first, SmileParser.Feature... other) {
-        _formatParserFeatures |= first.getMask();
+        _formatReadFeatures |= first.getMask();
         for (SmileParser.Feature f : other) {
-            _formatParserFeatures |= f.getMask();
+            _formatReadFeatures |= f.getMask();
         }
         return _this();
     }
 
     public SmileFactoryBuilder disable(SmileParser.Feature f) {
-        _formatParserFeatures &= ~f.getMask();
+        _formatReadFeatures &= ~f.getMask();
         return _this();
     }
 
     public SmileFactoryBuilder disable(SmileParser.Feature first, SmileParser.Feature... other) {
-        _formatParserFeatures &= ~first.getMask();
+        _formatReadFeatures &= ~first.getMask();
         for (SmileParser.Feature f : other) {
-            _formatParserFeatures &= ~f.getMask();
+            _formatReadFeatures &= ~f.getMask();
         }
         return _this();
     }
@@ -79,27 +61,27 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
     // // // Generator features
 
     public SmileFactoryBuilder enable(SmileGenerator.Feature f) {
-        _formatGeneratorFeatures |= f.getMask();
+        _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
     public SmileFactoryBuilder enable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
-        _formatGeneratorFeatures |= first.getMask();
+        _formatWriteFeatures |= first.getMask();
         for (SmileGenerator.Feature f : other) {
-            _formatGeneratorFeatures |= f.getMask();
+            _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
     public SmileFactoryBuilder disable(SmileGenerator.Feature f) {
-        _formatGeneratorFeatures &= ~f.getMask();
+        _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
     
     public SmileFactoryBuilder disable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
-        _formatGeneratorFeatures &= ~first.getMask();
+        _formatWriteFeatures &= ~first.getMask();
         for (SmileGenerator.Feature f : other) {
-            _formatGeneratorFeatures &= ~f.getMask();
+            _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }
@@ -107,11 +89,6 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
     public SmileFactoryBuilder configure(SmileGenerator.Feature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
-
-    // // // Accessors
-
-    public int formatParserFeaturesMask() { return _formatParserFeatures; }
-    public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
 
     @Override
     public SmileFactory build() {

@@ -74,6 +74,7 @@ public class IonFactory
      */
 
     public IonFactory() {
+        super(0, 0);
         _cfgBinaryWriters = DEFAULT_CREATE_BINARY;
         _system = IonSystemBuilder.standard().build();
     }

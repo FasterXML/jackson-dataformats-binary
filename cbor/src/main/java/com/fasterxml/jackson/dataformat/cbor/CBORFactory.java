@@ -55,15 +55,6 @@ public class CBORFactory
 
     /*
     /**********************************************************
-    /* Configuration
-    /**********************************************************
-     */
-
-    protected final int _formatParserFeatures;
-    protected final int _formatGeneratorFeatures;
-
-    /*
-    /**********************************************************
     /* Symbol table management
     /**********************************************************
      */
@@ -91,16 +82,13 @@ public class CBORFactory
      * factory instance.
      */
     public CBORFactory() {
-        super();
-        _formatParserFeatures = DEFAULT_CBOR_PARSER_FEATURE_FLAGS;
-        _formatGeneratorFeatures = DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS;
+        super(DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
+                DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 
     public CBORFactory(CBORFactory src)
     {
         super(src);
-        _formatParserFeatures = src._formatParserFeatures;
-        _formatGeneratorFeatures = src._formatGeneratorFeatures;
     }
 
     /**
@@ -110,8 +98,6 @@ public class CBORFactory
      */
     protected CBORFactory(CBORFactoryBuilder b) {
         super(b);
-        _formatParserFeatures = b.formatParserFeaturesMask();
-        _formatGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
 
     @Override

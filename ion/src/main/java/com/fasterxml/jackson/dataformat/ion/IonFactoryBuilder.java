@@ -40,6 +40,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
      */
 
     protected IonFactoryBuilder(boolean createBinary) {
+        super(0, 0);
         _createBinaryWriters = createBinary;
     }
 

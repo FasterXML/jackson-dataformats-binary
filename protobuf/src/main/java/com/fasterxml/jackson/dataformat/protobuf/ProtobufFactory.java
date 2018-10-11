@@ -20,7 +20,7 @@ public class ProtobufFactory
     /**********************************************************
      */
 
-    public ProtobufFactory() { }
+    public ProtobufFactory() { super(0, 0); }
 
     protected ProtobufFactory(ProtobufFactory src) {
         super(src);

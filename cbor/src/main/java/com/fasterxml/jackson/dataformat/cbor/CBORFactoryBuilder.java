@@ -13,61 +13,43 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
 {
     /*
     /**********************************************************************
-    /* Configuration
-    /**********************************************************************
-     */
-
-    /**
-     * Set of {@link CBORParser.Feature}s enabled, as bitmask.
-     */
-    protected int _formatParserFeatures;
-
-    /**
-     * Set of {@link CBORGenerator.Feature}s enabled, as bitmask.
-     */
-    protected int _formatGeneratorFeatures;
-
-    /*
-    /**********************************************************************
     /* Life cycle
     /**********************************************************************
      */
 
     protected CBORFactoryBuilder() {
-        _formatParserFeatures = CBORFactory.DEFAULT_CBOR_PARSER_FEATURE_FLAGS;
-        _formatGeneratorFeatures = CBORFactory.DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS;
+        super(CBORFactory.DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
+                CBORFactory.DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 
     public CBORFactoryBuilder(CBORFactory base) {
         super(base);
-        _formatParserFeatures = base._formatParserFeatures;
-        _formatGeneratorFeatures = base._formatGeneratorFeatures;
     }
 
     // // // Parser features
 
     public CBORFactoryBuilder enable(CBORParser.Feature f) {
-        _formatParserFeatures |= f.getMask();
+        _formatReadFeatures |= f.getMask();
         return _this();
     }
 
     public CBORFactoryBuilder enable(CBORParser.Feature first, CBORParser.Feature... other) {
-        _formatParserFeatures |= first.getMask();
+        _formatReadFeatures |= first.getMask();
         for (CBORParser.Feature f : other) {
-            _formatParserFeatures |= f.getMask();
+            _formatReadFeatures |= f.getMask();
         }
         return _this();
     }
 
     public CBORFactoryBuilder disable(CBORParser.Feature f) {
-        _formatParserFeatures &= ~f.getMask();
+        _formatReadFeatures &= ~f.getMask();
         return _this();
     }
 
     public CBORFactoryBuilder disable(CBORParser.Feature first, CBORParser.Feature... other) {
-        _formatParserFeatures &= ~first.getMask();
+        _formatReadFeatures &= ~first.getMask();
         for (CBORParser.Feature f : other) {
-            _formatParserFeatures &= ~f.getMask();
+            _formatReadFeatures &= ~f.getMask();
         }
         return _this();
     }
@@ -79,27 +61,27 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
     // // // Generator features
 
     public CBORFactoryBuilder enable(CBORGenerator.Feature f) {
-        _formatGeneratorFeatures |= f.getMask();
+        _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
     public CBORFactoryBuilder enable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
-        _formatGeneratorFeatures |= first.getMask();
+        _formatWriteFeatures |= first.getMask();
         for (CBORGenerator.Feature f : other) {
-            _formatGeneratorFeatures |= f.getMask();
+            _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
     public CBORFactoryBuilder disable(CBORGenerator.Feature f) {
-        _formatGeneratorFeatures &= ~f.getMask();
+        _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
     
     public CBORFactoryBuilder disable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
-        _formatGeneratorFeatures &= ~first.getMask();
+        _formatWriteFeatures &= ~first.getMask();
         for (CBORGenerator.Feature f : other) {
-            _formatGeneratorFeatures &= ~f.getMask();
+            _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }
@@ -107,11 +89,6 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
     public CBORFactoryBuilder configure(CBORGenerator.Feature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
-    
-    // // // Accessors
-
-    public int formatParserFeaturesMask() { return _formatParserFeatures; }
-    public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
 
     @Override
     public CBORFactory build() {
