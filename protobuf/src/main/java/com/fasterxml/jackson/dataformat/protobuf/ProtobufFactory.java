@@ -129,10 +129,10 @@ public class ProtobufFactory
 */
     
     @Override
-    public int getFormatParserFeatures() { return 0; }
+    public int getFormatReadFeatures() { return 0; }
 
     @Override
-    public int getFormatGeneratorFeatures() { return 0; }
+    public int getFormatWriteFeatures() { return 0; }
     
     /*
     /******************************************************
