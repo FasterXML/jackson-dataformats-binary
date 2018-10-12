@@ -757,7 +757,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * @since 2.9
      */
     protected Object _getSourceReference() {
-        if (JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION.enabledIn(_features)) {
+        if (JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION.enabledIn(_streamReadFeatures)) {
             return _ioContext.getSourceReference();
         }
         return null;
