@@ -151,7 +151,7 @@ public class ProtobufFactory
     {
         byte[] buf = ioCtxt.allocReadIOBuffer();
         return new ProtobufParser(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 (ProtobufSchema) readCtxt.getSchema(),
                 in, buf, 0, 0, true);
     }
@@ -161,7 +161,7 @@ public class ProtobufFactory
             byte[] data, int offset, int len) throws IOException
     {
         return new ProtobufParser(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 (ProtobufSchema) readCtxt.getSchema(),
                 null, data, offset, len, false);
     }
@@ -185,7 +185,7 @@ public class ProtobufFactory
             IOContext ioCtxt, OutputStream out) throws IOException
     {
         return new ProtobufGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
                 (ProtobufSchema) writeCtxt.getSchema(),
                 out);
     }

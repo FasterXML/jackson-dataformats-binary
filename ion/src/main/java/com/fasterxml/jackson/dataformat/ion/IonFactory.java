@@ -202,14 +202,14 @@ public class IonFactory
 
     public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
         return new IonParser(readCtxt, _createContext(in, false),
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 in, _system);
     }
 
     public IonParser createParser(ObjectReadContext readCtxt, IonValue value) {
         IonReader in = value.getSystem().newReader(value);
         return new IonParser(readCtxt, _createContext(in, true),
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 in, _system);
     }
 
@@ -344,7 +344,7 @@ public class IonFactory
     {
         IonReader ion = _system.newReader(in);
         return new IonParser(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 ion, _system);
     }
 
@@ -352,7 +352,7 @@ public class IonFactory
         throws IOException
     {
         return new IonParser(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 _system.newReader(r), _system);
     }
 
@@ -369,7 +369,7 @@ public class IonFactory
         throws IOException
     {
         return new IonParser(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
                 _system.newReader(data, offset, len), _system);
     }
 
@@ -412,7 +412,7 @@ public class IonFactory
             IonWriter ion, Closeable dst)
     {
         return new IonGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
                 ion, dst);
     }
 }

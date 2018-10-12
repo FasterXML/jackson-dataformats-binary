@@ -160,17 +160,17 @@ public class SmileFactory
     public boolean canParseAsync() { return true; }
 
     /**
-     * Check whether specified generator feature is enabled.
-     */
-    public final boolean isEnabled(SmileGenerator.Feature f) {
-        return (_formatGeneratorFeatures & f.getMask()) != 0;
-    }
-
-    /**
      * Checked whether specified parser feature is enabled.
      */
     public final boolean isEnabled(SmileParser.Feature f) {
-        return (_formatParserFeatures & f.getMask()) != 0;
+        return f.enabledIn(_formatReadFeatures);
+    }
+
+    /**
+     * Check whether specified generator feature is enabled.
+     */
+    public final boolean isEnabled(SmileGenerator.Feature f) {
+        return f.enabledIn(_formatWriteFeatures);
     }
 
     /*
@@ -199,12 +199,6 @@ public class SmileFactory
         return SmileGenerator.Feature.class;
     }
 
-    @Override
-    public int getFormatParserFeatures() { return _formatParserFeatures; }
-
-    @Override
-    public int getFormatGeneratorFeatures() { return _formatGeneratorFeatures; }
-    
     /*
     /**********************************************************
     /* Extended API: async
@@ -217,8 +211,8 @@ public class SmileFactory
     {
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
-                readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 can);
     }
 
@@ -237,8 +231,8 @@ public class SmileFactory
     {
         return new SmileParserBootstrapper(ioCtxt, in)
             .constructParser(readCtxt, _factoryFeatures,
-                    readCtxt.getParserFeatures(_parserFeatures),
-                    readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                    readCtxt.getParserFeatures(_streamReadFeatures),
+                    readCtxt.getFormatReadFeatures(_formatReadFeatures),
                     _byteSymbolCanonicalizer);
     }
 
@@ -248,8 +242,8 @@ public class SmileFactory
     {
         return new SmileParserBootstrapper(ioCtxt, data, offset, len)
             .constructParser(readCtxt, _factoryFeatures,
-                readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _byteSymbolCanonicalizer);
     }
 
@@ -270,14 +264,14 @@ public class SmileFactory
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out) throws IOException
     {
-        int smileFeatures = writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures);
+        int smileFeatures = writeCtxt.getFormatWriteFeatures(_formatWriteFeatures);
         /* One sanity check: MUST write header if shared string values setting is enabled,
          * or quoting of binary data disabled.
          * But should we force writing, or throw exception, if settings are in conflict?
          * For now, let's error out...
          */
         SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_generatorFeatures),
+                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
                 smileFeatures,
                 out);
         if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {

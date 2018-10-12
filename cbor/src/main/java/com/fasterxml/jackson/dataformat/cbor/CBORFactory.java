@@ -183,25 +183,19 @@ public class CBORFactory
     public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
         return CBORGenerator.Feature.class;
     }
-    
-    @Override
-    public int getFormatParserFeatures() { return _formatParserFeatures; }
 
-    @Override
-    public int getFormatGeneratorFeatures() { return _formatGeneratorFeatures; }
-    
     /**
      * Checked whether specified parser feature is enabled.
      */
     public final boolean isEnabled(CBORParser.Feature f) {
-        return (_formatParserFeatures & f.getMask()) != 0;
+        return f.enabledIn(_formatReadFeatures);
     }
 
     /**
      * Check whether specified generator feature is enabled.
      */
     public final boolean isEnabled(CBORGenerator.Feature f) {
-        return (_formatGeneratorFeatures & f.getMask()) != 0;
+        return f.enabledIn(_formatWriteFeatures);
     }
 
     /*
@@ -225,8 +219,8 @@ public class CBORFactory
     {
         return new CBORParserBootstrapper(ioCtxt, in).constructParser(readCtxt,
                 _factoryFeatures,
-                readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _byteSymbolCanonicalizer);
     }
 
@@ -240,8 +234,8 @@ public class CBORFactory
     {
         return new CBORParserBootstrapper(ioCtxt, data, offset, len).constructParser(readCtxt,
                 _factoryFeatures,
-                readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _byteSymbolCanonicalizer);
     }
 
@@ -264,10 +258,10 @@ public class CBORFactory
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out) throws IOException {
         CBORGenerator gen = new CBORGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures),
+                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
+                writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 out);
-        if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatGeneratorFeatures)) {
+        if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatWriteFeatures)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
         return gen;

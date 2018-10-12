@@ -174,14 +174,14 @@ public class AvroFactory
      * Checked whether specified parser feature is enabled.
      */
     public final boolean isEnabled(AvroParser.Feature f) {
-        return (_formatParserFeatures & f.getMask()) != 0;
+        return (_formatReadFeatures & f.getMask()) != 0;
     }
 
     /**
      * Check whether specified generator feature is enabled.
      */
     public final boolean isEnabled(AvroGenerator.Feature f) {
-        return (_formatGeneratorFeatures & f.getMask()) != 0;
+        return (_formatWriteFeatures & f.getMask()) != 0;
     }
 
     /*
@@ -226,14 +226,14 @@ public class AvroFactory
     {
         if (_useApacheLibDecoder) {
           return new ApacheAvroParserImpl(readCtxt, ioCtxt,
-                  readCtxt.getParserFeatures(_parserFeatures),
-                  readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                  readCtxt.getParserFeatures(_streamReadFeatures),
+                  readCtxt.getFormatReadFeatures(_formatReadFeatures),
                   (AvroSchema) readCtxt.getSchema(),
                   in);
         }
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 in);
     }
@@ -244,14 +244,14 @@ public class AvroFactory
     {
         if (_useApacheLibDecoder) {
             return new ApacheAvroParserImpl(readCtxt, ioCtxt,
-                    readCtxt.getParserFeatures(_parserFeatures),
-                    readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                    readCtxt.getParserFeatures(_streamReadFeatures),
+                    readCtxt.getFormatReadFeatures(_formatReadFeatures),
                     (AvroSchema) readCtxt.getSchema(),
                     data, offset, len);
         }
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_parserFeatures),
-                readCtxt.getFormatReadFeatures(_formatParserFeatures),
+                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 data, offset, len);
     }
@@ -275,8 +275,8 @@ public class AvroFactory
             IOContext ioCtxt, OutputStream out) throws IOException
     {
         return new AvroGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_generatorFeatures),
-                writeCtxt.getFormatWriteFeatures(_formatGeneratorFeatures),
+                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
+                writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 out,
                 (AvroSchema) writeCtxt.getSchema());
     }
