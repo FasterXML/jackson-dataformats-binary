@@ -238,7 +238,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _formatFeatures = formatFeatures;
         _ioContext = ioCtxt;
         _symbols = sym;
-        DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
+        DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _parsingContext = JsonReadContext.createRootContext(dups);
 
@@ -286,7 +286,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     @Override
-    public final int getFormatFeatures() {
+    public final int formatReadFeatures() {
         return _formatFeatures;
     }
 
@@ -757,7 +757,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * @since 2.9
      */
     protected Object _getSourceReference() {
-        if (JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION.enabledIn(_streamReadFeatures)) {
+        if (isEnabled(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)) {
             return _ioContext.getSourceReference();
         }
         return null;

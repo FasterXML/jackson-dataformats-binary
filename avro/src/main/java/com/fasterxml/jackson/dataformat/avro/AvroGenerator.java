@@ -299,7 +299,7 @@ public class AvroGenerator extends GeneratorBase
     public void close() throws IOException
     {
         super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT)) {
+        if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             AvroWriteContext ctxt;
             while ((ctxt = _avroContext) != null) {
                 if (ctxt.inArray()) {
@@ -329,9 +329,9 @@ public class AvroGenerator extends GeneratorBase
             }
         }
         if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
                 _output.close();
-            } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            } else  if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
                 // If we can't close it, we should at least flush
                 _output.flush();
             }

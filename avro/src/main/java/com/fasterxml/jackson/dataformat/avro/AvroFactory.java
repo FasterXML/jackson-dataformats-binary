@@ -226,13 +226,13 @@ public class AvroFactory
     {
         if (_useApacheLibDecoder) {
           return new ApacheAvroParserImpl(readCtxt, ioCtxt,
-                  readCtxt.getParserFeatures(_streamReadFeatures),
+                  readCtxt.getStreamReadFeatures(_streamReadFeatures),
                   readCtxt.getFormatReadFeatures(_formatReadFeatures),
                   (AvroSchema) readCtxt.getSchema(),
                   in);
         }
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 in);
@@ -244,13 +244,13 @@ public class AvroFactory
     {
         if (_useApacheLibDecoder) {
             return new ApacheAvroParserImpl(readCtxt, ioCtxt,
-                    readCtxt.getParserFeatures(_streamReadFeatures),
+                    readCtxt.getStreamReadFeatures(_streamReadFeatures),
                     readCtxt.getFormatReadFeatures(_formatReadFeatures),
                     (AvroSchema) readCtxt.getSchema(),
                     data, offset, len);
         }
         return new JacksonAvroParserImpl(readCtxt, ioCtxt,
-                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 (AvroSchema) readCtxt.getSchema(),
                 data, offset, len);
@@ -275,7 +275,7 @@ public class AvroFactory
             IOContext ioCtxt, OutputStream out) throws IOException
     {
         return new AvroGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
+                writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 out,
                 (AvroSchema) writeCtxt.getSchema());

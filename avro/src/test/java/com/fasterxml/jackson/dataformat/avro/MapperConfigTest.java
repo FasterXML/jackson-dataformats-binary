@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.FormatSchema;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.*;
 
 public class MapperConfigTest extends AvroTestBase
@@ -28,7 +28,7 @@ public class MapperConfigTest extends AvroTestBase
         assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroParser.Feature.AVRO_BUFFERING));
 
         assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
-        assertFalse(MAPPER.tokenStreamFactory().isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT));
+        assertFalse(MAPPER.tokenStreamFactory().isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT));
 
         assertFalse(MAPPER.tokenStreamFactory().canUseSchema(BOGUS_SCHEMA));
     }

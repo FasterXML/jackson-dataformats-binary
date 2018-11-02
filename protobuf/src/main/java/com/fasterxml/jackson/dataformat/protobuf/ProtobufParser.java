@@ -906,7 +906,7 @@ public class ProtobufParser extends ParserMinimalBase
     private JsonToken _skipUnknownField(int tag, int wireType) throws IOException
     {
         // First: is this even allowed?
-        if (!isEnabled(JsonParser.Feature.IGNORE_UNDEFINED)) {
+        if (!isEnabled(StreamReadFeature.IGNORE_UNDEFINED)) {
             _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `JsonParser.Feature.IGNORE_UNDEFINED` disabled",
                     tag, wireType, _currentMessage.getName());
         }
@@ -2212,7 +2212,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
                 _inputStream.close();
             }
             _inputStream = null;

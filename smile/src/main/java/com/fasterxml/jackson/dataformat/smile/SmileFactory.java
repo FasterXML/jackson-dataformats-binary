@@ -211,7 +211,7 @@ public class SmileFactory
     {
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
-                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 can);
     }
@@ -231,7 +231,7 @@ public class SmileFactory
     {
         return new SmileParserBootstrapper(ioCtxt, in)
             .constructParser(readCtxt, _factoryFeatures,
-                    readCtxt.getParserFeatures(_streamReadFeatures),
+                    readCtxt.getStreamReadFeatures(_streamReadFeatures),
                     readCtxt.getFormatReadFeatures(_formatReadFeatures),
                     _byteSymbolCanonicalizer);
     }
@@ -242,7 +242,7 @@ public class SmileFactory
     {
         return new SmileParserBootstrapper(ioCtxt, data, offset, len)
             .constructParser(readCtxt, _factoryFeatures,
-                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _byteSymbolCanonicalizer);
     }
@@ -271,7 +271,7 @@ public class SmileFactory
          * For now, let's error out...
          */
         SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
+                writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 smileFeatures,
                 out);
         if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {

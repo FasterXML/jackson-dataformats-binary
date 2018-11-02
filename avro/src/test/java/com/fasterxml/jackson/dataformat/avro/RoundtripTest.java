@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.*;
 
 public class RoundtripTest extends MapTest
@@ -68,7 +67,7 @@ public class RoundtripTest extends MapTest
     private void _testCharSequences(ObjectMapper mapper) throws Exception
     {
         ObjectWriter writ = mapper.writer(CHARSEQ_SCHEMA)
-                .with(JsonGenerator.Feature.IGNORE_UNKNOWN);
+                .with(StreamWriteFeature.IGNORE_UNKNOWN);
         CharSeqBean input = new CharSeqBean();
         input.id = "123";
         input.name = "John";

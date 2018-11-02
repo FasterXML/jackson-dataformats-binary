@@ -261,7 +261,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (f == null) {
             // May be ok, if we have said so
             if ((_currMessage == UNKNOWN_MESSAGE)
-                    || isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
+                    || isEnabled(StreamWriteFeature.IGNORE_UNKNOWN)) {
                 f = UNKNOWN_FIELD;
             } else {
                 _reportError("Unrecognized field '"+name+"' (in Message of type "+_currMessage.getName()
@@ -295,7 +295,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (f == null) {
             // May be ok, if we have said so
             if ((_currMessage == UNKNOWN_MESSAGE)
-                    || isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
+                    || isEnabled(StreamWriteFeature.IGNORE_UNKNOWN)) {
                 f = UNKNOWN_FIELD;
             } else {
                 _reportError("Unrecognized field '"+name+"' (in Message of type "+_currMessage.getName()
@@ -333,7 +333,7 @@ public class ProtobufGenerator extends GeneratorBase
     public void close() throws IOException
     {
         super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT)) {
+        if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             ProtobufWriteContext ctxt;
             while ((ctxt = _pbContext) != null) {
                 if (ctxt.inArray()) {
@@ -350,9 +350,9 @@ public class ProtobufGenerator extends GeneratorBase
             _complete();
         }
         if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
                 _output.close();
-            } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            } else  if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
                 // If we can't close it, we should at least flush
                 _output.flush();
             }

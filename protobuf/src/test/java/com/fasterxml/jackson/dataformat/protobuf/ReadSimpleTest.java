@@ -5,6 +5,7 @@ import java.io.StringWriter;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -342,7 +343,8 @@ public class ReadSimpleTest extends ProtobufTestBase
     {
         // Important: write Point3, read regular Point
         ProtobufMapper mapper = new ProtobufMapper(ProtobufFactory.builder()
-                .enable(JsonParser.Feature.IGNORE_UNDEFINED).build());
+                .enable(StreamReadFeature.IGNORE_UNDEFINED)
+                .build());
         ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
         ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);
 

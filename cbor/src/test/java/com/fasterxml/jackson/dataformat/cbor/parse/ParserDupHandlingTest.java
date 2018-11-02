@@ -16,9 +16,9 @@ public class ParserDupHandlingTest extends CBORTestBase
         }) {
             byte[] doc = cborDoc(json);
             ObjectReader r = sharedMapper().reader();
-            _testSimpleDupsOk(doc, r.without(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
+            _testSimpleDupsOk(doc, r.without(StreamReadFeature.STRICT_DUPLICATE_DETECTION));
             _testSimpleDupsFail(doc,
-                    r.with(JsonParser.Feature.STRICT_DUPLICATE_DETECTION),
+                    r.with(StreamReadFeature.STRICT_DUPLICATE_DETECTION),
                     "a");
         }
     }

@@ -16,7 +16,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
     // generator, not just via JsonFactory
     public void testSimpleDupsLazilyBytes() throws Exception {
         final SmileFactory f = new SmileFactory();
-        assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));
+        assertFalse(f.isEnabled(StreamWriteFeature.STRICT_DUPLICATE_DETECTION));
         _testSimpleDups(true, f);
     }
 
@@ -35,9 +35,9 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
 
         if (lazySetting) {
             g1 = _generator(f);            
-            g1.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            g1.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
         } else {
-            f = f.rebuild().enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION).build();
+            f = f.rebuild().enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION).build();
             g1 = _generator(f);            
         }
         try {
@@ -50,7 +50,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         JsonGenerator g2;
         if (lazySetting) {
             g2 = _generator(f);            
-            g2.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            g2.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
         } else {
             g2 = _generator(f);            
         }

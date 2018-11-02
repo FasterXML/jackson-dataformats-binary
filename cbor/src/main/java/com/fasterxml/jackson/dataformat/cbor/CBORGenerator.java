@@ -326,7 +326,7 @@ public class CBORGenerator extends GeneratorBase
     // public JsonParser overrideStdFeatures(int values, int mask)
 
     @Override
-    public int getFormatFeatures() {
+    public int formatWriteFeatures() {
         return _formatFeatures;
     }
 
@@ -1100,7 +1100,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void flush() throws IOException {
         _flushBuffer();
-        if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
             _out.flush();
         }
     }
@@ -1109,7 +1109,7 @@ public class CBORGenerator extends GeneratorBase
     public void close() throws IOException {
         // First: let's see that we still have buffers...
         if ((_outputBuffer != null)
-                && isEnabled(JsonGenerator.Feature.AUTO_CLOSE_CONTENT)) {
+                && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             while (true) {
                 TokenStreamContext ctxt = getOutputContext();
                 if (ctxt.inArray()) {
@@ -1126,7 +1126,7 @@ public class CBORGenerator extends GeneratorBase
         _flushBuffer();
 
         if (_ioContext.isResourceManaged()
-                || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+                || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
             _out.close();
         } else {
             // If we can't close it, we should at least flush

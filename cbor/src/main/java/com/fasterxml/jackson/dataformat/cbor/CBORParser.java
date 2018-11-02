@@ -328,7 +328,7 @@ public class CBORParser extends ParserMinimalBase
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
         _textBuffer = ioCtxt.constructTextBuffer();
-        DupDetector dups = JsonParser.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
+        DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _parsingContext = CBORReadContext.createRootContext(dups);
 
@@ -353,16 +353,6 @@ public class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
-//    public JsonParser overrideStdFeatures(int values, int mask)
-
-    @Override
-    public int getFormatFeatures() {
-        // No parser features, yet
-        return 0;
-    }
-
-    //public JsonParser overrideFormatFeatures(int values, int mask) {
-
     /*
     /**********************************************************
     /* Extended API
@@ -374,8 +364,6 @@ public class CBORParser extends ParserMinimalBase
      * the most recently decoded value (whether completely, for
      * scalar values, or partially, for Objects/Arrays), if any.
      * If no tag was associated with it, -1 is returned.
-     * 
-     * @since 2.5
      */
     public int getCurrentTag() {
         return _tagValue;
@@ -3282,7 +3270,7 @@ public class CBORParser extends ParserMinimalBase
 
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
                 _inputStream.close();
             }
             _inputStream = null;

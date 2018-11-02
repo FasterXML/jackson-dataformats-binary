@@ -219,7 +219,7 @@ public class CBORFactory
     {
         return new CBORParserBootstrapper(ioCtxt, in).constructParser(readCtxt,
                 _factoryFeatures,
-                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _byteSymbolCanonicalizer);
     }
@@ -234,7 +234,7 @@ public class CBORFactory
     {
         return new CBORParserBootstrapper(ioCtxt, data, offset, len).constructParser(readCtxt,
                 _factoryFeatures,
-                readCtxt.getParserFeatures(_streamReadFeatures),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _byteSymbolCanonicalizer);
     }
@@ -258,7 +258,7 @@ public class CBORFactory
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out) throws IOException {
         CBORGenerator gen = new CBORGenerator(writeCtxt, ioCtxt,
-                writeCtxt.getGeneratorFeatures(_streamWriteFeatures),
+                writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 out);
         if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatWriteFeatures)) {

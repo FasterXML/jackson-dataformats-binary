@@ -7,8 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 public class Issue19Test extends AvroTestBase
@@ -75,7 +74,7 @@ public class Issue19Test extends AvroTestBase
         EventLog input = new EventLog(9999, (byte) sampleEvents.size(), sampleEvents, sampleProblems);
 
         AvroMapper mapper = AvroMapper.builder()
-                .enable(JsonGenerator.Feature.IGNORE_UNKNOWN)
+                .enable(StreamWriteFeature.IGNORE_UNKNOWN)
                 .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .changeDefaultVisibility(vc ->
                     vc.withVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)

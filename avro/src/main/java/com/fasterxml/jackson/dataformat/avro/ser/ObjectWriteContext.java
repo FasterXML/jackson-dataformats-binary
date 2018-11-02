@@ -7,7 +7,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
@@ -127,7 +127,7 @@ public final class ObjectWriteContext
     }
 
     protected void _reportUnknownField(String name) {
-        if (!_generator.isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
+        if (!_generator.isEnabled(StreamWriteFeature.IGNORE_UNKNOWN)) {
             throw new IllegalStateException("No field named '"+_currentName+"'");
         }
     }

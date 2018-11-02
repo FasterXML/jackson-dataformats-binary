@@ -71,7 +71,7 @@ public class ReadUnkownFieldsTest extends ProtobufTestBase
         ProtobufSchema schemaWith1 = MAPPER.generateSchemaFor(OneField.class);
         OneField oneField = MAPPER.readerFor(OneField.class).with(schemaWith1)
                 // important: skip through unknown
-                .with(JsonParser.Feature.IGNORE_UNDEFINED)
+                .with(StreamReadFeature.IGNORE_UNDEFINED)
                 .readValue(in);
 
         assertEquals(threeField.getF3(), oneField.f3);

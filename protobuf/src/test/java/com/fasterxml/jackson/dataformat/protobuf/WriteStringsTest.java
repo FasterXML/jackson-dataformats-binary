@@ -91,7 +91,7 @@ public class WriteStringsTest extends ProtobufTestBase
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         JsonGenerator g = MAPPER.createGenerator(bytes);
-        g.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        g.enable(StreamWriteFeature.IGNORE_UNKNOWN);
         g.setSchema(NAME_SCHEMA);
 
         g.writeStartObject();

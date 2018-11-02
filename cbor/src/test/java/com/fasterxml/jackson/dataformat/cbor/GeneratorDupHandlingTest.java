@@ -14,7 +14,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
     // generator, not just via JsonFactory
     public void testSimpleDupsLazilyBytes() throws Exception {
         final CBORFactory f = new CBORFactory();
-        assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));
+        assertFalse(f.isEnabled(StreamWriteFeature.STRICT_DUPLICATE_DETECTION));
         _testSimpleDups(true, f);
     }
 
@@ -33,9 +33,9 @@ public class GeneratorDupHandlingTest extends CBORTestBase
 
         if (lazySetting) {
             g1 = _generator(f);            
-            g1.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            g1.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
         } else {
-            f = f.rebuild().enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION).build();
+            f = f.rebuild().enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION).build();
             g1 = _generator(f);            
         }
         try {
@@ -48,7 +48,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         JsonGenerator g2;
         if (lazySetting) {
             g2 = _generator(f);            
-            g2.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            g2.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
         } else {
             g2 = _generator(f);            
         }
