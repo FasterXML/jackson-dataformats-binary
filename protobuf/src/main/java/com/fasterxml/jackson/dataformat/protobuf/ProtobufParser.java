@@ -2111,6 +2111,7 @@ public class ProtobufParser extends ParserMinimalBase
         return _byteArrayBuilder;
     }
 
+    @SuppressWarnings("deprecation")
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
             if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {

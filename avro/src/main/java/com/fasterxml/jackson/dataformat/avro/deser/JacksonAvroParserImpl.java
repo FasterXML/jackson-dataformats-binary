@@ -119,6 +119,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         return _inputStream;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {

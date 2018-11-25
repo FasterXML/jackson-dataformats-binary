@@ -300,6 +300,7 @@ public class SmileParser extends SmileParserBase
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void _closeInput() throws IOException
     {

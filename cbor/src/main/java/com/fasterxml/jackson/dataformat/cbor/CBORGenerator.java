@@ -1097,6 +1097,7 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
+    @SuppressWarnings("deprecation")
     @Override
     public final void flush() throws IOException {
         _flushBuffer();

@@ -297,16 +297,24 @@ public class CBORParser extends ParserMinimalBase
 
     // Also, we need some numeric constants
 
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigInteger BI_MIN_INT = BigInteger.valueOf(Integer.MIN_VALUE);
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigInteger BI_MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
 
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigInteger BI_MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigInteger BI_MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
     
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigDecimal BD_MIN_LONG = new BigDecimal(BI_MIN_LONG);
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigDecimal BD_MAX_LONG = new BigDecimal(BI_MAX_LONG);
 
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigDecimal BD_MIN_INT = new BigDecimal(BI_MIN_INT);
+    @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigDecimal BD_MAX_INT = new BigDecimal(BI_MAX_INT);
 
     // Numeric value holders: multiple fields used for
@@ -3075,6 +3083,7 @@ public class CBORParser extends ParserMinimalBase
         return _byteArrayBuilder;
     }
 
+    @SuppressWarnings("deprecation")
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
             if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {

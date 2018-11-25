@@ -1770,6 +1770,7 @@ public class SmileGenerator
     /**********************************************************
      */
 
+    @SuppressWarnings("deprecation")
     @Override
     public final void flush() throws IOException
     {

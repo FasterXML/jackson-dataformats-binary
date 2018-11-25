@@ -327,6 +327,7 @@ public class ProtobufGenerator extends GeneratorBase
         _output.flush();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void close() throws IOException
     {

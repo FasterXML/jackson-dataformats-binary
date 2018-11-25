@@ -307,7 +307,8 @@ public class AvroGenerator extends GeneratorBase
     public final void flush() throws IOException {
         _output.flush();
     }
-    
+
+    @SuppressWarnings("deprecation")
     @Override
     public void close() throws IOException
     {

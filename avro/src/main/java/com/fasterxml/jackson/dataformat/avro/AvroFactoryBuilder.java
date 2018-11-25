@@ -62,7 +62,7 @@ public class AvroFactoryBuilder extends TSFBuilder<AvroFactory, AvroFactoryBuild
         //    manages to replace actual failure with a bogus one when
         //    missing "END_OBJECT"s (etc) are called. So let's default
         //    it to disabled, unlike for most JsonFactory sub-types.
-        _generatorFeatures &= ~JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT.getMask();
+        _streamWriteFeatures &= ~JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT.getMask();
     }
 
     public AvroFactoryBuilder(AvroFactory base) {
