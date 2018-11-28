@@ -341,7 +341,7 @@ public class ParserNumbersTest extends CBORTestBase
             assertEquals(NR, parser.getDecimalValue());
             assertEquals(NR.doubleValue(), parser.getDoubleValue());
             assertEquals(NR.intValue(), parser.getIntValue());
-            assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+            assertNull(parser.nextToken());
         }
         // Almost good. But [dataformats#139] to consider too...
         // ... but that'll need to wait for 2.10
