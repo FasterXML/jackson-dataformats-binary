@@ -1,0 +1,17 @@
+Project: jackson-datatypes-binary
+Modules:
+  jackson-dataformat-avro
+  jackson-dataformat-cbor
+  jackson-dataformat-protobuf
+  jackson-dataformat-smile
+Versions 3.x (for earlier see VERSION-2.x)
+
+Contains streaming API format codec implementations for supported binary formats,
+as well as support for integration via `jackson-databind` (`ObjectMapper` subtype
+implementations)
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+3.0.0 (not yet released)
