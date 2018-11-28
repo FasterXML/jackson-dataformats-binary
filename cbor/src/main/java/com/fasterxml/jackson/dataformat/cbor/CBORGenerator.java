@@ -1032,11 +1032,11 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_TAG_DECIMAL_FRACTION);
         _writeByte(BYTE_ARRAY_2_ELEMENTS);
 
+        // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
         int scale = dec.scale();
-        _writeIntValue(scale);
-        /* Hmmmh. Specification suggest use of regular integer for mantissa. But
-         * if it doesn't fit, use "bignum"
-         */
+        _writeIntValue(-scale);
+        // Hmmmh. Specification suggest use of regular integer for mantissa. But
+        // if it doesn't fit, use "bignum"
         BigInteger unscaled = dec.unscaledValue();
         int bitLength = unscaled.bitLength();
         if (bitLength <= 31) {

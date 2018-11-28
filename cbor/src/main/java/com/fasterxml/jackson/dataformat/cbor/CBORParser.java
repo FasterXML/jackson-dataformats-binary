@@ -828,7 +828,8 @@ public class CBORParser extends ParserMinimalBase
         if (t != JsonToken.VALUE_NUMBER_INT) {
             _reportError("Unexpected token ("+t+") as the first part of 'bigfloat' value: should get VALUE_NUMBER_INT");
         }
-        int exp = getIntValue();
+        // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
+        int exp = -getIntValue();
 
         t = nextToken();
         // Should get an integer value; int/long/BigInteger
