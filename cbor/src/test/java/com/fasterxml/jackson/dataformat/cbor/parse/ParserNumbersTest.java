@@ -328,7 +328,7 @@ public class ParserNumbersTest extends CBORTestBase
     }
 
     public void testBigDecimalType() throws IOException {
-        final BigDecimal NR = new BigDecimal("273.15");
+        final BigDecimal NR = new BigDecimal("172.125");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
         generator.writeNumber(NR);
@@ -343,7 +343,20 @@ public class ParserNumbersTest extends CBORTestBase
             assertEquals(NR.intValue(), parser.getIntValue());
             assertNull(parser.nextToken());
         }
-        // Almost good. But [dataformats#139] to consider too...
-        // ... but that'll need to wait for 2.10
+
+        // Almost good. But [dataformats#139] to consider too, see
+        // [https://tools.ietf.org/html/rfc7049#section-2.4.2]
+        final byte[] spec = new byte[] {
+                (byte) 0xC4,  // tag 4
+                (byte) 0x82,  // Array of length 2
+                0x21,  // int -- -2
+                0x19, 0x6a, (byte) 0xb3 // int 27315
+        };
+        try (CBORParser parser = cborParser(spec)) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, parser.getNumberType());
+            assertEquals(new BigDecimal("273.15"), parser.getDecimalValue());
+            assertNull(parser.nextToken());
+        }
     }
 }

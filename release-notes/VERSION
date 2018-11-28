@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.0 (not yet released)
+
+#139: Incorrect decimal fraction representation
+ (reported by wlukowicz@github)
+
 2.9.7 (19-Sep-2018)
 
 #142: (ion) `IonParser.getNumberType()` returns `null` for `IonType.FLOAT`
