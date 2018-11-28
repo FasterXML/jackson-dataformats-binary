@@ -327,4 +327,23 @@ public class ParserNumbersTest extends CBORTestBase
         parser.close();
     }
 
+    public void testBigDecimalType() throws IOException {
+        final BigDecimal NR = new BigDecimal("273.15");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator generator = cborGenerator(out);
+        generator.writeNumber(NR);
+        generator.close();
+
+        final byte[] b = out.toByteArray();
+        try (CBORParser parser = cborParser(b)) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, parser.getNumberType());
+            assertEquals(NR, parser.getDecimalValue());
+            assertEquals(NR.doubleValue(), parser.getDoubleValue());
+            assertEquals(NR.intValue(), parser.getIntValue());
+            assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+        }
+        // Almost good. But [dataformats#139] to consider too...
+        // ... but that'll need to wait for 2.10
+    }
 }
