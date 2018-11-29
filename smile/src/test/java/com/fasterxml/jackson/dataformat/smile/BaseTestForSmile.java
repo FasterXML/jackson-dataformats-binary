@@ -62,13 +62,13 @@ public abstract class BaseTestForSmile
     protected SmileParser _smileParser(byte[] input, boolean requireHeader) throws IOException
     {
         SmileFactory f = smileFactory(requireHeader, false, false);
-    	return _smileParser(f, input);
+        return _smileParser(f, input);
     }
 
     protected SmileParser _smileParser(InputStream in, boolean requireHeader) throws IOException
     {
         SmileFactory f = smileFactory(requireHeader, false, false);
-    	return _smileParser(f, in);
+        return _smileParser(f, in);
     }
     
     protected SmileParser _smileParser(SmileFactory f, byte[] input) throws IOException {
@@ -102,7 +102,7 @@ public abstract class BaseTestForSmile
         f.configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
         return f;
     }
-    
+
     protected byte[] _smileDoc(String json) throws IOException
     {
         return _smileDoc(json, true);
