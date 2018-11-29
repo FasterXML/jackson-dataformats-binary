@@ -127,7 +127,6 @@ public class ProtobufFactory
         return null;
     }
 */
-    
     @Override
     public int getFormatReadFeatures() { return 0; }
 
