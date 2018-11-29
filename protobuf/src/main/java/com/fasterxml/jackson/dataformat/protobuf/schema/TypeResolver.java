@@ -172,9 +172,14 @@ public class TypeResolver
         }
         return msg;
     }
-
+int depth = 0;
+    
     private ProtobufField _findAnyResolved(FieldElement nativeField, String typeStr)
     {
+        ++depth;
+        try {
+if (depth > 20) throw new Error("StackOverflow");
+System.err.println("_findAnyResolved("+depth+", '"+typeStr+"')");
         ProtobufField f = _findLocalResolved(nativeField, typeStr);
         if (f == null) {
             MessageElement nativeMt = _nativeMessageTypes.get(typeStr);
@@ -187,6 +192,9 @@ public class TypeResolver
             }
         }
         return f;
+        } finally {
+            --depth;
+        }
     }
 
     private StringBuilder _knownEnums(StringBuilder sb) {
