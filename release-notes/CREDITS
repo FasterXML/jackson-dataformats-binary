@@ -73,3 +73,7 @@ Michael Milkin (mmilkin@github)
 * Reported, Contributed fix for #142: (ion) `IonParser.getNumberType()` returns `null`
   for `IonType.FLOAT`
  (2.9.7)
+
+Guido Medina (guidomedina@github)
+* Reported #153: (smile) Unable to set a compression input/output decorator to a `SmileFactory`
+ (2.9.8)

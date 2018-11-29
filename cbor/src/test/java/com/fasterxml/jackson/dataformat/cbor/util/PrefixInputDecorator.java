@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.smile.testutil;
+package com.fasterxml.jackson.dataformat.cbor.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

@@ -1,18 +1,18 @@
-package com.fasterxml.jackson.dataformat.smile.filter;
+package com.fasterxml.jackson.dataformat.cbor.filter;
 
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.*;
-import com.fasterxml.jackson.dataformat.smile.testutil.PrefixInputDecorator;
-import com.fasterxml.jackson.dataformat.smile.testutil.PrefixOutputDecorator;
+import com.fasterxml.jackson.dataformat.cbor.*;
+import com.fasterxml.jackson.dataformat.cbor.util.PrefixInputDecorator;
+import com.fasterxml.jackson.dataformat.cbor.util.PrefixOutputDecorator;
 
-public class StreamingDecoratorsTest extends BaseTestForSmile
+public class StreamingDecoratorsTest extends CBORTestBase
 {
     public void testInputDecorators() throws Exception
     {
-        final byte[] DOC = _smileDoc("42   37");
-        final SmileFactory streamF = smileFactory(false,  true,  false);
+        final byte[] DOC = cborDoc("42   37");
+        final CBORFactory streamF = cborFactory();
         streamF.setInputDecorator(new PrefixInputDecorator(DOC));
         JsonParser p = streamF.createParser(new byte[0], 0, 0);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -25,9 +25,8 @@ public class StreamingDecoratorsTest extends BaseTestForSmile
 
     public void testOutputDecorators() throws Exception
     {
-        final byte[] DOC = _smileDoc(" 137");
-        // important! Do not add document header for this test
-        final SmileFactory streamF = smileFactory(false,  false,  false);
+        final byte[] DOC = cborDoc(" 137");
+        final CBORFactory streamF = cborFactory();
         streamF.setOutputDecorator(new PrefixOutputDecorator(DOC));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 

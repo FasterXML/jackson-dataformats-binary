@@ -274,27 +274,38 @@ public class CBORFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public CBORParser createParser(File f) throws IOException {
-        return _createParser(new FileInputStream(f), _createContext(f, true));
+        IOContext ctxt = _createContext(f, true);
+        return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
     @Override
     public CBORParser createParser(URL url) throws IOException {
-        return _createParser(_optimizedStreamFromURL(url), _createContext(url, true));
+        IOContext ctxt = _createContext(url, true);
+        return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
     }
 
     @Override
     public CBORParser createParser(InputStream in) throws IOException {
-        return _createParser(in, _createContext(in, false));
+        IOContext ctxt = _createContext(in, false);
+        return _createParser(_decorate(in, ctxt), ctxt);
     }
 
     @Override
     public CBORParser createParser(byte[] data) throws IOException {
-        return _createParser(data, 0, data.length, _createContext(data, true));
+        return createParser(data, 0, data.length);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public CBORParser createParser(byte[] data, int offset, int len) throws IOException {
-        return _createParser(data, offset, len, _createContext(data, true));
+        IOContext ctxt = _createContext(data, true);
+        if (_inputDecorator != null) {
+            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
+            if (in != null) {
+                return _createParser(in, ctxt);
+            }
+        }
+        return _createParser(data, offset, len, ctxt);
     }
 
     /*
@@ -312,8 +323,10 @@ public class CBORFactory extends JsonFactory
      */
     @Override
     public CBORGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
-        return _createCBORGenerator(_createContext(out, false),
-                _generatorFeatures, _formatGeneratorFeatures, _objectCodec, out);
+        final IOContext ctxt = _createContext(out, false);
+        return _createCBORGenerator(ctxt,
+                _generatorFeatures, _formatGeneratorFeatures, _objectCodec,
+                _decorate(out, ctxt));
     }
 
     /**
@@ -325,8 +338,10 @@ public class CBORFactory extends JsonFactory
      */
     @Override
     public CBORGenerator createGenerator(OutputStream out) throws IOException {
-        return _createCBORGenerator(_createContext(out, false),
-                _generatorFeatures, _formatGeneratorFeatures, _objectCodec, out);
+        final IOContext ctxt = _createContext(out, false);
+        return _createCBORGenerator(ctxt,
+                _generatorFeatures, _formatGeneratorFeatures, _objectCodec,
+                _decorate(out, ctxt));
     }
 
     /*

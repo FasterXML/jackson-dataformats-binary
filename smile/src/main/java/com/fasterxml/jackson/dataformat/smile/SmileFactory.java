@@ -319,7 +319,7 @@ public class SmileFactory extends JsonFactory
     public SmileParser createParser(byte[] data) throws IOException {
         return createParser(data, 0, data.length);
     }
-    
+
     @SuppressWarnings("resource")
     @Override
     public SmileParser createParser(byte[] data, int offset, int len) throws IOException {
@@ -327,7 +327,7 @@ public class SmileFactory extends JsonFactory
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
             if (in != null) {
-                return _createParser(_decorate(in, ctxt), ctxt);
+                return _createParser(in, ctxt);
             }
         }
         return _createParser(data, offset, len, ctxt);
