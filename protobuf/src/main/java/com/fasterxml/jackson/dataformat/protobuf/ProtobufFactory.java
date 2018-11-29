@@ -147,19 +147,23 @@ public class ProtobufFactory extends JsonFactory
     /**********************************************************
      */
 
+    @SuppressWarnings("resource")
     @Override
     public ProtobufParser createParser(File f) throws IOException {
-        return _createParser(new FileInputStream(f), _createContext(f, true));
+        final IOContext ctxt = _createContext(f, true);
+        return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
     @Override
     public ProtobufParser createParser(URL url) throws IOException {
-        return _createParser(_optimizedStreamFromURL(url), _createContext(url, true));
+        final IOContext ctxt = _createContext(url, true);
+        return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
     }
 
     @Override
     public ProtobufParser createParser(InputStream in) throws IOException {
-        return _createParser(in, _createContext(in, false));
+        final IOContext ctxt = _createContext(in, false);
+        return _createParser(_decorate(in, ctxt), ctxt);
     }
 
     @Override
@@ -167,9 +171,17 @@ public class ProtobufFactory extends JsonFactory
         return _createParser(data, 0, data.length, _createContext(data, true));
     }
 
+    @SuppressWarnings("resource")
     @Override
     public ProtobufParser createParser(byte[] data, int offset, int len) throws IOException {
-        return _createParser(data, offset, len, _createContext(data, true));
+        IOContext ctxt = _createContext(data, true);
+        if (_inputDecorator != null) {
+            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
+            if (in != null) {
+                return _createParser(in, ctxt);
+            }
+        }
+        return _createParser(data, offset, len, ctxt);
     }
 
     /*
@@ -182,8 +194,7 @@ public class ProtobufFactory extends JsonFactory
     public ProtobufGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
         IOContext ctxt = _createContext(out, false);
         ctxt.setEncoding(enc);
-        out = _decorate(out, ctxt);
-        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, out);
+        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, _decorate(out, ctxt));
     }
 
     /**
@@ -196,8 +207,7 @@ public class ProtobufFactory extends JsonFactory
     @Override
     public ProtobufGenerator createGenerator(OutputStream out) throws IOException {
         IOContext ctxt = _createContext(out, false);
-        out = _decorate(out, ctxt);
-        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, out);
+        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, _decorate(out, ctxt));
     }
 
     /*

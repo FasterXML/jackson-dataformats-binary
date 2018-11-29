@@ -330,19 +330,19 @@ public class AvroFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public AvroParser createParser(File f) throws IOException {
-        IOContext ctxt = _createContext(f, true);
+        final IOContext ctxt = _createContext(f, true);
         return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
     @Override
     public AvroParser createParser(URL url) throws IOException {
-        IOContext ctxt = _createContext(url, true);
+        final IOContext ctxt = _createContext(url, true);
         return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
     }
 
     @Override
     public AvroParser createParser(InputStream in) throws IOException {
-        IOContext ctxt = _createContext(in, false);
+        final IOContext ctxt = _createContext(in, false);
         return _createParser(_decorate(in, ctxt), ctxt);
     }
 
@@ -360,7 +360,7 @@ public class AvroFactory extends JsonFactory
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
             if (in != null) {
-                return _createParser(_decorate(in, ctxt), ctxt);
+                return _createParser(in, ctxt);
             }
         }
         return _createParser(data, offset, len, ctxt);
@@ -392,7 +392,7 @@ public class AvroFactory extends JsonFactory
         IOContext ctxt = _createContext(out, false);
         return _createGenerator(_decorate(out, ctxt), ctxt);
     }
-    
+
     /*
     /******************************************************
     /* Overridden internal factory methods
