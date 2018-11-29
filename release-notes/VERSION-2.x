@@ -13,6 +13,11 @@ Project: jackson-datatypes-binaryModules:
 #139: Incorrect decimal fraction representation
  (reported by wlukowicz@github)
 
+2.9.8 (not yet released)
+
+#153: (smile) Unable to set a compression input/output decorator to a `SmileFactory`
+ (reported by Guido M)
+
 2.9.7 (19-Sep-2018)
 
 #142: (ion) `IonParser.getNumberType()` returns `null` for `IonType.FLOAT`
