@@ -24,7 +24,7 @@ public class ReadSimpleTest extends ProtobufTestBase
             +" repeated string values = 2 [packed=true];\n"
             +"}\n"
     ;
-    
+
     final protected static String PROTOC_NAMED_STRINGS =
             "message NamedStrings {\n"
             +" required string name = 2;\n"
