@@ -14,35 +14,63 @@ public class TypeResolver
 {
     private final TypeResolver _parent;
 
-    private Map<String,MessageElement> _nativeMessageTypes;
+    /**
+     * For nested definitions we also need to know the name this context
+     * has (not used for root): this is unqualified name (that is, only
+     * name for context, not path)
+     */
+    private final String _contextName;
+    
+    /**
+     * Mapping from types declared within this scope (root types for
+     * root resolver; nested types for child resolvers)
+     */
+    private Map<String,MessageElement> _declaredMessageTypes;
 
     private Map<String,ProtobufEnum> _enumTypes;
 
+    /**
+     * Mapping from names of types within this scope (with possible prefix as
+     * necessary) into resolve types.
+     */
     private Map<String,ProtobufMessage> _resolvedMessageTypes;
-    
-    protected TypeResolver(TypeResolver p, Map<String,MessageElement> nativeMsgs,
+
+    protected TypeResolver(TypeResolver p, String name, Map<String,MessageElement> declaredMsgs,
             Map<String,ProtobufEnum> enums)
     {
         _parent = p;
-        if (enums == null) {
-            enums = Collections.emptyMap();
-        }
+        _contextName = name;
         _enumTypes = enums;
-        if (nativeMsgs == null) {
-            nativeMsgs = Collections.emptyMap();
+        if (declaredMsgs == null) {
+            declaredMsgs = Collections.emptyMap();
         }
-        _nativeMessageTypes = nativeMsgs;
+        _declaredMessageTypes = declaredMsgs;
         _resolvedMessageTypes = Collections.emptyMap();
     }
 
-    public static TypeResolver construct(Collection<TypeElement> nativeTypes) {
-        return construct(null, nativeTypes);
+    /**
+     * Main entry method for public API, for resolving specific root-level type and other
+     * types it depends on.
+     */
+    public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType) {
+        final TypeResolver rootR  = construct(null, null, nativeTypes);
+        // Important: parent context for "root types", but child context for nested; further,
+        // resolution happens in "child" context to allow proper referencing
+        return TypeResolver.construct(rootR, rawType.name(), rawType.nestedElements())
+                ._resolve(rawType);
     }
-    
-    protected static TypeResolver construct(TypeResolver parent, Collection<TypeElement> nativeTypes)
+
+    protected ProtobufMessage resolve(TypeResolver parent, MessageElement rawType)
+    {
+        return TypeResolver.construct(this, rawType.name(), rawType.nestedElements())
+                ._resolve(rawType);
+    }
+
+    protected static TypeResolver construct(TypeResolver parent, String localName,
+            Collection<TypeElement> nativeTypes)
     {
         Map<String,MessageElement> nativeMessages = null;
-        Map<String,ProtobufEnum> enumTypes = null;
+        Map<String,ProtobufEnum> enumTypes = new LinkedHashMap<>();
         
         for (TypeElement nt : nativeTypes) {
             if (nt instanceof MessageElement) {
@@ -51,16 +79,25 @@ public class TypeResolver
                 }
                 nativeMessages.put(nt.name(), (MessageElement) nt);
             } else if (nt instanceof EnumElement) {
-                if (enumTypes == null) {
-                    enumTypes = new LinkedHashMap<String,ProtobufEnum>();
+                final ProtobufEnum enumType = constructEnum((EnumElement) nt);
+                enumTypes.put(nt.name(), enumType);
+                // ... and don't forget parent scopes!
+                if (parent != null) {
+                    parent.addEnumType(_scopedName(localName, nt.name()), enumType);
                 }
-                enumTypes.put(nt.name(), _constructEnum((EnumElement) nt));
             } // no other known types?
         }
-        return new TypeResolver(parent, nativeMessages, enumTypes);
+        return new TypeResolver(parent, localName, nativeMessages, enumTypes);
     }
 
-    protected static ProtobufEnum _constructEnum(EnumElement nativeEnum)
+    protected void addEnumType(String name, ProtobufEnum enumType) {
+        _enumTypes.put(name, enumType);
+        if (_parent != null) {
+            _parent.addEnumType(_scopedName(name), enumType);
+        }
+    }
+
+    protected static ProtobufEnum constructEnum(EnumElement nativeEnum)
     {
         final Map<String,Integer> valuesByName = new LinkedHashMap<String,Integer>();
         boolean standard = true;
@@ -80,32 +117,15 @@ public class TypeResolver
         return new ProtobufEnum(name, valuesByName, standard);
     }
 
-    public ProtobufMessage resolve(MessageElement rawType)
-    {
-        ProtobufMessage msg = _findResolvedMessage(rawType.name());
-        if (msg != null) {
-            return msg;
-        }
-        /* Since MessageTypes can contain other type definitions, it is
-         * important that we actually create a new context, that is,
-         * new TypeResolver instance, and call resolution on that.
-         */
-        return TypeResolver.construct(this, rawType.nestedElements())
-                ._resolve(rawType);
-    }
-        
     protected ProtobufMessage _resolve(MessageElement rawType)
     {
         List<FieldElement> rawFields = rawType.fields();
         ProtobufField[] resolvedFields = new ProtobufField[rawFields.size()];
         
         ProtobufMessage message = new ProtobufMessage(rawType.name(), resolvedFields);
-        // Important: add type itself as (being) resolved, to allow for self-refs:
-        if (_resolvedMessageTypes.isEmpty()) {
-            _resolvedMessageTypes = new HashMap<String,ProtobufMessage>();
-        }
-        _resolvedMessageTypes.put(rawType.name(), message);
-
+        // Important: add type itself as (being) resolved, to allow for self- and cyclic refs
+        _parent.addResolvedMessageType(rawType.name(), message);
+        
         // and then resolve fields
         int ix = 0;
         for (FieldElement f : rawFields) {
@@ -125,15 +145,14 @@ public class TypeResolver
                     pbf = resolvedF;
                 } else {
                     // or, barring that local but as of yet unresolved message?
-                    MessageElement nativeMt = _nativeMessageTypes.get(typeStr);
+                    MessageElement nativeMt = _declaredMessageTypes.get(typeStr);
                     if (nativeMt != null) {
-                        pbf = new ProtobufField(f,
-                                TypeResolver.construct(this, nativeMt.nestedElements())._resolve(nativeMt));
+                        pbf = new ProtobufField(f, resolve(this, nativeMt));
                     } else {
                         // If not, perhaps parent might have an answer?
-                        resolvedF = _parent._findAnyResolved(f, typeStr);
+                        resolvedF = (_parent == null) ? null : _parent._findAnyResolved(f, typeStr);
                         if (resolvedF != null) {
-                                    pbf = resolvedF;
+                            pbf = resolvedF;
                         } else {
                             // Ok, we are out of options here...
                             StringBuilder enumStr = _knownEnums(new StringBuilder());
@@ -164,31 +183,42 @@ public class TypeResolver
         return message;
     }    
 
-    private ProtobufMessage _findResolvedMessage(String typeStr)
-    {
-        ProtobufMessage msg = _resolvedMessageTypes.get(typeStr);
-        if ((msg == null) && (_parent !=null)) {
-            return _parent._findResolvedMessage(typeStr);
+    protected void addResolvedMessageType(String name, ProtobufMessage toResolve) {
+        if (_resolvedMessageTypes.isEmpty()) {
+            _resolvedMessageTypes = new HashMap<String,ProtobufMessage>();
         }
-        return msg;
+        _resolvedMessageTypes.put(name, toResolve);
+        // But also: for parent scopes
+        if (_parent != null) {
+            _parent.addResolvedMessageType(_scopedName(name), toResolve);
+        }
     }
 
     private ProtobufField _findAnyResolved(FieldElement nativeField, String typeStr)
     {
-        ProtobufField f = _findLocalResolved(nativeField, typeStr);
-        if (f == null) {
-            MessageElement nativeMt = _nativeMessageTypes.get(typeStr);
-            if (nativeMt != null) {
-                return new ProtobufField(nativeField,
-                        TypeResolver.construct(this, nativeMt.nestedElements())._resolve(nativeMt));
+        for (TypeResolver r = this; r != null; r = r._parent) {
+            ProtobufField f = r._findLocalResolved(nativeField, typeStr);
+            if (f != null) {
+                return f;
             }
-            if (_parent != null) {
-                return _parent._findAnyResolved(nativeField, typeStr);
+            f = r._findAndResolve(nativeField, typeStr);
+            if (f != null) {
+                return f;
             }
         }
-        return f;
+
+        return null;
     }
 
+    private ProtobufField _findAndResolve(FieldElement nativeField, String typeStr)
+    {
+        MessageElement nativeMt = _declaredMessageTypes.get(typeStr);
+        if (nativeMt != null) {
+            return new ProtobufField(nativeField, resolve(this, nativeMt));
+        }
+        return null;
+    }
+    
     private StringBuilder _knownEnums(StringBuilder sb) {
         if (_parent != null) {
             sb = _parent._knownEnums(sb);
@@ -206,7 +236,7 @@ public class TypeResolver
         if (_parent != null) {
             sb = _parent._knownMsgs(sb);
         }
-        for (String name : _nativeMessageTypes.keySet()) {
+        for (String name : _declaredMessageTypes.keySet()) {
             if (sb.length() > 0) {
                 sb.append(", ");
             }
@@ -226,5 +256,13 @@ public class TypeResolver
             return new ProtobufField(nativeField, et);
         }
         return null;
+    }
+
+    private final String _scopedName(String localName) {
+        return _scopedName(_contextName, localName);
+    }
+
+    private final static String _scopedName(String contextName, String localName) {
+        return new StringBuilder(contextName).append('.').append(localName).toString();
     }
 }
