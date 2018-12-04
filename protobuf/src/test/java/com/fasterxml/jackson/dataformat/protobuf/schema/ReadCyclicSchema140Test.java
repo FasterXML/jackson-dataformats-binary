@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.protobuf.failing;
+package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ public class ReadCyclicSchema140Test extends ProtobufTestBase
     final protected static String PROTOC_CYCLIC =
             "message Front {\n"
             +" optional string id = 1;\n"
-            +" optional Back id = 2;\n"
+            +" optional Back next = 2;\n"
             +"}\n"
             +"message Back {\n"
             +" optional string id = 1;\n"
             +" optional string extra = 2;\n"
-            +" optional Front id = 3;\n"
+            +" optional Front next = 3;\n"
             +"}\n"
     ;
 
@@ -26,9 +26,10 @@ public class ReadCyclicSchema140Test extends ProtobufTestBase
         List<String> all = schema.getMessageTypes();
         assertEquals(2, all.size());
         assertEquals("Front", all.get(0));
-        assertEquals("Back", all.get(0));
+        assertEquals("Back", all.get(1));
         ProtobufMessage msg = schema.getRootType();
-        assertEquals(3, msg.getFieldCount());
+        assertEquals("Front", msg.getName());
+        assertEquals(2, msg.getFieldCount());
         ProtobufField f = msg.field("id");
         assertNotNull(f);
         assertEquals("id", f.name);

@@ -64,7 +64,7 @@ public class NativeProtobufSchema
                     +"') has no message type with name '"+messageTypeName+"': known types: "
                     +getMessageNames());
         }
-        return new ProtobufSchema(this, TypeResolver.construct(_nativeTypes).resolve(msg));
+        return new ProtobufSchema(this, TypeResolver.resolve(_nativeTypes, msg));
     }
 
     /**
@@ -78,7 +78,7 @@ public class NativeProtobufSchema
             throw new IllegalArgumentException("Protobuf schema definition (name '"+_name
                     +"') contains no message type definitions");
         }
-        return new ProtobufSchema(this, TypeResolver.construct(_nativeTypes).resolve(msg));
+        return new ProtobufSchema(this, TypeResolver.resolve(_nativeTypes, msg));
     }
 
     public List<String> getMessageNames() {
