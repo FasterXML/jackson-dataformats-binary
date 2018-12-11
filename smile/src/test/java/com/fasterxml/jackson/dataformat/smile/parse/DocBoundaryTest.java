@@ -42,7 +42,7 @@ public class DocBoundaryTest
     {
         // also; sprinkling headers can be used to segment document
         for (boolean addHeader : new boolean[] { false, true }) {
-            SmileFactory f = _smileFactory(false, false, false);
+            SmileFactory f = smileFactory(false, false, false);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             SmileGenerator jg = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out);
             jg.writeNumber(1);
@@ -79,7 +79,7 @@ public class DocBoundaryTest
     
     protected void _verifyMultiDoc(boolean addHeader, boolean addEndMarker) throws Exception
     {
-        SmileFactory f = _smileFactory(false, addHeader, addEndMarker);
+        SmileFactory f = smileFactory(false, addHeader, addEndMarker);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator jg = f.createGenerator(ObjectWriteContext.empty(), out);
         // First doc, JSON Object

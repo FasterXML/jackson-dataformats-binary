@@ -10,10 +10,11 @@ import java.util.Random;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.json.JsonFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public abstract class CBORTestBase
@@ -47,9 +48,7 @@ public abstract class CBORTestBase
             +"}"
             ;
 
-    protected final static JsonMapper JSON_MAPPER = new JsonMapper();
-
-    protected final static CBORMapper CBOR_MAPPER = new CBORMapper(new CBORFactory());
+    protected final static JsonMapper JSON_MAPPER = JsonMapper.shared();
 
     /*
     /**********************************************************
@@ -62,11 +61,11 @@ public abstract class CBORTestBase
     }
 
     protected CBORParser cborParser(byte[] input) throws IOException {
-        return (CBORParser) CBOR_MAPPER.createParser(input);
+        return (CBORParser) sharedMapper().createParser(input);
     }
 
     protected CBORParser cborParser(InputStream in) throws IOException {
-        return (CBORParser) CBOR_MAPPER.createParser(in);
+        return (CBORParser) sharedMapper().createParser(in);
     }
 
     protected CBORMapper cborMapper() {
@@ -78,22 +77,21 @@ public abstract class CBORTestBase
     }
 
     protected ObjectMapper jsonMapper() {
-        return new ObjectMapper(new JsonFactory());
+        return JsonMapper.shared();
     }
 
     protected CBORFactory cborFactory() {
-        CBORFactory f = new CBORFactory();
-        return f;
+        return new CBORFactory();
     }
 
     protected ObjectMapper sharedMapper() {
-        return CBOR_MAPPER;
+        return CBORMapper.shared();
     }
 
     protected CBORGenerator cborGenerator(OutputStream result)
         throws IOException
     {
-        return (CBORGenerator) CBOR_MAPPER.createGenerator(result);
+        return (CBORGenerator) CBORMapper.shared().createGenerator(result);
     }
 
     /*
@@ -136,7 +134,7 @@ public abstract class CBORTestBase
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try (JsonGenerator g = CBOR_MAPPER.createGenerator(out)) {
+            try (JsonGenerator g = CBORMapper.shared().createGenerator(out)) {
                 _copy(p, g);
             }
             return out.toByteArray();

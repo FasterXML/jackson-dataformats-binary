@@ -175,7 +175,7 @@ public class TestGenerator extends BaseTestForSmile
     public void testObjectWithEmptyKey() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileFactory f = _smileFactory(false, true, false).rebuild()
+        SmileFactory f = smileFactory(false, true, false).rebuild()
                 .enable(SmileGenerator.Feature.CHECK_SHARED_NAMES,
                         SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
                 .build();

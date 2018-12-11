@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -108,6 +109,22 @@ public class ProtobufMapper extends ObjectMapper
 
     /*
     /**********************************************************************
+    /* Life-cycle, shared "vanilla" (default configuration) instance
+    /**********************************************************************
+     */
+
+    /**
+     * Accessor method for getting globally shared "default" {@link ProtobufMapper}
+     * instance: one that has default configuration, no modules registered, no
+     * config overrides. Usable mostly when dealing "untyped" or Tree-style
+     * content reading and writing.
+     */
+    public static ProtobufMapper shared() {
+        return SharedWrapper.wrapped();
+    }
+
+    /*
+    /**********************************************************************
     /* Basic accessor overrides
     /**********************************************************************
      */
@@ -194,5 +211,21 @@ public class ProtobufMapper extends ObjectMapper
             _descriptorLoader = l = DescriptorLoader.construct(this);
         }
         return l;
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class(es)
+    /**********************************************************
+     */
+
+    /**
+     * Helper class to contain dynamically constructed "shared" instance of
+     * mapper, should one be needed via {@link #shared}.
+     */
+    private final static class SharedWrapper {
+        private final static ProtobufMapper MAPPER = ProtobufMapper.builder().build();
+
+        public static ProtobufMapper wrapped() { return MAPPER; }
     }
 }

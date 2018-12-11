@@ -365,7 +365,7 @@ public class BasicParserTest extends BaseTestForSmile
     // [JACKSON-629]
     public void testNameBoundary() throws IOException
     {
-        SmileFactory f = _smileFactory(true, true, false);
+        SmileFactory f = smileFactory(true, true, false);
         f = f.rebuild().disable(SmileGenerator.Feature.CHECK_SHARED_NAMES).build();
 
         // let's create 3 meg docs

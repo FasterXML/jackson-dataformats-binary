@@ -15,9 +15,9 @@ public class FactoryPropertiesTest extends ProtobufTestBase
 {
     final ProtobufSchema POINT_SCHEMA;
 
-    final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+    final ProtobufMapper MAPPER = ProtobufMapper.shared();
 
-    private final static ProtobufFactory PROTO_F = new ProtobufFactory();
+    private final ProtobufFactory PROTO_F = MAPPER.tokenStreamFactory();
 
     public FactoryPropertiesTest() throws IOException {
         POINT_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");

@@ -135,6 +135,21 @@ public class IonObjectMapper extends ObjectMapper
 
     /*
     /**********************************************************************
+    /* Life-cycle, shared "vanilla" (default configuration) instance
+    /**********************************************************************
+     */
+
+    /**
+     * Accessor method for getting globally shared "default" {@link IonObjectMapper}
+     * instance: one that has default configuration, no modules registered, no
+     * config overrides. Usable mostly when dealing "untyped" or Tree-style
+     * content reading and writing.
+     */
+    public static IonObjectMapper shared() {
+        return SharedWrapper.wrapped();
+    }    
+    /*
+    /**********************************************************************
     /* Basic accessor overrides
     /**********************************************************************
      */
@@ -297,5 +312,21 @@ public class IonObjectMapper extends ObjectMapper
         } finally {
             writer.close();
         }
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class(es)
+    /**********************************************************
+     */
+
+    /**
+     * Helper class to contain dynamically constructed "shared" instance of
+     * mapper, should one be needed via {@link #shared}.
+     */
+    private final static class SharedWrapper {
+        private final static IonObjectMapper MAPPER = IonObjectMapper.builder().build();
+
+        public static IonObjectMapper wrapped() { return MAPPER; }
     }
 }

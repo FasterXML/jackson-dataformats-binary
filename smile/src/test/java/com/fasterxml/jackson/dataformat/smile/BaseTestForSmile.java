@@ -99,7 +99,7 @@ public abstract class BaseTestForSmile
     }
     
     protected SmileMapper.Builder smileMapperBuilder() {
-        return SmileMapper.builder(_smileFactory(false, false, false));
+        return SmileMapper.builder(smileFactory(false, false, false));
     }
 
     protected SmileMapper smileMapper(boolean requireHeader) {
@@ -109,19 +109,25 @@ public abstract class BaseTestForSmile
     protected SmileMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        return new SmileMapper(_smileFactory(requireHeader, writeHeader, writeEndMarker));
+        return new SmileMapper(smileFactory(requireHeader, writeHeader, writeEndMarker));
     }
 
-    protected SmileFactory _smileFactory(boolean requireHeader,
+    protected SmileFactory smileFactory(boolean requireHeader,
+            boolean writeHeader, boolean writeEndMarker)
+    {
+        return smileFactoryBuilder(requireHeader, writeHeader, writeEndMarker)
+                .build();
+    }
+
+    protected SmileFactoryBuilder smileFactoryBuilder(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
         return SmileFactory.builder()
                 .configure(SmileParser.Feature.REQUIRE_HEADER, requireHeader)
                 .configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
-                .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker)
-                .build();
+                .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
     }
-
+    
     protected byte[] _smileDoc(String json) throws IOException
     {
         return _smileDoc(json, true);

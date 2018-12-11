@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.cbor.databind;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
+
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.PackageVersion;
 
@@ -12,13 +14,11 @@ import com.fasterxml.jackson.dataformat.cbor.PackageVersion;
  */
 public class CBORMapper extends ObjectMapper
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
     /**
      * Base implementation for "Vanilla" {@link ObjectMapper}, used with
      * CBOR backend.
-     *
-     * @since 2.10
      */
     public static class Builder extends MapperBuilder<CBORMapper, Builder>
     {
@@ -92,6 +92,22 @@ public class CBORMapper extends ObjectMapper
 
     /*
     /**********************************************************************
+    /* Life-cycle, shared "vanilla" (default configuration) instance
+    /**********************************************************************
+     */
+
+    /**
+     * Accessor method for getting globally shared "default" {@link CBORMapper}
+     * instance: one that has default configuration, no modules registered, no
+     * config overrides. Usable mostly when dealing "untyped" or Tree-style
+     * content reading and writing.
+     */
+    public static CBORMapper shared() {
+        return SharedWrapper.wrapped();
+    }
+
+    /*
+    /**********************************************************************
     /* Basic accessor overrides
     /**********************************************************************
      */
@@ -104,5 +120,21 @@ public class CBORMapper extends ObjectMapper
     @Override
     public CBORFactory tokenStreamFactory() {
         return (CBORFactory) _streamFactory;
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class(es)
+    /**********************************************************
+     */
+
+    /**
+     * Helper class to contain dynamically constructed "shared" instance of
+     * mapper, should one be needed via {@link #shared}.
+     */
+    private final static class SharedWrapper {
+        private final static CBORMapper MAPPER = CBORMapper.builder().build();
+
+        public static CBORMapper wrapped() { return MAPPER; }
     }
 }

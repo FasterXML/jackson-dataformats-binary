@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-public class BigNumPair {
+class BigNumPair {
     public static final String protobuf_str =
             "message BigNumPair {\n"
                     + " required int64 long1 = 1;\n"

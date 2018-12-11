@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.smile.databind;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
+
 import com.fasterxml.jackson.dataformat.smile.PackageVersion;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
@@ -90,6 +92,22 @@ public class SmileMapper extends ObjectMapper
 
     /*
     /**********************************************************************
+    /* Life-cycle, shared "vanilla" (default configuration) instance
+    /**********************************************************************
+     */
+
+    /**
+     * Accessor method for getting globally shared "default" {@link SmileMapper}
+     * instance: one that has default configuration, no modules registered, no
+     * config overrides. Usable mostly when dealing "untyped" or Tree-style
+     * content reading and writing.
+     */
+    public static SmileMapper shared() {
+        return SharedWrapper.wrapped();
+    }
+
+    /*
+    /**********************************************************************
     /* Basic accessor overrides
     /**********************************************************************
      */
@@ -102,5 +120,21 @@ public class SmileMapper extends ObjectMapper
     @Override
     public SmileFactory tokenStreamFactory() {
         return (SmileFactory) _streamFactory;
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class(es)
+    /**********************************************************
+     */
+
+    /**
+     * Helper class to contain dynamically constructed "shared" instance of
+     * mapper, should one be needed via {@link #shared}.
+     */
+    private final static class SharedWrapper {
+        private final static SmileMapper MAPPER = SmileMapper.builder().build();
+
+        public static SmileMapper wrapped() { return MAPPER; }
     }
 }

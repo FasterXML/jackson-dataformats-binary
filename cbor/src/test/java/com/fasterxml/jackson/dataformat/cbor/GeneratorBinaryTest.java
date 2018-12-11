@@ -10,13 +10,14 @@ import org.junit.rules.TemporaryFolder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public class GeneratorBinaryTest //extends CBORTestBase
 {
 	final static int SMALL_LENGTH = 100;
 	final static int LARGE_LENGTH = CBORGenerator.BYTE_BUFFER_FOR_OUTPUT + 500;
 
-	private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
+	private final ObjectMapper MAPPER = CBORMapper.shared();
 	
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();

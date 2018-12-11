@@ -4,15 +4,13 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.Versioned;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
-/**
- * Tests to verify [JACKSON-278]
- */
 public class VersionsTest extends BaseTestForSmile
 {
     public void testMapperVersions() throws IOException
     {
-        final ObjectMapper mapper = smileMapper(false);
+        final ObjectMapper mapper = SmileMapper.shared();
         assertVersion(mapper.tokenStreamFactory());
         assertVersion(mapper.createGenerator(new ByteArrayOutputStream()));
         assertVersion(mapper.createParser(new byte[0]));

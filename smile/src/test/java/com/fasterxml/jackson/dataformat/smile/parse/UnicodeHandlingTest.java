@@ -79,7 +79,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         p.close();
     }
 
-    private final ObjectMapper MAPPER = new ObjectMapper(_smileFactory(false, true, false));
+    private final ObjectMapper MAPPER = new ObjectMapper(smileFactory(false, true, false));
 
     @SuppressWarnings("resource")
     private JsonParser _parser(byte[] data, boolean throttling) throws IOException

@@ -5,13 +5,14 @@ import java.io.ByteArrayOutputStream;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 /**
  * Basic testing for scalar-array write methods added in 2.8.
  */
 public class ArrayGenerationTest extends BaseTestForSmile
 {
-    private final ObjectMapper MAPPER = smileMapper();
+    private final ObjectMapper MAPPER = SmileMapper.shared();
 
     public void testIntArray() throws Exception
     {

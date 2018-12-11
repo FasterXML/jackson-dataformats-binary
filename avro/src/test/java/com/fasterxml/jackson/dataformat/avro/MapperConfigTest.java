@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.*;
 
 public class MapperConfigTest extends AvroTestBase
 {
-    private final AvroMapper MAPPER = getMapper();
+    // Use shared mapper here to exercise it by some tests
+    private final AvroMapper MAPPER = AvroMapper.shared();
 
     private final FormatSchema BOGUS_SCHEMA = new FormatSchema() {
         @Override
