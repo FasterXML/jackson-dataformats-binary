@@ -27,6 +27,10 @@ public class TypeResolver
      */
     private Map<String,MessageElement> _declaredMessageTypes;
 
+    /**
+     * Enum types visible at this level and deeper (nested enums with
+     * scoped names), not including enums declared at outer levels.
+     */
     private Map<String,ProtobufEnum> _enumTypes;
 
     /**
@@ -69,25 +73,25 @@ public class TypeResolver
     protected static TypeResolver construct(TypeResolver parent, String localName,
             Collection<TypeElement> nativeTypes)
     {
-        Map<String,MessageElement> nativeMessages = null;
-        Map<String,ProtobufEnum> enumTypes = new LinkedHashMap<>();
+        Map<String,MessageElement> declaredMsgs = null;
+        Map<String,ProtobufEnum> declaredEnums = new LinkedHashMap<>();
         
         for (TypeElement nt : nativeTypes) {
             if (nt instanceof MessageElement) {
-                if (nativeMessages == null) {
-                    nativeMessages = new LinkedHashMap<String,MessageElement>();
+                if (declaredMsgs == null) {
+                    declaredMsgs = new LinkedHashMap<String,MessageElement>();
                 }
-                nativeMessages.put(nt.name(), (MessageElement) nt);
+                declaredMsgs.put(nt.name(), (MessageElement) nt);
             } else if (nt instanceof EnumElement) {
                 final ProtobufEnum enumType = constructEnum((EnumElement) nt);
-                enumTypes.put(nt.name(), enumType);
+                declaredEnums.put(nt.name(), enumType);
                 // ... and don't forget parent scopes!
                 if (parent != null) {
                     parent.addEnumType(_scopedName(localName, nt.name()), enumType);
                 }
             } // no other known types?
         }
-        return new TypeResolver(parent, localName, nativeMessages, enumTypes);
+        return new TypeResolver(parent, localName, declaredMsgs, declaredEnums);
     }
 
     protected void addEnumType(String name, ProtobufEnum enumType) {

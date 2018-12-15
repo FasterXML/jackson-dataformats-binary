@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 import java.util.List;
 
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
-import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 public class ReadCyclicSchema140Test extends ProtobufTestBase
 {
