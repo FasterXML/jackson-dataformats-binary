@@ -8,7 +8,7 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.8 (not yet released)
+2.9.8 (15-Dec-2018)
 
 #140: (protobuf) Stack overflow when generating Protobuf schema  on class with
    cyclic type definition
