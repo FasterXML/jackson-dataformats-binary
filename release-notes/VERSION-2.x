@@ -13,7 +13,7 @@ Project: jackson-datatypes-binaryModules:
 #139: Incorrect decimal fraction representation
  (reported by wlukowicz@github)
 
-2.9.8 (not yet released)
+2.9.8 (15-Dec-2018)
 
 #140: (protobuf) Stack overflow when generating Protobuf schema  on class with
    cyclic type definition
