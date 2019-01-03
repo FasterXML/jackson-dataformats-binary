@@ -326,7 +326,9 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, start, len);
             }
         }
-        _output.flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
 
     @Override

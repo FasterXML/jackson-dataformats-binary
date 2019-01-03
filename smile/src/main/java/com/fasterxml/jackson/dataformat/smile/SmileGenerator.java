@@ -1807,7 +1807,7 @@ public class SmileGenerator
 
         if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
             _out.close();
-        } else {
+        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
             // If we can't close it, we should at least flush
             _out.flush();
         }
