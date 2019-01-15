@@ -4,8 +4,8 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.*;
-import com.fasterxml.jackson.dataformat.cbor.util.PrefixInputDecorator;
-import com.fasterxml.jackson.dataformat.cbor.util.PrefixOutputDecorator;
+import com.fasterxml.jackson.dataformat.cbor.testutil.PrefixInputDecorator;
+import com.fasterxml.jackson.dataformat.cbor.testutil.PrefixOutputDecorator;
 
 public class StreamingDecoratorsTest extends CBORTestBase
 {

@@ -12,6 +12,8 @@ Project: jackson-datatypes-binaryModules:
 
 #139: Incorrect decimal fraction representation
  (reported by wlukowicz@github)
+#155: Inconsistent support for FLUSH_PASSED_TO_STREAM
+ (reported, fix suggested by Carter K)
 
 2.9.8 (15-Dec-2018)
 

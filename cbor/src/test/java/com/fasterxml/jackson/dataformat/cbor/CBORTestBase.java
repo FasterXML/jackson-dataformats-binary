@@ -46,8 +46,7 @@ public abstract class CBORTestBase
     }
     
     protected CBORFactory cborFactory() {
-        CBORFactory f = new CBORFactory();
-        return f;
+        return new CBORFactory();
     }
 
     protected byte[] cborDoc(String json) throws IOException {

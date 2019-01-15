@@ -305,10 +305,11 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void flush() throws IOException {
-        _output.flush();
+        if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void close() throws IOException
     {

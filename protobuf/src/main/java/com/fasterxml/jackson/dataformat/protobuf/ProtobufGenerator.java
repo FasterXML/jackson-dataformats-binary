@@ -324,10 +324,11 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, start, len);
             }
         }
-        _output.flush();
+        if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void close() throws IOException
     {
@@ -351,7 +352,8 @@ public class ProtobufGenerator extends GeneratorBase
         if (_output != null) {
             if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
                 _output.close();
-            } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            } else if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
                 // If we can't close it, we should at least flush
                 _output.flush();
             }

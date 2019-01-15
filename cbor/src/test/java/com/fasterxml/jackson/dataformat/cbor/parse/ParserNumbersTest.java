@@ -15,7 +15,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
+import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 @SuppressWarnings("resource")
 public class ParserNumbersTest extends CBORTestBase

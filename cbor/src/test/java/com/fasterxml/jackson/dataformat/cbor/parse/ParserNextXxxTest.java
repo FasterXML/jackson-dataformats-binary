@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
+import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 // note: copied from test of same name from jackson-dataformat-smile
 public class ParserNextXxxTest extends CBORTestBase

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
+import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 /**
  * Unit tests for simple value types.
