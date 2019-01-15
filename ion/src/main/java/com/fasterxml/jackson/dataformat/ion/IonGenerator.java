@@ -101,8 +101,10 @@ public class IonGenerator
             if (_ioContext.isResourceManaged()) {
                 _destination.close();
             } else {
-                if (_destination instanceof Flushable) {
-                    ((Flushable) _destination).flush();
+                if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                    if (_destination instanceof Flushable) {
+                        ((Flushable) _destination).flush();
+                    }
                 }
             }
         }
@@ -111,9 +113,11 @@ public class IonGenerator
     @Override
     public void flush() throws IOException
     {
-        Object dst = _ioContext.getSourceReference();
-        if (dst instanceof Flushable) {
-            ((Flushable) dst).flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            Object dst = _ioContext.getSourceReference();
+            if (dst instanceof Flushable) {
+                ((Flushable) dst).flush();
+            }
         }
     }
 

@@ -1807,8 +1807,9 @@ public class SmileGenerator
 
         if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
             _out.close();
-        } else {
+        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
             // If we can't close it, we should at least flush
+            // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
             _out.flush();
         }
         // Internal buffer(s) generator has can now be released as well

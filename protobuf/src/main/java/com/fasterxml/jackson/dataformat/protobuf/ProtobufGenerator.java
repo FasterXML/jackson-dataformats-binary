@@ -326,7 +326,9 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, start, len);
             }
         }
-        _output.flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
 
     @Override
@@ -352,7 +354,8 @@ public class ProtobufGenerator extends GeneratorBase
         if (_output != null) {
             if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
                 _output.close();
-            } else  if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
                 // If we can't close it, we should at least flush
                 _output.flush();
             }
@@ -366,7 +369,7 @@ public class ProtobufGenerator extends GeneratorBase
     /* Public API: structural output
     /**********************************************************
      */
-    
+
     @Override
     public final void writeStartArray() throws IOException
     {

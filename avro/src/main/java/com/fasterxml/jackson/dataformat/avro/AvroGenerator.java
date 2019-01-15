@@ -292,9 +292,11 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void flush() throws IOException {
-        _output.flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
-    
+
     @Override
     public void close() throws IOException
     {
