@@ -8,4 +8,6 @@ module com.fasterxml.jackson.dataformat.cbor {
 
     provides com.fasterxml.jackson.core.JsonFactory with
         com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+    provides com.fasterxml.jackson.databind.ObjectMapper with
+        com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 }

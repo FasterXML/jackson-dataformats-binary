@@ -9,4 +9,6 @@ module com.fasterxml.jackson.dataformat.smile {
 
     provides com.fasterxml.jackson.core.JsonFactory with
         com.fasterxml.jackson.dataformat.smile.SmileFactory;
+    provides com.fasterxml.jackson.databind.ObjectMapper with
+        com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 }
