@@ -15,7 +15,7 @@ module com.fasterxml.jackson.dataformat.avro {
     exports com.fasterxml.jackson.dataformat.avro.schema;
     exports com.fasterxml.jackson.dataformat.avro.ser;
 
-    provides com.fasterxml.jackson.core.JsonFactory with
+    provides com.fasterxml.jackson.core.TokenStreamFactory with
         com.fasterxml.jackson.dataformat.avro.AvroFactory;
     provides com.fasterxml.jackson.databind.ObjectMapper with
         com.fasterxml.jackson.dataformat.avro.AvroMapper;

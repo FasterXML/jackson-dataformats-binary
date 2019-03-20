@@ -9,7 +9,7 @@ module com.fasterxml.jackson.dataformat.protobuf {
     exports com.fasterxml.jackson.dataformat.protobuf.schema;
     exports com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
-    provides com.fasterxml.jackson.core.JsonFactory with
+    provides com.fasterxml.jackson.core.TokenStreamFactory with
         com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
     provides com.fasterxml.jackson.databind.ObjectMapper with
         com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;

@@ -11,7 +11,7 @@ module com.fasterxml.jackson.dataformat.ion {
     exports com.fasterxml.jackson.dataformat.ion.polymorphism;
     exports com.fasterxml.jackson.dataformat.ion.util;
 
-    provides com.fasterxml.jackson.core.JsonFactory with
+    provides com.fasterxml.jackson.core.TokenStreamFactory with
         com.fasterxml.jackson.dataformat.ion.IonFactory;
     provides com.fasterxml.jackson.databind.ObjectMapper with
         com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
