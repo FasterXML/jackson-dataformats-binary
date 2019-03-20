@@ -10,10 +10,11 @@ Project: jackson-datatypes-binaryModules:
 
 2.10.0 (not yet released)
 
-#139: Incorrect decimal fraction representation
+#139: (cbor) Incorrect decimal fraction representation
  (reported by wlukowicz@github)
-#155: Inconsistent support for FLUSH_PASSED_TO_STREAM
+#155: (cbor, smile) Inconsistent support for FLUSH_PASSED_TO_STREAM
  (reported, fix suggested by Carter K)
+#157: (all) Add simple module-info for JDK9+, using Moditect
 
 2.9.8 (15-Dec-2018)
 
