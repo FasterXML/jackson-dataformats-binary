@@ -11,13 +11,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Data;
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Stringable;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+
+import avro.shaded.com.google.common.base.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
@@ -37,7 +38,6 @@ import static org.junit.Assume.assumeTrue;
  */
 public class StringableTest extends InteropTestBase {
     @Stringable
-    @Data
     public static class CustomStringableKey {
         private final String test;
 
@@ -46,22 +46,43 @@ public class StringableTest extends InteropTestBase {
         }
 
         @Override
+        public int hashCode() {
+            return Objects.hashCode(test);
+        }
+        
+        @Override
         public String toString() {
             return test;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof CustomStringableKey)) return false;
+            CustomStringableKey other = (CustomStringableKey) o;
+            return Objects.equal(test, other.test);
+        }
     }
 
-    @Data
     static class BigNumberWrapper {
         @AvroSchema("\"double\"")
-        private BigDecimal bigDecimal;
+        public BigDecimal bigDecimal;
         @AvroSchema("\"long\"")
-        private BigInteger bigInteger;
+        public BigInteger bigInteger;
 
         protected BigNumberWrapper() { }
         public BigNumberWrapper(BigDecimal d1, BigInteger i2) {
             bigDecimal = d1;
             bigInteger = i2;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof CustomStringableKey)) return false;
+            BigNumberWrapper other = (BigNumberWrapper) o;
+            return Objects.equal(bigDecimal, other.bigDecimal)
+                    && Objects.equal(bigInteger, other.bigInteger);
         }
     }
 
