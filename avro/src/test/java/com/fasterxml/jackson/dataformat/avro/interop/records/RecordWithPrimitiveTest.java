@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
 
-import lombok.Data;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -15,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RecordWithPrimitiveTest extends InteropTestBase
 {
-    @Data
     @JsonPropertyOrder({ "byteField", "shortField", "characterField", "integerField", "longField",
         "floatField", "doubleField" })
     public static class TestRecord {
@@ -26,6 +24,32 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         public long   longField;
         public float  floatField;
         public double doubleField;
+
+        @Override
+        public int hashCode() {
+            return byteField + shortField + characterField + integerField
+                    + (int) longField;
+        }
+        
+        @Override
+        public String toString() {
+            return "TestRecord";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof TestRecord)) return false;
+            TestRecord other = (TestRecord) o;
+            return (byteField == other.byteField)
+                    && (shortField == other.shortField)
+                    && (characterField == other.characterField)
+                    && (integerField == other.integerField)
+                    && (longField == other.longField)
+                    && (floatField == other.floatField)
+                    && (doubleField == other.doubleField)
+                ;
+        }
     }
 
     @Test
