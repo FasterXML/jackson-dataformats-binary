@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 
@@ -104,7 +105,8 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
         return null != typeResolverAnn && IonAnnotationTypeResolverBuilder.class.equals(typeResolverAnn.value());
     }
 
-    protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType) {
+    protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType,
+            PolymorphicTypeValidator ptv) {
         return null;
     }
 }

@@ -3,11 +3,13 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.DeserializationConfig;
+
+import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
@@ -35,31 +37,29 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
     }
 
     @Override
-    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType,
+    public TypeSerializer buildTypeSerializer(SerializerProvider ctxt, JavaType baseType,
             Collection<NamedType> subtypes) {
         // All type information is encoded in the schema, never in the data.
         return null;
     }
 
     @Override
-    public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType,
+    public TypeDeserializer buildTypeDeserializer(DeserializationContext ctxt, JavaType baseType,
             Collection<NamedType> subtypes)
     {
         Class<?> rawDefault = getDefaultImpl();
         JavaType defaultImpl = (rawDefault == null) ? null :
-            config.constructType(rawDefault);
+            ctxt.constructType(rawDefault);
+        TypeIdResolver idRes = idResolver(ctxt, baseType, subTypeValidator(ctxt),
+                subtypes, true, false);
         return new AvroTypeDeserializer(baseType,
-                idResolver(config, baseType, subtypes, true, true),
-                getTypeProperty(),
-                isTypeIdVisible(),
-                defaultImpl
-        );
+                idRes, getTypeProperty(), isTypeIdVisible(), defaultImpl);
     }
 
     @Override
-    protected TypeIdResolver idResolver(MapperConfig<?> config, JavaType baseType,
-                Collection<NamedType> subtypes, boolean forSer,
-                boolean forDeser) {
-        return new AvroTypeIdResolver(baseType, config.getTypeFactory(), subtypes);
+    protected TypeIdResolver idResolver(DatabindContext ctxt,
+            JavaType baseType, PolymorphicTypeValidator subtypeValidator,
+            Collection<NamedType> subtypes, boolean forSer, boolean forDeser) {
+        return new AvroTypeIdResolver(baseType, ctxt.getTypeFactory(), subtypes);
     }
 }

@@ -18,9 +18,9 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -74,7 +74,7 @@ public class IonAnnotationTypeResolverBuilder
      * actual object data.
      */
     @Override
-    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType,
+    public TypeSerializer buildTypeSerializer(SerializerProvider ctxt, JavaType baseType,
             Collection<NamedType> subtypes) {
         return new IonAnnotationTypeSerializer(typeIdResolver);
     }
@@ -84,9 +84,10 @@ public class IonAnnotationTypeResolverBuilder
      * *all* steps of value deserialization: read type information, find the actual object deserializer, and run it.
      */
     @Override
-    public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
+    public TypeDeserializer buildTypeDeserializer(DeserializationContext ctxt, JavaType baseType,
+            Collection<NamedType> subtypes) {
         JavaType defImplType = (defaultImpl == null) ? null
-                : config.constructType(defaultImpl);
+                : ctxt.constructType(defaultImpl);
         return new IonAnnotationTypeDeserializer(baseType,
                 typeIdResolver, null, typeIdVisible, defImplType);
     }

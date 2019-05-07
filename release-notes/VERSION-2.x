@@ -16,6 +16,11 @@ Project: jackson-datatypes-binaryModules:
  (reported, fix suggested by Carter K)
 #157: (all) Add simple module-info for JDK9+, using Moditect
 
+2.9.9 (not yet released)
+
+#159: (cbor) Some short UTF Strings encoded using non-canonical form
+ (reported by Alexander C)
+
 2.9.8 (15-Dec-2018)
 
 #140: (protobuf) Stack overflow when generating Protobuf schema  on class with

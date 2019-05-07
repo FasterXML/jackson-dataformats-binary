@@ -1191,6 +1191,14 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
+    private final static int MAX_SHORT_STRING_CHARS = 23;
+    // in case it's > 23 bytes
+    private final static int MAX_SHORT_STRING_BYTES = 23 * 3 + 2;
+
+    private final static int MAX_MEDIUM_STRING_CHARS = 255;
+    // in case it's > 255 bytes
+    private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3;
+
     protected final void _writeString(String name) throws IOException {
         int len = name.length();
         if (len == 0) {
@@ -1204,7 +1212,7 @@ public class CBORGenerator extends GeneratorBase
             int actual = _encode(_outputTail + 1, name, len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
-            if (actual < MAX_SHORT_STRING_CHARS) { // fits in prefix byte
+            if (actual <= MAX_SHORT_STRING_CHARS) { // fits in prefix byte
                 buf[ix++] = (byte) (PREFIX_TYPE_TEXT + actual);
                 _outputTail = ix + actual;
                 return;
@@ -1226,14 +1234,6 @@ public class CBORGenerator extends GeneratorBase
         _writeString(cbuf, 0, len);
     }
 
-    private final static int MAX_SHORT_STRING_CHARS = 23;
-    // in case it's > 23 bytes
-    private final static int MAX_SHORT_STRING_BYTES = 23 * 3 + 2;
-
-    private final static int MAX_MEDIUM_STRING_CHARS = 255;
-    // in case it's > 255 bytes
-    private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3;
-
     protected final void _ensureSpace(int needed) throws IOException {
         if ((_outputTail + needed + 3) > _outputEnd) {
             _flushBuffer();
@@ -1243,12 +1243,12 @@ public class CBORGenerator extends GeneratorBase
     protected final void _writeString(char[] text, int offset, int len)
             throws IOException
     {
-        if (len <= MAX_SHORT_STRING_CHARS) { // possibly short strings (not necessarily)
+        if (len <= MAX_SHORT_STRING_CHARS) { // possibly short string (not necessarily)
             _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
             int actual = _encode(_outputTail + 1, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
-            if (actual < MAX_SHORT_STRING_CHARS) { // fits in prefix byte
+            if (actual <= MAX_SHORT_STRING_CHARS) { // fits in prefix byte
                 buf[ix++] = (byte) (PREFIX_TYPE_TEXT + actual);
                 _outputTail = ix + actual;
                 return;
@@ -1265,7 +1265,7 @@ public class CBORGenerator extends GeneratorBase
             int actual = _encode(_outputTail + 2, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
-            if (actual < MAX_MEDIUM_STRING_CHARS) { // fits as expected
+            if (actual <= MAX_MEDIUM_STRING_CHARS) { // fits as expected
                 buf[ix++] = BYTE_STRING_1BYTE_LEN;
                 buf[ix++] = (byte) actual;
                 _outputTail = ix + actual;

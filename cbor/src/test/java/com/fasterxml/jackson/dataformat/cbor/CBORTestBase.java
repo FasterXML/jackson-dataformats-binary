@@ -275,11 +275,11 @@ public abstract class CBORTestBase
         return sw.toString();
     }
 
-    protected static String generateAsciiString(int length) {
-        return generateAsciiString(length, new Random(length));
+    protected static String generateLongAsciiString(int length) {
+        return generateLongAsciiString(length, new Random(length));
     }
     
-    protected static String generateAsciiString(int length, Random rnd)
+    protected static String generateLongAsciiString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
         do {
