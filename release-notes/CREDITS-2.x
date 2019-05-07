@@ -78,6 +78,10 @@ Guido Medina (guidomedina@github)
 * Reported #153: (smile) Unable to set a compression input/output decorator to a `SmileFactory`
  (2.9.8)
 
+Alexander Cyon (Sajjon@github)
+* Reported #159: (cbor) Some short UTF Strings encoded using non-canonical form
+ (2.9.9)
+
 Carter Kozak (cakofony@github)
 * Reported, suggested fix for #155: Inconsistent support for FLUSH_PASSED_TO_STREAM
  (2.10.0)

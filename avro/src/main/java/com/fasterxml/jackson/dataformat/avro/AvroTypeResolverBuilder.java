@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
@@ -39,18 +40,16 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
         Class<?> rawDefault = getDefaultImpl();
         JavaType defaultImpl = (rawDefault == null) ? null : 
             config.constructType(rawDefault);
+        TypeIdResolver idRes = idResolver(config, baseType, subTypeValidator(config),
+                subtypes, true, false);
         return new AvroTypeDeserializer(baseType,
-                idResolver(config, baseType, subtypes, true, true),
-                getTypeProperty(),
-                isTypeIdVisible(),
-                defaultImpl
-        );
+                idRes, getTypeProperty(), isTypeIdVisible(), defaultImpl);
     }
 
     @Override
-    protected TypeIdResolver idResolver(MapperConfig<?> config, JavaType baseType,
-                Collection<NamedType> subtypes, boolean forSer,
-                boolean forDeser) {
+    protected TypeIdResolver idResolver(MapperConfig<?> config,
+            JavaType baseType, PolymorphicTypeValidator subtypeValidator,
+            Collection<NamedType> subtypes, boolean forSer, boolean forDeser) {
         return new AvroTypeIdResolver(baseType, config.getTypeFactory(), subtypes);
     }
 }

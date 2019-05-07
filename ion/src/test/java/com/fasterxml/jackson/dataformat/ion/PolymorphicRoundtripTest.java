@@ -26,13 +26,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -298,9 +301,11 @@ public class PolymorphicRoundtripTest {
         @Override
         protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType) {
             if (null != preferredTypeId) {
-                return new MultipleClassNameIdResolver(baseType, config.getTypeFactory());
+                return new MultipleClassNameIdResolver(baseType, config.getTypeFactory(),
+                        config.getPolymorphicTypeValidator());
             } else {
-                return new ClassNameIdResolver(baseType, config.getTypeFactory());
+                return new ClassNameIdResolver(baseType, config.getTypeFactory(),
+                        config.getPolymorphicTypeValidator());
             }
         }
     }
@@ -308,8 +313,9 @@ public class PolymorphicRoundtripTest {
     // Extends Jackson's ClassNameIdResolver to add superclass names, recursively
     class MultipleClassNameIdResolver extends ClassNameIdResolver implements MultipleTypeIdResolver {
 
-        MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory) {
-            super(baseType, typeFactory);
+        MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory,
+                PolymorphicTypeValidator ptv) {
+            super(baseType, typeFactory, ptv);
         }
 
         @Override
