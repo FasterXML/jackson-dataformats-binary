@@ -286,29 +286,13 @@ public class GeneratorSimpleTest extends CBORTestBase
         byte[] b = MAPPER.writeValueAsBytes(map);
         _verifyBytes(b, EXP);
     }
-    
-    public void testShortText() throws Exception
-    {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CBORGenerator gen = cborGenerator(out);
-        gen.writeString("");
-        gen.close();
-        _verifyBytes(out.toByteArray(), CBORConstants.BYTE_EMPTY_STRING);
 
-        out = new ByteArrayOutputStream();
-        gen = cborGenerator(out);
-        gen.writeString("abc");
-        gen.close();
-        _verifyBytes(out.toByteArray(), (byte) (CBORConstants.PREFIX_TYPE_TEXT + 3),
-                (byte) 'a', (byte) 'b', (byte) 'c');
-    }
-    
     public void testLongerText() throws Exception
     {
         // First, something with 8-bit length
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        final String SHORT_ASCII = generateAsciiString(240);
+        final String SHORT_ASCII = generateLongAsciiString(240);
         gen.writeString(SHORT_ASCII);
         gen.close();
         byte[] b = SHORT_ASCII.getBytes("UTF-8");
