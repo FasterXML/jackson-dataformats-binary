@@ -8,12 +8,12 @@ import org.apache.avro.io.BinaryDecoder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
-import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 
 /**
- * Implementation class that exposes additional internal API
- * to be used as callbacks by {@link AvroReadContext} implementations.
+ * Parser implementation that uses decoder from Apache Avro lib,
+ * instead of Jackson native Avro decoder.
  */
 public class ApacheAvroParserImpl extends AvroParserImpl
 {
@@ -64,25 +64,25 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     /**********************************************************
      */
     
-    public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec, InputStream in)
+    public ApacheAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures, AvroSchema schema,
+            InputStream in)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = in;
-        _inputBuffer = ctxt.allocReadIOBuffer();
+        _inputBuffer = ioCtxt.allocReadIOBuffer();
         _inputPtr = 0;
         _inputEnd = 0;
         _bufferRecyclable = true;
-
         _decoder = ApacheCodecRecycler.decoder(in,
                 Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
     }
 
-    public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec,
+    public ApacheAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures, AvroSchema schema,
             byte[] data, int offset, int len)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = null;
         _decoder = ApacheCodecRecycler.decoder(data, offset, len);
     }
@@ -147,7 +147,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             return _textValue;
         }
         if (_currToken == JsonToken.FIELD_NAME) {
-            return _avroContext.getCurrentName();
+            return _avroContext.currentName();
         }
         if (_currToken != null) {
             if (_currToken.isScalarValue()) {
@@ -158,7 +158,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         return null;
     }
 
-    @Override // since 2.8
+    @Override
     public int getText(Writer writer) throws IOException
     {
         JsonToken t = _currToken;
@@ -167,7 +167,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             return _textValue.length();
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _parsingContext.currentName();
             writer.write(n);
             return n.length();
         }

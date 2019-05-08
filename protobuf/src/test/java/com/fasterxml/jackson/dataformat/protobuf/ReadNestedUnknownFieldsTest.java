@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
@@ -122,7 +122,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    private final ProtobufMapper MAPPER = new ProtobufMapper();
+    private final ProtobufMapper MAPPER = newObjectMapper();
 
     // [dataformats-binary#108]
     public void testMultipleUnknown() throws Exception
@@ -140,7 +140,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
         LessNestedField lesser = MAPPER.readerFor(LessNestedField.class)
                 .with(MAPPER.generateSchemaFor(LessNestedField.class))
                 // important: skip through unknown
-                .with(JsonParser.Feature.IGNORE_UNDEFINED)
+                .with(StreamReadFeature.IGNORE_UNDEFINED)
                 .readValue(in);
 
         assertEquals(moreNestedField.getF1().getNested2(), lesser.getF1().getNested2());
@@ -149,8 +149,9 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     // [dataformats-binary#126]
     public void testCheckEndAfterSkip() throws Exception
     {
-        ProtobufMapper mapper = new ProtobufMapper();
-        mapper.enable(JsonParser.Feature.IGNORE_UNDEFINED);
+        ProtobufMapper mapper = new ProtobufMapper(ProtobufFactory.builder()
+                .enable(StreamReadFeature.IGNORE_UNDEFINED)
+                .build());
         ProtobufSchema schema = MAPPER.generateSchemaFor(Outer.class);
         ProtobufSchema schemaV2 = MAPPER.generateSchemaFor(OuterV2.class);
 

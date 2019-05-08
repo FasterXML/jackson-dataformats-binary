@@ -23,16 +23,13 @@ public abstract class AvroParser extends ParserBase
      * Enumeration that defines all togglable features for Avro parsers.
      */
     public enum Feature
-        implements FormatFeature // since 2.7
+        implements FormatFeature
     {
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
          * data then absolutely necessary.
-         * This affects buffering by underlying `SnakeYAML` codec.
          *<p>
          * Enabled by default to preserve the existing behavior.
-         *
-         * @since 2.7
          */
         AVRO_BUFFERING(true)
         ;
@@ -74,11 +71,6 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
 
-    /**
-     * Codec used for data binding when (if) requested.
-     */
-    protected ObjectCodec _objectCodec;
-
     protected AvroSchema _rootSchema;
 
     protected int _formatFeatures;
@@ -97,31 +89,16 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
 
-    protected AvroParser(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec)
+    protected AvroParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures)
     {
-        super(ctxt, parserFeatures);    
-        _objectCodec = codec;
+        super(readCtxt, ioCtxt, parserFeatures);    
         _formatFeatures = avroFeatures;
         _avroContext = MissingReader.instance;
     }
 
     @Override
-    public ObjectCodec getCodec() {
-        return _objectCodec;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        _objectCodec = c;
-    }
-
-    @Override
     public abstract Object getInputSource();
-
-    // ensure impl defines
-    @Override
-    public abstract JsonParser overrideFormatFeatures(int values, int mask);
 
     /*                                                                                       
     /**********************************************************                              
@@ -139,11 +116,6 @@ public abstract class AvroParser extends ParserBase
     /* ParserBase method impls
     /**********************************************************                              
      */
-
-    @Override
-    protected void _finishString() throws IOException {
-        _reportUnsupportedOperation();
-    }
 
     @Override
     protected abstract void _closeInput() throws IOException;
@@ -277,10 +249,10 @@ public abstract class AvroParser extends ParserBase
 
     @Override
     public abstract int getText(Writer writer) throws IOException;
-    
+
     @Override
-    public String getCurrentName() throws IOException {
-        return _avroContext.getCurrentName();
+    public String currentName() throws IOException {
+        return _avroContext.currentName();
     }
 
     @Override

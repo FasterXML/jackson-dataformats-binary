@@ -5,8 +5,8 @@ import java.io.ByteArrayOutputStream;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.core.*;
-
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 
 // for [dataformats-binary#43]
 public class SharedRawGeneratorBufferTest extends CBORTestBase
@@ -29,18 +29,18 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
     {
         String data = "{\"x\":\"" + generate(5000) + "\"}";
         RawBean bean = new RawBean(data);
-        ObjectMapper mapper = new ObjectMapper();
-        JsonFactory factory = new JsonFactory(mapper);
-        CBORFactory cborFactory = new CBORFactory(mapper);
+
+        ObjectMapper cborMapper = cborMapper();
+        ObjectMapper jsonMapper = new ObjectMapper();
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         
-        CBORGenerator cborGen = cborFactory.createGenerator(bytes);
+        CBORGenerator cborGen = (CBORGenerator) cborMapper.createGenerator(bytes);
         cborGen.writeObject(1);
         cborGen.close();
         bytes.reset();
 
-        JsonGenerator jsonGen = factory.createGenerator(bytes);
+        JsonGenerator jsonGen = jsonMapper.createGenerator(bytes);
         jsonGen.writeObject(bean);
         jsonGen.close();
 

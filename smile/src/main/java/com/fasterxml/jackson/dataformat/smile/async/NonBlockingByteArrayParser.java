@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectReadContext;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -52,10 +53,11 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    public NonBlockingByteArrayParser(IOContext ctxt, int parserFeatures, int smileFeatures,
+    public NonBlockingByteArrayParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);
+        super(readCtxt, ioCtxt, parserFeatures, smileFeatures, sym);
     }
 
     /*

@@ -22,8 +22,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import software.amazon.ion.IonDatagram;
@@ -39,8 +39,9 @@ public class IonTimestampRoundTripTest {
     @Test
     public void testDateRoundTrip() throws JsonGenerationException, JsonMappingException, IOException {
         Date date = new Date();
-        IonObjectMapper m = new IonObjectMapper();
-        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        IonObjectMapper m = IonObjectMapper.builder()
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         
         String val = m.writeValueAsString(date);
         IonLoader loader = ionSystem.newLoader();
@@ -57,9 +58,9 @@ public class IonTimestampRoundTripTest {
     @Test
     public void testMillisCompatibility() throws JsonGenerationException, JsonMappingException, IOException {
         Date date = new Date();
-        IonObjectMapper m = new IonObjectMapper();
-        
-        m.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        IonObjectMapper m = IonObjectMapper.builder()
+                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         
         String val = m.writeValueAsString(date);
         Date returned = m.readValue(val, Date.class);
@@ -74,11 +75,12 @@ public class IonTimestampRoundTripTest {
      * @throws IOException
      */
     @Test
-    public void testNonJoiCompatibility() throws JsonGenerationException, JsonMappingException, IOException {
+    public void testNonJoiCompatibility() throws IOException {
         Date date = new Date();
-        ObjectMapper nonJoiMillis = new ObjectMapper();
-        ObjectMapper nonJoiM = new ObjectMapper();
-        nonJoiM.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        JsonMapper nonJoiMillis = new JsonMapper();
+        JsonMapper nonJoiM = JsonMapper.builder()
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
         IonObjectMapper joiM = new IonObjectMapper();
         
         String dateInMillis = nonJoiMillis.writeValueAsString(date);

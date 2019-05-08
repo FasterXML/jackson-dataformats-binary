@@ -7,19 +7,19 @@ import com.fasterxml.jackson.core.*;
 public class GeneratorDupHandlingTest extends CBORTestBase
 {
     public void testSimpleDupsEagerlyBytes() throws Exception {
-        _testSimpleDups(false, new JsonFactory());
+        _testSimpleDups(false, new CBORFactory());
     }
 
     // Testing ability to enable checking after construction of
     // generator, not just via JsonFactory
     public void testSimpleDupsLazilyBytes() throws Exception {
-        final JsonFactory f = new JsonFactory();
-        assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));
+        final CBORFactory f = new CBORFactory();
+        assertFalse(f.isEnabled(StreamWriteFeature.STRICT_DUPLICATE_DETECTION));
         _testSimpleDups(true, f);
     }
 
     @SuppressWarnings("resource")
-    protected void _testSimpleDups(boolean lazySetting, JsonFactory f)
+    protected void _testSimpleDups(boolean lazySetting, TokenStreamFactory f)
         throws Exception
     {
         // First: fine, when not checking
@@ -33,9 +33,9 @@ public class GeneratorDupHandlingTest extends CBORTestBase
 
         if (lazySetting) {
             g1 = _generator(f);            
-            g1.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            g1.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
         } else {
-            f.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            f = f.rebuild().enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION).build();
             g1 = _generator(f);            
         }
         try {
@@ -48,7 +48,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         JsonGenerator g2;
         if (lazySetting) {
             g2 = _generator(f);            
-            g2.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+            g2.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
         } else {
             g2 = _generator(f);            
         }
@@ -60,9 +60,10 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         }
     }
 
-    protected JsonGenerator _generator(JsonFactory f) throws IOException
+    protected JsonGenerator _generator(TokenStreamFactory f) throws IOException
     {
-        return f.createGenerator(new ByteArrayOutputStream());
+        return f.createGenerator(ObjectWriteContext.empty(),
+                new ByteArrayOutputStream());
     }
 
     protected void _writeSimple0(JsonGenerator g, String name) throws IOException

@@ -12,12 +12,11 @@ public class GeneratorLongStringTest extends CBORTestBase
     
     public void testLongWithMultiBytes() throws Exception
     {
-        CBORFactory f = cborFactory();
         ArrayList<String> strings = new ArrayList<String>();
         Random rnd = new Random(123);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(DOC_LEN);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = cborGenerator(out);
         gen.writeStartArray();
         
         // Let's create 1M doc, first using Strings
@@ -35,11 +34,11 @@ public class GeneratorLongStringTest extends CBORTestBase
         gen.writeEndArray();
         gen.close();
         // Written ok; let's try parsing then
-        _verifyStrings(f, out.toByteArray(), strings);
+        _verifyStrings(out.toByteArray(), strings);
 
         // Then same with char[] 
         out = new ByteArrayOutputStream(DOC_LEN);
-        gen = f.createGenerator(out);
+        gen = cborGenerator(out);
         gen.writeStartArray();
         
         for (int i = 0, len = strings.size(); i < len; ++i) {
@@ -55,7 +54,7 @@ public class GeneratorLongStringTest extends CBORTestBase
         }
         gen.writeEndArray();
         gen.close();
-        _verifyStrings(f, out.toByteArray(), strings);
+        _verifyStrings(out.toByteArray(), strings);
     }
 
     /*
@@ -64,10 +63,10 @@ public class GeneratorLongStringTest extends CBORTestBase
     /**********************************************************
      */
 
-    private void _verifyStrings(JsonFactory f, byte[] input, List<String> strings)
+    private void _verifyStrings(byte[] input, List<String> strings)
         throws IOException
     {
-        JsonParser p = f.createParser(input);
+        JsonParser p = cborParser(input);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());

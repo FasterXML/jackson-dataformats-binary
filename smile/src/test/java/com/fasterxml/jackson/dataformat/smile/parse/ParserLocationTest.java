@@ -5,7 +5,6 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class ParserLocationTest
     extends BaseTestForSmile
@@ -15,7 +14,7 @@ public class ParserLocationTest
         byte[] data = _smileDoc("[ true, null, false, 511 ]", true); // true -> write header
         
         JsonParser p = _smileParser(data);
-        assertNull(p.getCurrentToken());
+        assertNull(p.currentToken());
         JsonLocation loc = p.getCurrentLocation();
         assertNotNull(loc);
         // first: -1 for "not known", for character-based stuff
@@ -67,7 +66,7 @@ public class ParserLocationTest
         final int SIZE = COUNT * 7;
         
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(COUNT + 10);
-        SmileGenerator gen = smileGenerator(bytes, true);
+        SmileGenerator gen = _smileGenerator(bytes, true);
         gen.disable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
         gen.writeStartArray();
         for (int i = 0; i < COUNT; ++i) {
@@ -78,7 +77,7 @@ public class ParserLocationTest
         byte[] b = bytes.toByteArray();
         assertEquals(4 + 2 + SIZE, b.length);
 
-        SmileParser p = _smileParser(new ByteArrayInputStream(b));
+        JsonParser p = _smileParser(new ByteArrayInputStream(b));
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         // 4 byte header, start array read, so 4 bytes down:
         assertEquals(5, p.getCurrentLocation().getByteOffset());

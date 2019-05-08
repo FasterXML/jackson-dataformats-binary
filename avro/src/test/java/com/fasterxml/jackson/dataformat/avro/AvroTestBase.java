@@ -289,8 +289,12 @@ public abstract class AvroTestBase extends TestCase
         return _sharedMapper;
     }
 
-    protected AvroMapper newMapper() {
+    protected static AvroMapper newMapper() {
         return new AvroMapper();
+    }
+
+    protected static AvroMapper newApacheMapper() {
+        return new AvroMapper(AvroFactory.builderWithApacheDecoder().build());
     }
     
     protected byte[] toAvro(Employee empl) throws IOException {
@@ -309,7 +313,7 @@ public abstract class AvroTestBase extends TestCase
 
     protected void assertToken(JsonToken expToken, JsonParser jp)
     {
-        assertToken(expToken, jp.getCurrentToken());
+        assertToken(expToken, jp.currentToken());
     }
 
     public static void verifyException(Throwable e, String... matches)

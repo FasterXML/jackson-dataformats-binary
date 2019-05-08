@@ -6,6 +6,8 @@ import java.util.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 /**
@@ -71,16 +73,17 @@ public class AsyncSharedStringsTest
     /**********************************************************
      */
 
+    private final ObjectMapper MAPPER = smileMapper();
+
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
-        
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileParser.Feature.REQUIRE_HEADER, false);
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, false);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, true);
+
+        ObjectReader r = _smileReader(false);
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter(false)
+                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .createGenerator(out);
         gen.writeStartArray();
         Random rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {
@@ -93,7 +96,7 @@ public class AsyncSharedStringsTest
         gen.close();
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(r, 37, smile, 0);
 
         // And verify 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -129,11 +132,10 @@ public class AsyncSharedStringsTest
 
     public void testSharedStringsInArrays() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter()
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(out);
         gen.writeStartArray();
         for (String value : SHARED_SYMBOLS) {
             gen.writeString(value);
@@ -143,7 +145,7 @@ public class AsyncSharedStringsTest
         
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, smile, 0);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (String value : SHARED_SYMBOLS) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -155,10 +157,10 @@ public class AsyncSharedStringsTest
 
     public void testSharedStringsInObject() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter()
+                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(out);
         gen.writeStartObject();
         for (int i = 0; i < SHARED_SYMBOLS.length; ++i) {
             gen.writeFieldName("a"+i);
@@ -169,7 +171,7 @@ public class AsyncSharedStringsTest
         
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, smile, 0);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         for (int i = 0; i < SHARED_SYMBOLS.length; ++i) {
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -183,11 +185,9 @@ public class AsyncSharedStringsTest
 
     public void testSharedStringsMixed() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-        
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = _smileWriter().with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .createGenerator(out);
         gen.writeStartObject();
 
         gen.writeFieldName("media");
@@ -226,7 +226,7 @@ public class AsyncSharedStringsTest
         
         byte[] smile = out.toByteArray();
 
-        AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, smile, 0);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -304,8 +304,9 @@ public class AsyncSharedStringsTest
 
     public void testDataBindingAndShared() throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
+        SmileFactory f = SmileFactory.builder()
+            .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .build();
         MediaItem item = new MediaItem();
         Content c = new Content();
         c.uri = "g";
@@ -340,9 +341,8 @@ public class AsyncSharedStringsTest
      */
     public void testIssue562() throws IOException
     {
-        JsonFactory factory = new SmileFactory();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        JsonGenerator gen = factory.createGenerator(bos);
+        JsonGenerator gen = MAPPER.createGenerator(bos);
         gen.writeStartObject();
         gen.writeFieldName("z_aaaabbbbccccddddee");
         gen.writeString("end");
@@ -351,17 +351,17 @@ public class AsyncSharedStringsTest
         gen.writeEndObject();
         gen.close();
 
-        JsonParser parser = factory.createParser(bos.toByteArray());
+        JsonParser parser = MAPPER.createParser(bos.toByteArray());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("z_aaaabbbbccccddddee", parser.getCurrentName());
+        assertEquals("z_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("end", parser.getText());
 
         // This one fails...
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("a_aaaabbbbccccddddee", parser.getCurrentName());
+        assertEquals("a_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("start", parser.getText());
 
@@ -374,10 +374,8 @@ public class AsyncSharedStringsTest
      */
     public void testIssue564() throws Exception
     {
-        JsonFactory factory = new SmileFactory();
-
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
-        JsonGenerator generator = factory.createGenerator(bos1);
+        JsonGenerator generator = MAPPER.createGenerator(bos1);
         generator.writeStartObject();
         generator.writeFieldName("query");
         generator.writeStartObject();
@@ -389,29 +387,29 @@ public class AsyncSharedStringsTest
         generator.writeEndObject();
         generator.close();
 
-        JsonParser parser = factory.createParser(bos1.toByteArray());
+        JsonParser parser = MAPPER.createParser(bos1.toByteArray());
         JsonToken token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("term", parser.getCurrentName());
+        assertEquals("term", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.getCurrentName());
+        assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
         assertEquals("foo", parser.getText());
         parser.close();
 
         ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
-        generator = factory.createGenerator(bos2);
+        generator = MAPPER.createGenerator(bos2);
         generator.writeStartObject();
         generator.writeFieldName("query");
         generator.writeStartObject();
@@ -425,24 +423,24 @@ public class AsyncSharedStringsTest
         generator.writeEndObject();
         generator.close();
 
-        parser = factory.createParser(bos2.toByteArray());
+        parser = MAPPER.createParser(bos2.toByteArray());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("term", parser.getCurrentName());
+        assertEquals("term", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
         // here we fail..., seems to be a problem with field caching factory level???
         // since we get the field name of the previous (bos1) document field value (withou the 2)
-        assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.getCurrentName());
+        assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
         assertEquals("bar", parser.getText());
@@ -452,11 +450,10 @@ public class AsyncSharedStringsTest
 
     public void testCorruptName34() throws Exception
     {
-        SmileFactory factory = new SmileFactory();
         // 65 chars/bytes, and not one less, to trigger it
         final String NAME = "Something else that's long enough (65 char) to cause fail: 123456";
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        SmileGenerator gen = factory.createGenerator(bout);
+        SmileGenerator gen = (SmileGenerator) MAPPER.createGenerator(bout);
         gen.writeStartArray();
         gen.writeStartObject();
         gen.writeNullField(NAME);
@@ -480,7 +477,7 @@ public class AsyncSharedStringsTest
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals(JsonTokenId.ID_FIELD_NAME, parser.getCurrentTokenId());
-        assertEquals(NAME, parser.getCurrentName());
+        assertEquals(NAME, parser.currentName());
 
         assertToken(JsonToken.VALUE_NULL, parser.nextToken());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
@@ -499,11 +496,14 @@ public class AsyncSharedStringsTest
     
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, true);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing);
+        ObjectWriter w = _smileWriter(true);
+        if (enableSharing) {
+            w = w.with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        } else {
+            w = w.without(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        }
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = f.createGenerator(out);
+        JsonGenerator gen = w.createGenerator(out);
         gen.writeStartArray();
         Random rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {
@@ -516,8 +516,7 @@ public class AsyncSharedStringsTest
 
     private void verifyStringValues(byte[] doc, int COUNT) throws IOException
     {
-        SmileFactory f = new SmileFactory();
-        AsyncReaderWrapper p = asyncForBytes(f, 37, doc, 0);
+        AsyncReaderWrapper p = asyncForBytes(_smileReader(), 37, doc, 0);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         Random rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {

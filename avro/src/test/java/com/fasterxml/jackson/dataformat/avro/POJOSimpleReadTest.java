@@ -47,7 +47,7 @@ public class POJOSimpleReadTest extends AvroTestBase
     {
 //        System.out.println("Bytes -> "+avro.length);
         InputStream in = new ByteArrayInputStream(avro);
-        JsonParser p = MAPPER.getFactory().createParser(smallReads
+        JsonParser p = MAPPER.createParser(smallReads
                 ? ThrottledInputStream.wrap(in, 9) : in);
         p.setSchema(getEmployeeSchema());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -58,7 +58,7 @@ public class POJOSimpleReadTest extends AvroTestBase
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertFalse(p.hasTextCharacters());
-        assertEquals("name", p.getCurrentName());
+        assertEquals("name", p.currentName());
         assertEquals("name", p.getText());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(empl.name, p.getText());
@@ -69,7 +69,7 @@ public class POJOSimpleReadTest extends AvroTestBase
 
         assertTrue(p.hasTextCharacters());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("age", p.getCurrentName());
+        assertEquals("age", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
         assertEquals(Integer.valueOf(empl.age), p.getNumberValue());
@@ -78,7 +78,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertEquals((double) empl.age, p.getDoubleValue());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
 
-        assertEquals("emails", p.getCurrentName());
+        assertEquals("emails", p.currentName());
         sw  = new StringWriter();
         assertEquals(6, p.getText(sw));
         assertEquals("emails", sw.toString());
@@ -91,11 +91,11 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("boss", p.getCurrentName());
+        assertEquals("boss", p.currentName());
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("name", p.getCurrentName());
+        assertEquals("name", p.currentName());
         // and then skip various bits and pieces
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertTrue(p.nextFieldName(new SerializedString("age")));
@@ -108,7 +108,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertFalse(p.nextFieldName(new SerializedString("bossy")));
         assertToken(JsonToken.FIELD_NAME, p.currentToken());
-        assertEquals("boss", p.getCurrentName());
+        assertEquals("boss", p.currentName());
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
 
         assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -129,7 +129,7 @@ public class POJOSimpleReadTest extends AvroTestBase
     {
         Employee empl = _simpleEmployee();
         byte[] avro = toAvro(empl);
-        JsonParser p = MAPPER.getFactory().createParser(avro);
+        JsonParser p = MAPPER.createParser(avro);
 
         try {
             p.nextToken();

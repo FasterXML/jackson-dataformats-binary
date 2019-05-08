@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -39,47 +40,58 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         assertNotNull(doc);
     }
 
+    private byte[] cborDoc(TokenStreamFactory f, String json) throws IOException
+    {
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), out)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+    
     public void testVersions() throws Exception
     {
-        CBORFactory f = CBOR_F;
-        assertNotNull(f.version());
+        ObjectMapper mapper = sharedMapper();
+        final Version EXP_VERSION = mapper.tokenStreamFactory().version();
+        assertNotNull(EXP_VERSION);
 
-        JsonGenerator g = f.createGenerator(new ByteArrayOutputStream());
+        JsonGenerator g = mapper.createGenerator(new ByteArrayOutputStream());
         assertNotNull(g.version());
-        assertEquals(f.version(), g.version());
+        assertEquals(EXP_VERSION, g.version());
         g.close();
 
-        JsonParser p = f.createParser(cborDoc(f, SIMPLE_DOC_AS_JSON));
+        JsonParser p = mapper.createParser(cborDoc(SIMPLE_DOC_AS_JSON));
         assertNotNull(p.version());
-        assertEquals(f.version(), p.version());
+        assertEquals(EXP_VERSION, p.version());
         p.close();
     }
 
     public void testCapabilities() throws Exception
     {
         assertTrue(CBOR_F.canHandleBinaryNatively());
-        assertFalse(CBOR_F.canUseCharArrays());
         assertEquals(CBORParser.Feature.class, CBOR_F.getFormatReadFeatureType());
         assertEquals(CBORGenerator.Feature.class, CBOR_F.getFormatWriteFeatureType());
     }
 
     public void testInabilityToReadChars() throws Exception
     {
-        final String EXP = "non-byte-based source";
+        final String EXP = "Can not create parser for character-based (not byte-based)";
         try {
-            CBOR_F.createParser("foo");
+            sharedMapper().createParser("foo");
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
         }
         try {
-            CBOR_F.createParser("foo".toCharArray());
+            sharedMapper().createParser("foo".toCharArray());
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
         }
         try {
-            CBOR_F.createParser(new StringReader("foo"));
+            sharedMapper().createParser(new StringReader("foo"));
             fail();
         } catch (UnsupportedOperationException e) {
             verifyException(e, EXP);
@@ -89,14 +101,13 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     public void testInabilityToWriteChars() throws Exception
     {
         try {
-            CBOR_F.createGenerator(new StringWriter());
+            sharedMapper().createGenerator(new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
-            verifyException(e, "non-byte-based target");
+            verifyException(e, "Can not create generator for character-based (not byte-based)");
         }
-        
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
@@ -113,7 +124,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T jdkDeserialize(byte[] raw) throws IOException
+    private <T> T jdkDeserialize(byte[] raw) throws IOException
     {
         ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(raw));
         try {
@@ -126,18 +137,18 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         }
     }
 
-    protected byte[] _copyDoc(CBORFactory f, byte[] doc) throws IOException
+    private byte[] _copyDoc(CBORFactory f, byte[] doc) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = f.createGenerator(bytes);
+        JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bytes);
         _copyDoc(f, doc, g);
         g.close();
         return bytes.toByteArray();
     }
         
-    protected void _copyDoc(JsonFactory f, byte[] doc, JsonGenerator g) throws IOException
+    private void _copyDoc(CBORFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
-        JsonParser p = f.createParser(doc);
+        JsonParser p = f.createParser(ObjectReadContext.empty(), doc);
         while (p.nextToken() != null) {
             g.copyCurrentEvent(p);
         }

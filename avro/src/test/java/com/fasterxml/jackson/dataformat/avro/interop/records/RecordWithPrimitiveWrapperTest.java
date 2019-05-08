@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
+import java.util.Objects;
 
-import lombok.Data;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -14,18 +14,44 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RecordWithPrimitiveWrapperTest extends InteropTestBase
 {
-    @Data
     public static class TestRecord {
-        private Byte      byteField      = 0;
-        private Short     shortField     = 0;
-        private Character characterField = 'A';
-        private Integer   integerField   = 0;
-        private Long      longField      = 0L;
-        private Float     floatField     = 0F;
-        private Double    doubleField    = 0D;
-        private String    stringField    = "";
+        public Byte      byteField      = 0;
+        public Short     shortField     = 0;
+        public Character characterField = 'A';
+        public Integer   integerField   = 0;
+        public Long      longField      = 0L;
+        public Float     floatField     = 0F;
+        public Double    doubleField    = 0D;
+        public String    stringField    = "";
+
+        @Override
+        public int hashCode() {
+            return byteField + shortField + characterField + integerField
+                    + Objects.hash(stringField);
+        }
+
+        @Override
+        public String toString() {
+            return "TestRecord";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof TestRecord)) return false;
+            TestRecord other = (TestRecord) o;
+            return Objects.equals(byteField, other.byteField)
+                    && Objects.equals(shortField, other.shortField)
+                    && Objects.equals(characterField, other.characterField)
+                    && Objects.equals(integerField, other.integerField)
+                    && Objects.equals(longField, other.longField)
+                    && Objects.equals(floatField, other.floatField)
+                    && Objects.equals(doubleField, other.doubleField)
+                    && Objects.equals(stringField, other.stringField)
+                ;
+        }
     }
-    
+
     @Test
     public void testByteField() throws IOException {
         TestRecord record = new TestRecord();

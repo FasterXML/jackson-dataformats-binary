@@ -197,6 +197,27 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) rawL);
     }
 
+    // [dataformats-binary#139]: wrong encoding of BigDecimal
+    public void testBigDecimalValues() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator gen = cborGenerator(out);
+        final BigDecimal NR = new BigDecimal("273.15");
+        gen.writeNumber(NR);
+        gen.close();
+        byte[] b = out.toByteArray();
+
+        // [https://tools.ietf.org/html/rfc7049#section-2.4.2]
+        final byte[] spec = new byte[] {
+                (byte) 0xC4,  // tag 4
+                (byte) 0x82,  // Array of length 2
+                0x21,  // int -- -2
+                0x19, 0x6a, (byte) 0xb3 // int 27315
+        };
+        assertEquals(spec.length, b.length);
+        Assert.assertArrayEquals(spec, b);
+    }
+    
     public void testEmptyArray() throws Exception
     {
         // First: empty array (2 bytes)
@@ -286,29 +307,13 @@ public class GeneratorSimpleTest extends CBORTestBase
         byte[] b = MAPPER.writeValueAsBytes(map);
         _verifyBytes(b, EXP);
     }
-    
-    public void testShortText() throws Exception
-    {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CBORGenerator gen = cborGenerator(out);
-        gen.writeString("");
-        gen.close();
-        _verifyBytes(out.toByteArray(), CBORConstants.BYTE_EMPTY_STRING);
 
-        out = new ByteArrayOutputStream();
-        gen = cborGenerator(out);
-        gen.writeString("abc");
-        gen.close();
-        _verifyBytes(out.toByteArray(), (byte) (CBORConstants.PREFIX_TYPE_TEXT + 3),
-                (byte) 'a', (byte) 'b', (byte) 'c');
-    }
-    
     public void testLongerText() throws Exception
     {
         // First, something with 8-bit length
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        final String SHORT_ASCII = generateAsciiString(240);
+        final String SHORT_ASCII = generateLongAsciiString(240);
         gen.writeString(SHORT_ASCII);
         gen.close();
         byte[] b = SHORT_ASCII.getBytes("UTF-8");

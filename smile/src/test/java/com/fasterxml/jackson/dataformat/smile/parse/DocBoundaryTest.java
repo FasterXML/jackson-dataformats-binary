@@ -2,11 +2,14 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectWriteContext;
+
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 /**
  * Unit tests for verifying that multiple document output and document
@@ -41,7 +44,7 @@ public class DocBoundaryTest
         for (boolean addHeader : new boolean[] { false, true }) {
             SmileFactory f = smileFactory(false, false, false);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            SmileGenerator jg = f.createGenerator(out);
+            SmileGenerator jg = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out);
             jg.writeNumber(1);
             if (addHeader) jg.writeHeader();
             jg.writeNumber(2);
@@ -49,7 +52,7 @@ public class DocBoundaryTest
             jg.writeNumber(3);
             jg.close();
 
-            SmileParser jp = f.createParser(out.toByteArray());
+            JsonParser jp = _smileParser(out.toByteArray());
             assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
             assertEquals(1, jp.getIntValue());
             if (addHeader) {
@@ -78,19 +81,19 @@ public class DocBoundaryTest
     {
         SmileFactory f = smileFactory(false, addHeader, addEndMarker);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator jg = f.createGenerator(out);
+        JsonGenerator jg = f.createGenerator(ObjectWriteContext.empty(), out);
         // First doc, JSON Object
         jg.writeStartObject();
         jg.writeEndObject();
         jg.close();
         // and second, array
-        jg = f.createGenerator(out);
+        jg = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out);
         jg.writeStartArray();
         jg.writeEndArray();
         jg.close();
 
         // and read it back
-        SmileParser jp = f.createParser(out.toByteArray());
+        JsonParser jp = _smileParser(out.toByteArray());
         assertToken(JsonToken.START_OBJECT, jp.nextToken());
         assertToken(JsonToken.END_OBJECT, jp.nextToken());
 

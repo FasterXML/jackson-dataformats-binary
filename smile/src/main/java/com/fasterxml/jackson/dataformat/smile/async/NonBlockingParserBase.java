@@ -138,30 +138,18 @@ public abstract class NonBlockingParserBase
     /**********************************************************************
      */
 
-    public NonBlockingParserBase(IOContext ctxt, int parserFeatures, int smileFeatures,
+    public NonBlockingParserBase(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);
+        super(readCtxt, ioCtxt, parserFeatures, smileFeatures, sym);
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
-        _inputCopy = ctxt.allocReadIOBuffer(500);
+        _inputCopy = ioCtxt.allocReadIOBuffer(500);
 
         _currToken = null;
         _majorState = MAJOR_INITIAL;
     }
 
-    @Override
-    public ObjectCodec getCodec() {
-        return null;
-    }
-
-    @Override
-    public void setCodec(ObjectCodec c) {
-        throw new UnsupportedOperationException("Can not use ObjectMapper with non-blocking parser");
-    }
-
-    /**
-     * @since 2.9
-     */
     @Override
     public boolean canParseAsync() { return true; }
 
@@ -271,7 +259,7 @@ public abstract class NonBlockingParserBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
             // TODO: optimize?
@@ -288,7 +276,7 @@ public abstract class NonBlockingParserBase
             return _textBuffer.getTextBuffer();
         case JsonTokenId.ID_FIELD_NAME:
             if (!_nameCopied) {
-                String name = _parsingContext.getCurrentName();
+                String name = _parsingContext.currentName();
                 int nameLen = name.length();
                 if (_nameCopyBuffer == null) {
                     _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
@@ -317,7 +305,7 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_STRING:
             return _textBuffer.size();
         case JsonTokenId.ID_FIELD_NAME:
-            return _parsingContext.getCurrentName().length();
+            return _parsingContext.currentName().length();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
             return getNumberValue().toString().length();

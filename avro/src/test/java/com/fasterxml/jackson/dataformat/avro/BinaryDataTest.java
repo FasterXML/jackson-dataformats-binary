@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
@@ -26,9 +25,9 @@ public class BinaryDataTest extends AvroTestBase
         public long size;
     }
 
-    private final AvroMapper AVRO_JACKSON_MAPPER =  new AvroMapper(new AvroFactory());
-    private final AvroMapper AVRO_APACHE_MAPPER =  new AvroMapper(new ApacheAvroFactory());
-    
+    private final AvroMapper AVRO_JACKSON_MAPPER = newMapper();
+    private final AvroMapper AVRO_APACHE_MAPPER =  newApacheMapper();
+
     public void testAvroSchemaGenerationWithJackson() throws Exception
     {
         _testAvroSchemaGenerationWithJackson(AVRO_JACKSON_MAPPER);
@@ -54,19 +53,19 @@ public class BinaryDataTest extends AvroTestBase
         assertEquals(37, result.size);
 
         // same, but via parser
-        JsonParser p = mapper.getFactory().createParser(ThrottledInputStream.wrap(
+        JsonParser p = mapper.createParser(ThrottledInputStream.wrap(
                 new ByteArrayInputStream(ser), 7));
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("filename", p.getCurrentName());
+        assertEquals("filename", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("data", p.getCurrentName());
+        assertEquals("data", p.currentName());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         // skip, don't read!
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("size", p.getCurrentName());
+        assertEquals("size", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(result.size, p.getLongValue());
         assertEquals((int) result.size, p.getIntValue());

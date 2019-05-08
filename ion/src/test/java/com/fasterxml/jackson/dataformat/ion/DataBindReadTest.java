@@ -45,7 +45,7 @@ public class DataBindReadTest {
     @Test
     public void testSimple() throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.shared();
         MyBean bean = m.readValue("{a: \"...\", \"b\" : 39, blob:{{SGVsbG8h}} }", MyBean.class);
         assertEquals("...", bean.a);
         assertEquals(39, bean.b);

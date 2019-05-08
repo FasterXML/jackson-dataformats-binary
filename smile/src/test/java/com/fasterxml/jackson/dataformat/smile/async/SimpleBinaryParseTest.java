@@ -4,19 +4,21 @@ import java.io.*;
 
 import static org.junit.Assert.*;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.async.AsyncReaderWrapper;
 
 public class SimpleBinaryParseTest extends AsyncTestBase
 {
-    private final SmileFactory F_RAW = new SmileFactory(); {
-        F_RAW.disable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
-    }
-    private final SmileFactory F_7BIT = new SmileFactory(); {
-        F_7BIT.enable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
-    }
+    private final ObjectWriter W_RAW = _smileWriter(true)
+            .without(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
+
+    private final ObjectWriter W_7BIT = _smileWriter(true)
+            .with(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
 
     final static int[] SIZES = new int[] {
         1, 2, 3, 4, 5, 7, 11,
@@ -25,27 +27,27 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     };
 
     public void testRawAsRootValue() throws IOException {
-        _testBinaryAsRoot(F_RAW);
+        _testBinaryAsRoot(W_RAW);
     }
 
     public void testRawAsArray() throws IOException {
-        _testBinaryAsArray(F_RAW);
+        _testBinaryAsArray(W_RAW);
     }
 
     public void testRawAsObject() throws IOException {
-        _testBinaryAsObject(F_RAW);
+        _testBinaryAsObject(W_RAW);
     }
     
     public void test7BitAsArray() throws IOException {
-        _testBinaryAsArray(F_7BIT);
+        _testBinaryAsArray(W_7BIT);
     }
 
     public void test7BitAsObject() throws IOException {
-        _testBinaryAsObject(F_7BIT);
+        _testBinaryAsObject(W_7BIT);
     }
 
     public void test7BitAsRootValue() throws IOException {
-        _testBinaryAsRoot(F_7BIT);
+        _testBinaryAsRoot(W_7BIT);
     }
 
     /*
@@ -54,22 +56,22 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     /**********************************************************
      */
 
-    private void _testBinaryAsRoot(SmileFactory f) throws IOException {
-        _testBinaryAsRoot2(f, 1, Integer.MAX_VALUE);
-        _testBinaryAsRoot2(f, 0, 3);
-        _testBinaryAsRoot2(f, 1, 1);
+    private void _testBinaryAsRoot(ObjectWriter w) throws IOException {
+        _testBinaryAsRoot2(w, 1, Integer.MAX_VALUE);
+        _testBinaryAsRoot2(w, 0, 3);
+        _testBinaryAsRoot2(w, 1, 1);
     }
 
-    private void _testBinaryAsObject(SmileFactory f) throws IOException {
-        _testBinaryAsObject2(f, 1, Integer.MAX_VALUE);
-        _testBinaryAsObject2(f, 0, 3);
-        _testBinaryAsObject2(f, 1, 1);
+    private void _testBinaryAsObject(ObjectWriter w) throws IOException {
+        _testBinaryAsObject2(w, 1, Integer.MAX_VALUE);
+        _testBinaryAsObject2(w, 0, 3);
+        _testBinaryAsObject2(w, 1, 1);
     }
 
-    private void _testBinaryAsArray(SmileFactory f) throws IOException {
-        _testBinaryAsArray2(f, 1, Integer.MAX_VALUE);
-        _testBinaryAsArray2(f, 0, 3);
-        _testBinaryAsArray2(f, 1, 1);
+    private void _testBinaryAsArray(ObjectWriter w) throws IOException {
+        _testBinaryAsArray2(w, 1, Integer.MAX_VALUE);
+        _testBinaryAsArray2(w, 0, 3);
+        _testBinaryAsArray2(w, 1, 1);
     }
 
     /*
@@ -78,18 +80,18 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     /**********************************************************
      */
     
-    private void _testBinaryAsRoot2(SmileFactory f, int offset, int readSize) throws IOException
+    private void _testBinaryAsRoot2(ObjectWriter w, int offset, int readSize) throws IOException
     {
         for (int size : SIZES) {
             byte[] binary = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
+            JsonGenerator g = w.createGenerator(bo);
             g.writeBinary(binary);
             g.close();
             byte[] smile = bo.toByteArray();
 
             // and verify
-            AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
+            AsyncReaderWrapper p = asyncForBytes(_smileReader(), readSize, smile, offset);
             
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
@@ -98,19 +100,19 @@ public class SimpleBinaryParseTest extends AsyncTestBase
             p.close();
 
             // and second time around, skipping
-            p = asyncForBytes(f, readSize, smile, offset);
+            p = asyncForBytes(_smileReader(), readSize, smile, offset);
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertNull(p.nextToken());
             p.close();
         }
     }
     
-    private void _testBinaryAsArray2(SmileFactory f, int offset, int readSize) throws IOException
+    private void _testBinaryAsArray2(ObjectWriter w, int offset, int readSize) throws IOException
     {
         for (int size : SIZES) {
             byte[] binary = _generateData(size);
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
+            JsonGenerator g = w.createGenerator(bo);
             g.writeStartArray();
             g.writeBinary(binary);
             g.writeNumber(1); // just to verify there's no overrun
@@ -119,7 +121,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
             byte[] smile = bo.toByteArray();            
             
             // and verify
-            AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
+            AsyncReaderWrapper p = asyncForBytes(_smileReader(), readSize, smile, offset);
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
 
@@ -133,7 +135,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
             p.close();
 
             // and second time around, skipping
-            p = asyncForBytes(f, readSize, smile, offset);
+            p = asyncForBytes(_smileReader(), readSize, smile, offset);
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -143,12 +145,12 @@ public class SimpleBinaryParseTest extends AsyncTestBase
         }
     }
     
-    private void _testBinaryAsObject2(SmileFactory f, int offset, int readSize) throws IOException
+    private void _testBinaryAsObject2(ObjectWriter w, int offset, int readSize) throws IOException
     {
         for (int size : SIZES) {
             byte[] data = _generateData(size);
-            ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
-            SmileGenerator g = f.createGenerator(bo);
+            ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);
+            JsonGenerator g = w.createGenerator(bo);
             g.writeStartObject();
             g.writeFieldName("binary");
             g.writeBinary(data);
@@ -156,7 +158,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
             g.close();
             byte[] smile = bo.toByteArray();
             
-            AsyncReaderWrapper p = asyncForBytes(f, readSize, smile, offset);
+            AsyncReaderWrapper p = asyncForBytes(_smileReader(), readSize, smile, offset);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -175,7 +177,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
             p.close();
 
             // and second time around, skipping
-            p = asyncForBytes(f, readSize, smile, offset);
+            p = asyncForBytes(_smileReader(), readSize, smile, offset);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());

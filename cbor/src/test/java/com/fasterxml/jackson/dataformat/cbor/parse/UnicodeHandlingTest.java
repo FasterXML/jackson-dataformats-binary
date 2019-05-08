@@ -2,13 +2,15 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
 import com.fasterxml.jackson.dataformat.cbor.*;
-import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
+import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 public class UnicodeHandlingTest extends CBORTestBase
 {
-    private final CBORFactory F = new CBORFactory();
+//    private final CBORFactory F = new CBORFactory();
 
     public void testShortUnicodeWithSurrogates() throws IOException
     {
@@ -41,9 +43,9 @@ public class UnicodeHandlingTest extends CBORTestBase
         }
         final String TEXT = sb.toString();
         final String quoted = quote(TEXT);
-        byte[] data = cborDoc(F, quoted);
+        byte[] data = cborDoc(quoted);
 
-        CBORParser p = _parser(data, throttling);
+        JsonParser p = _parser(data, throttling);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(TEXT, p.getText());
         assertNull(p.nextToken());
@@ -56,12 +58,12 @@ public class UnicodeHandlingTest extends CBORTestBase
         p.close();
         
         // Also, verify that it works as field name
-        data = cborDoc(F, "{"+quoted+":true}");
+        data = cborDoc("{"+quoted+":true}");
 
         p = _parser(data, throttling);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals(TEXT, p.getCurrentName());
+        assertEquals(TEXT, p.currentName());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
@@ -77,11 +79,11 @@ public class UnicodeHandlingTest extends CBORTestBase
     }
 
     @SuppressWarnings("resource")
-    private CBORParser _parser(byte[] data, boolean throttling) throws IOException
+    private JsonParser _parser(byte[] data, boolean throttling) throws IOException
     {
         if (throttling) {
-            return F.createParser(new ThrottledInputStream(data, 3));
+            return sharedMapper().createParser(new ThrottledInputStream(data, 3));
         }
-        return F.createParser(data);
+        return sharedMapper().createParser(data);
     }
 }

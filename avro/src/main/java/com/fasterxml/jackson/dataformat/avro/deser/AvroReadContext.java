@@ -2,22 +2,22 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.TokenStreamContext;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * We need to use a custom context to be able to carry along
  * Object and array records.
  */
-public abstract class AvroReadContext extends JsonStreamContext
+public abstract class AvroReadContext extends TokenStreamContext
 {
     protected final AvroReadContext _parent;
 
     protected final String _typeId;
 
-    /**
-     * @since 2.9
-     */
+    protected JsonToken _currToken;
+
     protected Object _currentValue;
 
     /*
@@ -43,6 +43,9 @@ public abstract class AvroReadContext extends JsonStreamContext
 
     public abstract String nextFieldName() throws IOException;
 
+    // @since 3.0
+    public abstract int nextFieldName(FieldNameMatcher matcher) throws IOException;
+
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
     public long getRemainingElements() {
@@ -66,9 +69,11 @@ public abstract class AvroReadContext extends JsonStreamContext
      */
 
     @Override
-    public String getCurrentName() { return null; }
+    public String currentName() { return null; }
 
-    public abstract JsonToken getCurrentToken();
+    public final JsonToken currentToken() {
+        return _currToken;
+    }
     
     @Override
     public final AvroReadContext getParent() { return _parent; }

@@ -456,14 +456,14 @@ public abstract class ProtobufTestBase extends TestCase
 
     /*
     /**********************************************************
-    /* Factory methods
+    /* Helper constructors
     /**********************************************************
      */
-    
+
     protected ProtobufMapper newObjectMapper() {
         return new ProtobufMapper();
     }
-
+    
     /*
     /**********************************************************
     /* Additional assertion methods
@@ -497,7 +497,7 @@ public abstract class ProtobufTestBase extends TestCase
 
     protected void assertToken(JsonToken expToken, JsonParser p)
     {
-        assertToken(expToken, p.getCurrentToken());
+        assertToken(expToken, p.currentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)

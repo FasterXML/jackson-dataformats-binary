@@ -74,7 +74,7 @@ public class SchemaGenTest extends ProtobufTestBase
     /**********************************************************
      */
 
-	private final ProtobufMapper MAPPER = newObjectMapper();
+	private final ProtobufMapper MAPPER = new ProtobufMapper();
 
 	public void testWithNestedClass() throws Exception
 	{

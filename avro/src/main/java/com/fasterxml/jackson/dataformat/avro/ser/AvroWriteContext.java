@@ -14,13 +14,13 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.reflect.ReflectData;
 
-import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.TokenStreamContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 public abstract class AvroWriteContext
-    extends JsonStreamContext
+    extends TokenStreamContext
 {
     private final static Class<?> CLS_STRING = String.class;
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
@@ -34,9 +34,6 @@ public abstract class AvroWriteContext
     
     protected final Schema _schema;
 
-    /**
-     * @since 2.9
-     */
     protected Object _currentValue;
 
     /*
@@ -44,7 +41,7 @@ public abstract class AvroWriteContext
     /* Life-cycle
     /**********************************************************
      */
-    
+
     protected AvroWriteContext(int type, AvroWriteContext parent,
             AvroGenerator generator, Schema schema)
     {
@@ -53,6 +50,17 @@ public abstract class AvroWriteContext
         _parent = parent;
         _generator = generator;
         _schema = schema;
+    }
+
+    protected AvroWriteContext(int type, AvroWriteContext parent,
+            AvroGenerator generator, Schema schema, Object currValue)
+    {
+        super();
+        _type = type;
+        _parent = parent;
+        _generator = generator;
+        _schema = schema;
+        _currentValue = currValue;
     }
     
     // // // Factory methods
@@ -70,15 +78,22 @@ public abstract class AvroWriteContext
         return NullContext.instance;
     }
 
-    public abstract AvroWriteContext createChildArrayContext() throws JsonMappingException;
-    public abstract AvroWriteContext createChildObjectContext() throws JsonMappingException;
+    public final AvroWriteContext createChildArrayContext() throws JsonMappingException {
+        return createChildArrayContext(null);
+    }
+
+    public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
+
+    public final AvroWriteContext createChildObjectContext() throws JsonMappingException {
+        return createChildObjectContext(null);
+    }
+
+    public abstract AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException;
 
     public void complete() throws IOException {
         throw new IllegalStateException("Can not be called on "+getClass().getName());
     }
-
-    public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException { return createChildObjectContext(); }
-
+    
     /*
     /**********************************************************
     /* Accessors
@@ -99,7 +114,7 @@ public abstract class AvroWriteContext
     public final AvroWriteContext getParent() { return _parent; }
 
     @Override
-    public String getCurrentName() { return null; }
+    public String currentName() { return null; }
 
     /*
     /**********************************************************
@@ -119,14 +134,8 @@ public abstract class AvroWriteContext
 
     public abstract void writeValue(Object value) throws IOException;
 
-    /**
-     * @since 2.5
-     */
     public abstract void writeString(String value) throws IOException;
 
-    /**
-     * @since 2.8
-     */
     public abstract void writeNull() throws IOException;
 
     /**
@@ -191,12 +200,13 @@ public abstract class AvroWriteContext
         return _createObjectContext(schema, null); // Object doesn't matter as long as schema isn't a union
     }
 
-    protected AvroWriteContext _createObjectContext(Schema schema, Object object) throws JsonMappingException
+    protected AvroWriteContext _createObjectContext(Schema schema, Object currValue)
+            throws JsonMappingException
     {
         Type type = schema.getType();
         if (type == Schema.Type.UNION) {
             try {
-                schema = resolveUnionSchema(schema, object);
+                schema = resolveUnionSchema(schema, currValue);
             } catch (UnresolvedUnionException e) {
                 // couldn't find an exact match
                 schema = _recordOrMapFromUnion(schema);
@@ -204,9 +214,9 @@ public abstract class AvroWriteContext
             type = schema.getType();
         }
         if (type == Schema.Type.MAP) {
-            return new MapWriteContext(this, _generator, schema);
+            return new MapWriteContext(this, _generator, schema, currValue);
         }
-        return new ObjectWriteContext(this, _generator, _createRecord(schema));
+        return new ObjectWriteContext(this, _generator, _createRecord(schema), currValue);
     }
 
     protected Schema _recordOrMapFromUnion(Schema unionSchema)
@@ -503,17 +513,17 @@ public abstract class AvroWriteContext
         public Object rawValue() { return null; }
         
         @Override
-        public final AvroWriteContext createChildArrayContext() {
+        public final AvroWriteContext createChildArrayContext(Object currValue) {
             _reportError();
             return null;
         }
-        
+
         @Override
-        public final AvroWriteContext createChildObjectContext() {
+        public final AvroWriteContext createChildObjectContext(Object currValue) {
             _reportError();
             return null;
         }
-    
+
         @Override
         public void writeValue(Object value) {
             _reportError();

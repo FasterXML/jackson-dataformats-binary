@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.util.InternCache;
 
 /**
  * Entity that encapsulates details of accessing value of a single field
@@ -10,11 +11,16 @@ import com.fasterxml.jackson.core.JsonToken;
  */
 public abstract class AvroFieldReader
 {
+    // 14-Nov-2017, tatu: MUST intern names to match to be able to use intern-based
+    //   field matcher
+    private final static InternCache INTERNER = InternCache.instance;
+
     protected final String _name;
     protected final boolean _isSkipper;
     protected final String _typeId;
 
     protected AvroFieldReader(String name, boolean isSkipper, String typeId) {
+        name = INTERNER.intern(name);
         _name = name;
         _isSkipper = isSkipper;
         _typeId = typeId;

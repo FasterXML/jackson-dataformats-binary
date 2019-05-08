@@ -7,7 +7,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
@@ -23,9 +23,9 @@ public final class ObjectWriteContext
     protected Schema.Field _nextField;
     
     public ObjectWriteContext(AvroWriteContext parent, AvroGenerator generator,
-            GenericRecord record)
+            GenericRecord record, Object currValue)
     {
-        super(parent, generator, record.getSchema());
+        super(parent, generator, record.getSchema(), currValue);
         _record = record;
     }
 
@@ -33,39 +33,27 @@ public final class ObjectWriteContext
     public Object rawValue() { return _record; }
 
     @Override
-    public final AvroWriteContext createChildArrayContext()
+    public final AvroWriteContext createChildArrayContext(Object currValue)
     {
         _verifyValueWrite();
         Schema.Field field = _findField();
         if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_ARRAY, this, _generator);
+            return new NopWriteContext(TYPE_ARRAY, this, _generator, currValue);
         }
-        AvroWriteContext child = new ArrayWriteContext(this, _generator, _createArray(field.schema()));
+        AvroWriteContext child = new ArrayWriteContext(this, _generator,
+                _createArray(field.schema()), currValue);
         _record.put(_currentName, child.rawValue());
         return child;
     }
 
     @Override
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException
-    {
+    public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
         _verifyValueWrite();
         Schema.Field field = _findField();
         if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_OBJECT, this, _generator);
+            return new NopWriteContext(TYPE_OBJECT, this, _generator, currValue);
         }
-        AvroWriteContext child = _createObjectContext(field.schema());
-        _record.put(_currentName, child.rawValue());
-        return child;
-    }
-
-    @Override
-    public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException {
-        _verifyValueWrite();
-        Schema.Field field = _findField();
-        if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_OBJECT, this, _generator);
-        }
-        AvroWriteContext child = _createObjectContext(field.schema(), object);
+        AvroWriteContext child = _createObjectContext(field.schema(), currValue);
         _record.put(_currentName, child.rawValue());
         return child;
     }
@@ -139,7 +127,7 @@ public final class ObjectWriteContext
     }
 
     protected void _reportUnknownField(String name) {
-        if (!_generator.isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
+        if (!_generator.isEnabled(StreamWriteFeature.IGNORE_UNKNOWN)) {
             throw new IllegalStateException("No field named '"+_currentName+"'");
         }
     }

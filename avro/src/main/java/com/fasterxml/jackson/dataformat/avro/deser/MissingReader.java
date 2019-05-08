@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 /**
  * Bogus {@link AvroReadContext} implementation used in two cases:
@@ -43,11 +44,6 @@ public class MissingReader extends AvroReadContext
     }
 
     @Override
-    public JsonToken getCurrentToken() {
-        return null;
-    }
-
-    @Override
     public void appendDesc(StringBuilder sb) {
         sb.append("?");
     }
@@ -56,6 +52,12 @@ public class MissingReader extends AvroReadContext
     public String nextFieldName() throws IOException {
         _checkSchemaSet();
         return null;
+    }
+
+    @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        _checkSchemaSet();
+        return FieldNameMatcher.MATCH_ODD_TOKEN;
     }
 
     @Override

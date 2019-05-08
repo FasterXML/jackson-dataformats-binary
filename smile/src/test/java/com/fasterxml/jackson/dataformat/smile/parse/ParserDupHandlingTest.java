@@ -16,17 +16,17 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         }) {
             SmileFactory f = new SmileFactory();
             byte[] doc = _smileDoc(json);
-            assertFalse(f.isEnabled(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
+            assertFalse(f.isEnabled(StreamReadFeature.STRICT_DUPLICATE_DETECTION));
             _testSimpleDupsOk(doc, f);
     
-            f.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+            f = f.rebuild().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
             _testSimpleDupsFail(doc, f, "a");
         }
     }
 
-    private void _testSimpleDupsOk(final byte[] doc, JsonFactory f) throws Exception
+    private void _testSimpleDupsOk(final byte[] doc, SmileFactory f) throws Exception
     {
-        JsonParser jp = f.createParser(doc);
+        JsonParser jp = f.createParser(ObjectReadContext.empty(), doc);
         JsonToken t = jp.nextToken();
         assertNotNull(t);
         assertTrue(t.isStructStart());
@@ -34,9 +34,9 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         jp.close();
     }
 
-    private void _testSimpleDupsFail(final byte[] doc, JsonFactory f, String name) throws Exception
+    private void _testSimpleDupsFail(final byte[] doc, SmileFactory f, String name) throws Exception
     {
-        JsonParser p = f.createParser(doc);
+        JsonParser p = f.createParser(ObjectReadContext.empty(), doc);
         JsonToken t = p.nextToken();
         assertNotNull(t);
         assertTrue(t.isStructStart());
@@ -48,5 +48,4 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         }
         p.close();
     }
-    
 }

@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 public abstract class ArrayReader extends AvroStructureReader
 {
@@ -39,11 +40,17 @@ public abstract class ArrayReader extends AvroStructureReader
         nextToken();
         return null;
     }
-    
+
     @Override
-    public String getCurrentName() {
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        nextToken();
+        return FieldNameMatcher.MATCH_ODD_TOKEN;
+    }
+
+    @Override
+    public String currentName() {
         if (_currentName == null) {
-            _currentName = _parent.getCurrentName();
+            _currentName = _parent.currentName();
         }
         return _currentName;
     }

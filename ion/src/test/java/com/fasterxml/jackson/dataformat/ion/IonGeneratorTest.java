@@ -14,10 +14,14 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+
 import org.junit.Test;
 import org.junit.Before;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
@@ -26,10 +30,6 @@ import software.amazon.ion.IonValue;
 import software.amazon.ion.IonStruct;
 import software.amazon.ion.IonSystem;
 import software.amazon.ion.system.IonSystemBuilder;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -52,7 +52,7 @@ public class IonGeneratorTest {
     }
 
     private IonSystem ionSystem;
-    private IonObjectMapper joiObjectMapper;
+    private IonObjectMapper MAPPER;
     private IonGenerator joiGenerator;
 
     private IonDatagram output;
@@ -61,15 +61,13 @@ public class IonGeneratorTest {
 
     @Before
     public void setUp() throws Exception {
-        final IonFactory factory = new IonFactory(); 
-
-        this.joiObjectMapper = new IonObjectMapper(factory);
+        MAPPER = new IonObjectMapper();
         this.ionSystem = IonSystemBuilder.standard().build();
         this.output = ionSystem.newDatagram();
-        this.joiGenerator = (IonGenerator) factory.createGenerator(ionSystem.newWriter(this.output));
+        this.joiGenerator = MAPPER.createGenerator(ionSystem.newWriter(output));
 
         this.testObjectIon = ionSystem.singleValue(testObjectStr);
-        this.testObjectTree = joiObjectMapper.readTree(testObjectStr);
+        this.testObjectTree = MAPPER.readTree(testObjectStr);
     }
 
     @Test

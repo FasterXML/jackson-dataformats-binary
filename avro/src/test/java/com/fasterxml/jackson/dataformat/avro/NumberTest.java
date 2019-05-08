@@ -60,7 +60,7 @@ public class NumberTest extends AvroTestBase
                 Long.MAX_VALUE,
                 0.125f, -3.75);
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
-        JsonParser p = MAPPER.getFactory()
+        JsonParser p = MAPPER
                 .createParser(LimitingInputStream.wrap(bytes, 42));
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());

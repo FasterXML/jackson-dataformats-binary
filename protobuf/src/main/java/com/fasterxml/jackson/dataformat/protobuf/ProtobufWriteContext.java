@@ -1,11 +1,12 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.TokenStreamContext;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
 public class ProtobufWriteContext
-    extends JsonStreamContext
+    extends TokenStreamContext
 {
     protected final ProtobufWriteContext _parent;
 
@@ -22,9 +23,6 @@ public class ProtobufWriteContext
      */
     protected ProtobufField _field;
 
-    /**
-     * @since 2.5
-     */
     protected Object _currentValue;
 
     /*
@@ -104,7 +102,7 @@ public class ProtobufWriteContext
     public final ProtobufWriteContext getParent() { return _parent; }
     
     @Override
-    public String getCurrentName() {
+    public String currentName() {
         return ((_type == TYPE_OBJECT) && (_field != null)) ? _field.name : null;
     }
 

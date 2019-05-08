@@ -54,7 +54,7 @@ public class BigNumbersTest extends CBORTestBase
         CBORParser parser = cborParser(b);
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("a", parser.getCurrentName());
+        assertEquals("a", parser.currentName());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
         assertEquals(expValue, parser.getDecimalValue());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());

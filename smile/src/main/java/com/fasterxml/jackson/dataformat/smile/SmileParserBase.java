@@ -15,9 +15,6 @@ import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
-/**
- * @since 2.9
- */
 public abstract class SmileParserBase extends ParserMinimalBase
 {
     protected final static String[] NO_STRINGS = new String[0];
@@ -233,18 +230,19 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************
      */
 
-    public SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
+    public SmileParserBase(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int formatFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(parserFeatures);
+        super(readCtxt, parserFeatures);
         _formatFeatures = formatFeatures;
-        _ioContext = ctxt;
+        _ioContext = ioCtxt;
         _symbols = sym;
-        DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
+        DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _parsingContext = JsonReadContext.createRootContext(dups);
 
-        _textBuffer = ctxt.constructTextBuffer();
+        _textBuffer = ioCtxt.constructTextBuffer();
         _smileBufferRecycler = _smileBufferRecycler();
     }
 
@@ -288,14 +286,8 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     @Override
-    public final int getFormatFeatures() {
+    public final int formatReadFeatures() {
         return _formatFeatures;
-    }
-
-    @Override
-    public final JsonParser overrideFormatFeatures(int values, int mask) {
-        _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
-        return this;
     }
 
     /*
@@ -350,12 +342,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * the current event.
      */
     @Override
-    public final String getCurrentName() throws IOException
+    public final String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            return _parsingContext.getParent().getCurrentName();
+            return _parsingContext.getParent().currentName();
         }
-        return _parsingContext.getCurrentName();
+        return _parsingContext.currentName();
     }
 
     @Override
@@ -765,7 +757,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * @since 2.9
      */
     protected Object _getSourceReference() {
-        if (JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION.enabledIn(_features)) {
+        if (isEnabled(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)) {
             return _ioContext.getSourceReference();
         }
         return null;

@@ -45,8 +45,10 @@ public class RecordVisitor
         _type = type;
         _schemas = schemas;
         // Check if the schema for this record is overridden
-        BeanDescription bean = getProvider().getConfig().introspectDirectClassAnnotations(_type);
-        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
+        SerializationConfig config = p.getConfig();
+        BeanDescription bean = config.introspectDirectClassAnnotations(_type);
+        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(config,
+                bean.getClassInfo());
         AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
@@ -172,7 +174,7 @@ public class RecordVisitor
                     if (prov == null) {
                         throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
                     }
-                    ser = prov.findValueSerializer(prop.getType(), prop);
+                    ser = prov.findPrimaryPropertySerializer(prop.getType(), prop);
                 }
                 VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
                 ser.acceptJsonFormatVisitor(visitor, prop.getType());
@@ -189,7 +191,9 @@ public class RecordVisitor
         }
         JsonNode defaultValue = parseJson(prop.getMetadata().getDefaultValue());
         writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
-        Schema.Field field = new Schema.Field(prop.getName(), writerSchema, prop.getMetadata().getDescription(),
+
+        String name = prop.getName();
+        Schema.Field field = new Schema.Field(name, writerSchema, prop.getMetadata().getDescription(),
                 JacksonUtils.toObject(defaultValue));
 
         AvroMeta meta = prop.getAnnotation(AvroMeta.class);
@@ -202,7 +206,6 @@ public class RecordVisitor
                 field.addAlias(pn.getSimpleName());
             }
         }
-
         return field;
     }
 

@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 /**
  * Simple adapter needed in some cases to unify handling of reading (and
@@ -60,5 +61,11 @@ final class ScalarDecoderWrapper extends AvroStructureReader
     public String nextFieldName() throws IOException {
         nextToken();
         return null;
+    }
+
+    @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        nextToken();
+        return FieldNameMatcher.MATCH_ODD_TOKEN;
     }
 }

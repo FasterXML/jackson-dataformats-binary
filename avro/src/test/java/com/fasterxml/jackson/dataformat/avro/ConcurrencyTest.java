@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.*;
 
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
 
 /**
@@ -13,7 +14,8 @@ import com.fasterxml.jackson.databind.SequenceWriter;
  */
 public class ConcurrencyTest extends AvroTestBase
 {
-    private final AvroMapper MAPPER = getMapper();
+    private final AvroMapper AVRO_JACKSON_MAPPER = newMapper();
+    private final AvroMapper AVRO_APACHE_MAPPER =  newApacheMapper();
 
     private final AvroSchema EMPL_SCHEMA;
 
@@ -25,11 +27,17 @@ public class ConcurrencyTest extends AvroTestBase
     // This should tease out simplest problems with possible encoder reuse.
     public void testMultipleEncoders() throws Exception
     {
+        testMultipleEncoders(AVRO_JACKSON_MAPPER);
+        testMultipleEncoders(AVRO_APACHE_MAPPER);
+    }
+
+    private void testMultipleEncoders(ObjectMapper mapper) throws Exception
+    {
         ByteArrayOutputStream b1 = new ByteArrayOutputStream();
         ByteArrayOutputStream b2 = new ByteArrayOutputStream();
-        SequenceWriter sw1 = MAPPER.writer(EMPL_SCHEMA)
+        SequenceWriter sw1 = mapper.writer(EMPL_SCHEMA)
                 .writeValues(b1);
-        SequenceWriter sw2 = MAPPER.writer(EMPL_SCHEMA)
+        SequenceWriter sw2 = mapper.writer(EMPL_SCHEMA)
                 .writeValues(b2);
 
         for (int i = 0; i < 200; ++i) {
@@ -44,19 +52,21 @@ public class ConcurrencyTest extends AvroTestBase
     }
 
     public void testMultipleDecodersBlock() throws Exception {
-        _testMultipleDecoders(false);
+        _testMultipleDecoders(AVRO_JACKSON_MAPPER, false);
+        _testMultipleDecoders(AVRO_APACHE_MAPPER, false);
     }
 
     public void testMultipleDecodersStreaming() throws Exception {
-        _testMultipleDecoders(true);
+        _testMultipleDecoders(AVRO_JACKSON_MAPPER, true);
+        _testMultipleDecoders(AVRO_APACHE_MAPPER, true);
     }
 
-    private void _testMultipleDecoders(boolean useStream) throws Exception
+    private void _testMultipleDecoders(ObjectMapper mapper, boolean useStream) throws Exception
     {
         final int ROUNDS = 40;
         // Here let's do encoding linearly, to remove coupling with other test(s)
         ByteArrayOutputStream b = new ByteArrayOutputStream();
-        SequenceWriter sw = MAPPER.writer(EMPL_SCHEMA)
+        SequenceWriter sw = mapper.writer(EMPL_SCHEMA)
                 .writeValues(b);
         for (int i = 0; i < ROUNDS; ++i) {
             _writeEmpl(sw, "a", i);
@@ -65,7 +75,7 @@ public class ConcurrencyTest extends AvroTestBase
         final byte[] b1 = b.toByteArray();
 
         b = new ByteArrayOutputStream();
-        sw = MAPPER.writer(EMPL_SCHEMA)
+        sw = mapper.writer(EMPL_SCHEMA)
                 .writeValues(b);
         for (int i = 0; i < ROUNDS; ++i) {
             _writeEmpl(sw, "b", i);
@@ -76,14 +86,14 @@ public class ConcurrencyTest extends AvroTestBase
         MappingIterator<Employee> it1, it2;
 
         if (useStream) {
-            it1 = MAPPER.readerFor(Employee.class).with(EMPL_SCHEMA)
+            it1 = mapper.readerFor(Employee.class).with(EMPL_SCHEMA)
                     .readValues(b1);
-            it2 = MAPPER.readerFor(Employee.class).with(EMPL_SCHEMA)
+            it2 = mapper.readerFor(Employee.class).with(EMPL_SCHEMA)
                     .readValues(b2);
         } else {
-            it1 = MAPPER.readerFor(Employee.class).with(EMPL_SCHEMA)
+            it1 = mapper.readerFor(Employee.class).with(EMPL_SCHEMA)
                     .readValues(new ByteArrayInputStream(b1));
-            it2 = MAPPER.readerFor(Employee.class).with(EMPL_SCHEMA)
+            it2 = mapper.readerFor(Employee.class).with(EMPL_SCHEMA)
                     .readValues(new ByteArrayInputStream(b2));
         }
 

@@ -21,7 +21,7 @@ public class AvroGenerator extends GeneratorBase
      * Enumeration that defines all togglable features for Avro generators
      */
     public enum Feature
-        implements FormatFeature // since 2.7
+        implements FormatFeature
     {
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
@@ -31,8 +31,7 @@ public class AvroGenerator extends GeneratorBase
          * input/output is unbuffered.
          *<p>
          * Enabled by default to preserve the existing behavior.
-         *
-         * @since 2.7
+
          */
         AVRO_BUFFERING(true),
 
@@ -43,8 +42,6 @@ public class AvroGenerator extends GeneratorBase
          * NOTE: reader-side will have to be aware of distinction as well, since possible inclusion
          * of this header is not 100% reliably auto-detectable (while header has distinct marker,
          * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
-         *
-         * @since 2.9
          */
         AVRO_FILE_OUTPUT(false)
         ;
@@ -134,16 +131,19 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    public AvroGenerator(IOContext ctxt, int jsonFeatures, int avroFeatures,
-            ObjectCodec codec, OutputStream output)
+    public AvroGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+            int jsonFeatures, int avroFeatures,
+            OutputStream output,
+            AvroSchema schema)
         throws IOException
     {
-        super(jsonFeatures, codec);
+        super(writeCtxt, jsonFeatures);
         _ioContext = ctxt;
         _formatFeatures = avroFeatures;
         _output = output;
         _avroContext = AvroWriteContext.nullContext();
         _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+        setSchema(schema);
     }
 
     public void setSchema(AvroSchema schema)
@@ -253,19 +253,6 @@ public class AvroGenerator extends GeneratorBase
         return this;
     }
 
-    @Override
-    public JsonGenerator overrideFormatFeatures(int values, int mask) {
-        int oldF = _formatFeatures;
-        int newF = (_formatFeatures & ~mask) | (values & mask);
-
-        if (oldF != newF) {
-            _formatFeatures = newF;
-            // 22-Oct-2015, tatu: Actually, not way to change buffering details at
-            //   this point. If change needs to be dynamic have to change it
-        }
-        return this;
-    }
-
     /*
     /**********************************************************************
     /* Overridden methods; writing field names
@@ -305,14 +292,16 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void flush() throws IOException {
-        _output.flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
-    
+
     @Override
     public void close() throws IOException
     {
         super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+        if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             AvroWriteContext ctxt;
             while ((ctxt = _avroContext) != null) {
                 if (ctxt.inArray()) {
@@ -342,9 +331,9 @@ public class AvroGenerator extends GeneratorBase
             }
         }
         if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
                 _output.close();
-            } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            } else  if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
                 // If we can't close it, we should at least flush
                 _output.flush();
             }
@@ -365,6 +354,12 @@ public class AvroGenerator extends GeneratorBase
         _complete = false;
     }
 
+    @Override
+    public final void writeStartArray(Object currValue, int len) throws IOException {
+        _avroContext = _avroContext.createChildArrayContext(currValue);
+        _complete = false;
+    }
+    
     @Override
     public final void writeEndArray() throws IOException
     {
@@ -387,11 +382,6 @@ public class AvroGenerator extends GeneratorBase
     public void writeStartObject(Object forValue) throws IOException {
         _avroContext = _avroContext.createChildObjectContext(forValue);
         _complete = false;
-        if(this._writeContext != null && forValue != null) {
-            this._writeContext.setCurrentValue(forValue);
-        }
-
-        this.setCurrentValue(forValue);
     }
 
     @Override

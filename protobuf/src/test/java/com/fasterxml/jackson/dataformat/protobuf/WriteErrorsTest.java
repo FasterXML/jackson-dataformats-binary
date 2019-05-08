@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -36,7 +37,7 @@ public class WriteErrorsTest extends ProtobufTestBase
         // First: if disabled, should get an error
         try {
             /*byte[] bytes =*/ w
-                .without(JsonGenerator.Feature.IGNORE_UNKNOWN)
+                .without(StreamWriteFeature.IGNORE_UNKNOWN)
                 .writeValueAsBytes(new Point3D(1, 2, 3));
         } catch (JsonProcessingException e) {
             verifyException(e, "Unrecognized field 'z'");
@@ -44,8 +45,8 @@ public class WriteErrorsTest extends ProtobufTestBase
 
         // but then not, if we disable checks
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = MAPPER.getFactory().createGenerator(bytes);
-        g.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        JsonGenerator g = MAPPER.createGenerator(bytes);
+        g.enable(StreamWriteFeature.IGNORE_UNKNOWN);
         g.setSchema(schema);
 
         g.writeStartObject();

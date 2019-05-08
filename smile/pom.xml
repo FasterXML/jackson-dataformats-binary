@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>2.9.8</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-smile</artifactId>
   <name>Jackson dataformat: Smile</name>
@@ -22,11 +22,11 @@ tree model)
 
   <dependencies>
 
-    <!-- and for testing we need databind-->
+    <!-- We need databind for testing, but also as optional dep for SmileMapper -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -47,6 +47,13 @@ tree model)
             <phase>generate-sources</phase>
           </execution>
         </executions>
+      </plugin>
+      <!-- 19-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
+             will have to use `moduleInfoFile` as anything else requires JDK 9+
+        -->
+      <plugin>
+	<groupId>org.moditect</groupId>
+	<artifactId>moditect-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

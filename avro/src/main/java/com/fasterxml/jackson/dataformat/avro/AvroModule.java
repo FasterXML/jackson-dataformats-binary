@@ -31,19 +31,17 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroUntypedDeserializer;
  *    of {@link java.lang.Object}.
  *  </li>
  *</ul>
- *
- * @since 2.5
  */
 public class AvroModule extends Module
+    implements java.io.Serializable
 {
+    private static final long serialVersionUID = 3L;
+
     protected final static AvroAnnotationIntrospector INTR
            = new AvroAnnotationIntrospector();
 
-    /**
-     * @since 2.9
-     */
     protected AnnotationIntrospector _intr = INTR;
-    
+
     public AvroModule() { }
 
     @Override
@@ -62,8 +60,6 @@ public class AvroModule extends Module
     
     /**
      * Fluent method that configures this module instance 
-     *
-     * @since 2.9
      */
     public AvroModule withAnnotationIntrospector(AnnotationIntrospector intr) {
         _intr = intr;
@@ -84,7 +80,6 @@ public class AvroModule extends Module
         _addSerializers(context);
     }
 
-    // since 2.9
     protected void _addIntrospector(SetupContext context) {
         if (_intr != null) {
             // insert (instead of append) to have higher precedence
@@ -92,21 +87,18 @@ public class AvroModule extends Module
         }
     }
 
-    // since 2.9
     protected void _addModifiers(SetupContext context) {
         // 08-Mar-2016, tatu: to fix [dataformat-avro#35], need to prune 'schema' property:
-        context.addBeanSerializerModifier(new AvroSerializerModifier());
+        context.addSerializerModifier(new AvroSerializerModifier());
     }
 
-    // since 2.9
     protected void _addDeserializers(SetupContext context) {
         // Override untyped deserializer to one that checks for type information in the schema before going to default handling
         SimpleDeserializers desers = new SimpleDeserializers();
-        desers.addDeserializer(Object.class, new AvroUntypedDeserializer());
+        desers.addDeserializer(Object.class, AvroUntypedDeserializer.construct(context.typeFactory()));
         context.addDeserializers(desers);
     }
 
-    // since 2.9
     protected void _addSerializers(SetupContext context) {
         SimpleSerializers sers = new SimpleSerializers();
         sers.addSerializer(new SchemaSerializer());

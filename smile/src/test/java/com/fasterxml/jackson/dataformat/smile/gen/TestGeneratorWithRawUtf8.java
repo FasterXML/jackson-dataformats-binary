@@ -1,44 +1,43 @@
 package com.fasterxml.jackson.dataformat.smile.gen;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * Test to verify handling of "raw String value" write methods that by-pass
  * most encoding steps, for potential higher output speed (in cases where
  * input naturally comes as UTF-8 encoded byte arrays).
- *
- * @since 1.7
  */
 public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 {
+    private final ObjectMapper MAPPER = smileMapper();
+
     public void testUtf8RawStrings() throws Exception
     {
         // Let's create set of Strings to output; no ctrl chars as we do raw
         List<byte[]> strings = generateStrings(new Random(28), 750000, false);
         ByteArrayOutputStream out = new ByteArrayOutputStream(16000);
-        SmileFactory jf = new SmileFactory();
-        JsonGenerator jgen = jf.createGenerator(out, JsonEncoding.UTF8);
-        jgen.writeStartArray();
+        JsonGenerator g = MAPPER.createGenerator(out, JsonEncoding.UTF8);
+        g.writeStartArray();
         for (byte[] str : strings) {
-            jgen.writeRawUTF8String(str, 0, str.length);
+            g.writeRawUTF8String(str, 0, str.length);
         }
-        jgen.writeEndArray();
-        jgen.close();
+        g.writeEndArray();
+        g.close();
         byte[] json = out.toByteArray();
         
         // Ok: let's verify that stuff was written out ok
-        JsonParser jp = jf.createParser(json);
+        JsonParser jp = MAPPER.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
         for (byte[] inputBytes : strings) {
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
@@ -60,18 +59,17 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         // Let's create set of Strings to output; do include control chars too:
         List<byte[]> strings = generateStrings(new Random(28), 720000, true);
         ByteArrayOutputStream out = new ByteArrayOutputStream(16000);
-        SmileFactory jf = new SmileFactory();
-        JsonGenerator jgen = jf.createGenerator(out, JsonEncoding.UTF8);
-        jgen.writeStartArray();
+        JsonGenerator g = MAPPER.createGenerator(out, JsonEncoding.UTF8);
+        g.writeStartArray();
         for (byte[] str : strings) {
-            jgen.writeUTF8String(str, 0, str.length);
+            g.writeUTF8String(str, 0, str.length);
         }
-        jgen.writeEndArray();
-        jgen.close();
+        g.writeEndArray();
+        g.close();
         byte[] json = out.toByteArray();
         
         // Ok: let's verify that stuff was written out ok
-        JsonParser jp = jf.createParser(json);
+        JsonParser jp = MAPPER.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
         for (byte[] inputBytes : strings) {
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
@@ -103,47 +101,29 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
     
     private void doTestIssue492(boolean asUtf8String) throws Exception
     {
-        SmileFactory factory = new SmileFactory();
-        
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator generator = factory.createGenerator(out);
+        SmileGenerator generator = (SmileGenerator) MAPPER.createGenerator(out);
         
         generator.writeStartObject();
-        
         generator.writeFieldName("name");
-        
-        if(asUtf8String)
-        {
+        if (asUtf8String) {
             byte[] text = "PojoFoo".getBytes("ASCII");
             generator.writeUTF8String(text, 0, text.length);
-        }
-        else
-        {
+        } else {
             generator.writeString("PojoFoo");
         }
-        
         generator.writeFieldName("collection");
-        
         generator.writeStartObject();
-        
         generator.writeFieldName("v");
-        
         generator.writeStartArray();
-        
-        if(asUtf8String)
-        {
+        if(asUtf8String) {
             byte[] text = "1".getBytes("ASCII");
             generator.writeUTF8String(text, 0, text.length);
-        }
-        else
-        {
+        } else {
             generator.writeString("1");
         }
-        
         generator.writeEndArray();
-        
         generator.writeEndObject();
-        
         generator.writeEndObject();
         
         generator.close();
@@ -151,21 +131,21 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         byte[] data = out.toByteArray();
         
         ByteArrayInputStream in = new ByteArrayInputStream(data);
-        SmileParser parser = factory.createParser(in);
+        SmileParser parser = (SmileParser)MAPPER.createParser(in);
         
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
         
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
-        assertEquals(parser.getCurrentName(), "name");
+        assertEquals(parser.currentName(), "name");
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
         assertEquals(parser.getText(), "PojoFoo");
         
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
-        assertEquals(parser.getCurrentName(), "collection");
+        assertEquals(parser.currentName(), "collection");
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
         
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
-        assertEquals("Should have property with name 'v'", parser.getCurrentName(), "v");
+        assertEquals("Should have property with name 'v'", parser.currentName(), "v");
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
         
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
@@ -173,8 +153,6 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         
         assertToken(parser.nextToken(), JsonToken.END_ARRAY);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);
-        
-        
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);
         parser.close();
     }

@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
+import com.fasterxml.jackson.core.ObjectWriteContext;
+
 /**
  * Unit tests geared at testing issues that were raised due to
  * inter-operability with other CBOR codec implementations
@@ -34,7 +36,7 @@ public class GeneratorInteropTest extends CBORTestBase
         CBORFactory f = cborFactory();
         assertFalse(f.isEnabled(CBORGenerator.Feature.WRITE_TYPE_HEADER));
         
-        CBORGenerator gen = f.createGenerator(out);
+        CBORGenerator gen = (CBORGenerator) f.createGenerator(ObjectWriteContext.empty(), out);
         // First, without feature, we get just a single byte doc
         gen.writeBoolean(true);
         gen.close();
@@ -43,15 +45,15 @@ public class GeneratorInteropTest extends CBORTestBase
             CBORConstants.BYTE_TRUE
         });
 
-        f.enable(CBORGenerator.Feature.WRITE_TYPE_HEADER);
+        f = f.rebuild()
+                .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
+                .build();
         // but with auto-write
         out = new ByteArrayOutputStream();
-        gen = f.createGenerator(out);
+        gen = (CBORGenerator) f.createGenerator(ObjectWriteContext.empty(), out);
         // First, without feature, we get just a single byte doc
         gen.writeBoolean(true);
         gen.close();
-
-        
         
         _verifyBytes(out.toByteArray(), TYPE_DESC_AND_TRUE);
     }

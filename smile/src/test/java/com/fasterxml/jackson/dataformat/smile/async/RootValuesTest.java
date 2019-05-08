@@ -8,10 +8,9 @@ import com.fasterxml.jackson.dataformat.smile.*;
 
 public class RootValuesTest extends AsyncTestBase
 {
-    private final SmileFactory F_REQ_HEADERS = new SmileFactory();
-    {
-        F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
-    }
+    private final SmileFactory F_REQ_HEADERS = SmileFactory.builder()
+            .enable(SmileParser.Feature.REQUIRE_HEADER)
+            .build();
 
     public void testSimpleRootSequence() throws Exception
     {
@@ -37,7 +36,7 @@ public class RootValuesTest extends AsyncTestBase
     private void _testSimpleRootSequence(SmileFactory f,
             byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(), readSize, data, offset);
         assertNull(r.currentToken());
 
         assertToken(JsonToken.START_ARRAY, r.nextToken());

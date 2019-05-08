@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public class GeneratorDeepNestingTest extends CBORTestBase
 {
@@ -14,14 +15,14 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     /**********************************************************
      */
 
-    final ObjectMapper MAPPER = cborMapper();
+    final ObjectMapper MAPPER =  CBORMapper.shared();
 
     // for [dataformats-binary#62]
     @SuppressWarnings("unchecked")
     public void testDeeplyNestedMap() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        JsonGenerator gen = MAPPER.createGenerator(out);
         _writeNestedMap(gen, 23);
         gen.close();
         byte[] encoded = out.toByteArray();
@@ -68,7 +69,7 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     public void testDeeplyNestedArray() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        JsonGenerator gen = MAPPER.createGenerator(out);
         _writeNestedArray(gen, 23);
         gen.close();
         byte[] encoded = out.toByteArray();

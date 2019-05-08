@@ -3,9 +3,10 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class StringObjectTest extends AsyncTestBase
 {
@@ -31,32 +32,35 @@ public class StringObjectTest extends AsyncTestBase
             UNICODE_LONG_NAME, UNICODE_SHORT_NAME,
             ASCII_SHORT_NAME, ASCII_SHORT_NAME));
 
-        final SmileFactory f = new SmileFactory();
-        f.enable(SmileParser.Feature.REQUIRE_HEADER);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, sharedNames);
-        f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, sharedNames);
+        ObjectWriter w = _smileWriter(true);
+        if (sharedNames) {
+            w = w.withFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
+                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        } else {
+            w = w.withoutFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
+                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        }
         
-        byte[] data = _smileDoc(f, json, true);
-        _testBasicFieldsNames(f, data, 0, 100);
-        _testBasicFieldsNames(f, data, 0, 3);
-        _testBasicFieldsNames(f, data, 0, 1);
+        byte[] data = _smileDoc(w, json);
+        _testBasicFieldsNames(data, 0, 100);
+        _testBasicFieldsNames(data, 0, 3);
+        _testBasicFieldsNames(data, 0, 1);
 
-        _testBasicFieldsNames(f, data, 1, 100);
-        _testBasicFieldsNames(f, data, 1, 3);
-        _testBasicFieldsNames(f, data, 1, 1);
+        _testBasicFieldsNames(data, 1, 100);
+        _testBasicFieldsNames(data, 1, 3);
+        _testBasicFieldsNames(data, 1, 1);
     }
 
-    private void _testBasicFieldsNames(SmileFactory f,
-            byte[] data, int offset, int readSize) throws IOException
+    private void _testBasicFieldsNames(byte[] data, int offset, int readSize) throws IOException
     {
-        _testBasicFieldsNames2(f, data, offset, readSize, true);
-        _testBasicFieldsNames2(f, data, offset, readSize, false);
+        _testBasicFieldsNames2(data, offset, readSize, true);
+        _testBasicFieldsNames2(data, offset, readSize, false);
     }
 
-    private void _testBasicFieldsNames2(SmileFactory f,
-            byte[] data, int offset, int readSize, boolean verifyContents) throws IOException
+    private void _testBasicFieldsNames2(byte[] data, int offset, int readSize, boolean verifyContents)
+        throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, offset);
 
         // start with "no token"
         assertNull(r.currentToken());
@@ -100,7 +104,7 @@ public class StringObjectTest extends AsyncTestBase
 
         // Second round, try with alternate read method
         if (verifyContents) {
-            r = asyncForBytes(f, readSize, data, offset);
+            r = asyncForBytes(_smileReader(true), readSize, data, offset);
             assertToken(JsonToken.START_OBJECT, r.nextToken());
             assertToken(JsonToken.FIELD_NAME, r.nextToken());
             assertEquals(UNICODE_SHORT_NAME, r.currentTextViaWriter());

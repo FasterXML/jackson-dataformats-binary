@@ -132,15 +132,17 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    public ProtobufGenerator(IOContext ctxt, int jsonFeatures,
-            ObjectCodec codec, OutputStream output)
+    public ProtobufGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+            int generatorFeatures, ProtobufSchema schema,
+            OutputStream output)
         throws IOException
     {
-        super(jsonFeatures, codec, BOGUS_WRITE_CONTEXT);
+        super(writeCtxt, generatorFeatures, BOGUS_WRITE_CONTEXT);
         _ioContext = ctxt;
         _output = output;
         _pbContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
+        setSchema(schema);
     }
 
     public void setSchema(ProtobufSchema schema)
@@ -259,7 +261,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (f == null) {
             // May be ok, if we have said so
             if ((_currMessage == UNKNOWN_MESSAGE)
-                    || isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
+                    || isEnabled(StreamWriteFeature.IGNORE_UNKNOWN)) {
                 f = UNKNOWN_FIELD;
             } else {
                 _reportError("Unrecognized field '"+name+"' (in Message of type "+_currMessage.getName()
@@ -293,7 +295,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (f == null) {
             // May be ok, if we have said so
             if ((_currMessage == UNKNOWN_MESSAGE)
-                    || isEnabled(JsonGenerator.Feature.IGNORE_UNKNOWN)) {
+                    || isEnabled(StreamWriteFeature.IGNORE_UNKNOWN)) {
                 f = UNKNOWN_FIELD;
             } else {
                 _reportError("Unrecognized field '"+name+"' (in Message of type "+_currMessage.getName()
@@ -324,14 +326,16 @@ public class ProtobufGenerator extends GeneratorBase
                 _output.write(_currBuffer, start, len);
             }
         }
-        _output.flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            _output.flush();
+        }
     }
 
     @Override
     public void close() throws IOException
     {
         super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+        if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             ProtobufWriteContext ctxt;
             while ((ctxt = _pbContext) != null) {
                 if (ctxt.inArray()) {
@@ -348,9 +352,10 @@ public class ProtobufGenerator extends GeneratorBase
             _complete();
         }
         if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
                 _output.close();
-            } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
                 // If we can't close it, we should at least flush
                 _output.flush();
             }
@@ -364,7 +369,7 @@ public class ProtobufGenerator extends GeneratorBase
     /* Public API: structural output
     /**********************************************************
      */
-    
+
     @Override
     public final void writeStartArray() throws IOException
     {
@@ -392,7 +397,13 @@ public class ProtobufGenerator extends GeneratorBase
             _startBuffering(_currField.typedTag);
         }
     }
-    
+
+    @Override
+    public final void writeStartArray(Object currValue, int len) throws IOException {
+        writeStartArray();
+        _pbContext.setCurrentValue(currValue);
+    }
+
     @Override
     public final void writeEndArray() throws IOException
     {
@@ -415,6 +426,12 @@ public class ProtobufGenerator extends GeneratorBase
         if (_currField.packed) {
             _finishBuffering();
         }
+    }
+
+    @Override
+    public final void writeStartObject(Object currValue) throws IOException {
+        writeStartObject();
+        _pbContext.setCurrentValue(currValue);
     }
 
     @Override

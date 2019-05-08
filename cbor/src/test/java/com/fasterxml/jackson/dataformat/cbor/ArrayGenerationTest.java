@@ -3,14 +3,15 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Basic testing for scalar-array write methods added in 2.8.
+ * Basic testing for scalar-array write methods.
  */
 public class ArrayGenerationTest extends CBORTestBase
 {
-    private final CBORFactory FACTORY = new CBORFactory();
-    
+    private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
+
     public void testIntArray() throws Exception
     {
         _testIntArray(false);
@@ -99,11 +100,11 @@ public class ArrayGenerationTest extends CBORTestBase
             values[i] = i-pre;
         }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator gen = FACTORY.createGenerator(bytes);
+        JsonGenerator gen = MAPPER.createGenerator(bytes);
         gen.writeArray(values, pre, elements);
         gen.close();
 
-        JsonParser p = FACTORY.createParser(bytes.toByteArray());
+        JsonParser p = MAPPER.createParser(bytes.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0; i < elements; ++i) {
             if ((i & 1) == 0) { // alternate
@@ -130,10 +131,10 @@ public class ArrayGenerationTest extends CBORTestBase
             values[i] = i-pre;
         }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator gen = FACTORY.createGenerator(bytes);
+        JsonGenerator gen = MAPPER.createGenerator(bytes);
         gen.writeArray(values, pre, elements);
         gen.close();
-        JsonParser p = FACTORY.createParser(bytes.toByteArray());
+        JsonParser p = MAPPER.createParser(bytes.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0; i < elements; ++i) {
             if ((i & 1) == 0) { // alternate
@@ -160,10 +161,10 @@ public class ArrayGenerationTest extends CBORTestBase
             values[i] = i-pre;
         }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator gen = FACTORY.createGenerator(bytes);
+        JsonGenerator gen = MAPPER.createGenerator(bytes);
         gen.writeArray(values, pre, elements);
         gen.close();
-        JsonParser p = FACTORY.createParser(bytes.toByteArray());
+        JsonParser p = MAPPER.createParser(bytes.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0; i < elements; ++i) {
             JsonToken t = p.nextToken();

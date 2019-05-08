@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
@@ -17,7 +18,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     {
         // false, no header (or frame marker)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = smileGenerator(out, false);
+        SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartArray();
         gen.writeStartObject();
         gen.writeNumberField("abc", 1);
@@ -45,7 +46,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
             String field = LONG_NAME.substring(0, strLen);
             // false, no header (or frame marker)
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            SmileGenerator gen = smileGenerator(out, false);
+            SmileGenerator gen = _smileGenerator(out, false);
             gen.writeStartArray();
             gen.writeStartObject();
             gen.writeNumberField(field, 1);
@@ -64,14 +65,14 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
             assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-            assertEquals(field, parser.getCurrentName());
+            assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(1, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
     
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
             assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-            assertEquals(field, parser.getCurrentName());
+            assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(2, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
@@ -142,14 +143,15 @@ public class TestGeneratorSymbols extends BaseTestForSmile
          */
         //Enable string value sharing
         JsonFactory jf = new JsonFactory();
-        JsonParser jp = jf.createParser(json);
+        JsonParser jp = jf.createParser(ObjectReadContext.empty(), json);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileFactory sf = new SmileFactory();
 
-        sf.configure(SmileGenerator.Feature.WRITE_HEADER, true);
-        sf.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES,true);
-        sf.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES,true);
-        JsonGenerator jg = sf.createGenerator(out, null);
+        SmileFactory sf = SmileFactory.builder()
+            .enable(SmileGenerator.Feature.WRITE_HEADER,
+                    SmileGenerator.Feature.CHECK_SHARED_NAMES,
+                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .build();
+        JsonGenerator jg = sf.createGenerator(ObjectWriteContext.empty(), out, null);
 
         while (jp.nextToken() != null) {
             jg.copyCurrentEvent(jp);
@@ -204,11 +206,11 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         final String FIELD_NAME = "dossier.domaine.supportsDeclaratifsForES.SupportDeclaratif.reference";
         final String VALUE = "11111";
         
-        SmileFactory factory = new SmileFactory();
-        factory.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames);
-
+        SmileFactory factory = SmileFactory.builder()
+                .configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames)
+                .build();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        JsonGenerator gen = factory.createGenerator(os);
+        JsonGenerator gen = factory.createGenerator(ObjectWriteContext.empty(), os);
         gen.writeStartObject();
         gen.writeObjectFieldStart("query");
         gen.writeStringField(FIELD_NAME, VALUE);
@@ -216,14 +218,15 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         gen.writeEndObject();
         gen.close();
         
-        JsonParser parser = factory.createParser(os.toByteArray());
-        assertNull(parser.getCurrentToken());
+        JsonParser parser = factory.createParser(ObjectReadContext.empty(),
+                os.toByteArray());
+        assertNull(parser.currentToken());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals(FIELD_NAME, parser.getCurrentName());
+        assertEquals(FIELD_NAME, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals(VALUE, parser.getText());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());

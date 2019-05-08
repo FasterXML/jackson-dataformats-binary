@@ -3,17 +3,15 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
-
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 public class GeneratorInvalidCallsTest extends BaseTestForSmile
 {
-    final SmileFactory SMILE_F = new SmileFactory();
-
     public void testInvalidFieldNameInRoot() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = SMILE_F.createGenerator(out);
+        JsonGenerator gen = _smileGenerator(out, true);
         try {
             gen.writeStringField("a", "b");
             fail("Should NOT allow writing of FIELD_NAME in root context");

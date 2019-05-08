@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroFactory;
@@ -112,24 +112,22 @@ public class SimpleGenerationTest extends AvroTestBase
     @SuppressWarnings("resource")
     public void testIgnoringOfUnknownScalar() throws Exception
     {
-        AvroFactory af = new AvroFactory();
-        ObjectMapper mapper = new ObjectMapper(af);
+        ObjectMapper mapper = newMapper();
         // we can repurpose "Binary" from above for schema
         BinaryAndNumber input = new BinaryAndNumber("Bob", 15);
-        JsonGenerator gen = mapper.getFactory().createGenerator(new ByteArrayOutputStream());
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
         try {
-             mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(gen, input);
+             mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(b, input);
              fail("Should have thrown exception");
         } catch (JsonMappingException e) {
             verifyException(e, "no field named");
         }
 
         // But should be fine if (and only if!) we enable support for skipping
-        af.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
-
-        gen = mapper.getFactory().createGenerator(new ByteArrayOutputStream());
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(b, input);
+        b = new ByteArrayOutputStream();
+        mapper.writer(SCHEMA_WITH_BINARY_JSON)
+            .with(StreamWriteFeature.IGNORE_UNKNOWN)
+            .writeValue(b, input);
         byte[] bytes = b.toByteArray();
         assertEquals(6, bytes.length);
 
@@ -152,7 +150,8 @@ public class SimpleGenerationTest extends AvroTestBase
         }
 
         // But should be fine if (and only if!) we enable support for skipping
-        af.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        af = af.rebuild().enable(StreamWriteFeature.IGNORE_UNKNOWN).build();
+        mapper = new ObjectMapper(af);
         byte[] bytes = mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValueAsBytes(input);
         assertEquals(6, bytes.length);
 

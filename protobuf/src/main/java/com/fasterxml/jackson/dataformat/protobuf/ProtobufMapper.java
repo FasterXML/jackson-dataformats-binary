@@ -6,9 +6,13 @@ import java.io.InputStream;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -17,22 +21,64 @@ import com.fasterxml.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerat
 
 public class ProtobufMapper extends ObjectMapper
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
+
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Protobuf backend.
+     *
+     * @since 3.0
+     */
+    public static class Builder extends MapperBuilder<ProtobufMapper, Builder>
+    {
+        public Builder(ProtobufFactory f) {
+            super(f);
+        }
+
+        public Builder(StateImpl state) {
+            super(state);
+        }
+
+        @Override
+        public ProtobufMapper build() {
+            return new ProtobufMapper(this);
+        }
+
+        @Override
+        protected MapperBuilderState _saveState() {
+            return new StateImpl(this);
+        }
+
+        protected static class StateImpl extends MapperBuilderState
+            implements java.io.Serializable // important!
+        {
+            private static final long serialVersionUID = 3L;
+    
+            public StateImpl(Builder src) {
+                super(src);
+            }
+    
+            // We also need actual instance of state as base class can not implement logic
+             // for reinstating mapper (via mapper builder) from state.
+            @Override
+            protected Object readResolve() {
+                return new Builder(this).build();
+            }
+        }
+    }
 
     protected ProtobufSchemaLoader _schemaLoader = ProtobufSchemaLoader.std;
 
     /**
      * Lazily constructed instance of {@link DescriptorLoader}, used for loading
      * structured protoc definitions from multiple files.
-     *
-     * @since 2.9
      */
     protected DescriptorLoader _descriptorLoader;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public ProtobufMapper() {
@@ -40,34 +86,63 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     public ProtobufMapper(ProtobufFactory f) {
-        super(f);
+        this(new Builder(f));
     }
 
-    protected ProtobufMapper(ProtobufMapper src) {
-        super(src);
+    public ProtobufMapper(Builder b) {
+        super(b);
     }
-    
+
+    public static Builder builder() {
+        return new Builder(new ProtobufFactory());
+    }
+
+    public static Builder builder(ProtobufFactory streamFactory) {
+        return new Builder(streamFactory);
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public ProtobufMapper copy()
-    {
-        _checkInvalidCopy(ProtobufMapper.class);
-        return new ProtobufMapper(this);
+    public Builder rebuild() {
+        return new Builder((Builder.StateImpl) _savedBuilderState);
     }
 
+    /*
+    /**********************************************************************
+    /* Life-cycle, shared "vanilla" (default configuration) instance
+    /**********************************************************************
+     */
+
+    /**
+     * Accessor method for getting globally shared "default" {@link ProtobufMapper}
+     * instance: one that has default configuration, no modules registered, no
+     * config overrides. Usable mostly when dealing "untyped" or Tree-style
+     * content reading and writing.
+     */
+    public static ProtobufMapper shared() {
+        return SharedWrapper.wrapped();
+    }
+
+    /*
+    /**********************************************************************
+    /* Basic accessor overrides
+    /**********************************************************************
+     */
+    
     @Override
     public Version version() {
         return PackageVersion.VERSION;
     }
 
     @Override
-    public ProtobufFactory getFactory() {
-        return (ProtobufFactory) _jsonFactory;
+    public ProtobufFactory tokenStreamFactory() {
+        return (ProtobufFactory) _streamFactory;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Schema access, single protoc source
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -87,8 +162,6 @@ public class ProtobufMapper extends ObjectMapper
      * Convenience method for constructing protoc definition that matches
      * given Java type. Uses {@link ProtobufSchemaGenerator} for
      * generation.
-     *
-     * @since 2.8
      */
     public ProtobufSchema generateSchemaFor(JavaType type) throws JsonMappingException
     {
@@ -101,8 +174,6 @@ public class ProtobufMapper extends ObjectMapper
      * Convenience method for constructing protoc definition that matches
      * given Java type. Uses {@link ProtobufSchemaGenerator} for
      * generation.
-     *
-     * @since 2.8
      */
     public ProtobufSchema generateSchemaFor(Class<?> type) throws JsonMappingException
     {
@@ -112,28 +183,19 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Schema access, FileDescriptorSets (since 2.9)
-    /**********************************************************
+    /**********************************************************************
      */
 
-    /**
-     * @since 2.9
-     */
     public FileDescriptorSet loadDescriptorSet(URL src) throws IOException {
         return descriptorLoader().load(src);
     }
 
-    /**
-     * @since 2.9
-     */
     public FileDescriptorSet loadDescriptorSet(File src) throws IOException {
         return descriptorLoader().load(src);
     }
 
-    /**
-     * @since 2.9
-     */
     public FileDescriptorSet loadDescriptorSet(InputStream src) throws IOException {
         return descriptorLoader().load(src);
     }
@@ -141,8 +203,6 @@ public class ProtobufMapper extends ObjectMapper
     /**
      * Accessors that may be used instead of convenience <code>loadDescriptorSet</code>
      * methods, if alternate sources need to be used.
-     *
-     * @since 2.9
      */
     public synchronized DescriptorLoader descriptorLoader() throws IOException
     {
@@ -151,5 +211,21 @@ public class ProtobufMapper extends ObjectMapper
             _descriptorLoader = l = DescriptorLoader.construct(this);
         }
         return l;
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class(es)
+    /**********************************************************
+     */
+
+    /**
+     * Helper class to contain dynamically constructed "shared" instance of
+     * mapper, should one be needed via {@link #shared}.
+     */
+    private final static class SharedWrapper {
+        private final static ProtobufMapper MAPPER = ProtobufMapper.builder().build();
+
+        public static ProtobufMapper wrapped() { return MAPPER; }
     }
 }

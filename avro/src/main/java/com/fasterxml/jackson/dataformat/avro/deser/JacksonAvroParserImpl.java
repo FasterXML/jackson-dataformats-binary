@@ -7,10 +7,10 @@ import java.io.Writer;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 /**
- * Implementation class that exposes additional internal API
- * to be used as callbacks by {@link AvroReadContext} implementations.
+ * Parser implementation that uses native Jackson avro decoder.
  */
 public class JacksonAvroParserImpl extends AvroParserImpl
 {
@@ -73,23 +73,24 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     /* Life-cycle
     /**********************************************************
      */
-    
-    public JacksonAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec, InputStream in)
+
+    public JacksonAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures, AvroSchema schema,
+            InputStream in)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = in;
-        _inputBuffer = ctxt.allocReadIOBuffer();
+        _inputBuffer = ioCtxt.allocReadIOBuffer();
         _inputPtr = 0;
         _inputEnd = 0;
         _bufferRecyclable = true;
     }
 
-    public JacksonAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec,
+    public JacksonAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures, AvroSchema schema,
             byte[] data, int offset, int len)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = null;
         _inputBuffer = data;
         _inputPtr = offset;
@@ -122,7 +123,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     @Override
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
                 _inputStream.close();
             }
             _inputStream = null;
@@ -178,7 +179,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             return _textBuffer.contentsAsString();
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _avroContext.getCurrentName();
+            return _avroContext.currentName();
         }
         if (t != null) {
             if (t.isNumeric()) {
@@ -197,7 +198,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _avroContext.getCurrentName();
+            String n = _avroContext.currentName();
             writer.write(n);
             return n.length();
         }

@@ -90,8 +90,8 @@ public class WriteStringsTest extends ProtobufTestBase
     private void _testSimpleLongManual(String longName) throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = MAPPER.getFactory().createGenerator(bytes);
-        g.enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        JsonGenerator g = MAPPER.createGenerator(bytes);
+        g.enable(StreamWriteFeature.IGNORE_UNKNOWN);
         g.setSchema(NAME_SCHEMA);
 
         g.writeStartObject();
@@ -104,7 +104,7 @@ public class WriteStringsTest extends ProtobufTestBase
         g.writeEndObject();
         g.close();
 
-        JsonParser p = MAPPER.getFactory().createParser(new ByteArrayInputStream(bytes.toByteArray()));
+        JsonParser p = MAPPER.createParser(new ByteArrayInputStream(bytes.toByteArray()));
         p.setSchema(NAME_SCHEMA);
         
         assertToken(JsonToken.START_OBJECT, p.nextToken());

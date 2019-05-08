@@ -1,7 +1,7 @@
 language: java
 
+# Jackson 3.x is Java 8 only so
 jdk:
-  - openjdk7
   - openjdk8
 
 # whitelist
@@ -9,6 +9,11 @@ branches:
   only:
     - master
     - "2.9"
+
+# Below this line is configuration for deploying to the Sonatype OSS repo
+# https://knowm.org/configure-travis-ci-to-deploy-snapshots/
+before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
+after_success: "mvn deploy --settings target/travis/settings.xml"
 
 env:
   global:

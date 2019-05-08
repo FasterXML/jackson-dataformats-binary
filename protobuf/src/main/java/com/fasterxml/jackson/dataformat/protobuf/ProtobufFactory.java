@@ -1,15 +1,16 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.*;
-import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.InputAccessor;
-import com.fasterxml.jackson.core.format.MatchStrength;
+import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
-public class ProtobufFactory extends JsonFactory
+public class ProtobufFactory
+    extends BinaryTSFactory
+    implements java.io.Serializable
 {
     private static final long serialVersionUID = 1;
 
@@ -19,24 +20,47 @@ public class ProtobufFactory extends JsonFactory
     /**********************************************************
      */
 
-    public ProtobufFactory() { }
+    public ProtobufFactory() { super(0, 0); }
 
-    public ProtobufFactory(ObjectCodec codec) {
-        super(codec);
+    protected ProtobufFactory(ProtobufFactory src) {
+        super(src);
     }
 
-    protected ProtobufFactory(ProtobufFactory src, ObjectCodec oc)
-    {
-        super(src, oc);
+    /**
+     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     *
+     * @since 3.0
+     */
+    protected ProtobufFactory(ProtobufFactoryBuilder b) {
+        super(b);
     }
 
     @Override
-    public ProtobufFactory copy()
-    {
-        _checkInvalidCopy(ProtobufFactory.class);
-        return new ProtobufFactory(this, null);
+    public ProtobufFactoryBuilder rebuild() {
+        return new ProtobufFactoryBuilder(this);
     }
 
+    /**
+     * Main factory method to use for constructing {@link ProtobufFactory} instances with
+     * different configuration.
+     */
+    public static ProtobufFactoryBuilder builder() {
+        return new ProtobufFactoryBuilder();
+    }
+
+    @Override
+    public ProtobufFactory copy(){
+        return new ProtobufFactory(this);
+    }
+
+    /**
+     * Instances are immutable so just return `this`
+     */
+    @Override
+    public TokenStreamFactory snapshot() {
+        return this;
+    }
+    
     /*
     /**********************************************************
     /* Serializable overrides
@@ -46,16 +70,14 @@ public class ProtobufFactory extends JsonFactory
     /**
      * Method that we need to override to actually make restoration go
      * through constructors etc.
-     * Also: must be overridden by sub-classes as well.
      */
-    @Override
     protected Object readResolve() {
-        return new ProtobufFactory(this, _objectCodec);
+        return new ProtobufFactory(this);
     }
 
     /*                                                                                       
     /**********************************************************                              
-    /* Versioned                                                                             
+    /* Basic introspection                                                                  
     /**********************************************************                              
      */
 
@@ -63,33 +85,6 @@ public class ProtobufFactory extends JsonFactory
     public Version version() {
         return PackageVersion.VERSION;
     }
-    
-    /*
-    /**********************************************************
-    /* Format detection functionality
-    /**********************************************************
-     */
-    
-    @Override
-    public String getFormatName() {
-        return ProtobufSchema.FORMAT_NAME_PROTOBUF;
-    }
-    
-    /**
-     * Sub-classes need to override this method
-     */
-    @Override
-    public MatchStrength hasFormat(InputAccessor acc) throws IOException
-    {
-        // TODO, if possible... probably isn't?
-        return MatchStrength.INCONCLUSIVE;
-    }
-
-    /*
-    /**********************************************************
-    /* Capability introspection
-    /**********************************************************
-     */
 
     // Protobuf is not positional
     @Override
@@ -97,15 +92,29 @@ public class ProtobufFactory extends JsonFactory
         return false;
     }
 
-    // Protobuf can embed raw binary data natively
     @Override
-    public boolean canHandleBinaryNatively() {
-        return true;
+    public boolean canParseAsync() {
+        // 30-Sep-2017, tatu: No async implementation exists yet
+        return false;
+    }
+
+    /*
+    /**********************************************************
+    /* Format detection functionality
+    /**********************************************************
+     */
+
+    @Override
+    public String getFormatName() {
+        return ProtobufSchema.FORMAT_NAME_PROTOBUF;
     }
 
     @Override
-    public boolean canUseCharArrays() { return false; }
-    
+    public boolean canUseSchema(FormatSchema schema) {
+        return (schema instanceof ProtobufSchema);
+    }
+
+
     // No format-specific configuration, yet:
 /*    
     @Override
@@ -118,79 +127,15 @@ public class ProtobufFactory extends JsonFactory
         return null;
     }
 */
-
-    /*
-    /**********************************************************
-    /* Overridden parser factory methods
-    /**********************************************************
-     */
-
-    @SuppressWarnings("resource")
     @Override
-    public ProtobufParser createParser(File f) throws IOException {
-        final IOContext ctxt = _createContext(f, true);
-        return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
-    }
+    public int getFormatReadFeatures() { return 0; }
 
     @Override
-    public ProtobufParser createParser(URL url) throws IOException {
-        final IOContext ctxt = _createContext(url, true);
-        return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
-    }
-
-    @Override
-    public ProtobufParser createParser(InputStream in) throws IOException {
-        final IOContext ctxt = _createContext(in, false);
-        return _createParser(_decorate(in, ctxt), ctxt);
-    }
-
-    @Override
-    public ProtobufParser createParser(byte[] data) throws IOException {
-        return _createParser(data, 0, data.length, _createContext(data, true));
-    }
-
-    @SuppressWarnings("resource")
-    @Override
-    public ProtobufParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
-        if (_inputDecorator != null) {
-            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
-            if (in != null) {
-                return _createParser(in, ctxt);
-            }
-        }
-        return _createParser(data, offset, len, ctxt);
-    }
-
-    /*
-    /**********************************************************
-    /* Overridden generator factory methods
-    /**********************************************************
-     */
-
-    @Override
-    public ProtobufGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
-        IOContext ctxt = _createContext(out, false);
-        ctxt.setEncoding(enc);
-        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, _decorate(out, ctxt));
-    }
-
-    /**
-     * Method for constructing {@link JsonGenerator} for generating
-     * protobuf-encoded output.
-     *<p>
-     * Since protobuf format always uses UTF-8 internally, no encoding need
-     * to be passed to this method.
-     */
-    @Override
-    public ProtobufGenerator createGenerator(OutputStream out) throws IOException {
-        IOContext ctxt = _createContext(out, false);
-        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, _decorate(out, ctxt));
-    }
-
+    public int getFormatWriteFeatures() { return 0; }
+    
     /*
     /******************************************************
-    /* Overridden internal factory methods
+    /* Factory methods: parsers
     /******************************************************
      */
 
@@ -200,57 +145,47 @@ public class ProtobufFactory extends JsonFactory
     }
 
     @Override
-    protected ProtobufParser _createParser(InputStream in, IOContext ctxt) throws IOException
+    protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in) throws IOException
     {
-        byte[] buf = ctxt.allocReadIOBuffer();
-        return new ProtobufParser(ctxt, _parserFeatures,
-                _objectCodec, in, buf, 0, 0, true);
+        byte[] buf = ioCtxt.allocReadIOBuffer();
+        return new ProtobufParser(readCtxt, ioCtxt,
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                (ProtobufSchema) readCtxt.getSchema(),
+                in, buf, 0, 0, true);
     }
 
     @Override
-    protected JsonParser _createParser(Reader r, IOContext ctxt) throws IOException {
-        return _nonByteSource();
-    }
-
-    @Override
-    protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
-            boolean recyclable) throws IOException {
-        return _nonByteSource();
-    }
-
-    @Override
-    protected ProtobufParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
+    protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            byte[] data, int offset, int len) throws IOException
     {
-        return new ProtobufParser(ctxt, _parserFeatures,
-                _objectCodec, null, data, offset, len, false);
+        return new ProtobufParser(readCtxt, ioCtxt,
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                (ProtobufSchema) readCtxt.getSchema(),
+                null, data, offset, len, false);
     }
 
     @Override
-    protected ProtobufGenerator _createGenerator(Writer out, IOContext ctxt) throws IOException {
-        return _nonByteTarget();
+    protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            DataInput input) throws IOException {
+        // 30-Sep-2017, tatu: As of now not supported although should be quite possible
+        //    to support
+        return _unsupported();
     }
+   
+    /*
+    /******************************************************
+    /* Factory methods: generators
+    /******************************************************
+     */
 
     @Override
-    protected ProtobufGenerator _createUTF8Generator(OutputStream out, IOContext ctxt) throws IOException {
-        return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, out);
-    }
-
-    @Override
-    protected Writer _createWriter(OutputStream out, JsonEncoding enc, IOContext ctxt) throws IOException {
-        return _nonByteTarget();
-    }
-
-    private final ProtobufGenerator _createProtobufGenerator(IOContext ctxt,
-            int stdFeat, ObjectCodec codec, OutputStream out) throws IOException
+    protected ProtobufGenerator _createGenerator(ObjectWriteContext writeCtxt,
+            IOContext ioCtxt, OutputStream out) throws IOException
     {
-        return new ProtobufGenerator(ctxt, stdFeat, _objectCodec, out);
-    }
-    
-    protected <T> T _nonByteSource() {
-        throw new UnsupportedOperationException("Can not create parser for non-byte-based source");
-    }
-
-    protected <T> T _nonByteTarget() {
-        throw new UnsupportedOperationException("Can not create generator for non-byte-based target");
+        return new ProtobufGenerator(writeCtxt, ioCtxt,
+                writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
+                (ProtobufSchema) writeCtxt.getSchema(),
+                out);
     }
 }

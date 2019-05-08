@@ -7,8 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 public class Issue19Test extends AvroTestBase
@@ -74,13 +73,13 @@ public class Issue19Test extends AvroTestBase
 
         EventLog input = new EventLog(9999, (byte) sampleEvents.size(), sampleEvents, sampleProblems);
 
-        AvroMapper mapper = newMapper();
-        mapper
-            .setVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)
-            .setVisibility(PropertyAccessor.GETTER, Visibility.NONE)
-            .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
-            .configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true)
-            ;
+        AvroMapper mapper = AvroMapper.builder()
+                .enable(StreamWriteFeature.IGNORE_UNKNOWN)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .changeDefaultVisibility(vc ->
+                    vc.withVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY)
+                    .withVisibility(PropertyAccessor.GETTER, Visibility.NONE))
+                .build();
 
         // First, see if we can generate schema, use that:
         AvroSchema schema = mapper.schemaFor(EventLog.class);

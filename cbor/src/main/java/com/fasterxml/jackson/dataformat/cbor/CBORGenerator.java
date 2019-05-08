@@ -213,9 +213,10 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
-            ObjectCodec codec, OutputStream out) {
-        super(stdFeatures, codec);
+    public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+            int generatorFeatures, int formatFeatures,
+            OutputStream out) {
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;
@@ -242,10 +243,12 @@ public class CBORGenerator extends GeneratorBase
      *            Offset pointing past already buffered content; that is, number
      *            of bytes of valid content to output, within buffer.
      */
-    public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
-            ObjectCodec codec, OutputStream out, byte[] outputBuffer,
-            int offset, boolean bufferRecyclable) {
-        super(stdFeatures, codec);
+    public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+            int generatorFeatures, int formatFeatures,
+            OutputStream out, byte[] outputBuffer,
+            int offset, boolean bufferRecyclable)
+    {
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;
@@ -323,20 +326,11 @@ public class CBORGenerator extends GeneratorBase
     // public JsonParser overrideStdFeatures(int values, int mask)
 
     @Override
-    public int getFormatFeatures() {
+    public int formatWriteFeatures() {
         return _formatFeatures;
     }
 
-    @Override
-    public JsonGenerator overrideStdFeatures(int values, int mask) {
-        int oldState = _features;
-        int newState = (oldState & ~mask) | (values & mask);
-        if (oldState != newState) {
-            _features = newState;
-        }
-        return this;
-    }
-
+    /*
     @Override
     public JsonGenerator overrideFormatFeatures(int values, int mask) {
         int oldState = _formatFeatures;
@@ -347,6 +341,7 @@ public class CBORGenerator extends GeneratorBase
         }
         return this;
     }
+    */
 
     /*
     /**********************************************************
@@ -395,7 +390,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldName(String name) throws IOException {
-        if (_writeContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(name);
@@ -405,7 +400,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeFieldName(SerializableString name)
             throws IOException {
         // Object is a value, need to verify it's allowed
-        if (_writeContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
@@ -418,9 +413,9 @@ public class CBORGenerator extends GeneratorBase
         _writeBytes(raw, 0, len);
     }
 
-    @Override // since 2.8
+    @Override
     public final void writeFieldId(long size) throws IOException {
-        if (_writeContext.writeFieldName(String.valueOf(size)) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(String.valueOf(size)) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeNumberNoCheck(size);
@@ -430,7 +425,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStringField(String fieldName, String value)
             throws IOException
     {
-        if (_writeContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(fieldName);
@@ -488,7 +483,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
-        _writeContext = _writeContext.createChildArrayContext();
+        _outputContext = _outputContext.createChildArrayContext();
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -500,11 +495,20 @@ public class CBORGenerator extends GeneratorBase
      * Unlike with JSON, this method is using slightly optimized version since
      * CBOR has a variant that allows embedding length in array start marker.
      */
-	 
+
     @Override
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
-        _writeContext = _writeContext.createChildArrayContext();
+        _outputContext = _outputContext.createChildArrayContext();
+        _pushRemainingElements();
+        _currentRemainingElements = elementsToWrite;
+        _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
+    }
+
+    @Override
+    public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
+        _verifyValueWrite("start an array");
+        _outputContext = _outputContext.createChildArrayContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -512,17 +516,17 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndArray() throws IOException {
-        if (!_writeContext.inArray()) {
-            _reportError("Current context not Array but "+_writeContext.typeDesc());
+        if (!_outputContext.inArray()) {
+            _reportError("Current context not Array but "+_outputContext.typeDesc());
         }
         closeComplexElement();
-        _writeContext = _writeContext.getParent();
+        _outputContext = _outputContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
-        _writeContext = _writeContext.createChildObjectContext();
+        _outputContext = _outputContext.createChildObjectContext();
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -531,14 +535,10 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    // since 2.8
     public final void writeStartObject(Object forValue) throws IOException {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _writeContext.createChildObjectContext();
-        _writeContext = ctxt;
-        if (forValue != null) {
-            ctxt.setCurrentValue(forValue);
-        }
+        JsonWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
+        _outputContext = ctxt;
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -548,7 +548,7 @@ public class CBORGenerator extends GeneratorBase
 
     public final void writeStartObject(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
-        _writeContext = _writeContext.createChildObjectContext();
+        _outputContext = _outputContext.createChildObjectContext();
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
@@ -556,11 +556,11 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndObject() throws IOException {
-        if (!_writeContext.inObject()) {
-            _reportError("Current context not Object but "+ _writeContext.typeDesc());
+        if (!_outputContext.inObject()) {
+            _reportError("Current context not Object but "+ _outputContext.typeDesc());
         }
         closeComplexElement();
-        _writeContext = _writeContext.getParent();
+        _outputContext = _outputContext.getParent();
     }
 
     @Override // since 2.8
@@ -1032,11 +1032,11 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_TAG_DECIMAL_FRACTION);
         _writeByte(BYTE_ARRAY_2_ELEMENTS);
 
+        // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
         int scale = dec.scale();
-        _writeIntValue(scale);
-        /* Hmmmh. Specification suggest use of regular integer for mantissa. But
-         * if it doesn't fit, use "bignum"
-         */
+        _writeIntValue(-scale);
+        // Hmmmh. Specification suggest use of regular integer for mantissa. But
+        // if it doesn't fit, use "bignum"
         BigInteger unscaled = dec.unscaledValue();
         int bitLength = unscaled.bitLength();
         if (bitLength <= 31) {
@@ -1065,7 +1065,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws IOException {
-        int status = _writeContext.writeValue();
+        int status = _outputContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not " + typeMsg + ", expecting field name");
         }
@@ -1088,7 +1088,7 @@ public class CBORGenerator extends GeneratorBase
     private void _failSizedArrayOrObject() throws IOException
     {
         _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
-                _writeContext.typeDesc()));
+                _outputContext.typeDesc()));
     }
 
     /*
@@ -1100,7 +1100,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void flush() throws IOException {
         _flushBuffer();
-        if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
             _out.flush();
         }
     }
@@ -1109,9 +1109,9 @@ public class CBORGenerator extends GeneratorBase
     public void close() throws IOException {
         // First: let's see that we still have buffers...
         if ((_outputBuffer != null)
-                && isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+                && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             while (true) {
-                JsonStreamContext ctxt = getOutputContext();
+                TokenStreamContext ctxt = getOutputContext();
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -1126,9 +1126,10 @@ public class CBORGenerator extends GeneratorBase
         _flushBuffer();
 
         if (_ioContext.isResourceManaged()
-                || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+                || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
             _out.close();
-        } else {
+        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
             // If we can't close it, we should at least flush
             _out.flush();
         }
@@ -1190,6 +1191,14 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
+    private final static int MAX_SHORT_STRING_CHARS = 23;
+    // in case it's > 23 bytes
+    private final static int MAX_SHORT_STRING_BYTES = 23 * 3 + 2;
+
+    private final static int MAX_MEDIUM_STRING_CHARS = 255;
+    // in case it's > 255 bytes
+    private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3;
+
     protected final void _writeString(String name) throws IOException {
         int len = name.length();
         if (len == 0) {
@@ -1203,7 +1212,7 @@ public class CBORGenerator extends GeneratorBase
             int actual = _encode(_outputTail + 1, name, len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
-            if (actual < MAX_SHORT_STRING_CHARS) { // fits in prefix byte
+            if (actual <= MAX_SHORT_STRING_CHARS) { // fits in prefix byte
                 buf[ix++] = (byte) (PREFIX_TYPE_TEXT + actual);
                 _outputTail = ix + actual;
                 return;
@@ -1225,14 +1234,6 @@ public class CBORGenerator extends GeneratorBase
         _writeString(cbuf, 0, len);
     }
 
-    private final static int MAX_SHORT_STRING_CHARS = 23;
-    // in case it's > 23 bytes
-    private final static int MAX_SHORT_STRING_BYTES = 23 * 3 + 2;
-
-    private final static int MAX_MEDIUM_STRING_CHARS = 255;
-    // in case it's > 255 bytes
-    private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3;
-
     protected final void _ensureSpace(int needed) throws IOException {
         if ((_outputTail + needed + 3) > _outputEnd) {
             _flushBuffer();
@@ -1242,12 +1243,12 @@ public class CBORGenerator extends GeneratorBase
     protected final void _writeString(char[] text, int offset, int len)
             throws IOException
     {
-        if (len <= MAX_SHORT_STRING_CHARS) { // possibly short strings (not necessarily)
+        if (len <= MAX_SHORT_STRING_CHARS) { // possibly short string (not necessarily)
             _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
             int actual = _encode(_outputTail + 1, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
-            if (actual < MAX_SHORT_STRING_CHARS) { // fits in prefix byte
+            if (actual <= MAX_SHORT_STRING_CHARS) { // fits in prefix byte
                 buf[ix++] = (byte) (PREFIX_TYPE_TEXT + actual);
                 _outputTail = ix + actual;
                 return;
@@ -1264,7 +1265,7 @@ public class CBORGenerator extends GeneratorBase
             int actual = _encode(_outputTail + 2, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
-            if (actual < MAX_MEDIUM_STRING_CHARS) { // fits as expected
+            if (actual <= MAX_MEDIUM_STRING_CHARS) { // fits as expected
                 buf[ix++] = BYTE_STRING_1BYTE_LEN;
                 buf[ix++] = (byte) actual;
                 _outputTail = ix + actual;
@@ -1674,7 +1675,7 @@ public class CBORGenerator extends GeneratorBase
             break;
         default:
             _reportError(String.format("%s size mismatch: expected %d more elements",
-                    _writeContext.typeDesc(), _currentRemainingElements));
+                    _outputContext.typeDesc(), _currentRemainingElements));
         }
         _currentRemainingElements = (_elementCountsPtr == 0) 
                 ? INDEFINITE_LENGTH

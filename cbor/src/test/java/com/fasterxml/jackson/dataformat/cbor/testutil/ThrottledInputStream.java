@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor.util;
+package com.fasterxml.jackson.dataformat.cbor.testutil;
 
 import java.io.*;
 

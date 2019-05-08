@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-import com.fasterxml.jackson.dataformat.cbor.util.ThrottledInputStream;
+import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 /**
  * Unit tests for simple value types.
@@ -247,9 +247,9 @@ public class BasicParserTest extends CBORTestBase
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("a", parser.getCurrentName());
+        assertEquals("a", parser.currentName());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("a", parser.getCurrentName());
+        assertEquals("a", parser.currentName());
         assertEquals("b", parser.getText());
         assertEquals(1, parser.getTextLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
@@ -280,15 +280,15 @@ public class BasicParserTest extends CBORTestBase
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("ob", parser.getCurrentName());
+        assertEquals("ob", parser.currentName());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("num", parser.getCurrentName());
+        assertEquals("num", parser.currentName());
         assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("arr", parser.getCurrentName());
+        assertEquals("arr", parser.currentName());
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
         

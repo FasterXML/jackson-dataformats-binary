@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
+import java.util.Objects;
 
-import lombok.Data;
 import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -14,16 +14,41 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
 {
-    @Data
     public static class TestRecord {
-        private Byte[]      byteArrayField      = new Byte[0];
-        private Short[]     shortArrayField     = new Short[0];
-        private Character[] characterArrayField = new Character[0];
-        private Integer[]   integerArrayField   = new Integer[0];
-        private Long[]      longArrayField      = new Long[0];
-        private Float[]     floatArrayField     = new Float[0];
-        private Double[]    doubleArrayField    = new Double[0];
-        private String[]    stringArrayField    = new String[0];
+        public Byte[]      byteArrayField      = new Byte[0];
+        public Short[]     shortArrayField     = new Short[0];
+        public Character[] characterArrayField = new Character[0];
+        public Integer[]   integerArrayField   = new Integer[0];
+        public Long[]      longArrayField      = new Long[0];
+        public Float[]     floatArrayField     = new Float[0];
+        public Double[]    doubleArrayField    = new Double[0];
+        public String[]    stringArrayField    = new String[0];
+
+        @Override
+        public int hashCode() {
+            return Objects.hash((Object) byteArrayField);
+        }
+
+        @Override
+        public String toString() {
+            return "TestRecord";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof TestRecord)) return false;
+            TestRecord other = (TestRecord) o;
+            return Objects.equals(byteArrayField, other.byteArrayField)
+                    && Objects.equals(shortArrayField, other.shortArrayField)
+                    && Objects.equals(characterArrayField, other.characterArrayField)
+                    && Objects.equals(integerArrayField, other.integerArrayField)
+                    && Objects.equals(longArrayField, other.longArrayField)
+                    && Objects.equals(floatArrayField, other.floatArrayField)
+                    && Objects.equals(doubleArrayField, other.doubleArrayField)
+                    && Objects.equals(stringArrayField, other.stringArrayField)
+                ;
+        }
     }
 
     @Test

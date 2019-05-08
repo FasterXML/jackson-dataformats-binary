@@ -4,8 +4,8 @@ import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
@@ -14,11 +14,9 @@ public class UndefinedValueTest extends CBORTestBase
 {
     private final static byte BYTE_UNDEFINED = (byte) 0xF7;
 
-    private final CBORFactory CBOR_F = cborFactory();
-
     public void testUndefinedLiteralStreaming() throws Exception
     {
-        JsonParser p = cborParser(CBOR_F, new byte[] { BYTE_UNDEFINED });
+        JsonParser p = cborParser(new byte[] { BYTE_UNDEFINED });
         assertEquals(JsonToken.VALUE_NULL, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -30,7 +28,7 @@ public class UndefinedValueTest extends CBORTestBase
         out.write(CBORConstants.BYTE_ARRAY_INDEFINITE);
         out.write(BYTE_UNDEFINED);
         out.write(CBORConstants.BYTE_BREAK);
-        JsonParser p = cborParser(CBOR_F, out.toByteArray());
+        JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_ARRAY, p.nextToken());
         assertEquals(JsonToken.VALUE_NULL, p.nextToken());
         assertEquals(JsonToken.END_ARRAY, p.nextToken());
@@ -52,7 +50,7 @@ public class UndefinedValueTest extends CBORTestBase
         // assume we use end marker for Object, so
         doc[doc.length-2] = BYTE_UNDEFINED;
         
-        JsonParser p = cborParser(CBOR_F, doc);
+        JsonParser p = cborParser(doc);
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("bar", p.currentName());

@@ -5,7 +5,6 @@ import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class TestParserNames extends BaseTestForSmile
 {
@@ -35,21 +34,21 @@ public class TestParserNames extends BaseTestForSmile
     {
         byte[] data = _smileDoc("{"+quote(name)+":13}");
         // important: MUST use InputStream to enforce buffer boundaries!
-        SmileParser p = _smileParser(new ByteArrayInputStream(data));
-        assertNull(p.getCurrentToken());
+        JsonParser p = _smileParser(new ByteArrayInputStream(data));
+        assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals(name, p.getCurrentName());
+        assertEquals(name, p.currentName());
 
         // but also let's verify we can override the name if need be
         String newName = "fake"+name;
         p.overrideCurrentName(newName);
-        assertEquals(newName, p.getCurrentName());
+        assertEquals(newName, p.currentName());
         
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(13, p.getIntValue());
         // and overridden name should stick, too
-        assertEquals(newName, p.getCurrentName());
+        assertEquals(newName, p.currentName());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
         p.close();

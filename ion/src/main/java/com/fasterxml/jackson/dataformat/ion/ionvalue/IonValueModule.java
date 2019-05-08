@@ -23,8 +23,8 @@ import software.amazon.ion.Timestamp;
  * A module which allows for the direct serialization to and from IonValue fields. The POJO can declare fields of type
  * IonValue (or a subclass) and the direct value will be provided.
  */
-public class IonValueModule extends SimpleModule {
-
+public class IonValueModule extends SimpleModule
+{
     private static final long serialVersionUID = 1L;
 
     public IonValueModule() {
@@ -34,5 +34,10 @@ public class IonValueModule extends SimpleModule {
 
         setDeserializers(new DeserializersEx());
         addDeserializer(Timestamp.class, new TimestampDeserializer());
+    }
+
+    @Override
+    public Object getRegistrationId() {
+        return getClass().getName();
     }
 }

@@ -3,8 +3,6 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.InputAccessor;
-import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
@@ -19,7 +17,7 @@ public class CBORParserBootstrapper
     /**********************************************************
      */
 
-    protected final IOContext _context;
+    protected final IOContext _ioContext;
     protected final InputStream _in;
     
     /*
@@ -58,19 +56,19 @@ public class CBORParserBootstrapper
     /**********************************************************
      */
 
-    public CBORParserBootstrapper(IOContext ctxt, InputStream in)
+    public CBORParserBootstrapper(IOContext ioCtxt, InputStream in)
     {
-        _context = ctxt;
+        _ioContext = ioCtxt;
         _in = in;
-        _inputBuffer = ctxt.allocReadIOBuffer();
+        _inputBuffer = ioCtxt.allocReadIOBuffer();
         _inputEnd = _inputPtr = 0;
         _inputProcessed = 0;
         _bufferRecyclable = true;
     }
 
-    public CBORParserBootstrapper(IOContext ctxt, byte[] inputBuffer, int inputStart, int inputLen)
+    public CBORParserBootstrapper(IOContext ioCtxt, byte[] inputBuffer, int inputStart, int inputLen)
     {
-        _context = ctxt;
+        _ioContext = ioCtxt;
         _in = null;
         _inputBuffer = inputBuffer;
         _inputPtr = inputStart;
@@ -80,16 +78,18 @@ public class CBORParserBootstrapper
         _bufferRecyclable = false;
     }
 
-    public CBORParser constructParser(int factoryFeatures,
+    public CBORParser constructParser(ObjectReadContext readCtxt,
+            int factoryFeatures,
             int generalParserFeatures, int formatFeatures,
-            ObjectCodec codec, ByteQuadsCanonicalizer rootByteSymbols)
+            ByteQuadsCanonicalizer rootByteSymbols)
         throws IOException, JsonParseException
     {
         ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
         // We just need a single byte to recognize possible "empty" document.
         ensureLoaded(1);
-        CBORParser p = new CBORParser(_context, generalParserFeatures, formatFeatures,
-                codec, can, 
+        CBORParser p = new CBORParser(readCtxt, _ioContext,
+                generalParserFeatures, formatFeatures,
+                can, 
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         if (_inputPtr < _inputEnd) { // only false for empty doc
             ; // anything we should verify? In future, could verify
@@ -103,79 +103,6 @@ public class CBORParserBootstrapper
         return p;
     }
 
-    /*
-    /**********************************************************
-    /*  Encoding detection for data format auto-detection
-    /**********************************************************
-     */
-
-    public static MatchStrength hasCBORFormat(InputAccessor acc) throws IOException
-    {
-        // Ok: ideally we start with the header -- if so, we are golden
-        if (!acc.hasMoreBytes()) {
-            return MatchStrength.INCONCLUSIVE;
-        }
-        // We always need at least two bytes to determine, so
-        byte b = acc.nextByte();
-
-        /* 13-Jan-2014, tatu: Let's actually consider indefine-length Objects
-         *    as conclusive matches if empty, or start with a text key.
-         */
-        if (b == CBORConstants.BYTE_OBJECT_INDEFINITE) {
-            if (acc.hasMoreBytes()) {
-                b = acc.nextByte();
-                if (b == CBORConstants.BYTE_BREAK) {
-                    return MatchStrength.SOLID_MATCH;
-                }
-                if (CBORConstants.hasMajorType(CBORConstants.MAJOR_TYPE_TEXT, b)) {
-                    return MatchStrength.SOLID_MATCH;
-                }
-                // other types; unlikely but can't exactly rule out
-                return MatchStrength.INCONCLUSIVE;
-            }
-        } else if (b == CBORConstants.BYTE_ARRAY_INDEFINITE) {
-            if (acc.hasMoreBytes()) {
-                b = acc.nextByte();
-                if (b == CBORConstants.BYTE_BREAK) {
-                    return MatchStrength.SOLID_MATCH;
-                }
-                // all kinds of types are possible, so let's just acknowledge it as possible:
-                return MatchStrength.WEAK_MATCH;
-            }
-        } else if (CBORConstants.hasMajorType(CBORConstants.MAJOR_TYPE_TAG, b)) {
-
-            // Actually, specific "self-describe tag" is a very good indicator
-            // (see [Issue#6]
-            if (b == (byte) 0xD9) {
-                if (acc.hasMoreBytes()) {
-                    b = acc.nextByte();
-                    if (b == (byte) 0xD9) {
-                        if (acc.hasMoreBytes()) {
-                            b = acc.nextByte();
-                            if (b == (byte) 0xF7) {
-                                return MatchStrength.FULL_MATCH;
-                            }
-                        }
-                    }
-                }
-            }
-            // As to other tags, possible. May want to add other "well-known" (commonly
-            // used ones for root value) tags for 'solid' match in future.
-            return MatchStrength.WEAK_MATCH;
-
-        // Other types; the only one where there's significant checking possibility
-        // is in last, "misc" category
-        } else if (CBORConstants.hasMajorType(CBORConstants.MAJOR_TYPE_MISC, b)) {
-            if ((b == CBORConstants.BYTE_FALSE)
-                    || (b == CBORConstants.BYTE_TRUE)
-                    || (b == CBORConstants.BYTE_NULL)) {
-                return MatchStrength.SOLID_MATCH;
-            }
-            return MatchStrength.NO_MATCH;
-        }
-        return MatchStrength.INCONCLUSIVE;
-    }
-    
     /*
     /**********************************************************
     /* Internal methods, raw input access

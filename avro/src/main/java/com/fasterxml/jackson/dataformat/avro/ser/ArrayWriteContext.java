@@ -11,7 +11,7 @@ public class ArrayWriteContext
     protected final GenericArray<Object> _array;
     
     public ArrayWriteContext(AvroWriteContext parent, AvroGenerator generator,
-            GenericArray<Object> array)
+            GenericArray<Object> array, Object currValue)
     {
         super(TYPE_ARRAY, parent, generator, array.getSchema());
         _array = array;
@@ -19,25 +19,17 @@ public class ArrayWriteContext
 
     @Override
     public Object rawValue() { return _array; }
-    
+
     @Override
-    public final AvroWriteContext createChildArrayContext() throws JsonMappingException {
+    public final AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException {
         GenericArray<Object> arr = _createArray(_schema.getElementType());
         _array.add(arr);
-        return new ArrayWriteContext(this, _generator, arr);
-    }
-    
-    @Override
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException
-    {
-        AvroWriteContext child = _createObjectContext(_schema.getElementType());
-        _array.add(child.rawValue());
-        return child;
+        return new ArrayWriteContext(this, _generator, arr, currValue);
     }
 
     @Override
-    public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException {
-        AvroWriteContext child = _createObjectContext(_schema.getElementType(), object);
+    public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+        AvroWriteContext child = _createObjectContext(_schema.getElementType(), currValue);
         _array.add(child.rawValue());
         return child;
     }

@@ -21,18 +21,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
 
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.type.WritableTypeId;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
 import software.amazon.ion.IonType;
 import software.amazon.ion.IonValue;
@@ -47,10 +40,10 @@ public class IonGenerator
     extends GeneratorBase
 {
     /*
-     *****************************************************************
-     * Basic configuration
-     *****************************************************************
-      */  
+    /*****************************************************************
+    /* Basic configuration
+    /*****************************************************************
+     */  
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
@@ -63,18 +56,26 @@ public class IonGenerator
      */
     protected final Closeable _destination;
 
-    /*
-     *****************************************************************
-     * Instantiation
-     *****************************************************************
-      */  
+    /**
+     * Object that handles pretty-printing (usually additional
+     * white space to make results more human-readable) during
+     * output. If null, no pretty-printing is done.
+     */
+    protected PrettyPrinter _cfgPrettyPrinter;
 
-    public IonGenerator(int features, ObjectCodec codec,
-            IonWriter ion, IOContext ctxt, Closeable dst)
+    /*
+    /*****************************************************************
+    /* Instantiation
+    /*****************************************************************
+     */
+
+    public IonGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
+            int generatorFeatures,
+            IonWriter ion, Closeable dst)
     {
-        super(features, codec);
+        super(writeCtxt, generatorFeatures);
         _writer = ion;
-        _ioContext = ctxt;
+        _ioContext = ioCtxt;
         _destination = dst;
     }
 
@@ -100,8 +101,10 @@ public class IonGenerator
             if (_ioContext.isResourceManaged()) {
                 _destination.close();
             } else {
-                if (_destination instanceof Flushable) {
-                    ((Flushable) _destination).flush();
+                if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                    if (_destination instanceof Flushable) {
+                        ((Flushable) _destination).flush();
+                    }
                 }
             }
         }
@@ -110,9 +113,11 @@ public class IonGenerator
     @Override
     public void flush() throws IOException
     {
-        Object dst = _ioContext.getSourceReference();
-        if (dst instanceof Flushable) {
-            ((Flushable) dst).flush();
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            Object dst = _ioContext.getSourceReference();
+            if (dst instanceof Flushable) {
+                ((Flushable) dst).flush();
+            }
         }
     }
 
@@ -200,7 +205,7 @@ public class IonGenerator
      *
      * @param annotation a type annotation
      * 
-     * @see IonAnnotationTypeSerializer
+     * @see com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer
      */
     public void annotateNextValue(String annotation) {
         // We're not calling _verifyValueWrite because this doesn't actually write anything -- writing happens upon
@@ -315,7 +320,9 @@ public class IonGenerator
         _verifyValueWrite("write null");
         _writer.writeNull(ionType);    
     }
-    
+
+    // 06-Oct-2017, tatu: Base impl from `GeneratorBase` should be sufficient
+    /*
     @Override
     public void writeObject(Object pojo) throws IOException, JsonProcessingException
     {
@@ -330,6 +337,7 @@ public class IonGenerator
             _objectCodec.writeValue(this, pojo);
         }
     }
+    */
 
     public void writeValue(IonValue value) throws IOException {
         _verifyValueWrite("write ion value");
@@ -363,10 +371,13 @@ public class IonGenerator
     @Override
     protected void _verifyValueWrite(String msg) throws IOException, JsonGenerationException
     {
-        int status = _writeContext.writeValue();
+        int status = _outputContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+msg+", expecting field name");
         }
+        // 05-Oct-2017, tatu: I don't think pretty-printing is supported... is it?
+        
+/*
         // Only additional work needed if we are pretty-printing
         if (_cfgPrettyPrinter != null) {
             // If we have a pretty printer, it knows what to do:
@@ -382,9 +393,9 @@ public class IonGenerator
                 break;
             case JsonWriteContext.STATUS_OK_AS_IS:
                 // First entry, but of which context?
-                if (_writeContext.inArray()) {
+                if (_outputContext.inArray()) {
                     _cfgPrettyPrinter.beforeArrayValues(this);
-                } else if (_writeContext.inObject()) {
+                } else if (_outputContext.inObject()) {
                     _cfgPrettyPrinter.beforeObjectEntries(this);
                 }
                 break;
@@ -392,24 +403,25 @@ public class IonGenerator
                 throw new IllegalStateException("Should never occur; status "+status);
             }
         }
+        */
     }
 
     @Override
     public void writeEndArray() throws IOException, JsonGenerationException {
-        _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
     public void writeEndObject() throws IOException, JsonGenerationException {
-        _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
     public void writeFieldName(String value) throws IOException, JsonGenerationException {
-        //This call to _writeContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
-        int status = _writeContext.writeFieldName(value);
+        //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
+        int status = _outputContext.writeFieldName(value);
         if (status == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
@@ -426,14 +438,14 @@ public class IonGenerator
     @Override
     public void writeStartArray() throws IOException, JsonGenerationException {
         _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
-        _writeContext = _writeContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.LIST);
     }
 
     @Override
     public void writeStartObject() throws IOException, JsonGenerationException {
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
-        _writeContext = _writeContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
+        _outputContext = _outputContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.STRUCT);
     }
 

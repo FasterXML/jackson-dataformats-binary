@@ -10,9 +10,12 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public abstract class BaseTestForSmile
     extends junit.framework.TestCase
@@ -45,101 +48,150 @@ public abstract class BaseTestForSmile
             +"}"
             ;
 
+    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
+
+    private final static ObjectMapper SMILE_MAPPER = new ObjectMapper(new SmileFactory());
+
     /*
     /**********************************************************
     /* Factory methods
     /**********************************************************
      */
 
-    protected SmileParser _smileParser(byte[] input) throws IOException {
+    protected JsonParser _smileParser(byte[] input) throws IOException {
         return _smileParser(input, false);
     }
 
-    protected SmileParser _smileParser(InputStream in) throws IOException {
+    protected JsonParser _smileParser(InputStream in) throws IOException {
         return _smileParser(in, false);
     }
     
-    protected SmileParser _smileParser(byte[] input, boolean requireHeader) throws IOException
+    protected JsonParser _smileParser(byte[] input, boolean requireHeader) throws IOException
     {
-        SmileFactory f = smileFactory(requireHeader, false, false);
-        return _smileParser(f, input);
+        return _smileReader(requireHeader).createParser(input);
     }
 
-    protected SmileParser _smileParser(InputStream in, boolean requireHeader) throws IOException
+    protected JsonParser _smileParser(InputStream in, boolean requireHeader) throws IOException
     {
-        SmileFactory f = smileFactory(requireHeader, false, false);
-        return _smileParser(f, in);
-    }
-    
-    protected SmileParser _smileParser(SmileFactory f, byte[] input) throws IOException {
-        return f.createParser(input);
+        return _smileReader(requireHeader).createParser(in);
     }
 
-    protected SmileParser _smileParser(SmileFactory f, InputStream in) throws IOException {
-        return f.createParser(in);
+    protected ObjectReader _smileReader() {
+        return _smileReader(false);
     }
-    
-    protected ObjectMapper smileMapper() {
+
+    protected ObjectReader _smileReader(boolean requireHeader) {
+        ObjectReader r = SMILE_MAPPER.reader();
+        if (requireHeader) {
+            r = r.with(SmileParser.Feature.REQUIRE_HEADER);
+        } else {
+            r = r.without(SmileParser.Feature.REQUIRE_HEADER);
+        }
+        return r;
+    }
+
+    protected SmileMapper newSmileMapper() {
+        return new SmileMapper(new SmileFactory());
+    }
+
+    protected SmileMapper smileMapper() {
         return smileMapper(false);
     }
     
-    protected ObjectMapper smileMapper(boolean requireHeader) {
+    protected SmileMapper.Builder smileMapperBuilder() {
+        return SmileMapper.builder(smileFactory(false, false, false));
+    }
+
+    protected SmileMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }
-    
-    protected ObjectMapper smileMapper(boolean requireHeader,
+
+    protected SmileMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        return new ObjectMapper(smileFactory(requireHeader, writeHeader, writeEndMarker));
+        return new SmileMapper(smileFactory(requireHeader, writeHeader, writeEndMarker));
     }
-    
+
     protected SmileFactory smileFactory(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
-        SmileFactory f = new SmileFactory();
-        f.configure(SmileParser.Feature.REQUIRE_HEADER, requireHeader);
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader);
-        f.configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
-        return f;
+        return smileFactoryBuilder(requireHeader, writeHeader, writeEndMarker)
+                .build();
     }
 
+    protected SmileFactoryBuilder smileFactoryBuilder(boolean requireHeader,
+            boolean writeHeader, boolean writeEndMarker)
+    {
+        return SmileFactory.builder()
+                .configure(SmileParser.Feature.REQUIRE_HEADER, requireHeader)
+                .configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
+                .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
+    }
+    
     protected byte[] _smileDoc(String json) throws IOException
     {
         return _smileDoc(json, true);
     }
 
-    protected byte[] _smileDoc(String json, boolean writeHeader) throws IOException
+    protected byte[] _smileDoc(ObjectMapper mapper, String json, boolean writeHeader) throws IOException
     {
-        return _smileDoc(new SmileFactory(), json, writeHeader);
+        ObjectWriter w = mapper.writer();
+        if (writeHeader) {
+            w = w.with(SmileGenerator.Feature.WRITE_HEADER);
+        } else {
+            w = w.without(SmileGenerator.Feature.WRITE_HEADER);
+        }
+        return _smileDoc(w, json);
     }
 
-    protected byte[] _smileDoc(SmileFactory smileFactory, String json, boolean writeHeader) throws IOException
+    protected byte[] _smileDoc(ObjectWriter w, String json)
+        throws IOException
     {
-        JsonFactory jf = new JsonFactory();
-        JsonParser p = jf.createParser(json);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator g = smileGenerator(out, writeHeader);
-    	
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = w.createGenerator(out)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+    
+    protected byte[] _smileDoc(String json, boolean writeHeader) throws IOException
+    {
+        try (JsonParser p = JSON_MAPPER.createParser(json)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (JsonGenerator g = _smileGenerator(out, writeHeader)) {
+                _copy(p, g);
+            }
+            return out.toByteArray();
+        }
+    }
+
+    private void _copy(JsonParser p, JsonGenerator g) throws IOException
+    {
         while (p.nextToken() != null) {
         	g.copyCurrentEvent(p);
         }
-        p.close();
-        g.close();
-        return out.toByteArray();
     }
 
-    protected SmileGenerator smileGenerator(OutputStream result, boolean addHeader)
+    protected SmileGenerator _smileGenerator(OutputStream result, boolean addHeader)
         throws IOException
     {
-        return smileGenerator(new SmileFactory(), result, addHeader);
+        return  (SmileGenerator) _smileWriter(addHeader).createGenerator(result);
     }
 
-    protected SmileGenerator smileGenerator(SmileFactory f,
-            OutputStream result, boolean addHeader)
-        throws IOException
-    {
-        f.configure(SmileGenerator.Feature.WRITE_HEADER, addHeader);
-        return f.createGenerator(result, null);
+    protected ObjectWriter _smileWriter() {
+        return _smileWriter(true);
+    }
+    
+    protected ObjectWriter _smileWriter(boolean addHeader) {
+        ObjectWriter w = SMILE_MAPPER.writer();
+        if (addHeader) {
+            w = w.with(SmileGenerator.Feature.WRITE_HEADER);
+        } else {
+            w = w.without(SmileGenerator.Feature.WRITE_HEADER);
+        }
+        return w;
     }
 
     /*
@@ -157,7 +209,7 @@ public abstract class BaseTestForSmile
 
     protected void assertToken(JsonToken expToken, JsonParser p)
     {
-        assertToken(expToken, p.getCurrentToken());
+        assertToken(expToken, p.currentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)
@@ -203,7 +255,7 @@ public abstract class BaseTestForSmile
         String str = p.getText();
 
         if (str.length() !=  actLen) {
-            fail("Internal problem (p.token == "+p.getCurrentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
+            fail("Internal problem (p.token == "+p.currentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
         }
         assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
 

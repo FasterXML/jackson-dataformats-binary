@@ -10,7 +10,7 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
  * to support features needed to decode nested Protobuf messages.
  */
 public final class ProtobufReadContext
-    extends JsonStreamContext
+    extends TokenStreamContext
 {
     /**
      * Parent context for this context; null for root context.
@@ -139,7 +139,7 @@ public final class ProtobufReadContext
      */
 
     @Override
-    public String getCurrentName() { return _currentName; }
+    public String currentName() { return _currentName; }
 
     @Override
     public ProtobufReadContext getParent() { return _parent; }

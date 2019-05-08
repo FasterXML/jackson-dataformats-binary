@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>2.9.8</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
@@ -65,6 +65,13 @@ tree model)
             <phase>generate-sources</phase>
           </execution>
         </executions>
+      </plugin>
+      <!--  19-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
+            will have to use `moduleInfoFile` as anything else requires JDK 9+
+        -->
+      <plugin>
+	<groupId>org.moditect</groupId>
+	<artifactId>moditect-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

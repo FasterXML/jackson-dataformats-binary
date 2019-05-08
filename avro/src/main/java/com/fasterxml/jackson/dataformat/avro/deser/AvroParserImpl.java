@@ -6,18 +6,17 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 /**
- * Implementation class that exposes additional internal API
+ * Implementation base class that exposes additional internal API
  * to be used as callbacks by {@link AvroReadContext} implementations.
  */
 public abstract class AvroParserImpl
     extends AvroParser
 {
-    protected final static byte[] NO_BYTES = new byte[0];
-
     /*
     /**********************************************************
     /* Other decoding state
@@ -26,15 +25,11 @@ public abstract class AvroParserImpl
 
     /**
      * Index of the union branch that was followed to reach the current token. This is cleared when the next token is read.
-     *
-     * @since 2.9
      */
     protected int _branchIndex;
 
     /**
      * Index of the enum that was read as the current token. This is cleared when the next token is read.
-     *
-     * @since 2.9
      */
     protected int _enumIndex;
 
@@ -43,8 +38,6 @@ public abstract class AvroParserImpl
      *<p>
      * NOTE: base class (`ParserBase`) has other value storage, but since JSON
      * has no distinction between double, float, only includes `float`.
-     *
-     * @since 2.9
      */
     protected float _numberFloat;
 
@@ -54,23 +47,12 @@ public abstract class AvroParserImpl
     /**********************************************************
      */
 
-    protected AvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
-            ObjectCodec codec)
+    protected AvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int avroFeatures,
+            AvroSchema schema)
     {
-        super(ctxt, parserFeatures, avroFeatures, codec);
-    }
-
-    @Override
-    public final JsonParser overrideFormatFeatures(int values, int mask) {
-        int oldF = _formatFeatures;
-        int newF = (_formatFeatures & ~mask) | (values & mask);
-
-        if (oldF != newF) {
-            _formatFeatures = newF;
-            // 22-Oct-2015, tatu: Actually, not way to change buffering details at
-            //   this point. If change needs to be dynamic have to change it
-        }
-        return this;
+        super(readCtxt, ioCtxt, parserFeatures, avroFeatures);
+        setSchema(schema);
     }
 
     @Override
@@ -82,7 +64,7 @@ public abstract class AvroParserImpl
 
     /*
     /**********************************************************
-    /* Abstract method impls, traversal
+    /* Abstract method impls, traversal, basic
     /**********************************************************
      */
 
@@ -100,6 +82,24 @@ public abstract class AvroParserImpl
         return t;
     }
 
+    /**
+     * Skip to the end of the current structure (array/map/object); This is different
+     * from {@link #skipMap()} and {@link #skipArray()} because it operates at the parser
+     * level instead of at the decoder level and advances the parsing context in addition
+     * to consuming the data from the input.
+     *
+     * @throws IOException If there was an issue advancing through the underlying data stream
+     */
+    public final void skipValue() throws IOException {
+        _avroContext.skipValue(this);
+    }
+    
+    /*
+    /**********************************************************
+    /* Abstract method impls, traversal, names
+    /**********************************************************
+     */
+
     @Override
     public String nextFieldName() throws IOException
     {
@@ -109,7 +109,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
+            _currToken = _avroContext.currentToken();
             return null;
         }
         _currToken = JsonToken.FIELD_NAME;
@@ -125,31 +125,50 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
+            _currToken = _avroContext.currentToken();
             return false;
         }
         _currToken = JsonToken.FIELD_NAME;
-        return name.equals(sstr.getValue());
+        String toMatch = sstr.getValue();
+        if (toMatch == name) {
+            return true;
+        }
+        return toMatch.equals(name);
     }
 
+    @Override
+    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    {
+        // note: closed-ness check by context, not needed here
+        _numTypesValid = NR_UNKNOWN;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _binaryValue = null;
+
+        int match = _avroContext.nextFieldName(matcher);
+        // 20-Dec-2017, tatu: not sure check would be any faster
+        _currToken = _avroContext.currentToken();
+/*
+        if (match < 0) { // END_OBJECT, mismatching FIELD_NAME or something else:
+            _currToken = _avroContext.currentToken();
+        } else {
+            _currToken = JsonToken.FIELD_NAME;
+        }
+*/
+        return match;
+    }
+
+    /*
+    /**********************************************************
+    /* Abstract method impls, traversal, values
+    /**********************************************************
+     */
+    
     @Override
     public abstract String nextTextValue() throws IOException;
 
     @Override
     public final void _initSchema(AvroSchema schema) throws JsonProcessingException {
         _avroContext = new RootReader(this, schema.getReader());
-    }
-
-    /**
-     * Skip to the end of the current structure (array/map/object); This is different
-     * from {@link #skipMap()} and {@link #skipArray()} because it operates at the parser
-     * level instead of at the decoder level and advances the parsing context in addition
-     * to consuming the data from the input.
-     *
-     * @throws IOException If there was an issue advancing through the underlying data stream
-     */
-    public final void skipValue() throws IOException {
-        _avroContext.skipValue(this);
     }
 
     /*
@@ -269,7 +288,7 @@ public abstract class AvroParserImpl
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             return;
         }
-        _reportError("Current token ("+getCurrentToken()+") not numeric, can not use numeric value accessors");
+        _reportError("Current token ("+currentToken()+") not numeric, can not use numeric value accessors");
     }
 
     @Override

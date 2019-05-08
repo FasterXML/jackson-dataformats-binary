@@ -24,7 +24,7 @@ public class SmileGenerator
      * Enumeration that defines all togglable features for Smile generators.
      */
     public enum Feature
-        implements FormatFeature // since 2.7
+        implements FormatFeature
     {
         /**
          * Whether to write 4-byte header sequence when starting output or not.
@@ -265,16 +265,17 @@ public class SmileGenerator
     /**********************************************************
      */
     
-    public SmileGenerator(IOContext ctxt, int jsonFeatures, int smileFeatures,
-            ObjectCodec codec, OutputStream out)
+    public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
+            int generatorFeatures, int smileFeatures,
+            OutputStream out)
     {
-        super(jsonFeatures, codec);
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = smileFeatures;
-        _ioContext = ctxt;
+        _ioContext = ioCtxt;
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
-        _outputBuffer = ctxt.allocWriteEncodingBuffer();
+        _outputBuffer = ioCtxt.allocWriteEncodingBuffer();
         _outputEnd = _outputBuffer.length;
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
@@ -305,13 +306,14 @@ public class SmileGenerator
         }
     }
 
-    public SmileGenerator(IOContext ctxt, int jsonFeatures, int smileFeatures,
-            ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset,
+    public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
+            int generatorFeatures, int smileFeatures,
+            OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(jsonFeatures, codec);
+        super(writeCtxt, generatorFeatures);
         _formatFeatures = smileFeatures;
-        _ioContext = ctxt;
+        _ioContext = ioCtxt;
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -441,14 +443,8 @@ public class SmileGenerator
 //  public JsonParser overrideStdFeatures(int values, int mask)
 
     @Override
-    public int getFormatFeatures() {
+    public int formatWriteFeatures() {
         return _formatFeatures;
-    }
-
-    @Override
-    public JsonGenerator overrideFormatFeatures(int values, int mask) {
-        _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
-        return this;
     }
 
     /*
@@ -464,7 +460,7 @@ public class SmileGenerator
     @Override
     public final void writeFieldName(String name)  throws IOException
     {
-        if (_writeContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -475,7 +471,7 @@ public class SmileGenerator
         throws IOException
     {
         // Object is a value, need to verify it's allowed
-        if (_writeContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -485,7 +481,7 @@ public class SmileGenerator
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
-        if (_writeContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(fieldName);
@@ -562,55 +558,60 @@ public class SmileGenerator
     public final void writeStartArray() throws IOException
     {
         _verifyValueWrite("start an array");
-        _writeContext = _writeContext.createChildArrayContext();
+        _outputContext = _outputContext.createChildArrayContext();
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
-    @Override // defined since 2.6.3
+    @Override
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _writeContext = _writeContext.createChildArrayContext();
+        _outputContext = _outputContext.createChildArrayContext();
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+    }
+
+    @Override
+    public final void writeStartArray(Object forValue, int size) throws IOException
+    {
+        _verifyValueWrite("start an array");
+        _outputContext = _outputContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
     @Override
     public final void writeEndArray() throws IOException
     {
-        if (!_writeContext.inArray()) {
-            _reportError("Current context not Array but "+_writeContext.typeDesc());
+        if (!_outputContext.inArray()) {
+            _reportError("Current context not Array but "+_outputContext.typeDesc());
         }
         _writeByte(TOKEN_LITERAL_END_ARRAY);
-        _writeContext = _writeContext.getParent();
+        _outputContext = _outputContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException
     {
         _verifyValueWrite("start an object");
-        _writeContext = _writeContext.createChildObjectContext();
+        _outputContext = _outputContext.createChildObjectContext();
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
-    @Override // since 2.8
+    @Override
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _writeContext.createChildObjectContext();
-        _writeContext = ctxt;
-        if (forValue != null) {
-            ctxt.setCurrentValue(forValue);
-        }
+        JsonWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
+        _outputContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     
     @Override
     public final void writeEndObject() throws IOException
     {
-        if (!_writeContext.inObject()) {
-            _reportError("Current context not Object but "+_writeContext.typeDesc());
+        if (!_outputContext.inObject()) {
+            _reportError("Current context not Object but "+_outputContext.typeDesc());
         }
-        _writeContext = _writeContext.getParent();
+        _outputContext = _outputContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);
     }
 
@@ -1758,7 +1759,7 @@ public class SmileGenerator
     protected final void _verifyValueWrite(String typeMsg)
         throws IOException
     {
-        int status = _writeContext.writeValue();
+        int status = _outputContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+typeMsg+", expecting field name");
         }
@@ -1774,7 +1775,7 @@ public class SmileGenerator
     public final void flush() throws IOException
     {
         _flushBuffer();
-        if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
             _out.flush();
         }
     }
@@ -1784,9 +1785,9 @@ public class SmileGenerator
     {
         // First: let's see that we still have buffers...
         if (_outputBuffer != null
-            && isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+            && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             while (true) {
-                JsonStreamContext ctxt = getOutputContext();
+                TokenStreamContext ctxt = getOutputContext();
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -1804,10 +1805,11 @@ public class SmileGenerator
         }
         _flushBuffer();
 
-        if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+        if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
             _out.close();
-        } else {
+        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
             // If we can't close it, we should at least flush
+            // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
             _out.flush();
         }
         // Internal buffer(s) generator has can now be released as well

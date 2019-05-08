@@ -4,7 +4,9 @@ import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /* Test based on kimchy's issue (see https://gist.github.com/853232);
@@ -14,15 +16,15 @@ public class TestGeneratorBufferRecycle extends BaseTestForSmile
 {
     public void testMaps() throws Exception
     {
-        SmileFactory factory = new SmileFactory();
+        ObjectMapper mapper = newSmileMapper();
 
         Map<?,?> props1 = buildMap("", 65);
         Map<?,?> props2 = buildMap("", 1);
 
-        writeMapAndParse(factory, props1);
-        writeMapAndParse(factory, props2);
-        writeMapAndParse(factory, props1);
-        writeMapAndParse(factory, props2);
+        writeMapAndParse(mapper, props1);
+        writeMapAndParse(mapper, props2);
+        writeMapAndParse(mapper, props1);
+        writeMapAndParse(mapper, props2);
     }
 
     /*
@@ -31,16 +33,16 @@ public class TestGeneratorBufferRecycle extends BaseTestForSmile
     /**********************************************************
      */
     
-    private static void writeMapAndParse(SmileFactory factory, Map<?,?> map) throws Exception {
+    private static void writeMapAndParse(ObjectMapper mapper, Map<?,?> map) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
         // generate
-        JsonGenerator generator = factory.createGenerator(os);
+        JsonGenerator generator = mapper.createGenerator(os);
         writeMap(generator, map);
         generator.close();
 
         // parse
-        JsonParser parser = factory.createParser(os.toByteArray());
+        JsonParser parser = mapper.createParser(os.toByteArray());
         while (parser.nextToken() != null) {
 
         }

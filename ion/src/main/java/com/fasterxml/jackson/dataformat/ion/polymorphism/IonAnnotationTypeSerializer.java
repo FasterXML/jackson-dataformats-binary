@@ -19,10 +19,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
 /**
  * This is a {@link TypeSerializer} that places typing metadata in Ion type annotations. It requires that the underlying
@@ -44,7 +44,7 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
     }
 
     @Override
-    public TypeSerializer forProperty(BeanProperty prop) {
+    public TypeSerializer forProperty(SerializerProvider ctxt, BeanProperty prop) {
         // We ignore the context information from BeanProperty.
         return this;
     }

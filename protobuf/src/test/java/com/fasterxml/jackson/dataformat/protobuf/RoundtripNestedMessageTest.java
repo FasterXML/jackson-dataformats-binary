@@ -152,7 +152,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
         byte[] protobufData = MAPPER.writer(schema)
                 .writeValueAsBytes(empl);
 
-        JsonParser p = new ProtobufFactory().createParser(protobufData);
+        JsonParser p = MAPPER.createParser(protobufData);
         p.setSchema(schema);
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -168,7 +168,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("foo@gmail.com", p.getText());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         assertNull(p.nextToken());

@@ -4,10 +4,10 @@
   <parent>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>2.9.8</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-protobuf</artifactId>
-  <name>Jackson dataformat: protobuf</name>
+  <name>Jackson dataformat: Protobuf</name>
   <packaging>bundle</packaging>
   <description>Support for reading and writing protobuf-encoded data via Jackson
 abstractions.
@@ -67,7 +67,6 @@ abstractions.
         <!--  We will shade proto-parser, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${version.plugin.shade}</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -94,7 +93,13 @@ abstractions.
           </execution>
         </executions>
       </plugin>
-      
+      <!-- 19-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
+             will have to use `moduleInfoFile` as anything else requires JDK 9+
+        -->      
+      <plugin>
+	<groupId>org.moditect</groupId>
+	<artifactId>moditect-maven-plugin</artifactId>
+      </plugin>
    </plugins>
   </build>
 

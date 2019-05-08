@@ -78,11 +78,9 @@ public class BiggerDataTest extends CBORTestBase
     /**********************************************************
      */
 
-	final ObjectMapper MAPPER = new ObjectMapper();
-	
-	public void testReading() throws Exception
+    public void testReading() throws Exception
 	{
-		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+		Citm citm0 = jsonMapper().readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 
 		ObjectMapper mapper = cborMapper();
@@ -112,7 +110,7 @@ public class BiggerDataTest extends CBORTestBase
 
 	public void testRoundTrip() throws Exception
 	{
-		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+		Citm citm0 = jsonMapper().readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 		ObjectMapper mapper = cborMapper();
 		byte[] cbor = mapper.writeValueAsBytes(citm0);

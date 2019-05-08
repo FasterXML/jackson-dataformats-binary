@@ -1,21 +1,17 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.SequenceInputStream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 // for [dataformat-cbor#13]
 public class ParserInputStreamTest extends CBORTestBase
 {
-    @Test
-    public void testInpuStream() throws Exception {
-        CBORFactory f = new CBORFactory();
-        ObjectMapper cborMapper = new ObjectMapper(new CBORFactory());
-        byte[] buffer = generateHugeCBOR(f);
+    public void testInpuStream() throws Exception
+    {
+        byte[] buffer = generateHugeCBOR();
 
         // split the buffer in two smaller buffer
         int len = 160;
@@ -29,11 +25,11 @@ public class ParserInputStreamTest extends CBORTestBase
         ByteArrayInputStream in2 = new ByteArrayInputStream(buf2);
         SequenceInputStream inputStream = new SequenceInputStream(in1, in2);
 
-        JsonNode jsonNode = cborMapper.readTree(inputStream);
+        JsonNode jsonNode = sharedMapper().readTree(inputStream);
         assertNotNull(jsonNode);
     }
 
-    private byte[] generateHugeCBOR(CBORFactory f) throws IOException {
+    private byte[] generateHugeCBOR() throws IOException {
         String hugeJson = "{";
         for (char c='a'; c <= 'z'; c++) {
             for (char cc='a'; cc <= 'z'; cc++) {
@@ -45,6 +41,6 @@ public class ParserInputStreamTest extends CBORTestBase
         }
         hugeJson += "\"name\":123";
         hugeJson += "}";
-        return cborDoc(f, hugeJson);
+        return cborDoc(hugeJson);
     }
 }

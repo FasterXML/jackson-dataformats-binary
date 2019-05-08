@@ -2,16 +2,16 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 public class UnicodeHandlingTest extends BaseTestForSmile
 {
-    private final SmileFactory F = smileFactory(false, true, false);
-    
     public void testShortUnicodeWithSurrogates() throws IOException
     {
         _testLongUnicodeWithSurrogates(28, false);
@@ -46,7 +46,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         final String quoted = quote(TEXT);
         byte[] data = _smileDoc(quoted);
 
-        SmileParser p = _parser(data, throttling);
+        JsonParser p = _parser(data, throttling);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(TEXT, p.getText());
         assertNull(p.nextToken());
@@ -64,7 +64,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         p = _parser(data, throttling);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals(TEXT, p.getCurrentName());
+        assertEquals(TEXT, p.currentName());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
@@ -79,12 +79,14 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         p.close();
     }
 
+    private final ObjectMapper MAPPER = new ObjectMapper(smileFactory(false, true, false));
+
     @SuppressWarnings("resource")
-    private SmileParser _parser(byte[] data, boolean throttling) throws IOException
+    private JsonParser _parser(byte[] data, boolean throttling) throws IOException
     {
         if (throttling) {
-            return F.createParser(new ThrottledInputStream(data, 3));
+            return MAPPER.createParser(new ThrottledInputStream(data, 3));
         }
-        return F.createParser(data);
+        return MAPPER.createParser(data);
     }
 }

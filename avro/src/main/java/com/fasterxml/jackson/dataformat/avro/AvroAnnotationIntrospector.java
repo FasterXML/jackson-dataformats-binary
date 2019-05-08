@@ -7,20 +7,18 @@ import java.util.List;
 import org.apache.avro.reflect.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
@@ -38,10 +36,9 @@ import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
  * the {@link #toString()} method. </li>
  * <li>{@link Union @Union} - Alias for <code>JsonSubTypes</code></li>
  * </ul>
- *
- * @since 2.9
  */
 public class AvroAnnotationIntrospector extends AnnotationIntrospector
+    implements java.io.Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -68,7 +65,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public Object findDeserializer(Annotated am) {
+    public Object findDeserializer(MapperConfig<?> config, Annotated am) {
         AvroEncode ann = _findAnnotation(am, AvroEncode.class);
         if (ann != null) {
             return new CustomEncodingDeserializer<>((CustomEncoding<?>)ClassUtil.createInstance(ann.using(), true));
@@ -123,7 +120,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public Object findSerializer(Annotated a) {
+    public Object findSerializer(MapperConfig<?> config, Annotated a) {
         if (a.hasAnnotation(Stringable.class)) {
             return ToStringSerializer.class;
         }
@@ -135,7 +132,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public List<NamedType> findSubtypes(Annotated a)
+    public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)
     {
         Class<?>[] types = _getUnionTypes(a);
         if (types == null) {
@@ -148,33 +145,27 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
         return names;
     }
 
+    /* 13-Mar-2018, tatu: Kludge, hacky; should probably be refactored. But works as well
+     *   as it used to, for the moment, so defer until later point.
+     */
     @Override
-    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, AnnotatedClass ac, JavaType baseType) {
-        return _findTypeResolver(config, ac, baseType);
-    }
-
-    @Override
-    public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType baseType) {
-        return _findTypeResolver(config, am, baseType);
-    }
-
-    @Override
-    public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType containerType) {
-        return _findTypeResolver(config, am, containerType);
-    }
-
-    protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config, Annotated ann, JavaType baseType) {
+    public Object findTypeResolverBuilder(MapperConfig<?> config, Annotated ann) {
         // 14-Apr-2017, tatu: There are two ways to enable polymorphic typing, above and beyond
         //    basic Jackson: use of `@Union`, and "default typing" approach for `java.lang.Object`:
         //    latter since Avro support for "untyped" values is otherwise difficult.
         //    This seems to work for now, but maybe needs more work in future...
-        if (baseType.isJavaLangObject() || (_getUnionTypes(ann) != null)) {
-            TypeResolverBuilder<?> resolver = new AvroTypeResolverBuilder();
-            JsonTypeInfo typeInfo = ann.getAnnotation(JsonTypeInfo.class);
-            if (typeInfo != null && typeInfo.defaultImpl() != JsonTypeInfo.class) {
-                resolver = resolver.defaultImpl(typeInfo.defaultImpl());
-            }
-            return resolver;
+        Class<?> raw = ann.getRawType();
+        
+        if ((raw == Object.class) || (_getUnionTypes(ann) != null)) {
+            return AvroTypeResolverBuilder.construct(null);
+            /*
+            return AvroTypeResolverBuilder.construct(
+                    JsonTypeInfo.Value.construct(JsonTypeInfo.Id.CUSTOM, // could be NONE, but there is type discriminator in Avro...
+                    JsonTypeInfo.As.PROPERTY, // N/A for custom
+                    "@class", // similarly, N/A
+                    null, // defaultImpl
+                    false));
+                    */
         }
         return null;
     }

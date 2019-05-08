@@ -23,8 +23,7 @@ public class MapAndArrayTest extends CBORTestBase
           FF        -- "break"
      */
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
         gen.writeBooleanField("Fun", true);
@@ -60,8 +59,7 @@ public class MapAndArrayTest extends CBORTestBase
      */
 
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
         gen.writeFieldName("Fun");
@@ -107,8 +105,7 @@ public class MapAndArrayTest extends CBORTestBase
           F4        -- Fifth value, false
     */
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject(5);
         gen.writeFieldId(1504);
@@ -157,8 +154,7 @@ public class MapAndArrayTest extends CBORTestBase
           F4        -- Fifth value, false
      */
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
         gen.writeFieldId(1504);
@@ -185,10 +181,10 @@ public class MapAndArrayTest extends CBORTestBase
         /*
             Parser test for the first element
          */
-        CBORParser parser = factory.createParser(bytes);
+        CBORParser parser = cborParser(bytes);
         parser.nextToken();
         parser.nextToken();
-        assertTrue(parser.getCurrentName().equals("1504"));
+        assertTrue(parser.currentName().equals("1504"));
         parser.close();
     }
 
@@ -199,8 +195,7 @@ public class MapAndArrayTest extends CBORTestBase
         0xbf61610161629f0203ffff
  	*/
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
         gen.writeFieldName("a");
@@ -223,8 +218,7 @@ public class MapAndArrayTest extends CBORTestBase
         0xa0...
  	*/
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject(4);
         gen.writeFieldName("a");
@@ -284,8 +278,7 @@ public class MapAndArrayTest extends CBORTestBase
        0xBF1905e0A11909C838201905e1f41905E26346756e1905E39F616303F4FF1B0000000311111111F4FF
     */
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
         gen.writeFieldId(1504);
@@ -319,8 +312,7 @@ public class MapAndArrayTest extends CBORTestBase
         0x9f018202039f0405ffff
  	*/
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartArray();
         gen.writeNumber(1);
@@ -345,8 +337,7 @@ public class MapAndArrayTest extends CBORTestBase
         0x9f018202039f0405ff8306079f080808820101ff8209099f0001ffff
  	*/
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
         gen.writeStartArray();
         gen.writeNumber(1);
         gen.writeStartArray(2);
@@ -392,8 +383,7 @@ public class MapAndArrayTest extends CBORTestBase
    	    0x84019f020304ff9f0482059f060606ffff8307089f090aff
  	*/
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartArray(4);//      [
         gen.writeNumber(1);    //      [1
@@ -451,8 +441,7 @@ public class MapAndArrayTest extends CBORTestBase
                 22	-- 34 decimal value (last value)
     */
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
         int size_finite_array = 258;
 
         gen.writeStartArray(3);
@@ -476,8 +465,7 @@ public class MapAndArrayTest extends CBORTestBase
         0x826161bf6162616361646165ff
  	*/
         ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen = factory.createGenerator(payloadOut);
+        CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartArray(2);
         gen.writeString("a");

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class ParserDupHandlingTest extends CBORTestBase
@@ -14,19 +14,18 @@ public class ParserDupHandlingTest extends CBORTestBase
                 "{ \"a\":1, \"b\":2, \"c\":3,\"a\":true,\"e\":false }",
                 "{ \"foo\": { \"bar\": [ [ { \"x\":3, \"a\":1 } ]], \"x\":0, \"a\":\"y\", \"b\":3,\"a\":13 } }",
         }) {
-            CBORFactory f = new CBORFactory();
-            byte[] doc = cborDoc(f, json);
-            assertFalse(f.isEnabled(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
-            _testSimpleDupsOk(doc, f);
-    
-            f.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
-            _testSimpleDupsFail(doc, f, "a");
+            byte[] doc = cborDoc(json);
+            ObjectReader r = sharedMapper().reader();
+            _testSimpleDupsOk(doc, r.without(StreamReadFeature.STRICT_DUPLICATE_DETECTION));
+            _testSimpleDupsFail(doc,
+                    r.with(StreamReadFeature.STRICT_DUPLICATE_DETECTION),
+                    "a");
         }
     }
 
-    private void _testSimpleDupsOk(final byte[] doc, JsonFactory f) throws Exception
+    private void _testSimpleDupsOk(final byte[] doc, ObjectReader r) throws Exception
     {
-        JsonParser p = f.createParser(doc);
+        JsonParser p = r.createParser(doc);
         JsonToken t = p.nextToken();
         assertNotNull(t);
         assertTrue(t.isStructStart());
@@ -34,9 +33,9 @@ public class ParserDupHandlingTest extends CBORTestBase
         p.close();
     }
 
-    private void _testSimpleDupsFail(final byte[] doc, JsonFactory f, String name) throws Exception
+    private void _testSimpleDupsFail(final byte[] doc, ObjectReader r, String name) throws Exception
     {
-        JsonParser p = f.createParser(doc);
+        JsonParser p = r.createParser(doc);
         JsonToken t = p.nextToken();
         assertNotNull(t);
         assertTrue(t.isStructStart());
@@ -48,5 +47,4 @@ public class ParserDupHandlingTest extends CBORTestBase
         }
         p.close();
     }
-    
 }

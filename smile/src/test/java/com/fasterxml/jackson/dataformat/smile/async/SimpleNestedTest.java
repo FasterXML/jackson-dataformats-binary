@@ -3,15 +3,11 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 public class SimpleNestedTest extends AsyncTestBase
 {
-    private final SmileFactory F_REQ_HEADERS = new SmileFactory();
-    {
-        F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
-    }
+    private final ObjectReader READER = _smileReader(true); // require headers
 
     /*
     /**********************************************************************
@@ -22,21 +18,18 @@ public class SimpleNestedTest extends AsyncTestBase
     public void testStuffInObject() throws Exception
     {
         byte[] data = _smileDoc(aposToQuotes("{'foobar':[1,2,-999],'other':{'':null} }"), true);
+        _testStuffInObject(data, 0, 100);
+        _testStuffInObject(data, 0, 3);
+        _testStuffInObject(data, 0, 1);
 
-        SmileFactory f = F_REQ_HEADERS;
-        _testStuffInObject(f, data, 0, 100);
-        _testStuffInObject(f, data, 0, 3);
-        _testStuffInObject(f, data, 0, 1);
-
-        _testStuffInObject(f, data, 1, 100);
-        _testStuffInObject(f, data, 1, 3);
-        _testStuffInObject(f, data, 1, 1);
+        _testStuffInObject(data, 1, 100);
+        _testStuffInObject(data, 1, 3);
+        _testStuffInObject(data, 1, 1);
     }
 
-    private void _testStuffInObject(SmileFactory f,
-            byte[] data, int offset, int readSize) throws IOException
+    private void _testStuffInObject(byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(READER, readSize, data, offset);
         assertToken(JsonToken.START_OBJECT, r.nextToken());
         assertFalse(r.parser().hasTextCharacters());
 
@@ -63,7 +56,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.END_OBJECT, r.nextToken());
 
         // another twist: close in the middle, verify
-        r = asyncForBytes(f, readSize, data, offset);
+        r = asyncForBytes(READER, readSize, data, offset);
         assertToken(JsonToken.START_OBJECT, r.nextToken());
         assertToken(JsonToken.FIELD_NAME, r.nextToken());
         r.parser().close();
@@ -75,20 +68,18 @@ public class SimpleNestedTest extends AsyncTestBase
     {
         byte[] data = _smileDoc(aposToQuotes("[true,{'extraOrdinary':''},[null],{'extraOrdinary':23}]"), true);
 
-        SmileFactory f = F_REQ_HEADERS;
-        _testStuffInArray(f, data, 0, 100);
-        _testStuffInArray(f, data, 0, 3);
-        _testStuffInArray(f, data, 0, 1);
+        _testStuffInArray(data, 0, 100);
+        _testStuffInArray(data, 0, 3);
+        _testStuffInArray(data, 0, 1);
 
-        _testStuffInArray(f, data, 1, 100);
-        _testStuffInArray(f, data, 1, 3);
-        _testStuffInArray(f, data, 1, 1);
+        _testStuffInArray(data, 1, 100);
+        _testStuffInArray(data, 1, 3);
+        _testStuffInArray(data, 1, 1);
     }
 
-    private void _testStuffInArray(SmileFactory f,
-            byte[] data, int offset, int readSize) throws IOException
+    private void _testStuffInArray(byte[] data, int offset, int readSize) throws IOException
     {
-        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, offset);
+        AsyncReaderWrapper r = asyncForBytes(READER, readSize, data, offset);
         assertToken(JsonToken.START_ARRAY, r.nextToken());
         assertFalse(r.parser().hasTextCharacters());
 

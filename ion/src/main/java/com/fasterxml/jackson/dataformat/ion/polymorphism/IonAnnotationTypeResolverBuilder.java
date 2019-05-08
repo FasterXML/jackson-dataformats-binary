@@ -17,9 +17,10 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.DeserializationConfig;
+
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -43,8 +44,25 @@ public class IonAnnotationTypeResolverBuilder
     /**
      * Whether type id should be exposed to deserializers or not
      */
-    private boolean typeIdVisible = false;
+    private boolean typeIdVisible;
 
+    // So that it can be instantiated from annotation
+    protected IonAnnotationTypeResolverBuilder() {
+    }
+
+    protected IonAnnotationTypeResolverBuilder(Class<?> defaultImpl,
+            TypeIdResolver idResolver) {
+        this.defaultImpl = defaultImpl;
+        typeIdVisible = false;
+        typeIdResolver = idResolver;
+    }
+
+    public static IonAnnotationTypeResolverBuilder construct(JavaType baseType,
+            JsonTypeInfo.Value typeInfo, TypeIdResolver idResolver)
+    {
+        return new IonAnnotationTypeResolverBuilder(baseType.getRawClass(), idResolver);
+    }
+    
     @Override
     public Class<?> getDefaultImpl() {
         return defaultImpl;
@@ -54,13 +72,9 @@ public class IonAnnotationTypeResolverBuilder
      * Creates a Jackson {@link TypeSerializer}. Note that while Jackson type serializers are responsible for writing
      * opening and closing metadata for types *in addition* to any type information, they are not involved with writing
      * actual object data.
-     *
-     * @param config
-     * @param baseType
-     * @param subtypes
      */
     @Override
-    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType,
+    public TypeSerializer buildTypeSerializer(SerializerProvider ctxt, JavaType baseType,
             Collection<NamedType> subtypes) {
         return new IonAnnotationTypeSerializer(typeIdResolver);
     }
@@ -68,44 +82,33 @@ public class IonAnnotationTypeResolverBuilder
     /**
      * Creates a Jackson {@link TypeDeserializer}. Unlike type serializers, deserializers are responsible for
      * *all* steps of value deserialization: read type information, find the actual object deserializer, and run it.
-     *
-     * @param config
-     * @param baseType
-     * @param subtypes
      */
     @Override
-    public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
+    public TypeDeserializer buildTypeDeserializer(DeserializationContext ctxt, JavaType baseType,
+            Collection<NamedType> subtypes) {
         JavaType defImplType = (defaultImpl == null) ? null
-                : config.constructType(defaultImpl);
+                : ctxt.constructType(defaultImpl);
         return new IonAnnotationTypeDeserializer(baseType,
                 typeIdResolver, null, typeIdVisible, defImplType);
     }
 
     @Override
-    public IonAnnotationTypeResolverBuilder init(JsonTypeInfo.Id idType, TypeIdResolver res) {
-        typeIdResolver = res;
-        return this;
-    }
-
-    @Override
-    public IonAnnotationTypeResolverBuilder inclusion(JsonTypeInfo.As includeAs) {
-        return this;
-    }
-
-    @Override
-    public IonAnnotationTypeResolverBuilder typeProperty(String propName) {
+    public IonAnnotationTypeResolverBuilder init(JsonTypeInfo.Value settings,
+            TypeIdResolver res) {
+        if (settings != null) {
+            defaultImpl = settings.getDefaultImpl();
+            typeIdVisible = settings.getIdVisible();
+        }
+        // 09-Mar-2018, tatu: Temporary check, should not be needed in future:
+        if (res != null) {
+            typeIdResolver = res;
+        }
         return this;
     }
 
     @Override
     public IonAnnotationTypeResolverBuilder defaultImpl(Class<?> di) {
-        this.defaultImpl = di;
-        return this;
-    }
-
-    @Override
-    public IonAnnotationTypeResolverBuilder typeIdVisibility(boolean isVisible) {
-        typeIdVisible = isVisible;
+        defaultImpl = di;
         return this;
     }
 }

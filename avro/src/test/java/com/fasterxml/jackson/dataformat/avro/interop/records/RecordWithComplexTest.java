@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class RecordWithComplexTest extends InteropTestBase
 {
-
     @Test
     public void testEmptyRecordWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();

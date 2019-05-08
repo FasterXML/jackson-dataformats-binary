@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 import java.util.*;
 
 import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.util.InternCache;
 import com.squareup.protoparser.FieldElement;
 import com.squareup.protoparser.OptionElement;
 
@@ -10,6 +11,8 @@ public class ProtobufField
 // sorted in increasing order
     implements Comparable<ProtobufField>
 {
+    private final static InternCache INTERNER = InternCache.instance;
+
     /**
      * Numeric tag, unshifted
      */
@@ -19,7 +22,7 @@ public class ProtobufField
      * Combination of numeric tag and 3-bit wire type.
      */
     public final int typedTag;
-    
+
     /**
      * Name of field in protoc definition
      */
@@ -31,7 +34,7 @@ public class ProtobufField
      * 3-bit id used on determining details of how values are serialized.
      */
     public final int wireType;
-    
+
     public final boolean required, repeated, packed, deprecated;
     public final boolean usesZigZag;
 
@@ -94,7 +97,9 @@ public class ProtobufField
             name = "UNKNOWN";
         } else {
             id = nativeField.tag();
-            name = nativeField.name();
+            // 13-Nov-2017, tatu: Important! MUST ensure `name` is intern()ed
+            name = INTERNER.intern(nativeField.name());
+
             switch (nativeField.label()) {
             case REPEATED:
                 required = false;

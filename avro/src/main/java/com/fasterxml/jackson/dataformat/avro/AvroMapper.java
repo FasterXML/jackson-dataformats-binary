@@ -7,23 +7,128 @@ import java.io.InputStream;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
  * Convenience {@link AvroMapper}, which is mostly similar to simply
  * constructing a mapper with {@link AvroFactory}, but also adds little
  * bit of convenience around {@link AvroSchema} generation.
- * 
- * @since 2.5
  */
 public class AvroMapper extends ObjectMapper
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
+    /**
+     * Base implementation for "Vanilla" {@link ObjectMapper}, used with
+     * Avro backend.
+     *
+     * @since 3.0
+     */
+    public static class Builder extends MapperBuilder<AvroMapper, Builder>
+    {
+        public Builder(AvroFactory f) {
+            super(f);
+            addModule(new AvroModule());
+        }
+
+        public Builder(StateImpl state) {
+            super(state);
+            // no need to add module, should come by default
+        }
+        
+        @Override
+        public AvroMapper build() {
+            return new AvroMapper(this);
+        }
+
+        @Override
+        protected MapperBuilderState _saveState() {
+            // nothing extra, just format features
+            return new StateImpl(this);
+        }
+        
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        public Builder enable(AvroParser.Feature... features) {
+            for (AvroParser.Feature f : features) {
+                _formatReadFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(AvroParser.Feature... features) {
+            for (AvroParser.Feature f : features) {
+                _formatReadFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(AvroParser.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatReadFeatures |= feature.getMask();
+            } else {
+                _formatReadFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
+        public Builder enable(AvroGenerator.Feature... features) {
+            for (AvroGenerator.Feature f : features) {
+                _formatWriteFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(AvroGenerator.Feature... features) {
+            for (AvroGenerator.Feature f : features) {
+                _formatWriteFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(AvroGenerator.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatWriteFeatures |= feature.getMask();
+            } else {
+                _formatWriteFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
+        protected static class StateImpl extends MapperBuilderState
+            implements java.io.Serializable // important!
+        {
+            private static final long serialVersionUID = 3L;
+    
+            public StateImpl(Builder src) {
+                super(src);
+            }
+    
+            // We also need actual instance of state as base class can not implement logic
+             // for reinstating mapper (via mapper builder) from state.
+            @Override
+            protected Object readResolve() {
+                return new Builder(this).build();
+            }
+        }
+    }
+
+    /*
+    /**********************************************************************
+    /* Life-cycle
+    /**********************************************************************
+     */
+    
     /**
      * Constructor that will construct mapper with standard {@link AvroFactory}
      * as codec, and will also register {@link AvroModule}.
@@ -37,58 +142,70 @@ public class AvroMapper extends ObjectMapper
      * as well as register standard {@link AvroModule} (with default settings).
      */
     public AvroMapper(AvroFactory f) {
-        super(f);
-        registerModule(new AvroModule());
+        this(new Builder(f));
     }
 
-    /**
-     * Constructor that will construct mapper with standard {@link AvroFactory}
-     * as codec, and register given modules but nothing else (that is, will
-     * only register {@link AvroModule} if it's included as argument.
-     */
-    public AvroMapper(Module... modules) {
-        super(new AvroFactory());
-        registerModules(modules);
+    public AvroMapper(Builder b) {
+        super(b);
     }
 
-    /**
-     * Constructor that will construct mapper with specified {@link AvroFactory}
-     * as codec, and register given modules but nothing else (that is, will
-     * only register {@link AvroModule} if it's included as argument.
-     */
-    public AvroMapper(AvroFactory f, Module... modules) {
-        super(f);
-        registerModules(modules);
+    public static Builder builder() {
+        return new Builder(new AvroFactory());
     }
 
-    protected AvroMapper(ObjectMapper src) {
-        super(src);
+    public static Builder builder(AvroFactory streamFactory) {
+        return new Builder(streamFactory);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public AvroMapper copy()
-    {
-        _checkInvalidCopy(AvroMapper.class);
-        return new AvroMapper(this);
+    public Builder rebuild() {
+        return new AvroMapper.Builder((Builder.StateImpl) _savedBuilderState);
     }
 
+    /*
+    /**********************************************************************
+    /* Life-cycle, shared "vanilla" (default configuration) instance
+    /**********************************************************************
+     */
+
+    /**
+     * Accessor method for getting globally shared "default" {@link AvroMapper}
+     * instance: one that has default configuration, no modules registered, no
+     * config overrides. Usable mostly when dealing "untyped" or Tree-style
+     * content reading and writing.
+     */
+    public static AvroMapper shared() {
+        return SharedWrapper.wrapped();
+    }
+    
+    /*
+    /**********************************************************************
+    /* Basic accessor overrides
+    /**********************************************************************
+     */
+    
     @Override
     public Version version() {
         return PackageVersion.VERSION;
     }
 
     @Override
-    public AvroFactory getFactory() {
-        return (AvroFactory) _jsonFactory;
+    public AvroFactory tokenStreamFactory() {
+        return (AvroFactory) _streamFactory;
     }
-    
+
+    /*
+    /**********************************************************************
+    /* Schema introspection
+    /**********************************************************************
+     */
+
     /**
      * Factory method for constructing {@link AvroSchema} by introspecting given
      * POJO type and building schema that contains specified properties.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.5
      */
     public AvroSchema schemaFor(Class<?> type) throws JsonMappingException
     {
@@ -102,8 +219,6 @@ public class AvroMapper extends ObjectMapper
      * POJO type and building schema that contains specified properties.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.5
      */
     public AvroSchema schemaFor(JavaType type) throws JsonMappingException
     {
@@ -117,8 +232,6 @@ public class AvroMapper extends ObjectMapper
      * and once done (successfully or not), closing the stream.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.6
      */
     public AvroSchema schemaFrom(InputStream in) throws IOException
     {
@@ -135,8 +248,6 @@ public class AvroMapper extends ObjectMapper
      * encoded JSON representation.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.6
      */
     public AvroSchema schemaFrom(String schemaAsString) throws IOException
     {
@@ -149,12 +260,26 @@ public class AvroMapper extends ObjectMapper
      * encoded JSON representation.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
-     *
-     * @since 2.6
      */
     public AvroSchema schemaFrom(File schemaFile) throws IOException
     {
         return new AvroSchema(new Schema.Parser().setValidate(true)
                 .parse(schemaFile));
+    }
+
+    /*
+    /**********************************************************
+    /* Helper class(es)
+    /**********************************************************
+     */
+
+    /**
+     * Helper class to contain dynamically constructed "shared" instance of
+     * mapper, should one be needed via {@link #shared}.
+     */
+    private final static class SharedWrapper {
+        private final static AvroMapper MAPPER = AvroMapper.builder().build();
+
+        public static AvroMapper wrapped() { return MAPPER; }
     }
 }
