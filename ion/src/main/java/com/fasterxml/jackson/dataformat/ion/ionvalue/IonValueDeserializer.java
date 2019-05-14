@@ -19,7 +19,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import software.amazon.ion.IonValue;
+import com.amazon.ion.IonValue;
 
 /**
  * Deserializer that knows how to deserialize an IonValue.
