@@ -25,12 +25,12 @@ import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
-import software.amazon.ion.IonDatagram;
-import software.amazon.ion.IonLoader;
-import software.amazon.ion.IonStruct;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonType;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonDatagram;
+import com.amazon.ion.IonLoader;
+import com.amazon.ion.IonStruct;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonType;
+import com.amazon.ion.system.IonSystemBuilder;
 
 public class SimpleWriteTest
 {

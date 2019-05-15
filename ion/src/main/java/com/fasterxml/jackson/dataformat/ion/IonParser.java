@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 
-import software.amazon.ion.*;
+import com.amazon.ion.*;
 
 /**
  * Implementation of {@link JsonParser} that will use an underlying

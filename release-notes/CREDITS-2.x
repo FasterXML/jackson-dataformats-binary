@@ -90,3 +90,7 @@ Alexander Cyon (Sajjon@github)
 Carter Kozak (cakofony@github)
 * Reported, suggested fix for #155: Inconsistent support for FLUSH_PASSED_TO_STREAM
  (2.10.0)
+
+Fernando Raganhan Barbosa (raganhan@github)
+* Suggested #163: (ion) Update `ion-java` dependency
+ (2.10.0)

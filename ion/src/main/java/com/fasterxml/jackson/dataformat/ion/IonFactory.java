@@ -22,11 +22,11 @@ import com.fasterxml.jackson.core.base.DecorableTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.ion.util.CloseSafeUTF8Writer;
 
-import software.amazon.ion.IonReader;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.IonWriter;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonReader;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.IonWriter;
+import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Sub-class of {@link TokenStreamFactory} that will work on Ion content, instead of JSON

@@ -25,11 +25,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
-import software.amazon.ion.IonDatagram;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.IonStruct;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonDatagram;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.IonStruct;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.system.IonSystemBuilder;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

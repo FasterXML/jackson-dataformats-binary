@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers.DateDeserializer;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers.SqlDateDeserializer;
-import software.amazon.ion.Timestamp;
+import com.amazon.ion.Timestamp;
 
 /**
  * A date deserializer that uses native Ion timestamps instead of JSON strings.

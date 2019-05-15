@@ -29,10 +29,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueModule;
 
-import software.amazon.ion.IonDatagram;
-import software.amazon.ion.IonReader;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.IonWriter;
+import com.amazon.ion.IonDatagram;
+import com.amazon.ion.IonReader;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.IonWriter;
 
 /**
  * Specialization of {@link ObjectMapper} that will set underlying

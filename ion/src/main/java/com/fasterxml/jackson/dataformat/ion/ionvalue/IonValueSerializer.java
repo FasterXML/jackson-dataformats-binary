@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
-import software.amazon.ion.IonValue;
+import com.amazon.ion.IonValue;
 
 /**
  * Serializer that knows how to serialize an IonValue.
