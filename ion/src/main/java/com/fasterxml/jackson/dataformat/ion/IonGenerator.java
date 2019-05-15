@@ -34,10 +34,10 @@ import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
-import software.amazon.ion.IonType;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.IonWriter;
-import software.amazon.ion.Timestamp;
+import com.amazon.ion.IonType;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.IonWriter;
+import com.amazon.ion.Timestamp;
 
 /**
  * Implementation of {@link JsonGenerator} that will use an underlying

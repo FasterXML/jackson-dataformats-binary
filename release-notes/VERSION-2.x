@@ -15,6 +15,8 @@ Project: jackson-datatypes-binaryModules:
 #155: (cbor, smile) Inconsistent support for FLUSH_PASSED_TO_STREAM
  (reported, fix suggested by Carter K)
 #157: (all) Add simple module-info for JDK9+, using Moditect
+#163: (ion) Update `ion-java` dependency
+ (contributed by Fernando R-B)
 
 2.9.9 (not yet released)
 

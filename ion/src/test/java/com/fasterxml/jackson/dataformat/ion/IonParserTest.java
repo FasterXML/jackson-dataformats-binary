@@ -21,10 +21,10 @@ import com.fasterxml.jackson.dataformat.ion.IonParser;
 
 import org.junit.Assert;
 
-import software.amazon.ion.IonReader;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonReader;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.system.IonSystemBuilder;
 
 import java.io.IOException;
 import java.math.BigInteger;

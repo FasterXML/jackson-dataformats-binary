@@ -21,8 +21,8 @@ import com.fasterxml.jackson.dataformat.ion.EnumAsIonSymbolModule;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonValue;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
 
 /**
  * Supports serializing Ion to POJO and back using the Jackson Ion framework.

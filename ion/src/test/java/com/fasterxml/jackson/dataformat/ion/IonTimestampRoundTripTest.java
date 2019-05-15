@@ -26,12 +26,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
-import software.amazon.ion.IonDatagram;
-import software.amazon.ion.IonLoader;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonType;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonDatagram;
+import com.amazon.ion.IonLoader;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonType;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.system.IonSystemBuilder;
 
 public class IonTimestampRoundTripTest {
     IonSystem ionSystem = IonSystemBuilder.standard().build();

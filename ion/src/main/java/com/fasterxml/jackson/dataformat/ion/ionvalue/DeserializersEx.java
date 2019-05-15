@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import software.amazon.ion.IonContainer;
-import software.amazon.ion.IonValue;
+import com.amazon.ion.IonContainer;
+import com.amazon.ion.IonValue;
 
 class DeserializersEx extends SimpleDeserializers
 {

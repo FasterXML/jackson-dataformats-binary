@@ -24,9 +24,9 @@ tree model)
   <dependencies>
     <!-- actual decoding by core streaming Ion lib -->
     <dependency>
-      <groupId>software.amazon.ion</groupId>
+      <groupId>com.amazon.ion</groupId>
       <artifactId>ion-java</artifactId>
-      <version>1.0.2</version>
+      <version>1.4.0</version>
     </dependency>
 
     <!-- Extends Jackson core, databind -->

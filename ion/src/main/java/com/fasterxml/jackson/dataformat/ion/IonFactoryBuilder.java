@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import com.fasterxml.jackson.core.TSFBuilder;
 
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * {@link com.fasterxml.jackson.core.TSFBuilder}

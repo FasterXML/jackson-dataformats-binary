@@ -14,9 +14,9 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,20 +36,19 @@ import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 
-import software.amazon.ion.IonSexp;
-import software.amazon.ion.IonSystem;
-import software.amazon.ion.IonValue;
-import software.amazon.ion.Timestamp;
-import software.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.IonSexp;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.Timestamp;
+import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Test of the {@link IonValueMapper} parser.
  */
-@SuppressWarnings("deprecation")
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
     private final IonValueMapper ionValueMapper = new IonValueMapper(ionSystem,
-            PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+            PropertyNamingStrategy.SNAKE_CASE);
 
     enum ReturnCode {
         Success,
