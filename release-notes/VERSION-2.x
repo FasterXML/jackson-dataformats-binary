@@ -20,6 +20,8 @@ Project: jackson-datatypes-binaryModules:
 
 #159: (cbor) Some short UTF Strings encoded using non-canonical form
  (reported by Alexander C)
+#161: (avro) Deserialize from newer version to older one throws NullPointerException
+ (reported, fix contributed by Łukasz D)
 
 2.9.8 (15-Dec-2018)
 
