@@ -60,6 +60,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
     protected TypeIdResolver idResolver(DatabindContext ctxt,
             JavaType baseType, PolymorphicTypeValidator subtypeValidator,
             Collection<NamedType> subtypes, boolean forSer, boolean forDeser) {
-        return new AvroTypeIdResolver(baseType, ctxt.getTypeFactory(), subtypes);
+        return new AvroTypeIdResolver(baseType, ctxt.getTypeFactory(), subtypeValidator,
+                subtypes);
     }
 }

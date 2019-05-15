@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
@@ -22,8 +23,9 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
 
     private final Map<Class<?>, String> _typeIds = new HashMap<>();
 
-    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory, Collection<NamedType> subTypes) {
-        this(baseType, typeFactory);
+    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
+            PolymorphicTypeValidator stv, Collection<NamedType> subTypes) {
+        this(baseType, typeFactory, stv);
         if (subTypes != null) {
             for (NamedType namedType : subTypes) {
                 registerSubtype(namedType.getType(), namedType.getName());
@@ -31,8 +33,9 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         }
     }
 
-    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory) {
-        super(baseType, typeFactory);
+    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
+            PolymorphicTypeValidator stv) {
+        super(baseType, typeFactory, stv);
     }
 
     @Override
