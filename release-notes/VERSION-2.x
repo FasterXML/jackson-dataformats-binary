@@ -18,7 +18,7 @@ Project: jackson-datatypes-binaryModules:
 #163: (ion) Update `ion-java` dependency
  (contributed by Fernando R-B)
 
-2.9.9 (not yet released)
+2.9.9 (16-May-2019)
 
 #159: (cbor) Some short UTF Strings encoded using non-canonical form
  (reported by Alexander C)
