@@ -147,7 +147,6 @@ public class AvroMapper extends ObjectMapper
     /**
      * @since 2.10
      */
-    @SuppressWarnings("unchecked")
     public static AvroMapper.Builder builder() {
         return new AvroMapper.Builder(new AvroMapper());
     }
