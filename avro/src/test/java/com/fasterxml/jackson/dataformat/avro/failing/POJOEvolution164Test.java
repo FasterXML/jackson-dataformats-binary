@@ -13,7 +13,7 @@ public class POJOEvolution164Test extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
-    public void testBase() throws Exception
+    public void testSimpleFieldRemove() throws Exception
     {
         final String WRITER_SCHEMA_SRC = "{\n" +
                 "  \"type\": \"record\",\n" +
