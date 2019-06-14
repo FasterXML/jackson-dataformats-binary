@@ -49,6 +49,20 @@ All modules are licensed under [Apache License 2.0](http://www.apache.org/licens
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
 
+## Maven dependencies
+
+To use these format backends Maven-based projects, use following dependency:
+
+```xml
+<dependency>
+  <groupId>com.fasterxml.jackson.dataformat</groupId>
+  <artifactId>jackson-dataformat-[FORMAT]</artifactId>
+  <version>2.9.9</version>
+</dependency>
+```
+
+where `[FORMAT]` is one of supported modules (`avro`, `cbor`, `smile` etc)
+
 ## Other Jackson binary backends
 
 In addition to binary format backends hosted by FasterXML in this repo, there are other
