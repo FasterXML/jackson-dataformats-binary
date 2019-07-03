@@ -50,6 +50,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
     protected TypeIdResolver idResolver(MapperConfig<?> config,
             JavaType baseType, PolymorphicTypeValidator subtypeValidator,
             Collection<NamedType> subtypes, boolean forSer, boolean forDeser) {
-        return new AvroTypeIdResolver(baseType, config.getTypeFactory(), subtypes);
+        return new AvroTypeIdResolver(baseType, config.getTypeFactory(), subtypeValidator,
+                subtypes);
     }
 }

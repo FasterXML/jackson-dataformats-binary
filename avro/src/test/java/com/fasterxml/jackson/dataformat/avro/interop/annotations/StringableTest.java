@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Stringable;
@@ -17,8 +18,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
-
-import avro.shaded.com.google.common.base.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
@@ -60,7 +59,7 @@ public class StringableTest extends InteropTestBase {
             if (o == this) return true;
             if (!(o instanceof CustomStringableKey)) return false;
             CustomStringableKey other = (CustomStringableKey) o;
-            return Objects.equal(test, other.test);
+            return Objects.equals(test, other.test);
         }
     }
 
@@ -81,8 +80,8 @@ public class StringableTest extends InteropTestBase {
             if (o == this) return true;
             if (!(o instanceof CustomStringableKey)) return false;
             BigNumberWrapper other = (BigNumberWrapper) o;
-            return Objects.equal(bigDecimal, other.bigDecimal)
-                    && Objects.equal(bigInteger, other.bigInteger);
+            return Objects.equals(bigDecimal, other.bigDecimal)
+                    && Objects.equals(bigInteger, other.bigInteger);
         }
     }
 
