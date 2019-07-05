@@ -38,10 +38,9 @@ class RootContext
 
     @Override
     public Object rawValue() { return _rootValue; }
-    
+
     @Override
-    public final AvroWriteContext createChildArrayContext() throws JsonMappingException
-    {
+    public final AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException {
         // verify that root type is array (or compatible)
         switch (_schema.getType()) {
         case ARRAY:
@@ -53,24 +52,23 @@ class RootContext
         }
         GenericArray<Object> arr = _createArray(_schema);
         _rootValue = arr;
-        return new ArrayWriteContext(this, _generator, arr);
+        return new ArrayWriteContext(this, _generator, arr, currValue);
     }
-    
+
     @Override
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException
-    {
+    public final AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
         // verify that root type is record (or compatible)
         switch (_schema.getType()) {
         case RECORD:
         case UNION: // maybe
             {
-                GenericRecord rec = _createRecord(_schema);
+                GenericRecord rec = _createRecord(_schema, currValue);
                 _rootValue = rec;
-                return new ObjectWriteContext(this, _generator, rec);
+                return new ObjectWriteContext(this, _generator, rec, currValue);
             }
         case MAP: // used to not be supported
             {
-                MapWriteContext ctxt = new MapWriteContext(this, _generator, _schema);
+                MapWriteContext ctxt = new MapWriteContext(this, _generator, _schema, currValue);
                 _rootValue = ctxt.rawValue();
                 return ctxt;
             }
