@@ -163,6 +163,28 @@ public abstract class AvroWriteContext
 
     // // // Shared helper methods
 
+    protected GenericRecord _createRecord(Schema schema, Object currValue) throws JsonMappingException
+    {
+        Type type = schema.getType();
+        if (type == Schema.Type.UNION) {
+            try {
+                schema = resolveUnionSchema(schema, currValue);
+            } catch (UnresolvedUnionException e) {
+                // couldn't find an exact match
+                schema = _recordOrMapFromUnion(schema);
+            }
+        }
+        if (type == Schema.Type.MAP) {
+            throw new IllegalStateException("_createRecord should never be called for elements of type MAP");
+        }
+        try {
+            return new GenericData.Record(schema);
+        } catch (RuntimeException e) {
+            // alas, generator not passed to us
+            throw new JsonMappingException(null, "Failed to create Record type from "+type, e);
+        }
+    }
+
     protected GenericRecord _createRecord(Schema schema) throws JsonMappingException
     {
         // Quick check: if type is Union, need to find actual record type...

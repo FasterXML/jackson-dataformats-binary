@@ -62,7 +62,7 @@ class RootContext
         case RECORD:
         case UNION: // maybe
             {
-                GenericRecord rec = _createRecord(_schema);
+                GenericRecord rec = _createRecord(_schema, currValue);
                 _rootValue = rec;
                 return new ObjectWriteContext(this, _generator, rec, currValue);
             }
