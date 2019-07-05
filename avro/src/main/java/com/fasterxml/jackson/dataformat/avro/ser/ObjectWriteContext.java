@@ -23,9 +23,9 @@ public final class ObjectWriteContext
     protected Schema.Field _nextField;
     
     public ObjectWriteContext(AvroWriteContext parent, AvroGenerator generator,
-            GenericRecord record)
+            GenericRecord record, Object currValue)
     {
-        super(parent, generator, record.getSchema());
+        super(parent, generator, record.getSchema(), currValue);
         _record = record;
     }
 
@@ -33,39 +33,27 @@ public final class ObjectWriteContext
     public Object rawValue() { return _record; }
 
     @Override
-    public final AvroWriteContext createChildArrayContext()
+    public final AvroWriteContext createChildArrayContext(Object currValue)
     {
         _verifyValueWrite();
         Schema.Field field = _findField();
         if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_ARRAY, this, _generator);
+            return new NopWriteContext(TYPE_ARRAY, this, _generator, currValue);
         }
-        AvroWriteContext child = new ArrayWriteContext(this, _generator, _createArray(field.schema()));
+        AvroWriteContext child = new ArrayWriteContext(this, _generator,
+                _createArray(field.schema()), currValue);
         _record.put(_currentName, child.rawValue());
         return child;
     }
 
     @Override
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException
-    {
+    public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
         _verifyValueWrite();
         Schema.Field field = _findField();
         if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_OBJECT, this, _generator);
+            return new NopWriteContext(TYPE_OBJECT, this, _generator, currValue);
         }
-        AvroWriteContext child = _createObjectContext(field.schema());
-        _record.put(_currentName, child.rawValue());
-        return child;
-    }
-
-    @Override
-    public AvroWriteContext createChildObjectContext(Object object) throws JsonMappingException {
-        _verifyValueWrite();
-        Schema.Field field = _findField();
-        if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_OBJECT, this, _generator);
-        }
-        AvroWriteContext child = _createObjectContext(field.schema(), object);
+        AvroWriteContext child = _createObjectContext(field.schema(), currValue);
         _record.put(_currentName, child.rawValue());
         return child;
     }
