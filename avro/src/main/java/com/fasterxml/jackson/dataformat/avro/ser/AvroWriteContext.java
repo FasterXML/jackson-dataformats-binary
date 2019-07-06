@@ -87,7 +87,7 @@ public abstract class AvroWriteContext
 
     public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
 
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException {
+    public AvroWriteContext createChildObjectContext() throws JsonMappingException {
         return createChildObjectContext(null);
     }
 
