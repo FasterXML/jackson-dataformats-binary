@@ -8,7 +8,7 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.10.0 (not yet released)
+2.10.0.pr1 (19-Jul-2019)
 
 #139: (cbor) Incorrect decimal fraction representation
  (reported by wlukowicz@github)
@@ -17,6 +17,7 @@ Project: jackson-datatypes-binaryModules:
 #157: (all) Add simple module-info for JDK9+, using Moditect
 #163: (ion) Update `ion-java` dependency
  (contributed by Fernando R-B)
+- asm version upgrade to 6.2.1 (from 5.1)
 
 2.9.9 (16-May-2019)
 
