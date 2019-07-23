@@ -1,0 +1,69 @@
+diff --git a/avro/pom.xml b/avro/pom.xml
+index 1a2deab..896f26a 100644
+--- a/avro/pom.xml
++++ b/avro/pom.xml
+@@ -34,7 +34,10 @@ abstractions.
+     <dependency>
+       <groupId>org.apache.avro</groupId>
+       <artifactId>avro</artifactId>
+-      <version>1.8.2</version>
++      <!-- 02-Jul-2019, tatu: Go to 1.9.x with Jackson 2.10: Apache Avro now
++              upgrades Jackson dep from 1.x to 2.x, causing incompatible API change
++        -->
++      <version>1.9.0</version>
+     </dependency>
+ 
+     <!-- and for testing we need logback -->
+diff --git a/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/deser/AvroFieldDefaulters.java b/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/deser/AvroFieldDefaulters.java
+index 058c62b..c0171da 100644
+--- a/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/deser/AvroFieldDefaulters.java
++++ b/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/deser/AvroFieldDefaulters.java
+@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
+ 
+ import java.util.*;
+ 
+-import org.codehaus.jackson.JsonNode;
++import com.fasterxml.jackson.databind.JsonNode;
+ 
+ /**
+  * Factory class for various default providers
+@@ -19,7 +19,7 @@ public class AvroFieldDefaulters
+         case VALUE_NULL:
+             return new ScalarDefaults.NullDefaults(name);
+         case VALUE_NUMBER_FLOAT:
+-            switch (defaultAsNode.getNumberType()) {
++            switch (defaultAsNode.numberType()) {
+             case FLOAT:
+                 return new ScalarDefaults.FloatDefaults(name, (float) defaultAsNode.asDouble());
+             case DOUBLE:
+@@ -28,7 +28,7 @@ public class AvroFieldDefaulters
+                 return new ScalarDefaults.DoubleDefaults(name, defaultAsNode.asDouble());
+             }
+         case VALUE_NUMBER_INT:
+-            switch (defaultAsNode.getNumberType()) {
++            switch (defaultAsNode.numberType()) {
+             case INT:
+                 return new ScalarDefaults.FloatDefaults(name, defaultAsNode.asInt());
+             case BIG_INTEGER: // TODO: maybe support separately?
+@@ -40,7 +40,7 @@ public class AvroFieldDefaulters
+             return new ScalarDefaults.StringDefaults(name, defaultAsNode.asText());
+         case START_OBJECT:
+             {
+-                Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.getFields();
++                Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.fields();
+                 List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+                 while (it.hasNext()) {
+                     Map.Entry<String,JsonNode> entry = it.next();
+diff --git a/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/schema/RecordVisitor.java b/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/schema/RecordVisitor.java
+index f1d6867..75a6ce3 100644
+--- a/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/schema/RecordVisitor.java
++++ b/avro/src/main/java/com/fasterxml/jackson/dataformat/avro/schema/RecordVisitor.java
+@@ -10,8 +10,6 @@ import org.apache.avro.Schema.Type;
+ import org.apache.avro.reflect.AvroMeta;
+ import org.apache.avro.reflect.AvroSchema;
+ import org.apache.avro.util.internal.JacksonUtils;
+-import org.codehaus.jackson.JsonNode;
+-import org.codehaus.jackson.map.ObjectMapper;
+ 
+ import com.fasterxml.jackson.databind.*;
+ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
