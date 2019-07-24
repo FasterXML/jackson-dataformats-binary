@@ -61,4 +61,57 @@ public class AvroFieldDefaulters
         }
         return null;
     }
+
+    // 23-Jul-2019, tatu: With Avro 1.9, likely changed  to use "raw" JDK containers?
+    //   Code would look more like this:
+/*    
+    public static AvroFieldReader createDefaulter(String name,
+            Object defaultValue)
+    {
+
+        if (defaultValue == null) {
+            return new ScalarDefaults.NullDefaults(name);
+        }
+        if (defaultValue instanceof Boolean) {
+            return new ScalarDefaults.BooleanDefaults(name, ((Boolean) defaultValue).booleanValue());
+        }
+        if (defaultValue instanceof String) {
+            return new ScalarDefaults.StringDefaults(name, (String) defaultValue);
+        }
+        if (defaultValue instanceof Number) {
+            Number n = (Number) defaultValue;
+            if (defaultValue instanceof Long) {
+                return new ScalarDefaults.LongDefaults(name, n.longValue());
+            }
+            if (defaultValue instanceof Integer) {
+                return new ScalarDefaults.IntDefaults(name, n.intValue());
+            }
+            if ((defaultValue instanceof Double) || (defaultValue instanceof java.math.BigDecimal)) {
+                return new ScalarDefaults.DoubleDefaults(name, n.doubleValue());
+            }
+            if (defaultValue instanceof Float) {
+                return new ScalarDefaults.FloatDefaults(name, n.floatValue());
+            }
+        }
+        if (defaultValue instanceof List<?>) {
+            List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+            for (Object value : ((List<?>) defaultValue)) {
+                readers.add(createDefaulter("", value));
+            }
+            return StructDefaults.createArrayDefaults(name, readers);
+        }
+        if (defaultValue instanceof Map<?,?>) {
+            List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> mapValue = (Map<String, Object>) defaultValue;
+            for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
+                readers.add(createDefaulter(entry.getKey(), entry.getValue()));
+            }
+            return StructDefaults.createObjectDefaults(name, readers);
+        }
+
+        throw new IllegalArgumentException("Unrecognized default value type: "
+                + ClassUtil.classNameOf(defaultValue));
+    }
+*/
 }
