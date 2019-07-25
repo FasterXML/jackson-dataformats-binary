@@ -419,13 +419,15 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override // since 2.8
-    public final void writeFieldId(long size) throws IOException {
-        if (_writeContext.writeFieldName(String.valueOf(size)) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+    public final void writeFieldId(long id) throws IOException {
+        // 24-Jul-2019, tatu: Should not force construction of a String here...
+        String idStr = Long.valueOf(id).toString(); // since instances for small values cached
+        if (_writeContext.writeFieldName(idStr) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
-        _writeNumberNoCheck(size);
+        _writeNumberNoCheck(id);
     }
-    
+
     @Override
     public final void writeStringField(String fieldName, String value)
             throws IOException
