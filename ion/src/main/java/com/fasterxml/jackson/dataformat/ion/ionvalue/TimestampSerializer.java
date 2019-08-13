@@ -28,8 +28,6 @@ import com.amazon.ion.Timestamp;
  */
 class TimestampSerializer extends StdScalarSerializer<Timestamp>
 {
-    private static final long serialVersionUID = 1L;
-
     protected TimestampSerializer() {
         super(Timestamp.class);
     }

@@ -10,13 +10,8 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
-/**
- * @since 2.9
- */
 public class AvroTypeDeserializer extends TypeDeserializerBase
 {
-    private static final long serialVersionUID = 1L;
-
     protected AvroTypeDeserializer(JavaType baseType, TypeIdResolver idRes, String typePropertyName, boolean typeIdVisible,
                                    JavaType defaultImpl) {
         super(baseType, idRes, typePropertyName, typeIdVisible, defaultImpl);

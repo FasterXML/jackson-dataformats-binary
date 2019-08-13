@@ -183,20 +183,6 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    /**
-     * Not sure whether to throw an exception or just do no-op; for now,
-     * latter.
-     */
-    @Override
-    public ProtobufGenerator useDefaultPrettyPrinter() {
-        return this;
-    }
-
-    @Override
-    public ProtobufGenerator setPrettyPrinter(PrettyPrinter pp) {
-        return this;
-    }
-
     @Override
     public Object getOutputTarget() {
         return _output;

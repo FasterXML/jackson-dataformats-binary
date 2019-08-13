@@ -41,8 +41,6 @@ import com.fasterxml.jackson.dataformat.ion.IonParser;
  */
 public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
 {
-    private static final long serialVersionUID = 1L;
-
     public IonAnnotationTypeDeserializer(JavaType baseType, TypeIdResolver idRes,
             String typePropertyName, boolean typeIdVisible, JavaType defaultImpl) {
         super(baseType, idRes, typePropertyName, typeIdVisible, defaultImpl);

@@ -28,15 +28,13 @@ import com.amazon.ion.IonValue;
  */
 class IonValueSerializer extends StdScalarSerializer<IonValue>
 {
-    private static final long serialVersionUID = 1L;
-
     public IonValueSerializer() {
         super(IonValue.class);        
     }
 
     @Override
-    public void serialize(IonValue value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-        IonGenerator joiGenerator = (IonGenerator) jgen;
+    public void serialize(IonValue value, JsonGenerator g, SerializerProvider provider) throws IOException {
+        IonGenerator joiGenerator = (IonGenerator) g;
         joiGenerator.writeValue(value);
     }
 }

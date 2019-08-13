@@ -295,24 +295,6 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    /**
-     * No way (or need) to indent anything, so let's block any attempts. (should
-     * we throw an exception instead?)
-     */
-    @Override
-    public JsonGenerator useDefaultPrettyPrinter() {
-        return this;
-    }
-
-    /**
-     * No way (or need) to indent anything, so let's block any attempts. (should
-     * we throw an exception instead?)
-     */
-    @Override
-    public JsonGenerator setPrettyPrinter(PrettyPrinter pp) {
-        return this;
-    }
-
     @Override
     public Object getOutputTarget() {
         return _out;

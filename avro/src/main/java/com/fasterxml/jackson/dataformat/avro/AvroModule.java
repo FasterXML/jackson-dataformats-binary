@@ -115,8 +115,6 @@ public class AvroModule extends Module
 
     public static class SchemaSerializer extends StdSerializer<Schema>
     {
-        private static final long serialVersionUID = 1L;
-
         public SchemaSerializer() {
             super(Schema.class);
         }

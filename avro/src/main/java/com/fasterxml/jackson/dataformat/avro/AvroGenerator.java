@@ -174,23 +174,6 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    /**
-     * Not sure what to do here; could reset indentation to some value maybe?
-     */
-    @Override
-    public AvroGenerator useDefaultPrettyPrinter()
-    {
-        return this;
-    }
-
-    /**
-     * Not relevant, as binary formats typically have no indentation.
-     */
-    @Override
-    public AvroGenerator setPrettyPrinter(PrettyPrinter pp) {
-        return this;
-    }
-
     @Override
     public Object getOutputTarget() {
         return _output;

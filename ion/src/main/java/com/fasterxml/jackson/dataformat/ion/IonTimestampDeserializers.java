@@ -29,8 +29,6 @@ import com.amazon.ion.Timestamp;
 public class IonTimestampDeserializers {
 
     public static class IonTimestampJavaDateDeserializer extends DateDeserializer {
-        private static final long serialVersionUID = 1L;
-
         @Override
         public java.util.Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
         {
@@ -45,8 +43,6 @@ public class IonTimestampDeserializers {
     }
     
     public static class IonTimestampSQLDateDeserializer extends SqlDateDeserializer {
-        private static final long serialVersionUID = 1L;
-
         @Override
         public java.sql.Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
         {

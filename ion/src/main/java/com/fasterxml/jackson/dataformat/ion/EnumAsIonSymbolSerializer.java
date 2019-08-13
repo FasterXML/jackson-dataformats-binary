@@ -39,8 +39,6 @@ import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
  */
 public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
 {
-    private static final long serialVersionUID = 1L;
-
     public EnumAsIonSymbolSerializer() {
         super(Enum.class, false);
     }

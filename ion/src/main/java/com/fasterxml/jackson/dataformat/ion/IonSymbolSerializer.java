@@ -40,8 +40,6 @@ import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
  */
 public class IonSymbolSerializer extends StdScalarSerializer<String>
 {
-    private static final long serialVersionUID = 1L;
-
     public IonSymbolSerializer() {
         super(String.class);
     }

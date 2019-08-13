@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 public class AvroUntypedDeserializer
     extends UntypedObjectDeserializer
 {
-    private static final long serialVersionUID = 1L;
-
     protected TypeDeserializer _typeDeserializer;
 
     public AvroUntypedDeserializer(JavaType listType, JavaType mapType)
