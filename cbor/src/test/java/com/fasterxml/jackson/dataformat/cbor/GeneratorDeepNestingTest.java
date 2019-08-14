@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.util.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;

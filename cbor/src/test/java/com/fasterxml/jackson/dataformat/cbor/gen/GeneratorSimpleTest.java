@@ -8,12 +8,13 @@ import java.util.*;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator.Feature;
 
 public class GeneratorSimpleTest extends CBORTestBase
 {

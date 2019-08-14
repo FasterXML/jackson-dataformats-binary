@@ -471,15 +471,15 @@ public class IonGenerator
 
     @Override
     public void writeStartArray() throws IOException, JsonGenerationException {
-        _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
+        _verifyValueWrite("start an array");
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         _writer.stepIn(IonType.LIST);
     }
 
     @Override
     public void writeStartObject() throws IOException, JsonGenerationException {
-        _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
+        _verifyValueWrite("start an object");
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
         _writer.stepIn(IonType.STRUCT);
     }
 
