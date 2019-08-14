@@ -56,14 +56,6 @@ public final class SmileWriteContext extends TokenStreamContext
     /**********************************************************
      */
 
-    protected SmileWriteContext(int type, SmileWriteContext parent, DupDetector dups) {
-        super();
-        _type = type;
-        _parent = parent;
-        _dups = dups;
-        _index = -1;
-    }
-
     protected SmileWriteContext(int type, SmileWriteContext parent, DupDetector dups,
             Object currentValue) {
         super();
@@ -72,16 +64,6 @@ public final class SmileWriteContext extends TokenStreamContext
         _dups = dups;
         _index = -1;
         _currentValue = currentValue;
-    }
-
-    private SmileWriteContext reset(int type) {
-        _type = type;
-        _index = -1;
-        // as long as _gotFieldId false, current name/id can be left as-is
-        _gotFieldId = false;
-        _currentValue = null;
-        if (_dups != null) { _dups.reset(); }
-        return this;
     }
 
     private SmileWriteContext reset(int type, Object currentValue) {
@@ -116,16 +98,17 @@ public final class SmileWriteContext extends TokenStreamContext
      */
 
     public static SmileWriteContext createRootContext(DupDetector dd) {
-        return new SmileWriteContext(TYPE_ROOT, null, dd);
+        return new SmileWriteContext(TYPE_ROOT, null, dd, null);
     }
 
-    public SmileWriteContext createChildArrayContext() {
+    public SmileWriteContext createChildArrayContext(Object currentValue) {
         SmileWriteContext ctxt = _childToRecycle;
         if (ctxt == null) {
-            _childToRecycle = ctxt = new SmileWriteContext(TYPE_ARRAY, this, (_dups == null) ? null : _dups.child());
+            _childToRecycle = ctxt = new SmileWriteContext(TYPE_ARRAY, this,
+                    (_dups == null) ? null : _dups.child(), currentValue);
             return ctxt;
         }
-        return ctxt.reset(TYPE_ARRAY);
+        return ctxt.reset(TYPE_ARRAY, currentValue);
     }
 
     public SmileWriteContext createChildObjectContext(Object currentValue) {

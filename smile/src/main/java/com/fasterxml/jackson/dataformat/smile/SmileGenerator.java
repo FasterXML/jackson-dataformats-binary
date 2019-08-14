@@ -576,7 +576,7 @@ public class SmileGenerator
     public final void writeStartArray() throws IOException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -584,7 +584,7 @@ public class SmileGenerator
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -592,7 +592,7 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue, int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 

@@ -59,14 +59,6 @@ public final class CBORWriteContext extends TokenStreamContext
     /**********************************************************
      */
 
-    protected CBORWriteContext(int type, CBORWriteContext parent, DupDetector dups) {
-        super();
-        _type = type;
-        _parent = parent;
-        _dups = dups;
-        _index = -1;
-    }
-
     protected CBORWriteContext(int type, CBORWriteContext parent, DupDetector dups,
             Object currentValue) {
         super();
@@ -75,16 +67,6 @@ public final class CBORWriteContext extends TokenStreamContext
         _dups = dups;
         _index = -1;
         _currentValue = currentValue;
-    }
-
-    private CBORWriteContext reset(int type) {
-        _type = type;
-        _index = -1;
-        // as long as _gotFieldId false, current name/id can be left as-is
-        _gotFieldId = false;
-        _currentValue = null;
-        if (_dups != null) { _dups.reset(); }
-        return this;
     }
 
     private CBORWriteContext reset(int type, Object currentValue) {
@@ -119,30 +101,17 @@ public final class CBORWriteContext extends TokenStreamContext
      */
 
     public static CBORWriteContext createRootContext(DupDetector dd) {
-        return new CBORWriteContext(TYPE_ROOT, null, dd);
+        return new CBORWriteContext(TYPE_ROOT, null, dd, null);
     }
 
-    public CBORWriteContext createChildArrayContext() {
-        CBORWriteContext ctxt = _childToRecycle;
-        if (ctxt == null) {
-            _childToRecycle = ctxt = new CBORWriteContext(TYPE_ARRAY, this, (_dups == null) ? null : _dups.child());
-            return ctxt;
-        }
-        return ctxt.reset(TYPE_ARRAY);
-    }
-
-    /**
-     * @since 3.0
-     */
-    public CBORWriteContext createChildArrayContext(Object currValue) {
+    public CBORWriteContext createChildArrayContext(Object currentValue) {
         CBORWriteContext ctxt = _childToRecycle;
         if (ctxt == null) {
             _childToRecycle = ctxt = new CBORWriteContext(TYPE_ARRAY, this,
-                    (_dups == null) ? null : _dups.child(),
-                    currValue);
+                    (_dups == null) ? null : _dups.child(), currentValue);
             return ctxt;
         }
-        return ctxt.reset(TYPE_ARRAY, currValue);
+        return ctxt.reset(TYPE_ARRAY, currentValue);
     }
 
     public CBORWriteContext createChildObjectContext(Object currentValue) {
