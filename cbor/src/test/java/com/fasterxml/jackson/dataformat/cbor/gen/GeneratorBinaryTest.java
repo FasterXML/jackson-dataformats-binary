@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -8,11 +8,13 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 
 public class GeneratorBinaryTest //extends CBORTestBase
 {
 	final static int SMALL_LENGTH = 100;
-	final static int LARGE_LENGTH = CBORGenerator.BYTE_BUFFER_FOR_OUTPUT + 500;
+	final static int LARGE_LENGTH = /*CBORGenerator.BYTE_BUFFER_FOR_OUTPUT*/ 16000 + 500;
 
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
