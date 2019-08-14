@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.util.BufferRecycler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GeneratorDeepNestingTest extends CBORTestBase
@@ -22,6 +26,23 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = MAPPER.getFactory().createGenerator(out);
+        _writeNestedMap(gen, 23);
+        gen.close();
+        byte[] encoded = out.toByteArray();
+        Map<String,Object> result = (Map<String,Object>) MAPPER.readValue(encoded, Map.class);
+        _verifyNestedMap(result, 23);
+    }
+
+    // Alternative to exercise secondary constructor: since it is not directly
+    // used by or exposed by factory (can't remember why it was added actually)
+    @SuppressWarnings("unchecked")
+    public void testDeeplyNestedWithAltConstructor() throws Exception
+    {
+        IOContext ctxt = new IOContext(new BufferRecycler(), this, true);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        JsonGenerator gen = new CBORGenerator(ctxt, 0, 0,
+                (ObjectCodec) null, out, new byte[1000], 0, false);
+
         _writeNestedMap(gen, 23);
         gen.close();
         byte[] encoded = out.toByteArray();

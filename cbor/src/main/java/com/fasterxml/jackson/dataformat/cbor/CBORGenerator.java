@@ -226,7 +226,7 @@ public class CBORGenerator extends GeneratorBase
 
     public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
             ObjectCodec codec, OutputStream out) {
-        super(stdFeatures, codec, /* DupDetector */ null);
+        super(stdFeatures, codec, /* Write Context */ null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
@@ -261,7 +261,12 @@ public class CBORGenerator extends GeneratorBase
     public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
             ObjectCodec codec, OutputStream out, byte[] outputBuffer,
             int offset, boolean bufferRecyclable) {
-        super(stdFeatures, codec);
+        super(stdFeatures, codec, /* Write Context */ null);
+        DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
+                ? DupDetector.rootDetector(this)
+                : null;
+        // NOTE: we passed `null` for default write context
+        _cborContext = CBORWriteContext.createRootContext(dups);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;

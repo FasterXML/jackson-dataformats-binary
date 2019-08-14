@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
+import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
@@ -180,6 +180,17 @@ public class SmileGenerator
     
     /*
     /**********************************************************
+    /* Output state
+    /**********************************************************
+     */
+
+    /**
+     * @since 2.10
+     */
+    protected SmileWriteContext _smileContext;
+
+    /*
+    /**********************************************************
     /* Output buffering
     /**********************************************************
      */
@@ -265,10 +276,15 @@ public class SmileGenerator
     /**********************************************************
      */
     
-    public SmileGenerator(IOContext ctxt, int jsonFeatures, int smileFeatures,
+    public SmileGenerator(IOContext ctxt, int stdFeatures, int smileFeatures,
             ObjectCodec codec, OutputStream out)
     {
-        super(jsonFeatures, codec);
+        super(stdFeatures, codec, /*WriteContext*/ null);
+        DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
+                ? DupDetector.rootDetector(this)
+                : null;
+                // NOTE: we passed `null` for default write context
+        _smileContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
         _ioContext = ctxt;
         _smileBufferRecycler = _smileBufferRecycler();
@@ -305,11 +321,16 @@ public class SmileGenerator
         }
     }
 
-    public SmileGenerator(IOContext ctxt, int jsonFeatures, int smileFeatures,
+    public SmileGenerator(IOContext ctxt, int stdFeatures, int smileFeatures,
             ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(jsonFeatures, codec);
+        super(stdFeatures, codec, null);
+        DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
+                ? DupDetector.rootDetector(this)
+                : null;
+                // NOTE: we passed `null` for default write context
+        _smileContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
         _ioContext = ctxt;
         _smileBufferRecycler = _smileBufferRecycler();
@@ -453,6 +474,27 @@ public class SmileGenerator
 
     /*
     /**********************************************************
+    /* Overridden methods, output context (and related)
+    /**********************************************************
+     */
+
+    @Override
+    public Object getCurrentValue() {
+        return _smileContext.getCurrentValue();
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _smileContext.setCurrentValue(v);
+    }
+
+    @Override
+    public JsonStreamContext getOutputContext() {
+        return _smileContext;
+    }
+
+    /*
+    /**********************************************************
     /* Overridden methods, write methods
     /**********************************************************
      */
@@ -464,7 +506,7 @@ public class SmileGenerator
     @Override
     public final void writeFieldName(String name)  throws IOException
     {
-        if (_writeContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_smileContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -475,7 +517,7 @@ public class SmileGenerator
         throws IOException
     {
         // Object is a value, need to verify it's allowed
-        if (_writeContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_smileContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -485,7 +527,7 @@ public class SmileGenerator
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
-        if (_writeContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_smileContext.writeFieldName(fieldName)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(fieldName);
@@ -562,7 +604,7 @@ public class SmileGenerator
     public final void writeStartArray() throws IOException
     {
         _verifyValueWrite("start an array");
-        _writeContext = _writeContext.createChildArrayContext();
+        _smileContext = _smileContext.createChildArrayContext();
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -570,25 +612,25 @@ public class SmileGenerator
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _writeContext = _writeContext.createChildArrayContext();
+        _smileContext = _smileContext.createChildArrayContext();
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
     @Override
     public final void writeEndArray() throws IOException
     {
-        if (!_writeContext.inArray()) {
-            _reportError("Current context not Array but "+_writeContext.typeDesc());
+        if (!_smileContext.inArray()) {
+            _reportError("Current context not Array but "+_smileContext.typeDesc());
         }
         _writeByte(TOKEN_LITERAL_END_ARRAY);
-        _writeContext = _writeContext.getParent();
+        _smileContext = _smileContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException
     {
         _verifyValueWrite("start an object");
-        _writeContext = _writeContext.createChildObjectContext();
+        _smileContext = _smileContext.createChildObjectContext(null);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
@@ -596,21 +638,18 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _writeContext.createChildObjectContext();
-        _writeContext = ctxt;
-        if (forValue != null) {
-            ctxt.setCurrentValue(forValue);
-        }
+        SmileWriteContext ctxt = _smileContext.createChildObjectContext(forValue);
+        _smileContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     
     @Override
     public final void writeEndObject() throws IOException
     {
-        if (!_writeContext.inObject()) {
-            _reportError("Current context not Object but "+_writeContext.typeDesc());
+        if (!_smileContext.inObject()) {
+            _reportError("Current context not Object but "+_smileContext.typeDesc());
         }
-        _writeContext = _writeContext.getParent();
+        _smileContext = _smileContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);
     }
 
@@ -1758,8 +1797,7 @@ public class SmileGenerator
     protected final void _verifyValueWrite(String typeMsg)
         throws IOException
     {
-        int status = _writeContext.writeValue();
-        if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
+        if (!_smileContext.writeValue()) {
             _reportError("Can not "+typeMsg+", expecting field name");
         }
     }
