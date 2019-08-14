@@ -408,7 +408,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldName(String name) throws IOException {
-        if (_outputContext.writeFieldName(name) == CBORWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_outputContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(name);
@@ -418,7 +418,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeFieldName(SerializableString name)
             throws IOException {
         // Object is a value, need to verify it's allowed
-        if (_outputContext.writeFieldName(name.getValue()) == CBORWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_outputContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
@@ -433,10 +433,8 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldId(long id) throws IOException {
-        // 24-Jul-2019, tatu: Should not force construction of a String here...
-        String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        if (_outputContext.writeFieldName(idStr) == CBORWriteContext.STATUS_EXPECT_VALUE) {
-            _reportError("Can not write a field name, expecting a value");
+        if (!_outputContext.writeFieldId(id)) {
+            _reportError("Can not write a field id, expecting a value");
         }
         _writeNumberNoCheck(id);
     }
@@ -445,7 +443,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStringField(String fieldName, String value)
             throws IOException
     {
-        if (_outputContext.writeFieldName(fieldName) == CBORWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_outputContext.writeFieldName(fieldName)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(fieldName);
@@ -1085,9 +1083,8 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws IOException {
-        int status = _outputContext.writeValue();
-        if (status == CBORWriteContext.STATUS_EXPECT_NAME) {
-            _reportError("Can not " + typeMsg + ", expecting field name");
+        if (!_outputContext.writeValue()) {
+            _reportError("Can not " + typeMsg + ", expecting field name/id");
         }
         // decrementElementsRemainingCount()
         int count = _currentRemainingElements;
