@@ -12,14 +12,8 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         _testSimpleDups(false, new SmileFactory());
     }
 
-    // Testing ability to enable checking after construction of
-    // generator, not just via JsonFactory
-    public void testSimpleDupsLazilyBytes() throws Exception {
-        final SmileFactory f = new SmileFactory();
-        assertFalse(f.isEnabled(StreamWriteFeature.STRICT_DUPLICATE_DETECTION));
-        _testSimpleDups(true, f);
-    }
-
+    // NOTE: with 3.0, no more "lazy" option for enabling duplicate detection
+    
     @SuppressWarnings("resource")
     protected void _testSimpleDups(boolean lazySetting, TokenStreamFactory f)
         throws Exception

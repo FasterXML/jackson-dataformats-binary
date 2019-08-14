@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FieldType;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
@@ -22,13 +21,6 @@ public class ProtobufGenerator extends GeneratorBase
     /* Constants
     /**********************************************************
      */
-
-    /**
-     * Since our context object does NOT implement standard write context, need
-     * to do something like use a placeholder...
-     */
-    protected final static JsonWriteContext BOGUS_WRITE_CONTEXT = JsonWriteContext.createRootContext(null);
-    
     /**
      * This instance is used as a placeholder for cases where we do not know
      * actual field and want to simply skip over any values that caller tries
@@ -108,7 +100,7 @@ public class ProtobufGenerator extends GeneratorBase
     /**
      * Current context, in form we can use it.
      */
-    protected ProtobufWriteContext _pbContext;
+    protected ProtobufWriteContext _tokenWriteContext;
 
     /**
      * Currently active output buffer, place where appends occur.
@@ -137,10 +129,10 @@ public class ProtobufGenerator extends GeneratorBase
             OutputStream output)
         throws IOException
     {
-        super(writeCtxt, generatorFeatures, BOGUS_WRITE_CONTEXT);
+        super(writeCtxt, generatorFeatures);
         _ioContext = ctxt;
         _output = output;
-        _pbContext = _rootContext = ProtobufWriteContext.createNullContext();
+        _tokenWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
         setSchema(schema);
     }
@@ -153,18 +145,21 @@ public class ProtobufGenerator extends GeneratorBase
         _schema = schema;
         // start with temporary root...
 //        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);
-        _pbContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
+        _tokenWriteContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
     }
 
     @Override
-    public Object getCurrentValue() {
-        return _pbContext.getCurrentValue();
+    public final Object getCurrentValue() {
+        return _tokenWriteContext.getCurrentValue();
     }
 
     @Override
-    public void setCurrentValue(Object v) {
-        _pbContext.setCurrentValue(v);
+    public final void setCurrentValue(Object v) {
+        _tokenWriteContext.setCurrentValue(v);
     }
+
+    @Override
+    public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
 
     /*                                                                                       
     /**********************************************************                              
@@ -231,12 +226,12 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeFieldName(String name) throws IOException {
         if (!_inObject) {
-            _reportError("Can not write field name: current context not Object but "+_pbContext.typeDesc());
+            _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
         ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
         // field means an array until START_OBJECT
-        if (f != null && _pbContext.notArray()) {
+        if (f != null && _tokenWriteContext.notArray()) {
             f = f.nextIf(name);
             if (f == null) {
                 f = _currMessage.field(name);
@@ -255,14 +250,14 @@ public class ProtobufGenerator extends GeneratorBase
                         
             }
         }
-        _pbContext.setField(f);
+        _tokenWriteContext.setField(f);
         _currField = f;
     }
 
     @Override
     public final void writeFieldName(SerializableString sstr) throws IOException {
         if (!_inObject) {
-            _reportError("Can not write field name: current context not Object but "+_pbContext.typeDesc());
+            _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
         ProtobufField f = _currField;
         final String name = sstr.getValue();
@@ -270,7 +265,7 @@ public class ProtobufGenerator extends GeneratorBase
         // field means an array until START_OBJECT
         // NOTE: not ideal -- depends on if it really is sibling field of an array,
         // or an entry within
-        if (f != null && _pbContext.notArray()) {
+        if (f != null && _tokenWriteContext.notArray()) {
             f = f.nextIf(name);
             if (f == null) {
                 f = _currMessage.field(name);
@@ -289,7 +284,7 @@ public class ProtobufGenerator extends GeneratorBase
                         
             }
         }
-        _pbContext.setField(f);
+        _tokenWriteContext.setField(f);
         _currField = f;
     }
 
@@ -323,7 +318,7 @@ public class ProtobufGenerator extends GeneratorBase
         super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             ProtobufWriteContext ctxt;
-            while ((ctxt = _pbContext) != null) {
+            while ((ctxt = _tokenWriteContext) != null) {
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -372,7 +367,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         // NOTE: do NOT clear _currField; needed for actual element type
 
-        _pbContext = _pbContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
         _writeTag = !_currField.packed;
         /* Unpacked vs packed: if unpacked, nothing special is needed, since it
          * is equivalent to just replicating same field N times.
@@ -387,23 +382,23 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeStartArray(Object currValue, int len) throws IOException {
         writeStartArray();
-        _pbContext.setCurrentValue(currValue);
+        _tokenWriteContext.setCurrentValue(currValue);
     }
 
     @Override
     public final void writeEndArray() throws IOException
     {
-        if (!_pbContext.inArray()) {
-            _reportError("Current context not Array but "+_pbContext.typeDesc());
+        if (!_tokenWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
         }
-        _pbContext = _pbContext.getParent();
-        if (_pbContext.inRoot()) {
+        _tokenWriteContext = _tokenWriteContext.getParent();
+        if (_tokenWriteContext.inRoot()) {
             if (!_complete) {
                 _complete();
             }
             _inObject = false;
         } else {
-            _inObject = _pbContext.inObject();
+            _inObject = _tokenWriteContext.inObject();
         }
 
         // no arrays inside arrays, so parent can't be array and so:
@@ -417,7 +412,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object currValue) throws IOException {
         writeStartObject();
-        _pbContext.setCurrentValue(currValue);
+        _tokenWriteContext.setCurrentValue(currValue);
     }
 
     @Override
@@ -425,7 +420,7 @@ public class ProtobufGenerator extends GeneratorBase
     {
         if (_currField == null) {
             // root?
-            if (!_pbContext.inRoot()) {
+            if (!_tokenWriteContext.inRoot()) {
                 _reportError("Can not write START_OBJECT without field (message type "+_currMessage.getName()+")");
             }
             _currMessage = _schema.getRootType();
@@ -446,10 +441,10 @@ public class ProtobufGenerator extends GeneratorBase
         }
         
         if (_inObject) {
-            _pbContext = _pbContext.createChildObjectContext(_currMessage);
+            _tokenWriteContext = _tokenWriteContext.createChildObjectContext(_currMessage);
             _currField = null;
         } else { // must be array, then
-            _pbContext = _pbContext.createChildObjectContext(_currMessage);
+            _tokenWriteContext = _tokenWriteContext.createChildObjectContext(_currMessage);
             // but do NOT clear next field here
             _inObject = true;
         }
@@ -461,21 +456,21 @@ public class ProtobufGenerator extends GeneratorBase
     public final void writeEndObject() throws IOException
     {
         if (!_inObject) {
-            _reportError("Current context not Object but "+_pbContext.typeDesc());
+            _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
         }
-        _pbContext = _pbContext.getParent();
-        if (_pbContext.inRoot()) {
+        _tokenWriteContext = _tokenWriteContext.getParent();
+        if (_tokenWriteContext.inRoot()) {
             if (!_complete) {
                 _complete();
             }
         } else {
-            _currMessage = _pbContext.getMessageType();
+            _currMessage = _tokenWriteContext.getMessageType();
         }
-        _currField = _pbContext.getField();
+        _currField = _tokenWriteContext.getField();
         // possible that we might be within array, which might be packed:
-        boolean inObj = _pbContext.inObject();
+        boolean inObj = _tokenWriteContext.inObject();
         _inObject = inObj;
-        _writeTag = inObj || !_pbContext.inArray() || !_currField.packed;
+        _writeTag = inObj || !_tokenWriteContext.inArray() || !_currField.packed;
         if (_buffered != null) { // null for root
             _finishBuffering();
         }

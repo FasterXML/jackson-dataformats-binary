@@ -24,6 +24,7 @@ import java.util.Calendar;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.type.WritableTypeId;
 
@@ -40,9 +41,9 @@ public class IonGenerator
     extends GeneratorBase
 {
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Basic configuration
-    /*****************************************************************
+    /**********************************************************************
      */  
 
     /* This is the textual or binary writer */
@@ -64,19 +65,34 @@ public class IonGenerator
     protected PrettyPrinter _cfgPrettyPrinter;
 
     /*
-    /*****************************************************************
+    /**********************************************************************
+    /* State
+    /**********************************************************************
+     */  
+    
+    /**
+     * Object that keeps track of the current contextual state of the generator.
+     */
+    protected JsonWriteContext _tokenWriteContext;
+
+    /*
+    /**********************************************************************
     /* Instantiation
-    /*****************************************************************
+    /**********************************************************************
      */
 
     public IonGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
-            int generatorFeatures,
+            int streamWriteFeatures,
             IonWriter ion, Closeable dst)
     {
-        super(writeCtxt, generatorFeatures);
+        super(writeCtxt, streamWriteFeatures);
         _writer = ion;
         _ioContext = ioCtxt;
         _destination = dst;
+
+        final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
+                ? DupDetector.rootDetector(this) : null;
+        _tokenWriteContext = JsonWriteContext.createRootContext(dups);
     }
 
     @Override
@@ -85,10 +101,23 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: state handling
-     *****************************************************************
-      */  
+    /**********************************************************************
+    /* JsonGenerator implementation: state handling
+    /**********************************************************************
+     */
+
+    @Override
+    public TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+
+    @Override
+    public Object getCurrentValue() {
+        return _tokenWriteContext.getCurrentValue();
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _tokenWriteContext.setCurrentValue(v);
+    }
 
     @Override
     public void close() throws IOException
@@ -127,9 +156,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Capability introspection
-    /*****************************************************************
+    /**********************************************************************
      */  
 
     @Override
@@ -139,9 +168,9 @@ public class IonGenerator
     public boolean canWriteBinaryNatively() { return true; }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonGenerator implementation: write numeric values
-    /*****************************************************************
+    /**********************************************************************
      */  
 
     @Override
@@ -371,7 +400,7 @@ public class IonGenerator
     @Override
     protected void _verifyValueWrite(String msg) throws IOException, JsonGenerationException
     {
-        int status = _outputContext.writeValue();
+        int status = _tokenWriteContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+msg+", expecting field name");
         }
@@ -408,20 +437,20 @@ public class IonGenerator
 
     @Override
     public void writeEndArray() throws IOException, JsonGenerationException {
-        _outputContext = _outputContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _tokenWriteContext = _tokenWriteContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
     public void writeEndObject() throws IOException, JsonGenerationException {
-        _outputContext = _outputContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _tokenWriteContext = _tokenWriteContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
     public void writeFieldName(String value) throws IOException, JsonGenerationException {
         //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
-        int status = _outputContext.writeFieldName(value);
+        int status = _tokenWriteContext.writeFieldName(value);
         if (status == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
@@ -438,14 +467,14 @@ public class IonGenerator
     @Override
     public void writeStartArray() throws IOException, JsonGenerationException {
         _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
-        _outputContext = _outputContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.LIST);
     }
 
     @Override
     public void writeStartObject() throws IOException, JsonGenerationException {
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
-        _outputContext = _outputContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.STRUCT);
     }
 

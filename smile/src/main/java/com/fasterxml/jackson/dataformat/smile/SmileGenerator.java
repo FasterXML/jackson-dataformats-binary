@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
+import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
@@ -156,9 +157,9 @@ public class SmileGenerator
     protected final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     final protected IOContext _ioContext;
@@ -179,9 +180,20 @@ public class SmileGenerator
     final protected SmileBufferRecycler<SharedStringNode> _smileBufferRecycler;
     
     /*
-    /**********************************************************
+    /**********************************************************************
+    /* Output state
+    /**********************************************************************
+     */
+
+    /**
+     * Object that keeps track of the current contextual state of the generator.
+     */
+    protected JsonWriteContext _tokenWriteContext;
+
+    /*
+    /**********************************************************************
     /* Output buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -210,9 +222,9 @@ public class SmileGenerator
     protected int _bytesWritten;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Shared String detection
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -246,9 +258,9 @@ public class SmileGenerator
     protected boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Thread-local recycling
-    /**********************************************************
+    /**********************************************************************
      */
     
     /**
@@ -258,20 +270,23 @@ public class SmileGenerator
      */
     final protected static ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>> _smileRecyclerRef
         = new ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>>();
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
     
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
-            int generatorFeatures, int smileFeatures,
+            int streamWriteFeatures, int smileFeatures,
             OutputStream out)
     {
-        super(writeCtxt, generatorFeatures);
+        super(writeCtxt, streamWriteFeatures);
         _formatFeatures = smileFeatures;
         _ioContext = ioCtxt;
+        final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
+                ? DupDetector.rootDetector(this) : null;
+        _tokenWriteContext = JsonWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
@@ -307,13 +322,16 @@ public class SmileGenerator
     }
 
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
-            int generatorFeatures, int smileFeatures,
+            int streamWriteFeatures, int smileFeatures,
             OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(writeCtxt, generatorFeatures);
+        super(writeCtxt, streamWriteFeatures);
         _formatFeatures = smileFeatures;
         _ioContext = ioCtxt;
+        final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
+                ? DupDetector.rootDetector(this) : null;
+        _tokenWriteContext = JsonWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -384,9 +402,9 @@ public class SmileGenerator
     }
 
     /*                                                                                       
-    /**********************************************************                              
+    /**********************************************************************
     /* Versioned                                                                             
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override
@@ -395,9 +413,28 @@ public class SmileGenerator
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
+    /* Overridden output state handling methods
+    /**********************************************************************
+     */
+    
+    @Override
+    public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+
+    @Override
+    public final Object getCurrentValue() {
+        return _tokenWriteContext.getCurrentValue();
+    }
+
+    @Override
+    public final void setCurrentValue(Object v) {
+        _tokenWriteContext.setCurrentValue(v);
+    }
+    
+    /*
+    /**********************************************************************
     /* Capability introspection
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -429,9 +466,9 @@ public class SmileGenerator
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods, write methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     /* And then methods overridden to make final, streamline some
@@ -441,7 +478,7 @@ public class SmileGenerator
     @Override
     public final void writeFieldName(String name)  throws IOException
     {
-        if (_outputContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_tokenWriteContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -452,7 +489,7 @@ public class SmileGenerator
         throws IOException
     {
         // Object is a value, need to verify it's allowed
-        if (_outputContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_tokenWriteContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -462,7 +499,7 @@ public class SmileGenerator
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
-        if (_outputContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_tokenWriteContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(fieldName);
@@ -470,9 +507,9 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Extended API, configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileGenerator enable(Feature f) {
@@ -499,9 +536,9 @@ public class SmileGenerator
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Extended API, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -528,18 +565,18 @@ public class SmileGenerator
     {
         _writeBytes(data, offset, len);
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, structural
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
     public final void writeStartArray() throws IOException
     {
         _verifyValueWrite("start an array");
-        _outputContext = _outputContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -547,7 +584,7 @@ public class SmileGenerator
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _outputContext = _outputContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -555,25 +592,25 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue, int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _outputContext = _outputContext.createChildArrayContext(forValue);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
     @Override
     public final void writeEndArray() throws IOException
     {
-        if (!_outputContext.inArray()) {
-            _reportError("Current context not Array but "+_outputContext.typeDesc());
+        if (!_tokenWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
         }
         _writeByte(TOKEN_LITERAL_END_ARRAY);
-        _outputContext = _outputContext.getParent();
+        _tokenWriteContext = _tokenWriteContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException
     {
         _verifyValueWrite("start an object");
-        _outputContext = _outputContext.createChildObjectContext();
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext();
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
@@ -581,18 +618,18 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
-        _outputContext = ctxt;
+        JsonWriteContext ctxt = _tokenWriteContext.createChildObjectContext(forValue);
+        _tokenWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     
     @Override
     public final void writeEndObject() throws IOException
     {
-        if (!_outputContext.inObject()) {
-            _reportError("Current context not Object but "+_outputContext.typeDesc());
+        if (!_tokenWriteContext.inObject()) {
+            _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
         }
-        _outputContext = _outputContext.getParent();
+        _tokenWriteContext = _tokenWriteContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);
     }
 
@@ -882,9 +919,9 @@ public class SmileGenerator
     }    
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, textual
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1740,7 +1777,7 @@ public class SmileGenerator
     protected final void _verifyValueWrite(String typeMsg)
         throws IOException
     {
-        int status = _outputContext.writeValue();
+        int status = _tokenWriteContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+typeMsg+", expecting field name");
         }
@@ -2478,9 +2515,9 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, buffer handling
-    /**********************************************************
+    /**********************************************************************
      */
     
     @Override
@@ -2532,9 +2569,9 @@ public class SmileGenerator
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, handling shared string "maps"
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final int _findSeenName(String name)
@@ -2672,9 +2709,9 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, error reporting
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**

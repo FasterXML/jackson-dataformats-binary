@@ -34,7 +34,7 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

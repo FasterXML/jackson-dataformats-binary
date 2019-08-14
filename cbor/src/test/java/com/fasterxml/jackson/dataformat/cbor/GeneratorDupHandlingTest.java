@@ -10,13 +10,8 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         _testSimpleDups(false, new CBORFactory());
     }
 
-    // Testing ability to enable checking after construction of
-    // generator, not just via JsonFactory
-    public void testSimpleDupsLazilyBytes() throws Exception {
-        final CBORFactory f = new CBORFactory();
-        assertFalse(f.isEnabled(StreamWriteFeature.STRICT_DUPLICATE_DETECTION));
-        _testSimpleDups(true, f);
-    }
+    // With 3.0, no more lazy enabling available.../
+//    public void testSimpleDupsLazilyBytes() throws Exception { }
 
     @SuppressWarnings("resource")
     protected void _testSimpleDups(boolean lazySetting, TokenStreamFactory f)

@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
+import com.fasterxml.jackson.core.json.DupDetector;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
@@ -59,8 +59,6 @@ public class CBORGenerator extends GeneratorBase
          * <p>
          * Default value is <code>false</code> meaning that type tag will not be
          * written at the beginning of a new document.
-         *
-         * @since 2.5
          */
         WRITE_TYPE_HEADER(false), ;
 
@@ -141,9 +139,17 @@ public class CBORGenerator extends GeneratorBase
     protected boolean _cfgMinimalInts;
 
     /*
-    /**********************************************************
+    /**********************************************************************
+    /* Output state
+    /**********************************************************************
+     */
+
+    protected CBORWriteContext _outputContext;
+    
+    /*
+    /**********************************************************************
     /* Output buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
 	/**
@@ -179,9 +185,9 @@ public class CBORGenerator extends GeneratorBase
     protected int _bytesWritten;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Tracking of remaining elements to write
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected int[] _elementCounts = NO_INTS;
@@ -196,30 +202,35 @@ public class CBORGenerator extends GeneratorBase
     protected int _currentRemainingElements = INDEFINITE_LENGTH;
 
     /*
-    /**********************************************************
-    /* Shared String detection
-    /**********************************************************
+    /**********************************************************************
+    /* Other configuration
+    /**********************************************************************
      */
 
     /**
-     * Flag that indicates whether the output buffer is recycable (and needs to
+     * Flag that indicates whether the output buffer is recyclable (and needs to
      * be returned to recycler once we are done) or not.
      */
     protected boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
-            int generatorFeatures, int formatFeatures,
-            OutputStream out) {
-        super(writeCtxt, generatorFeatures);
-        _formatFeatures = formatFeatures;
-        _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+            int streamWriteFeatures, int formatFeatures,
+            OutputStream out)
+    {
+        super(writeCtxt, streamWriteFeatures);
         _ioContext = ctxt;
+        _formatFeatures = formatFeatures;
+        DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
+                ? DupDetector.rootDetector(this)
+                : null;
+        _outputContext = CBORWriteContext.createRootContext(dups);
+        _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = true;
         _outputBuffer = ctxt.allocWriteEncodingBuffer(BYTE_BUFFER_FOR_OUTPUT);
@@ -244,14 +255,18 @@ public class CBORGenerator extends GeneratorBase
      *            of bytes of valid content to output, within buffer.
      */
     public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
-            int generatorFeatures, int formatFeatures,
+            int streamWriteFeatures, int formatFeatures,
             OutputStream out, byte[] outputBuffer,
             int offset, boolean bufferRecyclable)
     {
-        super(writeCtxt, generatorFeatures);
-        _formatFeatures = formatFeatures;
-        _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+        super(writeCtxt, streamWriteFeatures);
         _ioContext = ctxt;
+        _formatFeatures = formatFeatures;
+        DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
+                ? DupDetector.rootDetector(this)
+                : null;
+        _outputContext = CBORWriteContext.createRootContext(dups);
+        _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = bufferRecyclable;
         _outputTail = offset;
@@ -268,9 +283,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Versioned
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -279,9 +294,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Capability introspection
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -290,9 +305,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods, configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -326,9 +341,30 @@ public class CBORGenerator extends GeneratorBase
     */
 
     /*
-    /**********************************************************
+    /**********************************************************************
+    /* Overridden methods, output context (and related)
+    /**********************************************************************
+     */
+
+    @Override
+    public Object getCurrentValue() {
+        return _outputContext.getCurrentValue();
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _outputContext.setCurrentValue(v);
+    }
+
+    @Override
+    public TokenStreamContext getOutputContext() {
+        return _outputContext;
+    }
+
+    /*
+    /**********************************************************************
     /* Extended API, configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     public CBORGenerator enable(Feature f) {
@@ -372,7 +408,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldName(String name) throws IOException {
-        if (_outputContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(name) == CBORWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(name);
@@ -382,7 +418,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeFieldName(SerializableString name)
             throws IOException {
         // Object is a value, need to verify it's allowed
-        if (_outputContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(name.getValue()) == CBORWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
@@ -399,7 +435,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeFieldId(long id) throws IOException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        if (_outputContext.writeFieldName(idStr) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(idStr) == CBORWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeNumberNoCheck(id);
@@ -409,7 +445,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStringField(String fieldName, String value)
             throws IOException
     {
-        if (_outputContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (_outputContext.writeFieldName(fieldName) == CBORWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(fieldName);
@@ -510,7 +546,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
-        _outputContext = _outputContext.createChildObjectContext();
+        _outputContext = _outputContext.createChildObjectContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -521,7 +557,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object forValue) throws IOException {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
+        CBORWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
         _outputContext = ctxt;
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
@@ -532,7 +568,7 @@ public class CBORGenerator extends GeneratorBase
 
     public final void writeStartObject(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
-        _outputContext = _outputContext.createChildObjectContext();
+        _outputContext = _outputContext.createChildObjectContext(null);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
@@ -1050,7 +1086,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws IOException {
         int status = _outputContext.writeValue();
-        if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
+        if (status == CBORWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not " + typeMsg + ", expecting field name");
         }
         // decrementElementsRemainingCount()

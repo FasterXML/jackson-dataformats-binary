@@ -112,7 +112,7 @@ public class AvroGenerator extends GeneratorBase
     /**
      * Current context
      */
-    protected AvroWriteContext _avroContext;
+    protected AvroWriteContext _tokenWriteContext;
 
     /**
      * Lazily constructed encoder; reused in case of writing root-value sequences.
@@ -141,7 +141,7 @@ public class AvroGenerator extends GeneratorBase
         _ioContext = ctxt;
         _formatFeatures = avroFeatures;
         _output = output;
-        _avroContext = AvroWriteContext.nullContext();
+        _tokenWriteContext = AvroWriteContext.nullContext();
         _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
         setSchema(schema);
     }
@@ -153,7 +153,7 @@ public class AvroGenerator extends GeneratorBase
         }
         _rootSchema = schema;
         // start with temporary root...
-        _avroContext = _rootContext = AvroWriteContext.createRootContext(this,
+        _tokenWriteContext = _rootContext = AvroWriteContext.createRootContext(this,
                 schema.getAvroSchema(), _encoder);
     }
 
@@ -168,6 +168,25 @@ public class AvroGenerator extends GeneratorBase
         return PackageVersion.VERSION;
     }
 
+    /*
+    /**********************************************************
+    /* Output state handling
+    /**********************************************************
+     */
+    
+    @Override
+    public TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+
+    @Override
+    public Object getCurrentValue() {
+        return _tokenWriteContext.getCurrentValue();
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _tokenWriteContext.setCurrentValue(v);
+    }
+    
     /*
     /**********************************************************
     /* Overridden methods, configuration
@@ -249,21 +268,21 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeFieldName(String name) throws IOException
     {
-        _avroContext.writeFieldName(name);
+        _tokenWriteContext.writeFieldName(name);
     }
 
     @Override
     public final void writeFieldName(SerializableString name)
         throws IOException
     {
-        _avroContext.writeFieldName(name.getValue());
+        _tokenWriteContext.writeFieldName(name.getValue());
     }
 
     @Override
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
-        _avroContext.writeFieldName(fieldName);
+        _tokenWriteContext.writeFieldName(fieldName);
         writeString(value);
     }
 
@@ -286,7 +305,7 @@ public class AvroGenerator extends GeneratorBase
         super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             AvroWriteContext ctxt;
-            while ((ctxt = _avroContext) != null) {
+            while ((ctxt = _tokenWriteContext) != null) {
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -333,52 +352,52 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeStartArray() throws IOException {
-        _avroContext = _avroContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
         _complete = false;
     }
 
     @Override
     public final void writeStartArray(Object currValue, int len) throws IOException {
-        _avroContext = _avroContext.createChildArrayContext(currValue);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
         _complete = false;
     }
     
     @Override
     public final void writeEndArray() throws IOException
     {
-        if (!_avroContext.inArray()) {
-            _reportError("Current context not Array but "+_avroContext.typeDesc());
+        if (!_tokenWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
         }
-        _avroContext = _avroContext.getParent();
-        if (_avroContext.inRoot() && !_complete) {
+        _tokenWriteContext = _tokenWriteContext.getParent();
+        if (_tokenWriteContext.inRoot() && !_complete) {
             _complete();
         }
     }
 
     @Override
     public final void writeStartObject() throws IOException {
-        _avroContext = _avroContext.createChildObjectContext();
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext();
         _complete = false;
     }
 
     @Override
     public void writeStartObject(Object forValue) throws IOException {
-        _avroContext = _avroContext.createChildObjectContext(forValue);
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
         _complete = false;
     }
 
     @Override
     public final void writeEndObject() throws IOException
     {
-        if (!_avroContext.inObject()) {
-            _reportError("Current context not Object but "+_avroContext.typeDesc());
+        if (!_tokenWriteContext.inObject()) {
+            _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
         }
-        if (!_avroContext.canClose()) {
+        if (!_tokenWriteContext.canClose()) {
             _reportError("Can not write END_OBJECT after writing FIELD_NAME but not value");
         }
-        _avroContext = _avroContext.getParent();
+        _tokenWriteContext = _tokenWriteContext.getParent();
 
-        if (_avroContext.inRoot() && !_complete) {
+        if (_tokenWriteContext.inRoot() && !_complete) {
             _complete();
         }
     }
@@ -396,7 +415,7 @@ public class AvroGenerator extends GeneratorBase
             writeNull();
             return;
         }
-        _avroContext.writeString(text);
+        _tokenWriteContext.writeString(text);
     }
 
     @Override
@@ -428,7 +447,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeEmbeddedObject(Object object) throws IOException {
         if (object instanceof EncodedDatum) {
-            _avroContext.writeValue(object);
+            _tokenWriteContext.writeValue(object);
             return;
         }
         super.writeEmbeddedObject(object);
@@ -482,7 +501,7 @@ public class AvroGenerator extends GeneratorBase
             writeNull();
             return;
         }
-        _avroContext.writeValue(ByteBuffer.wrap(data, offset, len));
+        _tokenWriteContext.writeValue(ByteBuffer.wrap(data, offset, len));
     }
 
     /*
@@ -493,22 +512,22 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public void writeBoolean(boolean state) throws IOException {
-        _avroContext.writeValue(state ? Boolean.TRUE : Boolean.FALSE);
+        _tokenWriteContext.writeValue(state ? Boolean.TRUE : Boolean.FALSE);
     }
 
     @Override
     public void writeNull() throws IOException {
-        _avroContext.writeNull();
+        _tokenWriteContext.writeNull();
     }
 
     @Override
     public void writeNumber(int i) throws IOException {
-        _avroContext.writeValue(Integer.valueOf(i));
+        _tokenWriteContext.writeValue(Integer.valueOf(i));
     }
 
     @Override
     public void writeNumber(long l) throws IOException {
-        _avroContext.writeValue(Long.valueOf(l));
+        _tokenWriteContext.writeValue(Long.valueOf(l));
     }
 
     @Override
@@ -518,17 +537,17 @@ public class AvroGenerator extends GeneratorBase
             writeNull();
             return;
         }
-        _avroContext.writeValue(v);
+        _tokenWriteContext.writeValue(v);
     }
     
     @Override
     public void writeNumber(double d) throws IOException {
-        _avroContext.writeValue(Double.valueOf(d));
+        _tokenWriteContext.writeValue(Double.valueOf(d));
     }    
 
     @Override
     public void writeNumber(float f) throws IOException {
-        _avroContext.writeValue(Float.valueOf(f));
+        _tokenWriteContext.writeValue(Float.valueOf(f));
     }
 
     @Override
@@ -538,7 +557,7 @@ public class AvroGenerator extends GeneratorBase
             writeNull();
             return;
         }
-        _avroContext.writeValue(dec);
+        _tokenWriteContext.writeValue(dec);
     }
 
     @Override
