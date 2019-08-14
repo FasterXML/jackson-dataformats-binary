@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.json.DupDetector;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
 
 /**
  * Replacement for {@code JsonWriteContext}, needed to support alternative
