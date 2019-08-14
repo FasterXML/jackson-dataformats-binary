@@ -9,7 +9,6 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
 import com.fasterxml.jackson.core.json.DupDetector;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
@@ -188,10 +187,10 @@ public class SmileGenerator
     /**
      * Object that keeps track of the current contextual state of the generator.
      */
-    protected JsonWriteContext _tokenWriteContext;
+    protected SmileWriteContext _tokenWriteContext;
 
     /*
-    /**********************************************************************
+    /**********************************************************
     /* Output buffering
     /**********************************************************************
      */
@@ -286,7 +285,7 @@ public class SmileGenerator
         _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _tokenWriteContext = JsonWriteContext.createRootContext(dups);
+        _tokenWriteContext = SmileWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
@@ -331,7 +330,7 @@ public class SmileGenerator
         _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _tokenWriteContext = JsonWriteContext.createRootContext(dups);
+                _tokenWriteContext = SmileWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -414,25 +413,6 @@ public class SmileGenerator
 
     /*
     /**********************************************************************
-    /* Overridden output state handling methods
-    /**********************************************************************
-     */
-    
-    @Override
-    public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
-
-    @Override
-    public final Object getCurrentValue() {
-        return _tokenWriteContext.getCurrentValue();
-    }
-
-    @Override
-    public final void setCurrentValue(Object v) {
-        _tokenWriteContext.setCurrentValue(v);
-    }
-    
-    /*
-    /**********************************************************************
     /* Capability introspection
     /**********************************************************************
      */
@@ -467,6 +447,27 @@ public class SmileGenerator
 
     /*
     /**********************************************************************
+    /* Overridden methods, output context (and related)
+    /**********************************************************************
+     */
+
+    @Override
+    public Object getCurrentValue() {
+        return _tokenWriteContext.getCurrentValue();
+    }
+
+    @Override
+    public void setCurrentValue(Object v) {
+        _tokenWriteContext.setCurrentValue(v);
+    }
+
+    @Override
+    public TokenStreamContext getOutputContext() {
+        return _tokenWriteContext;
+    }
+
+    /*
+    /**********************************************************************
     /* Overridden methods, write methods
     /**********************************************************************
      */
@@ -478,7 +479,7 @@ public class SmileGenerator
     @Override
     public final void writeFieldName(String name)  throws IOException
     {
-        if (_tokenWriteContext.writeFieldName(name) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_tokenWriteContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -489,7 +490,7 @@ public class SmileGenerator
         throws IOException
     {
         // Object is a value, need to verify it's allowed
-        if (_tokenWriteContext.writeFieldName(name.getValue()) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_tokenWriteContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -499,7 +500,7 @@ public class SmileGenerator
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
-        if (_tokenWriteContext.writeFieldName(fieldName) == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_tokenWriteContext.writeFieldName(fieldName)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(fieldName);
@@ -549,9 +550,8 @@ public class SmileGenerator
      */
     public void writeRaw(byte b) throws IOException
     {
-        /* 08-Jan-2014, tatu: Should we just rather throw an exception? For now,
-         *   allow... maybe have a feature to cause an exception.
-         */
+        // 08-Jan-2014, tatu: Should we just rather throw an exception? For now,
+        //   allow... maybe have a feature to cause an exception.
         _writeByte(b);
     }
 
@@ -592,7 +592,7 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue, int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -610,7 +610,7 @@ public class SmileGenerator
     public final void writeStartObject() throws IOException
     {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext();
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
@@ -618,7 +618,7 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        JsonWriteContext ctxt = _tokenWriteContext.createChildObjectContext(forValue);
+        SmileWriteContext ctxt = _tokenWriteContext.createChildObjectContext(forValue);
         _tokenWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
@@ -1777,8 +1777,7 @@ public class SmileGenerator
     protected final void _verifyValueWrite(String typeMsg)
         throws IOException
     {
-        int status = _tokenWriteContext.writeValue();
-        if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
+        if (!_tokenWriteContext.writeValue()) {
             _reportError("Can not "+typeMsg+", expecting field name");
         }
     }
