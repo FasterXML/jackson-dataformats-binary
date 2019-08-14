@@ -604,15 +604,15 @@ public class SmileGenerator
     public final void writeStartArray() throws IOException
     {
         _verifyValueWrite("start an array");
-        _smileContext = _smileContext.createChildArrayContext();
+        _smileContext = _smileContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
-    @Override // defined since 2.6.3
+    @Override
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _smileContext = _smileContext.createChildArrayContext();
+        _smileContext = _smileContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 

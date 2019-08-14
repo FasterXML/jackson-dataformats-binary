@@ -530,7 +530,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
-        _cborContext = _cborContext.createChildArrayContext();
+        _cborContext = _cborContext.createChildArrayContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -546,7 +546,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
-        _cborContext = _cborContext.createChildArrayContext();
+        _cborContext = _cborContext.createChildArrayContext(null);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);

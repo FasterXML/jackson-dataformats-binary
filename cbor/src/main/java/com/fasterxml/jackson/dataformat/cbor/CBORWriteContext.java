@@ -60,14 +60,6 @@ public final class CBORWriteContext extends JsonStreamContext
     /**********************************************************
      */
 
-    protected CBORWriteContext(int type, CBORWriteContext parent, DupDetector dups) {
-        super();
-        _type = type;
-        _parent = parent;
-        _dups = dups;
-        _index = -1;
-    }
-
     protected CBORWriteContext(int type, CBORWriteContext parent, DupDetector dups,
             Object currentValue) {
         super();
@@ -76,16 +68,6 @@ public final class CBORWriteContext extends JsonStreamContext
         _dups = dups;
         _index = -1;
         _currentValue = currentValue;
-    }
-
-    private CBORWriteContext reset(int type) {
-        _type = type;
-        _index = -1;
-        // as long as _gotFieldId false, current name/id can be left as-is
-        _gotFieldId = false;
-        _currentValue = null;
-        if (_dups != null) { _dups.reset(); }
-        return this;
     }
 
     private CBORWriteContext reset(int type, Object currentValue) {
@@ -120,16 +102,17 @@ public final class CBORWriteContext extends JsonStreamContext
      */
 
     public static CBORWriteContext createRootContext(DupDetector dd) {
-        return new CBORWriteContext(TYPE_ROOT, null, dd);
+        return new CBORWriteContext(TYPE_ROOT, null, dd, null);
     }
 
-    public CBORWriteContext createChildArrayContext() {
+    public CBORWriteContext createChildArrayContext(Object currentValue) {
         CBORWriteContext ctxt = _childToRecycle;
         if (ctxt == null) {
-            _childToRecycle = ctxt = new CBORWriteContext(TYPE_ARRAY, this, (_dups == null) ? null : _dups.child());
+            _childToRecycle = ctxt = new CBORWriteContext(TYPE_ARRAY, this,
+                    (_dups == null) ? null : _dups.child(), currentValue);
             return ctxt;
         }
-        return ctxt.reset(TYPE_ARRAY);
+        return ctxt.reset(TYPE_ARRAY, currentValue);
     }
 
     public CBORWriteContext createChildObjectContext(Object currentValue) {
