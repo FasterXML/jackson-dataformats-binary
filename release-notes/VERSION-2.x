@@ -18,6 +18,7 @@ Project: jackson-datatypes-binaryModules:
 #163: (ion) Update `ion-java` dependency
  (contributed by Fernando R-B)
 - asm version upgrade to 6.2.1 (from 5.1)
+- (cbor) Rewrote handling of "output context" for better field id write support
 
 2.9.9 (16-May-2019)
 
