@@ -125,11 +125,11 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     public ProtobufGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
-            int generatorFeatures, ProtobufSchema schema,
+            int streamWriteFeatures, ProtobufSchema schema,
             OutputStream output)
         throws IOException
     {
-        super(writeCtxt, generatorFeatures);
+        super(writeCtxt, streamWriteFeatures);
         _ioContext = ctxt;
         _output = output;
         _tokenWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
@@ -160,6 +160,11 @@ public class ProtobufGenerator extends GeneratorBase
 
     @Override
     public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+
+    @Override
+    public int formatWriteFeatures() {
+        return 0; // none defined yet
+    }
 
     /*                                                                                       
     /**********************************************************                              

@@ -92,7 +92,7 @@ public class AvroGenerator extends GeneratorBase
      * {@link AvroGenerator.Feature}s
      * are enabled.
      */
-    protected int _formatFeatures;
+    protected int _formatWriteFeatures;
 
     protected AvroSchema _rootSchema;
 
@@ -139,7 +139,7 @@ public class AvroGenerator extends GeneratorBase
     {
         super(writeCtxt, jsonFeatures);
         _ioContext = ctxt;
-        _formatFeatures = avroFeatures;
+        _formatWriteFeatures = avroFeatures;
         _output = output;
         _tokenWriteContext = AvroWriteContext.nullContext();
         _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
@@ -194,6 +194,11 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
+    public int formatWriteFeatures() {
+        return _formatWriteFeatures;
+    }
+    
+    @Override
     public Object getOutputTarget() {
         return _output;
     }
@@ -233,17 +238,17 @@ public class AvroGenerator extends GeneratorBase
      */
 
     public AvroGenerator enable(Feature f) {
-        _formatFeatures |= f.getMask();
+        _formatWriteFeatures |= f.getMask();
         return this;
     }
 
     public AvroGenerator disable(Feature f) {
-        _formatFeatures &= ~f.getMask();
+        _formatWriteFeatures &= ~f.getMask();
         return this;
     }
 
     public final boolean isEnabled(Feature f) {
-        return (_formatFeatures & f.getMask()) != 0;
+        return (_formatWriteFeatures & f.getMask()) != 0;
     }
 
     public AvroGenerator configure(Feature f, boolean state) {

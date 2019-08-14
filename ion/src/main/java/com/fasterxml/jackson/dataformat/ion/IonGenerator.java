@@ -100,6 +100,11 @@ public class IonGenerator
         return PackageVersion.VERSION;
     }
 
+    @Override
+    public int formatWriteFeatures() {
+        return 0; // none defined yet
+    }
+
     /*
     /**********************************************************************
     /* JsonGenerator implementation: state handling
