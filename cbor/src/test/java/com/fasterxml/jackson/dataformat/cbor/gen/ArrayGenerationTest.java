@@ -1,16 +1,17 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 /**
  * Basic testing for scalar-array write methods.
  */
 public class ArrayGenerationTest extends CBORTestBase
 {
-    private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
+    private final ObjectMapper MAPPER = cborMapper();
 
     public void testIntArray() throws Exception
     {

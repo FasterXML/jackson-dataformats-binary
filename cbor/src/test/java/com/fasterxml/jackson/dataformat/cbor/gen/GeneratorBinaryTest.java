@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor;
+package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 public class GeneratorBinaryTest //extends CBORTestBase
 {
 	final static int SMALL_LENGTH = 100;
-	final static int LARGE_LENGTH = CBORGenerator.BYTE_BUFFER_FOR_OUTPUT + 500;
+	final static int LARGE_LENGTH = /*CBORGenerator.BYTE_BUFFER_FOR_OUTPUT*/ 16000 + 500;
 
 	private final ObjectMapper MAPPER = CBORMapper.shared();
 	

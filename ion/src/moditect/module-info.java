@@ -1,9 +1,11 @@
 // Generated 15-Mar-2019 using Moditect maven plugin
 module com.fasterxml.jackson.dataformat.ion {
-    requires com.fasterxml.jackson.annotation;
+    requires transitive com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
-    requires ion.java;
+
+    requires static ion.java;
+
     requires java.sql;
 
     exports com.fasterxml.jackson.dataformat.ion;

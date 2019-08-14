@@ -314,7 +314,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _schema = schema;
         // start with temporary root...
-//        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);
+//        _currentContext = _rootContext = ProtobufReadContext.createRootContext(this, schema);
     }
 
     /*                                                                                       
