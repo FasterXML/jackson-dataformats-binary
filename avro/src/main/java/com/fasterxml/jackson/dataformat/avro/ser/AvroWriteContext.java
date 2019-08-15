@@ -43,16 +43,6 @@ public abstract class AvroWriteContext
      */
 
     protected AvroWriteContext(int type, AvroWriteContext parent,
-            AvroGenerator generator, Schema schema)
-    {
-        super();
-        _type = type;
-        _parent = parent;
-        _generator = generator;
-        _schema = schema;
-    }
-
-    protected AvroWriteContext(int type, AvroWriteContext parent,
             AvroGenerator generator, Schema schema, Object currValue)
     {
         super();
@@ -62,7 +52,7 @@ public abstract class AvroWriteContext
         _schema = schema;
         _currentValue = currValue;
     }
-    
+
     // // // Factory methods
     
     public static AvroWriteContext createRootContext(AvroGenerator generator, Schema schema,
@@ -84,7 +74,7 @@ public abstract class AvroWriteContext
 
     public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
 
-    public final AvroWriteContext createChildObjectContext() throws JsonMappingException {
+    public AvroWriteContext createChildObjectContext() throws JsonMappingException {
         return createChildObjectContext(null);
     }
 
@@ -93,7 +83,7 @@ public abstract class AvroWriteContext
     public void complete() throws IOException {
         throw new IllegalStateException("Can not be called on "+getClass().getName());
     }
-    
+
     /*
     /**********************************************************
     /* Accessors
@@ -162,6 +152,28 @@ public abstract class AvroWriteContext
     }
 
     // // // Shared helper methods
+
+    protected GenericRecord _createRecord(Schema schema, Object currValue) throws JsonMappingException
+    {
+        Type type = schema.getType();
+        if (type == Schema.Type.UNION) {
+            try {
+                schema = resolveUnionSchema(schema, currValue);
+            } catch (UnresolvedUnionException e) {
+                // couldn't find an exact match
+                schema = _recordOrMapFromUnion(schema);
+            }
+        }
+        if (type == Schema.Type.MAP) {
+            throw new IllegalStateException("_createRecord should never be called for elements of type MAP");
+        }
+        try {
+            return new GenericData.Record(schema);
+        } catch (RuntimeException e) {
+            // alas, generator not passed to us
+            throw new JsonMappingException(null, "Failed to create Record type from "+type, e);
+        }
+    }
 
     protected GenericRecord _createRecord(Schema schema) throws JsonMappingException
     {
@@ -506,7 +518,7 @@ public abstract class AvroWriteContext
         public final static NullContext instance = new NullContext();
         
         private NullContext() {
-            super(TYPE_ROOT, null, null, null);
+            super(TYPE_ROOT, null, null, null, null);
         }
 
         @Override

@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.0.pr2
+
+#168: (avro) `JsonMappingException` for union types with multiple Record types
+ (reported by Juliana A; fix contributed by Marcos P)
+
 2.10.0.pr1 (19-Jul-2019)
 
 #139: (cbor) Incorrect decimal fraction representation
