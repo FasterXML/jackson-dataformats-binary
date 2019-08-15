@@ -66,7 +66,7 @@ public class UnionRecordEvolutionTest extends AvroTestBase {
             this.names = names;
         }
 
-        private class Names {
+        class Names {
             public String firstName;
 
             public Names() {

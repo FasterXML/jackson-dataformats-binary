@@ -10,13 +10,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.dataformat.avro.interop.annotations.UnionTest.Animal;
-import com.fasterxml.jackson.dataformat.avro.interop.annotations.UnionTest.Cat;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.junit.Test;
 
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getApacheSchema;
 import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserialize;
 import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonSerialize;
 import static org.assertj.core.api.Assertions.assertThat;

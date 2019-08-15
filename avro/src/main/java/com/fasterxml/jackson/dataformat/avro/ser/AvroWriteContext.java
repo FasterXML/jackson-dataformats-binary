@@ -118,6 +118,7 @@ public abstract class AvroWriteContext
      *    iff column was recognized)
      */
     public boolean writeFieldName(String name) throws IOException {
+        // To be overridden by Record/Map contexts
         return false;
     }
 
