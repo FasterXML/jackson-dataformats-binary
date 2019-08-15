@@ -110,6 +110,15 @@ public class UnionTest extends InteropTestBase {
     }
 
     @Test
+    public void testRootUnionWithAnimal() throws IOException {
+        Cat cat = new Cat("meow");
+        //
+        Cat result = roundTrip(Animal.class, cat);
+        //
+        assertThat(result).isEqualTo(cat);
+    }
+
+    @Test
     public void testInterfaceUnionWithCat() throws IOException {
         Cage cage = new Cage(new Cat("test"));
         //

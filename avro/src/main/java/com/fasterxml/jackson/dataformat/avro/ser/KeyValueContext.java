@@ -14,9 +14,9 @@ abstract class KeyValueContext extends AvroWriteContext
     protected boolean _expectValue = false;
 
     protected KeyValueContext(AvroWriteContext parent, AvroGenerator generator,
-            Schema schema)
+            Schema schema, Object currValue)
     {
-        super(TYPE_OBJECT, parent, generator, schema);
+        super(TYPE_OBJECT, parent, generator, schema, currValue);
     }
 
     @Override
