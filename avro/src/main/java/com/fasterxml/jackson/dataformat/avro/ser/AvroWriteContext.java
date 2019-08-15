@@ -68,10 +68,6 @@ public abstract class AvroWriteContext
         return NullContext.instance;
     }
 
-    public final AvroWriteContext createChildArrayContext() throws JsonMappingException {
-        return createChildArrayContext(null);
-    }
-
     public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
 
     public AvroWriteContext createChildObjectContext() throws JsonMappingException {
@@ -298,8 +294,7 @@ public abstract class AvroWriteContext
             // !!! TODO:
             //  - ByteBuffer
             //  - Number wrappers (Integer, ...)
-            
-            /*
+
             String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
@@ -308,7 +303,6 @@ public abstract class AvroWriteContext
                     return i;
                 }
             }
-            */
         }
 //System.err.println("Missing index for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);  
         return ReflectData.get().resolveUnion(unionSchema, datum);
@@ -350,7 +344,6 @@ public abstract class AvroWriteContext
                 return types.get(_resolveMapIndex(unionSchema, types, datum));
             }
 
-            /*
             String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
@@ -359,7 +352,6 @@ public abstract class AvroWriteContext
                     return schema;
                 }
             }
-            */
         }
 //System.err.println("Missing schema for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);  
         int ix = ReflectData.get().resolveUnion(unionSchema, datum);

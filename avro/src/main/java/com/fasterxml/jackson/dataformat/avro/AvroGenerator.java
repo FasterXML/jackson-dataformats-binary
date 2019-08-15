@@ -357,7 +357,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeStartArray() throws IOException {
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         _complete = false;
     }
 
