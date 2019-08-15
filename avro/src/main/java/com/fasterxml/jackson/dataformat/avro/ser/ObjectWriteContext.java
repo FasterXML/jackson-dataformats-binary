@@ -48,18 +48,6 @@ public final class ObjectWriteContext
     }
 
     @Override
-    public AvroWriteContext createChildObjectContext() throws JsonMappingException {
-        _verifyValueWrite();
-        Schema.Field field = _findField();
-        if (field == null) { // unknown, to ignore
-            return new NopWriteContext(TYPE_OBJECT, this, _generator, null);
-        }
-        AvroWriteContext child = _createObjectContext(field.schema());
-        _record.put(_currentName, child.rawValue());
-        return child;
-    }
-
-    @Override
     public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
         _verifyValueWrite();
         Schema.Field field = _findField();

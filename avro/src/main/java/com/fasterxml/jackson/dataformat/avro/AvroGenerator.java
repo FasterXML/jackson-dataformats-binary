@@ -381,7 +381,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeStartObject() throws IOException {
-        _avroContext = _avroContext.createChildObjectContext();
+        _avroContext = _avroContext.createChildObjectContext(null);
         _complete = false;
     }
 
