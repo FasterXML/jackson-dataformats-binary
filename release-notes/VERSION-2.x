@@ -12,6 +12,8 @@ Project: jackson-datatypes-binaryModules:
 
 #168: (avro) `JsonMappingException` for union types with multiple Record types
  (reported by Juliana A; fix contributed by Marcos P)
+#173: (Avro) Improve Union type serialization performance
+ (fix contributed by Marcos P)
 
 2.10.0.pr1 (19-Jul-2019)
 

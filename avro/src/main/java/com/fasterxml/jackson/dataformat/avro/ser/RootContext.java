@@ -32,7 +32,7 @@ class RootContext
     private NonBSGenericDatumWriter<Object> _writer;
 
     public RootContext(AvroGenerator generator, Schema schema, BinaryEncoder encoder) {
-        super(TYPE_ROOT, null, generator, schema);
+        super(TYPE_ROOT, null, generator, schema, null);
         _encoder = encoder;
     }
 

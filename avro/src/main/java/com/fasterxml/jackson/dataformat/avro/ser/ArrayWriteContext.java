@@ -13,7 +13,7 @@ public class ArrayWriteContext
     public ArrayWriteContext(AvroWriteContext parent, AvroGenerator generator,
             GenericArray<Object> array, Object currValue)
     {
-        super(TYPE_ARRAY, parent, generator, array.getSchema());
+        super(TYPE_ARRAY, parent, generator, array.getSchema(), currValue);
         _array = array;
     }
 

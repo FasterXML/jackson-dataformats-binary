@@ -363,7 +363,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeStartArray() throws IOException {
-        _avroContext = _avroContext.createChildArrayContext();
+        _avroContext = _avroContext.createChildArrayContext(null);
         _complete = false;
     }
 
@@ -389,11 +389,6 @@ public class AvroGenerator extends GeneratorBase
     public void writeStartObject(Object forValue) throws IOException {
         _avroContext = _avroContext.createChildObjectContext(forValue);
         _complete = false;
-        if(this._writeContext != null && forValue != null) {
-            this._writeContext.setCurrentValue(forValue);
-        }
-
-        this.setCurrentValue(forValue);
     }
 
     @Override

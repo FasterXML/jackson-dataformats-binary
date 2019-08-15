@@ -44,16 +44,6 @@ public abstract class AvroWriteContext
     /* Life-cycle
     /**********************************************************
      */
-    
-    protected AvroWriteContext(int type, AvroWriteContext parent,
-            AvroGenerator generator, Schema schema)
-    {
-        super();
-        _type = type;
-        _parent = parent;
-        _generator = generator;
-        _schema = schema;
-    }
 
     protected AvroWriteContext(int type, AvroWriteContext parent,
             AvroGenerator generator, Schema schema, Object currValue)
@@ -79,10 +69,6 @@ public abstract class AvroWriteContext
      */
     public static AvroWriteContext nullContext() {
         return NullContext.instance;
-    }
-
-    public final AvroWriteContext createChildArrayContext() throws JsonMappingException {
-        return createChildArrayContext(null);
     }
 
     public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
@@ -533,7 +519,7 @@ public abstract class AvroWriteContext
         public final static NullContext instance = new NullContext();
         
         private NullContext() {
-            super(TYPE_ROOT, null, null, null);
+            super(TYPE_ROOT, null, null, null, null);
         }
 
         @Override
