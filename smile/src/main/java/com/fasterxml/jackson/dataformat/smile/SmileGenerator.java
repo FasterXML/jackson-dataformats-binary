@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
 import com.fasterxml.jackson.core.json.DupDetector;
+import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
@@ -187,7 +188,7 @@ public class SmileGenerator
     /**
      * Object that keeps track of the current contextual state of the generator.
      */
-    protected SmileWriteContext _tokenWriteContext;
+    protected SimpleTokenWriteContext _tokenWriteContext;
 
     /*
     /**********************************************************
@@ -285,7 +286,7 @@ public class SmileGenerator
         _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _tokenWriteContext = SmileWriteContext.createRootContext(dups);
+        _tokenWriteContext = SimpleTokenWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
@@ -330,7 +331,7 @@ public class SmileGenerator
         _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-                _tokenWriteContext = SmileWriteContext.createRootContext(dups);
+                _tokenWriteContext = SimpleTokenWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -618,8 +619,7 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        SmileWriteContext ctxt = _tokenWriteContext.createChildObjectContext(forValue);
-        _tokenWriteContext = ctxt;
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     

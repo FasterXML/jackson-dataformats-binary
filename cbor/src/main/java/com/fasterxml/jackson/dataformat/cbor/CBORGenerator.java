@@ -144,8 +144,8 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    protected CBORWriteContext _outputContext;
-    
+    protected CBORWriteContext _tokenWriteContext;
+
     /*
     /**********************************************************************
     /* Output buffering
@@ -229,7 +229,7 @@ public class CBORGenerator extends GeneratorBase
         DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
-        _outputContext = CBORWriteContext.createRootContext(dups);
+        _tokenWriteContext = CBORWriteContext.createRootContext(dups);
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = true;
@@ -265,7 +265,7 @@ public class CBORGenerator extends GeneratorBase
         DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
-        _outputContext = CBORWriteContext.createRootContext(dups);
+        _tokenWriteContext = CBORWriteContext.createRootContext(dups);
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -348,17 +348,17 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public Object getCurrentValue() {
-        return _outputContext.getCurrentValue();
+        return _tokenWriteContext.getCurrentValue();
     }
 
     @Override
     public void setCurrentValue(Object v) {
-        _outputContext.setCurrentValue(v);
+        _tokenWriteContext.setCurrentValue(v);
     }
 
     @Override
     public TokenStreamContext getOutputContext() {
-        return _outputContext;
+        return _tokenWriteContext;
     }
 
     /*
@@ -408,7 +408,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldName(String name) throws IOException {
-        if (!_outputContext.writeFieldName(name)) {
+        if (!_tokenWriteContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(name);
@@ -418,7 +418,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeFieldName(SerializableString name)
             throws IOException {
         // Object is a value, need to verify it's allowed
-        if (!_outputContext.writeFieldName(name.getValue())) {
+        if (!_tokenWriteContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
@@ -433,7 +433,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldId(long id) throws IOException {
-        if (!_outputContext.writeFieldId(id)) {
+        if (!_tokenWriteContext.writeFieldId(id)) {
             _reportError("Can not write a field id, expecting a value");
         }
         _writeNumberNoCheck(id);
@@ -443,7 +443,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStringField(String fieldName, String value)
             throws IOException
     {
-        if (!_outputContext.writeFieldName(fieldName)) {
+        if (!_tokenWriteContext.writeFieldName(fieldName)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(fieldName);
@@ -501,7 +501,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
-        _outputContext = _outputContext.createChildArrayContext(null);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -517,7 +517,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
-        _outputContext = _outputContext.createChildArrayContext(null);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -526,7 +526,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
-        _outputContext = _outputContext.createChildArrayContext(forValue);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -534,17 +534,17 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndArray() throws IOException {
-        if (!_outputContext.inArray()) {
-            _reportError("Current context not Array but "+_outputContext.typeDesc());
+        if (!_tokenWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
         }
         closeComplexElement();
-        _outputContext = _outputContext.getParent();
+        _tokenWriteContext = _tokenWriteContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
-        _outputContext = _outputContext.createChildObjectContext(null);
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -555,8 +555,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object forValue) throws IOException {
         _verifyValueWrite("start an object");
-        CBORWriteContext ctxt = _outputContext.createChildObjectContext(forValue);
-        _outputContext = ctxt;
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -566,7 +565,7 @@ public class CBORGenerator extends GeneratorBase
 
     public final void writeStartObject(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
-        _outputContext = _outputContext.createChildObjectContext(null);
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
@@ -574,11 +573,11 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndObject() throws IOException {
-        if (!_outputContext.inObject()) {
-            _reportError("Current context not Object but "+ _outputContext.typeDesc());
+        if (!_tokenWriteContext.inObject()) {
+            _reportError("Current context not Object but "+ _tokenWriteContext.typeDesc());
         }
         closeComplexElement();
-        _outputContext = _outputContext.getParent();
+        _tokenWriteContext = _tokenWriteContext.getParent();
     }
 
     @Override // since 2.8
@@ -1083,7 +1082,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws IOException {
-        if (!_outputContext.writeValue()) {
+        if (!_tokenWriteContext.writeValue()) {
             _reportError("Can not " + typeMsg + ", expecting field name/id");
         }
         // decrementElementsRemainingCount()
@@ -1105,7 +1104,7 @@ public class CBORGenerator extends GeneratorBase
     private void _failSizedArrayOrObject() throws IOException
     {
         _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
-                _outputContext.typeDesc()));
+                _tokenWriteContext.typeDesc()));
     }
 
     /*
@@ -1692,7 +1691,7 @@ public class CBORGenerator extends GeneratorBase
             break;
         default:
             _reportError(String.format("%s size mismatch: expected %d more elements",
-                    _outputContext.typeDesc(), _currentRemainingElements));
+                    _tokenWriteContext.typeDesc(), _currentRemainingElements));
         }
         _currentRemainingElements = (_elementCountsPtr == 0) 
                 ? INDEFINITE_LENGTH

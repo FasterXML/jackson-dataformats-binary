@@ -25,9 +25,8 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.DupDetector;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.type.WritableTypeId;
-
+import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
 import com.amazon.ion.IonType;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.IonWriter;
@@ -69,11 +68,11 @@ public class IonGenerator
     /* State
     /**********************************************************************
      */  
-    
+
     /**
      * Object that keeps track of the current contextual state of the generator.
      */
-    protected JsonWriteContext _tokenWriteContext;
+    protected SimpleTokenWriteContext _tokenWriteContext;
 
     /*
     /**********************************************************************
@@ -92,7 +91,7 @@ public class IonGenerator
 
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _tokenWriteContext = JsonWriteContext.createRootContext(dups);
+        _tokenWriteContext = SimpleTokenWriteContext.createRootContext(dups);
     }
 
     @Override
@@ -405,8 +404,7 @@ public class IonGenerator
     @Override
     protected void _verifyValueWrite(String msg) throws IOException, JsonGenerationException
     {
-        int status = _tokenWriteContext.writeValue();
-        if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
+        if (!_tokenWriteContext.writeValue()) {
             _reportError("Can not "+msg+", expecting field name");
         }
         // 05-Oct-2017, tatu: I don't think pretty-printing is supported... is it?
@@ -455,8 +453,7 @@ public class IonGenerator
     @Override
     public void writeFieldName(String value) throws IOException, JsonGenerationException {
         //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
-        int status = _tokenWriteContext.writeFieldName(value);
-        if (status == JsonWriteContext.STATUS_EXPECT_VALUE) {
+        if (!_tokenWriteContext.writeFieldName(value)) {
             _reportError("Can not write a field name, expecting a value");
         }
         
@@ -532,7 +529,7 @@ public class IonGenerator
     public String toString() {
         return "["+getClass().getSimpleName()+", Ion writer: "+_writer+"]";
     }
-    
+
     /*
     /*****************************************************************
     /* Internal helper methods
