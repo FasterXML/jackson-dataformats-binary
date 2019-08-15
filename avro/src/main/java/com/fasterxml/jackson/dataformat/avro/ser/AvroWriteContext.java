@@ -70,10 +70,6 @@ public abstract class AvroWriteContext
 
     public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
 
-    public AvroWriteContext createChildObjectContext() throws JsonMappingException {
-        return createChildObjectContext(null);
-    }
-
     public abstract AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException;
 
     public void complete() throws IOException {
@@ -115,6 +111,7 @@ public abstract class AvroWriteContext
      *    iff column was recognized)
      */
     public boolean writeFieldName(String name) throws IOException {
+        // To be overridden by Record/Map contexts
         return false;
     }
 
@@ -201,23 +198,33 @@ public abstract class AvroWriteContext
         return new GenericData.Array<Object>(8, schema);
     }
 
+    // Removed from 2.10, should not be needed any more
+    /*
     protected AvroWriteContext _createObjectContext(Schema schema) throws JsonMappingException {
         if (schema.getType() == Type.UNION) {
             schema = _recordOrMapFromUnion(schema);
         }
         return _createObjectContext(schema, null); // Object doesn't matter as long as schema isn't a union
     }
+    */
 
     protected AvroWriteContext _createObjectContext(Schema schema, Object currValue)
             throws JsonMappingException
     {
         Type type = schema.getType();
         if (type == Schema.Type.UNION) {
-            try {
-                schema = resolveUnionSchema(schema, currValue);
-            } catch (UnresolvedUnionException e) {
-                // couldn't find an exact match
+            // 14-Aug-2019, tatu: Mapping null is bit special; and without special handling
+            //   we get an exception after fix for [dataformats-binary#168]
+            //  ... but I am not sure I fully understand what or why, actually.
+            if (currValue == null) {
                 schema = _recordOrMapFromUnion(schema);
+            } else {
+                try {
+                    schema = resolveUnionSchema(schema, currValue);
+                } catch (UnresolvedUnionException e) {
+                    // couldn't find an exact match
+                    schema = _recordOrMapFromUnion(schema);
+                }
             }
             type = schema.getType();
         }
