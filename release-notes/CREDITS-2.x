@@ -94,3 +94,14 @@ Carter Kozak (cakofony@github)
 Fernando Raganhan Barbosa (raganhan@github)
 * Suggested #163: (ion) Update `ion-java` dependency
  (2.10.0)
+
+Juliana Amorim (amorimjuliana@github)
+* Reported #168: (avro) `JsonMappingException` for union types with multiple Record types
+ (2.10.0)
+
+Marcos Passos (marcospassos@github)
+* Contributed fix for #168: (avro) `JsonMappingException` for union types with multiple Record types
+ (2.10.0)
+
+
+
