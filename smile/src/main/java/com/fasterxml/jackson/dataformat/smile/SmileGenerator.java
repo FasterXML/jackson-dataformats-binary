@@ -498,6 +498,16 @@ public class SmileGenerator
     }
 
     @Override
+    public void writeFieldId(long id) throws IOException {
+        // 24-Jul-2019, tatu: Should not force construction of a String here...
+        String idStr = Long.valueOf(id).toString(); // since instances for small values cached
+        if (!_tokenWriteContext.writeFieldName(idStr)) {
+            _reportError("Can not write a field name, expecting a value");
+        }
+        _writeFieldName(idStr);
+    }
+
+    @Override
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
@@ -582,10 +592,10 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeStartArray(int size) throws IOException
+    public final void writeStartArray(Object forValue) throws IOException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -623,6 +633,14 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     
+    @Override
+    public final void writeStartObject(Object forValue, int size) throws IOException
+    {
+        _verifyValueWrite("start an object");
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
+        _writeByte(TOKEN_LITERAL_START_OBJECT);
+    }
+
     @Override
     public final void writeEndObject() throws IOException
     {

@@ -293,6 +293,13 @@ public class ProtobufGenerator extends GeneratorBase
         _currField = f;
     }
 
+    @Override
+    public void writeFieldId(long id) throws IOException {
+        // 24-Jul-2019, tatu: Should not force construction of a String here...
+        String idStr = Long.valueOf(id).toString(); // since instances for small values cached
+        writeFieldName(idStr);
+    }
+
     /*
     /**********************************************************
     /* Public API: low-level I/O
@@ -385,7 +392,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeStartArray(Object currValue, int len) throws IOException {
+    public final void writeStartArray(Object currValue) throws IOException {
         writeStartArray();
         _tokenWriteContext.setCurrentValue(currValue);
     }

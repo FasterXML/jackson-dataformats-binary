@@ -440,13 +440,13 @@ public class IonGenerator
 
     @Override
     public void writeEndArray() throws IOException, JsonGenerationException {
-        _tokenWriteContext = _tokenWriteContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _tokenWriteContext = _tokenWriteContext.getParent();
         _writer.stepOut();
     }
 
     @Override
     public void writeEndObject() throws IOException, JsonGenerationException {
-        _tokenWriteContext = _tokenWriteContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _tokenWriteContext = _tokenWriteContext.getParent();
         _writer.stepOut();
     }
 
@@ -459,24 +459,45 @@ public class IonGenerator
         
         _writeFieldName(value);     
     }
-    
-    protected void _writeFieldName(String value) throws IOException, JsonGenerationException {
+
+    @Override
+    public void writeFieldId(long id) throws IOException {
+        // Should not force construction of a String here...
+        String idStr = Long.valueOf(id).toString(); // since instances for small values cached
+        writeFieldName(idStr);
+    }
+
+    protected void _writeFieldName(String value) throws IOException {
         //Even though this is a one-liner, putting it into a function "_writeFieldName"
         //to keep this code matching the factoring in Jackson's UTF8JsonGenerator.
         _writer.setFieldName(value);   
     }
 
     @Override
-    public void writeStartArray() throws IOException, JsonGenerationException {
+    public void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         _writer.stepIn(IonType.LIST);
     }
 
     @Override
-    public void writeStartObject() throws IOException, JsonGenerationException {
+    public void writeStartArray(Object currValue) throws IOException {
+        _verifyValueWrite("start an array");
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
+        _writer.stepIn(IonType.LIST);
+    }
+
+    @Override
+    public void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
+        _writer.stepIn(IonType.STRUCT);
+    }
+
+    @Override
+    public void writeStartObject(Object currValue) throws IOException {
+        _verifyValueWrite("start an object");
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(currValue);
         _writer.stepIn(IonType.STRUCT);
     }
 

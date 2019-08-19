@@ -509,20 +509,21 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_ARRAY_INDEFINITE);
     }
 
+    @Override
+    public void writeStartArray(Object currValue) throws IOException {
+        _verifyValueWrite("start an array");
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
+        if (_elementCountsPtr > 0) {
+            _pushRemainingElements();
+        }
+        _currentRemainingElements = INDEFINITE_LENGTH;
+        _writeByte(BYTE_ARRAY_INDEFINITE);
+    }
+
     /*
      * Unlike with JSON, this method is using slightly optimized version since
      * CBOR has a variant that allows embedding length in array start marker.
      */
-
-    @Override
-    public void writeStartArray(int elementsToWrite) throws IOException {
-        _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
-        _pushRemainingElements();
-        _currentRemainingElements = elementsToWrite;
-        _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
-    }
-
     @Override
     public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
@@ -563,9 +564,9 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_OBJECT_INDEFINITE);
     }
 
-    public final void writeStartObject(int elementsToWrite) throws IOException {
+    public final void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
+        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);

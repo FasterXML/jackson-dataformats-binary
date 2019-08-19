@@ -284,6 +284,13 @@ public class AvroGenerator extends GeneratorBase
     }
 
     @Override
+    public void writeFieldId(long id) throws IOException {
+        // TODO: Should not force construction of a String here...
+        String idStr = Long.valueOf(id).toString(); // since instances for small values cached
+        _tokenWriteContext.writeFieldName(idStr);
+    }
+
+    @Override
     public final void writeStringField(String fieldName, String value)
         throws IOException
     {
@@ -358,6 +365,12 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
+        _complete = false;
+    }
+
+    @Override
+    public final void writeStartArray(Object currValue) throws IOException {
+        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
         _complete = false;
     }
 
