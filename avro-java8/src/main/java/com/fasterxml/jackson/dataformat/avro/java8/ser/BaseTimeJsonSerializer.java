@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseTimeJsonSerializer<T> extends JsonSerializer<T> {
@@ -25,7 +26,7 @@ public abstract class BaseTimeJsonSerializer<T> extends JsonSerializer<T> {
     final long output;
     switch (this.resolution) {
       case MICROSECONDS:
-        output = TimeUnit.MILLISECONDS.toMicros(instant.toEpochMilli());
+        output = ChronoUnit.MICROS.between(Instant.EPOCH, instant);
         break;
       case MILLISECONDS:
         output = instant.toEpochMilli();

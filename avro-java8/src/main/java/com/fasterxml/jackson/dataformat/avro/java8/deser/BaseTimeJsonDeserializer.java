@@ -7,10 +7,11 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseTimeJsonDeserializer<T> extends JsonDeserializer<T> {
-  final TimeUnit resolution;
+  private final TimeUnit resolution;
   final ZoneId zoneId = ZoneId.of("UTC");
 
   BaseTimeJsonDeserializer(TimeUnit resolution) {
@@ -22,20 +23,21 @@ public abstract class BaseTimeJsonDeserializer<T> extends JsonDeserializer<T> {
   @Override
   public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
     final long input = p.getLongValue();
-    final long output;
+    final ChronoUnit chronoUnit;
+
     switch (this.resolution) {
       case MICROSECONDS:
-        output = TimeUnit.MICROSECONDS.toMillis(input);
+        chronoUnit = ChronoUnit.MICROS;
         break;
       case MILLISECONDS:
-        output = input;
+        chronoUnit = ChronoUnit.MILLIS;
         break;
       default:
         throw new UnsupportedOperationException(
             String.format("%s is not supported", this.resolution)
         );
     }
-    final Instant instant = Instant.ofEpochMilli(output);
+    final Instant instant = Instant.EPOCH.plus(input, chronoUnit);
     return fromInstant(instant);
   }
 }

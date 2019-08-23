@@ -1,22 +1,17 @@
 package com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.time;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.java8.AvroJavaTimeModule;
+import com.fasterxml.jackson.dataformat.avro.AvroType;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.LogicalTypeTestCase;
 import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.util.Date;
 
-public class TimestampMicrosZonedDateTimeTest extends LogicalTypeTestCase<TimestampMicrosZonedDateTimeTest.TestCase> {
-  static final ZonedDateTime VALUE = ZonedDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
+public class TimestampMillisInstantTest extends LogicalTypeTestCase<TimestampMillisInstantTest.TestCase> {
+  static final Instant VALUE = new Date(1526955327123L).toInstant();
 
   @Override
   protected Class<TestCase> dataClass() {
@@ -30,7 +25,7 @@ public class TimestampMicrosZonedDateTimeTest extends LogicalTypeTestCase<Timest
 
   @Override
   protected String logicalType() {
-    return "timestamp-micros";
+    return "timestamp-millis";
   }
 
   @Override
@@ -42,21 +37,21 @@ public class TimestampMicrosZonedDateTimeTest extends LogicalTypeTestCase<Timest
 
   @Override
   protected Object convertedValue() {
-    return 1526955327123L * 1000L;
+    return 1526955327123L;
   }
 
   @Override
   protected void configure(AvroMapper mapper) {
-    mapper.registerModule(new AvroJavaTimeModule());
+
   }
 
-  static class TestCase extends TestData<ZonedDateTime> {
+  static class TestCase extends TestData<Instant> {
     @JsonProperty(required = true)
-    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MICROSECOND)
-    ZonedDateTime value;
+    @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MILLISECOND)
+    Instant value;
 
     @Override
-    public ZonedDateTime value() {
+    public Instant value() {
       return this.value;
     }
   }

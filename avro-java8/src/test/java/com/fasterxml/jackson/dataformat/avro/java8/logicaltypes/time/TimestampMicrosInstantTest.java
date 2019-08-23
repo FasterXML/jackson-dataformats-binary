@@ -7,14 +7,12 @@ import com.fasterxml.jackson.dataformat.avro.java8.logicaltypes.TestData;
 import org.apache.avro.Schema;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
-public class TimestampMicrosOffsetDateTimeTest extends LogicalTypeTestCase<TimestampMicrosOffsetDateTimeTest.TestCase> {
-  static final OffsetDateTime VALUE = OffsetDateTime.ofInstant(
-      Instant.ofEpochMilli(1526955327123L),
-      ZoneId.of("UTC")
-  );
+public class TimestampMicrosInstantTest extends LogicalTypeTestCase<TimestampMicrosInstantTest.TestCase> {
+  static final Instant VALUE = new Date(1526955327123L).toInstant();
 
   @Override
   protected Class<TestCase> dataClass() {
@@ -40,17 +38,16 @@ public class TimestampMicrosOffsetDateTimeTest extends LogicalTypeTestCase<Times
 
   @Override
   protected Object convertedValue() {
-    return 1526955327123L * 1000L;
+    return ChronoUnit.MICROS.between(Instant.EPOCH, VALUE);
   }
 
-
-  static class TestCase extends TestData<OffsetDateTime> {
+  static class TestCase extends TestData<Instant> {
     @JsonProperty(required = true)
     @AvroType(schemaType = Schema.Type.LONG, logicalType = AvroType.LogicalType.TIMESTAMP_MICROSECOND)
-    OffsetDateTime value;
+    Instant value;
 
     @Override
-    public OffsetDateTime value() {
+    public Instant value() {
       return this.value;
     }
   }
