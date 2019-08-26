@@ -37,6 +37,14 @@ abstract class RecordReader extends AvroStructureReader
     public String currentName() { return _currentName; }
 
     @Override
+    public boolean consumesNoContent() {
+        // 26-Aug-2019, tatu: As per [dataformats-binary#177], 0-field Records consume
+        //   no content. It may be possible other variants exist too (fields with "Constant"
+        //   value?), but let's start with the simple case
+        return _fieldReaders.length == 0;
+    }
+
+    @Override
     public final void skipValue(AvroParserImpl parser) throws IOException {
         for (int i = 0, end = _fieldReaders.length; i < end; ++i) {
             _fieldReaders[i].skipValue(parser);

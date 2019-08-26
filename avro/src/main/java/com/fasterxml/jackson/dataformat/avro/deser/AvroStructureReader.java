@@ -16,6 +16,26 @@ public abstract class AvroStructureReader
         super(parent, typeId);
         _type = type;
     }
+
+    /*
+    /**********************************************************************
+    /* Metadata access
+    /**********************************************************************
+     */
+
+    /**
+     * Method that may be called to check if the values "read" by this reader
+     * are zero-length, that is, consume no content: most common example being
+     * Record with no fields.
+     *<p>
+     * Note: Arrays can not return {@code true} as they need to encode length
+     * even for "empty" arrays.
+     *
+     * @since 2.10
+     */
+    public boolean consumesNoContent() {
+        return false;
+    }
     
     /*
     /**********************************************************************
