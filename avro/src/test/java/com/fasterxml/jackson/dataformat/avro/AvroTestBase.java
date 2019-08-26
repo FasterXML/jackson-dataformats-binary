@@ -282,6 +282,19 @@ public abstract class AvroTestBase extends TestCase
         return getMapper().schemaFrom(STRING_MAP_SCHEMA_JSON);
     }
 
+    protected AvroSchema parseSchema(String schemaAsJson) {
+        return parseSchema(getMapper(), schemaAsJson);
+    }
+
+    protected AvroSchema parseSchema(AvroMapper mapper, String schemaAsJson) {
+        try {
+            return getMapper().schemaFrom(aposToQuotes(schemaAsJson));
+        } catch (IOException e) {
+            fail("Could not parse Avro Schema from: "+schemaAsJson+", problem: "+e);
+            return null;
+        }
+    }
+    
     protected AvroMapper getMapper() {
         if (_sharedMapper == null) {
             _sharedMapper = newMapper();
