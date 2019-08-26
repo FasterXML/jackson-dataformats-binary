@@ -1,12 +1,11 @@
-package com.fasterxml.jackson.dataformat.avro.failing;
+package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
-public class EmptyRecordRead177Test extends AvroTestBase
+public class RootEmptyRecord177Test extends AvroTestBase
 {
     private final AvroMapper MAPPER = getMapper();
 
@@ -25,7 +24,6 @@ public class EmptyRecordRead177Test extends AvroTestBase
         final Empty empty = new Empty();
 
         byte[] ser = MAPPER.writer().with(SCHEMA).writeValueAsBytes(empty);
-
         final Empty result = MAPPER.readerFor(Empty.class)
                 .with(SCHEMA)
                 .readValue(ser);

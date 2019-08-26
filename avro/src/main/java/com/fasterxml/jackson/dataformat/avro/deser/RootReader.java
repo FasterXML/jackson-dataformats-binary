@@ -26,7 +26,11 @@ public class RootReader extends AvroReadContext
         // First: possibly we are at end. Could theoretically check against
         // empty streams but...
         if (_parser.checkInputEnd()) {
-            return null;
+            // 26-Aug-2019, tatu: As per [dataformats-binary#177], 0-field Records consume
+            //    no content, and if so we MUST NOT indicate end-of-content:
+            if (!_valueReader.consumesNoContent()) {
+                return null;
+            }
         }
         return _valueReader.newReader(this, _parser).nextToken();
     }
