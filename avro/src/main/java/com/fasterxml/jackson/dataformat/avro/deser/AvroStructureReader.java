@@ -30,8 +30,6 @@ public abstract class AvroStructureReader
      *<p>
      * Note: Arrays can not return {@code true} as they need to encode length
      * even for "empty" arrays.
-     *
-     * @since 2.10
      */
     public boolean consumesNoContent() {
         return false;

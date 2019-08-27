@@ -164,6 +164,8 @@ abstract class RecordReader extends AvroStructureReader
                     return name;
                 }
                 _nextAtEndObject();
+            } else if (_state == STATE_END) {
+                _nextAtEndObject();
             } else {
                 nextToken();
             }
@@ -182,6 +184,10 @@ abstract class RecordReader extends AvroStructureReader
                 }
                 return _matchAtEndObject();
             }
+            if (_state == STATE_END) {
+                return _matchAtEndObject();
+            }
+            // 26-Aug-2019, tatu: Is this correct thing to do?
             nextToken();
             return FieldNameMatcher.MATCH_ODD_TOKEN;
         }
