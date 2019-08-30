@@ -86,6 +86,10 @@ public abstract class BaseTestForSmile
     protected SmileMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }
+
+    protected SmileMapper.Builder smileMapperBuilder(boolean requireHeader) {
+        return SmileMapper.builder();
+    }
     
     protected SmileMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
