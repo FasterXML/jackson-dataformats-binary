@@ -42,7 +42,7 @@ public class ProtobufGenerator extends GeneratorBase
 
     final protected IOContext _ioContext;
 
-    protected ProtobufSchema _schema;
+    final protected ProtobufSchema _schema;
 
     /*
     /**********************************************************
@@ -134,14 +134,6 @@ public class ProtobufGenerator extends GeneratorBase
         _output = output;
         _tokenWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
-        setSchema(schema);
-    }
-
-    public void setSchema(ProtobufSchema schema)
-    {
-        if (_schema == schema) {
-            return;
-        }
         _schema = schema;
         // start with temporary root...
 //        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);
@@ -206,16 +198,6 @@ public class ProtobufGenerator extends GeneratorBase
 
     @Override public ProtobufSchema getSchema() {
         return _schema;
-    }
-
-    @Override
-    public void setSchema(FormatSchema schema)
-    {
-        if (!(schema instanceof ProtobufSchema)) {
-            throw new IllegalArgumentException("Can not use FormatSchema of type "
-                    +schema.getClass().getName());
-        }
-        setSchema((ProtobufSchema) schema);
     }
 
     /*

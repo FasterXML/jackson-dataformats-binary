@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.apache.avro.io.BinaryEncoder;
 
@@ -105,7 +106,7 @@ public class AvroGenerator extends GeneratorBase
      */
     protected int _formatWriteFeatures;
 
-    protected AvroSchema _rootSchema;
+    final protected AvroSchema _rootSchema;
 
     /*
     /**********************************************************************
@@ -154,15 +155,7 @@ public class AvroGenerator extends GeneratorBase
         _output = output;
         _tokenWriteContext = AvroWriteContext.nullContext();
         _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
-        setSchema(schema);
-    }
-
-    public void setSchema(AvroSchema schema)
-    {
-        if (_rootSchema == schema) {
-            return;
-        }
-        _rootSchema = schema;
+        _rootSchema = Objects.requireNonNull(schema, "Can not pass `null` 'schema'");
         // start with temporary root...
         _tokenWriteContext = _rootContext = AvroWriteContext.createRootContext(this,
                 schema.getAvroSchema(), _encoder);
@@ -230,16 +223,6 @@ public class AvroGenerator extends GeneratorBase
 
     @Override public AvroSchema getSchema() {
         return _rootSchema;
-    }
-
-    @Override
-    public void setSchema(FormatSchema schema)
-    {
-        if (!(schema instanceof AvroSchema)) {
-            throw new IllegalArgumentException("Can not use FormatSchema of type "
-                    +schema.getClass().getName());
-        }
-        setSchema((AvroSchema) schema);
     }
 
     /*

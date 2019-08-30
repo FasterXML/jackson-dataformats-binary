@@ -59,22 +59,21 @@ public class MapperConfigTest extends AvroTestBase
     public void testGeneratorDefaults() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        AvroGenerator g = (AvroGenerator) MAPPER.createGenerator(bytes);
+        final AvroSchema schema = getEmployeeSchema();
+        AvroGenerator g = (AvroGenerator) MAPPER
+                .writer()
+                .with(schema)
+                .createGenerator(bytes);
         assertTrue(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
         g.close();
 
         AvroMapper mapper = AvroMapper.builder()
                 .disable(AvroGenerator.Feature.AVRO_BUFFERING)
                 .build();
-        g = (AvroGenerator) mapper.createGenerator(bytes);
+        g = (AvroGenerator) mapper.writer()
+                .with(schema)
+                .createGenerator(bytes);
         assertFalse(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
-
-        try {
-            g.setSchema(BOGUS_SCHEMA);
-            fail("Should not pass!");
-        } catch (IllegalArgumentException e) {
-            verifyException(e, "Can not use FormatSchema of type ");
-        }
         g.close();
     }
 

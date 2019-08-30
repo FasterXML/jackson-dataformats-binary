@@ -125,8 +125,9 @@ public class WriteSimpleTest extends ProtobufTestBase
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = MAPPER.createGenerator(bytes);
-        g.setSchema(schema);
+        JsonGenerator g = MAPPER.writer()
+                .with(schema)
+                .createGenerator(bytes);
 
         g.writeStartObject();
         g.writeFieldName("last");
@@ -151,8 +152,9 @@ public class WriteSimpleTest extends ProtobufTestBase
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_L);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = MAPPER.createGenerator(bytes);
-        g.setSchema(schema);
+        JsonGenerator g = MAPPER.writer()
+                .with(schema)
+                .createGenerator(bytes);
 
         g.writeStartObject();
         g.writeFieldName("x");

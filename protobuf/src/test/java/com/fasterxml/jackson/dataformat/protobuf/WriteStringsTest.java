@@ -90,9 +90,10 @@ public class WriteStringsTest extends ProtobufTestBase
     private void _testSimpleLongManual(String longName) throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        JsonGenerator g = MAPPER.createGenerator(bytes);
-        g.enable(StreamWriteFeature.IGNORE_UNKNOWN);
-        g.setSchema(NAME_SCHEMA);
+        JsonGenerator g = MAPPER.writer()
+                .with(StreamWriteFeature.IGNORE_UNKNOWN)
+                .with(NAME_SCHEMA)
+                .createGenerator(bytes);
 
         g.writeStartObject();
         g.writeStringField("first", null);
