@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.TokenStreamFactory;
+import com.fasterxml.jackson.dataformat.avro.AvroFactory;
+import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
@@ -20,6 +23,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
+import org.codehaus.jackson.node.NullNode;
 
 public class RecordVisitor
     extends JsonObjectFormatVisitor.Base
@@ -38,6 +42,8 @@ public class RecordVisitor
     protected Schema _avroSchema;
     
     protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
+
+    protected boolean isDefaultsEnabled = false;
     
     public RecordVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
     {
@@ -49,6 +55,15 @@ public class RecordVisitor
         BeanDescription bean = config.introspectDirectClassAnnotations(_type);
         List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(config,
                 bean.getClassInfo());
+
+        TokenStreamFactory factory = p.getGeneratorFactory();
+        if(factory instanceof AvroFactory) {
+            AvroFactory avroFactory = (AvroFactory) factory;
+            if(avroFactory.isEnabled(AvroGenerator.Feature.AVRO_DEFAULT_ENABLED)) {
+                this.isDefaultsEnabled = true;
+            }
+        }
+
         AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
@@ -190,6 +205,10 @@ public class RecordVisitor
             }
         }
         JsonNode defaultValue = parseJson(prop.getMetadata().getDefaultValue());
+        if(isDefaultsEnabled && defaultValue == null
+                && writerSchema.getType() == Type.UNION && writerSchema.getIndexNamed(Type.NULL.getName()) != null) {
+            defaultValue = NullNode.getInstance();
+        }
         writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
 
         String name = prop.getName();

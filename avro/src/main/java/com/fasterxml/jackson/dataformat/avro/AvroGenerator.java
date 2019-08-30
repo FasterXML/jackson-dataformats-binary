@@ -43,7 +43,12 @@ public class AvroGenerator extends GeneratorBase
          * of this header is not 100% reliably auto-detectable (while header has distinct marker,
          * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
          */
-        AVRO_FILE_OUTPUT(false)
+        AVRO_FILE_OUTPUT(false),
+
+        /**
+         * Feature that includes to every object type default value "null" when no real default value is defined.
+         */
+        AVRO_DEFAULT_ENABLED(false)
         ;
 
         protected final boolean _defaultState;
