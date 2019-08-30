@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.*;
+
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroDefault;
-import org.apache.avro.reflect.AvroName;
 
 public class TestSimpleGeneration extends AvroTestBase
 {
@@ -91,9 +91,9 @@ public class TestSimpleGeneration extends AvroTestBase
     }
 
     /*
-    /**********************************************************
-    /* Tests
-    /**********************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
 
     private final AvroMapper MAPPER = newMapper();
@@ -223,7 +223,7 @@ public class TestSimpleGeneration extends AvroTestBase
     }
 
     public void testEnabledDefaultValues() throws JsonMappingException {
-        AvroMapper mapper = new AvroMapper(AvroFactory.builder().enable(AvroGenerator.Feature.AVRO_DEFAULT_ENABLED).build());
+        AvroMapper mapper = new AvroMapper(AvroFactory.builder().enable(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA).build());
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         mapper.acceptJsonFormatVisitor(WithDefaults.class, gen);
         Schema schema = gen.getAvroSchema();

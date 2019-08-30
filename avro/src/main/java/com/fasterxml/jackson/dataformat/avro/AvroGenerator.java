@@ -31,7 +31,6 @@ public class AvroGenerator extends GeneratorBase
          * input/output is unbuffered.
          *<p>
          * Enabled by default to preserve the existing behavior.
-
          */
         AVRO_BUFFERING(true),
 
@@ -46,9 +45,16 @@ public class AvroGenerator extends GeneratorBase
         AVRO_FILE_OUTPUT(false),
 
         /**
-         * Feature that includes to every object type default value "null" when no real default value is defined.
+         * Feature that enables addition of {@code null} as default value in generated schema
+         * when no real default value is defined and {@code null} is legal value for type
+         * (union type with {@code null} included).
+         *<p>
+         * Disabled by default.
+         *
+         * @since 3.0
+         * 
          */
-        AVRO_DEFAULT_ENABLED(false)
+        ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA(false)
         ;
 
         protected final boolean _defaultState;
