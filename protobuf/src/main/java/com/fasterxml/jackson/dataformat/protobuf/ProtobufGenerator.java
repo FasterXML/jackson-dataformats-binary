@@ -4,6 +4,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
@@ -134,7 +135,7 @@ public class ProtobufGenerator extends GeneratorBase
         _output = output;
         _tokenWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
-        _schema = schema;
+        _schema = Objects.requireNonNull(schema, "Can not pass `null` 'schema'");
         // start with temporary root...
 //        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);
         _tokenWriteContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());

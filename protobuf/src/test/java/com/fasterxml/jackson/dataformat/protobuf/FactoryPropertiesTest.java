@@ -40,13 +40,18 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         final Version expV = MAPPER.tokenStreamFactory().version();
         assertNotNull(expV);
 
-        JsonGenerator g = MAPPER.createGenerator(new ByteArrayOutputStream());
+        JsonGenerator g = MAPPER
+                .writer()
+                .with(POINT_SCHEMA)
+                .createGenerator(new ByteArrayOutputStream());
         assertNotNull(g.version());
         assertEquals(expV, g.version());
         g.close();
 
-        JsonParser p = MAPPER.createParser(_writeDoc(MAPPER));
-        p.setSchema(POINT_SCHEMA);
+        JsonParser p = MAPPER
+                .reader()
+                .with(POINT_SCHEMA)
+                .createParser(_writeDoc(MAPPER));
         assertNotNull(p.version());
         assertEquals(expV, p.version());
         p.close();
