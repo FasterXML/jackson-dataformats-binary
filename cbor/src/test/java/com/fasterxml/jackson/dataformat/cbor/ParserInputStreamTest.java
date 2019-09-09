@@ -1,21 +1,23 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.SequenceInputStream;
 
-// for [dataformat-cbor#13]
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ParserInputStreamTest extends CBORTestBase
 {
-    @Test
+    private final ObjectMapper MAPPER = cborMapper();
+
+    // for [dataformat-cbor#13]
     public void testInpuStream() throws Exception {
-        CBORFactory f = new CBORFactory();
-        ObjectMapper cborMapper = new ObjectMapper(new CBORFactory());
-        byte[] buffer = generateHugeCBOR(f);
+        byte[] buffer = generateHugeCBOR(MAPPER.getFactory());
 
         // split the buffer in two smaller buffer
         int len = 160;
@@ -29,11 +31,34 @@ public class ParserInputStreamTest extends CBORTestBase
         ByteArrayInputStream in2 = new ByteArrayInputStream(buf2);
         SequenceInputStream inputStream = new SequenceInputStream(in1, in2);
 
-        JsonNode jsonNode = cborMapper.readTree(inputStream);
+        JsonNode jsonNode = MAPPER.readTree(inputStream);
         assertNotNull(jsonNode);
     }
 
-    private byte[] generateHugeCBOR(CBORFactory f) throws IOException {
+    public void testInputStreamWithHugeValueThatOverlaps() throws Exception {
+        final byte[] buffer = new byte[8002];
+        buffer[0] = 0x79; // string length 7996 + 3 init bytes
+        buffer[1] = 0x1f;
+        buffer[2] = 0x3c;
+        buffer[7999] = 0x61; // string length 1 + 1 init byte
+
+        final InputStream in = new ByteArrayInputStream(buffer);
+        final JsonParser parser = MAPPER.getFactory().createParser(in);
+
+        parser.nextToken();
+        parser.finishToken();
+
+        final long start = parser.getCurrentLocation().getByteOffset();
+        assertEquals(7999, start);
+
+        parser.nextToken();
+        parser.finishToken();
+
+        final long end = parser.getCurrentLocation().getByteOffset();
+        assertEquals(8001, end);
+    }
+
+    private byte[] generateHugeCBOR(JsonFactory f) throws IOException {
         String hugeJson = "{";
         for (char c='a'; c <= 'z'; c++) {
             for (char cc='a'; cc <= 'z'; cc++) {

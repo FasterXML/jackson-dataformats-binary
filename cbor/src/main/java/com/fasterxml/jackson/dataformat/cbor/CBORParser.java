@@ -3052,13 +3052,14 @@ public class CBORParser extends ParserMinimalBase
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
         if (amount > 0 && _inputPtr > 0) {
-            _currInputProcessed += _inputPtr;
             //_currInputRowStart -= _inputPtr;
             System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
             _inputEnd = amount;
         } else {
             _inputEnd = 0;
         }
+        // Needs to be done here, as per [dataformats-binary#178]
+        _currInputProcessed += _inputPtr;
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
             int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);

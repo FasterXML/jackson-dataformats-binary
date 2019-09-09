@@ -12,6 +12,8 @@ Project: jackson-datatypes-binaryModules:
 
 #148: (protobuf) Add `ProtobufMapper.generateSchemaFor(TypeReference<?>)` overload
  (suggested by MrThreepwood@github)
+#178: Fix issue wit input offsets when parsing CBOR from `InputStream`
+ (reported by iziamos@github)
 
 2.10.0.pr2 (31-Aug-2019)
 

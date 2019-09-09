@@ -53,7 +53,7 @@ public abstract class CBORTestBase
         return cborDoc(cborFactory(), json);
     }
 
-    protected byte[] cborDoc(CBORFactory cborF, String json) throws IOException
+    protected byte[] cborDoc(TokenStreamFactory cborF, String json) throws IOException
     {
         JsonFactory jf = new JsonFactory();
         JsonParser p = jf.createParser(json);

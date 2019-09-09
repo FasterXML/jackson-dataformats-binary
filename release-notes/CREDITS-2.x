@@ -105,5 +105,6 @@ Marcos Passos (marcospassos@github)
 * Contributed fix for #173: (Avro) Improve Union type serialization performance
  (2.10.0)
 
-
-
+John (iziamos@github)
+* Reported, suggested fix for #178: Fix issue wit input offsets when parsing CBOR from `InputStream`
+ (2.10.0)
