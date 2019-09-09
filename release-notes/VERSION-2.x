@@ -8,7 +8,12 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.10.0.pr2
+2.10.0 (not yet released)
+
+#148: (protobuf) Add `ProtobufMapper.generateSchemaFor(TypeReference<?>)` overload
+ (suggested by MrThreepwood@github)
+
+2.10.0.pr2 (31-Aug-2019)
 
 #168: (avro) `JsonMappingException` for union types with multiple Record types
  (reported by Juliana A; fix contributed by Marcos P)

@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -49,7 +50,7 @@ public class EnumHandlingTest extends ProtobufTestBase
         // type + short id == 2 bytes
         assertEquals(2, bytes.length);
 
-        ObjectReader r =  MAPPER.readerFor(BigEnumWrapper.class).with(schema);
+        ObjectReader r =  MAPPER.readerFor(new TypeReference<BigEnumWrapper> () {}).with(schema);
         BigEnumWrapper result = r.readValue(bytes);
         assertEquals(input.value, result.value);
     }

@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.Version;
-
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -162,6 +162,10 @@ public class ProtobufMapper extends ObjectMapper
      * Convenience method for constructing protoc definition that matches
      * given Java type. Uses {@link ProtobufSchemaGenerator} for
      * generation.
+     *
+     * @param type Resolved type to generate {@link ProtobufSchema} for
+     *
+     * @return Generated {@link ProtobufSchema}
      */
     public ProtobufSchema generateSchemaFor(JavaType type) throws JsonMappingException
     {
@@ -172,8 +176,11 @@ public class ProtobufMapper extends ObjectMapper
 
     /**
      * Convenience method for constructing protoc definition that matches
-     * given Java type. Uses {@link ProtobufSchemaGenerator} for
-     * generation.
+     * given Java type. Uses {@link ProtobufSchemaGenerator} for generation.
+     *
+     * @param type Type-erased type to generate {@link ProtobufSchema} for
+     *
+     * @return Generated {@link ProtobufSchema}
      */
     public ProtobufSchema generateSchemaFor(Class<?> type) throws JsonMappingException
     {
@@ -182,9 +189,21 @@ public class ProtobufMapper extends ObjectMapper
         return gen.getGeneratedSchema();
     }
 
+    /**
+     * Convenience method for constructing protoc definition that matches
+     * given Java type. Uses {@link ProtobufSchemaGenerator} for generation.
+     *
+     * @param type Type to generate {@link ProtobufSchema} for
+     *
+     * @return Generated {@link ProtobufSchema}
+     */
+    public ProtobufSchema generateSchemaFor(TypeReference<?> type) throws JsonMappingException {
+        return generateSchemaFor(_typeFactory.constructType(type));
+    }
+
     /*
     /**********************************************************************
-    /* Schema access, FileDescriptorSets (since 2.9)
+    /* Schema access, FileDescriptorSets
     /**********************************************************************
      */
 
@@ -214,9 +233,9 @@ public class ProtobufMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper class(es)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
