@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.Version;
-
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,7 +65,6 @@ public class ProtobufMapper extends ObjectMapper
     /**
      * @since 2.10
      */
-    @SuppressWarnings("unchecked")
     public static ProtobufMapper.Builder builder() {
         return new Builder(new ProtobufMapper());
     }
@@ -118,7 +117,9 @@ public class ProtobufMapper extends ObjectMapper
      * given Java type. Uses {@link ProtobufSchemaGenerator} for
      * generation.
      *
-     * @since 2.8
+     * @param type Resolved type to generate {@link ProtobufSchema} for
+     *
+     * @return Generated {@link ProtobufSchema}
      */
     public ProtobufSchema generateSchemaFor(JavaType type) throws JsonMappingException
     {
@@ -129,8 +130,11 @@ public class ProtobufMapper extends ObjectMapper
 
     /**
      * Convenience method for constructing protoc definition that matches
-     * given Java type. Uses {@link ProtobufSchemaGenerator} for
-     * generation.
+     * given Java type. Uses {@link ProtobufSchemaGenerator} for generation.
+     *
+     * @param type Type-erased type to generate {@link ProtobufSchema} for
+     *
+     * @return Generated {@link ProtobufSchema}
      *
      * @since 2.8
      */
@@ -139,6 +143,20 @@ public class ProtobufMapper extends ObjectMapper
         ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
         acceptJsonFormatVisitor(type, gen);
         return gen.getGeneratedSchema();
+    }
+
+    /**
+     * Convenience method for constructing protoc definition that matches
+     * given Java type. Uses {@link ProtobufSchemaGenerator} for generation.
+     *
+     * @param type Type to generate {@link ProtobufSchema} for
+     *
+     * @return Generated {@link ProtobufSchema}
+     *
+     * @since 2.10
+     */
+    public ProtobufSchema generateSchemaFor(TypeReference<?> type) throws JsonMappingException {
+        return generateSchemaFor(_typeFactory.constructType(type));
     }
 
     /*
