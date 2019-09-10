@@ -172,6 +172,22 @@ public class ProtobufGenerator extends GeneratorBase
 
     /*
     /**********************************************************
+    /* Capability introspection
+    /**********************************************************
+     */
+
+    @Override // since 2.10
+    public boolean canWriteBinaryNatively() {
+        return true;
+    }
+
+    @Override
+    public boolean canUseSchema(FormatSchema schema) {
+        return (schema instanceof ProtobufSchema);
+    }
+
+    /*
+    /**********************************************************
     /* Overridden methods, configuration
     /**********************************************************
      */
@@ -190,11 +206,6 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public int getOutputBuffered() {
         return -1;
-    }
-
-    @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof ProtobufSchema);
     }
 
     @Override public ProtobufSchema getSchema() {
