@@ -14,6 +14,7 @@ Project: jackson-datatypes-binaryModules:
  (suggested by MrThreepwood@github)
 #178: Fix issue wit input offsets when parsing CBOR from `InputStream`
  (reported by iziamos@github)
+#180: Add `ProtobufGenerator.canWriteBinaryNatively()` to support binary writes
 
 2.10.0.pr2 (31-Aug-2019)
 
