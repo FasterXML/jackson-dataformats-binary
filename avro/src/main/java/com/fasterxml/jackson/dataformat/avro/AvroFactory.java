@@ -131,7 +131,12 @@ public class AvroFactory
     public TokenStreamFactory snapshot() {
         return this;
     }
-    
+
+    @Override // since 2.10 (should have been earlier)
+    public boolean canHandleBinaryNatively() {
+        return true;
+    }
+
     /*
     /**********************************************************
     /* Serializable overrides

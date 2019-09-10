@@ -216,14 +216,25 @@ public class AvroGenerator extends GeneratorBase
         return -1;
     }
 
+    @Override public AvroSchema getSchema() {
+        return _rootSchema;
+    }
+
+    /*
+    /**********************************************************************
+    /* Public API, capability introspection methods
+    /**********************************************************************
+     */
+
     @Override
     public boolean canUseSchema(FormatSchema schema) {
         return (schema instanceof AvroSchema);
     }
 
-    @Override public AvroSchema getSchema() {
-        return _rootSchema;
-    }
+    // 10-Sep-2019, Tatu: Should implement wrt [dataformats-binary#179], but...
+    //    can't. Not yet, will just break things. Wait until 2.11
+//    @Override
+//    public boolean canWriteBinaryNatively() { return true; }
 
     /*
     /**********************************************************************
