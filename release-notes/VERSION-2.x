@@ -8,7 +8,7 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.10.0 (not yet released)
+2.10.0.pr3 (17-Sep-2019)
 
 #148: (protobuf) Add `ProtobufMapper.generateSchemaFor(TypeReference<?>)` overload
  (suggested by MrThreepwood@github)
