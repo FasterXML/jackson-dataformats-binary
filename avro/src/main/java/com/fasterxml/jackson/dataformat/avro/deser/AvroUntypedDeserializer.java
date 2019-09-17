@@ -100,7 +100,7 @@ public class AvroUntypedDeserializer
             key1 = p.currentName();
         } else {
             if (t != JsonToken.END_OBJECT) {
-                return ctxt.handleUnexpectedToken(handledType(), p);
+                return ctxt.handleUnexpectedToken(getValueType(ctxt), p);
             }
             key1 = null;
         }
