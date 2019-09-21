@@ -37,6 +37,10 @@ Project: jackson-datatypes-binaryModules:
 - asm version upgrade to 6.2.1 (from 5.1)
 - (cbor, smile) Rewrote handling of "output context" for better field id write support
 
+2.9.10 (21-Sep-2019)
+
+No changes since 2.9.9
+
 2.9.9 (16-May-2019)
 
 #159: (cbor) Some short UTF Strings encoded using non-canonical form
