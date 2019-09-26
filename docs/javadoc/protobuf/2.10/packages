@@ -1,0 +1,3 @@
+com.fasterxml.jackson.dataformat.protobuf
+com.fasterxml.jackson.dataformat.protobuf.schema
+com.fasterxml.jackson.dataformat.protobuf.schemagen

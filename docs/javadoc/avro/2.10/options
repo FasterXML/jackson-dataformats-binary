@@ -1,0 +1,27 @@
+-classpath
+'/Users/tatu/.m2/repository/org/apache/commons/commons-compress/1.8.1/commons-compress-1.8.1.jar:/Users/tatu/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.9.13/jackson-core-asl-1.9.13.jar:/Users/tatu/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.10.0/jackson-annotations-2.10.0.jar:/Users/tatu/.m2/repository/com/thoughtworks/paranamer/paranamer/2.7/paranamer-2.7.jar:/Users/tatu/.m2/repository/org/xerial/snappy/snappy-java/1.1.1.3/snappy-java-1.1.1.3.jar:/Users/tatu/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.9.13/jackson-mapper-asl-1.9.13.jar:/Users/tatu/.m2/repository/org/tukaani/xz/1.5/xz-1.5.jar:/Users/tatu/.m2/repository/org/apache/avro/avro/1.8.2/avro-1.8.2.jar:/Users/tatu/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.10.0/jackson-databind-2.10.0.jar:/Users/tatu/.m2/repository/org/slf4j/slf4j-api/1.7.7/slf4j-api-1.7.7.jar:/Users/tatu/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.10.0/jackson-core-2.10.0.jar'
+-encoding
+'UTF-8'
+-protected
+-quiet
+-sourcepath
+'/opt/java/jackson-dataformats-binary/avro/src/main/java:/opt/java/jackson-dataformats-binary/avro/target/generated-sources:/opt/java/jackson-dataformats-binary/avro/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2019 <a href="http://fasterxml.com/">FasterXML</a>. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/opt/java/jackson-dataformats-binary/avro/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Jackson dataformat: Avro 2.10.0 API'
+-link
+'https://docs.oracle.com/javase/8/docs/api'
+-linkoffline
+'https://docs.oracle.com/javase/7/docs/api' '/opt/java/jackson-dataformats-binary/avro/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'Jackson dataformat: Avro 2.10.0 API'
