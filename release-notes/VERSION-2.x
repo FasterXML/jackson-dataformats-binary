@@ -8,34 +8,32 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.10.0.pr3 (17-Sep-2019)
+2.10.0 (26-Sep-2019)
 
+#139: (cbor) Incorrect decimal fraction representation
+ (reported by wlukowicz@github)
 #148: (protobuf) Add `ProtobufMapper.generateSchemaFor(TypeReference<?>)` overload
  (suggested by MrThreepwood@github)
-#178: Fix issue wit input offsets when parsing CBOR from `InputStream`
- (reported by iziamos@github)
-#180: Add `ProtobufGenerator.canWriteBinaryNatively()` to support binary writes
-
-2.10.0.pr2 (31-Aug-2019)
-
+#155: (cbor, smile) Inconsistent support for FLUSH_PASSED_TO_STREAM
+ (reported, fix suggested by Carter K)
+#157: (all) Add simple module-info for JDK9+, using Moditect
+#163: (ion) Update `ion-java` dependency
+ (contributed by Fernando R-B)
 #168: (avro) `JsonMappingException` for union types with multiple Record types
  (reported by Juliana A; fix contributed by Marcos P)
 #173: (avro) Improve Union type serialization performance
  (fix contributed by Marcos P)
 #177: (avro) Deserialization of "empty" Records as root values fails
  (reported by Macros P)
-
-2.10.0.pr1 (19-Jul-2019)
-
-#139: (cbor) Incorrect decimal fraction representation
- (reported by wlukowicz@github)
-#155: (cbor, smile) Inconsistent support for FLUSH_PASSED_TO_STREAM
- (reported, fix suggested by Carter K)
-#157: (all) Add simple module-info for JDK9+, using Moditect
-#163: (ion) Update `ion-java` dependency
- (contributed by Fernando R-B)
+#178: (cbor) Fix issue wit input offsets when parsing CBOR from `InputStream`
+ (reported by iziamos@github)
+#180: (protobuf) Add `ProtobufGenerator.canWriteBinaryNatively()` to support binary writes
 - asm version upgrade to 6.2.1 (from 5.1)
 - (cbor, smile) Rewrote handling of "output context" for better field id write support
+
+2.9.10 (21-Sep-2019)
+
+No changes since 2.9.9
 
 2.9.9 (16-May-2019)
 
