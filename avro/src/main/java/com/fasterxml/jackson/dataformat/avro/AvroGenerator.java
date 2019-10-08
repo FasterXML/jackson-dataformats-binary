@@ -295,14 +295,6 @@ public class AvroGenerator extends GeneratorBase
         _tokenWriteContext.writeFieldName(idStr);
     }
 
-    @Override
-    public final void writeStringField(String fieldName, String value)
-        throws IOException
-    {
-        _tokenWriteContext.writeFieldName(fieldName);
-        writeString(value);
-    }
-
     /*
     /**********************************************************************
     /* Public API: low-level I/O
