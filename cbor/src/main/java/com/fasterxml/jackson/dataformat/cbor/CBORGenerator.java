@@ -468,23 +468,6 @@ public class CBORGenerator extends GeneratorBase
         _writeNumberNoCheck(id);
     }
 
-    @Override
-    public final void writeStringField(String fieldName, String value)
-            throws IOException
-    {
-        if (!_cborContext.writeFieldName(fieldName)) {
-            _reportError("Can not write a field name, expecting a value");
-        }
-        _writeString(fieldName);
-        // inlined from 'writeString()'
-        if (value == null) {
-            writeNull();
-            return;
-        }
-        _verifyValueWrite("write String value");
-        _writeString(value);
-    }
-
     /*
     /**********************************************************
     /* Overridden methods, copying with tag-awareness

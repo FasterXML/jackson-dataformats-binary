@@ -300,14 +300,6 @@ public class AvroGenerator extends GeneratorBase
         _avroContext.writeFieldName(name.getValue());
     }
 
-    @Override
-    public final void writeStringField(String fieldName, String value)
-        throws IOException
-    {
-        _avroContext.writeFieldName(fieldName);
-        writeString(value);
-    }
-
     /*
     /**********************************************************
     /* Public API: low-level I/O

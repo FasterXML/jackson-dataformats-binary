@@ -8,6 +8,10 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.11.0 (not yet released)
+
+-
+
 2.10.0 (26-Sep-2019)
 
 #139: (cbor) Incorrect decimal fraction representation

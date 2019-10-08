@@ -523,17 +523,6 @@ public class SmileGenerator
         _writeFieldName(name);
     }
 
-    @Override
-    public final void writeStringField(String fieldName, String value)
-        throws IOException
-    {
-        if (!_smileContext.writeFieldName(fieldName)) {
-            _reportError("Can not write a field name, expecting a value");
-        }
-        _writeFieldName(fieldName);
-        writeString(value);
-    }
-    
     /*
     /**********************************************************
     /* Extended API, configuration
