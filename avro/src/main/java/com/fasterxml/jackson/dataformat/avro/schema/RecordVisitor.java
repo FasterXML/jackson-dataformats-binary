@@ -63,7 +63,7 @@ public class RecordVisitor
         //   otherwise there's infinite loop awaiting for... some reason. Other parts of code
         //   should probably check for loops but bit hard for me to fix as I did not author
         //   code in question (so may be unaware of some nuances)
-        final AnnotatedClass annotations = p.getConfig().introspectDirectClassAnnotations(_type);
+        final AnnotatedClass annotations = p.introspectDirectClassAnnotations(_type);
         final AnnotationIntrospector intr = p.getAnnotationIntrospector();
         List<NamedType> subTypes = intr.findSubtypes(config, annotations);
         AvroSchema ann = annotations.getAnnotation(AvroSchema.class);
