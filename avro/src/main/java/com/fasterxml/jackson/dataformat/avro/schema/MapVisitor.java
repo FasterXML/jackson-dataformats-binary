@@ -33,7 +33,7 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
         if (_valueSchema == null) {
             throw new IllegalStateException("Missing value type for "+_type);
         }
-        AnnotatedClass ac = _provider.getConfig().introspectClassAnnotations(_keyType).getClassInfo();
+        AnnotatedClass ac = _provider.getConfig().introspectClassAnnotations(_keyType);
         if (AvroSchemaHelper.isStringable(ac)) {
             return AvroSchemaHelper.stringableKeyMapSchema(_type, _keyType, _valueSchema);
         } else {

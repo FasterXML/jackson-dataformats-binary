@@ -15,6 +15,7 @@ import org.codehaus.jackson.node.NullNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -57,12 +58,15 @@ public class RecordVisitor
 
         // Check if the schema for this record is overridden
         SerializationConfig config = p.getConfig();
-        BeanDescription bean = config.introspectDirectClassAnnotations(_type);
-        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(config,
-                bean.getClassInfo());
 
-
-        AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
+        // 12-Oct-2019, tatu: VERY important: only get direct annotations, not for supertypes --
+        //   otherwise there's infinite loop awaiting for... some reason. Other parts of code
+        //   should probably check for loops but bit hard for me to fix as I did not author
+        //   code in question (so may be unaware of some nuances)
+        final AnnotatedClass annotations = p.getConfig().introspectDirectClassAnnotations(_type);
+        final AnnotationIntrospector intr = p.getAnnotationIntrospector();
+        List<NamedType> subTypes = intr.findSubtypes(config, annotations);
+        AvroSchema ann = annotations.getAnnotation(AvroSchema.class);
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
             _overridden = true;
@@ -81,9 +85,9 @@ public class RecordVisitor
                 throw new RuntimeException("Failed to build schema", jme);
             }
         } else {
-            _avroSchema = AvroSchemaHelper.initializeRecordSchema(bean);
+            _avroSchema = AvroSchemaHelper.initializeRecordSchema(_type, intr, annotations);
             _overridden = false;
-            AvroMeta meta = bean.getClassInfo().getAnnotation(AvroMeta.class);
+            AvroMeta meta = annotations.getAnnotation(AvroMeta.class);
             if (meta != null) {
                 _avroSchema.addProp(meta.key(), meta.value());
             }

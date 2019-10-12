@@ -14,7 +14,8 @@ import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.BeanDescription;
+
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
@@ -208,13 +209,14 @@ public abstract class AvroSchemaHelper
      * Initializes a record schema with metadata from the given class; this schema is returned in a non-finalized state, and still
      * needs to have fields added to it.
      */
-    public static Schema initializeRecordSchema(BeanDescription bean) {
+    public static Schema initializeRecordSchema(JavaType type, AnnotationIntrospector intr,
+            AnnotatedClass annotations) {
         return addAlias(Schema.createRecord(
-                getTypeName(bean.getType()),
-            bean.findClassDescription(),
-            getNamespace(bean.getType()),
-            bean.getType().isTypeOrSubTypeOf(Throwable.class)
-        ), bean);
+                getTypeName(type),
+                intr.findClassDescription(annotations),
+            getNamespace(type),
+            type.isTypeOrSubTypeOf(Throwable.class)
+        ), annotations);
     }
 
     /**
@@ -228,26 +230,26 @@ public abstract class AvroSchemaHelper
     /**
      * Constructs a new enum schema
      *
-     * @param bean Enum type to use for name / description / namespace
      * @param values List of enum names
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
-    public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
+    public static Schema createEnumSchema(JavaType enumType, AnnotationIntrospector intr,
+            AnnotatedClass annotations, List<String> values) {
         return addAlias(Schema.createEnum(
-                getTypeName(bean.getType()),
-                bean.findClassDescription(),
-                getNamespace(bean.getType()), values
-        ), bean);
+                getTypeName(enumType),
+                intr.findClassDescription(annotations),
+                getNamespace(enumType), values
+        ), annotations);
     }
 
     /**
      * Looks for {@link AvroAlias @AvroAlias} on {@code bean} and adds it to {@code schema} if it exists
      * @param schema Schema to which the alias should be added
-     * @param bean Bean to inspect for type aliases
+     * @param annotations Set of possibly relevant annotations
      * @return {@code schema}, possibly with an alias added
      */
-    public static Schema addAlias(Schema schema, BeanDescription bean) {
-        AvroAlias ann = bean.getClassInfo().getAnnotation(AvroAlias.class);
+    public static Schema addAlias(Schema schema, AnnotatedClass annotations) {
+        AvroAlias ann = annotations.getAnnotation(AvroAlias.class);
         if (ann != null) {
             schema.addAlias(ann.alias(), ann.space().equals(AvroAlias.NULL) ? null : ann.space());
         }

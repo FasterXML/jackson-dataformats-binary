@@ -121,9 +121,9 @@ public class CBORGenerator extends GeneratorBase
     private final static int INDEFINITE_LENGTH = -2; // just to allow -1 as marker for "one too many"
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     final protected IOContext _ioContext;
@@ -397,9 +397,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods, write methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     /*
@@ -476,9 +476,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, structural
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -547,6 +547,7 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_OBJECT_INDEFINITE);
     }
 
+    @Override
     public final void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
@@ -564,7 +565,7 @@ public class CBORGenerator extends GeneratorBase
         _tokenWriteContext = _tokenWriteContext.getParent();
     }
 
-    @Override // since 2.8
+    @Override
     public void writeArray(int[] array, int offset, int length) throws IOException
     {
         _verifyOffsets(array.length, offset, length);
@@ -576,7 +577,7 @@ public class CBORGenerator extends GeneratorBase
         }
     }
 
-    @Override // since 2.8
+    @Override
     public void writeArray(long[] array, int offset, int length) throws IOException
     {
         _verifyOffsets(array.length, offset, length);
@@ -588,7 +589,7 @@ public class CBORGenerator extends GeneratorBase
         }
     }
 
-    @Override // since 2.8
+    @Override
     public void writeArray(double[] array, int offset, int length) throws IOException
     {
         _verifyOffsets(array.length, offset, length);
@@ -600,7 +601,6 @@ public class CBORGenerator extends GeneratorBase
         }
     }
 
-    // @since 2.8.8
     private final void _pushRemainingElements() {
         if (_elementCounts.length == _elementCountsPtr) { // initially, as well as if full
             _elementCounts = Arrays.copyOf(_elementCounts, _elementCounts.length+10);
@@ -699,9 +699,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /***********************************************************
+    /**********************************************************************
     /* Output method implementations, textual
-    /***********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -759,9 +759,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, unprocessed ("raw")
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -802,9 +802,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-     * /********************************************************** /* Output
-     * method implementations, base64-encoded binary
-     * /**********************************************************
+    /**********************************************************************
+    /* Output method implementations, base64-encoded binary
+    /**********************************************************************
      */
 
     @Override
@@ -850,9 +850,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, primitive
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1059,9 +1059,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Implementations for other methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1092,9 +1092,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level output handling
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1138,9 +1138,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
-     * Extended API, CBOR-specific encoded output
-    /**********************************************************
+    /**********************************************************************
+    /* Extended API, CBOR-specific encoded output
+    /**********************************************************************
      */
 
     /**
@@ -1160,9 +1160,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Extended API, raw bytes (by-passing encoder)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -1186,9 +1186,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods: low-level text output
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final static int MAX_SHORT_STRING_CHARS = 23;
@@ -1331,9 +1331,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, UTF-8 encoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -1500,9 +1500,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, writing bytes
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final void _ensureRoomForOutput(int needed) throws IOException {
@@ -1633,9 +1633,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, buffer handling
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1661,9 +1661,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /********************************************************** 
+    /**********************************************************************
     /* Internal methods, size control for array and objects
-    /**********************************************************
+    /**********************************************************************
 	*/
 
     private final void closeComplexElement() throws IOException {
@@ -1683,9 +1683,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, error reporting
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected UnsupportedOperationException _notSupported() {
