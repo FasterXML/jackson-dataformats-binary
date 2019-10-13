@@ -28,7 +28,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import com.fasterxml.jackson.core.Version;
-
+import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -144,11 +144,11 @@ public class PolymorphicRoundtripTest
         }
 
         @Override
-        public String[] idsFromValue(Object value) {
+        public String[] idsFromValue(DatabindContext ctxt, Object value) {
             List<String> ids = new ArrayList<String>();
             Class<?> cls = value.getClass();
             while (null != cls) {
-                ids.add(super.idFromValueAndType(value, cls));
+                ids.add(super.idFromValueAndType(ctxt, value, cls));
                 cls = cls.getSuperclass();
             }
             return ids.toArray(new String[0]);

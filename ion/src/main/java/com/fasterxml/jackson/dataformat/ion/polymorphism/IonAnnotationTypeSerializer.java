@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
@@ -68,25 +69,25 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
             String id = getTypeIdResolver().idFromValue(value);
             if (null != id && !id.isEmpty()) {
                 ionGenerator(g).annotateNextValue(id);
-            }
+            }s
         }
         g.writeStartObject(); // standard
     }*/
 
     @Override
-    protected final void _generateTypeId(WritableTypeId idMetadata) {
+    protected final void _generateTypeId(DatabindContext ctxt, WritableTypeId idMetadata) {
         Object id = idMetadata.id;
         if (id == null) {
             final Object value = idMetadata.forValue;
             TypeIdResolver resolver = getTypeIdResolver();
             if (resolver instanceof MultipleTypeIdResolver) {
-                id = ((MultipleTypeIdResolver)resolver).idsFromValue(value);
+                id = ((MultipleTypeIdResolver)resolver).idsFromValue(ctxt, value);
             } else {
                 Class<?> typeForId = idMetadata.forValueType;
                 if (typeForId == null) {
-                    id = idFromValue(value);
+                    id = idFromValue(ctxt, value);
                 } else {
-                    id = idFromValueAndType(value, typeForId);
+                    id = idFromValueAndType(ctxt, value, typeForId);
                 }
             }
             idMetadata.id = id;

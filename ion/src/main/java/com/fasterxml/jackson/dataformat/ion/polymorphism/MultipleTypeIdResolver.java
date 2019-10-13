@@ -14,6 +14,7 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
+import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 
 /**
@@ -50,7 +51,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
  * About particular implementations:
  * <p/>
  * Ion serialization should be using {@link IonAnnotationTypeSerializer}, which is polymorphism-aware, but how should a
- * MultipleTypeIdResolver handle a call to the non-polymorphic {@link TypeIdResolver#idFromValue(Object)}? I'd probably
+ * MultipleTypeIdResolver handle a call to the non-polymorphic {@link TypeIdResolver#idFromValue}? I'd probably
  * do something like {@code return selectId(idsFromValue(value)); }, to keep things working when serializing
  * to non-Ion formats. Throwing a runtime exception is another idea, if you want to forbid non-Ion serialization.
  */
@@ -62,7 +63,7 @@ public interface MultipleTypeIdResolver extends TypeIdResolver {
      * @param value Java object to be serialized.
      * @return An array of zero or more ids indicating valid types this value may be viewed as. May not be null.
      */
-    String[] idsFromValue(Object value);
+    String[] idsFromValue(DatabindContext ctxt, Object value);
 
     /**
      * Given a set of type ids, select the most 'relevant'. We're not just doing something simple (like picking the
