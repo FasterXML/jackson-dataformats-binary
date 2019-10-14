@@ -128,9 +128,9 @@ public class PolymorphicRoundtripTest
         protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType,
                 PolymorphicTypeValidator ptv) {
             if (null != preferredTypeId) {
-                return new MultipleClassNameIdResolver(baseType, config.getTypeFactory(), ptv);
+                return new MultipleClassNameIdResolver(baseType,ptv);
             } else {
-                return new ClassNameIdResolver(baseType, config.getTypeFactory(), ptv);
+                return new ClassNameIdResolver(baseType, ptv);
             }
         }
     }
@@ -138,9 +138,8 @@ public class PolymorphicRoundtripTest
     // Extends Jackson's ClassNameIdResolver to add superclass names, recursively
     class MultipleClassNameIdResolver extends ClassNameIdResolver implements MultipleTypeIdResolver {
 
-        MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory,
-                PolymorphicTypeValidator ptv) {
-            super(baseType, typeFactory, ptv);
+        MultipleClassNameIdResolver(JavaType baseType, PolymorphicTypeValidator ptv) {
+            super(baseType, ptv);
         }
 
         @Override

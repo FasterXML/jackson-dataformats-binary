@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
  * {@link com.fasterxml.jackson.databind.jsontype.TypeIdResolver} for Avro type IDs embedded in schemas. Avro generally uses class names,
@@ -23,9 +22,9 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
 
     private final Map<Class<?>, String> _typeIds = new HashMap<>();
 
-    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
+    public AvroTypeIdResolver(JavaType baseType,
             PolymorphicTypeValidator stv, Collection<NamedType> subTypes) {
-        this(baseType, typeFactory, stv);
+        this(baseType, stv);
         if (subTypes != null) {
             for (NamedType namedType : subTypes) {
                 registerSubtype(namedType.getType(), namedType.getName());
@@ -33,9 +32,8 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         }
     }
 
-    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
-            PolymorphicTypeValidator stv) {
-        super(baseType, typeFactory, stv);
+    public AvroTypeIdResolver(JavaType baseType, PolymorphicTypeValidator stv) {
+        super(baseType, stv);
     }
 
     @Override
@@ -45,7 +43,7 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
     }
 
     @Override
-    protected JavaType _typeFromId(String id, DatabindContext ctxt) throws IOException {
+    protected JavaType _typeFromId(DatabindContext ctxt, String id) throws IOException {
         // base types don't have subclasses
         if (_baseType.isPrimitive()) {
             return _baseType;
@@ -53,10 +51,10 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         // check if there's a specific type we should be using for this ID
         Class<?> subType = _idTypes.get(id);
         if (subType != null) {
-            id = _idFrom(null, subType, _typeFactory);
+            id = _idFrom(ctxt, null, subType);
         }
         try {
-            return super._typeFromId(id, ctxt);
+            return super._typeFromId(ctxt, id);
         } catch (InvalidTypeIdException | IllegalArgumentException e) {
             // AvroTypeDeserializer expects null if we can't map the type ID to a class; It will throw an appropriate error if we can't
             // find a usable type.
