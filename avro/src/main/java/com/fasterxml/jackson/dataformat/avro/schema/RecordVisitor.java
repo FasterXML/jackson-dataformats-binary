@@ -85,7 +85,7 @@ public class RecordVisitor
                 throw new RuntimeException("Failed to build schema", jme);
             }
         } else {
-            _avroSchema = AvroSchemaHelper.initializeRecordSchema(_type, intr, annotations);
+            _avroSchema = AvroSchemaHelper.initializeRecordSchema(p.getConfig(), _type, annotations);
             _overridden = false;
             AvroMeta meta = annotations.getAnnotation(AvroMeta.class);
             if (meta != null) {
@@ -94,7 +94,7 @@ public class RecordVisitor
         }
         schemas.addSchema(type, _avroSchema);
     }
-    
+
     @Override
     public Schema builtAvroSchema() {
         if (!_overridden) {

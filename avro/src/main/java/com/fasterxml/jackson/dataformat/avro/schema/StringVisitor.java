@@ -47,7 +47,7 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
         }
         AnnotatedClass annotations = _provider.introspectClassAnnotations(_type);
         if (_enums != null) {
-            Schema s = AvroSchemaHelper.createEnumSchema(_type, _provider.getAnnotationIntrospector(),
+            Schema s = AvroSchemaHelper.createEnumSchema(_provider.getConfig(), _type,
                     annotations, new ArrayList<>(_enums));
             _schemas.addSchema(_type, s);
             return s;

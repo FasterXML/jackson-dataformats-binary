@@ -60,7 +60,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public PropertyName findNameForDeserialization(Annotated a) {
+    public PropertyName findNameForDeserialization(MapperConfig<?> config, Annotated a) {
         return _findName(a);
     }
 

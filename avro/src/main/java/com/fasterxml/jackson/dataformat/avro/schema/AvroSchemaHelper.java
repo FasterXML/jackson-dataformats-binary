@@ -15,8 +15,8 @@ import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
@@ -209,11 +209,11 @@ public abstract class AvroSchemaHelper
      * Initializes a record schema with metadata from the given class; this schema is returned in a non-finalized state, and still
      * needs to have fields added to it.
      */
-    public static Schema initializeRecordSchema(JavaType type, AnnotationIntrospector intr,
+    public static Schema initializeRecordSchema(MapperConfig<?> config, JavaType type,
             AnnotatedClass annotations) {
         return addAlias(Schema.createRecord(
                 getTypeName(type),
-                intr.findClassDescription(annotations),
+                config.getAnnotationIntrospector().findClassDescription(config, annotations),
             getNamespace(type),
             type.isTypeOrSubTypeOf(Throwable.class)
         ), annotations);
@@ -233,11 +233,11 @@ public abstract class AvroSchemaHelper
      * @param values List of enum names
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
-    public static Schema createEnumSchema(JavaType enumType, AnnotationIntrospector intr,
+    public static Schema createEnumSchema(MapperConfig<?> config, JavaType enumType,
             AnnotatedClass annotations, List<String> values) {
         return addAlias(Schema.createEnum(
                 getTypeName(enumType),
-                intr.findClassDescription(annotations),
+                config.getAnnotationIntrospector().findClassDescription(config, annotations),
                 getNamespace(enumType), values
         ), annotations);
     }
