@@ -50,12 +50,12 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public boolean hasIgnoreMarker(AnnotatedMember m) {
+    public boolean hasIgnoreMarker(MapperConfig<?> config, AnnotatedMember m) {
         return _findAnnotation(m, AvroIgnore.class) != null;
     }
 
     @Override
-    public PropertyName findNameForSerialization(Annotated a) {
+    public PropertyName findNameForSerialization(MapperConfig<?> config, Annotated a) {
         return _findName(a);
     }
 
@@ -74,13 +74,13 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public String findPropertyDefaultValue(Annotated m) {
+    public String findPropertyDefaultValue(MapperConfig<?> config, Annotated m) {
         AvroDefault ann = _findAnnotation(m, AvroDefault.class);
         return (ann == null) ? null : ann.value();
     }
 
     @Override
-    public List<PropertyName> findPropertyAliases(Annotated m) {
+    public List<PropertyName> findPropertyAliases(MapperConfig<?> config, Annotated m) {
         AvroAlias ann = _findAnnotation(m, AvroAlias.class);
         if (ann == null) {
             return null;
@@ -95,7 +95,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
     }
 
     @Override
-    public Boolean hasRequiredMarker(AnnotatedMember m) {
+    public Boolean hasRequiredMarker(MapperConfig<?> config, AnnotatedMember m) {
         if (_hasAnnotation(m, Nullable.class)) {
             return Boolean.FALSE;
         }
