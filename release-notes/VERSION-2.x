@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.1 (not yet released)
+
+#185: Internal parsing of tagged arrays can lead to stack overflow
+ (reported by Paul A)
+
 2.10.0 (26-Sep-2019)
 
 #139: (cbor) Incorrect decimal fraction representation

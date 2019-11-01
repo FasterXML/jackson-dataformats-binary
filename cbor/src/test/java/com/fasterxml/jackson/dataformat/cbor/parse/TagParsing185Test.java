@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor.failing;
+package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import com.fasterxml.jackson.core.*;
 
@@ -24,7 +24,14 @@ public class TagParsing185Test extends CBORTestBase
          }
 
          JsonParser p = CBOR_F.createParser(data);
+         JsonToken t;
 
-         assertToken(JsonToken.START_ARRAY, p.nextToken());
+         try {
+             t = p.nextToken();
+             fail("Should not pass, got token: "+t);
+         } catch (JsonParseException e) {
+             verifyException(e, "Unexpected token");
+             verifyException(e, "first part of 'bigfloat' value");
+         }
     }
 }

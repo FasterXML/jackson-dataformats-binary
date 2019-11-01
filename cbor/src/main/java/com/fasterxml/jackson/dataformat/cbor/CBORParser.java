@@ -877,35 +877,194 @@ public class CBORParser extends ParserMinimalBase
             _reportError("Unexpected array size ("+len+") for tagged 'bigfloat' value; should have exactly 2 number elements");
         }
         // and then use recursion to get values
-        JsonToken t = nextToken();
         // First: exponent, which MUST be a simple integer value
-        if (t != JsonToken.VALUE_NUMBER_INT) {
-            _reportError("Unexpected token ("+t+") as the first part of 'bigfloat' value: should get VALUE_NUMBER_INT");
+        if (!_checkNextIsIntInArray("bigfloat")) {
+            _reportError("Unexpected token ("+currentToken()+") as the first part of 'bigfloat' value: should get VALUE_NUMBER_INT");
         }
         // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
         int exp = -getIntValue();
 
-        t = nextToken();
         // Should get an integer value; int/long/BigInteger
-        if (t != JsonToken.VALUE_NUMBER_INT) {
-            _reportError("Unexpected token ("+t+") as the second part of 'bigfloat' value: should get VALUE_NUMBER_INT");
+        if (!_checkNextIsIntInArray("bigfloat")) {
+            _reportError("Unexpected token ("+currentToken()+") as the second part of 'bigfloat' value: should get VALUE_NUMBER_INT");
         }
-        
-        BigDecimal dec;
 
+        // important: check number type here
+        BigDecimal dec;
         NumberType numberType = getNumberType();
         if (numberType == NumberType.BIG_INTEGER) {
             dec = new BigDecimal(getBigIntegerValue(), exp);
         } else  {
             dec = BigDecimal.valueOf(getLongValue(), exp);
         }
-        t = nextToken();
-        if (t != JsonToken.END_ARRAY) {
-            _reportError("Unexpected token ("+t+") after 2 elements of 'bigfloat' value");
+
+        // but verify closing END_ARRAY here, as this will now override current token
+        if (!_checkNextIsEndArray()) {
+            _reportError("Unexpected token ("+currentToken()+") after 2 elements of 'bigfloat' value");
         }
+
+        // which needs to be reset here
         _numberBigDecimal = dec;
         _numTypesValid = NR_BIGDECIMAL;
         return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+    }
+
+    /**
+     * Heavily simplified method that does a subset of what {@code nextTokendoes to basically
+     * only (1) determine that we are getting {@code JsonToken.VALUE_NUMBER_INT} (if not,
+     * return with no processing) and (2) if so, prepare state so that number accessor
+     * method will work).
+     *<p>
+     * Note that in particular this method DOES NOT reset state that {@code nextToken()} would do,
+     * but will change current token type to allow access.
+     */
+    protected final boolean _checkNextIsIntInArray(final String typeDesc) throws IOException
+    {
+        // We know we are in array, with length prefix so:
+        if (!_parsingContext.expectMoreValues()) {
+            _tagValue = -1;
+            _parsingContext = _parsingContext.getParent();
+            _currToken = JsonToken.END_ARRAY;
+            return false;
+        }
+
+        if (_inputPtr >= _inputEnd) {
+            if (!loadMore()) {
+                _handleCBOREOF();
+                return false;
+            }
+        }
+        int ch = _inputBuffer[_inputPtr++];
+        int type = (ch >> 5) & 0x7;
+
+        // 01-Nov-2019, tatu: Although we don't use tag for anything, might as well decode it
+        //    for funsies and just ignore.
+        int tagValue = -1;
+        if (type == 6) {
+            tagValue = _decodeTag(ch & 0x1F);
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    _handleCBOREOF();
+                    return false;
+                }
+            }
+            ch = _inputBuffer[_inputPtr++];
+            type = (ch >> 5) & 0x7;
+        }
+        
+        final int lowBits = ch & 0x1F;
+        switch (type) {
+        case 0: // positive int
+            _numTypesValid = NR_INT;
+            if (lowBits <= 23) {
+                _numberInt = lowBits;
+            } else {
+                switch (lowBits - 24) {
+                case 0:
+                    _numberInt = _decode8Bits();
+                    break;
+                case 1:
+                    _numberInt = _decode16Bits();
+                    break;
+                case 2:
+                    {
+                        int v = _decode32Bits();
+                        if (v >= 0) {
+                            _numberInt = v;
+                        } else {
+                            long l = (long) v;
+                            _numberLong = l & 0xFFFFFFFFL;
+                            _numTypesValid = NR_LONG;
+                        }
+                    }
+                    break;
+                case 3:
+                    {
+                        long l = _decode64Bits();
+                        if (l >= 0L) {
+                            _numberLong = l;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberBigInt = _bigPositive(l);
+                            _numTypesValid = NR_BIGINT;
+                        }
+                    }
+                    break;
+                default:
+                    _invalidToken(ch);
+                }
+            }
+            _currToken = JsonToken.VALUE_NUMBER_INT;
+            return true;
+        case 1: // negative int
+            _numTypesValid = NR_INT;
+            if (lowBits <= 23) {
+                _numberInt = -lowBits - 1;
+            } else {
+                switch (lowBits - 24) {
+                case 0:
+                    _numberInt = -_decode8Bits() - 1;
+                    break;
+                case 1:
+                    _numberInt = -_decode16Bits() - 1;
+                    break;
+                case 2:
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        int v = _decode32Bits();
+                        if (v < 0) {
+                            long unsignedBase = (long) v & 0xFFFFFFFFL;
+                            _numberLong = -unsignedBase - 1L;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberInt = -v - 1;
+                        }
+                    }
+                    break;
+                case 3:
+                    // 15-Oct-2016, as per [dataformats-binary#30], we got an edge case here
+                    {
+                        long l = _decode64Bits();
+                        if (l >= 0L) {
+                            _numberLong = -l - 1L;
+                            _numTypesValid = NR_LONG;
+                        } else {
+                            _numberBigInt = _bigNegative(l);
+                            _numTypesValid = NR_BIGINT;
+                        }
+                    }
+                    break;
+                default:
+                    _invalidToken(ch);
+                }
+            }
+            _currToken = JsonToken.VALUE_NUMBER_INT;
+            return true;
+
+        case 2: // byte[]
+            // ... but we only really care about very specific case of `BigInteger`
+            if (tagValue < 0) {
+                break;
+            }
+            _typeByte = ch;
+            _tokenIncomplete = true;
+            _currToken = _handleTaggedBinary(tagValue);
+            return (_currToken == JsonToken.VALUE_NUMBER_INT);
+
+        case 6: // another tag; not allowed
+            _reportError("Multiple tags not allowed per value (first tag: "+tagValue+")");
+        }
+
+        // Important! Need to push back the last byte read (but not consumed)
+        --_inputPtr;
+        // and now it is safe to decode next token, too
+        nextToken();
+        return false;
+    }
+
+    protected final boolean _checkNextIsEndArray() throws IOException
+    {
+        return nextToken() == JsonToken.END_ARRAY;
     }
     
     // base impl is fine:
@@ -1467,7 +1626,7 @@ public class CBORParser extends ParserMinimalBase
         }
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // TODO, maybe: support base64 for text?
-            _reportError("Current token ("+getCurrentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         return _binaryValue;
     }
@@ -1489,7 +1648,7 @@ public class CBORParser extends ParserMinimalBase
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // Todo, maybe: support base64 for text?
-            _reportError("Current token ("+getCurrentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         if (!_tokenIncomplete) { // someone already decoded or read
             if (_binaryValue == null) { // if this method called twice in a row
@@ -1724,7 +1883,7 @@ public class CBORParser extends ParserMinimalBase
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             return;
         }
-        _reportError("Current token ("+getCurrentToken()+") not numeric, can not use numeric value accessors");
+        _reportError("Current token ("+currentToken()+") not numeric, can not use numeric value accessors");
     }
 
     protected void convertNumberToInt() throws IOException
@@ -2770,11 +2929,11 @@ public class CBORParser extends ParserMinimalBase
         case 3:
             long l = _decode64Bits();
             if (l < 0 || l > MAX_INT_L) {
-                throw _constructError("Illegal length for "+getCurrentToken()+": "+l);
+                throw _constructError("Illegal length for "+currentToken()+": "+l);
             }
             return (int) l;
         }
-        throw _constructError("Invalid length for "+getCurrentToken()+": 0x"+Integer.toHexString(lowBits));
+        throw _constructError("Invalid length for "+currentToken()+": 0x"+Integer.toHexString(lowBits));
     }
 
     private int _decodeChunkLength(int expType) throws IOException
