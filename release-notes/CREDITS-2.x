@@ -108,3 +108,7 @@ Marcos Passos (marcospassos@github)
 John (iziamos@github)
 * Reported, suggested fix for #178: Fix issue wit input offsets when parsing CBOR from `InputStream`
  (2.10.0)
+
+Paul Adolph (padolph@github)
+* Reported #185: Internal parsing of tagged arrays can lead to stack overflow
+ (2.10.1)
