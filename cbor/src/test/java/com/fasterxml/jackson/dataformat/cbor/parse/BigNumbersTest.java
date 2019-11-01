@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 // tests for [cbor#17]
 public class BigNumbersTest extends CBORTestBase
 {
-    public void testBigDecimal() throws Exception
+    public void testBigDecimalShort() throws Exception
     {
         _testBigDecimal(BigDecimal.ONE);
         _testBigDecimal(BigDecimal.ZERO);
@@ -31,9 +31,12 @@ public class BigNumbersTest extends CBORTestBase
         BigDecimal bd = new BigDecimal("12345.667899024");
         _testBigDecimal(bd);
         _testBigDecimal(bd.negate());
+    }
 
+    public void testBigDecimalLonger() throws Exception
+    {
         // ensure mantissa is beyond long; more than 22 digits or so
-        bd = new BigDecimal("1234567890.12345678901234567890");
+        BigDecimal bd = new BigDecimal("1234567890.12345678901234567890");
         _testBigDecimal(bd);
         _testBigDecimal(bd.negate());
     }

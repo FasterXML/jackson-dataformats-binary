@@ -343,7 +343,9 @@ public class ParserNumbersTest extends CBORTestBase
             assertEquals(NR.intValue(), parser.getIntValue());
             assertNull(parser.nextToken());
         }
+    }
 
+    public void testBigDecimalType2() throws IOException {
         // Almost good. But [dataformats#139] to consider too, see
         // [https://tools.ietf.org/html/rfc7049#section-2.4.2]
         final byte[] spec = new byte[] {
