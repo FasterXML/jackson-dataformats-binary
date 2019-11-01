@@ -937,16 +937,14 @@ public class CBORParser extends ParserMinimalBase
         int ch = _inputBuffer[_inputPtr++];
         int type = (ch >> 5) & 0x7;
 
-        // 01-Nov-2019, tatu: Although we don't use tag for anything, might as well decode it
-        //    for funsies and just ignore.
+        // 01-Nov-2019, tatu: We may actually need tag so decode it, but do not assign
+        //   (that'd override tag we already have)
         int tagValue = -1;
         if (type == 6) {
             tagValue = _decodeTag(ch & 0x1F);
-            if (_inputPtr >= _inputEnd) {
-                if (!loadMore()) {
-                    _handleCBOREOF();
-                    return false;
-                }
+            if ((_inputPtr >= _inputEnd) && !loadMore()) {
+                _handleCBOREOF();
+                return false;
             }
             ch = _inputBuffer[_inputPtr++];
             type = (ch >> 5) & 0x7;
@@ -1064,9 +1062,42 @@ public class CBORParser extends ParserMinimalBase
 
     protected final boolean _checkNextIsEndArray() throws IOException
     {
-        return nextToken() == JsonToken.END_ARRAY;
+        // We know we are in array, with length prefix, and this is where we should be:
+        if (!_parsingContext.expectMoreValues()) {
+            _tagValue = -1;
+            _parsingContext = _parsingContext.getParent();
+            _currToken = JsonToken.END_ARRAY;
+            return true;
+        }
+
+        // But while we otherwise could bail out we should check what follows for better
+        // error reporting... yet we ALSO must avoid direct call to `nextToken()` to avoid
+        // [dataformats-binary#185]
+        int ch = _inputBuffer[_inputPtr++];
+        int type = (ch >> 5) & 0x7;
+
+        // No use for tag but removing it is necessary
+        int tagValue = -1;
+        if (type == 6) {
+            tagValue = _decodeTag(ch & 0x1F);
+            if ((_inputPtr >= _inputEnd) && !loadMore()) {
+                _handleCBOREOF();
+                return false;
+            }
+            ch = _inputBuffer[_inputPtr++];
+            type = (ch >> 5) & 0x7;
+            // including but not limited to nested tags (which we do not allow)
+            if (type == 6) {
+                _reportError("Multiple tags not allowed per value (first tag: "+tagValue+")");
+            }
+        }
+        // and that's what we need to do for safety; now can drop to generic handling:
+        
+        // Important! Need to push back the last byte read (but not consumed)
+        --_inputPtr;
+        return nextToken() == JsonToken.END_ARRAY; // should never match
     }
-    
+
     // base impl is fine:
     //public String getCurrentName() throws IOException
 
