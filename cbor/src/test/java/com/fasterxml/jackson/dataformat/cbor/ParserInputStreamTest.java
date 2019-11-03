@@ -42,19 +42,19 @@ public class ParserInputStreamTest extends CBORTestBase
         buffer[7999] = 0x61; // string length 1 + 1 init byte
 
         final InputStream in = new ByteArrayInputStream(buffer);
-        final JsonParser parser = MAPPER.createParser(in);
-
-        parser.nextToken();
-        parser.finishToken();
-
-        final long start = parser.getCurrentLocation().getByteOffset();
-        assertEquals(7999, start);
-
-        parser.nextToken();
-        parser.finishToken();
-
-        final long end = parser.getCurrentLocation().getByteOffset();
-        assertEquals(8001, end);
+        try (final JsonParser parser = MAPPER.createParser(in)) {
+            parser.nextToken();
+            parser.finishToken();
+    
+            final long start = parser.getCurrentLocation().getByteOffset();
+            assertEquals(7999, start);
+    
+            parser.nextToken();
+            parser.finishToken();
+    
+            final long end = parser.getCurrentLocation().getByteOffset();
+            assertEquals(8001, end);
+        }
     }
 
     private byte[] generateHugeCBOR() throws IOException {

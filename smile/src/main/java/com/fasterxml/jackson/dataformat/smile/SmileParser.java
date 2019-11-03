@@ -173,7 +173,7 @@ public class SmileParser extends SmileParserBase
 
     /*
     /**********************************************************
-    /* Former StreamBasedParserBase methods
+    /* Implementations for JsonParser/ParserBase
     /**********************************************************
      */
 

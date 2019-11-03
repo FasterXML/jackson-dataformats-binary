@@ -22,8 +22,7 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonReadContext;
-
+import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
 import com.amazon.ion.*;
 
 /**
@@ -40,9 +39,9 @@ public class IonParser
     private static final BigInteger INT_MAX_VALUE = BigInteger.valueOf(Integer.MAX_VALUE);
     
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Basic configuration
-    /*****************************************************************
+    /**********************************************************************
      */  
 
     protected final IonReader _reader;
@@ -56,9 +55,9 @@ public class IonParser
     private final IonSystem _system;
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* State
-    /*****************************************************************
+    /**********************************************************************
      */  
 
     /**
@@ -69,7 +68,7 @@ public class IonParser
     /**
      * Information about context in structure hierarchy
      */
-    protected JsonReadContext _parsingContext;
+    protected SimpleTokenReadContext _parsingContext;
 
     /**
      * Type of value token we have; used to temporarily hold information
@@ -78,9 +77,9 @@ public class IonParser
     protected JsonToken _valueToken;
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Construction
-    /*****************************************************************
+    /**********************************************************************
      */  
 
     public IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -89,7 +88,8 @@ public class IonParser
         super(readCtxt, parserFeatures);
         _reader = r;
         _ioContext = ioCtxt;
-        _parsingContext = JsonReadContext.createRootContext(-1, -1, null);
+        // No DupDetector in use (yet?)
+        _parsingContext = SimpleTokenReadContext.createRootContext(-1, -1, null);
         _system = system;
     }
 
@@ -99,9 +99,9 @@ public class IonParser
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Capability, config introspection
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -348,11 +348,9 @@ public class IonParser
         return _parsingContext.currentName();
     }
 
-    @Override
-    public TokenStreamContext getParsingContext() {
-        return _parsingContext;
-    }
-
+    @Override public TokenStreamContext getParsingContext() {  return _parsingContext; }
+    @Override public void setCurrentValue(Object v) { _parsingContext.setCurrentValue(v); }
+    @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
 
     @Override
     public JsonLocation getTokenLocation() {

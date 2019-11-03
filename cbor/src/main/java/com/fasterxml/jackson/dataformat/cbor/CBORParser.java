@@ -65,9 +65,9 @@ public class CBORParser extends ParserMinimalBase
     private final static double MATH_POW_2_NEG14 = Math.pow(2, -14);
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Generic I/O state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -84,9 +84,9 @@ public class CBORParser extends ParserMinimalBase
     protected boolean _closed;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Current input data
-    /**********************************************************
+    /**********************************************************************
      */
 
     // Note: type of actual buffer depends on sub-class, can't include
@@ -102,9 +102,9 @@ public class CBORParser extends ParserMinimalBase
     protected int _inputEnd = 0;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Current input location information
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -128,10 +128,10 @@ public class CBORParser extends ParserMinimalBase
     protected int _currInputRowStart = 0;
 
     /*
-    /**********************************************************
-    /* Information about starting location of event
-    /* Reader is pointing to; updated on-demand
-    /**********************************************************
+    /**********************************************************************
+    /* Information about starting location of event Reader is pointing to;
+    /* updated on-demand
+    /**********************************************************************
      */
 
     // // // Location info at point when current token was started
@@ -155,9 +155,9 @@ public class CBORParser extends ParserMinimalBase
     protected int _tokenInputCol = 0;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Parsing state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -207,9 +207,9 @@ public class CBORParser extends ParserMinimalBase
     protected int _tagValue = -1;
 
     /*
-    /**********************************************************
-    /* Input source config, state (from ex StreamBasedParserBase)
-    /**********************************************************
+    /**********************************************************************
+    /* Input source config, state
+    /**********************************************************************
      */
 
     /**
@@ -236,9 +236,9 @@ public class CBORParser extends ParserMinimalBase
     protected boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Additional parsing state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -259,9 +259,9 @@ public class CBORParser extends ParserMinimalBase
     private int _chunkLeft, _chunkEnd;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Symbol handling, decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -280,9 +280,9 @@ public class CBORParser extends ParserMinimalBase
     protected int _quad1, _quad2, _quad3;
 
     /*
-    /**********************************************************
-    /* Constants and fields of former 'JsonNumericParserBase'
-    /**********************************************************
+    /**********************************************************************
+    /* Constants and fields related to number handling
+    /**********************************************************************
      */
 
     // Numeric value holders: multiple fields used for
@@ -307,9 +307,9 @@ public class CBORParser extends ParserMinimalBase
     protected BigDecimal _numberBigDecimal;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public CBORParser(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -337,9 +337,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*                                                                                       
-    /**********************************************************                              
+    /**********************************************************************
     /* Versioned                                                                             
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override
@@ -348,15 +348,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
-    /* Configuration
-    /**********************************************************
-     */
-
-    /*
-    /**********************************************************
+    /**********************************************************************
     /* Extended API
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -370,10 +364,15 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract impls
-    /**********************************************************
+    /**********************************************************************
      */
+
+    @Override public boolean isClosed() { return _closed; }
+    @Override public TokenStreamContext getParsingContext() { return _parsingContext; }
+    @Override public void setCurrentValue(Object v) { _parsingContext.setCurrentValue(v); }
+    @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
 
     @Override
     public int releaseBuffered(OutputStream out) throws IOException
@@ -427,8 +426,7 @@ public class CBORParser extends ParserMinimalBase
     public String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            CBORReadContext parent = _parsingContext.getParent();
-            return parent.currentName();
+            return _parsingContext.getParent().currentName();
         }
         return _parsingContext.currentName();
     }
@@ -448,18 +446,10 @@ public class CBORParser extends ParserMinimalBase
         }
     }
 
-    @Override
-    public boolean isClosed() { return _closed; }
-
-    @Override
-    public CBORReadContext getParsingContext() {
-        return _parsingContext;
-    }
-
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -501,9 +491,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* JsonParser impl
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override

@@ -309,6 +309,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************
      */
 
+    @Override public final JsonReadContext getParsingContext() { return _parsingContext; }
+    @Override public void setCurrentValue(Object v) { _parsingContext.setCurrentValue(v); }
+    @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
+    @Override public final boolean isClosed() { return _closed; }
+
     /**
      * Overridden since we do not really have character-based locations,
      * but we do have byte offset to specify.
@@ -396,9 +401,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     protected abstract void _releaseBuffers2();
-    
-    @Override public final boolean isClosed() { return _closed; }
-    @Override public final JsonReadContext getParsingContext() { return _parsingContext; }
 
     /*
     /**********************************************************

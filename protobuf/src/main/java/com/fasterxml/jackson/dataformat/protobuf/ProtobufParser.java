@@ -416,6 +416,16 @@ public class ProtobufParser extends ParserMinimalBase
         return _parsingContext;
     }
 
+    @Override
+    public void setCurrentValue(Object v) {
+        _parsingContext.setCurrentValue(v);
+    }
+
+    @Override
+    public Object getCurrentValue() {
+        return _parsingContext.getCurrentValue();
+    }
+    
     /*
     /**********************************************************
     /* Overridden methods
