@@ -351,22 +351,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final void overrideCurrentName(String name)
-    {
-        // Simple, but need to look for START_OBJECT/ARRAY's "off-by-one" thing:
-        JsonReadContext ctxt = _parsingContext;
-        if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            ctxt = ctxt.getParent();
-        }
-        // Unfortunate, but since we did not expose exceptions, need to wrap
-        try {
-            ctxt.setCurrentName(name);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Override
     public final void close() throws IOException {
         if (!_closed) {
             _closed = true;

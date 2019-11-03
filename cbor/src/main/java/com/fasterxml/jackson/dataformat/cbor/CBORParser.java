@@ -434,22 +434,6 @@ public class CBORParser extends ParserMinimalBase
     }
 
     @Override
-    public void overrideCurrentName(String name)
-    {
-        // Simple, but need to look for START_OBJECT/ARRAY's "off-by-one" thing:
-        CBORReadContext ctxt = _parsingContext;
-        if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            ctxt = ctxt.getParent();
-        }
-        // Unfortunate, but since we did not expose exceptions, need to wrap
-        try {
-            ctxt.setCurrentName(name);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-    
-    @Override
     public void close() throws IOException {
         if (!_closed) {
             _closed = true;
@@ -856,7 +840,7 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /**
-     * Heavily simplified method that does a subset of what {@code nextTokendoes to basically
+     * Heavily simplified method that does a subset of what {@link #nextToken} does to basically
      * only (1) determine that we are getting {@code JsonToken.VALUE_NUMBER_INT} (if not,
      * return with no processing) and (2) if so, prepare state so that number accessor
      * method will work).

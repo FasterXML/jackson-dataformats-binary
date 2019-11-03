@@ -498,19 +498,4 @@ public class IonParser
             _reportError(": expected close marker for "+_parsingContext.typeDesc()+" (from "+_parsingContext.getStartLocation(_ioContext.getSourceReference())+")");
         }
     }
-
-    @Override
-    public void overrideCurrentName(String name) {
-        try {
-            _parsingContext.setCurrentName(name);
-        } catch (Exception e) {
-            // JsonReadContext.setCurrentName started throwing
-            // JsonProcessingException in Jackson 2.3; allow compiling against
-            // both versions.
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-            throw new RuntimeException(e);
-        }
-    }
 }

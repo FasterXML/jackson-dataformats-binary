@@ -6,9 +6,8 @@ import java.io.Writer;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-
+import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 import com.fasterxml.jackson.dataformat.avro.deser.MissingReader;
 
@@ -81,6 +80,12 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
 
+    /**
+     * Information about parser context, context in which
+     * the next token is to be parsed (root, array, object).
+     */
+    protected SimpleTokenReadContext _parsingContext;
+
     protected AvroReadContext _avroContext;
 
     /*
@@ -94,6 +99,8 @@ public abstract class AvroParser extends ParserBase
     {
         super(readCtxt, ioCtxt, parserFeatures);    
         _formatFeatures = avroFeatures;
+        // null -> No dup checks in Avro (would only be relevant for Maps)
+        _parsingContext = SimpleTokenReadContext.createRootContext(null);
         _avroContext = MissingReader.instance;
     }
 
@@ -116,6 +123,8 @@ public abstract class AvroParser extends ParserBase
     /* ParserBase method impls
     /**********************************************************                              
      */
+
+    @Override public TokenStreamContext getParsingContext() { return _parsingContext; }
 
     @Override
     protected abstract void _closeInput() throws IOException;
@@ -255,24 +264,6 @@ public abstract class AvroParser extends ParserBase
         return _avroContext.currentName();
     }
 
-    @Override
-    public void overrideCurrentName(String name)
-    {
-        // Simple, but need to look for START_OBJECT/ARRAY's "off-by-one" thing:
-        JsonReadContext ctxt = _parsingContext;
-        if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            ctxt = ctxt.getParent();
-        }
-        /* 24-Sep-2013, tatu: Unfortunate, but since we did not expose exceptions,
-         *   need to wrap this here
-         */
-        try {
-            ctxt.setCurrentName(name);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-    
     @Override
     public char[] getTextCharacters() throws IOException {
         String text = getText();
