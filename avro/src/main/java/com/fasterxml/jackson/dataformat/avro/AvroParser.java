@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
+import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 import com.fasterxml.jackson.dataformat.avro.deser.MissingReader;
 
@@ -108,9 +109,9 @@ public abstract class AvroParser extends ParserBase
     public abstract Object getInputSource();
 
     /*                                                                                       
-    /**********************************************************                              
+    /**********************************************************************
     /* Versioned                                                                             
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override
@@ -119,9 +120,9 @@ public abstract class AvroParser extends ParserBase
     }
 
     /*
-    /**********************************************************                              
+    /**********************************************************************
     /* ParserBase method impls
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override public TokenStreamContext getParsingContext() { return _parsingContext; }
@@ -133,9 +134,9 @@ public abstract class AvroParser extends ParserBase
     protected abstract void _closeInput() throws IOException;
 
     /*
-    /***************************************************
+    /**********************************************************************
     /* Public API, configuration
-    /***************************************************
+    /**********************************************************************
      */
 
     /**
@@ -219,38 +220,35 @@ public abstract class AvroParser extends ParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Location info
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public JsonLocation getTokenLocation()
-    {
+    public JsonLocation getTokenLocation() {
         // !!! TODO
         return null;
     }
 
     @Override
-    public JsonLocation getCurrentLocation()
-    {
+    public JsonLocation getCurrentLocation() {
         // !!! TODO
         return null;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Parsing
-    /**********************************************************
+    /**********************************************************************
      */
     
-    @Override
-    public abstract JsonToken nextToken() throws IOException;
+//    public abstract JsonToken nextToken() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* String value handling
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -298,6 +296,8 @@ public abstract class AvroParser extends ParserBase
     @Override
     public byte[] getBinaryValue(Base64Variant variant) throws IOException
     {
+        // Usually we get properly declared byte[], and _binaryValue non null.
+        // But we also support base64-encoded String as fallback
         if (_binaryValue == null) {
             if (_currToken != JsonToken.VALUE_STRING) {
                 _reportError("Current token ("+_currToken+") not VALUE_STRING, can not access as binary");
@@ -309,4 +309,24 @@ public abstract class AvroParser extends ParserBase
         }
         return _binaryValue;
     }
+
+    /*
+    /**********************************************************************
+    /* And methods we shouldn't really need...
+    /**********************************************************************
+     */
+
+    // We should never end up here, as all numeric values are eagerly decoded...
+
+    @Override
+    protected void _parseNumericValue(int expType) throws IOException {
+        VersionUtil.throwInternal();
+    }
+
+    @Override
+    protected int _parseIntValue() throws IOException {
+        VersionUtil.throwInternal();
+        return 0;
+    }
+
 }

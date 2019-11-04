@@ -6,8 +6,6 @@ import com.fasterxml.jackson.dataformat.cbor.*;
 
 public class TagParsing185Test extends CBORTestBase
 {
-    private final CBORFactory CBOR_F = new CBORFactory();
-
     public void testRecursiveTags() throws Exception
     {
         _testRecursiveTags(20000);
@@ -23,11 +21,8 @@ public class TagParsing185Test extends CBORTestBase
                         2);
          }
 
-         JsonParser p = CBOR_F.createParser(data);
-         JsonToken t;
-
-         try {
-             t = p.nextToken();
+         try (JsonParser p = cborParser(data)) {
+             JsonToken t = p.nextToken();
              fail("Should not pass, got token: "+t);
          } catch (JsonParseException e) {
              verifyException(e, "Unexpected token");
