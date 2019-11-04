@@ -76,20 +76,6 @@ public class CBORParser extends ParserBase
     protected CBORReadContext _parsingContext;
 
     /**
-     * Temporary buffer that is needed if field name is accessed
-     * using {@link #getTextCharacters} method (instead of String
-     * returning alternatives)
-     */
-    protected char[] _nameCopyBuffer = null;
-
-    /**
-     * Flag set to indicate whether the field name is available
-     * from the name copy buffer or not (in addition to its String
-     * representation  being available via read context)
-     */
-    protected boolean _nameCopied = false;
-
-    /**
      * We will keep track of tag value for possible future use.
      */
     protected int _tagValue = -1;
@@ -320,10 +306,6 @@ public class CBORParser extends ParserBase
             // yes; is or can be made available efficiently as char[]
             return _textBuffer.hasTextAsCharacters();
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
-            // not necessarily; possible but:
-            return _nameCopied;
-        }
         // other types, no benefit from accessing as char[]
         return false;
     }
@@ -337,18 +319,14 @@ public class CBORParser extends ParserBase
     @Override
     protected void _releaseBuffers() throws IOException
     {
-         if (_bufferRecyclable) {
-             byte[] buf = _inputBuffer;
-             if (buf != null) {
-                 _inputBuffer = null;
-                 _ioContext.releaseReadIOBuffer(buf);
-             }
-         }
-         char[] buf = _nameCopyBuffer;
-         if (buf != null) {
-             _nameCopyBuffer = null;
-             _ioContext.releaseNameCopyBuffer(buf);
-         }
+        super._releaseBuffers();
+        if (_bufferRecyclable) {
+            byte[] buf = _inputBuffer;
+            if (buf != null) {
+                _inputBuffer = null;
+                _ioContext.releaseReadIOBuffer(buf);
+            }
+        }
     }
 
     /*

@@ -228,10 +228,6 @@ public abstract class NonBlockingParserBase
             // yes; is or can be made available efficiently as char[]
             return _textBuffer.hasTextAsCharacters();
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
-            // not necessarily; possible but:
-            return _nameCopied;
-        }
         // other types, no benefit from accessing as char[]
         return false;
     }
@@ -275,18 +271,7 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_STRING:
             return _textBuffer.getTextBuffer();
         case JsonTokenId.ID_FIELD_NAME:
-            if (!_nameCopied) {
-                String name = _parsingContext.currentName();
-                int nameLen = name.length();
-                if (_nameCopyBuffer == null) {
-                    _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
-                } else if (_nameCopyBuffer.length < nameLen) {
-                    _nameCopyBuffer = new char[nameLen];
-                }
-                name.getChars(0, nameLen, _nameCopyBuffer, 0);
-                _nameCopied = true;
-            }
-            return _nameCopyBuffer;
+            return _parsingContext.currentName().toCharArray();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
             return getNumberValue().toString().toCharArray();

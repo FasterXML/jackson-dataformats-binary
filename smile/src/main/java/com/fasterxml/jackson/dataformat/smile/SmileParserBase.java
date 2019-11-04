@@ -118,20 +118,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected final TextBuffer _textBuffer;
 
     /**
-     * Temporary buffer that is needed if field name is accessed
-     * using {@link #getTextCharacters} method (instead of String
-     * returning alternatives)
-     */
-    protected char[] _nameCopyBuffer;
-
-    /**
-     * Flag set to indicate whether the field name is available
-     * from the name copy buffer or not (in addition to its String
-     * representation  being available via read context)
-     */
-    protected boolean _nameCopied;
-
-    /**
      * We will hold on to decoded binary data, for duration of
      * current event, so that multiple calls to
      * {@link #getBinaryValue} will not need to decode data more
@@ -372,11 +358,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected final void _releaseBuffers() throws IOException {
         _textBuffer.releaseBuffers();
-        char[] buf = _nameCopyBuffer;
-        if (buf != null) {
-            _nameCopyBuffer = null;
-            _ioContext.releaseNameCopyBuffer(buf);
-        }
         String[] nameBuf = _seenNames;
         if (nameBuf != null && nameBuf.length > 0) {
             _seenNames = null;

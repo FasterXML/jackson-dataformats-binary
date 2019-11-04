@@ -56,7 +56,9 @@ public class SimpleObjectTest extends AsyncTestBase
         assertEquals(0, r.parser().getTextOffset());
         assertEquals(1, r.parser().getTextLength());
         assertEquals("a", new String(ch, 0, 1));
-        assertTrue(r.parser().hasTextCharacters());
+
+        // 04-Nov-2019, tatu: Changed in 3.0 (remove use of namecopybuffer)
+        assertFalse(r.parser().hasTextCharacters());
         
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 

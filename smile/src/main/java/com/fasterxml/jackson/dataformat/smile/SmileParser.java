@@ -302,10 +302,6 @@ public class SmileParser extends SmileParserBase
             // yes; is or can be made available efficiently as char[]
             return _textBuffer.hasTextAsCharacters();
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
-            // not necessarily; possible but:
-            return _nameCopied;
-        }
         // other types, no benefit from accessing as char[]
         return false;
     }
@@ -1313,18 +1309,7 @@ public class SmileParser extends SmileParserBase
                 return _textBuffer.getTextBuffer();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
-                if (!_nameCopied) {
-                    String name = _parsingContext.currentName();
-                    int nameLen = name.length();
-                    if (_nameCopyBuffer == null) {
-                        _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
-                    } else if (_nameCopyBuffer.length < nameLen) {
-                        _nameCopyBuffer = new char[nameLen];
-                    }
-                    name.getChars(0, nameLen, _nameCopyBuffer, 0);
-                    _nameCopied = true;
-                }
-                return _nameCopyBuffer;
+                return _parsingContext.currentName().toCharArray();
             }
             if (_currToken.isNumeric()) { // TODO: optimize?
                 return getNumberValue().toString().toCharArray();
