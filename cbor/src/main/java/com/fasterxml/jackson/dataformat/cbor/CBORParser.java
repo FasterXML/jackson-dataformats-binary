@@ -7,18 +7,17 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.TextBuffer;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
-public class CBORParser extends ParserMinimalBase
+public class CBORParser extends ParserBase
 {
     /**
      * Enumeration that defines all togglable features for CBOR generators.
@@ -66,96 +65,6 @@ public class CBORParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Generic I/O state
-    /**********************************************************************
-     */
-
-    /**
-     * I/O context for this reader. It handles buffer allocation
-     * for the reader.
-     */
-    final protected IOContext _ioContext;
-
-    /**
-     * Flag that indicates whether parser is closed or not. Gets
-     * set when parser is either closed by explicit call
-     * ({@link #close}) or when end-of-input is reached.
-     */
-    protected boolean _closed;
-
-    /*
-    /**********************************************************************
-    /* Current input data
-    /**********************************************************************
-     */
-
-    // Note: type of actual buffer depends on sub-class, can't include
-
-    /**
-     * Pointer to next available character in buffer
-     */
-    protected int _inputPtr = 0;
-
-    /**
-     * Index of character after last available one in the buffer.
-     */
-    protected int _inputEnd = 0;
-
-    /*
-    /**********************************************************************
-    /* Current input location information
-    /**********************************************************************
-     */
-
-    /**
-     * Number of characters/bytes that were contained in previous blocks
-     * (blocks that were already processed prior to the current buffer).
-     */
-    protected long _currInputProcessed = 0L;
-
-    /**
-     * Current row location of current point in input buffer, starting
-     * from 1, if available.
-     */
-    protected int _currInputRow = 1;
-
-    /**
-     * Current index of the first character of the current row in input
-     * buffer. Needed to calculate column position, if necessary; benefit
-     * of not having column itself is that this only has to be updated
-     * once per line.
-     */
-    protected int _currInputRowStart = 0;
-
-    /*
-    /**********************************************************************
-    /* Information about starting location of event Reader is pointing to;
-    /* updated on-demand
-    /**********************************************************************
-     */
-
-    // // // Location info at point when current token was started
-
-    /**
-     * Total number of bytes/characters read before start of current token.
-     * For big (gigabyte-sized) sizes are possible, needs to be long,
-     * unlike pointers and sizes related to in-memory buffers.
-     */
-    protected long _tokenInputTotal = 0; 
-
-    /**
-     * Input row on which current token starts, 1-based
-     */
-    protected int _tokenInputRow = 1;
-
-    /**
-     * Column on input row that current token starts; 0-based (although
-     * in the end it'll be converted to 1-based)
-     */
-    protected int _tokenInputCol = 0;
-
-    /*
-    /**********************************************************************
     /* Parsing state
     /**********************************************************************
      */
@@ -165,13 +74,6 @@ public class CBORParser extends ParserMinimalBase
      * the next token is to be parsed (root, array, object).
      */
     protected CBORReadContext _parsingContext;
-
-    /**
-     * Buffer that contains contents of String values, including
-     * field names if necessary (name split across boundary,
-     * contains escape sequence, or access needed to char array)
-     */
-    protected final TextBuffer _textBuffer;
 
     /**
      * Temporary buffer that is needed if field name is accessed
@@ -186,20 +88,6 @@ public class CBORParser extends ParserMinimalBase
      * representation  being available via read context)
      */
     protected boolean _nameCopied = false;
-
-    /**
-     * ByteArrayBuilder is needed if 'getBinaryValue' is called. If so,
-     * we better reuse it for remainder of content.
-     */
-    protected ByteArrayBuilder _byteArrayBuilder = null;
-
-    /**
-     * We will hold on to decoded binary data, for duration of
-     * current event, so that multiple calls to
-     * {@link #getBinaryValue} will not need to decode data more
-     * than once.
-     */
-    protected byte[] _binaryValue;
 
     /**
      * We will keep track of tag value for possible future use.
@@ -227,7 +115,7 @@ public class CBORParser extends ParserMinimalBase
     protected byte[] _inputBuffer;
 
     /**
-     * Flag that indicates whether the input buffer is recycable (and
+     * Flag that indicates whether the input buffer is recyclable (and
      * needs to be returned to recycler once we are done) or not.
      *<p>
      * If it is not, it also means that parser can NOT modify underlying
@@ -258,6 +146,9 @@ public class CBORParser extends ParserMinimalBase
      */
     private int _chunkLeft, _chunkEnd;
 
+    // Base class has all other types, but no distinction between double, float, so
+    protected float _numberFloat;
+
     /*
     /**********************************************************************
     /* Symbol handling, decoding
@@ -281,33 +172,6 @@ public class CBORParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Constants and fields related to number handling
-    /**********************************************************************
-     */
-
-    // Numeric value holders: multiple fields used for
-    // for efficiency
-
-    /**
-     * Bitfield that indicates which numeric representations
-     * have been calculated for the current type
-     */
-    protected int _numTypesValid = NR_UNKNOWN;
-
-    // First primitives
-
-    protected int _numberInt;
-    protected long _numberLong;
-    protected float _numberFloat;
-    protected double _numberDouble;
-
-    // And then object types
-
-    protected BigInteger _numberBigInt;
-    protected BigDecimal _numberBigDecimal;
-
-    /*
-    /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
@@ -318,8 +182,7 @@ public class CBORParser extends ParserMinimalBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(readCtxt, parserFeatures);
-        _ioContext = ioCtxt;
+        super(readCtxt, ioCtxt, parserFeatures);
         _symbols = sym;
 
         _inputStream = in;
@@ -327,7 +190,6 @@ public class CBORParser extends ParserMinimalBase
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-        _textBuffer = ioCtxt.constructTextBuffer();
         DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _parsingContext = CBORReadContext.createRootContext(dups);
@@ -369,7 +231,6 @@ public class CBORParser extends ParserMinimalBase
     /**********************************************************************
      */
 
-    @Override public boolean isClosed() { return _closed; }
     @Override public TokenStreamContext getParsingContext() { return _parsingContext; }
     @Override public void setCurrentValue(Object v) { _parsingContext.setCurrentValue(v); }
     @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
@@ -473,6 +334,7 @@ public class CBORParser extends ParserMinimalBase
      * example, when explicitly closing this reader instance), or
      * separately (if need be).
      */
+    @Override
     protected void _releaseBuffers() throws IOException
     {
          if (_bufferRecyclable) {
@@ -482,7 +344,6 @@ public class CBORParser extends ParserMinimalBase
                  _ioContext.releaseReadIOBuffer(buf);
              }
          }
-         _textBuffer.releaseBuffers();
          char[] buf = _nameCopyBuffer;
          if (buf != null) {
              _nameCopyBuffer = null;
@@ -1885,9 +1746,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Numeric accessors of public API
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override // since 2.9
@@ -1971,48 +1832,12 @@ public class CBORParser extends ParserMinimalBase
         }
         return NumberType.FLOAT;
     }
-    
-    @Override
-    public int getIntValue() throws IOException
-    {
-        if ((_numTypesValid & NR_INT) == 0) {
-            if (_numTypesValid == NR_UNKNOWN) { // not parsed at all
-                _checkNumericValue(NR_INT); // will also check event type
-            }
-            if ((_numTypesValid & NR_INT) == 0) { // wasn't an int natively?
-                convertNumberToInt(); // let's make it so, if possible
-            }
-        }
-        return _numberInt;
-    }
-    
-    @Override
-    public long getLongValue() throws IOException
-    {
-        if ((_numTypesValid & NR_LONG) == 0) {
-            if (_numTypesValid == NR_UNKNOWN) {
-                _checkNumericValue(NR_LONG);
-            }
-            if ((_numTypesValid & NR_LONG) == 0) {
-                convertNumberToLong();
-            }
-        }
-        return _numberLong;
-    }
-    
-    @Override
-    public BigInteger getBigIntegerValue() throws IOException
-    {
-        if ((_numTypesValid & NR_BIGINT) == 0) {
-            if (_numTypesValid == NR_UNKNOWN) {
-                _checkNumericValue(NR_BIGINT);
-            }
-            if ((_numTypesValid & NR_BIGINT) == 0) {
-                convertNumberToBigInteger();
-            }
-        }
-        return _numberBigInt;
-    }
+
+//    public int getIntValue() throws IOException
+
+//    public long getLongValue() throws IOException
+
+//    public BigInteger getBigIntegerValue() throws IOException
 
     @Override
     public float getFloatValue() throws IOException
@@ -2034,38 +1859,27 @@ public class CBORParser extends ParserMinimalBase
         return _numberFloat;
     }
 
+//    public double getDoubleValue() throws IOException
+
+//    public BigDecimal getDecimalValue() throws IOException
+
+    // Not needed since no lazy decoding for numbers
     @Override
-    public double getDoubleValue() throws IOException
-    {
-        if ((_numTypesValid & NR_DOUBLE) == 0) {
-            if (_numTypesValid == NR_UNKNOWN) {
-                _checkNumericValue(NR_DOUBLE);
-            }
-            if ((_numTypesValid & NR_DOUBLE) == 0) {
-                convertNumberToDouble();
-            }
-        }
-        return _numberDouble;
+    protected void _parseNumericValue(int expType) throws IOException {
+        _throwInternal();
     }
-    
+
+    // Not needed since no lazy decoding for numbers
     @Override
-    public BigDecimal getDecimalValue() throws IOException
-    {
-        if ((_numTypesValid & NR_BIGDECIMAL) == 0) {
-            if (_numTypesValid == NR_UNKNOWN) {
-                _checkNumericValue(NR_BIGDECIMAL);
-            }
-            if ((_numTypesValid & NR_BIGDECIMAL) == 0) {
-                convertNumberToBigDecimal();
-            }
-        }
-        return _numberBigDecimal;
+    protected int _parseIntValue() throws IOException {
+        _throwInternal();
+        return 0;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Numeric conversions
-    /**********************************************************
+    /**********************************************************************
      */    
 
     protected void _checkNumericValue(int expType) throws IOException
@@ -2077,6 +1891,7 @@ public class CBORParser extends ParserMinimalBase
         _reportError("Current token ("+currentToken()+") not numeric, can not use numeric value accessors");
     }
 
+    @Override // due to addition of Float as type
     protected void convertNumberToInt() throws IOException
     {
         // First, converting from long ought to be easy
@@ -2116,6 +1931,7 @@ public class CBORParser extends ParserMinimalBase
         _numTypesValid |= NR_INT;
     }
     
+    @Override // due to addition of Float as type
     protected void convertNumberToLong() throws IOException
     {
         if ((_numTypesValid & NR_INT) != 0) {
@@ -2147,7 +1963,8 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_LONG;
     }
-    
+
+    @Override // due to addition of Float as type
     protected void convertNumberToBigInteger() throws IOException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -2167,6 +1984,7 @@ public class CBORParser extends ParserMinimalBase
         _numTypesValid |= NR_BIGINT;
     }
 
+    // Base class does not have this one...
     protected void convertNumberToFloat() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -2186,7 +2004,8 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_FLOAT;
     }
-    
+
+    @Override // due to addition of Float as type
     protected void convertNumberToDouble() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -2206,7 +2025,8 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_DOUBLE;
     }
-    
+
+    @Override // due to addition of Float as type
     protected void convertNumberToBigDecimal() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -2228,9 +2048,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, secondary parsing
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -2278,9 +2098,6 @@ public class CBORParser extends ParserMinimalBase
         _finishShortText(len);
     }
 
-    /**
-     * @since 2.6
-     */
     protected String _finishTextToken(int ch) throws IOException
     {
         _tokenIncomplete = false;
@@ -2946,9 +2763,9 @@ public class CBORParser extends ParserMinimalBase
     }    
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, skipping
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -3064,9 +2881,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, length/number decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final int _decodeTag(int lowBits) throws IOException
@@ -3260,17 +3077,15 @@ public class CBORParser extends ParserMinimalBase
      * Current definition for 2.9 is that we will be return {@link JsonToken#VALUE_NULL}, but
      * for later versions it is likely that we will alternatively allow decoding as
      * {@link JsonToken#VALUE_EMBEDDED_OBJECT} with "embedded value" of `null`.
-     *
-     * @since 2.9.6
      */
     protected JsonToken _decodeUndefinedValue() throws IOException {
         return JsonToken.VALUE_NULL;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, UTF8 decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     /*
@@ -3358,9 +3173,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level reading, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected final boolean loadMore() throws IOException
@@ -3425,15 +3240,7 @@ public class CBORParser extends ParserMinimalBase
         }
     }
 
-    protected ByteArrayBuilder _getByteArrayBuilder() {
-        if (_byteArrayBuilder == null) {
-            _byteArrayBuilder = new ByteArrayBuilder();
-        } else {
-            _byteArrayBuilder.reset();
-        }
-        return _byteArrayBuilder;
-    }
-
+    @Override
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
             if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
@@ -3456,9 +3263,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, error handling, reporting
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected JsonToken _handleCBOREOF() throws IOException {
@@ -3510,9 +3317,9 @@ public class CBORParser extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final static BigInteger BIT_63 = BigInteger.ONE.shiftLeft(63);
