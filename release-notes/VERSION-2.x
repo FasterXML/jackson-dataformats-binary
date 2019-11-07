@@ -12,6 +12,9 @@ Project: jackson-datatypes-binaryModules:
 
 #185: Internal parsing of tagged arrays can lead to stack overflow
  (reported by Paul A)
+#188: Unexpected `MismatchedInputException` for `byte[]` value bound to `String`
+  in collection/array (actual fix in `jackson-databind`)
+ (reported by Yanming Z)
 
 2.10.0 (26-Sep-2019)
 
