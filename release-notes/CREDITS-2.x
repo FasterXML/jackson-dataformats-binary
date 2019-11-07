@@ -112,3 +112,8 @@ John (iziamos@github)
 Paul Adolph (padolph@github)
 * Reported #185: Internal parsing of tagged arrays can lead to stack overflow
  (2.10.1)
+
+Yanming Zhou (quaff@github)
+* Reported #188: Unexpected `MismatchedInputException` for `byte[]` value bound to `String`
+  in collection/array
+ (2.10.1)
