@@ -7,7 +7,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
@@ -53,6 +52,11 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         if (subType != null) {
             id = _idFrom(ctxt, null, subType);
         }
+        return super._typeFromId(ctxt, id);
+
+        // 26-Nov-2019, tatu: Should not swallow exceptions; with 2.10+ we can get
+        //    "Illegal subtype" accidentally and that should be propagated
+/*
         try {
             return super._typeFromId(ctxt, id);
         } catch (InvalidTypeIdException | IllegalArgumentException e) {
@@ -60,5 +64,6 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
             // find a usable type.
             return null;
         }
+*/
     }
 }
