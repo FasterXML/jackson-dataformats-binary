@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -116,6 +117,14 @@ public abstract class AvroWriteContext
     }
 
     public abstract void writeValue(Object value) throws IOException;
+
+    public void writeBinary(byte[] data, int offset, int len) throws IOException {
+        // 26-Nov-2019, tatu: Let's defer coercion, just need to remove fluff
+        if ((offset != 0) || (len != data.length)) {
+            data = Arrays.copyOfRange(data, offset, offset+len);
+        }
+        writeValue(data);
+    }
 
     public abstract void writeString(String value) throws IOException;
 

@@ -82,7 +82,10 @@ public abstract class AvroSchemaHelper
     }
 
     protected static String getNamespace(JavaType type) {
-        Class<?> cls = type.getRawClass();
+        return getNamespace(type.getRawClass());
+    }
+
+    protected static String getNamespace(Class<?> cls) {
         // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`;
         //   NOTE: was reverted in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
@@ -136,6 +139,10 @@ public abstract class AvroSchemaHelper
             }
             return Schema.create(Schema.Type.DOUBLE);
         case STRING:
+            // 26-Nov-2019, tatu: [dataformats-binary#179] UUIDs are special
+            if ((hint != null) && hint.hasRawClass(java.util.UUID.class)) {
+                return createUUIDSchema();
+            }
             return Schema.create(Schema.Type.STRING);
         case ARRAY:
         case OBJECT:
@@ -240,6 +247,17 @@ public abstract class AvroSchemaHelper
                 config.getAnnotationIntrospector().findClassDescription(config, annotations),
                 getNamespace(enumType), values
         ), annotations);
+    }
+
+    /**
+     * Helper method to enclose details of expressing best Avro Schema for
+     * {@link java.util.UUID}: 16-byte fixed-length binary (alternative would
+     * be basic variable length "bytes").
+     *
+     * @since 2.11
+     */
+    public static Schema createUUIDSchema() {
+        return Schema.createFixed("UUID", "", "java.util", 16);
     }
 
     /**

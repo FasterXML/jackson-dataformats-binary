@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import org.apache.avro.io.BinaryEncoder;
@@ -231,10 +230,10 @@ public class AvroGenerator extends GeneratorBase
         return (schema instanceof AvroSchema);
     }
 
-    // 10-Sep-2019, Tatu: Should implement wrt [dataformats-binary#179], but...
-    //    can't. Not yet, will just break things. Wait until 2.11
-//    @Override
-//    public boolean canWriteBinaryNatively() { return true; }
+    // 26-Nov-2019, tatu: [dataformats-binary#179] needed this; could
+    //   only add in 2.11
+    @Override // since 2.11
+    public boolean canWriteBinaryNatively() { return true; }
 
     /*
     /**********************************************************************
@@ -516,7 +515,7 @@ public class AvroGenerator extends GeneratorBase
             writeNull();
             return;
         }
-        _tokenWriteContext.writeValue(ByteBuffer.wrap(data, offset, len));
+        _tokenWriteContext.writeBinary(data, offset, len);
     }
 
     /*

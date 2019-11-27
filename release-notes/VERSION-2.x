@@ -10,13 +10,15 @@ Project: jackson-datatypes-binaryModules:
 
 2.11.0 (not yet released)
 
+#179: (avro) Add `AvroGenerator.canWriteBinaryNatively()` to support binary writes,
+  fix `java.util.UUID` representation
 - `AvroGenerator` overrides `getOutputContext()` properly
 
 2.10.1 (09-Nov-2019)
 
-#185: Internal parsing of tagged arrays can lead to stack overflow
+#185: (cbor) Internal parsing of tagged arrays can lead to stack overflow
  (reported by Paul A)
-#188: Unexpected `MismatchedInputException` for `byte[]` value bound to `String`
+#188: (cbor) Unexpected `MismatchedInputException` for `byte[]` value bound to `String`
   in collection/array (actual fix in `jackson-databind`)
  (reported by Yanming Z)
 
