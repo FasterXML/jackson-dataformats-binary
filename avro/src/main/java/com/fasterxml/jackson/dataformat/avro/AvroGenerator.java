@@ -178,8 +178,7 @@ public class AvroGenerator extends GeneratorBase
      * Not sure what to do here; could reset indentation to some value maybe?
      */
     @Override
-    public AvroGenerator useDefaultPrettyPrinter()
-    {
+    public AvroGenerator useDefaultPrettyPrinter() {
         return this;
     }
 
@@ -194,6 +193,11 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public Object getOutputTarget() {
         return _output;
+    }
+
+    @Override
+    public JsonStreamContext getOutputContext() {
+        return _avroContext;
     }
 
     /**
@@ -283,9 +287,7 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
     
-    /* And then methods overridden to make final, streamline some
-     * aspects...
-     */
+    // And then methods overridden to make final, streamline some aspects...
 
     @Override
     public final void writeFieldName(String name) throws IOException

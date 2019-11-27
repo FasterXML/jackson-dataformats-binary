@@ -10,7 +10,7 @@ Project: jackson-datatypes-binaryModules:
 
 2.11.0 (not yet released)
 
--
+- `AvroGenerator` overrides `getOutputContext()` properly
 
 2.10.1 (09-Nov-2019)
 
