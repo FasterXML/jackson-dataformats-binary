@@ -33,6 +33,12 @@ public class AvroMapper extends ObjectMapper
         public Builder(AvroFactory f) {
             super(f);
             addModule(new AvroModule());
+
+            // 26-Nov-2019, tatu: Since Avro does not allow open-ended classes,
+            //   but does rely on polymorphic (but not default) type handling,
+            //   we need to use more permissive PTV:
+
+            _baseSettings = _baseSettings.with(AvroSubTypeValidator.instance);
         }
 
         public Builder(StateImpl state) {
