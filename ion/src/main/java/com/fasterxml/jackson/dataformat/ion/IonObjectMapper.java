@@ -174,7 +174,7 @@ public class IonObjectMapper extends ObjectMapper
      * @since 3.0
      */
     public IonParser createParser(IonReader src) {
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (IonParser) ctxt.assignAndReturnParser(tokenStreamFactory().createParser(ctxt, src));
     }
 
@@ -182,7 +182,7 @@ public class IonObjectMapper extends ObjectMapper
      * @since 3.0
      */
     public IonParser createParser(IonValue value) {
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (IonParser) ctxt.assignAndReturnParser(tokenStreamFactory().createParser(ctxt, value));
     }
 
@@ -208,7 +208,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, Class<T> valueType) throws IOException {
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueType));
     }
@@ -221,7 +221,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws IOException {
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueTypeRef));
     }
@@ -234,7 +234,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, JavaType valueType) throws IOException {
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r), valueType);
     }
 
@@ -246,7 +246,7 @@ public class IonObjectMapper extends ObjectMapper
         if (value == null) {
             return null;
         }
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueType));
     }
@@ -259,7 +259,7 @@ public class IonObjectMapper extends ObjectMapper
         if (value == null) {
             return null;
         }
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueTypeRef));
     }
@@ -272,7 +272,7 @@ public class IonObjectMapper extends ObjectMapper
         if (value == null) {
             return null;
         }
-        DefaultDeserializationContext ctxt = createDeserializationContext();
+        DefaultDeserializationContext ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value), valueType);
     }
 
