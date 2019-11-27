@@ -78,17 +78,25 @@ public final class ObjectWriteContext
     public void writeValue(Object value) throws JsonMappingException {
         _verifyValueWrite();
         if (_nextField != null) {
+            // 26-Nov-2019, tatu: Should not be needed any more, handled at a later
+            //    point in `NonBSGenericDatumWriter`
+            /*
             Schema schema = _nextField.schema();
-            if (schema.getType() == Schema.Type.FIXED && value instanceof ByteBuffer) {
-                // 13-Nov-2014 josh: AvroGenerator wraps all binary values in ByteBuffers,
-                // but avro wants FIXED, so rewrap the array, copying if necessary
-                ByteBuffer bb = (ByteBuffer) value;
-                byte[] bytes = bb.array();
-                if (bb.arrayOffset() != 0 || bb.remaining() != bytes.length) {
-                    bytes = Arrays.copyOfRange(bytes, bb.arrayOffset(), bb.remaining());
+            if (schema.getType() == Schema.Type.FIXED) {
+                if (value instanceof ByteBuffer) {
+                    // 13-Nov-2014 josh: AvroGenerator wraps all binary values in ByteBuffers,
+                    // but avro wants FIXED, so rewrap the array, copying if necessary
+                    ByteBuffer bb = (ByteBuffer) value;
+                    byte[] bytes = bb.array();
+                    if (bb.arrayOffset() != 0 || bb.remaining() != bytes.length) {
+                        bytes = Arrays.copyOfRange(bytes, bb.arrayOffset(), bb.remaining());
+                    }
+                    value = new GenericData.Fixed(schema, bytes);
+                } else if (value instanceof byte[]) {
+                    value = new GenericData.Fixed(schema, (byte[]) value);
                 }
-                value = new GenericData.Fixed(schema, bytes);
             }
+            */
             _record.put(_nextField.pos(), value);
         }
     }

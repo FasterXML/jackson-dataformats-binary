@@ -44,6 +44,11 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
         if (_type.hasRawClass(char.class) || _type.hasRawClass(Character.class)) {
             return AvroSchemaHelper.numericAvroSchema(NumberType.INT, TypeFactory.defaultInstance().constructType(Character.class));
         }
+        // [dataformats-binary#179]: need special help with UUIDs, to coerce into Binary
+        //   (could actually be 
+        if (_type.hasRawClass(java.util.UUID.class)) {
+            return AvroSchemaHelper.createUUIDSchema();
+        }
         BeanDescription bean = _provider.getConfig().introspectClassAnnotations(_type);
         if (_enums != null) {
             Schema s = AvroSchemaHelper.createEnumSchema(bean, new ArrayList<>(_enums));

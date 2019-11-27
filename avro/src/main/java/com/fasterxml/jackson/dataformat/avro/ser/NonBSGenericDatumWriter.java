@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.apache.avro.Schema;
@@ -91,6 +92,27 @@ public class NonBSGenericDatumWriter<D>
                 }
             }
             break;
+        case BYTES:
+            if (datum instanceof byte[]) {
+                super.writeWithoutConversion(schema, ByteBuffer.wrap((byte[]) datum), out);
+                return;
+            }
+            break;
+        case FIXED:
+            // One more mismatch to fix
+            /*
+            if (datum instanceof ByteBuffer) {
+                byte[] buf = ((ByteBuffer) datum).array();
+                super.writeWithoutConversion(schema, new GenericData.Fixed(schema, buf), out);
+                return;
+            }
+            */
+            if (datum instanceof byte[]) {
+                super.writeWithoutConversion(schema, new GenericData.Fixed(schema, (byte[]) datum), out);
+                return;
+            }
+            break;
+
         default:
         }
         // EncodedDatum are already in an avro-encoded format and can be written out directly to the underlying encoder

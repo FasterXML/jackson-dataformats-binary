@@ -20,7 +20,6 @@ public class UUIDTest extends AvroTestBase
     public void testUUIDRoundtrip() throws Exception
     {
         final AvroSchema schema = MAPPER.schemaFor(UUIDWrapper.class);
-//System.err.println("DEBUG: schema -> "+schema.getAvroSchema());
         UUIDWrapper input = new UUIDWrapper(UUID.nameUUIDFromBytes("BOGUS".getBytes("UTF-8")));
         byte[] avro = MAPPER.writer(schema).writeValueAsBytes(input);
 
