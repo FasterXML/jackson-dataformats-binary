@@ -1,10 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
 import com.fasterxml.jackson.core.StreamWriteFeature;
