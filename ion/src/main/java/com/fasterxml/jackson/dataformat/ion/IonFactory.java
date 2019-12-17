@@ -189,7 +189,7 @@ public class IonFactory extends JsonFactory {
      * @since 2.7
      */
     public JsonGenerator createGenerator(IonWriter out) {
-        return _createGenerator(out, _createContext(out, false), out);
+        return _createGenerator(out, false, _createContext(out, false), out);
     }
 
     /**
@@ -214,7 +214,7 @@ public class IonFactory extends JsonFactory {
      */
     @Deprecated
     public JsonGenerator createJsonGenerator(IonWriter out) {
-        return _createGenerator(out, _createContext(out, false), out);
+        return _createGenerator(out, false, _createContext(out, false), out);
     }
 
     /*
@@ -267,7 +267,7 @@ public class IonFactory extends JsonFactory {
         if (createBinaryWriters()) {
             throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(_system.newTextWriter(out), _createContext(out, false), out);
+        return _createGenerator(_system.newTextWriter(out), true, _createContext(out, false), out);
     }
 
     @Override
@@ -340,11 +340,11 @@ public class IonFactory extends JsonFactory {
             ion = _system.newTextWriter(w);
             dst = w;
         }
-        return _createGenerator(ion, ctxt, dst);
+        return _createGenerator(ion, true, ctxt, dst);
     }
 
-    protected IonGenerator _createGenerator(IonWriter ion, IOContext ctxt, Closeable dst)
+    protected IonGenerator _createGenerator(IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
-        return new IonGenerator(_generatorFeatures, _objectCodec, ion, ctxt, dst);
+        return new IonGenerator(_generatorFeatures, _objectCodec, ion, ionWriterIsManaged, ctxt, dst);
     }        
 }
