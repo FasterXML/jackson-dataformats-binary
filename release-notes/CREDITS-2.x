@@ -117,3 +117,7 @@ Yanming Zhou (quaff@github)
 * Reported #188: Unexpected `MismatchedInputException` for `byte[]` value bound to `String`
   in collection/array
  (2.10.1)
+
+Zack Slayton (zslayton@github)
+* Reported, contributed fix for #189: IonObjectMapper close()s the provided IonWriter unnecessarily
+ (2.10.2)
