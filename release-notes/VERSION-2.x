@@ -14,6 +14,12 @@ Project: jackson-datatypes-binaryModules:
   fix `java.util.UUID` representation
 - `AvroGenerator` overrides `getOutputContext()` properly
 
+2.10.2 (not yet released)
+
+#189: IonObjectMapper close()s the provided IonWriter unnecessarily
+ (reported, fix contributed by Zack S)
+- ion-java dependency 1.4.0 -> 1.5.1
+
 2.10.1 (09-Nov-2019)
 
 #185: (cbor) Internal parsing of tagged arrays can lead to stack overflow

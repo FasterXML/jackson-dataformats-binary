@@ -14,24 +14,26 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import com.amazon.ion.IonDatagram;
+import com.amazon.ion.IonList;
+import com.amazon.ion.IonReader;
+import com.amazon.ion.IonStruct;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonType;
+import com.amazon.ion.IonWriter;
+import com.amazon.ion.system.IonBinaryWriterBuilder;
+import com.amazon.ion.system.IonReaderBuilder;
+import com.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.system.IonTextWriterBuilder;
+import com.amazon.ion.system.IonWriterBuilder;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-
-import com.amazon.ion.IonDatagram;
-import com.amazon.ion.IonList;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonWriter;
-import com.amazon.ion.system.IonSystemBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class DataBindWriteTest {
     
@@ -132,7 +134,19 @@ public class DataBindWriteTest {
         IonDatagram loadedDatagram = ion.newLoader().load(data);
         assertEquals(expectedArray, loadedDatagram);
     }
-    
+
+    @Test
+    public void testReusingBinaryIonWriter() throws Exception
+    {
+        _testIonWriterReuse(IonBinaryWriterBuilder.standard());
+    }
+
+    @Test
+    public void testReusingTextIonWriter() throws Exception
+    {
+        _testIonWriterReuse(IonTextWriterBuilder.standard());
+    }
+
     // // Helper methods
 
     private byte[] _writeAsBytes(Object ob) throws IOException
@@ -142,5 +156,27 @@ public class DataBindWriteTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         m.writeValue(out, ob);
         return out.toByteArray();
+    }
+
+    private void _testIonWriterReuse(IonWriterBuilder ionWriterBuilder) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+        IonWriter ionWriter = ionWriterBuilder.build(byteArrayOutputStream);
+
+        IonObjectMapper ionObjectMapper = new IonObjectMapper();
+        ionObjectMapper.writeValue(ionWriter, "Animal");
+        ionObjectMapper.writeValue(ionWriter, "Vegetable");
+        ionObjectMapper.writeValue(ionWriter, "Mineral");
+        ionWriter.close();
+
+        byte[] data = byteArrayOutputStream.toByteArray();
+        assertNotNull(data);
+
+        IonReader ionReader = IonReaderBuilder.standard().build(data);
+        assertEquals(IonType.STRING, ionReader.next());
+        assertEquals("Animal", ionReader.stringValue());
+        assertEquals(IonType.STRING, ionReader.next());
+        assertEquals("Vegetable", ionReader.stringValue());
+        assertEquals(IonType.STRING, ionReader.next());
+        assertEquals("Mineral", ionReader.stringValue());
     }
 }

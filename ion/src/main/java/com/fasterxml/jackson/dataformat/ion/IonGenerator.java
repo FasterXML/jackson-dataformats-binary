@@ -54,6 +54,8 @@ public class IonGenerator
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
+    /* Indicates whether the IonGenerator is responsible for closing the underlying IonWriter. */
+    protected final boolean _ionWriterIsManaged;
 
     protected final IOContext _ioContext;
     
@@ -70,10 +72,11 @@ public class IonGenerator
       */  
 
     public IonGenerator(int features, ObjectCodec codec,
-            IonWriter ion, IOContext ctxt, Closeable dst)
+            IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
         super(features, codec);
         _writer = ion;
+        _ionWriterIsManaged = ionWriterIsManaged;
         _ioContext = ctxt;
         _destination = dst;
     }
@@ -94,9 +97,9 @@ public class IonGenerator
     {
         if (!_closed) {
             _closed = true;
-            // force flush the writer
-            _writer.close();
-            // either way
+            if (_ionWriterIsManaged) {
+                _writer.close();
+            }
             if (_ioContext.isResourceManaged()) {
                 _destination.close();
             } else {
