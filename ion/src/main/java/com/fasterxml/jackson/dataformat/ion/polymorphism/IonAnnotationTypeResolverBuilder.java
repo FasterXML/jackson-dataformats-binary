@@ -76,7 +76,7 @@ public class IonAnnotationTypeResolverBuilder
     @Override
     public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
         JavaType defImplType = (defaultImpl == null) ? null
-                : config.constructType(defaultImpl);
+                : config.constructSpecializedType(baseType, defaultImpl);
         return new IonAnnotationTypeDeserializer(baseType,
                 typeIdResolver, null, typeIdVisible, defImplType);
     }
