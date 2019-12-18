@@ -47,6 +47,8 @@ public class IonGenerator
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
+    /* Indicates whether the IonGenerator is responsible for closing the underlying IonWriter. */
+    protected final boolean _ionWriterIsManaged;
 
     protected final IOContext _ioContext;
     
@@ -82,11 +84,12 @@ public class IonGenerator
 
     public IonGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int streamWriteFeatures,
-            IonWriter ion, Closeable dst)
+            IonWriter ion, boolean ionWriterIsManaged, Closeable dst)
     {
         super(writeCtxt, streamWriteFeatures);
         _writer = ion;
         _ioContext = ioCtxt;
+        _ionWriterIsManaged = ionWriterIsManaged;
         _destination = dst;
 
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
@@ -128,9 +131,9 @@ public class IonGenerator
     {
         if (!_closed) {
             _closed = true;
-            // force flush the writer
-            _writer.close();
-            // either way
+            if (_ionWriterIsManaged) {
+                _writer.close();
+            }
             if (_ioContext.isResourceManaged()) {
                 _destination.close();
             } else {
