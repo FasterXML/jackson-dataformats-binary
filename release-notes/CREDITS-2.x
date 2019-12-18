@@ -119,5 +119,10 @@ Yanming Zhou (quaff@github)
  (2.10.1)
 
 Zack Slayton (zslayton@github)
-* Reported, contributed fix for #189: IonObjectMapper close()s the provided IonWriter unnecessarily
+* Reported, contributed fix for #189: (ion) IonObjectMapper close()s the provided IonWriter unnecessarily
  (2.10.2)
+
+Binh Tran (ankel@github)
+* Reported, contributed fix for #192: (ion) Allow `IonObjectMapper` with class name annotation introspector
+  to deserialize generic subtypes
+ (2.11.0)
