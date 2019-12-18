@@ -12,6 +12,9 @@ Project: jackson-datatypes-binaryModules:
 
 #179: (avro) Add `AvroGenerator.canWriteBinaryNatively()` to support binary writes,
   fix `java.util.UUID` representation
+#192: (ion) Allow `IonObjectMapper` with class name annotation introspector to deserialize
+  generic subtypes
+ (reported, fix provided by Binh T)
 - `AvroGenerator` overrides `getOutputContext()` properly
 
 2.10.2 (not yet released)
