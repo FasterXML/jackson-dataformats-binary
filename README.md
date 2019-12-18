@@ -22,8 +22,8 @@ sub-classes) in Jackson 3.0.
 `master` branch is for developing the next major Jackson version -- 3.0 -- but there
 are active maintenance branches in which much of development happens:
 
-* `2.10` is for developing the next (and possibly last) minor 2.x version
-* `2.8` and `2.9` are for backported fixes for 2.8/2.9 patch versions
+* `2.11` is for developing the next 2.x version
+* `2.10` are for backported fixes for 2.10 version
 
 Older branches are usually not changed but are available for historic reasons.
 All released versions have matching git tags (`jackson-dataformats-binary-2.9.4`).
