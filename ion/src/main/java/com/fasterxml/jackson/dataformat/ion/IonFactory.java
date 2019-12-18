@@ -404,6 +404,7 @@ public class IonFactory
             ion = _system.newTextWriter(w);
             dst = w;
         }
+        // `true` for "ionWriterIsManaged" since we created it:
         return _createGenerator(writeCtxt, ioCtxt, ion, true, dst);
     }
 
