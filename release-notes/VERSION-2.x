@@ -17,7 +17,7 @@ Project: jackson-datatypes-binaryModules:
  (reported, fix provided by Binh T)
 - `AvroGenerator` overrides `getOutputContext()` properly
 
-2.10.2 (not yet released)
+2.10.2 (05-Jan-2020)
 
 #189: IonObjectMapper close()s the provided IonWriter unnecessarily
  (reported, fix contributed by Zack S)
