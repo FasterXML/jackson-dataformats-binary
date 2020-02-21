@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.util.*;
 
 import org.apache.avro.Schema;
-import org.apache.avro.util.internal.JacksonUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -22,6 +22,7 @@ public abstract class AvroReaderFactory
     protected final static ScalarDecoder READER_LONG = new LongReader();
     protected final static ScalarDecoder READER_NULL = new NullReader();
     protected final static ScalarDecoder READER_STRING = new StringReader();
+    private final static ObjectMapper DEFAULT_MAPPER = new ObjectMapper();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -56,24 +57,24 @@ public abstract class AvroReaderFactory
         switch (type.getType()) {
         case BOOLEAN:
             return READER_BOOLEAN;
-        case BYTES: 
+        case BYTES:
             return READER_BYTES;
-        case DOUBLE: 
+        case DOUBLE:
             return READER_DOUBLE;
-        case ENUM: 
+        case ENUM:
             return new EnumDecoder(AvroSchemaHelper.getFullName(type), type.getEnumSymbols());
-        case FIXED: 
+        case FIXED:
             return new FixedDecoder(type.getFixedSize(), AvroSchemaHelper.getFullName(type));
-        case FLOAT: 
+        case FLOAT:
             return READER_FLOAT;
         case INT:
             if (AvroSchemaHelper.getTypeId(type) != null) {
                 return new IntReader(AvroSchemaHelper.getTypeId(type));
             }
             return READER_INT;
-        case LONG: 
+        case LONG:
             return READER_LONG;
-        case NULL: 
+        case NULL:
             return READER_NULL;
         case STRING:
             if (AvroSchemaHelper.getTypeId(type) != null) {
@@ -127,7 +128,7 @@ public abstract class AvroReaderFactory
         switch (schema.getType()) {
         case ARRAY:
             return createArrayReader(schema);
-        case MAP: 
+        case MAP:
             return createMapReader(schema);
         case RECORD:
             return createRecordReader(schema);
@@ -252,7 +253,7 @@ public abstract class AvroReaderFactory
             switch (writerSchema.getType()) {
             case ARRAY:
                 return createArrayReader(writerSchema, readerSchema);
-            case MAP: 
+            case MAP:
                 return createMapReader(writerSchema, readerSchema);
             case RECORD:
                 return createRecordReader(writerSchema, readerSchema);
@@ -303,7 +304,7 @@ public abstract class AvroReaderFactory
             final List<Schema.Field> writerFields = writerSchema.getFields();
 
             // but first: find fields that only exist in reader-side and need defaults,
-            // and remove those from 
+            // and remove those from
             Map<String,Schema.Field> readerFields = new HashMap<String,Schema.Field>();
             List<Schema.Field> defaultFields = new ArrayList<Schema.Field>();
             {
@@ -320,7 +321,7 @@ public abstract class AvroReaderFactory
                     }
                 }
             }
-            
+
             // note: despite changes, we will always have known number of field entities,
             // ones from writer schema -- some may skip, but there's entry there
             AvroFieldReader[] fieldReaders = new AvroFieldReader[writerFields.size()
@@ -339,12 +340,13 @@ public abstract class AvroReaderFactory
                         : createFieldReader(readerField.name(),
                                 writerField.schema(), readerField.schema());
             }
-            
+
             // Any defaults to consider?
             if (!defaultFields.isEmpty()) {
                 for (Schema.Field defaultField : defaultFields) {
-                    AvroFieldReader fr =
-                        AvroFieldDefaulters.createDefaulter(defaultField.name(), JacksonUtils.toJsonNode(defaultField.defaultVal()));
+                    AvroFieldReader fr = AvroFieldDefaulters.createDefaulter(defaultField.name(),
+                                                                             AvroSchemaHelper.parseDefaultValue(defaultField.defaultVal())
+                    );
                     if (fr == null) {
                         throw new IllegalArgumentException("Unsupported default type: "+defaultField.schema().getType());
                     }
@@ -359,9 +361,9 @@ public abstract class AvroReaderFactory
             final List<Schema> types = writerSchema.getTypes();
             AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
             int i = 0;
-            
+
             // !!! TODO: actual resolution !!!
-            
+
             for (Schema type : types) {
                 typeReaders[i++] = createReader(type);
             }
@@ -414,7 +416,7 @@ public abstract class AvroReaderFactory
             //    in case there are multiple alternatives of same structured type.
             //    But since that is quite non-trivial let's wait for a good example of actual
             //    usage before tackling that.
-            
+
             if (actualType == Schema.Type.UNION) {
                 for (Schema sch : readerSchema.getTypes()) {
                     if (sch.getType() == expectedType) {
