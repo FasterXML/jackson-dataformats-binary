@@ -14,8 +14,8 @@ import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
@@ -23,6 +23,11 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 
 public abstract class AvroSchemaHelper
 {
+    /**
+     * Dedicated mapper for handling default values (String &lt;-&gt; JsonNode &lt;-&gt; Object)
+     */
+    private static final ObjectMapper DEFAULT_VALUE_MAPPER = new ObjectMapper();
+
     /**
      * Constant used by native Avro Schemas for indicating more specific
      * physical class of a value; referenced indirectly to reduce direct
@@ -317,6 +322,10 @@ public abstract class AvroSchemaHelper
     /**
      * Returns the full name of a schema; This is similar to {@link Schema#getFullName()}, except that it properly handles namespaces for
      * nested classes. (<code>package.name.ClassName$NestedClassName</code> instead of <code>package.name.ClassName$.NestedClassName</code>)
+     * <p>
+     *     <b>WARNING!</b> This method has to probe for nested classes in order to resolve whether or not a schema references a top-level
+     *     class or a nested class and return the corresponding name for each.
+     * </p>
      */
     public static String getFullName(Schema schema) {
         switch (schema.getType()) {
@@ -332,9 +341,44 @@ public abstract class AvroSchemaHelper
                 return namespace + name;
             }
             StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
-            return sb.append(namespace).append('.').append(name).toString();
-        default:
+            // Check if this is a nested class
+            String nestedClassName = sb.append(namespace).append('$').append(name).toString();
+            try {
+                Class.forName(nestedClassName);
+                return nestedClassName;
+            } catch (ClassNotFoundException e) {
+                // Could not find a nested class, must be a regular class
+                sb.setLength(0);
+                return sb.append(namespace).append('.').append(name).toString();
+            }
+            default:
             return schema.getType().getName();
+        }
+    }
+
+    public static JsonNode parseDefaultValue(Object defaultValue) {
+        return DEFAULT_VALUE_MAPPER.convertValue(defaultValue, JsonNode.class);
+    }
+
+    public static Object convertDefaultValueToObject(JsonNode defaultJsonValue) {
+        return DEFAULT_VALUE_MAPPER.convertValue(defaultJsonValue, Object.class);
+    }
+
+    /**
+     * Converts a default value represented as a string (such as from a schema specification) into a JsonNode for further handling.
+     *
+     * @param defaultValue The default value to parse, in the form of a JSON string
+     * @return a parsed JSON representation of the default value
+     * @throws JsonMappingException If {@code defaultValue} is not valid JSON
+     */
+    public static JsonNode parseDefaultValue(String defaultValue) throws JsonMappingException {
+        if (defaultValue == null) {
+            return null;
+        }
+        try {
+            return DEFAULT_VALUE_MAPPER.readTree(defaultValue);
+        } catch (JsonProcessingException e) {
+            throw new JsonMappingException(null, "Failed to parse default value", e);
         }
     }
 }
