@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,10 +8,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
 import org.apache.avro.reflect.AvroSchema;
-import org.apache.avro.util.internal.JacksonUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.NullNode;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
@@ -43,10 +38,9 @@ public class RecordVisitor
     protected final boolean _cfgAddNullDefaults;
 
     protected Schema _avroSchema;
-    
+
     protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
 
-    
     public RecordVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
     {
         super(p);
@@ -109,7 +103,7 @@ public class RecordVisitor
     /* JsonObjectFormatVisitor implementation
     /**********************************************************
      */
-    
+
     @Override
     public void property(BeanProperty writer) throws JsonMappingException
     {
@@ -161,7 +155,7 @@ public class RecordVisitor
     /* Internal methods
     /**********************************************************************
      */
-    
+
     protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional) throws JsonMappingException
     {
         Schema writerSchema;
@@ -205,6 +199,7 @@ public class RecordVisitor
                 writerSchema = AvroSchemaHelper.unionWithNull(writerSchema);
             }
         }
+/*
         JsonNode defaultValue = parseJson(prop.getMetadata().getDefaultValue());
         if ((defaultValue == null) && _cfgAddNullDefaults
                 && writerSchema.getType() == Type.UNION
@@ -216,6 +211,20 @@ public class RecordVisitor
         String name = prop.getName();
         Schema.Field field = new Schema.Field(name, writerSchema, prop.getMetadata().getDescription(),
                 JacksonUtils.toObject(defaultValue));
+*/
+        JsonNode defaultValue = AvroSchemaHelper.parseDefaultValue(prop.getMetadata().getDefaultValue());
+
+        // [dataformats-binary#145]: induce `null` default value, if compatible
+        if (_cfgAddNullDefaults
+                && (defaultValue == null)
+                && writerSchema.getType() == Type.UNION
+                && writerSchema.getIndexNamed(Type.NULL.getName()) != null) {
+            defaultValue = AvroSchemaHelper.nullNode();
+        } else {
+            writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
+        }
+        Schema.Field field = new Schema.Field(prop.getName(), writerSchema, prop.getMetadata().getDescription(),
+                AvroSchemaHelper.jsonNodeToObject(defaultValue));
 
         AvroMeta meta = prop.getAnnotation(AvroMeta.class);
         if (meta != null) {
@@ -228,29 +237,6 @@ public class RecordVisitor
             }
         }
         return field;
-    }
-
-    /**
-     * Parses a JSON-encoded string for use as the default value of a field
-     *
-     * @param defaultValue
-     *     Default value as a JSON-encoded string
-     *
-     * @return Jackson V1 {@link JsonNode} for use as the default value in a {@link Schema.Field}
-     *
-     * @throws JsonMappingException
-     *     if {@code defaultValue} is not valid JSON
-     */
-    protected JsonNode parseJson(String defaultValue) throws JsonMappingException {
-        if (defaultValue == null) {
-            return null;
-        }
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readTree(defaultValue);
-        } catch (IOException e) {
-            throw JsonMappingException.from(getProvider(), "Unable to parse default value as JSON: " + defaultValue, e);
-        }
     }
 
     /**

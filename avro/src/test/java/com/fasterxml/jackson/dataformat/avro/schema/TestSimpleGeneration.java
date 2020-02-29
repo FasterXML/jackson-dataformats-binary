@@ -210,28 +210,42 @@ public class TestSimpleGeneration extends AvroTestBase
         }
     }
 
+    // for [dataformats-binary#146]
     public void testDefaultValues() throws JsonMappingException {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         MAPPER.acceptJsonFormatVisitor(WithDefaults.class, gen);
         Schema schema = gen.getAvroSchema();
-        assertEquals(JsonProperties.NULL_VALUE, schema.getField("avro").defaultVal());
-        assertEquals(JsonProperties.NULL_VALUE, schema.getField("json").defaultVal());
         assertNull(schema.getField("noDefault").defaultVal());
         assertNull(schema.getField("simpleInt").defaultVal());
         assertNull(schema.getField("integer").defaultVal());
         assertNull(schema.getField("required").defaultVal());
+
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("avro").defaultVal());
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("json").defaultVal());
     }
 
+    // for [dataformats-binary#146]
     public void testEnabledDefaultValues() throws JsonMappingException {
-        AvroMapper mapper = new AvroMapper(AvroFactory.builder().enable(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA).build());
+        AvroMapper mapper = new AvroMapper(AvroFactory.builder()
+                .enable(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA)
+                .build());
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         mapper.acceptJsonFormatVisitor(WithDefaults.class, gen);
         Schema schema = gen.getAvroSchema();
-        assertEquals(JsonProperties.NULL_VALUE, schema.getField("avro").defaultVal());
-        assertEquals(JsonProperties.NULL_VALUE, schema.getField("json").defaultVal());
-        assertEquals(JsonProperties.NULL_VALUE, schema.getField("noDefault").defaultVal());
+
+        // primitive `int` can not take `null`
         assertNull(schema.getField("simpleInt").defaultVal());
-        assertEquals(JsonProperties.NULL_VALUE, schema.getField("integer").defaultVal());
+        // And since this is `required` (even if String value could take `null`):
         assertNull(schema.getField("required").defaultVal());
+
+        // String value without default, but non-required so `null` ok:
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("noDefault").defaultVal());
+        // Integer value without default, non-required so `null` ok too
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("integer").defaultVal());
+
+        // @AvroDefault("null")
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("avro").defaultVal());
+        // @JsonProperty(defaultValue = "null")
+        assertEquals(JsonProperties.NULL_VALUE, schema.getField("json").defaultVal());
     }
 }

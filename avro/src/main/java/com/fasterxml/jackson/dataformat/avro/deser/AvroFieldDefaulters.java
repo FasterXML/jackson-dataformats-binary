@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.util.*;
 
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Factory class for various default providers
@@ -19,7 +19,7 @@ public class AvroFieldDefaulters
         case VALUE_NULL:
             return new ScalarDefaults.NullDefaults(name);
         case VALUE_NUMBER_FLOAT:
-            switch (defaultAsNode.getNumberType()) {
+            switch (defaultAsNode.numberType()) {
             case FLOAT:
                 return new ScalarDefaults.FloatDefaults(name, (float) defaultAsNode.asDouble());
             case DOUBLE:
@@ -28,7 +28,7 @@ public class AvroFieldDefaulters
                 return new ScalarDefaults.DoubleDefaults(name, defaultAsNode.asDouble());
             }
         case VALUE_NUMBER_INT:
-            switch (defaultAsNode.getNumberType()) {
+            switch (defaultAsNode.numberType()) {
             case INT:
                 return new ScalarDefaults.FloatDefaults(name, defaultAsNode.asInt());
             case BIG_INTEGER: // TODO: maybe support separately?
@@ -40,7 +40,7 @@ public class AvroFieldDefaulters
             return new ScalarDefaults.StringDefaults(name, defaultAsNode.asText());
         case START_OBJECT:
             {
-                Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.getFields();
+                Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.fields();
                 List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
                 while (it.hasNext()) {
                     Map.Entry<String,JsonNode> entry = it.next();
@@ -64,7 +64,7 @@ public class AvroFieldDefaulters
 
     // 23-Jul-2019, tatu: With Avro 1.9, likely changed  to use "raw" JDK containers?
     //   Code would look more like this:
-/*    
+/*
     public static AvroFieldReader createDefaulter(String name,
             Object defaultValue)
     {

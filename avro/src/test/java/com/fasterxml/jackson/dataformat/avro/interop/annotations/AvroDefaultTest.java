@@ -15,7 +15,7 @@ public class AvroDefaultTest {
         @AvroDefault("1234")
         public Integer intField;
         @AvroDefault("true")
-        public Integer booleanField;
+        public Boolean booleanField;
     }
 
     @Test

@@ -15,6 +15,8 @@ Project: jackson-datatypes-binaryModules:
 #192: (ion) Allow `IonObjectMapper` with class name annotation introspector to deserialize
   generic subtypes
  (reported, fix provided by Binh T)
+#195: Remove dependencies upon Jackson 1.X and Avro's JacksonUtils
+ (contributed by Bryan H)
 - `AvroGenerator` overrides `getOutputContext()` properly
 
 2.10.2 (05-Jan-2020)

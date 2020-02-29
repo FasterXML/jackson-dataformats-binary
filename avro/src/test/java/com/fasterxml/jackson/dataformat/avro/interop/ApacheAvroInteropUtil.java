@@ -122,6 +122,18 @@ public class ApacheAvroInteropUtil {
             if (type instanceof TypeVariable) {
                 // Should only get here by recursion normally; names should be populated with the schema for this type variable by a
                 // previous stack frame
+                /* 14-Jun-2018, tatu: This is 99.9% certainly wrong; IDE gives warnings and
+                 *   it just... doesn't fly. Either keys are NOT Strings or...
+                 */
+                /*
+                 * 26-Jun-2019, baharclerode: The keys are NOT always strings. It's a horrible hack I used to enable support for generics
+                 * in the apache implementation because otherwise it flat out doesn't support generic types correctly except for the handful
+                 * that they hand-coded support for, resulting in oddities like Set<T> not working, or List<T> working but LinkedList<T> not
+                 * working. This regression suite is a lot simpler when we don't have to disable half the tests because the reference
+                 * implementation doesn't support them.
+                 *
+                 * Note the "((Map) names).put(...)" above this else/if case.
+                 */
                 if (names.containsKey(type)) {
                     return names.get(type);
                 }
