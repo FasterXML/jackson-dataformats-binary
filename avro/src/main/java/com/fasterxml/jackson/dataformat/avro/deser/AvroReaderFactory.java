@@ -4,7 +4,6 @@ import java.util.*;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -22,7 +21,6 @@ public abstract class AvroReaderFactory
     protected final static ScalarDecoder READER_LONG = new LongReader();
     protected final static ScalarDecoder READER_NULL = new NullReader();
     protected final static ScalarDecoder READER_STRING = new StringReader();
-    private final static ObjectMapper DEFAULT_MAPPER = new ObjectMapper();
 
     /**
      * To resolve cyclic types, need to keep track of resolved named
@@ -345,7 +343,7 @@ public abstract class AvroReaderFactory
             if (!defaultFields.isEmpty()) {
                 for (Schema.Field defaultField : defaultFields) {
                     AvroFieldReader fr = AvroFieldDefaulters.createDefaulter(defaultField.name(),
-                                                                             AvroSchemaHelper.parseDefaultValue(defaultField.defaultVal())
+                            AvroSchemaHelper.objectToJsonNode(defaultField.defaultVal())
                     );
                     if (fr == null) {
                         throw new IllegalArgumentException("Unsupported default type: "+defaultField.schema().getType());

@@ -186,7 +186,7 @@ public class RecordVisitor
         JsonNode defaultValue = AvroSchemaHelper.parseDefaultValue(prop.getMetadata().getDefaultValue());
         writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
         Schema.Field field = new Schema.Field(prop.getName(), writerSchema, prop.getMetadata().getDescription(),
-                AvroSchemaHelper.convertDefaultValueToObject(defaultValue));
+                AvroSchemaHelper.jsonNodeToObject(defaultValue));
 
         AvroMeta meta = prop.getAnnotation(AvroMeta.class);
         if (meta != null) {

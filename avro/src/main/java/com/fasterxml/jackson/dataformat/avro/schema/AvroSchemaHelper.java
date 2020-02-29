@@ -25,6 +25,8 @@ public abstract class AvroSchemaHelper
 {
     /**
      * Dedicated mapper for handling default values (String &lt;-&gt; JsonNode &lt;-&gt; Object)
+     *
+     * @since 2.11
      */
     private static final ObjectMapper DEFAULT_VALUE_MAPPER = new ObjectMapper();
 
@@ -341,7 +343,9 @@ public abstract class AvroSchemaHelper
                 return namespace + name;
             }
             StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
-            // Check if this is a nested class
+            // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
+            //     to support differences between avro-lib 1.8 and 1.9...
+            //     Check if this is a nested class
             String nestedClassName = sb.append(namespace).append('$').append(name).toString();
             try {
                 Class.forName(nestedClassName);
@@ -356,11 +360,17 @@ public abstract class AvroSchemaHelper
         }
     }
 
-    public static JsonNode parseDefaultValue(Object defaultValue) {
+    /**
+     * @since 2.11
+     */
+    public static JsonNode objectToJsonNode(Object defaultValue) {
         return DEFAULT_VALUE_MAPPER.convertValue(defaultValue, JsonNode.class);
     }
 
-    public static Object convertDefaultValueToObject(JsonNode defaultJsonValue) {
+    /**
+     * @since 2.11
+     */
+    public static Object jsonNodeToObject(JsonNode defaultJsonValue) {
         return DEFAULT_VALUE_MAPPER.convertValue(defaultJsonValue, Object.class);
     }
 
@@ -370,6 +380,8 @@ public abstract class AvroSchemaHelper
      * @param defaultValue The default value to parse, in the form of a JSON string
      * @return a parsed JSON representation of the default value
      * @throws JsonMappingException If {@code defaultValue} is not valid JSON
+     *
+     * @since 2.11
      */
     public static JsonNode parseDefaultValue(String defaultValue) throws JsonMappingException {
         if (defaultValue == null) {
@@ -378,6 +390,9 @@ public abstract class AvroSchemaHelper
         try {
             return DEFAULT_VALUE_MAPPER.readTree(defaultValue);
         } catch (JsonProcessingException e) {
+            if (e instanceof JsonMappingException) {
+                throw (JsonMappingException) e;
+            }
             throw new JsonMappingException(null, "Failed to parse default value", e);
         }
     }
