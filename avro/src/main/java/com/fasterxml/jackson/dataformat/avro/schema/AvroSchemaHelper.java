@@ -355,6 +355,9 @@ public abstract class AvroSchemaHelper
     }
 
     public static JsonNode objectToJsonNode(Object defaultValue) {
+        if (defaultValue == JsonProperties.NULL_VALUE) {
+            return nullNode();
+        }
         return DEFAULT_VALUE_MAPPER.convertValue(defaultValue, JsonNode.class);
     }
 
