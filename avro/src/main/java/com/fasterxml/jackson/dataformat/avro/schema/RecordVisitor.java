@@ -199,19 +199,6 @@ public class RecordVisitor
                 writerSchema = AvroSchemaHelper.unionWithNull(writerSchema);
             }
         }
-/*
-        JsonNode defaultValue = parseJson(prop.getMetadata().getDefaultValue());
-        if ((defaultValue == null) && _cfgAddNullDefaults
-                && writerSchema.getType() == Type.UNION
-                && writerSchema.getIndexNamed(Type.NULL.getName()) != null) {
-            defaultValue = NullNode.getInstance();
-        }
-        writerSchema = reorderUnionToMatchDefaultType(writerSchema, defaultValue);
-
-        String name = prop.getName();
-        Schema.Field field = new Schema.Field(name, writerSchema, prop.getMetadata().getDescription(),
-                JacksonUtils.toObject(defaultValue));
-*/
         JsonNode defaultValue = AvroSchemaHelper.parseDefaultValue(prop.getMetadata().getDefaultValue());
 
         // [dataformats-binary#145]: induce `null` default value, if compatible
