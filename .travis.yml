@@ -8,6 +8,11 @@ jdk:
   - openjdk8
   - openjdk11
 
+branches:
+  only:
+    - master
+    - "3.0"
+
 # 2019-11-26, tatu: Let's try caching Maven dependencies
 cache:
   directories:
@@ -18,17 +23,6 @@ cache:
 before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
 after_success:
   - "mvn -B source:jar javadoc:jar deploy --settings target/travis/settings.xml"
-
-# whitelist
-branches:
-  only:
-    - master
-    - "3.0"
-
-# Below this line is configuration for deploying to the Sonatype OSS repo
-# https://knowm.org/configure-travis-ci-to-deploy-snapshots/
-before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
-after_success: "mvn deploy --settings target/travis/settings.xml"
 
 env:
   global:
