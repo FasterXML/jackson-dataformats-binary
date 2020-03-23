@@ -25,12 +25,12 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
   </properties>
 
   <dependencies>
-    <!-- We need databind for testing, but also as optional dep for CBORMapper -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>provided</scope>
     </dependency>
+
+    <!-- annotations for testing -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
