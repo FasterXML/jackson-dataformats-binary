@@ -25,13 +25,14 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
   </properties>
 
   <dependencies>
-    <!-- and for testing we need databind, annotations -->
-    <!-- 08-Oct-2018, tatu: for 2.10 we have `CBORMapper` which needs databind, too -->
+    <!-- 23-Mar-2020, tatu: for 2.10 we have `CBORMapper` which needs databind, too;
+        added as full dependency in 2.11
+      -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>provided</scope>
     </dependency>
+    <!-- for testing we need annotations -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>

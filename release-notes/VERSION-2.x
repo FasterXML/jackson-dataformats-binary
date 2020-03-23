@@ -17,6 +17,8 @@ Project: jackson-datatypes-binaryModules:
  (reported, fix provided by Binh T)
 #195: Remove dependencies upon Jackson 1.X and Avro's JacksonUtils
  (contributed by Bryan H)
+#198: `jackson-databind` should not be full dependency for (cbor, protobuf, smile)
+  modules
 - `AvroGenerator` overrides `getOutputContext()` properly
 
 2.10.3 (03-Mar-2020)

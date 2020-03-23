@@ -31,14 +31,11 @@ abstractions.
     </dependency>
 
     <!-- Hmmh. Need databind for schema generation, convenience ProtobufMapper.
-         However: dependency should be possible to include as 'provided', to
-         make it possible to exclude for use cases where ObjectMapper and databind
-         are not strictly needed.
+         And starting with 2.10(.4), there is only explicit mapper:
       -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>provided</scope>
     </dependency>
 
     <!-- and for testing, JUnit is needed; as well as annotations -->
