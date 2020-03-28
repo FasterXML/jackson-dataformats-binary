@@ -114,9 +114,6 @@ public class CBORGenerator extends GeneratorBase
      */
     private final static int MIN_BUFFER_LENGTH = (3 * 256) + 2;
 
-    private final static long MIN_INT_AS_LONG = (long) Integer.MIN_VALUE;
-    private final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
-
     /**
      * Special value that is use to keep tracks of arrays and maps opened with infinite length
      */
@@ -630,9 +627,20 @@ public class CBORGenerator extends GeneratorBase
     }
 
     private final void _writeNumberNoCheck(int i) throws IOException {
-        int marker;
         if (i < 0) {
-            i = -i - 1;
+            _writeNumberNoCheck(true, -i - 1);
+        } else {
+            _writeNumberNoCheck(false, i);
+        }
+    }
+
+    /**
+     * Write {@code signum ? -i - 1 : i}. This allows writing numbers that are outside the range of java {@code int}
+     * but still can be encoded as 4 bytes + 1 marker byte.
+     */
+    private final void _writeNumberNoCheck(boolean signum, int i) throws IOException {
+        int marker;
+        if (signum) {
             marker = PREFIX_TYPE_INT_NEG;
         } else {
             marker = PREFIX_TYPE_INT_POS;
@@ -642,7 +650,7 @@ public class CBORGenerator extends GeneratorBase
         _ensureRoomForOutput(5);
 
         byte b0;
-        if (_cfgMinimalInts) {
+        if (_cfgMinimalInts && i >= 0) {
             if (i < 24) {
                 _outputBuffer[_outputTail++] = (byte) (marker + i);
                 return;
@@ -673,8 +681,12 @@ public class CBORGenerator extends GeneratorBase
 
     private final void _writeNumberNoCheck(long l) throws IOException {
         if (_cfgMinimalInts) {
-            if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
-                _writeNumberNoCheck((int) l);
+            if (l >= 0 && l < 0x100000000L) {
+                _writeNumberNoCheck(false, (int) l);
+                return;
+            }
+            if (l < 0 && l >= -0x100000000L) {
+                _writeNumberNoCheck(true, (int) (-l - 1));
                 return;
             }
         }
@@ -895,72 +907,13 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeNumber(int i) throws IOException {
         _verifyValueWrite("write number");
-        int marker;
-        if (i < 0) {
-            i = -i - 1;
-            marker = PREFIX_TYPE_INT_NEG;
-        } else {
-            marker = PREFIX_TYPE_INT_POS;
-        }
-        _ensureRoomForOutput(5);
-        byte b0;
-        if (_cfgMinimalInts) {
-            if (i < 24) {
-                _outputBuffer[_outputTail++] = (byte) (marker + i);
-                return;
-            }
-            if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT8_ELEMENTS);
-                _outputBuffer[_outputTail++] = (byte) i;
-                return;
-            }
-            b0 = (byte) i;
-            i >>= 8;
-            if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT16_ELEMENTS);
-                _outputBuffer[_outputTail++] = (byte) i;
-                _outputBuffer[_outputTail++] = b0;
-                return;
-            }
-        } else {
-            b0 = (byte) i;
-            i >>= 8;
-        }
-        _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT32_ELEMENTS);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        _outputBuffer[_outputTail++] = b0;
+        _writeNumberNoCheck(i);
     }
 
     @Override
     public void writeNumber(long l) throws IOException {
-        if (_cfgMinimalInts) {
-            // First: maybe 32 bits is enough?
-            if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
-                writeNumber((int) l);
-                return;
-            }
-        }
         _verifyValueWrite("write number");
-        _ensureRoomForOutput(9);
-        if (l < 0L) {
-            l += 1;
-            l = -l;
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_NEG + SUFFIX_UINT64_ELEMENTS);
-        } else {
-            _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
-        }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeNumberNoCheck(l);
     }
 
     @Override

@@ -71,7 +71,7 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = cborGenerator(out);
-        gen.writeNumber(Integer.MAX_VALUE);
+        gen.writeNumber((long) Integer.MAX_VALUE);
         gen.close();
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 26),
@@ -79,11 +79,27 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = cborGenerator(out);
-        gen.writeNumber(Integer.MIN_VALUE);
+        gen.writeNumber((long) Integer.MIN_VALUE);
         gen.close();
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 26),
                 (byte) 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumber(0xffffffffL);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 26),
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumber(-0xffffffffL - 1);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 26),
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
     }
 
     public void testIntValues() throws Exception
