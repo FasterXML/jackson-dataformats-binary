@@ -465,7 +465,7 @@ public class CBORGenerator extends GeneratorBase
         if (!_cborContext.writeFieldId(id)) {
             _reportError("Can not write a field id, expecting a value");
         }
-        _writeNumberNoCheck(id);
+        _writeLongNoCheck(id);
     }
 
     /*
@@ -593,7 +593,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeNumberNoCheck(array[i]);
+            _writeIntNoCheck(array[i]);
         }
     }
 
@@ -605,7 +605,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeNumberNoCheck(array[i]);
+            _writeLongNoCheck(array[i]);
         }
     }
 
@@ -617,7 +617,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeNumberNoCheck(array[i]);
+            _writeDoubleNoCheck(array[i]);
         }
     }
 
@@ -629,7 +629,7 @@ public class CBORGenerator extends GeneratorBase
         _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
     }
 
-    private final void _writeNumberNoCheck(int i) throws IOException {
+    private final void _writeIntNoCheck(int i) throws IOException {
         int marker;
         if (i < 0) {
             i = -i - 1;
@@ -671,10 +671,10 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = b0;
     }
 
-    private final void _writeNumberNoCheck(long l) throws IOException {
+    private final void _writeLongNoCheck(long l) throws IOException {
         if (_cfgMinimalInts) {
             if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
-                _writeNumberNoCheck((int) l);
+                _writeIntNoCheck((int) l);
                 return;
             }
         }
@@ -698,7 +698,7 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) i;
     }
 
-    private final void _writeNumberNoCheck(double d) throws IOException {
+    private final void _writeDoubleNoCheck(double d) throws IOException {
         _ensureRoomForOutput(11);
         // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
         // more accurate to use exact representation; and possibly faster.
