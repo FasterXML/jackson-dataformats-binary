@@ -384,15 +384,6 @@ public class CBORGenerator extends GeneratorBase
         return (_formatFeatures & f.getMask()) != 0;
     }
 
-    public CBORGenerator configure(Feature f, boolean state) {
-        if (state) {
-            enable(f);
-        } else {
-            disable(f);
-        }
-        return this;
-    }
-
     /*
     /**********************************************************************
     /* Overridden methods, write methods

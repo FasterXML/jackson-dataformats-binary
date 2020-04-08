@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
@@ -45,7 +46,7 @@ public class ArrayGenerationTest extends CBORTestBase
     {
         final int[] input = new int[] { v1, v2 };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        CBORGenerator gen = FACTORY.createGenerator(bytes);
+        CBORGenerator gen = (CBORGenerator) MAPPER.createGenerator(bytes);
         assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
         gen.writeArray(input, 0, 2);
         gen.close();
@@ -56,7 +57,7 @@ public class ArrayGenerationTest extends CBORTestBase
 
         // then verify contents
 
-        CBORParser p = FACTORY.createParser(encoded);
+        CBORParser p = (CBORParser) MAPPER.createParser(encoded);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
@@ -69,8 +70,11 @@ public class ArrayGenerationTest extends CBORTestBase
 
         // but then also check without minimization
         bytes = new ByteArrayOutputStream();
-        gen = FACTORY.createGenerator(bytes);
-        gen.disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS);
+        gen = (CBORGenerator) MAPPER
+                .writer()
+                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .createGenerator(bytes);
+        assertFalse(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
 
         gen.writeArray(input, 0, 2);
         gen.close();
@@ -81,7 +85,7 @@ public class ArrayGenerationTest extends CBORTestBase
 
         // then verify contents
 
-        p = FACTORY.createParser(encoded);
+        p = (CBORParser) MAPPER.createParser(encoded);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
@@ -126,8 +130,9 @@ public class ArrayGenerationTest extends CBORTestBase
 
         // but then also check without minimization
         bytes = new ByteArrayOutputStream();
-        gen = FACTORY.createGenerator(bytes);
-        gen.disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS);
+        gen = (CBORGenerator) MAPPER.writer()
+                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .createGenerator(bytes);
 
         gen.writeArray(input, 0, 2);
         gen.close();
@@ -138,7 +143,7 @@ public class ArrayGenerationTest extends CBORTestBase
 
         // then verify contents
 
-        p = FACTORY.createParser(encoded);
+        p = MAPPER.createParser(encoded);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.LONG, p.getNumberType());
