@@ -112,9 +112,6 @@ public class CBORGenerator extends GeneratorBase
      */
     private final static int MIN_BUFFER_LENGTH = (3 * 256) + 2;
 
-    private final static long MIN_INT_AS_LONG = (long) Integer.MIN_VALUE;
-    private final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
-
     /**
      * Special value that is use to keep tracks of arrays and maps opened with infinite length
      */
@@ -436,7 +433,7 @@ public class CBORGenerator extends GeneratorBase
         if (!_tokenWriteContext.writeFieldId(id)) {
             _reportError("Can not write a field id, expecting a value");
         }
-        _writeNumberNoCheck(id);
+        _writeLongNoCheck(id);
     }
 
     /*
@@ -573,7 +570,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeNumberNoCheck(array[i]);
+            _writeIntNoCheck(array[i]);
         }
     }
 
@@ -585,7 +582,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeNumberNoCheck(array[i]);
+            _writeLongNoCheck(array[i]);
         }
     }
 
@@ -597,7 +594,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeNumberNoCheck(array[i]);
+            _writeDoubleNoCheck(array[i]);
         }
     }
 
@@ -608,7 +605,7 @@ public class CBORGenerator extends GeneratorBase
         _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
     }
 
-    private final void _writeNumberNoCheck(int i) throws IOException {
+    private final void _writeIntNoCheck(int i) throws IOException {
         int marker;
         if (i < 0) {
             i = -i - 1;
@@ -650,10 +647,48 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = b0;
     }
 
-    private final void _writeNumberNoCheck(long l) throws IOException {
+    private final void _writeIntMinimal(int markerBase, int i) throws IOException
+    {
+        _ensureRoomForOutput(5);
+        byte b0;
+        if (i >= 0) {
+            if (i < 24) {
+                _outputBuffer[_outputTail++] = (byte) (markerBase + i);
+                return;
+            }
+            if (i <= 0xFF) {
+                _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT8_ELEMENTS);
+                _outputBuffer[_outputTail++] = (byte) i;
+                return;
+            }
+            b0 = (byte) i;
+            i >>= 8;
+            if (i <= 0xFF) {
+                _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT16_ELEMENTS);
+                _outputBuffer[_outputTail++] = (byte) i;
+                _outputBuffer[_outputTail++] = b0;
+                return;
+            }
+        } else {
+            b0 = (byte) i;
+            i >>= 8;
+        }
+        _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT32_ELEMENTS);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+        _outputBuffer[_outputTail++] = b0;
+    }
+    
+    private final void _writeLongNoCheck(long l) throws IOException {
         if (_cfgMinimalInts) {
-            if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
-                _writeNumberNoCheck((int) l);
+            if (l >= 0) {
+                if (l <= 0x100000000L) {
+                    _writeIntMinimal(PREFIX_TYPE_INT_POS, (int) l);
+                    return;
+                }
+            } else if (l >= -0x100000000L) {
+                _writeIntMinimal(PREFIX_TYPE_INT_NEG, (int) (-l - 1));
                 return;
             }
         }
@@ -677,7 +712,7 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) i;
     }
 
-    private final void _writeNumberNoCheck(double d) throws IOException {
+    private final void _writeDoubleNoCheck(double d) throws IOException {
         _ensureRoomForOutput(11);
         // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
         // more accurate to use exact representation; and possibly faster.
@@ -914,14 +949,18 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public void writeNumber(long l) throws IOException {
-        if (_cfgMinimalInts) {
-            // First: maybe 32 bits is enough?
-            if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
-                writeNumber((int) l);
+        _verifyValueWrite("write number");
+        if (_cfgMinimalInts) { // maybe 32 bits is enough?
+            if (l >= 0) {
+                if (l <= 0x100000000L) {
+                    _writeIntMinimal(PREFIX_TYPE_INT_POS, (int) l);
+                    return;
+                }
+            } else if (l >= -0x100000000L) {
+                _writeIntMinimal(PREFIX_TYPE_INT_NEG, (int) (-l - 1));
                 return;
             }
         }
-        _verifyValueWrite("write number");
         _ensureRoomForOutput(9);
         if (l < 0L) {
             l += 1;

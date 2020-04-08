@@ -19,6 +19,9 @@ Project: jackson-datatypes-binaryModules:
  (contributed by Bryan H)
 #198: `jackson-databind` should not be full dependency for (cbor, protobuf, smile)
   modules
+#201: `CBORGenerator.Feature.WRITE_MINIMAL_INTS` does not write most compact form
+  for all integers
+ (reported by Jonas K)
 - `AvroGenerator` overrides `getOutputContext()` properly
 
 2.10.3 (03-Mar-2020)
