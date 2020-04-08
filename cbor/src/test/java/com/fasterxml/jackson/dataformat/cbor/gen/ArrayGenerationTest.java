@@ -3,7 +3,10 @@ package com.fasterxml.jackson.dataformat.cbor.gen;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 /**
@@ -15,23 +18,54 @@ public class ArrayGenerationTest extends CBORTestBase
     
     public void testIntArray() throws Exception
     {
-        _testIntArray(false);
-        _testIntArray(true);
+        _testIntArray();
     }
 
     public void testLongArray() throws Exception
     {
-        _testLongArray(false);
-        _testLongArray(true);
+        _testLongArray();
     }
 
     public void testDoubleArray() throws Exception
     {
-        _testDoubleArray(false);
-        _testDoubleArray(true);
+        _testDoubleArray();
     }
 
-    private void _testIntArray(boolean useBytes) throws Exception {
+    public void testMinimalIntValues2() throws Exception
+    {
+        // Array with 2 values that can't be passed as `int`s but DO fit
+        // CBOR 5-byte int (sign + 32-bits)
+        final long[] input = new long[] {
+                0xffffffffL, // max value that fits
+                -0xffffffffL - 1 // min value that fits
+        };
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        CBORGenerator gen = FACTORY.createGenerator(bytes);
+        assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
+        gen.writeArray(input, 0, 2);
+        gen.close();
+
+        // With default settings, should get:
+        byte[] encoded = bytes.toByteArray();
+        assertEquals(11, encoded.length);
+
+        // then verify contents
+
+        CBORParser p = FACTORY.createParser(encoded);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        assertEquals(input[0], p.getLongValue());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        assertEquals(input[1], p.getLongValue());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
+
+        // but then also check without minimization
+    }
+
+    private void _testIntArray() throws Exception {
         // first special cases of 0, 1 values
         _testIntArray(0, 0, 0);
         _testIntArray(0, 1, 1);
@@ -52,7 +86,7 @@ public class ArrayGenerationTest extends CBORTestBase
         _testIntArray(7777, 0, 1);
     }
 
-    private void _testLongArray(boolean useBytes) throws Exception {
+    private void _testLongArray() throws Exception {
         // first special cases of 0, 1 values
         _testLongArray(0, 0, 0);
         _testLongArray(0, 1, 1);
@@ -73,7 +107,7 @@ public class ArrayGenerationTest extends CBORTestBase
         _testLongArray(6110, 0, 1);
     }
 
-    private void _testDoubleArray(boolean useBytes) throws Exception {
+    private void _testDoubleArray() throws Exception {
         // first special cases of 0, 1 values
         _testDoubleArray(0, 0, 0);
         _testDoubleArray(0, 1, 1);

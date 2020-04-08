@@ -126,3 +126,9 @@ Binh Tran (ankel@github)
 * Reported, contributed fix for #192: (ion) Allow `IonObjectMapper` with class name annotation introspector
   to deserialize generic subtypes
  (2.11.0)
+
+Jonas Konrad (yawkat@github)
+* Reported, contributed fix for #201: `CBORGenerator.Feature.WRITE_MINIMAL_INTS` does not write
+  most compact form for all integers
+ (2.11.0)
+ 

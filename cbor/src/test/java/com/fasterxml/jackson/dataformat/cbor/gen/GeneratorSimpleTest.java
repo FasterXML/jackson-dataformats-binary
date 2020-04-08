@@ -71,7 +71,7 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = cborGenerator(out);
-        gen.writeNumber(Integer.MAX_VALUE);
+        gen.writeNumber((long) Integer.MAX_VALUE);
         gen.close();
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 26),
@@ -79,13 +79,40 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = cborGenerator(out);
-        gen.writeNumber(Integer.MIN_VALUE);
+        gen.writeNumber((long) Integer.MIN_VALUE);
         gen.close();
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 26),
                 (byte) 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
     }
 
+    // [dataformats-binary#201]
+    public void testMinimalIntValues2() throws Exception
+    {
+        ByteArrayOutputStream out;
+        CBORGenerator gen;
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        // -1 if coerced as int, BUT cbor encoding can fit in 32-bit integer since
+        // sign is indicated by prefix
+        gen.writeNumber(0xffffffffL);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 26),
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        // similarly for negative numbers, we have 32-bit value bits, not 31
+        // as with Java int
+        gen.writeNumber(-0xffffffffL - 1);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 26),
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
+    }
+    
     public void testIntValues() throws Exception
     {
         // first, single-byte
@@ -156,12 +183,15 @@ public class GeneratorSimpleTest extends CBORTestBase
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        long l = -1L + Integer.MIN_VALUE;
+
+        // 07-Apr-2020, tatu: Since minimization enabled by default,
+        //   need to use value that can not be minimized
+        long l = ((long) Integer.MIN_VALUE) << 2;
         gen.writeNumber(l);
         gen.close();
         byte[] b = out.toByteArray();
-        assertEquals((byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 27), b[0]);
         assertEquals(9, b.length);
+        assertEquals((byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 27), b[0]);
         // could test full contents, but for now this shall suffice
         assertEquals(0, b[1]);
         assertEquals(0, b[2]);
