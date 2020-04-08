@@ -569,8 +569,25 @@ public class CBORGenerator extends GeneratorBase
         // short-cut, do not create child array context etc
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
-        for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeIntNoCheck(array[i]);
+
+        if (_cfgMinimalInts) {
+            for (int i = offset, end = offset+length; i < end; ++i) {
+                final int value = array[i];
+                if (value < 0) {
+                    _writeIntMinimal(PREFIX_TYPE_INT_NEG, -value - 1);
+                } else {
+                    _writeIntMinimal(PREFIX_TYPE_INT_POS, value);
+                }
+            }
+        } else {
+            for (int i = offset, end = offset+length; i < end; ++i) {
+                final int value = array[i];
+                if (value < 0) {
+                    _writeIntFull(PREFIX_TYPE_INT_NEG, -value - 1);
+                } else {
+                    _writeIntFull(PREFIX_TYPE_INT_POS, value);
+                }
+            }
         }
     }
 
@@ -605,48 +622,6 @@ public class CBORGenerator extends GeneratorBase
         _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
     }
 
-    private final void _writeIntNoCheck(int i) throws IOException {
-        int marker;
-        if (i < 0) {
-            i = -i - 1;
-            marker = PREFIX_TYPE_INT_NEG;
-        } else {
-            marker = PREFIX_TYPE_INT_POS;
-        }
-
-        // if ((_outputTail + needed) >= _outputEnd) { _flushBuffer(); }
-        _ensureRoomForOutput(5);
-
-        byte b0;
-        if (_cfgMinimalInts) {
-            if (i < 24) {
-                _outputBuffer[_outputTail++] = (byte) (marker + i);
-                return;
-            }
-            if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT8_ELEMENTS);
-                _outputBuffer[_outputTail++] = (byte) i;
-                return;
-            }
-            b0 = (byte) i;
-            i >>= 8;
-            if (i <= 0xFF) {
-                _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT16_ELEMENTS);
-                _outputBuffer[_outputTail++] = (byte) i;
-                _outputBuffer[_outputTail++] = b0;
-                return;
-            }
-        } else {
-            b0 = (byte) i;
-            i >>= 8;
-        }
-        _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT32_ELEMENTS);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        _outputBuffer[_outputTail++] = b0;
-    }
-
     private final void _writeIntMinimal(int markerBase, int i) throws IOException
     {
         _ensureRoomForOutput(5);
@@ -679,7 +654,21 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) i;
         _outputBuffer[_outputTail++] = b0;
     }
-    
+
+    private final void _writeIntFull(int markerBase, int i) throws IOException
+    {
+        // if ((_outputTail + needed) >= _outputEnd) { _flushBuffer(); }
+        _ensureRoomForOutput(5);
+
+        _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT32_ELEMENTS);
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+    }
+
+    // Helper method that works like `writeNumber(long)` but DOES NOT
+    // check internal output state. It does, however, check need for minimization
     private final void _writeLongNoCheck(long l) throws IOException {
         if (_cfgMinimalInts) {
             if (l >= 0) {
