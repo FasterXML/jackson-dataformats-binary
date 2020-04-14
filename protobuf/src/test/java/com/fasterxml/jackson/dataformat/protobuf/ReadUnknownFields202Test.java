@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.protobuf.failing;
+package com.fasterxml.jackson.dataformat.protobuf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
@@ -124,7 +124,6 @@ public class ReadUnknownFields202Test extends ProtobufTestBase
         TestMessageV0 messageV0 = MAPPER
                 .readerFor(TestMessageV0.class)
                 .with(schemaV0)
-                .with(StreamReadFeature.IGNORE_UNDEFINED)
                 .readValue(protobufData);
 
         assertEquals(messageV1.getId(), messageV0.getId());

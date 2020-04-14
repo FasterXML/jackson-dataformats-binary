@@ -685,7 +685,7 @@ public class ProtobufParser extends ParserMinimalBase
     private JsonToken _handleRootKey(int tag) throws IOException
     {
         int wireType = (tag & 0x7);
-        int id = (tag >> 3);
+        final int id = (tag >> 3);
 
         ProtobufField f;
         if (_currentField != null) {
@@ -1070,11 +1070,11 @@ public class ProtobufParser extends ParserMinimalBase
                     return false;
                 }
             }
-            int tag = _decodeVInt();
+            final int tag = _decodeVInt();
             // inlined _handleRootKey()
 
-            int wireType = (tag & 0x7);
-            int id = (tag >> 3);
+            final int wireType = (tag & 0x7);
+            final int id = (tag >> 3);
 
             ProtobufField f = _findField(id);
             if (f == null) {
@@ -1106,11 +1106,11 @@ public class ProtobufParser extends ParserMinimalBase
                 _currToken = JsonToken.END_OBJECT;
                 return false;
             }
-            int tag = _decodeVInt();
+            final int tag = _decodeVInt();
             // inlined '_handleNestedKey()'
 
-            int wireType = (tag & 0x7);
-            int id = (tag >> 3);
+            final int wireType = (tag & 0x7);
+            final int id = (tag >> 3);
 
             ProtobufField f = _findField(id);
             if (f == null) {
@@ -1155,11 +1155,11 @@ public class ProtobufParser extends ParserMinimalBase
                     return FieldNameMatcher.MATCH_END_OBJECT;
                 }
             }
-            int tag = _decodeVInt();
+            final int tag = _decodeVInt();
             // inlined _handleRootKey()
 
             int wireType = (tag & 0x7);
-            int id = (tag >> 3);
+            final int id = (tag >> 3);
 
             ProtobufField f = _findField(id);
             if (f == null) {
@@ -1169,6 +1169,8 @@ public class ProtobufParser extends ParserMinimalBase
                             ? FieldNameMatcher.MATCH_END_OBJECT : FieldNameMatcher.MATCH_ODD_TOKEN;
                 }
                 // sub-optimal as skip method already set it, but:
+                // [dataformats-binary#202]: need to reset after skipping
+                wireType = _currentField.wireType;
             }
             String name = _currentField.name;
             _parsingContext.setCurrentName(name);
@@ -1191,11 +1193,11 @@ public class ProtobufParser extends ParserMinimalBase
                 _currToken = JsonToken.END_OBJECT;
                 return FieldNameMatcher.MATCH_END_OBJECT;
             }
-            int tag = _decodeVInt();
+            final int tag = _decodeVInt();
             // inlined '_handleNestedKey()'
 
             int wireType = (tag & 0x7);
-            int id = (tag >> 3);
+            final int id = (tag >> 3);
 
             ProtobufField f = _findField(id);
             if (f == null) {
@@ -1205,6 +1207,8 @@ public class ProtobufParser extends ParserMinimalBase
                             ? FieldNameMatcher.MATCH_END_OBJECT : FieldNameMatcher.MATCH_ODD_TOKEN;
                 }
                 // sub-optimal as skip method already set it, but:
+                // [dataformats-binary#202]: need to reset after skipping
+                wireType = _currentField.wireType;
             }
             final String name = _currentField.name;
             _parsingContext.setCurrentName(name);
