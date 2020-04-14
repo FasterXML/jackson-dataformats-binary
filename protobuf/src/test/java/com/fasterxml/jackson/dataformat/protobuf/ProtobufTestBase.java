@@ -463,7 +463,11 @@ public abstract class ProtobufTestBase extends TestCase
     protected ProtobufMapper newObjectMapper() {
         return new ProtobufMapper();
     }
-    
+
+    protected ProtobufMapper.Builder newMapperBuilder() {
+        return ProtobufMapper.builder();
+    }
+
     /*
     /**********************************************************
     /* Additional assertion methods
