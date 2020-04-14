@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.4 (not yet released)
+
+#202: Parsing a protobuf message doesn't properly skip unknown fields
+ (reported by dmitry-timin@github)
+
 2.10.3 (03-Mar-2020)
 
 No changes since 2.10.2
