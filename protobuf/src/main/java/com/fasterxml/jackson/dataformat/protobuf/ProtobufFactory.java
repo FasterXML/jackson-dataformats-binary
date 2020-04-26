@@ -31,7 +31,7 @@ public class ProtobufFactory extends JsonFactory
     }
 
     /**
-     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     * Constructors used by {@link ProtobufFactoryBuilder} for instantiation.
      *
      * @since 2.9
      */

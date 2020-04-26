@@ -102,7 +102,7 @@ public class AvroFactory extends JsonFactory
     }
 
     /**
-     * Constructors used by {@link YAMLFactoryBuilder} for instantiation.
+     * Constructors used by {@link AvroFactoryBuilder} for instantiation.
      *
      * @since 2.9
      */

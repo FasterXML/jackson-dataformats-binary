@@ -45,7 +45,7 @@ public final class SmileConstants
 
     /**
      * Longest back reference we use for short shared String values is 10 bits,
-     * so up to (1 << 10) values to keep track of.
+     * so up to {@code (1 << 10)} values to keep track of.
      */
     public final static int MAX_SHARED_STRING_VALUES = 1024;
 

@@ -20,11 +20,11 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
  * This is an extension of {@link TypeIdResolver} for serializing and deserializing polymorphic types. The vanilla
  * implementation of TypeIdResolver only enables a single type id to be serialized with a value, which is not always
  * sufficient for every consumer of a value with polymorphic typing to identify and instantiate the appropriate type.
- * <p/>
+ * <p>
  * This allows more robust polymorphism support, in that consumers of a serialized polymorphic object do not need
  * complete type information. As long as their deserializer can resolve (or, understand) one of the annotated type ids,
  * they can still perform polymorphic deserialization. An example:
- * <p/>
+ * <p>
  * <pre>
  * class BasicMessage {
  *      String id;
@@ -33,22 +33,22 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
  * class SocialMediaMessage extends BasicMessage {
  *      boolean cool;
  * }
- *
+ *</pre>
  * Let's say we serialized a value into:
- *
+ *<pre>
  *      {id="123",message="hi",cool=false}.
- *
+ *</pre>
  * The existing polymorphism support may have annotated this as the following Ion:
- *
+ *<pre>
  *      SocialMediaMessage::{id="123",message="hi",cool=false}
- *
+ *</pre>
  * But a consumer who only has BasicMessage in its classloader won't know (or care) what a SocialMediaMessage is, and be
  * stuck. Using this interface enables the following serialization:
- *
+ *<pre>
  *      SocialMediaMessage::BasicMessage::{id="123",message="hi",cool=false}
- *
+ *</pre>
  * About particular implementations:
- * <p/>
+ * <p>
  * Ion serialization should be using {@link IonAnnotationTypeSerializer}, which is polymorphism-aware, but how should a
  * MultipleTypeIdResolver handle a call to the non-polymorphic {@link TypeIdResolver#idFromValue(Object)}? I'd probably
  * do something like {@code return selectId(idsFromValue(value)); }, to keep things working when serializing
@@ -72,7 +72,7 @@ public interface MultipleTypeIdResolver extends TypeIdResolver {
      * {@link TypeIdResolver#typeFromId} to get a {@link com.fasterxml.jackson.databind.JavaType}. It is a invariant
      * on this method that its output, if non-null, be valid input for {@link TypeIdResolver#typeFromId} of the
      * same TypeIdResolver instance.
-     * <p/>
+     * <p>
      * Note that we're not resolving the array of ids directly into a JavaType because there is code (in the Jackson
      * package, not ours) which consumes the id String itself, not the JavaType object.
      *

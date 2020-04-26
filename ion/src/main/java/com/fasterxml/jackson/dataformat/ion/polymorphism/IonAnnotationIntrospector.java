@@ -27,20 +27,19 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
  * A Jackson {@link com.fasterxml.jackson.databind.AnnotationIntrospector} (essentially an interceptor for
  * serializer/deserializer construction) that provides type serializer/deserializers that write/read Ion type
  * annotations.
- * <p/>
+ * <p>
  * The logic in this class is very similar to {@link com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector}!
  * We both look at the @JsonTypeResolver, etc annotations and try to make type resolvers.
- * <p/>
+ * <p>
  * This class adds a {@code resolveAllTypes} override, which allows for universal polymorphism without needing
  * any annotations or mixins, and also permits top-level polymorphism -- deserialize to any object without providing its
  * actual type, as long as type information was serialized. (i.e., ObjectMapper#readValue(serializedData, Object.class))
- * <p/>
+ * <p>
  * Note: the provided {@link com.fasterxml.jackson.databind.jsontype.TypeSerializer} will only write type annotations if the configured
  * {@link TypeIdResolver} returns non-null.
- * <p/>
+ * <p>
  * Note: {@link com.fasterxml.jackson.databind.jsontype.TypeDeserializer} are actually full-on value deserializers -- all
  * deserialization logic goes through them (unlike TypeSerializers, which just write the type metadata).
- * <p/>
  */
 public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
     private static final long serialVersionUID = 1L;
@@ -63,10 +62,10 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
     /**
      * Provides a {@link TypeResolverBuilder} if the {@link AnnotatedClass} is enabled for type resolving, and a
      * {@link TypeIdResolver} can be instantiated.
-     * <p/>
+     * <p>
      * The AnnotatedClass is enabled for type resolving if either {@code resolveAllTypes} is set, or shouldResolveType()
      * returns true.
-     * <p/>
+     * <p>
      * We look for a TypeIdResolver by checking for a {@link JsonTypeIdResolver} annotation, and fallback to
      * {@code defaultIdResolver()}.
      *

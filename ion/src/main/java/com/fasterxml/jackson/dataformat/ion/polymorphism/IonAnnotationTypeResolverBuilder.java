@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 /**
  * A {@link TypeResolverBuilder} which produces {@link TypeSerializer}s and {@link TypeDeserializer}s that use
  * Ion type annotations to communicate type metadata. Jackson polymorphism, the Ion way.
- *
+ *<p>
  * This TypeResolverBuilder expects to be initialized with a functional {@link TypeIdResolver}, and will serialize
  * type information (and deserialize to something other than the default type) when it resolves the provided
  * {@link JavaType} to a non-null type identifier, and vice versa.
