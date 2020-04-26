@@ -669,7 +669,7 @@ public class CBORParser extends ParserBase
     }
 
     /**
-     * Heavily simplified method that does a subset of what {@link #nextToken} does to basically
+     * Heavily simplified method that does a subset of what {@code nextToken()} does to basically
      * only (1) determine that we are getting {@code JsonToken.VALUE_NUMBER_INT} (if not,
      * return with no processing) and (2) if so, prepare state so that number accessor
      * method will work).

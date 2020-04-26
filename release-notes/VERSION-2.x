@@ -8,7 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.11.0 (not yet released)
+2.11.1 (not yet released)
+
+-
+
+2.11.0 (26-Apr-2020)
 
 #179: (avro) Add `AvroGenerator.canWriteBinaryNatively()` to support binary writes,
   fix `java.util.UUID` representation

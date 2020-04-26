@@ -93,7 +93,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected long _currInputProcessed;
 
     /**
-     * Alternative to {@link #_tokenInputTotal} that will only contain
+     * Alternative to {@code _tokenInputTotal} that will only contain
      * offset within input buffer, as int.
      */
     protected int _tokenOffsetForTotal;

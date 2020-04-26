@@ -74,7 +74,7 @@ public class AvroFactory
     }
 
     /**
-     * Constructors used by {@link YAMLFactoryBuilder} for instantiation.
+     * Constructors used by {@link AvroFactoryBuilder} for instantiation.
      *
      * @since 3.0
      */

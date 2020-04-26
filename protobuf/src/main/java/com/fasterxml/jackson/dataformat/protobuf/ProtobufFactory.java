@@ -27,7 +27,7 @@ public class ProtobufFactory
     }
 
     /**
-     * Constructors used by {@link CBORFactoryBuilder} for instantiation.
+     * Constructors used by {@link ProtobufFactoryBuilder} for instantiation.
      *
      * @since 3.0
      */
