@@ -28,7 +28,7 @@ Project: jackson-datatypes-binaryModules:
  (reported by Jonas K)
 - `AvroGenerator` overrides `getOutputContext()` properly
 
-2.10.4 (not yet released)
+2.10.4 (03-May-2020)
 
 #202: Parsing a protobuf message doesn't properly skip unknown fields
  (reported by dmitry-timin@github)
