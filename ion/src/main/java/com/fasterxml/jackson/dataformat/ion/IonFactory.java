@@ -135,6 +135,10 @@ public class IonFactory extends JsonFactory {
         return new IonFactory(this, null);
     }
 
+    public IonSystem getIonSystem() {
+        return _system;
+    }
+
     @Override
     public Version version() {
         return PackageVersion.VERSION;
