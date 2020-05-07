@@ -200,6 +200,10 @@ public class IonFactory
     /***************************************************************
      */
 
+    public IonSystem getIonSystem() {
+        return _system;
+    }
+
     public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
         return new IonParser(readCtxt, _createContext(in, false),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
