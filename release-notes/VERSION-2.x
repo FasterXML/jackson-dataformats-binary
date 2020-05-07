@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.12.0 (not yet released)
+
+#204: (ion) Add `IonFactory.getIonSystem()` accessor
+ (contributed by Paul F)
+
 2.11.1 (not yet released)
 
 #204: (ion) Add `IonFactory.getIonSystem()` accessor
