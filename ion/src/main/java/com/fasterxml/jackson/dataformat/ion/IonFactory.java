@@ -192,6 +192,14 @@ public class IonFactory extends JsonFactory {
         return _createGenerator(out, false, _createContext(out, false), out);
     }
 
+    // actually added in 2.10.5 / 2.11.1 but officially part of 2.12 API
+    /**
+     * @since 2.12
+     */
+    public IonSystem getIonSystem() {
+        return _system;
+    }
+
     /**
      * @deprecated Since 2.7
      */
