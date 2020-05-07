@@ -5,6 +5,7 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**
@@ -220,8 +221,8 @@ public class AnySetterTest extends BaseTestForSmile
             MAPPER.readValue(_smileDoc(aposToQuotes("{'value':3}")),
                     MapImitatorDisabled.class);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
-            verifyException(e, "Unrecognized field \"value\"");
+        } catch (UnrecognizedPropertyException e) {
+            verifyException(e, "Unrecognized property \"value\"");
         }
     }
 

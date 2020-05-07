@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 /**
@@ -138,8 +139,8 @@ public class UnknownPropertyDeserTest
     {
         try {
             MAPPER.readValue(cborDoc(JSON_UNKNOWN_FIELD), TestBean.class);
-        } catch (JsonMappingException jex) {
-            verifyException(jex, "Unrecognized field \"foo\"");
+        } catch (UnrecognizedPropertyException jex) {
+            verifyException(jex, "Unrecognized property \"foo\"");
         }
     }
 
@@ -249,8 +250,8 @@ public class UnknownPropertyDeserTest
         doc = cborDoc("{\"a\":1,\"b\":2,\"c\":3,\"fff\":4 }");
         try {
             MAPPER.readValue(doc, ImplicitIgnores.class);
-        } catch (JsonMappingException e) {
-            verifyException(e, "Unrecognized field \"fff\"");
+        } catch (UnrecognizedPropertyException e) {
+            verifyException(e, "Unrecognized property \"fff\"");
         }
     }
 

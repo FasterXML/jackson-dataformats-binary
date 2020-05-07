@@ -3,9 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.mapper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class CaseInsensitiveDeserTest extends BaseTestForSmile
@@ -56,8 +55,8 @@ public class CaseInsensitiveDeserTest extends BaseTestForSmile
         try {
             mapper.readValue(DOC, Issue476Bean.class);
             fail("Should not accept improper case properties by default");
-        } catch (JsonProcessingException e) {
-            verifyException(e, "Unrecognized field");
+        } catch (UnrecognizedPropertyException e) {
+            verifyException(e, "Unrecognized property ");
         }
 
         ObjectReader r = INSENSITIVE_MAPPER.readerFor(Issue476Bean.class);

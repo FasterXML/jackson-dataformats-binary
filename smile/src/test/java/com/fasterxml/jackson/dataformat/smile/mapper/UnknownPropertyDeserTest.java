@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**
@@ -135,8 +136,8 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
     {
         try {
             MAPPER.readValue(_smileDoc(JSON_UNKNOWN_FIELD), TestBean.class);
-        } catch (JsonMappingException jex) {
-            verifyException(jex, "Unrecognized field \"foo\"");
+        } catch (UnrecognizedPropertyException jex) {
+            verifyException(jex, "Unrecognized property \"foo\"");
         }
     }
 
@@ -246,8 +247,8 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         doc = _smileDoc("{\"a\":1,\"b\":2,\"c\":3,\"fffg\":4 }");
         try {
             MAPPER.readValue(doc, ImplicitIgnores.class);
-        } catch (JsonMappingException e) {
-            verifyException(e, "Unrecognized field \"fffg\"");
+        } catch (UnrecognizedPropertyException e) {
+            verifyException(e, "Unrecognized property \"fffg\"");
         }
     }
 
