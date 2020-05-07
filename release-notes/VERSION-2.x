@@ -8,9 +8,14 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.5 (not yet released)
+
+#204: (ion) Add `IonFactory.getIonSystem()` accessor
+ (contributed by Paul F)
+
 2.10.4 (03-May-2020)
 
-#202: Parsing a protobuf message doesn't properly skip unknown fields
+#202: (protobuf) Parsing a protobuf message doesn't properly skip unknown fields
  (reported by dmitry-timin@github)
 
 2.10.3 (03-Mar-2020)
@@ -19,7 +24,7 @@ No changes since 2.10.2
 
 2.10.2 (05-Jan-2020)
 
-#189: IonObjectMapper close()s the provided IonWriter unnecessarily
+#189: (ion) IonObjectMapper close()s the provided IonWriter unnecessarily
  (reported, fix contributed by Zack S)
 - ion-java dependency 1.4.0 -> 1.5.1
 
