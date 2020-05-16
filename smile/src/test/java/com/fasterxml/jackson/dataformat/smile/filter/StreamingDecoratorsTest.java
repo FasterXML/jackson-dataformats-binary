@@ -12,8 +12,9 @@ public class StreamingDecoratorsTest extends BaseTestForSmile
     public void testInputDecorators() throws Exception
     {
         final byte[] DOC = _smileDoc("42   37");
-        final SmileFactory streamF = smileFactory(false,  true,  false);
-        streamF.setInputDecorator(new PrefixInputDecorator(DOC));
+        final SmileFactory streamF = smileFactoryBuilder(false, true, false)
+                .inputDecorator(new PrefixInputDecorator(DOC))
+                .build();
         JsonParser p = streamF.createParser(new byte[0], 0, 0);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(42, p.getIntValue());
@@ -27,8 +28,9 @@ public class StreamingDecoratorsTest extends BaseTestForSmile
     {
         final byte[] DOC = _smileDoc(" 137");
         // important! Do not add document header for this test
-        final SmileFactory streamF = smileFactory(false,  false,  false);
-        streamF.setOutputDecorator(new PrefixOutputDecorator(DOC));
+        final SmileFactory streamF = smileFactoryBuilder(false,  false,  false)
+                .outputDecorator(new PrefixOutputDecorator(DOC))
+                .build();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
         JsonGenerator g = streamF.createGenerator(bytes);

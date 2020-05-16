@@ -12,8 +12,9 @@ public class StreamingDecoratorsTest extends CBORTestBase
     public void testInputDecorators() throws Exception
     {
         final byte[] DOC = cborDoc("42   37");
-        final CBORFactory streamF = cborFactory();
-        streamF.setInputDecorator(new PrefixInputDecorator(DOC));
+        final CBORFactory streamF = cborFactoryBuilder()
+                .inputDecorator(new PrefixInputDecorator(DOC))
+                .build();
         JsonParser p = streamF.createParser(new byte[0], 0, 0);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(42, p.getIntValue());
@@ -26,8 +27,9 @@ public class StreamingDecoratorsTest extends CBORTestBase
     public void testOutputDecorators() throws Exception
     {
         final byte[] DOC = cborDoc(" 137");
-        final CBORFactory streamF = cborFactory();
-        streamF.setOutputDecorator(new PrefixOutputDecorator(DOC));
+        final CBORFactory streamF = cborFactoryBuilder()
+                .outputDecorator(new PrefixOutputDecorator(DOC))
+                .build();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
         JsonGenerator g = streamF.createGenerator(bytes);

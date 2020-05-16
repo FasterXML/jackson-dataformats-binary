@@ -40,13 +40,17 @@ public abstract class CBORTestBase
     protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {
         return f.createParser(in);
     }
-    
+
     protected CBORMapper cborMapper() {
         return new CBORMapper(cborFactory());
     }
-    
+
     protected CBORFactory cborFactory() {
         return new CBORFactory();
+    }
+
+    protected CBORFactoryBuilder cborFactoryBuilder() {
+        return CBORFactory.builder();
     }
 
     protected byte[] cborDoc(String json) throws IOException {

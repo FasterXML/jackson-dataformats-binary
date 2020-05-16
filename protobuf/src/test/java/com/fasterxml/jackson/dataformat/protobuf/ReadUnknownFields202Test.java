@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.fasterxml.jackson.core.JsonParser;
+
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.dataformat.protobuf.*;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 

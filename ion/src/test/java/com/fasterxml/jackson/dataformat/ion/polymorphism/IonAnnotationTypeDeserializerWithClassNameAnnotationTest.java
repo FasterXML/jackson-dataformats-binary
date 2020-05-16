@@ -27,7 +27,8 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
 
     private static IonValue ionValueWithoutAnnotation;
     private static IonValue ionValueWithAnnotation;
-    private IonObjectMapper mapperUnderTest;
+
+    IonObjectMapper mapperUnderTest;
 
     @BeforeClass
     public static void setupClass() throws IOException {
