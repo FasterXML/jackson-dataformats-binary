@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
@@ -403,7 +404,11 @@ public class CBORParser extends ParserMinimalBase
         return 0;
     }
 
-    //public JsonParser overrideFormatFeatures(int values, int mask) {
+    @Override // since 2.12
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
+    }
 
     /*
     /**********************************************************

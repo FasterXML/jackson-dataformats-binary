@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
-
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
 
@@ -140,6 +140,12 @@ public class IonParser
         //This is always false because getText() is more efficient than getTextCharacters().
         // See the javadoc for JsonParser.hasTextCharacters().
         return false;
+    }
+
+    @Override // since 2.12
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
     }
 
     /*

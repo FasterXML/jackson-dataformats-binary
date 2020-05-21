@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
 /**
@@ -296,6 +297,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final JsonParser overrideFormatFeatures(int values, int mask) {
         _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
         return this;
+    }
+
+    @Override // since 2.12
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
     }
 
     /*
@@ -764,7 +771,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
      *
      * @since 2.9
      */
-    @SuppressWarnings("deprecation")
     protected Object _getSourceReference() {
         if (isEnabled(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)) {
             return _ioContext.getSourceReference();
@@ -772,4 +778,3 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return null;
     }
 }
-

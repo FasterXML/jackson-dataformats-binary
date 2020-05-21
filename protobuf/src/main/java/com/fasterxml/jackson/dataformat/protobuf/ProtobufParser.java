@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
@@ -328,6 +329,12 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public void setCodec(ObjectCodec c) {
         _objectCodec = c;
+    }
+
+    @Override // since 2.12
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
     }
 
     /*                                                                                       

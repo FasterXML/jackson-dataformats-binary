@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 import com.fasterxml.jackson.dataformat.avro.deser.MissingReader;
 
@@ -122,6 +122,12 @@ public abstract class AvroParser extends ParserBase
     // ensure impl defines
     @Override
     public abstract JsonParser overrideFormatFeatures(int values, int mask);
+
+    @Override // since 2.12
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
+    }
 
     /*                                                                                       
     /**********************************************************                              
