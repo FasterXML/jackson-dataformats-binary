@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
 public abstract class SmileParserBase extends ParserMinimalBase
@@ -257,23 +258,23 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Extended API
+    /* Capability, config introspection
     /**********************************************************************
-     */
-
-    public final boolean mayContainRawBinary() {
-        return _mayContainRawBinary;
-    }
-    
-    /*                                                                                       
-    /**********************************************************                              
-    /* FormatFeature support                                                                             
-    /**********************************************************                              
      */
 
     @Override
     public final int formatReadFeatures() {
         return _formatFeatures;
+    }
+
+    @Override
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
+    }
+
+    public final boolean mayContainRawBinary() {
+        return _mayContainRawBinary;
     }
 
     /*
@@ -730,4 +731,3 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return null;
     }
 }
-

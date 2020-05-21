@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
@@ -121,6 +122,33 @@ public abstract class AvroParser extends ParserBase
 
     /*
     /**********************************************************************
+    /* Capability introspection
+    /**********************************************************************
+     */
+
+    @Override
+    public final int formatReadFeatures() {
+        return _formatFeatures;
+    }
+
+    @Override
+    public boolean canReadTypeId() {
+        return true;
+    }
+
+    @Override
+    public boolean canUseSchema(FormatSchema schema) {
+        return (schema instanceof AvroSchema);
+    }
+
+    @Override
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
+    }
+
+    /*
+    /**********************************************************************
     /* ParserBase method impls
     /**********************************************************************
      */
@@ -179,11 +207,6 @@ public abstract class AvroParser extends ParserBase
         return (_formatFeatures & f.getMask()) != 0;
     }
 
-    @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof AvroSchema);
-    }
-
     @Override public AvroSchema getSchema() {
         return _rootSchema;
     }
@@ -208,11 +231,6 @@ public abstract class AvroParser extends ParserBase
     }
 
     protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
-
-    @Override
-    public boolean canReadTypeId() {
-        return true;
-    }
 
     @Override
     public Object getTypeId() throws IOException {

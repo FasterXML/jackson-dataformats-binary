@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
@@ -193,6 +194,24 @@ public class CBORParser extends ParserBase
     @Override
     public Version version() {
         return PackageVersion.VERSION;
+    }
+
+    /*
+    /**********************************************************************
+    /* Configuration
+    /**********************************************************************
+     */
+
+    @Override
+    public int formatReadFeatures() {
+        // No parser features, yet
+        return 0;
+    }
+
+    @Override // since 2.12
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
     }
 
     /*

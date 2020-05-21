@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.amazon.ion.*;
 
 /**
@@ -105,15 +106,14 @@ public class IonParser
      */
 
     @Override
-    public boolean hasTextCharacters() {
-        //This is always false because getText() is more efficient than getTextCharacters().
-        // See the javadoc for JsonParser.hasTextCharacters().
-        return false;
+    public final int formatReadFeatures() {
+        return 0;
     }
 
     @Override
-    public IonReader getInputSource() {
-        return _reader;
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
     }
 
     /*
@@ -141,11 +141,23 @@ public class IonParser
         }
     }
 
+    @Override
+    public IonReader getInputSource() {
+        return _reader;
+    }
+
     /*
     /*****************************************************************
     /* JsonParser implementation: Text value access
     /*****************************************************************
-     */  
+     */
+
+    @Override
+    public boolean hasTextCharacters() {
+        //This is always false because getText() is more efficient than getTextCharacters().
+        // See the javadoc for JsonParser.hasTextCharacters().
+        return false;
+    }
 
     @Override
     public String getText() throws IOException

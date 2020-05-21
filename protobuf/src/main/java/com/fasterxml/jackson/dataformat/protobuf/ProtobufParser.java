@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
@@ -329,6 +330,28 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     /*
+    /**********************************************************************
+    /* Capability, config introspection
+    /**********************************************************************
+     */
+
+    @Override
+    public final int formatReadFeatures() {
+        return 0;
+    }
+
+    @Override
+    public boolean canUseSchema(FormatSchema schema) {
+        return (schema instanceof ProtobufSchema);
+    }
+
+    @Override
+    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+        // Defaults are fine
+        return DEFAULT_READ_CAPABILITIES;
+    }
+    
+    /*
     /**********************************************************
     /* Abstract impls
     /**********************************************************
@@ -431,11 +454,6 @@ public class ProtobufParser extends ParserMinimalBase
     /* Overridden methods
     /**********************************************************
      */
-
-    @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof ProtobufSchema);
-    }
 
     @Override public ProtobufSchema getSchema() {
         return _schema;
