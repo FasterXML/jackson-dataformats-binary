@@ -102,11 +102,6 @@ public class IonGenerator
         return PackageVersion.VERSION;
     }
 
-    @Override
-    public int formatWriteFeatures() {
-        return 0; // none defined yet
-    }
-
     /*
     /**********************************************************************
     /* JsonGenerator implementation: state handling
@@ -126,6 +121,23 @@ public class IonGenerator
         _tokenWriteContext.setCurrentValue(v);
     }
 
+    /*
+    /**********************************************************************
+    /* JsonGenerator implementation: low-level I/O
+    /**********************************************************************
+     */
+
+    @Override
+    public int getOutputBuffered() { return -1; }
+
+    @Override
+    public Object getOutputTarget() {
+        // 25-May-2020, tatu: Tricky one here; should we return `IonWriter` or
+        //    actual underlying Writer/OutputStream?
+        //    For now, return underlying Writer/OutputStream
+        return _writer;
+    }
+    
     @Override
     public void close() throws IOException
     {
@@ -179,6 +191,11 @@ public class IonGenerator
     /* JsonGenerator implementation: write numeric values
     /**********************************************************************
      */  
+
+    @Override
+    public void writeNumber(short v) throws IOException {
+        writeNumber((int) v);
+    }
 
     @Override
     public void writeNumber(int value) throws IOException, JsonGenerationException {

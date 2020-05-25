@@ -439,13 +439,6 @@ public class SmileGenerator
         return _outputTail;
     }
 
-//  public JsonParser overrideStdFeatures(int values, int mask)
-
-    @Override
-    public int formatWriteFeatures() {
-        return _formatFeatures;
-    }
-
     /*
     /**********************************************************************
     /* Overridden methods, output context (and related)
@@ -1326,6 +1319,11 @@ public class SmileGenerator
     {
         _verifyValueWrite("write null value");
         _writeByte(TOKEN_LITERAL_NULL);
+    }
+
+    @Override
+    public void writeNumber(short v) throws IOException {
+        writeNumber((int) v);
     }
 
     @Override

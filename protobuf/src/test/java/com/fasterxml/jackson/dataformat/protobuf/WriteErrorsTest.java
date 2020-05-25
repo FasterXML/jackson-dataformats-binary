@@ -46,9 +46,9 @@ public class WriteErrorsTest extends ProtobufTestBase
         // but then not, if we disable checks
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         JsonGenerator g = MAPPER.writer()
+                .with(StreamWriteFeature.IGNORE_UNKNOWN)
                 .with(schema)
                 .createGenerator(bytes);
-        g.enable(StreamWriteFeature.IGNORE_UNKNOWN);
 
         g.writeStartObject();
         g.writeFieldName("x");

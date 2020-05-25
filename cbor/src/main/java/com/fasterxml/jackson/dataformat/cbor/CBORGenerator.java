@@ -317,26 +317,6 @@ public class CBORGenerator extends GeneratorBase
         return _outputTail;
     }
 
-    // public JsonParser overrideStdFeatures(int values, int mask)
-
-    @Override
-    public int formatWriteFeatures() {
-        return _formatFeatures;
-    }
-
-    /*
-    @Override
-    public JsonGenerator overrideFormatFeatures(int values, int mask) {
-        int oldState = _formatFeatures;
-        int newState = (_formatFeatures & ~mask) | (values & mask);
-        if (oldState != newState) {
-            _formatFeatures = newState;
-            _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(newState);
-        }
-        return this;
-    }
-    */
-
     /*
     /**********************************************************************
     /* Overridden methods, output context (and related)
@@ -884,6 +864,12 @@ public class CBORGenerator extends GeneratorBase
     public void writeNull() throws IOException {
         _verifyValueWrite("write null value");
         _writeByte(BYTE_NULL);
+    }
+
+    @Override
+    public void writeNumber(short v) throws IOException {
+        // !!! TODO 25-May-2020, tatu: Should we try to check for more optimal form?
+        writeNumber((int) v);
     }
 
     @Override

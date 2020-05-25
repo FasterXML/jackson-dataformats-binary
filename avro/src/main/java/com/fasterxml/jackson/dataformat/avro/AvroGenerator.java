@@ -197,11 +197,6 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public int formatWriteFeatures() {
-        return _formatWriteFeatures;
-    }
-    
-    @Override
     public Object getOutputTarget() {
         return _output;
     }
@@ -535,13 +530,18 @@ public class AvroGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(int i) throws IOException {
-        _tokenWriteContext.writeValue(Integer.valueOf(i));
+    public void writeNumber(short v) throws IOException {
+        _tokenWriteContext.writeValue(Short.valueOf(v));
     }
 
     @Override
-    public void writeNumber(long l) throws IOException {
-        _tokenWriteContext.writeValue(Long.valueOf(l));
+    public void writeNumber(int v) throws IOException {
+        _tokenWriteContext.writeValue(Integer.valueOf(v));
+    }
+
+    @Override
+    public void writeNumber(long v) throws IOException {
+        _tokenWriteContext.writeValue(Long.valueOf(v));
     }
 
     @Override

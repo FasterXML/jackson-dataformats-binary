@@ -29,7 +29,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
 
         if (lazySetting) {
             g1 = _generator(f);            
-            g1.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
+            g1.configure(StreamWriteFeature.STRICT_DUPLICATE_DETECTION, true);
         } else {
             f = f.rebuild().enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION).build();
             g1 = _generator(f);            
@@ -44,7 +44,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         JsonGenerator g2;
         if (lazySetting) {
             g2 = _generator(f);            
-            g2.enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION);
+            g2.configure(StreamWriteFeature.STRICT_DUPLICATE_DETECTION, true);
         } else {
             g2 = _generator(f);            
         }

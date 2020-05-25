@@ -154,11 +154,6 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
 
-    @Override
-    public int formatWriteFeatures() {
-        return 0; // none defined yet
-    }
-
     /*                                                                                       
     /**********************************************************                              
     /* Versioned                                                                             
@@ -1110,7 +1105,12 @@ public class ProtobufGenerator extends GeneratorBase
             _reportError("Can not omit writing of `null` value for required field '"+_currField.name+"' (type "+_currField.type+")");
         }
     }
-    
+
+    @Override
+    public void writeNumber(short v) throws IOException {
+        writeNumber((int) v);
+    }
+
     @Override
     public void writeNumber(int v) throws IOException
     {
