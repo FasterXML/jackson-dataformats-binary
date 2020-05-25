@@ -57,8 +57,9 @@ public class MapTest extends AvroTestBase
         assertEquals(16, bytes.length); // measured to be current exp size
 
         // and then back. Start with streaming
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("stuff", p.currentName());

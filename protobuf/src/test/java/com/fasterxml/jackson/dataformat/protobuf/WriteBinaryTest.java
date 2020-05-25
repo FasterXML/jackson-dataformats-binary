@@ -53,8 +53,9 @@ public class WriteBinaryTest extends ProtobufTestBase
         _verify(data, result.data);
 
         // and via JsonParser too
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -72,8 +73,9 @@ public class WriteBinaryTest extends ProtobufTestBase
         p.close();
 
         // and with skipping of binary data
-        p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());

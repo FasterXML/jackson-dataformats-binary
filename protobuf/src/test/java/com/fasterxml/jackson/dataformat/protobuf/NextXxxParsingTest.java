@@ -33,8 +33,9 @@ public class NextXxxParsingTest extends ProtobufTestBase
         Strings input = new Strings("Dogs", "like", "Baco\u00F1");
         byte[] bytes = w.writeValueAsBytes(input);
 
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
 
         assertFalse(p.nextFieldName(new SerializedString("values")));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
@@ -69,8 +70,9 @@ public class NextXxxParsingTest extends ProtobufTestBase
         final Point3 input = new Point3(Integer.MAX_VALUE, -1, Integer.MIN_VALUE);
         byte[] bytes = MAPPER.writer(point3Schema).writeValueAsBytes(input);
 
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(point3Schema);
+        JsonParser p = MAPPER.reader()
+                .with(point3Schema)
+                .createParser(bytes);
         assertEquals(-1, p.nextIntValue(-1));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertEquals(-1, p.nextIntValue(-1));

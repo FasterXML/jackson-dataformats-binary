@@ -46,14 +46,6 @@ public class MapperConfigTest extends AvroTestBase
         p = (AvroParser) mapper.createParser(new byte[0]);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
         p.close();
-
-        try {
-            p.setSchema(BOGUS_SCHEMA);
-            fail("Should not pass!");
-        } catch (IllegalArgumentException e) {
-            ; // finel
-        }
-        p.close();
     }
 
     public void testGeneratorDefaults() throws Exception

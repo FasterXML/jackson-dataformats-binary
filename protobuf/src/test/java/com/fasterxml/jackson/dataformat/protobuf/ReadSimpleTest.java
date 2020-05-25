@@ -77,8 +77,9 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("x", p.currentName());
@@ -110,8 +111,9 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("x", p.currentName());
@@ -185,8 +187,9 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
 
         // and also verify via streaming
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertEquals("/", p.getParsingContext().toString());
@@ -215,8 +218,9 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
 
         // and, ditto, but skipping
-        p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -273,8 +277,9 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
 
         // and also verify via streaming
-        JsonParser p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader()
+                .with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -301,8 +306,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
 
         // also, for fun: partial read
-        p = MAPPER.createParser(bytes);
-        p.setSchema(schema);
+        p = MAPPER.reader().with(schema)
+                .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());

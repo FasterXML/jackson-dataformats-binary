@@ -105,8 +105,9 @@ public class WriteStringsTest extends ProtobufTestBase
         g.writeEndObject();
         g.close();
 
-        JsonParser p = MAPPER.createParser(new ByteArrayInputStream(bytes.toByteArray()));
-        p.setSchema(NAME_SCHEMA);
+        JsonParser p = MAPPER.reader()
+                .with(NAME_SCHEMA)
+                .createParser(new ByteArrayInputStream(bytes.toByteArray()));
         
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());

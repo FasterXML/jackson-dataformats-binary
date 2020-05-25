@@ -53,9 +53,10 @@ public class BinaryDataTest extends AvroTestBase
         assertEquals(37, result.size);
 
         // same, but via parser
-        JsonParser p = mapper.createParser(ThrottledInputStream.wrap(
+        JsonParser p = mapper.reader()
+                .with(schema)
+                .createParser(ThrottledInputStream.wrap(
                 new ByteArrayInputStream(ser), 7));
-        p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("filename", p.currentName());

@@ -152,8 +152,8 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
         byte[] protobufData = MAPPER.writer(schema)
                 .writeValueAsBytes(empl);
 
-        JsonParser p = MAPPER.createParser(protobufData);
-        p.setSchema(schema);
+        JsonParser p = MAPPER.reader().with(schema)
+                .createParser(protobufData);
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 

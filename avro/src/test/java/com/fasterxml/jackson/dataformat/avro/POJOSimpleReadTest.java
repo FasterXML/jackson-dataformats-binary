@@ -47,9 +47,9 @@ public class POJOSimpleReadTest extends AvroTestBase
     {
 //        System.out.println("Bytes -> "+avro.length);
         InputStream in = new ByteArrayInputStream(avro);
-        JsonParser p = MAPPER.createParser(smallReads
-                ? ThrottledInputStream.wrap(in, 9) : in);
-        p.setSchema(getEmployeeSchema());
+        JsonParser p = MAPPER.reader()
+                .with(getEmployeeSchema())
+                .createParser(smallReads ? ThrottledInputStream.wrap(in, 9) : in);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         if (!smallReads) {
