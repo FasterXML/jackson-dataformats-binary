@@ -202,12 +202,6 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    @Override
-    public int formatReadFeatures() {
-        // No parser features, yet
-        return 0;
-    }
-
     @Override // since 2.12
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
         // Defaults are fine

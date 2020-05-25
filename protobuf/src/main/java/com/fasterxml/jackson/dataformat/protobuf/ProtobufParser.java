@@ -336,11 +336,6 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public final int formatReadFeatures() {
-        return 0;
-    }
-
-    @Override
     public boolean canUseSchema(FormatSchema schema) {
         return (schema instanceof ProtobufSchema);
     }

@@ -263,11 +263,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     @Override
-    public final int formatReadFeatures() {
-        return _formatFeatures;
-    }
-
-    @Override
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;

@@ -106,11 +106,6 @@ public class IonParser
      */
 
     @Override
-    public final int formatReadFeatures() {
-        return 0;
-    }
-
-    @Override
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;

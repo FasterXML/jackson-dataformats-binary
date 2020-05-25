@@ -127,11 +127,6 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    public final int formatReadFeatures() {
-        return _formatFeatures;
-    }
-
-    @Override
     public boolean canReadTypeId() {
         return true;
     }
