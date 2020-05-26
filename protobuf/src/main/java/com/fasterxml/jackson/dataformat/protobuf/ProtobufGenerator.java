@@ -176,11 +176,6 @@ public class ProtobufGenerator extends GeneratorBase
         return true;
     }
 
-    @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof ProtobufSchema);
-    }
-
     /*
     /**********************************************************
     /* Overridden methods, configuration

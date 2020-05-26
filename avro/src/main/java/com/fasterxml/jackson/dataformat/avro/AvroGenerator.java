@@ -220,11 +220,6 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof AvroSchema);
-    }
-
     // 26-Nov-2019, tatu: [dataformats-binary#179] needed this; could
     //   only add in 2.11
     @Override // since 2.11

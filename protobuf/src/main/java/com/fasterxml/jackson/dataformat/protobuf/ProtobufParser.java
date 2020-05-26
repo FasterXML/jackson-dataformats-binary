@@ -336,11 +336,6 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof ProtobufSchema);
-    }
-
-    @Override
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;

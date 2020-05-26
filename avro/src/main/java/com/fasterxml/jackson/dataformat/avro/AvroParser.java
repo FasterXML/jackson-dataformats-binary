@@ -132,11 +132,6 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public boolean canUseSchema(FormatSchema schema) {
-        return (schema instanceof AvroSchema);
-    }
-
-    @Override
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;
