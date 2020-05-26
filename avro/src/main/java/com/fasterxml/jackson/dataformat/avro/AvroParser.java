@@ -206,22 +206,15 @@ public abstract class AvroParser extends ParserBase
         return _rootSchema;
     }
 
-    @Override
-    public void setSchema(FormatSchema schema)
+    protected void setSchema(AvroSchema schema)
     {
         if (_rootSchema == schema) {
             return;
         }
-        if (schema instanceof AvroSchema) {
-            // 27-Jan-2016, tatu: Crap, can't expose exception directly.
-            try {
-                _initSchema((AvroSchema) schema);
-            } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException(e);
-            }
-        } else {
-            throw new IllegalArgumentException("Can not use FormatSchema of type "
-                    +schema.getClass().getName());
+        try {
+            _initSchema((AvroSchema) schema);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 

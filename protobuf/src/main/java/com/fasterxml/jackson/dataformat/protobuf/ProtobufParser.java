@@ -455,16 +455,6 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public void setSchema(FormatSchema schema)
-    {
-        if (!(schema instanceof ProtobufSchema)) {
-            throw new IllegalArgumentException("Can not use FormatSchema of type "
-                    +schema.getClass().getName());
-        }
-        setSchema((ProtobufSchema) schema);
-    }
-    
-    @Override
     public boolean hasTextCharacters()
     {
         if (_currToken == JsonToken.VALUE_STRING) {
