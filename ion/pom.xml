@@ -19,6 +19,8 @@ tree model)
   <properties>
     <packageVersion.dir>com/fasterxml/jackson/dataformat/ion</packageVersion.dir>
     <packageVersion.package>${project.groupId}.ion</packageVersion.package>
+    <javac.src.version>1.8</javac.src.version>
+    <javac.target.version>1.8</javac.target.version>
   </properties>
 
   <dependencies>
