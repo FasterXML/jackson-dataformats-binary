@@ -289,7 +289,7 @@ public abstract class AvroReaderFactory
                 String valueTypeId = readerSchema.getValueType().getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS);
                 return MapReader.construct(dec, typeId, keyTypeId, valueTypeId);
             }
-            return MapReader.construct(createReader(writerElementType, readerSchema.getElementType()), typeId, keyTypeId);
+            return MapReader.construct(createReader(writerElementType, readerSchema.getValueType()), typeId, keyTypeId);
         }
 
         protected AvroStructureReader createRecordReader(Schema writerSchema, Schema readerSchema)
