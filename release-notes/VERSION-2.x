@@ -38,6 +38,8 @@ Project: jackson-datatypes-binaryModules:
 
 #204: (ion) Add `IonFactory.getIonSystem()` accessor
  (contributed by Paul F)
+#211: (avro) Fix schema evolution involving maps of non-scalar
+ (fix contributed by Marcos P)
 
 2.10.4 (03-May-2020)
 
