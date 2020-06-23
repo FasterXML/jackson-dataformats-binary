@@ -102,8 +102,10 @@ Juliana Amorim (amorimjuliana@github)
 Marcos Passos (marcospassos@github)
 * Contributed fix for #168: (avro) `JsonMappingException` for union types with multiple Record types
  (2.10.0)
-* Contributed fix for #173: (Avro) Improve Union type serialization performance
+* Contributed fix for #173: (avro) Improve Union type serialization performance
  (2.10.0)
+* Contributed fix for #211: (avro) Fix schema evolution involving maps of non-scalar
+ (2.10.5)
 
 John (iziamos@github)
 * Reported, suggested fix for #178: Fix issue wit input offsets when parsing CBOR from `InputStream`
