@@ -116,7 +116,7 @@ ObjectWriteContext writeCtxt, IOContext ctxt,
             gen.writeStartArray();
             break;
         default:
-            gen.writeStartArray(2);
+            gen.writeStartArray(null, 2);
             break;
         }
         gen.writeNumber(levelsLeft);

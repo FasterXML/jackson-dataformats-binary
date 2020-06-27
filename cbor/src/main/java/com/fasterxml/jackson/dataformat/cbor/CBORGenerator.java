@@ -471,10 +471,6 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_ARRAY_INDEFINITE);
     }
 
-    /*
-     * Unlike with JSON, this method is using slightly optimized version since
-     * CBOR has a variant that allows embedding length in array start marker.
-     */
     @Override
     public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
