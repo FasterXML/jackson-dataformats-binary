@@ -286,7 +286,15 @@ public class IonParser
         }
         return null;
     }
-    
+
+    // @TODO -- 27-Jun-2020, tatu: 3.0 requires parser implementations to define
+    //  and I _think_ this should be implemented, assuming Ion allows some Not-a-Number
+    //  values for floating-point types?
+    @Override
+    public boolean isNaN() throws IOException {
+        return false;
+    }
+
     /*
     /****************************************************************
     /* JsonParser implementation: Access to other (non-text/number) values
