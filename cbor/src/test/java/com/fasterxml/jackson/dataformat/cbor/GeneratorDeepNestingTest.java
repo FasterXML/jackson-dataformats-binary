@@ -109,7 +109,7 @@ public class GeneratorDeepNestingTest extends CBORTestBase
             gen.writeStartArray();
             break;
         default:
-            gen.writeStartArray(2);
+            gen.writeStartArray(null, 2);
             break;
         }
         gen.writeNumber(levelsLeft);

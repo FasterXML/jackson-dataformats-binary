@@ -118,7 +118,7 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeFieldId(1506);
         gen.writeString("Fun");
         gen.writeFieldName("Amt");
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
@@ -236,13 +236,13 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeNumber(3);
         gen.writeEndArray();
         gen.writeFieldId(1501);
-        gen.writeStartArray(5);
+        gen.writeStartArray(null, 5);
         gen.writeString("Fun");
         gen.writeNumber(44);
         gen.writeStartArray();
         gen.writeNumber(45);
         gen.writeNumber(46);
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeNumber(47);
         gen.writeNumber(48);
         gen.writeEndArray();
@@ -324,7 +324,7 @@ public class MapAndArrayTest extends CBORTestBase
 
         gen.writeStartArray();
         gen.writeNumber(1);
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
@@ -349,7 +349,7 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = factory.createGenerator(payloadOut);
         gen.writeStartArray();
         gen.writeNumber(1);
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
@@ -357,20 +357,20 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeNumber(4);
         gen.writeNumber(5);
         gen.writeEndArray();
-        gen.writeStartArray(3);
+        gen.writeStartArray(null, 3);
         gen.writeNumber(6);
         gen.writeNumber(7);
         gen.writeStartArray();
         gen.writeNumber(8);
         gen.writeNumber(8);
         gen.writeNumber(8);
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeNumber(1);
         gen.writeNumber(1);
         gen.writeEndArray();
         gen.writeEndArray();
         gen.writeEndArray();
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeNumber(9);
         gen.writeNumber(9);
         gen.writeEndArray();
@@ -395,7 +395,7 @@ public class MapAndArrayTest extends CBORTestBase
         CBORFactory factory = new CBORFactory();
         CBORGenerator gen = factory.createGenerator(payloadOut);
 
-        gen.writeStartArray(4);//      [
+        gen.writeStartArray(null, 4);//      [
         gen.writeNumber(1);    //      [1
         gen.writeStartArray();  //      [1,[_
         gen.writeNumber(2);    //      [1,[_2,
@@ -404,7 +404,7 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeEndArray();    //      [1,[_2,3,4,_]
         gen.writeStartArray();  //      [1,[_2,3,4,_][_
         gen.writeNumber(4);    //      [1,[_2,3,4,_][_4,
-        gen.writeStartArray(2);//      [1,[_2,3,4,_][_4,[
+        gen.writeStartArray(null, 2);//      [1,[_2,3,4,_][_4,[
         gen.writeNumber(5);    //      [1,[_2,3,4,_][_4,[5,
         gen.writeStartArray();  //      [1,[_2,3,4,_][_4,[5,[
         gen.writeNumber(6);    //      [1,[_2,3,4,_][_4,[5,[_6
@@ -413,7 +413,7 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeEndArray();    //      [1,[_2,3,4,_][_4,[5,[_6,6,6]
         gen.writeEndArray();    //      [1,[_2,3,4,_][_4,[5,[_6,6,6]]
         gen.writeEndArray();    //      [1,[_2,3,4,_][_4,[5,[_6,6,6]]]
-        gen.writeStartArray(3);//      [1,[_2,3,4,_][_4,[5,[_6,6,6]]],[
+        gen.writeStartArray(null, 3);//      [1,[_2,3,4,_][_4,[5,[_6,6,6]]],[
         gen.writeNumber(7);    //      [1,[_2,3,4,_][_4,[5,[_6,6,6]]],[7
         gen.writeNumber(8);    //      [1,[_2,3,4,_][_4,[5,[_6,6,6]]],[7,8
         gen.writeStartArray();  //      [1,[_2,3,4,_][_4,[5,[_6,6,6]]],[7,8,[_
@@ -455,9 +455,9 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = factory.createGenerator(payloadOut);
         int size_finite_array = 258;
 
-        gen.writeStartArray(3);
+        gen.writeStartArray(null, 3);
         gen.writeNumber(33);
-        gen.writeStartArray(size_finite_array - 2);
+        gen.writeStartArray(null, size_finite_array - 2);
         for (int i = 0; i < size_finite_array - 2; i++) {
             gen.writeNumber(i + 1);
         }
@@ -479,7 +479,7 @@ public class MapAndArrayTest extends CBORTestBase
         CBORFactory factory = new CBORFactory();
         CBORGenerator gen = factory.createGenerator(payloadOut);
 
-        gen.writeStartArray(2);
+        gen.writeStartArray(null, 2);
         gen.writeString("a");
         gen.writeStartObject();
         gen.writeFieldName("b");

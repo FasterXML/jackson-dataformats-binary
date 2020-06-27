@@ -597,6 +597,23 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
+    @Override // since 2.12
+    public final void writeStartArray(Object forValue) throws IOException
+    {
+        _verifyValueWrite("start an array");
+        _smileContext = _smileContext.createChildArrayContext(forValue);
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+    }
+
+    @Override // since 2.12
+    public final void writeStartArray(Object forValue, int elementsToWrite) throws IOException
+    {
+        _verifyValueWrite("start an array");
+        _smileContext = _smileContext.createChildArrayContext(forValue);
+        _writeByte(TOKEN_LITERAL_START_ARRAY);
+    }
+
+    @Deprecated // since 2.12
     @Override
     public final void writeStartArray(int size) throws IOException
     {
