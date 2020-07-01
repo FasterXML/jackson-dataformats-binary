@@ -268,19 +268,17 @@ public class IonParser
             // harder to pin down exact type. But let's try some checks still.
             switch (type) {
             case DECIMAL:
-                // Could be float, double or big decimal; hard to check, let's choose doubel
-                return NumberType.DOUBLE;
+                //Ion decimals can be arbitrary precision, need to read as big decimal
+                return NumberType.BIG_DECIMAL;
             case INT:
-                // TODO: It would be good if IonReader directly told us which type to use.
-                BigInteger i = _reader.bigIntegerValue();
-                if ((i.compareTo(LONG_MIN_VALUE) < 0) || 
-                        (i.compareTo(LONG_MAX_VALUE) > 0)) {
-                    return NumberType.BIG_INTEGER;
-                } else if ((i.compareTo(INT_MIN_VALUE) < 0) || 
-                        (i.compareTo(INT_MAX_VALUE) > 0)) {
-                    return NumberType.LONG;
-                } else {
+                IntegerSize size = _reader.getIntegerSize();
+                switch (size) {
+                case INT:
                     return NumberType.INT;
+                case LONG:
+                    return NumberType.LONG;
+                default:
+                    return NumberType.BIG_INTEGER;
                 }
             case FLOAT:
                 return NumberType.DOUBLE;
