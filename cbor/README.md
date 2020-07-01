@@ -17,7 +17,7 @@ backends, it implementsfull support for all levels (streaming, data-binding, tre
 
 Minor limitations exist with respect to advanced type-handling of `CBOR` format:
 
-* While tags are written for some types (`BigDecimal`, `BigInteger`), they are not handling on parsing
+* While tags are written for some types (`BigDecimal`, `BigInteger`), they are not handled on parsing
 
 # Maven dependency
 
@@ -27,7 +27,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-cbor</artifactId>
-  <version>2.7.4</version>
+  <version>2.11.1</version>
 </dependency>
 ```
 

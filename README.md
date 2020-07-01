@@ -26,7 +26,7 @@ Currently included backends are:
 * [Avro](avro/) ([Avro format](http://avro.apache.org/docs/current))
 * [CBOR](cbor/) ([CBOR format](https://tools.ietf.org/html/rfc7049))
 * [Ion](ion/) ([Ion format](https://amznlabs.github.io/ion-docs/))
-* [Protobuf](protobuf/) ([Protobuf format](https://github.com/protocolbuffers/protobuf))
+* [Protobuf](protobuf/) ([Protobuf format](https://developers.google.com/protocol-buffers/))
 * [Smile](smile/) ([Smile format](https://github.com/FasterXML/smile-format-specification))
 
 # License
