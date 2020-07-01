@@ -26,38 +26,62 @@ import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.junit.Test;
 
 @SuppressWarnings("resource")
 public class IonParserTest
 {
+    private final IonFactory ionFactory = new IonFactory();
+    
     @Test
-    public void testGetNumberType() throws Exception {
+    public void testGetNumberTypeAndValue() throws Exception {
         IonSystem ion = IonSystemBuilder.standard().build();
  
-        IonValue ionInt = ion.newInt(Integer.MAX_VALUE);
+        Integer intValue = Integer.MAX_VALUE;
+        IonValue ionInt = ion.newInt(intValue);
         final ObjectReadContext EMPTY_READ_CTXT = ObjectReadContext.empty();
 
-        IonParser intParser = new IonFactory().createParser(EMPTY_READ_CTXT, ionInt);
+        IonParser intParser = ionFactory.createParser(EMPTY_READ_CTXT, ionInt);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, intParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.INT, intParser.getNumberType());
+        Assert.assertEquals(intValue, intParser.getNumberValue());
  
-        IonValue ionLong = ion.newInt(Long.MAX_VALUE);
-        IonParser longParser = new IonFactory().createParser(EMPTY_READ_CTXT, ionLong);
+        Long longValue = Long.MAX_VALUE;
+        IonValue ionLong = ion.newInt(longValue);
+        IonParser longParser = ionFactory.createParser(EMPTY_READ_CTXT, ionLong);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, longParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.LONG, longParser.getNumberType());
+        Assert.assertEquals(longValue, longParser.getNumberValue());
  
-        IonValue ionBigInt = ion.newInt(new BigInteger(Long.MAX_VALUE + "1"));
-        IonParser bigIntParser = new IonFactory().createParser(EMPTY_READ_CTXT, ionBigInt);
+        BigInteger bigIntValue = new BigInteger(Long.MAX_VALUE + "1");
+        IonValue ionBigInt = ion.newInt(bigIntValue);
+        IonParser bigIntParser = ionFactory.createParser(EMPTY_READ_CTXT, ionBigInt);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntParser.getNumberType());
- 
-        // JoiParser is currently deficient with decimals -- all decimals are reported as Double. So this is all we can test.
-        IonValue ionDecimal = ion.newDecimal(Double.MAX_VALUE);
-        IonParser floatParser = new IonFactory().createParser(EMPTY_READ_CTXT, ionDecimal);
+        Assert.assertEquals(bigIntValue, bigIntParser.getNumberValue());
+
+        Double decimalValue = Double.MAX_VALUE;
+        IonValue ionDecimal = ion.newDecimal(decimalValue);
+        IonParser decimalParser = ionFactory.createParser(EMPTY_READ_CTXT, ionDecimal);
+        Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, decimalParser.nextToken());
+        Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, decimalParser.getNumberType());
+        Assert.assertTrue(new BigDecimal("" + decimalValue).compareTo((BigDecimal)decimalParser.getNumberValue()) == 0);
+
+        Double floatValue = Double.MAX_VALUE;
+        IonValue ionFloat = ion.newFloat(floatValue);
+        IonParser floatParser = ionFactory.createParser(EMPTY_READ_CTXT, ionFloat);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
+        Assert.assertEquals(floatValue, floatParser.getNumberValue());
+
+        BigDecimal bigDecimalValue = new BigDecimal(Double.MAX_VALUE + "1");
+        IonValue ionBigDecimal = ion.newDecimal(bigDecimalValue);
+        IonParser bigDecimalParser = ionFactory.createParser(EMPTY_READ_CTXT, ionBigDecimal);
+        Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, bigDecimalParser.nextToken());
+        Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, bigDecimalParser.getNumberType());
+        Assert.assertTrue(bigDecimalValue.compareTo((BigDecimal)bigDecimalParser.getNumberValue()) == 0);
     }
 
     @Test
@@ -75,7 +99,7 @@ public class IonParserTest
         reader.stepIn();
         // Step next.
         reader.next();
-        final IonParser floatParser = new IonFactory().createParser(ctxt, reader);
+        final IonParser floatParser = ionFactory.createParser(ctxt, reader);
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
     }
 }
