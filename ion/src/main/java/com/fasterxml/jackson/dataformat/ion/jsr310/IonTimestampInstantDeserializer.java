@@ -14,13 +14,11 @@ import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
 /**
@@ -30,10 +28,7 @@ import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
  * @param <T>  The type of a instant class that can be deserialized.
  */
 public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScalarDeserializer<T> 
-        implements ContextualDeserializer {
-
-    private static final long serialVersionUID = 1L;
-
+{
     public static final IonTimestampInstantDeserializer<Instant> INSTANT = 
             new IonTimestampInstantDeserializer<>(Instant.class, (instant, zoneID) -> instant);
 
@@ -66,9 +61,9 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
 
     @SuppressWarnings("unchecked")
     @Override
-    public T deserialize(JsonParser p, DeserializationContext context) throws IOException, JsonProcessingException {
+    public T deserialize(JsonParser p, DeserializationContext context) throws IOException {
         final ZoneId defaultZoneId = context.getTimeZone().toZoneId().normalized();
-        switch (p.getCurrentToken()) {
+        switch (p.currentToken()) {
         case VALUE_NUMBER_FLOAT:
             return fromDecimal(p.getDecimalValue(), defaultZoneId);
         case VALUE_NUMBER_INT:
@@ -80,7 +75,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
             }
         default:
             try {
-                return (T) context.handleUnexpectedToken(_valueClass, p);
+                return (T) context.handleUnexpectedToken(getValueType(context), p);
             } catch (JsonMappingException e) {
                 throw e;
             } catch (IOException e) {

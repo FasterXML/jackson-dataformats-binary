@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
@@ -29,10 +28,7 @@ import com.fasterxml.jackson.dataformat.ion.IonGenerator;
  * @param <T>  The type of a instant class that can be serialized.
  */
 public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalarSerializer<T>
-        implements ContextualSerializer {
-
-    private static final long serialVersionUID = 1L;
-
+{
     public static final IonTimestampInstantSerializer<Instant> INSTANT = 
             new IonTimestampInstantSerializer<>(Instant.class, 
                     Function.identity(),
@@ -85,8 +81,7 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
     protected IonTimestampInstantSerializer(IonTimestampInstantSerializer<T> base,
             ZoneId zoneIdOverride,
             Boolean writeDateTimestampsAsNanosOverride) {
-
-        super(base.handledType());
+        super(base);
         this.getInstant = base.getInstant;
         this.getOffset = base.getOffset;
         this.getOffsetAtZoneId = base.getOffsetAtZoneId;
