@@ -35,13 +35,13 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
 
     public static final IonTimestampInstantSerializer<Instant> INSTANT = 
             new IonTimestampInstantSerializer<>(Instant.class, 
-            		Function.identity(),
+                    Function.identity(),
                     (instant) -> ZoneOffset.UTC,
                     (instant, zoneId) -> instant.atZone(zoneId).getOffset());
     
     public static final IonTimestampInstantSerializer<OffsetDateTime> OFFSET_DATE_TIME = 
             new IonTimestampInstantSerializer<>(OffsetDateTime.class,
-            		OffsetDateTime::toInstant,
+                    OffsetDateTime::toInstant,
                     OffsetDateTime::getOffset,
                     (offsetDateTime, zoneId) -> offsetDateTime.atZoneSameInstant(zoneId).getOffset());
     
@@ -51,9 +51,9 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
      */
     public static final IonTimestampInstantSerializer<ZonedDateTime> ZONED_DATE_TIME = 
             new IonTimestampInstantSerializer<>(ZonedDateTime.class,
-            		ZonedDateTime::toInstant,
-            		ZonedDateTime::getOffset,
-            		(zonedDateTime, zoneId) -> zonedDateTime.withZoneSameInstant(zoneId).getOffset());
+                    ZonedDateTime::toInstant,
+                    ZonedDateTime::getOffset,
+                    (zonedDateTime, zoneId) -> zonedDateTime.withZoneSameInstant(zoneId).getOffset());
     
     private final Function<T, Instant> getInstant;
     private final Function<T, ZoneOffset> getOffset;
