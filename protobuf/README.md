@@ -1,12 +1,13 @@
 ## Overview
 
-Project contains [Jackson](../../../jackson) extension component
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf)
+
+Project contains [Jackson](../../../../jackson) extension component
 for reading and writing [Protobuf](http://code.google.com/p/protobuf/) encoded data (see
 [protobuf encoding spec](https://developers.google.com/protocol-buffers/docs/encoding)).
 This project adds necessary abstractions on top to make things work with other Jackson functionality;
 mostly just low-level Streaming components (`JsonFactory`, `JsonParser`, `JsonGenerator`).
-
-Project is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 
 ## Dependencies
 
@@ -17,13 +18,6 @@ Project does NOT depend on the official [Google Java protobuf](https://github.co
 it may be used for conformance testing purposes in future.
 
 Protobuf module requires Java 7.
-
-# Status
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf/)
-[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-protobuf)
-
-With release 2.6.0 (Jul-2015), this module is considered stable, although number of production deployments is still limited.
 
 # Functionality
 
