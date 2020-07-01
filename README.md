@@ -11,26 +11,23 @@ For Jackson 2.x this is done by sub-classing Jackson core abstractions of:
 
 * All backends sub-class `JsonFactory`, which is factory for:
     * `JsonParser` for reading data (decoding data encoding in supported format)
-        * `JsonGenerator` for writing data (encoding data using supported format)
-	* Some backends sub-class `ObjectMapper` for additional support for databinding
-
-there will be some changes (such as introduction of format-specific `ObjectMapper`
-sub-classes) in Jackson 3.0.
+    * `JsonGenerator` for writing data (encoding data using supported format)
+* Starting with 2.10 there is also sub-class of `ObjectMapper` (like `CBORMapper`, `SmileMapper`) for all formats, mostly for convenience
+* Jackson 2.10 also added "Builder" style construction for above-mentioned factories, mappers.
 
 # Status
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
 
-
-# Binary formats included
+# Binary formats supported
 
 Currently included backends are:
 
-* [Avro](avro/)
-* [CBOR](cbor/)
-* [Ion](ion/)
-* [Protobuf](protobuf/)
-* [Smile](smile/)
+* [Avro](avro/) ([Avro format](http://avro.apache.org/docs/current))
+* [CBOR](cbor/) ([CBOR format](https://tools.ietf.org/html/rfc7049))
+* [Ion](ion/) ([Ion format](https://amznlabs.github.io/ion-docs/))
+* [Protobuf](protobuf/) ([Protobuf format](https://github.com/protocolbuffers/protobuf))
+* [Smile](smile/) ([Smile format](https://github.com/FasterXML/smile-format-specification))
 
 # License
 
