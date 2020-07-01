@@ -1,6 +1,6 @@
 ## Overview
 
-[Jackson](/FasterXML/jackson) (Java) data format module that supports reading and writing 
+[Jackson](../../../jackson) (Java) data format module that supports reading and writing 
 [CBOR](https://www.rfc-editor.org/info/rfc7049)
 ("Concise Binary Object Representation") encoded data.
 Module extends standard Jackson streaming API (`JsonFactory`, `JsonParser`, `JsonGenerator`), and as such works seamlessly with all the higher level data abstractions (data binding, tree model, and pluggable extensions).
