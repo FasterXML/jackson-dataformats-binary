@@ -133,4 +133,9 @@ Jonas Konrad (yawkat@github)
 * Reported, contributed fix for #201: `CBORGenerator.Feature.WRITE_MINIMAL_INTS` does not write
   most compact form for all integers
  (2.11.0)
- 
+
+Michael Liedtke (mcliedtke@github)
+
+* Contributed fix for #212: (ion) Optimize `IonParser.getNumberType()` using
+  `IonReader.getIntegerSize()`
+ (2.12.0)
