@@ -1,4 +1,4 @@
-## Overview
+# Overview
 
 This is a multi-module umbrella project for [Jackson](../../../jackson)
 standard binary dataformat backends.
@@ -17,21 +17,12 @@ For Jackson 2.x this is done by sub-classing Jackson core abstractions of:
 there will be some changes (such as introduction of format-specific `ObjectMapper`
 sub-classes) in Jackson 3.0.
 
-## Branches
+# Status
 
-`master` branch is for developing the next major Jackson version -- 3.0 -- but there
-are active maintenance branches in which much of development happens:
+[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
 
-* `2.11` is for developing the next 2.x version
-* `2.10` are for backported fixes for 2.10 version
 
-Older branches are usually not changed but are available for historic reasons.
-All released versions have matching git tags (`jackson-dataformats-binary-2.9.4`).
-
-Note that since individual format modules used to live in their own repositories,
-older branches (before 2.8) and tags do not exist in this repository.
-
-## Binary formats included
+# Binary formats included
 
 Currently included backends are:
 
@@ -41,15 +32,11 @@ Currently included backends are:
 * [Protobuf](protobuf/)
 * [Smile](smile/)
 
-## License
+# License
 
 All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 
-## Status
-
-[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
-
-## Maven dependencies
+# Maven dependencies
 
 To use these format backends Maven-based projects, use following dependency:
 
@@ -63,7 +50,34 @@ To use these format backends Maven-based projects, use following dependency:
 
 where `[FORMAT]` is one of supported modules (`avro`, `cbor`, `smile` etc)
 
-## Other Jackson binary backends
+# Development
+
+## Maintainers
+
+* Author: Tatu Saloranta (@cowtowncoder)
+* Active Maintainers:
+    * Michael Liedtke (@mcliedtke) (Ion backend)
+
+You may at-reference them as necessary but please keep in mind that all
+maintenance work is strictly voluntary (no one gets paid to work on this
+or any other Jackson components) so there is no guarantee for timeliness of
+responses.
+
+## Branches
+
+`master` branch is for developing the next major Jackson version -- 3.0 -- but there
+are active maintenance branches in which much of development happens:
+
+* `2.12` is for developing the next 2.x version
+* `2.11` are for backported fixes for 2.11 version
+
+Older branches are usually not changed but are available for historic reasons.
+All released versions have matching git tags (`jackson-dataformats-binary-2.10.3`).
+
+Note that since individual format modules used to live in their own repositories,
+older branches (before 2.8) and tags do not exist in this repository.
+
+# Other Jackson binary backends
 
 In addition to binary format backends hosted by FasterXML in this repo, there are other
 known Jackson backends for binary data formats.
@@ -73,6 +87,6 @@ For example:
 * [EXIficient](https://github.com/EXIficient/exificient-for-json) for [Efficient XML Interchange](https://en.wikipedia.org/wiki/Efficient_XML_Interchange)
 * [jackson-dataformat-msgpack](https://github.com/msgpack/msgpack-java/tree/develop/msgpack-jackson) for [MessagePack](http://en.wikipedia.org/wiki/MessagePack) (aka `MsgPack`) format
 
-## More
+# More
 
 See [Wiki](../../wiki) for more information (javadocs).
