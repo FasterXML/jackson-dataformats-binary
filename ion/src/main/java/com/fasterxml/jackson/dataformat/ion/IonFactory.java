@@ -40,9 +40,9 @@ public class IonFactory
     implements java.io.Serializable
 {
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Constants
-    /**********************************************************
+    /**********************************************************************
      */
 
     private static final long serialVersionUID = 1L;
@@ -55,9 +55,9 @@ public class IonFactory
     final static boolean DEFAULT_CREATE_BINARY = false;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -148,11 +148,11 @@ public class IonFactory
     public TokenStreamFactory snapshot() {
         return this;
     }
-    
+
     /*                                                                                       
-    /**********************************************************                              
+    /**********************************************************************
     /* Basic introspection                                                                  
-    /**********************************************************                              
+    /**********************************************************************
      */
     
     @Override
@@ -171,11 +171,11 @@ public class IonFactory
         // 30-Sep-2017, tatu: No async implementation exists
         return false;
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Data format support
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -193,39 +193,11 @@ public class IonFactory
 
     @Override
     public int getFormatWriteFeatures() { return 0; }
-    
-    /*
-    /***************************************************************
-    /* Extended API
-    /***************************************************************
-     */
-
-    public IonSystem getIonSystem() {
-        return _system;
-    }
-
-    public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
-        return new IonParser(readCtxt, _createContext(in, false),
-                readCtxt.getStreamReadFeatures(_streamReadFeatures),
-                in, _system);
-    }
-
-    public IonParser createParser(ObjectReadContext readCtxt, IonValue value) {
-        IonReader in = value.getSystem().newReader(value);
-        return new IonParser(readCtxt, _createContext(in, true),
-                readCtxt.getStreamReadFeatures(_streamReadFeatures),
-                in, _system);
-    }
-
-    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, IonWriter out) {
-        return _createGenerator(writeCtxt, _createContext(out, false),
-                out, false, out);
-    }
 
     /*
-    /***************************************************************
+    /**********************************************************************
     /* Factory methods: parsers
-    /***************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -302,11 +274,11 @@ public class IonFactory
     public JsonParser createParser(ObjectReadContext readCtxt, DataInput in) throws IOException {
         return _unsupported();
     }        
-    
+
     /*
-    /***************************************************************
+    /**********************************************************************
     /* Factory methods: generators
-    /***************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -338,9 +310,37 @@ public class IonFactory
     }
 
     /*
-    /***************************************************************
+    /**********************************************************************
+    /* Extended API: additional factory methods, accessors
+    /**********************************************************************
+     */
+
+    public IonSystem getIonSystem() {
+        return _system;
+    }
+
+    public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
+        return new IonParser(readCtxt, _createContext(in, false),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                in, _system);
+    }
+
+    public IonParser createParser(ObjectReadContext readCtxt, IonValue value) {
+        IonReader in = value.getSystem().newReader(value);
+        return new IonParser(readCtxt, _createContext(in, true),
+                readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                in, _system);
+    }
+
+    public IonGenerator createGenerator(ObjectWriteContext writeCtxt, IonWriter out) {
+        return _createGenerator(writeCtxt, _createContext(out, false),
+                out, false, out);
+    }
+
+    /*
+    /**********************************************************************
     /* Helper methods, parsers
-    /***************************************************************
+    /**********************************************************************
      */
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, InputStream in)
@@ -378,9 +378,9 @@ public class IonFactory
     }
 
     /*
-    /***************************************************************
+    /**********************************************************************
     /* Helper methods, generators
-    /***************************************************************
+    /**********************************************************************
      */
 
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
