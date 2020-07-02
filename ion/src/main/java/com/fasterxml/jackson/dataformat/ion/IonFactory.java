@@ -185,6 +185,8 @@ public class IonFactory extends JsonFactory {
         return new IonParser(in, _system, _createContext(in, true), getCodec());
     }
 
+    // NOTE! Suboptimal return type -- but can't change safely before 3.0 as return
+    // type is part of signature
     /**
      * @since 2.7
      */

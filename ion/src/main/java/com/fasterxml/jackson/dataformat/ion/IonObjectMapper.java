@@ -77,7 +77,6 @@ public class IonObjectMapper extends ObjectMapper
         super(src);
     }
 
-    @SuppressWarnings("unchecked")
     public static Builder builder() {
         return new Builder(new IonObjectMapper());
     }
@@ -108,6 +107,43 @@ public class IonObjectMapper extends ObjectMapper
 
     /*
      ************************************************************************
+     * Convenience factory methods added in 2.12 (similar to ones added in
+     * core in 2.11)
+     ************************************************************************
+     */
+
+    /**
+     * @since 2.12
+     */
+    public IonParser createParser(IonReader reader) throws IOException {
+        _assertNotNull("value", reader);
+        IonParser p = getFactory().createParser(reader);
+        _deserializationConfig.initialize(p);
+        return p;
+    }
+
+    /**
+     * @since 2.12
+     */
+    public IonParser createParser(IonValue value) throws IOException {
+        _assertNotNull("value", value);
+        IonParser p = getFactory().createParser(value);
+        _deserializationConfig.initialize(p);
+        return p;
+    }
+
+    /**
+     * @since 2.12
+     */
+    public IonGenerator createGenerator(IonWriter writer) throws IOException {
+        _assertNotNull("writer", writer);
+        IonGenerator g = (IonGenerator) getFactory().createGenerator(writer);
+        _serializationConfig.initialize(g);
+        return g;
+    }
+
+    /*
+     ************************************************************************
      * Convenience read/write methods for IonReader, IonWriter, and IonValue,
      * by analogy with the existing convenience methods of ObjectMapper
      ************************************************************************
@@ -121,7 +157,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, Class<T> valueType) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(r), _typeFactory.constructType(valueType));
+        return (T)_readMapAndClose(createParser(r), _typeFactory.constructType(valueType));
     }
 
     /**
@@ -132,7 +168,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(r), _typeFactory.constructType(valueTypeRef));
+        return (T)_readMapAndClose(createParser(r), _typeFactory.constructType(valueTypeRef));
     }
 
     /**
@@ -143,7 +179,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, JavaType valueType) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(r), valueType);
+        return (T)_readMapAndClose(createParser(r), valueType);
     }
 
     /**
@@ -151,7 +187,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, Class<T> valueType) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(value), _typeFactory.constructType(valueType));
+        return (T)_readMapAndClose(createParser(value), _typeFactory.constructType(valueType));
     }
 
     /**
@@ -159,7 +195,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonValue value, TypeReference valueTypeRef) throws IOException {
-        return (T)_readMapAndClose(getFactory().createParser(value), _typeFactory.constructType(valueTypeRef));
+        return (T)_readMapAndClose(createParser(value), _typeFactory.constructType(valueTypeRef));
     }
 
     /**
@@ -167,7 +203,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonValue value, JavaType valueType) throws IOException  {
-        return (T)_readMapAndClose(getFactory().createParser(value), valueType);
+        return (T)_readMapAndClose(createParser(value), valueType);
     }
 
     /**
@@ -177,7 +213,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying writer explicitly
      */
     public void writeValue(IonWriter w, Object value) throws IOException {
-        _configAndWriteValue(getFactory().createGenerator(w), value);
+        _writeValueAndClose(createGenerator(w), value);
     }
 
     /**
