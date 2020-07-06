@@ -14,6 +14,7 @@ Project: jackson-datatypes-binaryModules:
  (contributed by Paul F)
 #212: (ion) Optimize `IonParser.getNumberType()` using `IonReader.getIntegerSize()`
  (contributed by Michael L)
+- Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
 2.11.1 (25-Jun-2020)
 
