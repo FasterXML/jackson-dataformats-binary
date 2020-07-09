@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
 import com.fasterxml.jackson.core.json.DupDetector;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
@@ -424,6 +425,11 @@ public class SmileGenerator
         return true;
     }
 
+    @Override // @since 2.12
+    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+        return DEFAULT_BINARY_WRITE_CAPABILITIES;
+    }
+
     /*
     /**********************************************************
     /* Overridden methods, configuration
@@ -435,8 +441,7 @@ public class SmileGenerator
      * (should we throw an exception instead?)
      */
     @Override
-    public JsonGenerator useDefaultPrettyPrinter()
-    {
+    public JsonGenerator useDefaultPrettyPrinter() {
         return this;
     }
 
