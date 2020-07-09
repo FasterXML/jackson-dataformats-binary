@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
 import com.fasterxml.jackson.core.json.DupDetector;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
@@ -421,6 +422,11 @@ public class SmileGenerator
     @Override
     public boolean canWriteBinaryNatively() {
         return true;
+    }
+
+    @Override // @since 2.12
+    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+        return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
     /*
