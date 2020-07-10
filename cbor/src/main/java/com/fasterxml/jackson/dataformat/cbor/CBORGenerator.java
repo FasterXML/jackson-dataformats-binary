@@ -63,7 +63,9 @@ public class CBORGenerator extends GeneratorBase
          *
          * @since 2.5
          */
-        WRITE_TYPE_HEADER(false), ;
+        WRITE_TYPE_HEADER(false)
+
+        ;
 
         protected final boolean _defaultState;
         protected final int _mask;
