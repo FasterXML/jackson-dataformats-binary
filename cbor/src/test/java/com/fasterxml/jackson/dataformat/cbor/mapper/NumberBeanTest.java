@@ -1,6 +1,16 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class NumberBeanTest extends CBORTestBase
@@ -17,6 +27,23 @@ public class NumberBeanTest extends CBORTestBase
 
         public LongBean(long v) { value = v; }
         protected LongBean() { }
+    }
+
+    static class NumberWrapper {
+        public Number nr;
+    }
+
+    // // Copied form "JDKNumberDeserTest", related to BigDecimal precision
+    // // retaining through buffering
+
+    // [databind#2784]
+    static class BigDecimalHolder2784 {
+        public BigDecimal value;
+    }
+
+    static class NestedBigDecimalHolder2784 {
+        @JsonUnwrapped
+        public BigDecimalHolder2784 holder;
     }
 
     /*
@@ -66,5 +93,146 @@ public class NumberBeanTest extends CBORTestBase
         assertEquals(1, result.length);
         assertEquals(Float.class, result[0].getClass());
         assertEquals(input[0], result[0]);
+    }
+
+    public void testNumberTypeRetainingInt() throws Exception
+    {
+        NumberWrapper result;
+        ByteArrayOutputStream bytes;
+
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("nr", 123);
+            g.writeEndObject();
+        }
+        result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
+        assertEquals(Integer.valueOf(123), result.nr);
+
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("nr", Long.MAX_VALUE);
+            g.writeEndObject();
+        }
+        result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
+        assertEquals(Long.valueOf(Long.MAX_VALUE), result.nr);
+
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("nr", BigInteger.valueOf(-42L));
+            g.writeEndObject();
+        }
+        result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
+        assertEquals(BigInteger.valueOf(-42L), result.nr);
+    }
+
+    public void testNumberTypeRetainingFP() throws Exception
+    {
+        NumberWrapper result;
+        ByteArrayOutputStream bytes;
+
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("nr", 0.25f);
+            g.writeEndObject();
+        }
+        result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
+        assertEquals(Float.valueOf(0.25f), result.nr);
+
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("nr", 0.5);
+            g.writeEndObject();
+        }
+        result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
+        assertEquals(Double.valueOf(0.5), result.nr);
+
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("nr", new BigDecimal("0.100"));
+            g.writeEndObject();
+        }
+        result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
+        assertEquals(new BigDecimal("0.100"), result.nr);
+    }
+
+    public void testNumberTypeRetainingBuffering() throws Exception
+    {
+        ByteArrayOutputStream bytes;
+
+        CBORFactory f = cborFactoryBuilder()
+                .disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .build();
+        final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
+        
+        bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(f, bytes)) {
+            g.writeStartArray();
+            g.writeNumber(101);
+            g.writeNumber(0.25);
+            g.writeNumber(13117L);
+            g.writeNumber(0.5f);
+            g.writeNumber(BigInteger.valueOf(1972));
+            g.writeNumber(EXP_BIG_DEC);
+            g.writeEndArray();
+        }
+
+        try (CBORParser p = cborParser(bytes.toByteArray())) {
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(NumberType.INT, p.getNumberType());
+            assertEquals(Integer.valueOf(101), p.getNumberValue());
+            assertEquals(Integer.valueOf(101), p.getNumberValueExact());
+
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(NumberType.DOUBLE, p.getNumberType());
+            assertEquals(Double.valueOf(0.25), p.getNumberValue());
+            assertEquals(Double.valueOf(0.25), p.getNumberValueExact());
+            
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(NumberType.LONG, p.getNumberType());
+            assertEquals(Long.valueOf(13117L), p.getNumberValue());
+            assertEquals(Long.valueOf(13117L), p.getNumberValueExact());
+
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(NumberType.FLOAT, p.getNumberType());
+            assertEquals(Float.valueOf(0.5f), p.getNumberValue());
+            assertEquals(Float.valueOf(0.5f), p.getNumberValueExact());
+            
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
+            assertEquals(BigInteger.valueOf(1972), p.getNumberValue());
+            assertEquals(BigInteger.valueOf(1972), p.getNumberValueExact());
+
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, p.getNumberType());
+            assertEquals(EXP_BIG_DEC, p.getNumberValue());
+            assertEquals(EXP_BIG_DEC, p.getNumberValueExact());
+            
+            assertToken(JsonToken.END_ARRAY, p.nextToken());
+        }
+    }
+    
+    // [databind#2784]
+    public void testBigDecimalWithBuffering() throws Exception
+    {
+        final BigDecimal VALUE = new BigDecimal("5.00");
+        // Need to generate by hand since JSON would not indicate desire for BigDecimal
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (CBORGenerator g = cborGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("value", VALUE);
+            g.writeEndObject();
+        }
+        
+        NestedBigDecimalHolder2784 result = MAPPER.readValue(bytes.toByteArray(),
+                NestedBigDecimalHolder2784.class);
+        assertEquals(VALUE, result.holder.value);
     }
 }

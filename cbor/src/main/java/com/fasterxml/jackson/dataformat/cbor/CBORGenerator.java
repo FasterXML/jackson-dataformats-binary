@@ -61,7 +61,9 @@ public class CBORGenerator extends GeneratorBase
          * Default value is <code>false</code> meaning that type tag will not be
          * written at the beginning of a new document.
          */
-        WRITE_TYPE_HEADER(false), ;
+        WRITE_TYPE_HEADER(false)
+
+        ;
 
         protected final boolean _defaultState;
         protected final int _mask;
