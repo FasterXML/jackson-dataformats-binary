@@ -5,10 +5,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
@@ -165,13 +168,12 @@ public class NumberBeanTest extends CBORTestBase
     {
         ByteArrayOutputStream bytes;
 
-        CBORFactory f = cborFactoryBuilder()
-                .disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
-                .build();
+        ObjectWriter w = MAPPER.writer()
+                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS);
         final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
         
         bytes = new ByteArrayOutputStream();
-        try (CBORGenerator g = cborGenerator(f, bytes)) {
+        try (JsonGenerator g = w.createGenerator(bytes)) {
             g.writeStartArray();
             g.writeNumber(101);
             g.writeNumber(0.25);

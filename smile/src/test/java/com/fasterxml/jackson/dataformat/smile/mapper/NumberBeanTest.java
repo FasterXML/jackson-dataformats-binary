@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,7 +70,7 @@ public class NumberBeanTest extends BaseTestForSmile
         ByteArrayOutputStream bytes;
 
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("nr", 123);
             g.writeEndObject();
@@ -78,7 +79,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(Integer.valueOf(123), result.nr);
 
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("nr", Long.MAX_VALUE);
             g.writeEndObject();
@@ -87,7 +88,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(Long.valueOf(Long.MAX_VALUE), result.nr);
 
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("nr", BigInteger.valueOf(-42L));
             g.writeEndObject();
@@ -102,7 +103,7 @@ public class NumberBeanTest extends BaseTestForSmile
         ByteArrayOutputStream bytes;
 
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("nr", 0.25f);
             g.writeEndObject();
@@ -111,7 +112,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(Float.valueOf(0.25f), result.nr);
 
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("nr", 0.5);
             g.writeEndObject();
@@ -120,7 +121,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(Double.valueOf(0.5), result.nr);
 
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("nr", new BigDecimal("0.100"));
             g.writeEndObject();
@@ -135,7 +136,7 @@ public class NumberBeanTest extends BaseTestForSmile
         final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
         
         bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartArray();
             g.writeNumber(101);
             g.writeNumber(0.25);
@@ -146,7 +147,7 @@ public class NumberBeanTest extends BaseTestForSmile
             g.writeEndArray();
         }
 
-        try (SmileParser p = _smileParser(bytes.toByteArray(), true)) {
+        try (JsonParser p = _smileParser(bytes.toByteArray(), true)) {
             assertToken(JsonToken.START_ARRAY, p.nextToken());
 
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -189,7 +190,7 @@ public class NumberBeanTest extends BaseTestForSmile
         final BigDecimal VALUE = new BigDecimal("5.00");
         // Need to generate by hand since JSON would not indicate desire for BigDecimal
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try (SmileGenerator g = smileGenerator(bytes, true)) {
+        try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartObject();
             g.writeNumberField("value", VALUE);
             g.writeEndObject();
