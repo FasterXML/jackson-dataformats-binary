@@ -29,7 +29,7 @@ Project: jackson-datatypes-binaryModules:
  (reported by Jonas K)
 - `AvroGenerator` overrides `getOutputContext()` properly
 
-2.10.5 (not yet released)
+2.10.5 (21-Jul-2020)
 
 #204: (ion) Add `IonFactory.getIonSystem()` accessor
  (contributed by Paul F)
