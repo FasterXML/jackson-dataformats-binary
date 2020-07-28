@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.11.2 (not yet released)
+
+#216: (avro) Avro null deserialization
+ (fix contributed by Marcos P)
+
 2.11.1 (25-Jun-2020)
 
 #204: (ion) Add `IonFactory.getIonSystem()` accessor

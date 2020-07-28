@@ -106,6 +106,8 @@ Marcos Passos (marcospassos@github)
  (2.10.0)
 * Contributed fix for #211: (avro) Fix schema evolution involving maps of non-scalar
  (2.10.5)
+* Contributed fix for #216: (avro) Avro null deserialization
+ (2.11.2)
 
 John (iziamos@github)
 * Reported, suggested fix for #178: Fix issue wit input offsets when parsing CBOR from `InputStream`
