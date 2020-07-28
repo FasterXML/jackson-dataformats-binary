@@ -66,6 +66,7 @@ public class RecordEvolutionTest extends AvroTestBase
 			this.preferences = preferences;
 		}
 
+		@Override
 		public boolean equals(final Object object) {
 			if (this == object) {
 				return true;
@@ -81,6 +82,7 @@ public class RecordEvolutionTest extends AvroTestBase
 				preferences.equals(user.preferences);
 		}
 
+          @Override
 		public int hashCode() {
 			return Objects.hash(name, preferences);
 		}
@@ -94,46 +96,45 @@ public class RecordEvolutionTest extends AvroTestBase
 		}
 	}
 
-	static class UserV2 {
-		public String fullName;
-		public Map<String, List<String>> preferences;
+    static class UserV2 {
+        public String fullName;
+        public Map<String, List<String>> preferences;
 
-		public UserV2(
-			@JsonProperty("fullName") final String fullName,
-			@JsonProperty("preferences") final Map<String, List<String>> preferences
-		) {
-			this.fullName = fullName;
-			this.preferences = preferences;
-		}
+        public UserV2(
+                @JsonProperty("fullName") final String fullName,
+                @JsonProperty("preferences") final Map<String, List<String>> preferences
+        ) {
+            this.fullName = fullName;
+            this.preferences = preferences;
+        }
 
-		public boolean equals(final Object object) {
-			if (this == object) {
-				return true;
-			}
+        @Override
+        public boolean equals(final Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (!(object instanceof UserV2)) {
+                return false;
+            }
+            final UserV2 user = (UserV2) object;
+            return fullName.equals(user.fullName) && preferences.equals(user.preferences);
+        }
 
-			if (!(object instanceof UserV2)) {
-				return false;
-			}
+        @Override
+        public int hashCode() {
+            return Objects.hash(fullName, preferences);
+        }
 
-			final UserV2 user = (UserV2) object;
+        @Override
+        public String toString() {
+            return "UserV2{" +
+                    "fullName='" + fullName + '\'' +
+                    ", preferences=" + preferences +
+                    '}';
+        }
+    }
 
-			return fullName.equals(user.fullName) && preferences.equals(user.preferences);
-		}
-
-		public int hashCode() {
-			return Objects.hash(fullName, preferences);
-		}
-
-		@Override
-		public String toString() {
-			return "UserV2{" +
-				"fullName='" + fullName + '\'' +
-				", preferences=" + preferences +
-				'}';
-		}
-	}
-
-	private final AvroMapper MAPPER = getMapper();
+    private final AvroMapper MAPPER = getMapper();
 
 	public void testEvolutionInvolvingComplexRecords() throws Exception
 	{

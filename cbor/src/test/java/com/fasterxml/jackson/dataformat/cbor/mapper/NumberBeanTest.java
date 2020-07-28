@@ -196,7 +196,7 @@ public class NumberBeanTest extends CBORTestBase
             assertEquals(NumberType.DOUBLE, p.getNumberType());
             assertEquals(Double.valueOf(0.25), p.getNumberValue());
             assertEquals(Double.valueOf(0.25), p.getNumberValueExact());
-            
+
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.LONG, p.getNumberType());
             assertEquals(Long.valueOf(13117L), p.getNumberValue());
@@ -206,7 +206,7 @@ public class NumberBeanTest extends CBORTestBase
             assertEquals(NumberType.FLOAT, p.getNumberType());
             assertEquals(Float.valueOf(0.5f), p.getNumberValue());
             assertEquals(Float.valueOf(0.5f), p.getNumberValueExact());
-            
+
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
             assertEquals(BigInteger.valueOf(1972), p.getNumberValue());
@@ -216,11 +216,11 @@ public class NumberBeanTest extends CBORTestBase
             assertEquals(NumberType.BIG_DECIMAL, p.getNumberType());
             assertEquals(EXP_BIG_DEC, p.getNumberValue());
             assertEquals(EXP_BIG_DEC, p.getNumberValueExact());
-            
+
             assertToken(JsonToken.END_ARRAY, p.nextToken());
         }
     }
-    
+
     // [databind#2784]
     public void testBigDecimalWithBuffering() throws Exception
     {
