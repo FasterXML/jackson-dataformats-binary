@@ -35,11 +35,6 @@ import com.amazon.ion.system.IonSystemBuilder;
 public class IonParser
     extends ParserMinimalBase
 {
-    private static final BigInteger LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
-    private static final BigInteger LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
-    private static final BigInteger INT_MIN_VALUE = BigInteger.valueOf(Integer.MIN_VALUE);
-    private static final BigInteger INT_MAX_VALUE = BigInteger.valueOf(Integer.MAX_VALUE);
-    
     /*
     /*****************************************************************
     /* Basic configuration
@@ -309,7 +304,12 @@ public class IonParser
         }
         return null;
     }
-    
+
+    @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
+    public final Number getNumberValueExact() throws IOException {
+        return getNumberValue();
+    }
+
     /*
     /****************************************************************
     /* JsonParser implementation: Access to other (non-text/number) values

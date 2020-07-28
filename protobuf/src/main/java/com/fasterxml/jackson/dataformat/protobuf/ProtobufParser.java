@@ -1528,7 +1528,12 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return _numberFloat;
     }
-    
+
+    @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
+    public final Number getNumberValueExact() throws IOException {
+        return getNumberValue();
+    }
+
     @Override
     public NumberType getNumberType() throws IOException
     {
