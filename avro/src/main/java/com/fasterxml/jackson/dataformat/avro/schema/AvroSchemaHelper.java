@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
+import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
 import org.apache.avro.reflect.AvroAlias;
@@ -360,10 +361,18 @@ public abstract class AvroSchemaHelper
         }
     }
 
+    public static JsonNode nullNode() {
+        return DEFAULT_VALUE_MAPPER.nullNode();
+    }
+
     /**
      * @since 2.11
      */
     public static JsonNode objectToJsonNode(Object defaultValue) {
+        if (defaultValue == JsonProperties.NULL_VALUE) {
+            return nullNode();
+        }
+
         return DEFAULT_VALUE_MAPPER.convertValue(defaultValue, JsonNode.class);
     }
 
@@ -371,6 +380,14 @@ public abstract class AvroSchemaHelper
      * @since 2.11
      */
     public static Object jsonNodeToObject(JsonNode defaultJsonValue) {
+        if (defaultJsonValue == null) {
+            return null;
+        }
+
+        if (defaultJsonValue.isNull()) {
+            return JsonProperties.NULL_VALUE;
+        }
+
         return DEFAULT_VALUE_MAPPER.convertValue(defaultJsonValue, Object.class);
     }
 
