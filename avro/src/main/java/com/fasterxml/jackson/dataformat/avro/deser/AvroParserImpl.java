@@ -229,6 +229,11 @@ public abstract class AvroParserImpl
         return _numberFloat;
     }
 
+    @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
+    public final Number getNumberValueExact() throws IOException {
+        return getNumberValue();
+    }
+
     @Override
     public final NumberType getNumberType() throws IOException
     {

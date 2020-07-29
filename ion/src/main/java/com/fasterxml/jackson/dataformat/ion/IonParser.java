@@ -34,11 +34,6 @@ import com.amazon.ion.*;
 public class IonParser
     extends ParserMinimalBase
 {
-    private static final BigInteger LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
-    private static final BigInteger LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
-    private static final BigInteger INT_MIN_VALUE = BigInteger.valueOf(Integer.MIN_VALUE);
-    private static final BigInteger INT_MAX_VALUE = BigInteger.valueOf(Integer.MAX_VALUE);
-    
     /*
     /**********************************************************************
     /* Basic configuration
@@ -283,6 +278,11 @@ public class IonParser
             }
         }
         return null;
+    }
+
+    @Override
+    public final Number getNumberValueExact() throws IOException {
+        return getNumberValue();
     }
 
     // @TODO -- 27-Jun-2020, tatu: 3.0 requires parser implementations to define
