@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
@@ -29,7 +30,7 @@ public abstract class AvroSchemaHelper
      *
      * @since 2.11
      */
-    private static final ObjectMapper DEFAULT_VALUE_MAPPER = new ObjectMapper();
+    private static final ObjectMapper DEFAULT_VALUE_MAPPER = new JsonMapper();
 
     /**
      * Constant used by native Avro Schemas for indicating more specific
