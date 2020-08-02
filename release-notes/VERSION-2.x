@@ -16,7 +16,7 @@ Project: jackson-datatypes-binaryModules:
  (contributed by Michael L)
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
-2.11.2 (not yet released)
+2.11.2 (02-Aug-2020)
 
 #216: (avro) Avro null deserialization
  (fix contributed by Marcos P)
