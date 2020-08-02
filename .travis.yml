@@ -13,7 +13,7 @@ branches:
     - master
     - "3.0"
 
-# 2019-11-26, tatu: Let's try caching Maven dependencies
+# 2020-08-02, tatu: Let's try caching Maven dependencies (but remove if snapshot builds fail)
 cache:
   directories:
     - $HOME/.m2
@@ -21,8 +21,7 @@ cache:
 # Below this line is configuration for deploying to the Sonatype OSS repo
 # https://knowm.org/configure-travis-ci-to-deploy-snapshots/
 before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
-after_success:
-  - "mvn -B source:jar javadoc:jar deploy --settings target/travis/settings.xml"
+script: "[ ${TRAVIS_PULL_REQUEST} = 'false' ] && mvn clean deploy --settings target/travis/settings.xml || mvn clean verify --settings target/travis/settings.xml"
 
 env:
   global:
