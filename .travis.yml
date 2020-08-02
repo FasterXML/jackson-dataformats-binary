@@ -14,6 +14,11 @@ branches:
     - master
     - "2.12"
 
+# 2020-08-02, tatu: Let's try caching Maven dependencies (but remove if snapshot builds fail)
+cache:
+  directories:
+    - $HOME/.m2
+
 # Below this line is configuration for deploying to the Sonatype OSS repo
 # https://knowm.org/configure-travis-ci-to-deploy-snapshots/
 before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
