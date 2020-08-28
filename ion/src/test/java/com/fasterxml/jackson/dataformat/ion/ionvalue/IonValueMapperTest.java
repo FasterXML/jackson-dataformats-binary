@@ -29,12 +29,12 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 
 import com.amazon.ion.IonSexp;
 import com.amazon.ion.IonSystem;
@@ -48,7 +48,7 @@ import com.amazon.ion.system.IonSystemBuilder;
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
     private final IonValueMapper ionValueMapper = new IonValueMapper(ionSystem,
-            PropertyNamingStrategy.SNAKE_CASE);
+            PropertyNamingStrategies.SNAKE_CASE);
 
     enum ReturnCode {
         Success,
