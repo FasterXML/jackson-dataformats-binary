@@ -13,4 +13,9 @@ public class AnnotationBasedTagGenerator implements TagGenerator
         throw new IllegalStateException("No index metadata found for " + writer.getFullName()
                 + " (usually annotated with @JsonProperty.index): either annotate all properties of type " + writer.getWrapperName().getSimpleName() + " with indexes or none at all");
     }
+
+    @Override
+    public int nextTag() {
+        throw new IllegalStateException("Index metadata not found, (usually annotated with @JsonProperty.index): either annotate all properties with indexes or none at all");
+    }
 }

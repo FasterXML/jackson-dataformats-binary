@@ -50,8 +50,8 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     }
 
     @Override
-    public void property(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) {
-        throw new UnsupportedOperationException();
+    public void property(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) throws JsonMappingException {
+       _builder.addField(buildFieldElement(name, propertyTypeHint, Label.REQUIRED));
     }
 
     @Override
@@ -60,8 +60,8 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     }
 
     @Override
-    public void optionalProperty(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) {
-        throw new UnsupportedOperationException();
+    public void optionalProperty(String name, JsonFormatVisitable handler, JavaType propertyTypeHint) throws JsonMappingException {
+        _builder.addField(buildFieldElement(name, propertyTypeHint, Label.OPTIONAL));
     }
 
     protected FieldElement buildFieldElement(BeanProperty writer, Label label) throws JsonMappingException
@@ -88,6 +88,33 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
         return fBuilder.build();
     }
 
+    protected FieldElement buildFieldElement(String name, JavaType type, Label label) throws JsonMappingException
+    {
+        FieldElement.Builder fBuilder = FieldElement.builder();
+
+        fBuilder.name(name);
+        fBuilder.tag(nextTag());
+
+        if (type.isArrayType() || type.isCollectionLikeType()) {
+            if (ProtobufSchemaHelper.isBinaryType(type)) {
+                fBuilder.label(label);
+                fBuilder.type(ScalarType.BYTES);
+            } else {
+                fBuilder.label(Label.REPEATED);
+                fBuilder.type(getDataType(type.getContentType()));
+            }
+        } else {
+            fBuilder.label(label);
+            fBuilder.type(getDataType(type));
+        }
+        return fBuilder.build();
+    }
+
+    protected int nextTag() {
+        getTagGenerator(null);
+        return _tagGenerator.nextTag();
+    }
+
     protected int nextTag(BeanProperty writer) {
         getTagGenerator(writer);
         return _tagGenerator.nextTag(writer);
@@ -95,7 +122,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
 
     protected void getTagGenerator(BeanProperty writer) {
         if (_tagGenerator == null) {
-            if (ProtobufSchemaHelper.hasIndex(writer)) {
+            if (writer != null && ProtobufSchemaHelper.hasIndex(writer)) {
                 _tagGenerator = new AnnotationBasedTagGenerator();
             } else {
                 _tagGenerator = new DefaultTagGenerator();
