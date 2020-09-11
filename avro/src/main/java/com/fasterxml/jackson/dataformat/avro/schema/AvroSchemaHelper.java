@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 
 public abstract class AvroSchemaHelper
 {
+    private static final Map<String, String> SCHEMA_NAME_CACHE = new HashMap<>();
+
     /**
      * Dedicated mapper for handling default values (String &lt;-&gt; JsonNode &lt;-&gt; Object)
      *
@@ -332,32 +334,54 @@ public abstract class AvroSchemaHelper
      */
     public static String getFullName(Schema schema) {
         switch (schema.getType()) {
-        case RECORD:
-        case ENUM:
-        case FIXED:
-            String namespace = schema.getNamespace();
-            String name = schema.getName();
-            if (namespace == null) {
-                return schema.getName();
-            }
-            if (namespace.endsWith("$")) {
-                return namespace + name;
-            }
-            StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
-            // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
-            //     to support differences between avro-lib 1.8 and 1.9...
-            //     Check if this is a nested class
-            String nestedClassName = sb.append(namespace).append('$').append(name).toString();
-            try {
-                Class.forName(nestedClassName);
-                return nestedClassName;
-            } catch (ClassNotFoundException e) {
-                // Could not find a nested class, must be a regular class
-                sb.setLength(0);
-                return sb.append(namespace).append('.').append(name).toString();
-            }
+            case RECORD:
+            case ENUM:
+            case FIXED:
+                String namespace = schema.getNamespace();
+                String name = schema.getName();
+                String key = namespace + "." + name;
+                String schemaName = SCHEMA_NAME_CACHE.get(key);
+
+                if (schemaName == null) {
+                    schemaName = resolveFullName(schema);
+                    SCHEMA_NAME_CACHE.put(key, schemaName);
+                }
+
+                return schemaName;
+
             default:
-            return schema.getType().getName();
+                return schema.getType().getName();
+        }
+    }
+
+    private static String resolveFullName(Schema schema) {
+        String namespace = schema.getNamespace();
+        String name = schema.getName();
+
+        if (namespace == null) {
+            return schema.getName();
+        }
+
+        if (namespace.endsWith("$")) {
+            return namespace + name;
+        }
+
+        StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
+
+        // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
+        //     to support differences between avro-lib 1.8 and 1.9...
+        //     Check if this is a nested class
+        String nestedClassName = sb.append(namespace).append('$').append(name).toString();
+
+        try {
+            Class.forName(nestedClassName);
+
+            return nestedClassName;
+        } catch (ClassNotFoundException e) {
+            // Could not find a nested class, must be a regular class
+            sb.setLength(0);
+
+            return sb.append(namespace).append('.').append(name).toString();
         }
     }
 
