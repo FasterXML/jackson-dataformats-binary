@@ -50,11 +50,11 @@ public abstract class InteropTestBase
         return new ParameterizedTypeImpl(baseClass, parameters);
     }
 
-    private static class ParameterizedTypeImpl implements ParameterizedType {
+    static class ParameterizedTypeImpl implements ParameterizedType {
         private final Class<?> rawType;
         private final Type[]   typeBindings;
 
-        private ParameterizedTypeImpl(Class<?> rawType, Type[] typeBindings) {
+        ParameterizedTypeImpl(Class<?> rawType, Type[] typeBindings) {
             this.rawType = rawType;
             this.typeBindings = typeBindings;
         }

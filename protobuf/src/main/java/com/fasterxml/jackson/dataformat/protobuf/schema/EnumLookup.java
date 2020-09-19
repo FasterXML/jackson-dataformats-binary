@@ -82,7 +82,7 @@ public abstract class EnumLookup
         protected final String key1;
         protected final int index1;
 
-        private Small1(String key, int index) {
+        Small1(String key, int index) {
             key1 = key;
             index1 = index;
         }
@@ -122,7 +122,7 @@ public abstract class EnumLookup
         protected final String key1, key2;
         protected final int index1, index2;
 
-        private Small2(String k1, int i1, String k2, int i2) {
+        Small2(String k1, int i1, String k2, int i2) {
             key1 = k1;
             index1 = i1;
             key2 = k2;
@@ -188,7 +188,7 @@ public abstract class EnumLookup
         protected final String key1, key2, key3;
         protected final int index1, index2, index3;
 
-        private Small3(String k1, int i1, String k2, int i2, String k3, int i3) {
+        Small3(String k1, int i1, String k2, int i2, String k3, int i3) {
             key1 = k1;
             index1 = i1;
             key2 = k2;

@@ -16,12 +16,9 @@ package com.fasterxml.jackson.dataformat.ion;
  
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
-import com.fasterxml.jackson.dataformat.ion.IonParser;
 
 import org.junit.Assert;
 
-import com.amazon.ion.IonDecimal;
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;

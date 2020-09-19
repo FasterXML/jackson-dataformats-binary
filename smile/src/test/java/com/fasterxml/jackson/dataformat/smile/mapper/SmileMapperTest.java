@@ -30,7 +30,7 @@ public class SmileMapperTest extends BaseTestForSmile
 
     // [dataformats-binary#1711]
     static class ByteWrapper1711 {
-        private final byte[] val;
+        final byte[] val;
 
         @JsonCreator // (mode=JsonCreator.Mode.DELEGATING)
         public ByteWrapper1711(byte[] val) {

@@ -40,7 +40,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeResolverBuilder;
@@ -60,9 +59,9 @@ public class PolymorphicRoundtripTest {
      * ClassNameIonAnnotationIntrospector, and MultipleClassNameIdResolver (where they actually get used). I think
      * this is (a little) easier to understand.
      */
-    private boolean resolveAllTypes = false; // apply resolver under test to all types, not just annotated ones
-    private String preferredTypeId = null; // if asked to resolve from multiple ids, choose this one.
-    private IonSystem ionSystem = IonSystemBuilder.standard().build();
+    boolean resolveAllTypes = false; // apply resolver under test to all types, not just annotated ones
+    String preferredTypeId = null; // if asked to resolve from multiple ids, choose this one.
+    IonSystem ionSystem = IonSystemBuilder.standard().build();
     
     @Before
     public void reset() {

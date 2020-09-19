@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.gen.Event35;
 import com.fasterxml.jackson.dataformat.avro.gen.Event35Id;
 
