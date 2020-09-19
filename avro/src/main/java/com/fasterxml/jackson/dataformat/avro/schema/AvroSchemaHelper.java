@@ -348,40 +348,13 @@ public abstract class AvroSchemaHelper
             if (namespace.charAt(len-1) == '$') {
                 return namespace + name;
             }
-            return _findFullName(namespace, name);
+            // 19-Sep-2020, tatu: Due to very expensive contortions of lookups introduced
+            //   in [dataformats-binary#195], attempts to resolve [dataformats-binary#219]
+            //   isolated into separate class
+            return FullNameResolver.instance.resolve(namespace, name);
 
         default:
             return type.getName();
-        }
-    }
-
-    private static String _findFullName(final String namespace, final String name) {
-        final String cacheKey = namespace + "." + name;
-        String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
-
-        if (schemaName == null) {
-            schemaName = _resolveFullName(namespace, name);
-            SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
-        }
-        return schemaName;
-    }
-        
-    private static String _resolveFullName(final String namespace, final String name) {
-        StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
-
-        // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
-        //     to support differences between avro-lib 1.8 and 1.9...
-        //     Check if this is a nested class
-        final String nestedClassName = sb.append(namespace).append('$').append(name).toString();
-        try {
-            Class.forName(nestedClassName);
-
-            return nestedClassName;
-        } catch (ClassNotFoundException e) {
-            // Could not find a nested class, must be a regular class
-            sb.setLength(0);
-
-            return sb.append(namespace).append('.').append(name).toString();
         }
     }
 
@@ -439,5 +412,65 @@ public abstract class AvroSchemaHelper
     }
 
     // @since 2.11.3
-    private static final LRUMap<String, String> SCHEMA_NAME_CACHE = new LRUMap<>(80, 800);
+    private final static class FullNameResolver {
+        private final LRUMap<FullNameKey, String> SCHEMA_NAME_CACHE = new LRUMap<>(80, 800);
+
+        public final static FullNameResolver instance = new FullNameResolver();
+
+        public String resolve(final String namespace, final String name) {
+            final FullNameKey cacheKey = new FullNameKey(namespace, name);
+            String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
+
+            if (schemaName == null) {
+                schemaName = _resolve(cacheKey);
+                SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
+            }
+            return schemaName;
+        }
+
+        private static String _resolve(FullNameKey key) {
+            // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
+            //     to support differences between avro-lib 1.8 and 1.9...
+            //     Check if this is a nested class
+            // 19-Sep-2020, tatu: This is a horrible, horribly inefficient and all-around
+            //    wrong mechanism. To be abolished if possible.
+            final String nestedClassName = key.nameWithSeparator('$');
+            try {
+                Class.forName(nestedClassName);
+                return nestedClassName;
+            } catch (ClassNotFoundException e) {
+                // Could not find a nested class, must be a regular class
+                return key.nameWithSeparator('.');
+            }
+        }
+    }
+
+    // @since 2.11.3
+    private final static class FullNameKey {
+        private final String _namespace, _name;
+        private final int _hashCode;
+
+        public FullNameKey(String namespace, String name) {
+            _namespace = namespace;
+            _name = name;
+            _hashCode = namespace.hashCode() + name.hashCode();
+        }
+
+        public String nameWithSeparator(char sep) {
+            final StringBuilder sb = new StringBuilder(1 + _namespace.length() + _name.length());
+            return sb.append(_namespace).append(sep).append(_name).toString();
+        }
+
+        @Override
+        public int hashCode() { return _hashCode; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (o == null) return false;
+            // Only used internally don't bother with type checks
+            final FullNameKey other = (FullNameKey) o;
+            return other._name.equals(_name) && other._namespace.equals(_namespace);
+        }
+    }
 }
