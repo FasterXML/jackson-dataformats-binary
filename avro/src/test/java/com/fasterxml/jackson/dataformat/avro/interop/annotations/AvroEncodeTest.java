@@ -53,7 +53,7 @@ public class AvroEncodeTest extends InteropTestBase {
         public Long longValue;
 
         @AvroEncode(using = UuidAsBytesAvroEncoding.class)
-        private UUID uuidValue;
+        UUID uuidValue;
 
         protected CustomComponent() { }
     }

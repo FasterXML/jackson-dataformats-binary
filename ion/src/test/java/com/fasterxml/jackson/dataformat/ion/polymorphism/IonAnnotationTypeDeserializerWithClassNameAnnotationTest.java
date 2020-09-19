@@ -109,11 +109,11 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
         }
     }
 
-    private static class ClassA {
+    static class ClassA {
         public int value;
     }
 
-    private static class ClassB<T> {
+    static class ClassB<T> {
         public T content;
     }
 }

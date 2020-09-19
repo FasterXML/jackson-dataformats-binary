@@ -12,9 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerator;
 
 public class SchemaGenTest extends ProtobufTestBase

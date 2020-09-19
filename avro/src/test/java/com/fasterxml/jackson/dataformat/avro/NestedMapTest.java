@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 public class NestedMapTest extends AvroTestBase

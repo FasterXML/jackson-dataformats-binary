@@ -50,7 +50,7 @@ public abstract class FieldLookup
         protected final String key1;
         protected final ProtobufField field1;
 
-        private Small1(ProtobufField f) {
+        Small1(ProtobufField f) {
             key1 = f.name;
             field1 = f;
         }
@@ -69,7 +69,7 @@ public abstract class FieldLookup
         protected final String key1, key2;
         protected final ProtobufField field1, field2;
 
-        private Small2(ProtobufField f1, ProtobufField f2) {
+        Small2(ProtobufField f1, ProtobufField f2) {
             key1 = f1.name;
             field1 = f1;
             key2 = f2.name;
@@ -99,7 +99,7 @@ public abstract class FieldLookup
         protected final String key1, key2, key3;
         protected final ProtobufField field1, field2, field3;
 
-        private Small3(ProtobufField f1, ProtobufField f2, ProtobufField f3) {
+        Small3(ProtobufField f1, ProtobufField f2, ProtobufField f3) {
             key1 = f1.name;
             field1 = f1;
             key2 = f2.name;

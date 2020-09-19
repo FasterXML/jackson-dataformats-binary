@@ -2,9 +2,6 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-
 public class RootEmptyRecord177Test extends AvroTestBase
 {
     private final AvroMapper MAPPER = getMapper();
