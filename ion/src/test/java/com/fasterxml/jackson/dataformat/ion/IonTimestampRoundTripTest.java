@@ -21,10 +21,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import com.amazon.ion.IonDatagram;
 import com.amazon.ion.IonLoader;

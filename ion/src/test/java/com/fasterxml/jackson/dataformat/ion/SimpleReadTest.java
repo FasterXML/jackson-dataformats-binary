@@ -21,7 +21,6 @@ import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
 
 public class SimpleReadTest {
     // // // Actual tests; low level

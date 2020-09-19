@@ -6,7 +6,6 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class SchemaWithUUIDTest extends ProtobufTestBase
 {

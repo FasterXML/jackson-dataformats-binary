@@ -19,7 +19,6 @@ import java.io.*;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonStruct;
@@ -38,9 +37,7 @@ public class DataBindReadTest {
         public byte[] blob;
     }
     
-    static class BeanToo {
-        
-    }
+    static class BeanToo { }
 
     @Test
     public void testSimple() throws IOException
