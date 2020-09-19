@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.async.AsyncReaderWrapper;
 
 public class SimpleBinaryParseTest extends AsyncTestBase
 {

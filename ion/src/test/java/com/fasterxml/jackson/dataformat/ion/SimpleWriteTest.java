@@ -22,8 +22,6 @@ import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.ObjectWriteContext;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 
 import com.amazon.ion.IonDatagram;
 import com.amazon.ion.IonLoader;

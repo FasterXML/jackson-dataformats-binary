@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.smile;
 
-import com.fasterxml.jackson.dataformat.smile.SmileUtil;
-
 public class SmileUtilTest extends BaseTestForSmile
 {
     /**

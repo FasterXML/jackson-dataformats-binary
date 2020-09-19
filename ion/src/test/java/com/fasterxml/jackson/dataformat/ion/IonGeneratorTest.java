@@ -22,8 +22,6 @@ import org.junit.Test;
 import org.junit.Before;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import com.amazon.ion.IonDatagram;
 import com.amazon.ion.IonValue;
@@ -32,7 +30,7 @@ import com.amazon.ion.IonSystem;
 import com.amazon.ion.system.IonSystemBuilder;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class IonGeneratorTest {
     private static final Map<String, String> testObject;

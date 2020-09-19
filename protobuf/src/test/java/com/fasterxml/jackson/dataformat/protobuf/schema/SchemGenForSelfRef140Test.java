@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import com.fasterxml.jackson.dataformat.protobuf.*;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 // for [dataformats-binary#140]
 public class SchemGenForSelfRef140Test extends ProtobufTestBase

@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 
 public class GeneratorInvalidCallsTest extends CBORTestBase
 {
