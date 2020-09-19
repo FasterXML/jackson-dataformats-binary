@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 
 public abstract class AvroSchemaHelper
 {
-    private static final LRUMap<String, String> SCHEMA_NAME_CACHE = new LRUMap<>(16, 1024);
-
     /**
      * Dedicated mapper for handling default values (String &lt;-&gt; JsonNode &lt;-&gt; Object)
      *
@@ -334,46 +332,47 @@ public abstract class AvroSchemaHelper
      * </p>
      */
     public static String getFullName(Schema schema) {
-        switch (schema.getType()) {
-            case RECORD:
-            case ENUM:
-            case FIXED:
-                String namespace = schema.getNamespace();
-                String name = schema.getName();
-                String key = namespace + "." + name;
-                String schemaName = SCHEMA_NAME_CACHE.get(key);
+        final Schema.Type type = schema.getType();
+        switch (type) {
+        case RECORD:
+        case ENUM:
+        case FIXED:
+            final String namespace = schema.getNamespace();
+            final String name = schema.getName();
 
-                if (schemaName == null) {
-                    schemaName = resolveFullName(schema);
-                    SCHEMA_NAME_CACHE.put(key, schemaName);
-                }
+            // Handle (presumed) common case
+            if (namespace == null) {
+                return name;
+            }
+            final int len = namespace.length();
+            if (namespace.charAt(len-1) == '$') {
+                return namespace + name;
+            }
+            return _findFullName(namespace, name);
 
-                return schemaName;
-
-            default:
-                return schema.getType().getName();
+        default:
+            return type.getName();
         }
     }
 
-    private static String resolveFullName(Schema schema) {
-        String namespace = schema.getNamespace();
-        String name = schema.getName();
+    private static String _findFullName(final String namespace, final String name) {
+        final String cacheKey = namespace + "." + name;
+        String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
 
-        if (namespace == null) {
-            return schema.getName();
+        if (schemaName == null) {
+            schemaName = _resolveFullName(namespace, name);
+            SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
         }
-
-        if (namespace.endsWith("$")) {
-            return namespace + name;
-        }
-
+        return schemaName;
+    }
+        
+    private static String _resolveFullName(final String namespace, final String name) {
         StringBuilder sb = new StringBuilder(1 + namespace.length() + name.length());
 
         // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
         //     to support differences between avro-lib 1.8 and 1.9...
         //     Check if this is a nested class
-        String nestedClassName = sb.append(namespace).append('$').append(name).toString();
-
+        final String nestedClassName = sb.append(namespace).append('$').append(name).toString();
         try {
             Class.forName(nestedClassName);
 
@@ -438,4 +437,7 @@ public abstract class AvroSchemaHelper
             throw new JsonMappingException(null, "Failed to parse default value", e);
         }
     }
+
+    // @since 2.11.3
+    private static final LRUMap<String, String> SCHEMA_NAME_CACHE = new LRUMap<>(80, 800);
 }

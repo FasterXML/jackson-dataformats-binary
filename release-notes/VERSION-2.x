@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.11.3 (not yet released)
+
+#219: Cache record names to avoid hitting class loader
+ (contributed by Marcos P)
+
 2.11.2 (02-Aug-2020)
 
 #216: (avro) Avro null deserialization

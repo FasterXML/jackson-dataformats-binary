@@ -66,19 +66,19 @@ public abstract class AvroReaderFactory
         case FLOAT:
             return READER_FLOAT;
         case INT:
-            if (AvroSchemaHelper.getTypeId(type) != null) {
-                return new IntReader(AvroSchemaHelper.getTypeId(type));
+            {
+                final String typeId = AvroSchemaHelper.getTypeId(type);
+                return (typeId != null) ? new IntReader(typeId) : READER_INT;
             }
-            return READER_INT;
         case LONG:
             return READER_LONG;
         case NULL:
             return READER_NULL;
         case STRING:
-            if (AvroSchemaHelper.getTypeId(type) != null) {
-                return new StringReader(AvroSchemaHelper.getTypeId(type));
+            {
+                final String typeId = AvroSchemaHelper.getTypeId(type);
+                return (typeId != null) ? new StringReader(typeId) : READER_STRING;
             }
-            return READER_STRING;
         case UNION:
             /* Union is a "scalar union" if all the alternative types
              * are scalar. One common type is that of "nullable" one,
