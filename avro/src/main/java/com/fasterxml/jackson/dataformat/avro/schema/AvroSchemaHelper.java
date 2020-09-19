@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import com.fasterxml.jackson.databind.util.LRUMap;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,7 +25,7 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 
 public abstract class AvroSchemaHelper
 {
-    private static final Map<String, String> SCHEMA_NAME_CACHE = new HashMap<>();
+    private static final LRUMap<String, String> SCHEMA_NAME_CACHE = new LRUMap<>(16, 1024);
 
     /**
      * Dedicated mapper for handling default values (String &lt;-&gt; JsonNode &lt;-&gt; Object)
