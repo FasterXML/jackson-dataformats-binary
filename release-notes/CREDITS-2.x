@@ -108,6 +108,8 @@ Marcos Passos (marcospassos@github)
  (2.10.5)
 * Contributed fix for #216: (avro) Avro null deserialization
  (2.11.2)
+* Contributed #219: Cache record names to avoid hitting class loader
+ (2.11.3)
 
 John (iziamos@github)
 * Reported, suggested fix for #178: Fix issue wit input offsets when parsing CBOR from `InputStream`
