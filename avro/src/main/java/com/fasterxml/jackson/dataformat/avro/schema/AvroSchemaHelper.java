@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.databind.util.LRUMap;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -25,6 +24,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.databind.util.SimpleLookupCache;
 
 public abstract class AvroSchemaHelper
 {
@@ -417,5 +417,5 @@ public abstract class AvroSchemaHelper
     }
 
     // @since 2.11.3
-    private static final LRUMap<String, String> SCHEMA_NAME_CACHE = new LRUMap<>(80, 800);
+    private static final SimpleLookupCache<String, String> SCHEMA_NAME_CACHE = new SimpleLookupCache<>(80, 800);
 }
