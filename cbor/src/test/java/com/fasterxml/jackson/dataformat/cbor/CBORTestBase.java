@@ -85,6 +85,14 @@ public abstract class CBORTestBase
         return f.createGenerator(result, null);
     }
 
+    protected CBORGenerator lenientUnicodeCborGenerator(ByteArrayOutputStream result)
+        throws IOException
+    {
+        CBORGenerator gen = cborGenerator(result);
+        gen.enable(CBORGenerator.Feature.LENIENT_UTF_ENCODING);
+        return gen;
+    }
+
     /*
     /**********************************************************
     /* Additional assertion methods

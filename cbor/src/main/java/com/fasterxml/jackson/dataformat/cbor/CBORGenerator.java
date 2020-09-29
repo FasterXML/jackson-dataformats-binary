@@ -23,6 +23,11 @@ public class CBORGenerator extends GeneratorBase
     private final static int[] NO_INTS = new int[0];
 
     /**
+     * The replacement character to use to fix invalid unicode sequences.
+     */
+    final static int REPLACEMENT_CHAR = 0xfffd;
+
+    /**
      * Let's ensure that we have big enough output buffer because of safety
      * margins we need for UTF-8 encoding.
      */
@@ -63,7 +68,14 @@ public class CBORGenerator extends GeneratorBase
          *
          * @since 2.5
          */
-        WRITE_TYPE_HEADER(false)
+        WRITE_TYPE_HEADER(false),
+
+        /**
+         * Feature that determines if an invalid surrogate encoding found in the
+         * incoming String should fail with an exception or silently be outputed
+         * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD)
+         */
+        LENIENT_UTF_ENCODING(false),
 
         ;
 
@@ -139,6 +151,8 @@ public class CBORGenerator extends GeneratorBase
     protected int _formatFeatures;
 
     protected boolean _cfgMinimalInts;
+
+    protected boolean _cfgLenientUnicodeEncoding;
 
     /*
     /**********************************************************
@@ -234,6 +248,7 @@ public class CBORGenerator extends GeneratorBase
         _cborContext = CBORWriteContext.createRootContext(dups);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+        _cfgLenientUnicodeEncoding = Feature.LENIENT_UTF_ENCODING.enabledIn(formatFeatures);
         _ioContext = ctxt;
         _out = out;
         _bufferRecyclable = true;
@@ -406,6 +421,9 @@ public class CBORGenerator extends GeneratorBase
         if (f == Feature.WRITE_MINIMAL_INTS) {
             _cfgMinimalInts = true;
         }
+        if (f == Feature.LENIENT_UTF_ENCODING) {
+            _cfgLenientUnicodeEncoding = true;
+        }
         return this;
     }
 
@@ -413,6 +431,9 @@ public class CBORGenerator extends GeneratorBase
         _formatFeatures &= ~f.getMask();
         if (f == Feature.WRITE_MINIMAL_INTS) {
             _cfgMinimalInts = false;
+        }
+        if (f == Feature.LENIENT_UTF_ENCODING) {
+            _cfgLenientUnicodeEncoding = false;
         }
         return this;
     }
@@ -1424,59 +1445,11 @@ public class CBORGenerator extends GeneratorBase
         do {
             int c = str[i];
             if (c > 0x7F) {
-                return _shortUTF8Encode2(str, i, end, outputPtr, outputStart);
+                return _encode2(i, outputPtr, str, end, outputStart);
             }
             outBuf[outputPtr++] = (byte) c;
         } while (++i < end);
         return outputPtr - outputStart;
-    }
-
-    /**
-     * Helper method called when the whole character sequence is known to fit in
-     * the output buffer, but not all characters are single-byte (ASCII)
-     * characters.
-     */
-    private final int _shortUTF8Encode2(char[] str, int i, int end,
-            int outputPtr, int outputStart) {
-        final byte[] outBuf = _outputBuffer;
-        while (i < end) {
-            int c = str[i++];
-            if (c <= 0x7F) {
-                outBuf[outputPtr++] = (byte) c;
-                continue;
-            }
-            // Nope, multi-byte:
-            if (c < 0x800) { // 2-byte
-                outBuf[outputPtr++] = (byte) (0xc0 | (c >> 6));
-                outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
-                continue;
-            }
-            // 3 or 4 bytes (surrogate)
-            // Surrogates?
-            if (c < SURR1_FIRST || c > SURR2_LAST) { // nope, regular 3-byte character
-                outBuf[outputPtr++] = (byte) (0xe0 | (c >> 12));
-                outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-                outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
-                continue;
-            }
-            // Yup, a surrogate pair
-            if (c > SURR1_LAST) { // must be from first range; second won't do
-                _throwIllegalSurrogate(c);
-            }
-            // ... meaning it must have a pair
-            if (i >= end) {
-                _throwIllegalSurrogate(c);
-            }
-            c = _convertSurrogate(c, str[i++]);
-            if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-                _throwIllegalSurrogate(c);
-            }
-            outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
-        }
-        return (outputPtr - outputStart);
     }
 
     private final int _encode(int outputPtr, String str, int len) {
@@ -1486,19 +1459,19 @@ public class CBORGenerator extends GeneratorBase
         for (int i = 0; i < len; ++i) {
             int c = str.charAt(i);
             if (c > 0x7F) {
-                return _encode2(i, outputPtr, str, len, outputStart);
+                return _encode2(i, outputPtr, str.toCharArray(), len, outputStart);
             }
             outBuf[outputPtr++] = (byte) c;
         }
         return (outputPtr - outputStart);
     }
 
-    private final int _encode2(int i, int outputPtr, String str, int len,
+    private final int _encode2(int i, int outputPtr, char[] str, int len,
             int outputStart) {
         final byte[] outBuf = _outputBuffer;
         // no; non-ASCII stuff, slower loop
         while (i < len) {
-            int c = str.charAt(i++);
+            int c = str[i++];
             if (c <= 0x7F) {
                 outBuf[outputPtr++] = (byte) c;
                 continue;
@@ -1520,20 +1493,43 @@ public class CBORGenerator extends GeneratorBase
             }
             // Yup, a surrogate pair
             if (c > SURR1_LAST) { // must be from first range; second won't do
-                _throwIllegalSurrogate(c);
+                if (_cfgLenientUnicodeEncoding) {
+                    c = REPLACEMENT_CHAR;
+                } else {
+                    _throwIllegalSurrogate(c);
+                }
             }
             // ... meaning it must have a pair
-            if (i >= len) {
-                _throwIllegalSurrogate(c);
+            else if (i >= len) {
+               if (_cfgLenientUnicodeEncoding) {
+                    c = REPLACEMENT_CHAR;
+                } else {
+                    _throwIllegalSurrogate(c);
+                }
             }
-            c = _convertSurrogate(c, str.charAt(i++));
-            if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-                _throwIllegalSurrogate(c);
+            // ... verify that the next character is in range
+            else if (str[i] < SURR2_FIRST || str[i] > SURR2_LAST) {
+                if (_cfgLenientUnicodeEncoding) {
+                    c = REPLACEMENT_CHAR;
+                } else {
+                    _throwIllegalSurrogatePair(c, str[i]);
+                }
             }
-            outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            // ... we have a valid surrogate pair
+            else {
+                c = _convertSurrogate(c, str[i++]);
+            }
+            // if we replaced by the replacement char we actually have a 3 bytes char
+            if (c == REPLACEMENT_CHAR) {
+                outBuf[outputPtr++] = (byte) (0xe0 | (c >> 12));
+                outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
+                outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            } else {
+                outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
+                outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
+                outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
+                outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            }
         }
         return (outputPtr - outputStart);
     }
@@ -1542,16 +1538,24 @@ public class CBORGenerator extends GeneratorBase
      * Method called to calculate UTF codepoint, from a surrogate pair.
      */
     private int _convertSurrogate(int firstPart, int secondPart) {
-        // Ok, then, is the second part valid?
-        if (secondPart < SURR2_FIRST || secondPart > SURR2_LAST) {
-            throw new IllegalArgumentException(
+        int c = 0x10000 + ((firstPart - SURR1_FIRST) << 10)
+                + (secondPart - SURR2_FIRST);
+        if (c > 0x10FFFF) { // illegal in JSON as well as in XML
+            if (_cfgLenientUnicodeEncoding) {
+                c = REPLACEMENT_CHAR;
+            } else {
+                _throwIllegalSurrogate(c);
+            }
+        }
+        return c;
+    }
+
+    private void _throwIllegalSurrogatePair(int firstPart, int secondPart) {
+         throw new IllegalArgumentException(
                     "Broken surrogate pair: first char 0x"
                             + Integer.toHexString(firstPart) + ", second 0x"
                             + Integer.toHexString(secondPart)
                             + "; illegal combination");
-        }
-        return 0x10000 + ((firstPart - SURR1_FIRST) << 10)
-                + (secondPart - SURR2_FIRST);
     }
 
     private void _throwIllegalSurrogate(int code) {
