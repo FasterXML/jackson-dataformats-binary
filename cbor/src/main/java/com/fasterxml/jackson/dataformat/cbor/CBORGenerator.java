@@ -74,6 +74,8 @@ public class CBORGenerator extends GeneratorBase
          * Feature that determines if an invalid surrogate encoding found in the
          * incoming String should fail with an exception or silently be outputed
          * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD)
+         *
+         * @since 2.12
          */
         LENIENT_UTF_ENCODING(false),
 
@@ -152,6 +154,11 @@ public class CBORGenerator extends GeneratorBase
 
     protected boolean _cfgMinimalInts;
 
+
+    /**
+     * If true we will output the REPLACEMENT_CHAR for invalid unicode sequences.
+     * If false we will throw an IllegalArgumentException for invalid unicode sequences.
+     */
     protected boolean _cfgLenientUnicodeEncoding;
 
     /*
@@ -1493,27 +1500,15 @@ public class CBORGenerator extends GeneratorBase
             }
             // Yup, a surrogate pair
             if (c > SURR1_LAST) { // must be from first range; second won't do
-                if (_cfgLenientUnicodeEncoding) {
-                    c = REPLACEMENT_CHAR;
-                } else {
-                    _throwIllegalSurrogate(c);
-                }
+                c = _illegalSurrogateFound(c);
             }
             // ... meaning it must have a pair
             else if (i >= len) {
-               if (_cfgLenientUnicodeEncoding) {
-                    c = REPLACEMENT_CHAR;
-                } else {
-                    _throwIllegalSurrogate(c);
-                }
+                c = _illegalSurrogateFound(c);
             }
             // ... verify that the next character is in range
             else if (str[i] < SURR2_FIRST || str[i] > SURR2_LAST) {
-                if (_cfgLenientUnicodeEncoding) {
-                    c = REPLACEMENT_CHAR;
-                } else {
-                    _throwIllegalSurrogatePair(c, str[i]);
-                }
+                c = _illegalSurrogatePairFound(c, str[i]);
             }
             // ... we have a valid surrogate pair
             else {
@@ -1541,43 +1536,47 @@ public class CBORGenerator extends GeneratorBase
         int c = 0x10000 + ((firstPart - SURR1_FIRST) << 10)
                 + (secondPart - SURR2_FIRST);
         if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-            if (_cfgLenientUnicodeEncoding) {
-                c = REPLACEMENT_CHAR;
-            } else {
-                _throwIllegalSurrogate(c);
-            }
+            c = _illegalSurrogatePairFound(firstPart, secondPart);
         }
         return c;
     }
 
-    private void _throwIllegalSurrogatePair(int firstPart, int secondPart) {
-         throw new IllegalArgumentException(
-                    "Broken surrogate pair: first char 0x"
-                            + Integer.toHexString(firstPart) + ", second 0x"
-                            + Integer.toHexString(secondPart)
-                            + "; illegal combination");
+    private int _illegalSurrogatePairFound(int firstPart, int secondPart) {
+        if (_cfgLenientUnicodeEncoding) {
+            return REPLACEMENT_CHAR;
+        } else {
+            throw new IllegalArgumentException(
+                "Broken surrogate pair: first char 0x"
+                        + Integer.toHexString(firstPart) + ", second 0x"
+                        + Integer.toHexString(secondPart)
+                        + "; illegal combination");
+        }
     }
 
-    private void _throwIllegalSurrogate(int code) {
-        if (code > 0x10FFFF) { // over max?
-            throw new IllegalArgumentException("Illegal character point (0x"
-                    + Integer.toHexString(code)
-                    + ") to output; max is 0x10FFFF as per RFC 4627");
-        }
-        if (code >= SURR1_FIRST) {
-            if (code <= SURR1_LAST) { // Unmatched first part (closing without
-                                      // second part?)
+    private int _illegalSurrogateFound(int code) {
+        if (_cfgLenientUnicodeEncoding) {
+            return REPLACEMENT_CHAR;
+        } else {
+            if (code > 0x10FFFF) { // over max?
+                throw new IllegalArgumentException("Illegal character point (0x"
+                        + Integer.toHexString(code)
+                        + ") to output; max is 0x10FFFF as per RFC 4627");
+            }
+            if (code >= SURR1_FIRST) {
+                if (code <= SURR1_LAST) { // Unmatched first part (closing without
+                                        // second part?)
+                    throw new IllegalArgumentException(
+                            "Unmatched first part of surrogate pair (0x"
+                                    + Integer.toHexString(code) + ")");
+                }
                 throw new IllegalArgumentException(
-                        "Unmatched first part of surrogate pair (0x"
+                        "Unmatched second part of surrogate pair (0x"
                                 + Integer.toHexString(code) + ")");
             }
-            throw new IllegalArgumentException(
-                    "Unmatched second part of surrogate pair (0x"
-                            + Integer.toHexString(code) + ")");
+            // should we ever get this?
+            throw new IllegalArgumentException("Illegal character point (0x"
+                    + Integer.toHexString(code) + ") to output");
         }
-        // should we ever get this?
-        throw new IllegalArgumentException("Illegal character point (0x"
-                + Integer.toHexString(code) + ") to output");
     }
 
     /*
