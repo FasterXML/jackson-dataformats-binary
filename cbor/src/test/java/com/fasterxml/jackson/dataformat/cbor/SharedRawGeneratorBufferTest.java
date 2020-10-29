@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 
 // for [dataformats-binary#43]
 public class SharedRawGeneratorBufferTest extends CBORTestBase

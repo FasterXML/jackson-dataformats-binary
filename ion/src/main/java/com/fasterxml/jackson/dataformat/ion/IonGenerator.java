@@ -28,7 +28,6 @@ import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
 import com.amazon.ion.IonType;
 import com.amazon.ion.IonValue;

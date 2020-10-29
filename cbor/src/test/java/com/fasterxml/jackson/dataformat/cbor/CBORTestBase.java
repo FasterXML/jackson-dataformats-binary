@@ -84,6 +84,10 @@ public abstract class CBORTestBase
         return new CBORFactory();
     }
 
+    protected CBORFactoryBuilder cborFactoryBuilder() {
+        return CBORFactory.builder();
+    }
+
     protected ObjectMapper sharedMapper() {
         return CBORMapper.shared();
     }
@@ -148,7 +152,15 @@ public abstract class CBORTestBase
         }
     }
 
-    
+    protected CBORGenerator lenientUnicodeCborGenerator(ByteArrayOutputStream result)
+        throws IOException
+    {
+        return (CBORGenerator) cborFactoryBuilder()
+                .enable(CBORGenerator.Feature.LENIENT_UTF_ENCODING)
+                .build()
+                .createGenerator(ObjectWriteContext.empty(), result);
+    }
+
     /*
     /**********************************************************
     /* Additional assertion methods

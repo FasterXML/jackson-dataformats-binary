@@ -32,7 +32,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
      * Set of {@link IonFactory.Feature}s enabled, as bitmask.
      */
     protected boolean _createBinaryWriters;
-    
+
     /*
     /**********************************************************
     /* Life cycle

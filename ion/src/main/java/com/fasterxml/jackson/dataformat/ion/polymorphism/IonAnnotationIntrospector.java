@@ -15,15 +15,12 @@
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 
 /**
  * A Jackson {@link com.fasterxml.jackson.databind.AnnotationIntrospector} (essentially an interceptor for
@@ -52,7 +49,7 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
 //        this.resolveAllTypes = resolveAllTypes;
     }
 
-    /**
+    /*
      * Provides a {@link TypeResolverBuilder} if the {@link AnnotatedClass} is enabled for type resolving, and a
      * {@link TypeIdResolver} can be instantiated.
      * <p>

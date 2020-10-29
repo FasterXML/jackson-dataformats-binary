@@ -143,3 +143,9 @@ Michael Liedtke (mcliedtke@github)
 * Contributed fix for #212: (ion) Optimize `IonParser.getNumberType()` using
   `IonReader.getIntegerSize()`
  (2.12.0)
+
+Guillaume Bort (guillaumebort@github)
+
+* Contributed implementation of #222: (cbor) Add `CBORGenerator.Feature.LENIENT_UTF_ENCODING`
+  for lenient handling of Unicode surrogate pairs on writing
+ (2.12.0)

@@ -9,7 +9,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
+
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FieldType;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
