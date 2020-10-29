@@ -14,6 +14,9 @@ Project: jackson-datatypes-binaryModules:
  (contributed by Paul F)
 #212: (ion) Optimize `IonParser.getNumberType()` using `IonReader.getIntegerSize()`
  (contributed by Michael L)
+#222: (cbor) Add `CBORGenerator.Feature.LENIENT_UTF_ENCODING` for lenient handling of
+  Unicode surrogate pairs on writing
+ (contributed by Guillaume B)
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
 2.11.3 (02-Oct-2020)

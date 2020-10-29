@@ -29,6 +29,14 @@ public class CBORGenerator extends GeneratorBase
     final static int BYTE_BUFFER_FOR_OUTPUT = 16000;
 
     /**
+     * The replacement character to use to fix invalid Unicode sequences
+     * (mismatched surrogate pair).
+     *
+     * @since 2.12
+     */
+    final static int REPLACEMENT_CHAR = 0xfffd;
+
+    /**
      * Longest char chunk we will output is chosen so that it is guaranteed to
      * fit in an empty buffer even if everything encoded in 3-byte sequences;
      * but also fit two full chunks in case of single-byte (ascii) output.
@@ -58,13 +66,25 @@ public class CBORGenerator extends GeneratorBase
          * 55799, encoded as 3-byte sequence of <code>0xD9, 0xD9, 0xF7</code>)
          * should be written at the beginning of document or not.
          * <p>
-         * Default value is <code>false</code> meaning that type tag will not be
+         * Default value is {@code false} meaning that type tag will not be
          * written at the beginning of a new document.
          *
          * @since 2.5
          */
-        WRITE_TYPE_HEADER(false)
+        WRITE_TYPE_HEADER(false),
 
+        /**
+         * Feature that determines if an invalid surrogate encoding found in the
+         * incoming String should fail with an exception or silently be output
+         * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD) or not; if not,
+         * an exception will be thrown to indicate invalid content.
+         *<p>
+         * Default value is {@code false} (for backwards compatibility) meaning that
+         * an invalide surrogate will result in exception ({@link IllegalArgumentException}
+         *
+         * @since 2.12
+         */
+        LENIENT_UTF_ENCODING(false),
         ;
 
         protected final boolean _defaultState;
@@ -201,7 +221,7 @@ public class CBORGenerator extends GeneratorBase
 
     /**
      * Number of elements remaining in the current complex structure (if any),
-     * when writing defined-length Arrays, Objects; marker {@link #INDEFINITE_LENGTH}
+     * when writing defined-length Arrays, Objects; marker {code INDEFINITE_LENGTH}
      * otherwise.
      */
     protected int _currentRemainingElements = INDEFINITE_LENGTH;
@@ -1452,29 +1472,25 @@ public class CBORGenerator extends GeneratorBase
                 continue;
             }
             // 3 or 4 bytes (surrogate)
-            // Surrogates?
-            if (c < SURR1_FIRST || c > SURR2_LAST) { // nope, regular 3-byte character
+            if (c < SURR1_FIRST || c > SURR2_LAST) { // regular 3-byte character
                 outBuf[outputPtr++] = (byte) (0xe0 | (c >> 12));
                 outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
                 outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
                 continue;
             }
-            // Yup, a surrogate pair
-            if (c > SURR1_LAST) { // must be from first range; second won't do
-                _throwIllegalSurrogate(c);
+            // Yup, looks like a surrogate pair... but is it?
+            if ((c <= SURR1_LAST) && (i < end)) { // must be from first range and have another char
+                final int d = str[i];
+                if ((d <= SURR2_LAST) && (d >= SURR2_FIRST)) {
+                    ++i;
+                    outputPtr = _decodeAndWriteSurrogate(c, d, outBuf, outputPtr);
+                    continue;
+                }
+                outputPtr = _invalidSurrogateEnd(c, d, outBuf, outputPtr);
+                continue;
             }
-            // ... meaning it must have a pair
-            if (i >= end) {
-                _throwIllegalSurrogate(c);
-            }
-            c = _convertSurrogate(c, str[i++]);
-            if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-                _throwIllegalSurrogate(c);
-            }
-            outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            // Nah, something wrong
+            outputPtr = _invalidSurrogateStart(c, outBuf, outputPtr);
         }
         return (outputPtr - outputStart);
     }
@@ -1510,70 +1526,76 @@ public class CBORGenerator extends GeneratorBase
                 continue;
             }
             // 3 or 4 bytes (surrogate)
-            // Surrogates?
-            if (c < SURR1_FIRST || c > SURR2_LAST) { // nope, regular 3-byte
-                                                     // character
+            if (c < SURR1_FIRST || c > SURR2_LAST) { // regular 3-byte character
                 outBuf[outputPtr++] = (byte) (0xe0 | (c >> 12));
                 outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
                 outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
                 continue;
             }
-            // Yup, a surrogate pair
-            if (c > SURR1_LAST) { // must be from first range; second won't do
-                _throwIllegalSurrogate(c);
+            // Yup, looks like a surrogate pair... but is it?
+            if ((c <= SURR1_LAST) && (i < len)) { // must be from first range and have another char
+                final int d = str.charAt(i);
+                if ((d <= SURR2_LAST) && (d >= SURR2_FIRST)) {
+                    ++i;
+                    outputPtr = _decodeAndWriteSurrogate(c, d, outBuf, outputPtr);
+                    continue;
+                }
+                outputPtr = _invalidSurrogateEnd(c, d, outBuf, outputPtr);
+                continue;
             }
-            // ... meaning it must have a pair
-            if (i >= len) {
-                _throwIllegalSurrogate(c);
-            }
-            c = _convertSurrogate(c, str.charAt(i++));
-            if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-                _throwIllegalSurrogate(c);
-            }
-            outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            // Nah, something wrong
+            outputPtr = _invalidSurrogateStart(c, outBuf, outputPtr);
         }
         return (outputPtr - outputStart);
     }
 
-    /**
-     * Method called to calculate UTF codepoint, from a surrogate pair.
-     */
-    private int _convertSurrogate(int firstPart, int secondPart) {
-        // Ok, then, is the second part valid?
-        if (secondPart < SURR2_FIRST || secondPart > SURR2_LAST) {
-            throw new IllegalArgumentException(
-                    "Broken surrogate pair: first char 0x"
-                            + Integer.toHexString(firstPart) + ", second 0x"
-                            + Integer.toHexString(secondPart)
-                            + "; illegal combination");
+    private int _invalidSurrogateStart(int code, byte[] outBuf, int outputPtr) {
+        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+            return _appendReplacementChar(outBuf, outputPtr);
         }
-        return 0x10000 + ((firstPart - SURR1_FIRST) << 10)
-                + (secondPart - SURR2_FIRST);
+        // Will be called in two distinct cases: either first character is
+        // invalid (code range of second part), or first character is valid
+        // but there is no second part to encode
+        if (code <= SURR1_LAST) {
+            // Unmatched first part (closing without second part?)
+            throw new IllegalArgumentException(String.format(
+"Unmatched surrogate pair, starts with valid high surrogate (0x%04X) but ends without low surrogate",
+code));
+        }
+        throw new IllegalArgumentException(String.format(
+"Invalid surrogate pair, starts with invalid high surrogate (0x%04X), not in valid range [0xD800, 0xDBFF]",
+code));
     }
 
-    private void _throwIllegalSurrogate(int code) {
-        if (code > 0x10FFFF) { // over max?
-            throw new IllegalArgumentException("Illegal character point (0x"
-                    + Integer.toHexString(code)
-                    + ") to output; max is 0x10FFFF as per RFC 4627");
+    private int _invalidSurrogateEnd(int surr1, int surr2,
+            byte[] outBuf, int outputPtr)
+    {
+        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+            return _appendReplacementChar(outBuf, outputPtr);
         }
-        if (code >= SURR1_FIRST) {
-            if (code <= SURR1_LAST) { // Unmatched first part (closing without
-                                      // second part?)
-                throw new IllegalArgumentException(
-                        "Unmatched first part of surrogate pair (0x"
-                                + Integer.toHexString(code) + ")");
-            }
-            throw new IllegalArgumentException(
-                    "Unmatched second part of surrogate pair (0x"
-                            + Integer.toHexString(code) + ")");
-        }
-        // should we ever get this?
-        throw new IllegalArgumentException("Illegal character point (0x"
-                + Integer.toHexString(code) + ") to output");
+        throw new IllegalArgumentException(String.format(
+"Invalid surrogate pair, starts with valid high surrogate (0x%04X)"
++" but ends with invalid low surrogate (0x%04X), not in valid range [0xDC00, 0xDFFF]",
+surr1, surr2));
+    }
+
+    private int _appendReplacementChar(byte[] outBuf, int outputPtr) {
+        outBuf[outputPtr++] = (byte) (0xe0 | (REPLACEMENT_CHAR >> 12));
+        outBuf[outputPtr++] = (byte) (0x80 | ((REPLACEMENT_CHAR >> 6) & 0x3f));
+        outBuf[outputPtr++] = (byte) (0x80 | (REPLACEMENT_CHAR & 0x3f));
+        return outputPtr;
+    }
+
+    private int _decodeAndWriteSurrogate(int surr1, int surr2,
+            byte[] outBuf, int outputPtr)
+    {
+        final int c = 0x10000 + ((surr1 - SURR1_FIRST) << 10)
+                + (surr2 - SURR2_FIRST);
+        outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
+        outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
+        outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
+        outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+        return outputPtr;
     }
 
     /*
