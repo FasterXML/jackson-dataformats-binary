@@ -147,22 +147,22 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.nextToken());
         p.close();
     }
-    
+
     // Test for ASCII String values longer than 64 bytes; separate
     // since handling differs
     public void testLongAsciiString() throws IOException
     {
-    	final String DIGITS = "1234567890";
-    	String LONG = DIGITS + DIGITS + DIGITS + DIGITS;
-    	LONG = LONG + LONG + LONG + LONG;
-    	byte[] data = _smileDoc(quote(LONG));
+        final String DIGITS = "1234567890";
+        String LONG = DIGITS + DIGITS + DIGITS + DIGITS;
+        LONG = LONG + LONG + LONG + LONG;
+        byte[] data = _smileDoc(quote(LONG));
 
-    	JsonParser p = _smileParser(data);
-    	assertNull(p.currentToken());
-    	assertToken(JsonToken.VALUE_STRING, p.nextToken());
-    	assertEquals(LONG, p.getText());
-    	assertNull(p.nextToken());
-     p.close();
+        try (JsonParser p = _smileParser(data)) {
+            assertNull(p.currentToken());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+    	        assertEquals(LONG, p.getText());
+    	        assertNull(p.nextToken());
+        }
     }
 
     //Test for non-ASCII String values longer than 64 bytes; separate
@@ -188,22 +188,37 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
     
+    // Simple test for encoding where "Unicode" string value is
+    // actually ascii (which is fine, encoders need not ensure it is not,
+    // it's just not guaranteeing content IS ascii)
+    public void testShortAsciiAsUnicodeString() throws IOException
+    {
+        byte[] data = new byte[] {
+                (byte) 0x82, 0x64, 0x61, 0x74, 0x61
+        };
+        try (JsonParser p = _smileParser(data)) {
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            assertEquals("data", p.getText());
+            assertNull(p.nextToken());
+        }
+    }
+
     public void testTrivialObject() throws IOException
     {
-    	byte[] data = _smileDoc("{\"abc\":13}");
-    	JsonParser p = _smileParser(data);
-    	assertNull(p.currentToken());
+        byte[] data = _smileDoc("{\"abc\":13}");
+        JsonParser p = _smileParser(data);
+        assertNull(p.currentToken());
 
-    	assertToken(JsonToken.START_OBJECT, p.nextToken());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("abc", p.currentName());
-    	assertEquals("abc", p.getText());
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(13, p.getIntValue());    	
-    	assertToken(JsonToken.END_OBJECT, p.nextToken());
-     p.close();
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("abc", p.currentName());
+        assertEquals("abc", p.getText());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(13, p.getIntValue());    	
+    	    assertToken(JsonToken.END_OBJECT, p.nextToken());
+    	    p.close();
     }
-    
+
     public void testSimpleObject() throws IOException
     {
     	byte[] data = _smileDoc("{\"a\":8, \"b\" : [ true ], \"c\" : { }, \"d\":{\"e\":null}}");
