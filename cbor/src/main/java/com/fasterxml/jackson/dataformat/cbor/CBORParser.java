@@ -527,6 +527,11 @@ public class CBORParser extends ParserBase
             _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
             
         default: // misc: tokens, floats
+            if(lowBits < 20) {
+                _numTypesValid = NR_INT;
+                _numberInt = _decode8Bits();
+                return (_currToken = JsonToken.VALUE_NUMBER_INT);
+            }
             switch (lowBits) {
             case 20:
                 return (_currToken = JsonToken.VALUE_FALSE);
