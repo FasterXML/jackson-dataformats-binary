@@ -77,9 +77,29 @@ public class CBORParser extends ParserBase
     protected CBORReadContext _parsingContext;
 
     /**
+     * Helper variables used when dealing with chunked content.
+     */
+    private int _chunkLeft, _chunkEnd;
+
+    /**
      * We will keep track of tag value for possible future use.
      */
     protected int _tagValue = -1;
+
+    /**
+     * Flag that indicates that the current token has not yet
+     * been fully processed, and needs to be finished for
+     * some access (or skipped to obtain the next token)
+     */
+    protected boolean _tokenIncomplete = false;
+
+    /**
+     * Type byte of the current token
+     */
+    protected int _typeByte;
+
+    // Base class has all other types, but no distinction between double, float, so
+    protected float _numberFloat;
 
     /*
     /**********************************************************************
@@ -109,32 +129,6 @@ public class CBORParser extends ParserBase
      * buffer.
      */
     protected boolean _bufferRecyclable;
-
-    /*
-    /**********************************************************************
-    /* Additional parsing state
-    /**********************************************************************
-     */
-
-    /**
-     * Flag that indicates that the current token has not yet
-     * been fully processed, and needs to be finished for
-     * some access (or skipped to obtain the next token)
-     */
-    protected boolean _tokenIncomplete = false;
-
-    /**
-     * Type byte of the current token
-     */
-    protected int _typeByte;
-
-    /**
-     * Helper variables used when dealing with chunked content.
-     */
-    private int _chunkLeft, _chunkEnd;
-
-    // Base class has all other types, but no distinction between double, float, so
-    protected float _numberFloat;
 
     /*
     /**********************************************************************
@@ -386,24 +380,25 @@ public class CBORParser extends ParserBase
                 return _handleCBOREOF();
             }
         }
-        int ch = _inputBuffer[_inputPtr++];
-        int type = (ch >> 5) & 0x7;
+        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        int type = (ch >> 5);
+        int lowBits = ch & 0x1F;
 
         // One special case: need to consider tag as prefix first:
         if (type == 6) {
-            _tagValue = Integer.valueOf(_decodeTag(ch & 0x1F));
+            _tagValue = Integer.valueOf(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     return _handleCBOREOF();
                 }
             }
-            ch = _inputBuffer[_inputPtr++];
-            type = (ch >> 5) & 0x7;
+            ch = _inputBuffer[_inputPtr++] & 0xFF;
+            type = (ch >> 5);
+            lowBits = ch & 0x1F;
         } else {
             _tagValue = -1;
         }
         
-        final int lowBits = ch & 0x1F;
         switch (type) {
         case 0: // positive int
             _numTypesValid = NR_INT;
@@ -525,7 +520,8 @@ public class CBORParser extends ParserBase
 
         case 6: // another tag; not allowed
             _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
-            
+
+        case 7:
         default: // misc: tokens, floats
             switch (lowBits) {
             case 20:
@@ -564,9 +560,8 @@ public class CBORParser extends ParserBase
                 // Object end-marker can't occur here
                 _reportUnexpectedBreak();
             }
-            _invalidToken(ch);
+            return (_currToken = _decodeSimpleValue(lowBits, ch));
         }
-        return null;
     }
 
     protected String _numberToName(int ch, boolean neg) throws IOException
@@ -706,23 +701,24 @@ public class CBORParser extends ParserBase
                 return false;
             }
         }
-        int ch = _inputBuffer[_inputPtr++];
-        int type = (ch >> 5) & 0x7;
+        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        int type = (ch >> 5);
+        int lowBits = ch & 0x1F;
 
         // 01-Nov-2019, tatu: We may actually need tag so decode it, but do not assign
         //   (that'd override tag we already have)
         int tagValue = -1;
         if (type == 6) {
-            tagValue = _decodeTag(ch & 0x1F);
+            tagValue = _decodeTag(lowBits);
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
                 _handleCBOREOF();
                 return false;
             }
-            ch = _inputBuffer[_inputPtr++];
-            type = (ch >> 5) & 0x7;
+            ch = _inputBuffer[_inputPtr++] & 0xFF;
+            type = (ch >> 5);
+            lowBits = ch & 0x1F;
         }
-        
-        final int lowBits = ch & 0x1F;
+
         switch (type) {
         case 0: // positive int
             _numTypesValid = NR_INT;
@@ -1292,25 +1288,26 @@ public class CBORParser extends ParserBase
                 return null;
             }
         }
-        int ch = _inputBuffer[_inputPtr++];
-        int type = (ch >> 5) & 0x7;
+        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        int type = (ch >> 5);
+        int lowBits = ch & 0x1F;
 
         // One special case: need to consider tag as prefix first:
         if (type == 6) {
-            _tagValue = Integer.valueOf(_decodeTag(ch & 0x1F));
+            _tagValue = Integer.valueOf(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     _handleCBOREOF();
                     return null;
                 }
             }
-            ch = _inputBuffer[_inputPtr++];
-            type = (ch >> 5) & 0x7;
+            ch = _inputBuffer[_inputPtr++] & 0xFF;
+            type = (ch >> 5);
+            lowBits = ch & 0x1F;
         } else {
             _tagValue = -1;
         }
-        
-        final int lowBits = ch & 0x1F;
+
         switch (type) {
         case 0: // positive int
             _numTypesValid = NR_INT;
@@ -1432,6 +1429,7 @@ public class CBORParser extends ParserBase
         case 6: // another tag; not allowed
             _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
             
+        case 7:
         default: // misc: tokens, floats
             switch (lowBits) {
             case 20:
@@ -1478,10 +1476,9 @@ public class CBORParser extends ParserBase
                 // Object end-marker can't occur here
                 _reportUnexpectedBreak();
             }
-            _invalidToken(ch);
+            _currToken = _decodeSimpleValue(lowBits, ch);
+            return null;
         }
-        // otherwise fall back to generic handling:
-        return (nextToken() == JsonToken.VALUE_STRING) ? getText() : null;
     }
 
     @Override
@@ -3076,6 +3073,44 @@ public class CBORParser extends ParserBase
      */
     protected JsonToken _decodeUndefinedValue() throws IOException {
         return JsonToken.VALUE_NULL;
+    }
+
+    /**
+     * Helper method that deals with details of decoding unallocated "simple values"
+     * and exposing them as expected token.
+     *<p>
+     * As of Jackson 2.12, simple values are exposed as
+     * {@link JsonToken#VALUE_NUMBER_INT}s,
+     * but in later versions this is planned to be changed to separate value type.
+     *
+     * @since 2.12
+     */
+    public JsonToken _decodeSimpleValue(int lowBits, int ch) throws IOException {
+        if (lowBits > 24) {
+            _invalidToken(ch);
+        }
+        if (lowBits < 24) {
+            _numberInt = lowBits;
+        } else { // need another byte
+            if (_inputPtr >= _inputEnd) {
+                loadMoreGuaranteed();
+            }
+            _numberInt = _inputBuffer[_inputPtr++] & 0xFF;
+            // As per CBOR spec, values below 32 not allowed to avoid
+            // confusion (as well as guarantee uniqueness of encoding)
+            if (_numberInt < 32) {
+                throw _constructError("Invalid second byte for simple value: 0x"
+                        +Integer.toHexString(_numberInt)+" (only values 0x20 - 0xFF allowed)");
+            }
+        }
+
+        // 25-Nov-2020, tatu: Although ideally we should report these
+        //    as `JsonToken.VALUE_EMBEDDED_OBJECT`, due to late addition
+        //    of handling in 2.12, simple value in 2.12 will be reported
+        //    as simple ints.
+
+        _numTypesValid = NR_INT;
+        return (JsonToken.VALUE_NUMBER_INT);
     }
 
     /*

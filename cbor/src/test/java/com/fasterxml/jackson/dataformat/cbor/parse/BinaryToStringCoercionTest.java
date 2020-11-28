@@ -41,7 +41,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
     static class StringMapWrapper {
         public Map<String, String> data;
     }
-    
+
     private final ObjectMapper CBOR_MAPPER = cborMapper();
 
     public void testWithList() throws Exception
