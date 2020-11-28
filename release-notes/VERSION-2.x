@@ -17,7 +17,7 @@ Project: jackson-datatypes-binaryModules:
 #222: (cbor) Add `CBORGenerator.Feature.LENIENT_UTF_ENCODING` for lenient handling of
   Unicode surrogate pairs on writing
  (contributed by Guillaume B)
-#228: Add support for decoding unassigned "simple values" (type 7)
+#228: (cbor) Add support for decoding unassigned "simple values" (type 7)
  (requested by davidlepilote@github)
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
