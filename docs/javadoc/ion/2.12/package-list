@@ -1,0 +1,5 @@
+com.fasterxml.jackson.dataformat.ion
+com.fasterxml.jackson.dataformat.ion.ionvalue
+com.fasterxml.jackson.dataformat.ion.jsr310
+com.fasterxml.jackson.dataformat.ion.polymorphism
+com.fasterxml.jackson.dataformat.ion.util

@@ -1,0 +1,2 @@
+com.fasterxml.jackson.dataformat.cbor
+com.fasterxml.jackson.dataformat.cbor.databind
