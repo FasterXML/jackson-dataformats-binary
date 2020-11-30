@@ -3365,7 +3365,7 @@ public class CBORParser extends ParserMinimalBase
     }
 
     private final BigInteger _bigNegative(long l) {
-        // 03-Dec-2017, tatu: [dataformats-binary#149] Careful with overflow
+        // 03-Dec-2017, tatu: [dataformats-binary#124] Careful with overflow
         BigInteger unsignedBase = _bigPositive(l);
         return unsignedBase.negate().subtract(BigInteger.ONE);
     }
