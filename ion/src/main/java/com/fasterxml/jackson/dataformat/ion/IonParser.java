@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
+import com.fasterxml.jackson.dataformat.ion.polymorphism.MultipleTypeIdResolver;
 
 /**
  * Implementation of {@link JsonParser} that will use an underlying
@@ -35,14 +36,52 @@ import com.amazon.ion.system.IonSystemBuilder;
 public class IonParser
     extends ParserMinimalBase
 {
+    /**
+     * Enumeration that defines all togglable features for Ion parsers.
+     */
+    public enum Feature implements FormatFeature // in 2.12
+    {
+        ;
+
+        final boolean _defaultState;
+        final int _mask;
+
+        /**
+         * Method that calculates bit set (flags) of all features that
+         * are enabled by default.
+         */
+        public static int collectDefaults()
+        {
+            int flags = 0;
+            for (Feature f : values()) {
+                if (f.enabledByDefault()) {
+                    flags |= f.getMask();
+                }
+            }
+            return flags;
+        }
+
+        private Feature(boolean defaultState) {
+            _defaultState = defaultState;
+            _mask = (1 << ordinal());
+        }
+
+        @Override
+        public boolean enabledByDefault() { return _defaultState; }
+        @Override
+        public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
+        @Override
+        public int getMask() { return _mask; }
+    }
+
     /*
     /*****************************************************************
     /* Basic configuration
     /*****************************************************************
-     */  
+     */
 
     protected final IonReader _reader;
-    
+
     /**
      * Some information about source is passed here, including underlying
      * stream
@@ -57,7 +96,7 @@ public class IonParser
     /*****************************************************************
     /* State
     /*****************************************************************
-     */  
+     */
 
     /**
      * Whether this logical parser has been closed or not
@@ -79,7 +118,7 @@ public class IonParser
     /*****************************************************************
     /* Construction
     /*****************************************************************
-     */  
+     */
 
     /**
      * @deprecated use {@link IonFactory#createParser(IonReader) instead}
@@ -128,8 +167,13 @@ public class IonParser
      */
 
     @Override
+    public boolean canReadTypeId() {
+        return true; // yes, Ion got 'em
+    }
+
+    @Override
     public boolean requiresCustomCodec() { return false;}
-    
+
     @Override
     public boolean hasTextCharacters() {
         //This is always false because getText() is more efficient than getTextCharacters().
@@ -147,13 +191,13 @@ public class IonParser
     /*****************************************************************
     /* JsonParser implementation: state handling
     /*****************************************************************
-     */  
- 
+     */
+
     @Override
     public boolean isClosed() {
         return _closed;
     }
-    
+
     @Override
     public void close() throws IOException {
         if (!_closed) {
@@ -172,7 +216,7 @@ public class IonParser
     /*****************************************************************
     /* JsonParser implementation: Text value access
     /*****************************************************************
-     */  
+     */
 
     @Override
     public String getText() throws IOException
@@ -217,12 +261,12 @@ public class IonParser
     public int getTextOffset() throws IOException {
         return 0;
     }
-    
+
     /*
     /*****************************************************************
     /* JsonParser implementation: Numeric value access
     /*****************************************************************
-     */  
+     */
 
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
@@ -314,8 +358,8 @@ public class IonParser
     /****************************************************************
     /* JsonParser implementation: Access to other (non-text/number) values
     /*****************************************************************
-     */  
-    
+     */
+
     @Override
     public byte[] getBinaryValue(Base64Variant arg0) throws IOException
     {
@@ -363,10 +407,27 @@ public class IonParser
     }
 
     /*
+    /**********************************************************
+    /* Public API, Native Ids (type, object)
+    /**********************************************************
+     */
+
+    /* getTypeId() wants to return a single type, but there may be multiple type annotations on an Ion value.
+     * @see MultipleTypeIdResolver...
+     * MultipleClassNameIdResolver#selectId
+     */
+    @Override
+    public Object getTypeId() throws IOException {
+        String[] typeAnnotations = getTypeAnnotations();
+        // getTypeAnnotations signals "none" with an empty array, but getTypeId is allowed to return null
+        return typeAnnotations.length == 0 ? null : typeAnnotations[0];
+    }
+
+    /*
     /*****************************************************************
     /* JsonParser implementation: traversal
     /*****************************************************************
-     */  
+     */
 
     @Override
     public JsonLocation getCurrentLocation() {
@@ -456,7 +517,7 @@ public class IonParser
         while (true) {
             JsonToken t = nextToken();
             if (t == null) {
-                _handleEOF(); // won't return in this case... 
+                _handleEOF(); // won't return in this case...
                 return this;
             }
             switch (t) {
@@ -479,15 +540,15 @@ public class IonParser
      *****************************************************************
      * Internal helper methods
      *****************************************************************
-      */  
-    
+      */
+
     protected JsonToken _tokenFromType(IonType type)
     {
         // One twist: Ion exposes nulls as typed ones... so:
         if (_reader.isNullValue()) {
             return JsonToken.VALUE_NULL;
         }
-        
+
         switch (type) {
         case BOOL:
             return _reader.booleanValue() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
@@ -517,7 +578,7 @@ public class IonParser
         // (BLOB, CLOB)
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
-    
+
     /**
      * Method called when an EOF is encountered between tokens.
      */
