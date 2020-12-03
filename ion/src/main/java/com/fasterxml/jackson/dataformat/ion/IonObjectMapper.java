@@ -35,7 +35,7 @@ import com.amazon.ion.IonWriter;
  * to be an instance of {@link IonFactory}.
  */
 public class IonObjectMapper extends ObjectMapper
-{    
+{
     private static final long serialVersionUID = 1L;
 
     /**
@@ -93,11 +93,45 @@ public class IonObjectMapper extends ObjectMapper
 
     public void setCreateBinaryWriters(boolean bin) {
         getFactory().setCreateBinaryWriters(bin);
-    }   
+    }
 
     @Override
     public Version version() {
         return PackageVersion.VERSION;
+    }
+
+        /*
+    /**********************************************************************
+    /* Configuration
+    /**********************************************************************
+     */
+
+    public IonObjectMapper configure(IonGenerator.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
+    }
+
+    public IonObjectMapper configure(IonParser.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
+    }
+
+    public IonObjectMapper enable(IonGenerator.Feature f) {
+        ((IonFactory)_jsonFactory).enable(f);
+        return this;
+    }
+
+    public IonObjectMapper enable(IonParser.Feature f) {
+        ((IonFactory)_jsonFactory).enable(f);
+        return this;
+    }
+
+    public IonObjectMapper disable(IonGenerator.Feature f) {
+        ((IonFactory)_jsonFactory).disable(f);
+        return this;
+    }
+
+    public IonObjectMapper disable(IonParser.Feature f) {
+        ((IonFactory)_jsonFactory).disable(f);
+        return this;
     }
 
     @Override

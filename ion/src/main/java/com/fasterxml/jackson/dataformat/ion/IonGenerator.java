@@ -22,17 +22,17 @@ import java.math.BigInteger;
 import java.util.Calendar;
 
 import com.fasterxml.jackson.core.Base64Variant;
+import com.fasterxml.jackson.core.FormatFeature;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.StreamWriteCapability;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
-import com.fasterxml.jackson.core.type.WritableTypeId;
+import com.fasterxml.jackson.core.util.JacksonFeature;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
@@ -48,11 +48,61 @@ import com.amazon.ion.Timestamp;
 public class IonGenerator
     extends GeneratorBase
 {
+    /**
+     * Enumeration that defines all toggleable features for Ion generators
+     */
+    public enum Feature implements FormatFeature // since 2.12
+    {
+        /**
+         * Whether to use Ion native Type Id construct for indicating type (true);
+         * or "generic" type property (false) when writing. Former works better for
+         * systems that are Ion-centric; latter may be better choice for interoperability,
+         * when converting between formats or accepting other formats. Enabled by default
+         * for backwards compatibility as that has been the behavior of
+         * `jackson-dataformat-ion` since 2.9.
+         *
+         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot>The Ion Specification</a>
+         * @since 2.12
+         */
+        USE_NATIVE_TYPE_ID(true),
+        ;
+
+        protected final boolean _defaultState;
+        protected final int _mask;
+
+        /**
+         * Method that calculates bit set (flags) of all features that
+         * are enabled by default.
+         */
+        public static int collectDefaults()
+        {
+            int flags = 0;
+            for (Feature f : values()) {
+                if (f.enabledByDefault()) {
+                    flags |= f.getMask();
+                }
+            }
+            return flags;
+        }
+
+        private Feature(boolean defaultState) {
+            _defaultState = defaultState;
+            _mask = (1 << ordinal());
+        }
+
+        @Override
+        public boolean enabledByDefault() { return _defaultState; }
+        @Override
+        public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
+        @Override
+        public int getMask() { return _mask; }
+    }
+
     /*
      *****************************************************************
      * Basic configuration
      *****************************************************************
-      */  
+      */
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
@@ -60,7 +110,14 @@ public class IonGenerator
     protected final boolean _ionWriterIsManaged;
 
     protected final IOContext _ioContext;
-    
+
+    /**
+     * Bit flag composed of bits that indicate which
+     * {@link IonGenerator.Feature}s
+     * are enabled.
+     */
+    protected int _formatFeatures;
+
     /**
      * Highest-level output abstraction we can use; either
      * OutputStream or Writer.
@@ -71,16 +128,18 @@ public class IonGenerator
      *****************************************************************
      * Instantiation
      *****************************************************************
-      */  
+      */
 
-    public IonGenerator(int features, ObjectCodec codec,
-            IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
+    public IonGenerator(int jsonFeatures, final int ionFeatures, ObjectCodec codec,
+                        IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
-        super(features, codec);
+        super(jsonFeatures, codec);
+        _formatFeatures = ionFeatures;
         _writer = ion;
         _ionWriterIsManaged = ionWriterIsManaged;
         _ioContext = ctxt;
         _destination = dst;
+
     }
 
     @Override
@@ -92,7 +151,7 @@ public class IonGenerator
      *****************************************************************
      * JsonGenerator implementation: state handling
      *****************************************************************
-      */  
+      */
 
     @Override
     public void close() throws IOException
@@ -134,10 +193,14 @@ public class IonGenerator
     /*****************************************************************
     /* Capability introspection
     /*****************************************************************
-     */  
+     */
 
     @Override
-    public boolean canWriteTypeId() { return true; }
+    public boolean canWriteTypeId() {
+        // yes, Ion does support Native Type Ids!
+        // 29-Nov-2020, jobarr: Except as per [dataformats-binary#225] might not want to...
+        return Feature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
+    }
 
     @Override
     public boolean canWriteBinaryNatively() { return true; }
@@ -151,7 +214,7 @@ public class IonGenerator
     /*****************************************************************
     /* JsonGenerator implementation: write numeric values
     /*****************************************************************
-     */  
+     */
 
     @Override
     public void writeNumber(int value) throws IOException, JsonGenerationException {
@@ -213,7 +276,7 @@ public class IonGenerator
      * {@link IonWriter}s {@code write*()} methods.
      *
      * @param annotation a type annotation
-     * 
+     *
      * @see IonAnnotationTypeSerializer
      */
     public void annotateNextValue(String annotation) {
@@ -221,11 +284,11 @@ public class IonGenerator
         // the next _writer.write*() or stepIn().
         _writer.addTypeAnnotation(annotation);
     }
-    
+
     /* Ion Exentions
-     * 
+     *
      */
-    
+
     public void writeDate(Calendar value) throws JsonGenerationException, IOException {
         _verifyValueWrite("write date value");
         _writer.writeTimestamp(Timestamp.forCalendar(value));
@@ -234,7 +297,7 @@ public class IonGenerator
      *****************************************************************
      * JsonGenerator implementation: write textual values
      *****************************************************************
-      */  
+      */
 
     @Override
     public void writeString(String value) throws IOException, JsonGenerationException {
@@ -253,13 +316,13 @@ public class IonGenerator
         // Ion doesn't have matching optimized method, so:
         writeString(new String(buffer, offset, length, "UTF-8"));
     }
-    
+
     /*
      *****************************************************************
      * JsonGenerator implementation: write raw JSON; N/A for Ion
      *****************************************************************
-     */  
-    
+     */
+
     @Override
     public void writeRaw(String value) throws IOException, JsonGenerationException {
         _reportNoRaw();
@@ -299,13 +362,13 @@ public class IonGenerator
     public void writeRawUTF8String(byte[] text, int offset, int length) throws IOException, JsonGenerationException {
         _reportNoRaw();
     }
-    
+
     /*
      *****************************************************************
      * JsonGenerator implementation: write other types of values
      *****************************************************************
-      */  
-    
+      */
+
     @Override
     public void writeBinary(Base64Variant b64v, byte[] data, int offset, int length) throws IOException, JsonGenerationException {
         _verifyValueWrite("write binary data");
@@ -324,12 +387,12 @@ public class IonGenerator
         _verifyValueWrite("write null");
         _writer.writeNull();
     }
-    
+
     public void writeNull(IonType ionType) throws IOException, JsonGenerationException {
         _verifyValueWrite("write null");
-        _writer.writeNull(ionType);    
+        _writer.writeNull(ionType);
     }
-    
+
     @Override
     public void writeObject(Object pojo) throws IOException, JsonProcessingException
     {
@@ -367,8 +430,8 @@ public class IonGenerator
     /*****************************************************************
     /* Methods base impl needs
     /*****************************************************************
-     */  
-    
+     */
+
     @Override
     protected void _releaseBuffers() {
         // nothing to do here...
@@ -427,14 +490,14 @@ public class IonGenerator
         if (status == JsonWriteContext.STATUS_EXPECT_VALUE) {
             _reportError("Can not write a field name, expecting a value");
         }
-        
-        _writeFieldName(value);     
+
+        _writeFieldName(value);
     }
-    
+
     protected void _writeFieldName(String value) throws IOException, JsonGenerationException {
         //Even though this is a one-liner, putting it into a function "_writeFieldName"
         //to keep this code matching the factoring in Jackson's UTF8JsonGenerator.
-        _writer.setFieldName(value);   
+        _writer.setFieldName(value);
     }
 
     @Override
@@ -455,7 +518,7 @@ public class IonGenerator
     /*****************************************************************
     /* Support for type ids
     /*****************************************************************
-     */  
+     */
 
     @Override
     public void writeTypeId(Object rawId) throws IOException {
@@ -469,23 +532,8 @@ public class IonGenerator
         }
     }
 
-    // default might actually work, but let's straighten it out a bit
-    @Override
-    public WritableTypeId writeTypePrefix(WritableTypeId typeIdDef) throws IOException
-    {
-        final JsonToken valueShape = typeIdDef.valueShape;
-        typeIdDef.wrapperWritten = false;
-        writeTypeId(typeIdDef.id);
-
-        // plus start marker for value, if/as necessary
-        if (valueShape == JsonToken.START_OBJECT) {
-            writeStartObject(typeIdDef.forValue);
-        } else if (valueShape == JsonToken.START_ARRAY) {
-            // should we now set the current object?
-            writeStartArray();
-        }
-        return typeIdDef;
-    }
+    // Default impl should work fine here:
+    // public WritableTypeId writeTypePrefix(WritableTypeId typeIdDef) throws IOException
 
     // Default impl should work fine here:
     // public WritableTypeId writeTypeSuffix(WritableTypeId typeIdDef) throws IOException
@@ -494,18 +542,18 @@ public class IonGenerator
     /*****************************************************************
     /* Standard methods
     *****************************************************************
-     */  
+     */
 
     @Override
     public String toString() {
         return "["+getClass().getSimpleName()+", Ion writer: "+_writer+"]";
     }
-    
+
     /*
     /*****************************************************************
     /* Internal helper methods
     /*****************************************************************
-     */  
+     */
 
     protected void _reportNoRaw() throws IOException {
         throw new IOException("writeRaw() functionality not available with Ion backend");

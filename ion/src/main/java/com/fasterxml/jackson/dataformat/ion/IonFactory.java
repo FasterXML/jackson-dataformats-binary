@@ -56,7 +56,23 @@ public class IonFactory extends JsonFactory {
      * Whether we will produce binary or text Ion writers: default is textual.
      */
     protected boolean _cfgCreateBinaryWriters = false;
-    
+
+    /**
+     * Bitfield (set of flags) of all parser features that are enabled
+     * by default.
+     */
+    protected final static int DEFAULT_ION_PARSER_FEATURE_FLAGS = IonParser.Feature.collectDefaults();
+
+    /**
+     * Bitfield (set of flags) of all generator features that are enabled
+     * by default.
+     */
+    protected final static int DEFAULT_ION_GENERATOR_FEATURE_FLAGS = IonGenerator.Feature.collectDefaults();
+
+    protected int _ionParserFeatures = DEFAULT_ION_PARSER_FEATURE_FLAGS;
+
+    protected int _ionGeneratorFeatures = DEFAULT_ION_GENERATOR_FEATURE_FLAGS;
+
     public IonFactory() {
         this((ObjectCodec) null);
     }
@@ -64,7 +80,7 @@ public class IonFactory extends JsonFactory {
     public IonFactory(ObjectCodec mapper) {
         this(mapper, IonSystemBuilder.standard().build());
     }
-    
+
     public IonFactory(ObjectCodec mapper, IonSystem system) {
         super(mapper);
         _system = system;
@@ -110,7 +126,7 @@ public class IonFactory extends JsonFactory {
     public static IonFactoryBuilder builderForBinaryWriters() {
         return new IonFactoryBuilder(true);
     }
-    
+
     /**
      * Method for creating {@link IonFactory} that will
      * create textual (not binary) writers.
@@ -144,7 +160,7 @@ public class IonFactory extends JsonFactory {
     public String getFormatName() {
         return FORMAT_NAME_ION;
     }
-    
+
     public void setCreateBinaryWriters(boolean b) {
         _cfgCreateBinaryWriters = b;
     }
@@ -163,6 +179,107 @@ public class IonFactory extends JsonFactory {
     public boolean canUseCharArrays() {
         return false;
     }
+
+    /*
+    /**********************************************************
+    /* Configuration, parser settings
+    /**********************************************************
+     */
+
+    /**
+     * Method for enabling or disabling specified parser feature
+     * (check {@link IonParser.Feature} for list of features)
+     */
+    public final IonFactory configure(IonParser.Feature f, boolean state)
+    {
+        if (state) {
+            enable(f);
+        } else {
+            disable(f);
+        }
+        return this;
+    }
+
+    /**
+     * Method for enabling specified parser feature
+     * (check {@link IonParser.Feature} for list of features)
+     */
+    public IonFactory enable(IonParser.Feature f) {
+        _ionParserFeatures |= f.getMask();
+        return this;
+    }
+
+    /**
+     * Method for disabling specified parser features
+     * (check {@link IonParser.Feature} for list of features)
+     */
+    public IonFactory disable(IonParser.Feature f) {
+        _ionParserFeatures &= ~f.getMask();
+        return this;
+    }
+
+    /**
+     * Checked whether specified parser feature is enabled.
+     */
+    public final boolean isEnabled(IonParser.Feature f) {
+        return (_ionParserFeatures & f.getMask()) != 0;
+    }
+
+    @Override
+    public int getFormatParserFeatures() {
+        return _ionParserFeatures;
+    }
+
+    /*
+    /**********************************************************
+    /* Configuration, generator settings
+    /**********************************************************
+     */
+
+    /**
+     * Method for enabling or disabling specified generator feature
+     * (check {@link IonGenerator.Feature} for list of features)
+     */
+    public final IonFactory configure(IonGenerator.Feature f, boolean state) {
+        if (state) {
+            enable(f);
+        } else {
+            disable(f);
+        }
+        return this;
+    }
+
+
+    /**
+     * Method for enabling specified generator features
+     * (check {@link IonGenerator.Feature} for list of features)
+     */
+    public IonFactory enable(IonGenerator.Feature f) {
+        _ionGeneratorFeatures |= f.getMask();
+        return this;
+    }
+
+    /**
+     * Method for disabling specified generator feature
+     * (check {@link IonGenerator.Feature} for list of features)
+     */
+    public IonFactory disable(IonGenerator.Feature f) {
+        _ionGeneratorFeatures &= ~f.getMask();
+        return this;
+    }
+
+    /**
+     * Check whether specified generator feature is enabled.
+     */
+    public final boolean isEnabled(IonGenerator.Feature f) {
+        return (_ionGeneratorFeatures & f.getMask()) != 0;
+    }
+
+    @Override
+    public int getFormatGeneratorFeatures() {
+        return _ionGeneratorFeatures;
+    }
+
 
     /*
     ***************************************************************
@@ -305,7 +422,7 @@ public class IonFactory extends JsonFactory {
 
         main_loop:
         while (true) {
-            
+
             while (offset < buf.length) {
                 int count = r.read(buf, offset, buf.length - offset);
                 if (count < 0) {
@@ -355,6 +472,6 @@ public class IonFactory extends JsonFactory {
 
     protected IonGenerator _createGenerator(IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
-        return new IonGenerator(_generatorFeatures, _objectCodec, ion, ionWriterIsManaged, ctxt, dst);
-    }        
+        return new IonGenerator(_generatorFeatures, _ionGeneratorFeatures, _objectCodec, ion, ionWriterIsManaged, ctxt, dst);
+    }
 }
