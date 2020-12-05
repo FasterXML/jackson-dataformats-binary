@@ -64,6 +64,10 @@ public class CBORParser extends ParserBase
     private final static double MATH_POW_2_10 = Math.pow(2, 10);
     private final static double MATH_POW_2_NEG14 = Math.pow(2, -14);
 
+    // 2.11.4: [dataformats-binary#186] Avoid OOME/DoS for bigger binary;
+    //  read only up to 250k
+    protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
+
     /*
     /**********************************************************************
     /* Parsing state
@@ -1715,13 +1719,15 @@ public class CBORParser extends ParserBase
         }
     }
 
-    private int _readAndWriteBytes(OutputStream out, int total) throws IOException
+    private int _readAndWriteBytes(OutputStream out, final int total) throws IOException
     {
         int left = total;
         while (left > 0) {
             int avail = _inputEnd - _inputPtr;
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                if (!loadMore()) {
+                    _reportIncompleteBinaryRead(total, total-left);
+                }
                 avail = _inputEnd - _inputPtr;
             }
             int count = Math.min(avail, left);
@@ -2395,33 +2401,55 @@ public class CBORParser extends ParserBase
         // either way, got it now
         return _inputBuffer[_inputPtr++];
     }
-    
+
+    /**
+     * Helper called to complete reading of binary data ("byte string") in
+     * case contents are needed.
+     */
     @SuppressWarnings("resource")
     protected byte[] _finishBytes(int len) throws IOException
     {
+        // Chunked?
         // First, simple: non-chunked
-        if (len >= 0) {
+        if (len <= 0) {
             if (len == 0) {
                 return NO_BYTES;
             }
-            byte[] b = new byte[len];
-            if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
-            }
-            int ptr = 0;
-            while (true) {
-                int toAdd = Math.min(len, _inputEnd - _inputPtr);
-                System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
-                _inputPtr += toAdd;
-                ptr += toAdd;
-                len -= toAdd;
-                if (len <= 0) {
-                    return b;
-                }
-                loadMoreGuaranteed();
+            return _finishChunkedBytes();
+        }
+        // Non-chunked, contiguous
+        if (len > LONGEST_NON_CHUNKED_BINARY) {
+            // [dataformats-binary#186]: avoid immediate allocation for longest
+            return _finishLongContiguousBytes(len);
+        }
+
+        final byte[] b = new byte[len];
+        final int expLen = len;
+        if (_inputPtr >= _inputEnd) {
+            if (!loadMore()) {
+                _reportIncompleteBinaryRead(expLen, 0);
             }
         }
 
+        int ptr = 0;
+        while (true) {
+            int toAdd = Math.min(len, _inputEnd - _inputPtr);
+            System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
+            _inputPtr += toAdd;
+            ptr += toAdd;
+            len -= toAdd;
+            if (len <= 0) {
+                return b;
+            }
+            if (!loadMore()) {
+                _reportIncompleteBinaryRead(expLen, ptr);
+            }
+        }
+    }
+
+    // @since 2.12
+    protected byte[] _finishChunkedBytes() throws IOException
+    {
         // or, if not, chunked...
         ByteArrayBuilder bb = _getByteArrayBuilder();
         while (true) {
@@ -2438,14 +2466,17 @@ public class CBORParser extends ParserBase
                 throw _constructError("Mismatched chunk in chunked content: expected "+CBORConstants.MAJOR_TYPE_BYTES
                         +" but encountered "+type);
             }
-            len = _decodeExplicitLength(ch & 0x1F);
+            int len = _decodeExplicitLength(ch & 0x1F);
             if (len < 0) {
                 throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+CBORConstants.MAJOR_TYPE_BYTES+")");
             }
+            final int chunkLen = len;
             while (len > 0) {
                 int avail = _inputEnd - _inputPtr;
                 if (_inputPtr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    if (!loadMore()) {
+                        _reportIncompleteBinaryRead(chunkLen, chunkLen-len);
+                    }
                     avail = _inputEnd - _inputPtr;
                 }
                 int count = Math.min(avail, len);
@@ -2456,7 +2487,33 @@ public class CBORParser extends ParserBase
         }
         return bb.toByteArray();
     }
-    
+
+    // @since 2.12
+    protected byte[] _finishLongContiguousBytes(final int expLen) throws IOException
+    {
+        int left = expLen;
+
+        // 04-Dec-2020, tatu: Let's NOT use recycled instance since we have much
+        //   longer content and there is likely less benefit of trying to recycle
+        //   segments
+        try (final ByteArrayBuilder bb = new ByteArrayBuilder(LONGEST_NON_CHUNKED_BINARY >> 1)) {
+            while (left > 0) {
+                int avail = _inputEnd - _inputPtr;
+                if (avail <= 0) {
+                    if (!loadMore()) {
+                        _reportIncompleteBinaryRead(expLen, expLen-left);
+                    }
+                    avail = _inputEnd - _inputPtr;
+                }
+                int count = Math.min(avail, left);
+                bb.write(_inputBuffer, _inputPtr, count);
+                _inputPtr += count;
+                left -= count;        
+            }
+            return bb.toByteArray();
+        }
+    }
+
     protected final JsonToken _decodeFieldName() throws IOException
     {     
         if (_inputPtr >= _inputEnd) {
@@ -2605,7 +2662,8 @@ public class CBORParser extends ParserBase
         } else if (type == CBORConstants.MAJOR_TYPE_INT_NEG) {
             name = _numberToName(ch, true);
         } else if (type == CBORConstants.MAJOR_TYPE_BYTES) {
-            //  08-Sep-2014, tatu: There are codecs (f.ex. Perl module "CBOR::XS") that use Binary data...
+            // 08-Sep-2014, tatu: As per [Issue#5], there are codecs
+            //   (f.ex. Perl module "CBOR::XS") that use Binary data...
             final int blen = _decodeExplicitLength(ch & 0x1F);
             byte[] b = _finishBytes(blen);
             // TODO: Optimize, if this becomes commonly used & bottleneck; we have
@@ -3209,7 +3267,7 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    protected final boolean loadMore() throws IOException
+    protected boolean loadMore() throws IOException
     {
         if (_inputStream != null) {
             _currInputProcessed += _inputEnd;
@@ -3230,7 +3288,7 @@ public class CBORParser extends ParserBase
         return false;
     }
 
-    protected final void loadMoreGuaranteed() throws IOException {
+    protected void loadMoreGuaranteed() throws IOException {
         if (!loadMore()) { _reportInvalidEOF(); }
     }
     
@@ -3345,6 +3403,13 @@ public class CBORParser extends ParserBase
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
+    }
+
+    // @since 2.12
+    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws IOException
+    {
+        _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
+                expLen, actLen), _currToken);
     }
 
     /*
