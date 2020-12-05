@@ -116,8 +116,11 @@ John (iziamos@github)
  (2.10.0)
 
 Paul Adolph (padolph@github)
-* Reported #185: Internal parsing of tagged arrays can lead to stack overflow
+* Reported #185: (cbor) Internal parsing of tagged arrays can lead to stack overflow
  (2.10.1)
+* Reported #186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
+   exception
+ (2.11.4)
 
 Yanming Zhou (quaff@github)
 * Reported #188: Unexpected `MismatchedInputException` for `byte[]` value bound to `String`

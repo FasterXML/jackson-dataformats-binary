@@ -198,7 +198,7 @@ public class CBORGenerator extends GeneratorBase
 
     /**
      * Number of elements remaining in the current complex structure (if any),
-     * when writing defined-length Arrays, Objects; marker {@link #INDEFINITE_LENGTH}
+     * when writing defined-length Arrays, Objects; marker {code INDEFINITE_LENGTH}
      * otherwise.
      */
     protected int _currentRemainingElements = INDEFINITE_LENGTH;

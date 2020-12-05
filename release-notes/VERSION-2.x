@@ -8,9 +8,15 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.11.4 (not yet released)
+
+#186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
+   exception
+ (reported by Paul A)
+
 2.11.3 (02-Oct-2020)
 
-#219: Cache record names to avoid hitting class loader
+#219: (avro) Cache record names to avoid hitting class loader
  (contributed by Marcos P)
 
 2.11.2 (02-Aug-2020)
