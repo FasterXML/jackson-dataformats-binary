@@ -44,6 +44,12 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
         _formatGeneratorFeatures = base._smileGeneratorFeatures;
     }
 
+    @Override
+    public SmileFactory build() {
+        // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
+        return new SmileFactory(this);
+    }
+
     // // // Parser features
 
     public SmileFactoryBuilder enable(SmileParser.Feature f) {
@@ -112,10 +118,4 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
 
     public int formatParserFeaturesMask() { return _formatParserFeatures; }
     public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }
-
-    @Override
-    public SmileFactory build() {
-        // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
-        return new SmileFactory(this);
-    }
 }

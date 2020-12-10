@@ -112,8 +112,6 @@ public class SmileFactory extends JsonFactory
 
     /**
      * Constructors used by {@link SmileFactoryBuilder} for instantiation.
-     *
-     * @since 3.0
      */
     protected SmileFactory(SmileFactoryBuilder b) {
         super(b, false);

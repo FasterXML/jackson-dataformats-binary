@@ -97,13 +97,13 @@ public class IonFactory extends JsonFactory {
 
     /**
      * Constructors used by {@link IonFactoryBuilder} for instantiation.
-     *
-     * @since 3.0
      */
     protected IonFactory(IonFactoryBuilder b) {
         super(b, false);
         _cfgCreateBinaryWriters = b.willCreateBinaryWriters();
         _system = b.ionSystem();
+        _ionParserFeatures = b.formatParserFeaturesMask();
+        _ionGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
 
     @Override
@@ -120,19 +120,19 @@ public class IonFactory extends JsonFactory {
     }
 
     /**
-     * Method for creating {@link IonFactoryBuilder} initialized with settings to
-     * create binary (not textual) writers.
-     */
-    public static IonFactoryBuilder builderForBinaryWriters() {
-        return new IonFactoryBuilder(true);
-    }
-
-    /**
      * Method for creating {@link IonFactory} that will
      * create textual (not binary) writers.
      */
     public static IonFactory forTextualWriters() {
         return new IonFactoryBuilder(false).build();
+    }
+
+    /**
+     * Method for creating {@link IonFactoryBuilder} initialized with settings to
+     * create binary (not textual) writers.
+     */
+    public static IonFactoryBuilder builderForBinaryWriters() {
+        return new IonFactoryBuilder(true);
     }
 
     /**

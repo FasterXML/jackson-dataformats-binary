@@ -257,14 +257,12 @@ public class IonObjectMapper extends ObjectMapper
     {
         IonFactory f = getFactory();
         IonDatagram container = f._system.newDatagram();
-        IonWriter writer = f._system.newWriter(container);
-        try {
+
+        try (IonWriter writer = f._system.newWriter(container)) {
             writeValue(writer, value);
             IonValue result = container.get(0);
             result.removeFromContainer();
             return result;
-        } finally {
-            writer.close();
         }
     }
 }
