@@ -8,6 +8,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.12.1 (not yet released)
+
+#232: (ion) Allow disabling native type ids in IonMapper
+ (contributed by Josh B)
+
 2.12.0 (29-Nov-2020)
 
 #204: (ion) Add `IonFactory.getIonSystem()` accessor
