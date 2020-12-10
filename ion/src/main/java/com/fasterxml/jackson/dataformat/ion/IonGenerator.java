@@ -32,7 +32,6 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
-import com.fasterxml.jackson.core.util.JacksonFeature;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
 
@@ -61,7 +60,7 @@ public class IonGenerator
          * for backwards compatibility as that has been the behavior of
          * `jackson-dataformat-ion` since 2.9.
          *
-         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot>The Ion Specification</a>
+         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
          * @since 2.12
          */
         USE_NATIVE_TYPE_ID(true),

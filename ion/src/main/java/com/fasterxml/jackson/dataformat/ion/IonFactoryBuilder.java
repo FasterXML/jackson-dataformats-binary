@@ -8,8 +8,6 @@ import com.amazon.ion.system.IonSystemBuilder;
 /**
  * {@link com.fasterxml.jackson.core.TSFBuilder}
  * implementation for constructing {@link IonFactory} instances.
- *
- * @since 3.0
  */
 public class IonFactoryBuilder extends TSFBuilder<IonFactory, IonFactoryBuilder>
 {
@@ -28,11 +26,8 @@ public class IonFactoryBuilder extends TSFBuilder<IonFactory, IonFactoryBuilder>
      */
     protected IonSystem _system;
 
-    /**
-     * Set of {@link IonFactory.Feature}s enabled, as bitmask.
-     */
     protected boolean _createBinaryWriters;
-    
+
     /*
     /**********************************************************
     /* Life cycle

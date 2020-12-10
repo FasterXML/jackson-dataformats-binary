@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.MultipleTypeIdResolver;
 
 /**
  * Implementation of {@link JsonParser} that will use an underlying
