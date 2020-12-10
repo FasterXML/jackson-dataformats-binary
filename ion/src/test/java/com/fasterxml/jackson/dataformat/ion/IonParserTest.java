@@ -38,7 +38,7 @@ public class IonParserTest
     @Test
     public void testGetNumberTypeAndValue() throws Exception {
         IonSystem ion = IonSystemBuilder.standard().build();
- 
+
         Integer intValue = Integer.MAX_VALUE;
         IonValue ionInt = ion.newInt(intValue);
         final ObjectReadContext EMPTY_READ_CTXT = ObjectReadContext.empty();
@@ -47,14 +47,14 @@ public class IonParserTest
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, intParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.INT, intParser.getNumberType());
         Assert.assertEquals(intValue, intParser.getNumberValue());
- 
+
         Long longValue = Long.MAX_VALUE;
         IonValue ionLong = ion.newInt(longValue);
         IonParser longParser = ionFactory.createParser(EMPTY_READ_CTXT, ionLong);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, longParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.LONG, longParser.getNumberType());
         Assert.assertEquals(longValue, longParser.getNumberValue());
- 
+
         BigInteger bigIntValue = new BigInteger(Long.MAX_VALUE + "1");
         IonValue ionBigInt = ion.newInt(bigIntValue);
         IonParser bigIntParser = ionFactory.createParser(EMPTY_READ_CTXT, ionBigInt);
@@ -101,5 +101,20 @@ public class IonParserTest
         reader.next();
         final IonParser floatParser = ionFactory.createParser(ctxt, reader);
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
+    }
+
+    @Test
+    public void testGetTypeId() throws IOException {
+        String className = "com.example.Struct";
+        final byte[] data =  ("'" + className + "'::{ foo: \"bar\" }").getBytes("UTF-8");
+
+        IonSystem ion = IonSystemBuilder.standard().build();
+        IonReader reader = ion.newReader(data, 0, data.length);
+        IonFactory factory = new IonFactory();
+        IonParser parser = factory.createParser(ObjectReadContext.empty(), reader);
+
+        parser.nextToken(); // advance to find START_OBJECT
+
+        Assert.assertEquals(className, parser.getTypeId());
     }
 }

@@ -20,6 +20,7 @@ import java.net.URL;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.DecorableTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+
 import com.fasterxml.jackson.dataformat.ion.util.CloseSafeUTF8Writer;
 
 import com.amazon.ion.IonReader;
@@ -52,7 +53,19 @@ public class IonFactory
     /**
      * Default setting for binary vs textual output: defaulting to textual.
      */
-    final static boolean DEFAULT_CREATE_BINARY = false;
+    protected final static boolean DEFAULT_CREATE_BINARY = false;
+
+    /**
+     * Bitfield (set of flags) of all parser features that are enabled
+     * by default.
+     */
+    protected final static int DEFAULT_ION_PARSER_FEATURE_FLAGS = IonParser.Feature.collectDefaults();
+
+    /**
+     * Bitfield (set of flags) of all generator features that are enabled
+     * by default.
+     */
+    protected final static int DEFAULT_ION_GENERATOR_FEATURE_FLAGS = IonGenerator.Feature.collectDefaults();
 
     /*
     /**********************************************************************
@@ -74,7 +87,7 @@ public class IonFactory
      */
 
     public IonFactory() {
-        super(0, 0);
+        super(DEFAULT_ION_PARSER_FEATURE_FLAGS, DEFAULT_ION_GENERATOR_FEATURE_FLAGS);
         _cfgBinaryWriters = DEFAULT_CREATE_BINARY;
         _system = IonSystemBuilder.standard().build();
     }
@@ -119,7 +132,7 @@ public class IonFactory
     public static IonFactoryBuilder builderForBinaryWriters() {
         return new IonFactoryBuilder(true);
     }
-    
+
     /**
      * Method for creating {@link IonFactory} that will
      * create textual (not binary) writers.
@@ -149,9 +162,23 @@ public class IonFactory
         return this;
     }
 
-    /*                                                                                       
+    /*
     /**********************************************************************
-    /* Basic introspection                                                                  
+    /* Serializable overrides
+    /**********************************************************************
+     */
+
+    /**
+     * Method that we need to override to actually make restoration go
+     * through constructors etc.
+     */
+    protected Object readResolve() {
+        return new IonFactory(this);
+    }
+
+    /*
+    /**********************************************************************
+    /* Capability introspection
     /**********************************************************************
      */
     
@@ -161,20 +188,34 @@ public class IonFactory
     }
 
     @Override
-    public boolean canHandleBinaryNatively() {
-        // 21-Feb-2017, tatu: I think only support with binary backend
-        return _cfgBinaryWriters;
-    }
-
-    @Override
     public boolean canParseAsync() {
         // 30-Sep-2017, tatu: No async implementation exists
         return false;
     }
 
+    @Override
+    public boolean canHandleBinaryNatively() {
+        // 21-Feb-2017, tatu: I think only support with binary backend
+        return _cfgBinaryWriters;
+    }
+
+    /**
+     * Checked whether specified parser feature is enabled.
+     */
+    public final boolean isEnabled(IonParser.Feature f) {
+        return (_formatReadFeatures & f.getMask()) != 0;
+    }
+
+    /**
+     * Check whether specified generator feature is enabled.
+     */
+    public final boolean isEnabled(IonGenerator.Feature f) {
+        return (_formatWriteFeatures & f.getMask()) != 0;
+    }
+
     /*
     /**********************************************************************
-    /* Data format support
+    /* Format support
     /**********************************************************************
      */
 
@@ -189,15 +230,19 @@ public class IonFactory
     }
 
     @Override
-    public int getFormatReadFeatures() { return 0; }
+    public Class<IonParser.Feature> getFormatReadFeatureType() {
+        return IonParser.Feature.class;
+    }
 
     @Override
-    public int getFormatWriteFeatures() { return 0; }
+    public Class<IonGenerator.Feature> getFormatWriteFeatureType() {
+        return IonGenerator.Feature.class;
+    }
 
     /*
-    /**********************************************************************
-    /* Factory methods: parsers
-    /**********************************************************************
+    /***************************************************************
+    /* Extended API
+    /***************************************************************
      */
 
     @Override
@@ -418,6 +463,7 @@ public class IonFactory
     {
         return new IonGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
+                writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 ion, ionWriterIsManaged, dst);
     }
 }

@@ -62,7 +62,7 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
             return (IonParser) p;
         }
         throw new JsonParseException(p,
-                "Can only use IonAnnotationTypeDeserializer with IonGenerator");
+                "Can only use IonAnnotationTypeDeserializer with IonParser");
     }
 
     private Object _deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {

@@ -152,3 +152,8 @@ Guillaume Bort (guillaumebort@github)
 * Contributed implementation of #222: (cbor) Add `CBORGenerator.Feature.LENIENT_UTF_ENCODING`
   for lenient handling of Unicode surrogate pairs on writing
  (2.12.0)
+
+Josh Barr (jobarr-amzn@github)
+
+* Contributed #232: (ion) Allow disabling native type ids in IonMapper
+ (2.12.1)

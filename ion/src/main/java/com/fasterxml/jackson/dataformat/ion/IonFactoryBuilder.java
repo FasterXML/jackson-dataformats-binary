@@ -8,8 +8,6 @@ import com.amazon.ion.system.IonSystemBuilder;
 /**
  * {@link com.fasterxml.jackson.core.TokenStreamFactory.TSFBuilder}
  * implementation for constructing {@link IonFactory} instances.
- *
- * @since 3.0
  */
 public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactoryBuilder>
 {
@@ -28,9 +26,6 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
      */
     protected IonSystem _system;
 
-    /**
-     * Set of {@link IonFactory.Feature}s enabled, as bitmask.
-     */
     protected boolean _createBinaryWriters;
 
     /*
@@ -40,7 +35,8 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
      */
 
     protected IonFactoryBuilder(boolean createBinary) {
-        super(0, 0);
+        super(IonFactory.DEFAULT_ION_PARSER_FEATURE_FLAGS,
+                IonFactory.DEFAULT_ION_GENERATOR_FEATURE_FLAGS);
         _createBinaryWriters = createBinary;
     }
 
@@ -49,7 +45,17 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
         _createBinaryWriters = base._cfgBinaryWriters;
     }
 
-    // // // Configuration
+    @Override
+    public IonFactory build() {
+        // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
+        return new IonFactory(this);
+    }
+
+    /*
+    /**********************************************************
+    /* Configuration: Ion-specific
+    /**********************************************************
+     */
 
     public IonFactoryBuilder withBinaryWriters() {
         _createBinaryWriters = true;
@@ -68,6 +74,76 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
 
     /*
     /**********************************************************
+    /* Configuration: on/off features
+    /**********************************************************
+     */
+
+    // // // Parser features
+
+    public IonFactoryBuilder enable(IonParser.Feature f) {
+        _formatReadFeatures |= f.getMask();
+        return _this();
+    }
+
+    public IonFactoryBuilder enable(IonParser.Feature first, IonParser.Feature... other) {
+        _formatReadFeatures |= first.getMask();
+        for (IonParser.Feature f : other) {
+            _formatReadFeatures |= f.getMask();
+        }
+        return _this();
+    }
+
+    public IonFactoryBuilder disable(IonParser.Feature f) {
+        _formatReadFeatures &= ~f.getMask();
+        return _this();
+    }
+
+    public IonFactoryBuilder disable(IonParser.Feature first, IonParser.Feature... other) {
+        _formatReadFeatures &= ~first.getMask();
+        for (IonParser.Feature f : other) {
+            _formatReadFeatures &= ~f.getMask();
+        }
+        return _this();
+    }
+
+    public IonFactoryBuilder configure(IonParser.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
+    }
+
+    // // // Generator features
+
+    public IonFactoryBuilder enable(IonGenerator.Feature f) {
+        _formatWriteFeatures |= f.getMask();
+        return _this();
+    }
+
+    public IonFactoryBuilder enable(IonGenerator.Feature first, IonGenerator.Feature... other) {
+        _formatWriteFeatures |= first.getMask();
+        for (IonGenerator.Feature f : other) {
+            _formatWriteFeatures |= f.getMask();
+        }
+        return _this();
+    }
+
+    public IonFactoryBuilder disable(IonGenerator.Feature f) {
+        _formatWriteFeatures &= ~f.getMask();
+        return _this();
+    }
+
+    public IonFactoryBuilder disable(IonGenerator.Feature first, IonGenerator.Feature... other) {
+        _formatWriteFeatures &= ~first.getMask();
+        for (IonGenerator.Feature f : other) {
+            _formatWriteFeatures &= ~f.getMask();
+        }
+        return _this();
+    }
+
+    public IonFactoryBuilder configure(IonGenerator.Feature f, boolean state) {
+        return state ? enable(f) : disable(f);
+    }
+
+    /*
+    /**********************************************************
     /* Accessors
     /**********************************************************
      */
@@ -79,11 +155,5 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
             return IonSystemBuilder.standard().build();
         }
         return _system;
-    }
-
-    @Override
-    public IonFactory build() {
-        // 28-Dec-2017, tatu: No special settings beyond base class ones, so:
-        return new IonFactory(this);
     }
 }
