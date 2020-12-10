@@ -139,6 +139,18 @@ public class IonParser
      */
 
     @Override
+    public boolean canReadTypeId() {
+        return true; // yes, Ion got 'em
+    }
+
+    @Override
+    public boolean hasTextCharacters() {
+        //This is always false because getText() is more efficient than getTextCharacters().
+        // See the javadoc for JsonParser.hasTextCharacters().
+        return false;
+    }
+
+    @Override
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;
@@ -179,13 +191,6 @@ public class IonParser
     /* JsonParser implementation: Text value access
     /*****************************************************************
      */
-
-    @Override
-    public boolean hasTextCharacters() {
-        //This is always false because getText() is more efficient than getTextCharacters().
-        // See the javadoc for JsonParser.hasTextCharacters().
-        return false;
-    }
 
     @Override
     public String getText() throws IOException
