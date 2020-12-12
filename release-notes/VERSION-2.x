@@ -8,7 +8,7 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.11.4 (not yet released)
+2.11.4 (12-Dec-2020)
 
 #186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
    exception
