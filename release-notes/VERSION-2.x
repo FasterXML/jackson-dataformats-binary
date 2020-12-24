@@ -1,6 +1,7 @@
 Project: jackson-datatypes-binaryModules:
   jackson-dataformat-avro
   jackson-dataformat-cbor
+  jackson-dataformat-ion (since 2.9)
   jackson-dataformat-protobuf
   jackson-dataformat-smile
 
