@@ -1,6 +1,7 @@
 Project: jackson-datatypes-binaryModules:
   jackson-dataformat-avro
   jackson-dataformat-cbor
+  jackson-dataformat-ion (since 2.9)
   jackson-dataformat-protobuf
   jackson-dataformat-smile
 
@@ -26,7 +27,7 @@ Project: jackson-datatypes-binaryModules:
  (requested by davidlepilote@github)
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
-2.11.4 (not yet released)
+2.11.4 (12-Dec-2020)
 
 #186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
    exception

@@ -49,11 +49,13 @@ public class IonGenerator
          * Whether to use Ion native Type Id construct for indicating type (true);
          * or "generic" type property (false) when writing. Former works better for
          * systems that are Ion-centric; latter may be better choice for interoperability,
-         * when converting between formats or accepting other formats. Enabled by default
-         * for backwards compatibility as that has been the behavior of
-         * `jackson-dataformat-ion` since 2.9.
+         * when converting between formats or accepting other formats.
+         *<p>
+         * Enabled by default for backwards compatibility as that has been the behavior
+         * of `jackson-dataformat-ion` since 2.9 (first official public version)
          *
          * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
+         *
          * @since 2.12
          */
         USE_NATIVE_TYPE_ID(true),
