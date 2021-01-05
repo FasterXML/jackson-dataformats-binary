@@ -452,7 +452,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                         i = b & 0x7F;
                         if (b < 0) {
                             b = _nextByteGuaranteed();
-                            if (i < 0) {
+                            if (b < 0) {
                                 _reportInvalidNegative(b);
                             }
                             i |= (b << 7);

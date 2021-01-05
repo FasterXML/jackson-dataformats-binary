@@ -23,7 +23,9 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
 {
     private final Map<String, Class<?>> _idTypes = new HashMap<>();
 
-    private final Map<Class<?>, String> _typeIds = new HashMap<>();
+    // 04-Jan-2021, tatu: Not sure why this is being kept around, not used as of
+    //    2.12; commenting out may be removed from 2.13
+//    private final Map<Class<?>, String> _typeIds = new HashMap<>();
 
     public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
             PolymorphicTypeValidator ptv,
@@ -44,12 +46,12 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
     @Override
     public void registerSubtype(Class<?> type, String name) {
         _idTypes.put(name, type);
-        _typeIds.put(type, name);
+//        _typeIds.put(type, name);
     }
 
     @Override
     protected JavaType _typeFromId(String id, DatabindContext ctxt) throws IOException {
-        // base types don't have subclasses
+        // primitive types don't have subclasses
         if (_baseType.isPrimitive()) {
             return _baseType;
         }
