@@ -140,11 +140,13 @@ public abstract class AvroSchemaHelper
             return Schema.create(Schema.Type.NULL);
         case NUMBER:
             // 16-Feb-2017, tatu: Fixed as suggested by `baharclerode@github`
-            if (hint.hasRawClass(float.class)) {
-                return Schema.create(Schema.Type.FLOAT);
-            }
-            if (hint.hasRawClass(long.class)) {
-                return Schema.create(Schema.Type.LONG);
+            if (hint != null) {
+                if (hint.hasRawClass(float.class)) {
+                    return Schema.create(Schema.Type.FLOAT);
+                }
+                if (hint.hasRawClass(long.class)) {
+                    return Schema.create(Schema.Type.LONG);
+                }
             }
             return Schema.create(Schema.Type.DOUBLE);
         case STRING:

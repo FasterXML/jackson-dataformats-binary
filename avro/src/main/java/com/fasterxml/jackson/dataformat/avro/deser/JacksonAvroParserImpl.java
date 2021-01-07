@@ -1099,6 +1099,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
             _reportError("Needed to read %d bytes, reached end-of-input", minAvailable);
+            return; // never gets here, but sec tools complain without
         }
         while (_inputEnd < minAvailable) {
             int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
