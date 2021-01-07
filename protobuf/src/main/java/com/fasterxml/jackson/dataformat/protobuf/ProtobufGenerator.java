@@ -394,6 +394,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         if (_currField == null) { // just a sanity check
             _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
+            return; // never gets here but code analyzers can't see that
         }
         if (!_currField.isArray()) {
             _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");
@@ -568,6 +569,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         if (_currField == null) { // inlined _verifyValueWrite
             _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
+            return; // never gets here but need to help code analyzers
         }
         if (!_currField.isArray()) {
             _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");

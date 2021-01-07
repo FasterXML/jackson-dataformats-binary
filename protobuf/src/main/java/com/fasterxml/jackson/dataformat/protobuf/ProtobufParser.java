@@ -545,6 +545,7 @@ public class ProtobufParser extends ParserMinimalBase
         case STATE_INITIAL:
             if (_schema == null) {
                 _reportError("No Schema has been assigned: can not decode content");
+                return null; // never gets here but needed for code analyzers benefit
             }
             _currentMessage = _schema.getRootType();
             _currentField = _currentMessage.firstField();
