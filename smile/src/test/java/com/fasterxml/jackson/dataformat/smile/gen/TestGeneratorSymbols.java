@@ -34,12 +34,20 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     // same as above, but with name >= 64 characters
     public void testSharedNameSimpleLong() throws Exception
     {
+        _testSharedNameSimpleLong("ABCD");
+        _testSharedNameSimpleLong("ABCY");
+        _testSharedNameSimpleLong("XBCD");
+        _testSharedNameSimpleLong("ACCD");
+    }
+
+    private void _testSharedNameSimpleLong(String suffix) throws Exception
+    {
         String digits = "01234567899";
 
         // Base is 76 chars; loop over couple of shorter ones too
         
-        final String LONG_NAME = "a"+digits+"b"+digits+"c"+digits+"d"+digits+"e"+digits+"f"+digits+"ABCD";
-        
+        final String LONG_NAME = "a"+digits+"b"+digits+"c"+digits+"d"+digits+"e"+digits+"f"+digits+suffix;
+
         for (int i = 0; i < 4; ++i) {
             int strLen = LONG_NAME.length() - i;
             String field = LONG_NAME.substring(0, strLen);
@@ -64,14 +72,14 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
             assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-            assertEquals(field, parser.getCurrentName());
+            assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(1, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
     
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
             assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-            assertEquals(field, parser.getCurrentName());
+            assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(2, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
@@ -217,13 +225,13 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         gen.close();
         
         JsonParser parser = factory.createParser(os.toByteArray());
-        assertNull(parser.getCurrentToken());
+        assertNull(parser.currentToken());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals(FIELD_NAME, parser.getCurrentName());
+        assertEquals(FIELD_NAME, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals(VALUE, parser.getText());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());

@@ -1516,14 +1516,14 @@ public class SmileParser extends SmileParserBase
     {
         int lastQuadBytes = byteLen & 3;
         // Ok: must decode UTF-8 chars. No other validation SHOULD be needed (except bounds checks?)
-        /* Note: last quad is not correctly aligned (leading zero bytes instead
-         * need to shift a bit, instead of trailing). Only need to shift it
-         * for UTF-8 decoding; need revert for storage (since key will not
-         * be aligned, to optimize lookup speed)
-         */
+
+        // Note: last quad is not correctly aligned (leading zero bytes instead
+        // need to shift a bit, instead of trailing). Only need to shift it
+        // for UTF-8 decoding; need revert for storage (since key will not
+        // be aligned, to optimize lookup speed)
+        //
         int lastQuad;
-    
-        if (lastQuadBytes < 4) {
+        if (lastQuadBytes > 0) {
             lastQuad = quads[quadLen-1];
             // 8/16/24 bit left shift
             quads[quadLen-1] = (lastQuad << ((4 - lastQuadBytes) << 3));
@@ -1574,7 +1574,7 @@ public class SmileParser extends SmileParserBase
                     byteIx = (ix & 3);
                     ch2 = (ch2 >> ((3 - byteIx) << 3));
                     ++ix;
-                    
+
                     if ((ch2 & 0xC0) != 0x080) {
                         _reportInvalidOther(ch2);
                     }
@@ -1608,7 +1608,7 @@ public class SmileParser extends SmileParserBase
         // Ok. Now we have the character array, and can construct the String
         String baseName = new String(cbuf, 0, cix);
         // And finally, un-align if necessary
-        if (lastQuadBytes < 4) {
+        if (lastQuadBytes > 0) {
             quads[quadLen-1] = lastQuad;
         }
         return _symbols.addName(baseName, quads, quadLen);
