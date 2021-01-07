@@ -48,9 +48,6 @@ public class ProtobufUtil
         if (len <= 0x1FFFFF) { // 21 bytes
             return 3;
         }
-        if (len <= 0x1FFFFF) { // 21 bytes
-            return 3;
-        }
         if (len <= 0x0FFFFFFF) { // 28 bytes
             return 4;
         }

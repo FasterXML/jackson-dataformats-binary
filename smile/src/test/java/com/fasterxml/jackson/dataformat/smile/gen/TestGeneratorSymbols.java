@@ -35,12 +35,20 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     // same as above, but with name >= 64 characters
     public void testSharedNameSimpleLong() throws Exception
     {
+        _testSharedNameSimpleLong("ABCD");
+        _testSharedNameSimpleLong("ABCY");
+        _testSharedNameSimpleLong("XBCD");
+        _testSharedNameSimpleLong("ACCD");
+    }
+
+    private void _testSharedNameSimpleLong(String suffix) throws Exception
+    {
         String digits = "01234567899";
 
         // Base is 76 chars; loop over couple of shorter ones too
         
-        final String LONG_NAME = "a"+digits+"b"+digits+"c"+digits+"d"+digits+"e"+digits+"f"+digits+"ABCD";
-        
+        final String LONG_NAME = "a"+digits+"b"+digits+"c"+digits+"d"+digits+"e"+digits+"f"+digits+suffix;
+
         for (int i = 0; i < 4; ++i) {
             int strLen = LONG_NAME.length() - i;
             String field = LONG_NAME.substring(0, strLen);
@@ -217,7 +225,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         gen.writeEndObject();
         gen.writeEndObject();
         gen.close();
-        
+
         JsonParser parser = factory.createParser(ObjectReadContext.empty(),
                 os.toByteArray());
         assertNull(parser.currentToken());

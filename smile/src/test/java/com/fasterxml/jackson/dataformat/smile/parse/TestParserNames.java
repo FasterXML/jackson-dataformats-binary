@@ -12,7 +12,7 @@ public class TestParserNames extends BaseTestForSmile
     {
         _testWithName(generateName(5000));
     }
-    
+
     public void testJsonBinForLargeObjects() throws Exception
     {
         StringBuilder nameBuf = new StringBuilder("longString");
@@ -29,7 +29,7 @@ public class TestParserNames extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     private void _testWithName(String name) throws IOException
     {
         byte[] data = _smileDoc("{"+quote(name)+":13}");

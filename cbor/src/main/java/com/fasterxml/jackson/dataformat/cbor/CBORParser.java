@@ -2831,7 +2831,7 @@ public class CBORParser extends ParserBase
 
         // Either String or byte[]
         if (type != CBORConstants.MAJOR_TYPE_TEXT
-                && type == CBORConstants.MAJOR_TYPE_TEXT) {
+                && type != CBORConstants.MAJOR_TYPE_BYTES) {
             _throwInternal();
         }
         final int lowBits = _typeByte & 0x1F;
