@@ -91,9 +91,9 @@ public class SmileParserBootstrapper
         ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
         // We just need a single byte, really, to know if it starts with header
         int end = _inputEnd;
-        if (_inputPtr < end && _in != null) {
-        	int count = _in.read(_inputBuffer, end, _inputBuffer.length - end);
-        	if (count > 0) {
+        if ((_inputPtr < end) && (_in != null)) {
+            int count = _in.read(_inputBuffer, end, _inputBuffer.length - end);
+            if (count > 0) {
                 _inputEnd += count;
             }
         }
@@ -102,23 +102,23 @@ public class SmileParserBootstrapper
                 can, 
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         boolean hadSig = false;
-        if (_inputPtr < _inputEnd) { // only false for empty doc
-            if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
-                // need to ensure it gets properly handled so caller won't see the signature
-                hadSig = p.handleSignature(true, true);
-            }
-        } else {
-            /* 11-Oct-2012, tatu: Actually, let's allow empty documents even if
-             *   header signature would otherwise be needed. This is useful for
-             *   JAX-RS provider, empty PUT/POST payloads.
-             */
+
+        if (_inputPtr >= _inputEnd) { // only the case for empty doc
+            // 11-Oct-2012, tatu: Actually, let's allow empty documents even if
+            //   header signature would otherwise be needed. This is useful for
+            //   JAX-RS provider, empty PUT/POST payloads.
             return p;
         }
+        final byte firstByte = _inputBuffer[_inputPtr];
+        if (firstByte == SmileConstants.HEADER_BYTE_1) {
+            // need to ensure it gets properly handled so caller won't see the signature
+            hadSig = p.handleSignature(true, true);
+        }
+
         if (!hadSig && SmileParser.Feature.REQUIRE_HEADER.enabledIn(smileFeatures)) {
             // Ok, first, let's see if it looks like plain JSON...
             String msg;
 
-            byte firstByte = (_inputPtr < _inputEnd) ? _inputBuffer[_inputPtr] : 0;
             if (firstByte == '{' || firstByte == '[') {
                 msg = "Input does not start with Smile format header (first byte = 0x"
                     +Integer.toHexString(firstByte & 0xFF)+") -- rather, it starts with '"+((char) firstByte)
