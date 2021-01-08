@@ -13,6 +13,8 @@ Project: jackson-datatypes-binaryModules:
 
 #232: (ion) Allow disabling native type ids in IonMapper
  (contributed by Josh B)
+#235: (smile) Small bug in byte-alignment for long field names in Smile,
+  symbol table reuse
 
 2.12.0 (29-Nov-2020)
 
