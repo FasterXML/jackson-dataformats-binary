@@ -186,7 +186,7 @@ public abstract class NonBlockingParserBase
      */
 
     @Override
-    public abstract int releaseBuffered(OutputStream out) throws IOException;
+    public abstract int releaseBuffered(OutputStream out);
 
     @Override
     public Object getInputSource() {
@@ -195,7 +195,7 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    protected void _closeInput() throws IOException {
+    protected void _closeInput() {
         // nothing to do here
     }
 
@@ -208,7 +208,7 @@ public abstract class NonBlockingParserBase
     // No incomplete values yet -- although may want to make BigInt/BigDec lazy
     // in future
     @Override
-    protected void _parseNumericValue() throws IOException {
+    protected void _parseNumericValue() throws JacksonException {
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             return;
         }
@@ -245,7 +245,7 @@ public abstract class NonBlockingParserBase
      * Method can be called for any event.
      */
     @Override
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
@@ -265,7 +265,7 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException
+    public char[] getTextCharacters() throws JacksonException
     {
         switch (currentTokenId()) {
         case JsonTokenId.ID_STRING:
@@ -284,7 +284,7 @@ public abstract class NonBlockingParserBase
     }
 
     @Override    
-    public int getTextLength() throws IOException
+    public int getTextLength() throws JacksonException
     {
         switch (currentTokenId()) {
         case JsonTokenId.ID_STRING:
@@ -303,15 +303,19 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public int getTextOffset() throws IOException {
+    public int getTextOffset() throws JacksonException {
         return 0;
     }
 
     @Override
-    public int getText(Writer w) throws IOException
+    public int getText(Writer w) throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(w);
+            try {
+                return _textBuffer.contentsToWriter(w);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
         }
         if (_currToken == JsonToken.NOT_AVAILABLE) {
             _reportError("Current token not available: can not call this method");
@@ -327,7 +331,7 @@ public abstract class NonBlockingParserBase
      */
 
     @Override
-    public byte[] getBinaryValue(Base64Variant b64variant) throws IOException
+    public byte[] getBinaryValue(Base64Variant b64variant) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             _reportError("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
@@ -336,7 +340,7 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public Object getEmbeddedObject() throws IOException
+    public Object getEmbeddedObject() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
             return _binaryValue;
@@ -346,11 +350,15 @@ public abstract class NonBlockingParserBase
 
     @Override
     public int readBinaryValue(Base64Variant b64variant, OutputStream out)
-            throws IOException {
+            throws JacksonException {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             _reportError("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
         }
-        out.write(_binaryValue);
+        try {
+            out.write(_binaryValue);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         return _binaryValue.length;
     }
 
@@ -360,7 +368,7 @@ public abstract class NonBlockingParserBase
     /**********************************************************************
      */
 
-    protected final JsonToken _startArrayScope() throws IOException
+    protected final JsonToken _startArrayScope() throws JacksonException
     {
         _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
         _majorState = MAJOR_ARRAY_ELEMENT;
@@ -368,7 +376,7 @@ public abstract class NonBlockingParserBase
         return (_currToken = JsonToken.START_ARRAY);
     }
 
-    protected final JsonToken _startObjectScope() throws IOException
+    protected final JsonToken _startObjectScope() throws JacksonException
     {
         _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
         _majorState = MAJOR_OBJECT_FIELD;
@@ -376,7 +384,7 @@ public abstract class NonBlockingParserBase
         return (_currToken = JsonToken.START_OBJECT);
     }
 
-    protected final JsonToken _closeArrayScope() throws IOException
+    protected final JsonToken _closeArrayScope() throws JacksonException
     {
         if (!_parsingContext.inArray()) {
             _reportMismatchedEndMarker(']', '}');
@@ -396,7 +404,7 @@ public abstract class NonBlockingParserBase
         return (_currToken = JsonToken.END_ARRAY);
     }
 
-    protected final JsonToken _closeObjectScope() throws IOException
+    protected final JsonToken _closeObjectScope() throws JacksonException
     {
         if (!_parsingContext.inObject()) {
             _reportMismatchedEndMarker('}', ']');
@@ -424,7 +432,7 @@ public abstract class NonBlockingParserBase
 
     // Helper method for trying to find specified encoded UTF-8 byte sequence
     // from symbol table; if successful avoids actual decoding to String
-    protected final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws IOException
+    protected final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws JacksonException
     {
         // First: maybe we already have this name decoded?
         if (len < 5) {
@@ -468,7 +476,7 @@ public abstract class NonBlockingParserBase
     }
     
     // Method for locating names longer than 8 bytes (in UTF-8)
-    private final String _findDecodedLonger(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _findDecodedLonger(byte[] inBuf, int inPtr, int len) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -549,7 +557,7 @@ public abstract class NonBlockingParserBase
      * Helper method called at point when all input has been exhausted and
      * input feeder has indicated no more input will be forthcoming.
      */
-    protected final JsonToken _eofAsNextToken() throws IOException {
+    protected final JsonToken _eofAsNextToken() throws JacksonException {
         _majorState = MAJOR_CLOSED;
         if (!_parsingContext.inRoot()) {
             _handleEOF();
@@ -558,14 +566,14 @@ public abstract class NonBlockingParserBase
         return (_currToken = null);
     }
 
-    protected final JsonToken _valueComplete(JsonToken t) throws IOException
+    protected final JsonToken _valueComplete(JsonToken t) throws JacksonException
     {
         _majorState = _majorStateAfterValue;
         _currToken = t;
         return t;
     }
 
-    protected final JsonToken _handleSharedString(int index) throws IOException
+    protected final JsonToken _handleSharedString(int index) throws JacksonException
     {
         if (index >= _seenStringValueCount) {
             _reportInvalidSharedStringValue(index);
@@ -574,7 +582,7 @@ public abstract class NonBlockingParserBase
         return _valueComplete(JsonToken.VALUE_STRING);
     }
 
-    protected final JsonToken _handleSharedName(int index) throws IOException
+    protected final JsonToken _handleSharedName(int index) throws JacksonException
     {
         if (index >= _seenNameCount) {
             _reportInvalidSharedName(index);
@@ -584,7 +592,7 @@ public abstract class NonBlockingParserBase
         return (_currToken = JsonToken.FIELD_NAME);
     }
 
-    protected final void _addSeenStringValue(String v) throws IOException
+    protected final void _addSeenStringValue(String v) throws JacksonException
     {
         if (_seenStringValueCount < _seenStringValues.length) {
             _seenStringValues[_seenStringValueCount++] = v;
@@ -642,7 +650,7 @@ public abstract class NonBlockingParserBase
     /**********************************************************************
      */
 
-    protected void _reportMissingHeader(int unmaskedFirstByte) throws IOException
+    protected void _reportMissingHeader(int unmaskedFirstByte) throws JacksonException
     {
         String msg;
         int b = unmaskedFirstByte & 0xFF;
@@ -658,7 +666,7 @@ public abstract class NonBlockingParserBase
         throw new JsonParseException(this, msg);
     }
 
-    protected void _reportInvalidSharedName(int index) throws IOException
+    protected void _reportInvalidSharedName(int index) throws JacksonException
     {
         if (_seenNames == null) {
             _reportError("Encountered shared name reference, even though document header explicitly declared no shared name references are included");
@@ -667,7 +675,7 @@ public abstract class NonBlockingParserBase
                index, _seenNameCount);
     }
 
-    protected void _reportInvalidSharedStringValue(int index) throws IOException
+    protected void _reportInvalidSharedStringValue(int index) throws JacksonException
     {
         if (_seenStringValues == null) {
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");

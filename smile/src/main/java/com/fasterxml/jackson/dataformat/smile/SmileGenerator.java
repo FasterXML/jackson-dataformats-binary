@@ -375,7 +375,7 @@ public class SmileGenerator
      * with same generator (and even in that case this is optional thing to do).
      * As a result usually only {@link SmileFactory} calls this method.
      */
-    public void writeHeader() throws IOException
+    public void writeHeader() throws JacksonException
     {
         int last = HEADER_BYTE_4;
         if (Feature.CHECK_SHARED_NAMES.enabledIn(_formatFeatures)) {
@@ -477,7 +477,7 @@ public class SmileGenerator
      */
 
     @Override
-    public final void writeFieldName(String name)  throws IOException
+    public final void writeFieldName(String name)  throws JacksonException
     {
         if (!_tokenWriteContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
@@ -487,7 +487,7 @@ public class SmileGenerator
 
     @Override
     public final void writeFieldName(SerializableString name)
-        throws IOException
+        throws JacksonException
     {
         // Object is a value, need to verify it's allowed
         if (!_tokenWriteContext.writeFieldName(name.getValue())) {
@@ -497,7 +497,7 @@ public class SmileGenerator
     }
 
     @Override
-    public void writeFieldId(long id) throws IOException {
+    public void writeFieldId(long id) throws JacksonException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
         if (!_tokenWriteContext.writeFieldName(idStr)) {
@@ -547,7 +547,7 @@ public class SmileGenerator
      *<p>
      * NOTE: only use this method if you really know what you are doing.
      */
-    public void writeRaw(byte b) throws IOException
+    public void writeRaw(byte b) throws JacksonException
     {
         // 08-Jan-2014, tatu: Should we just rather throw an exception? For now,
         //   allow... maybe have a feature to cause an exception.
@@ -560,7 +560,7 @@ public class SmileGenerator
      *<p>
      * NOTE: only use this method if you really know what you are doing.
      */
-    public void writeBytes(byte[] data, int offset, int len) throws IOException
+    public void writeBytes(byte[] data, int offset, int len) throws JacksonException
     {
         _writeBytes(data, offset, len);
     }
@@ -572,7 +572,7 @@ public class SmileGenerator
      */
 
     @Override
-    public final void writeStartArray() throws IOException
+    public final void writeStartArray() throws JacksonException
     {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
@@ -580,7 +580,7 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeStartArray(Object forValue) throws IOException
+    public final void writeStartArray(Object forValue) throws JacksonException
     {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
@@ -588,7 +588,7 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeStartArray(Object forValue, int size) throws IOException
+    public final void writeStartArray(Object forValue, int size) throws JacksonException
     {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
@@ -596,7 +596,7 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeEndArray() throws IOException
+    public final void writeEndArray() throws JacksonException
     {
         if (!_tokenWriteContext.inArray()) {
             _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
@@ -606,7 +606,7 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeStartObject() throws IOException
+    public final void writeStartObject() throws JacksonException
     {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
@@ -614,7 +614,7 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeStartObject(Object forValue) throws IOException
+    public final void writeStartObject(Object forValue) throws JacksonException
     {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
@@ -622,7 +622,7 @@ public class SmileGenerator
     }
     
     @Override
-    public final void writeStartObject(Object forValue, int size) throws IOException
+    public final void writeStartObject(Object forValue, int size) throws JacksonException
     {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
@@ -630,7 +630,7 @@ public class SmileGenerator
     }
 
     @Override
-    public final void writeEndObject() throws IOException
+    public final void writeEndObject() throws JacksonException
     {
         if (!_tokenWriteContext.inObject()) {
             _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
@@ -641,7 +641,7 @@ public class SmileGenerator
 
     @Override // since 2.8
     public void writeArray(int[] array, int offset, int length)
-        throws IOException
+        throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -665,7 +665,7 @@ public class SmileGenerator
 
     @Override // since 2.8
     public void writeArray(long[] array, int offset, int length)
-        throws IOException
+        throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -688,7 +688,7 @@ public class SmileGenerator
 
     @Override // since 2.8
     public void writeArray(double[] array, int offset, int length)
-        throws IOException
+        throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -709,7 +709,7 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_END_ARRAY);
     }
     
-    private final void _writeFieldName(String name) throws IOException
+    private final void _writeFieldName(String name) throws JacksonException
     {
         int len = name.length();
         if (len == 0) {
@@ -766,7 +766,7 @@ public class SmileGenerator
         }
     }
 
-    private final void _writeNonShortFieldName(final String name, final int len) throws IOException
+    private final void _writeNonShortFieldName(final String name, final int len) throws JacksonException
     {
         _writeByte(TOKEN_KEY_LONG_STRING);
         // can we still make a temp copy?
@@ -789,7 +789,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;                
     }
     
-    protected final void _writeFieldName(SerializableString name) throws IOException
+    protected final void _writeFieldName(SerializableString name) throws JacksonException
     {
         final int charLen = name.charLength();
         if (charLen == 0) {
@@ -829,7 +829,7 @@ public class SmileGenerator
     }
 
     private final void _writeLongAsciiFieldName(byte[] bytes)
-        throws IOException
+        throws JacksonException
     {
         final int byteLen = bytes.length;
         if (_outputTail >= _outputEnd) {
@@ -852,14 +852,18 @@ public class SmileGenerator
                 if (_outputTail > 0) {
                     _flushBuffer();
                 }
-                _out.write(bytes, 0, byteLen);
+                try {
+                    _out.write(bytes, 0, byteLen);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
         }
         _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;
     }
 
     protected final void _writeFieldNameUnicode(SerializableString name, byte[] bytes)
-        throws IOException
+        throws JacksonException
     {
         final int byteLen = bytes.length;
 
@@ -899,7 +903,11 @@ public class SmileGenerator
                 if (_outputTail > 0) {
                     _flushBuffer();
                 }
-                _out.write(bytes, 0, byteLen);
+                try {
+                    _out.write(bytes, 0, byteLen);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
         }
         _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;
@@ -910,7 +918,7 @@ public class SmileGenerator
     }
 
     private final void _writeSharedNameReference(int ix)
-        throws IOException
+        throws JacksonException
     {
         // 03-Mar-2011, tatu: Related to [JACKSON-525], let's add a sanity check here
         if (ix >= _seenNameCount) {
@@ -931,7 +939,7 @@ public class SmileGenerator
      */
 
     @Override
-    public void writeString(String text) throws IOException
+    public void writeString(String text) throws JacksonException
     {
         if (text == null) {
             writeNull();
@@ -985,7 +993,7 @@ public class SmileGenerator
         }
     }
 
-    private final void _writeSharedStringValueReference(int ix) throws IOException
+    private final void _writeSharedStringValueReference(int ix) throws JacksonException
     {
         // 03-Mar-2011, tatu: Related to [JACKSON-525], let's add a sanity check here
         if (ix >= _seenStringValueCount) {
@@ -1003,7 +1011,7 @@ public class SmileGenerator
      * Helper method called to handle cases where String value to write is known
      * to be long enough not to be shareable.
      */
-    private final void _writeNonSharedString(final String text, final int len) throws IOException
+    private final void _writeNonSharedString(final String text, final int len) throws JacksonException
     {
         // Expansion can be 3x for Unicode; and then there's type byte and end marker, so:
         int maxLen = len + len + len + 2;
@@ -1031,7 +1039,7 @@ public class SmileGenerator
     }
     
     @Override
-    public void writeString(char[] text, int offset, int len) throws IOException
+    public void writeString(char[] text, int offset, int len) throws JacksonException
     {
         // Shared strings are tricky; easiest to just construct String, call the other method
         if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0 && len > 0) {
@@ -1090,7 +1098,7 @@ public class SmileGenerator
 
     @Override
     public final void writeString(SerializableString sstr)
-        throws IOException
+        throws JacksonException
     {
         _verifyValueWrite("write String value");
         // First: is it empty?
@@ -1141,7 +1149,7 @@ public class SmileGenerator
 
     @Override
     public void writeRawUTF8String(byte[] text, int offset, int len)
-        throws IOException
+        throws JacksonException
     {
         _verifyValueWrite("write String value");
         // first: is it empty String?
@@ -1194,7 +1202,7 @@ public class SmileGenerator
 
     @Override
     public final void writeUTF8String(byte[] text, int offset, int len)
-        throws IOException
+        throws JacksonException
     {
         // Since no escaping is needed, same as 'writeRawUTF8String'
         writeRawUTF8String(text, offset, len);
@@ -1207,37 +1215,37 @@ public class SmileGenerator
      */
 
     @Override
-    public void writeRaw(String text) throws IOException {
+    public void writeRaw(String text) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(String text, int offset, int len) throws IOException {
+    public void writeRaw(String text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(char[] text, int offset, int len) throws IOException {
+    public void writeRaw(char[] text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(char c) throws IOException {
+    public void writeRaw(char c) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(String text) throws IOException {
+    public void writeRawValue(String text) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(String text, int offset, int len) throws IOException {
+    public void writeRawValue(String text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(char[] text, int offset, int len) throws IOException {
+    public void writeRawValue(char[] text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
     
@@ -1248,7 +1256,7 @@ public class SmileGenerator
      */
 
     @Override
-    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws IOException
+    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
     {
         if (data == null) {
             writeNull();
@@ -1268,7 +1276,7 @@ public class SmileGenerator
 
     @Override
     public int writeBinary(InputStream data, int dataLength)
-        throws IOException
+        throws JacksonException
     {
         // Smile requires knowledge of length in advance, since binary is length-prefixed
         if (dataLength < 0) {
@@ -1298,7 +1306,7 @@ public class SmileGenerator
     
     @Override
     public int writeBinary(Base64Variant b64variant, InputStream data, int dataLength)
-        throws IOException
+        throws JacksonException
     {
         return writeBinary(data, dataLength);
     }
@@ -1310,7 +1318,7 @@ public class SmileGenerator
      */
 
     @Override
-    public void writeBoolean(boolean state) throws IOException
+    public void writeBoolean(boolean state) throws JacksonException
     {
         _verifyValueWrite("write boolean value");
         if (state) {
@@ -1321,19 +1329,19 @@ public class SmileGenerator
     }
 
     @Override
-    public void writeNull() throws IOException
+    public void writeNull() throws JacksonException
     {
         _verifyValueWrite("write null value");
         _writeByte(TOKEN_LITERAL_NULL);
     }
 
     @Override
-    public void writeNumber(short v) throws IOException {
+    public void writeNumber(short v) throws JacksonException {
         writeNumber((int) v);
     }
 
     @Override
-    public void writeNumber(int i) throws IOException
+    public void writeNumber(int i) throws JacksonException
     {
         _verifyValueWrite("write number");
         // First things first: let's zigzag encode number
@@ -1374,7 +1382,7 @@ public class SmileGenerator
 
     // since 2.8: same as `writeNumber(int)` minus validity checks for
     // value write AND boundary checks
-    private final int _writeNumberNoChecks(int ptr, int i) throws IOException
+    private final int _writeNumberNoChecks(int ptr, int i) throws JacksonException
     {
         final byte[] output = _outputBuffer;
         i = SmileUtil.zigzagEncode(i);
@@ -1426,7 +1434,7 @@ public class SmileGenerator
     }
     
     @Override
-    public void writeNumber(long l) throws IOException
+    public void writeNumber(long l) throws JacksonException
     {
         // First: maybe 32 bits is enough?
         if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
@@ -1490,7 +1498,7 @@ public class SmileGenerator
 
     // since 2.8: same as `writeNumber(int)` minus validity checks for
     // value write AND boundary checks
-    private final int _writeNumberNoChecks(int ptr, long l) throws IOException
+    private final int _writeNumberNoChecks(int ptr, long l) throws JacksonException
     {
         // First: maybe 32 bits is enough?
         if (l <= MAX_INT_AS_LONG && l >= MIN_INT_AS_LONG) {
@@ -1587,7 +1595,7 @@ public class SmileGenerator
     }
     
     @Override
-    public void writeNumber(BigInteger v) throws IOException
+    public void writeNumber(BigInteger v) throws JacksonException
     {
         if (v == null) {
             writeNull();
@@ -1601,7 +1609,7 @@ public class SmileGenerator
     }
     
     @Override
-    public void writeNumber(double d) throws IOException
+    public void writeNumber(double d) throws JacksonException
     {
         // Ok, now, we needed token type byte plus 10 data bytes (7 bits each)
         _ensureRoomForOutput(11);
@@ -1642,7 +1650,7 @@ public class SmileGenerator
         _outputTail += 4;
     }
 
-    private final int _writeNumberNoChecks(int ptr, double d) throws IOException
+    private final int _writeNumberNoChecks(int ptr, double d) throws JacksonException
     {
         long l = Double.doubleToRawLongBits(d);
         final byte[] output = _outputBuffer;
@@ -1677,7 +1685,7 @@ public class SmileGenerator
     }
         
     @Override
-    public void writeNumber(float f) throws IOException
+    public void writeNumber(float f) throws JacksonException
     {
         // Ok, now, we needed token type byte plus 5 data bytes (7 bits each)
         _ensureRoomForOutput(6);
@@ -1703,7 +1711,7 @@ public class SmileGenerator
     }
 
     @Override
-    public void writeNumber(BigDecimal dec) throws IOException
+    public void writeNumber(BigDecimal dec) throws JacksonException
     {
         if (dec == null) {
             writeNull();
@@ -1721,7 +1729,7 @@ public class SmileGenerator
     }
 
     @Override
-    public void writeNumber(String encodedValue) throws IOException
+    public void writeNumber(String encodedValue) throws JacksonException
     {
         if (encodedValue == null) {
             writeNull();
@@ -1747,7 +1755,7 @@ public class SmileGenerator
         _writeDecimalNumber(encodedValue);
     }
 
-    protected void _writeIntegralNumber(String enc, boolean neg) throws IOException
+    protected void _writeIntegralNumber(String enc, boolean neg) throws JacksonException
     {
         int len = enc.length();
         if (neg) {
@@ -1768,7 +1776,7 @@ public class SmileGenerator
         }
     }
 
-    protected void _writeDecimalNumber(String enc) throws IOException
+    protected void _writeDecimalNumber(String enc) throws JacksonException
     {
         try {
             writeNumber(new BigDecimal(enc));
@@ -1786,7 +1794,7 @@ public class SmileGenerator
     
     @Override
     protected final void _verifyValueWrite(String typeMsg)
-        throws IOException
+        throws JacksonException
     {
         if (!_tokenWriteContext.writeValue()) {
             _reportError("Can not "+typeMsg+", expecting field name");
@@ -1800,16 +1808,20 @@ public class SmileGenerator
      */
 
     @Override
-    public final void flush() throws IOException
+    public final void flush() throws JacksonException
     {
         _flushBuffer();
         if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-            _out.flush();
+            try {
+                _out.flush();
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
         }
     }
 
     @Override
-    public void close() throws IOException
+    public void close() throws JacksonException
     {
         // First: let's see that we still have buffers...
         if (_outputBuffer != null
@@ -1833,12 +1845,16 @@ public class SmileGenerator
         }
         _flushBuffer();
 
-        if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
-            _out.close();
-        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-            // If we can't close it, we should at least flush
-            // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
-            _out.flush();
+        try {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
+                _out.close();
+            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                // If we can't close it, we should at least flush
+                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
+                _out.flush();
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         // Internal buffer(s) generator has can now be released as well
         _releaseBuffers();
@@ -1855,7 +1871,7 @@ public class SmileGenerator
      * fit in the output buffer regardless of UTF-8 expansion.
      */
     private final int _shortUTF8Encode(char[] str, int i, int end)
-        throws IOException
+        throws JacksonException
     {
         // First: let's see if it's all ASCII: that's rather fast
         int ptr = _outputTail;
@@ -1878,7 +1894,7 @@ public class SmileGenerator
      * characters.
      */
     private final int _shortUTF8Encode2(char[] str, int i, int end, int outputPtr)
-        throws IOException
+        throws JacksonException
     {
         final byte[] outBuf = _outputBuffer;
         while (i < end) {
@@ -1924,7 +1940,7 @@ public class SmileGenerator
     }
 
     private final int _shortUTF8Encode(String str, int i, int end)
-        throws IOException
+        throws JacksonException
     {
         // First: let's see if it's all ASCII: that's rather fast
         int ptr = _outputTail;
@@ -1942,7 +1958,7 @@ public class SmileGenerator
     }
 
     private final int _shortUTF8Encode2(String str, int i, int end, int outputPtr)
-        throws IOException
+        throws JacksonException
     {
         final byte[] outBuf = _outputBuffer;
         while (i < end) {
@@ -1987,7 +2003,7 @@ public class SmileGenerator
         return codedLen;
     }
 
-    private void _mediumUTF8Encode(char[] str, int inputPtr, int inputEnd) throws IOException
+    private void _mediumUTF8Encode(char[] str, int inputPtr, int inputEnd) throws JacksonException
     {
         final int bufferEnd = _outputEnd - 4;
         
@@ -2056,7 +2072,7 @@ public class SmileGenerator
         }
     }
 
-    private void _mediumUTF8Encode(String str, int inputPtr, int inputEnd) throws IOException
+    private void _mediumUTF8Encode(String str, int inputPtr, int inputEnd) throws JacksonException
     {
         final int bufferEnd = _outputEnd - 4;
         
@@ -2128,7 +2144,7 @@ public class SmileGenerator
     /**
      * Method called to calculate UTF codepoint, from a surrogate pair.
      */
-    private int _convertSurrogate(int firstPart, int secondPart) throws IOException
+    private int _convertSurrogate(int firstPart, int secondPart) throws JacksonException
     {
         // Ok, then, is the second part valid?
         if (secondPart < SURR2_FIRST || secondPart > SURR2_LAST) {
@@ -2139,7 +2155,7 @@ public class SmileGenerator
         return 0x10000 + ((firstPart - SURR1_FIRST) << 10) + (secondPart - SURR2_FIRST);
     }
 
-    private void _throwIllegalSurrogate(int code) throws IOException
+    private void _throwIllegalSurrogate(int code) throws JacksonException
     {
         if (code > 0x10FFFF) { // over max?
             _reportError(String.format(
@@ -2163,14 +2179,14 @@ public class SmileGenerator
     /**********************************************************
     */
 
-    private final void _ensureRoomForOutput(int needed) throws IOException
+    private final void _ensureRoomForOutput(int needed) throws JacksonException
     {
         if ((_outputTail + needed) >= _outputEnd) {
             _flushBuffer();
         }        
     }
     
-    private final void _writeByte(byte b) throws IOException
+    private final void _writeByte(byte b) throws JacksonException
     {
         if (_outputTail >= _outputEnd) {
             _flushBuffer();
@@ -2178,7 +2194,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = b;
     }
 
-    private final void _writeBytes(byte b1, byte b2) throws IOException
+    private final void _writeBytes(byte b1, byte b2) throws JacksonException
     {
         if ((_outputTail + 1) >= _outputEnd) {
             _flushBuffer();
@@ -2187,7 +2203,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = b2;
     }
 
-    private final void _writeBytes(byte b1, byte b2, byte b3) throws IOException
+    private final void _writeBytes(byte b1, byte b2, byte b3) throws JacksonException
     {
         if ((_outputTail + 2) >= _outputEnd) {
             _flushBuffer();
@@ -2197,7 +2213,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = b3;
     }
 
-    private final void _writeBytes(byte b1, byte b2, byte b3, byte b4) throws IOException
+    private final void _writeBytes(byte b1, byte b2, byte b3, byte b4) throws JacksonException
     {
         if ((_outputTail + 3) >= _outputEnd) {
             _flushBuffer();
@@ -2208,7 +2224,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = b4;
     }
 
-    private final void _writeBytes(byte b1, byte b2, byte b3, byte b4, byte b5) throws IOException
+    private final void _writeBytes(byte b1, byte b2, byte b3, byte b4, byte b5) throws JacksonException
     {
         if ((_outputTail + 4) >= _outputEnd) {
             _flushBuffer();
@@ -2220,7 +2236,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = b5;
     }
 
-    private final void _writeBytes(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6) throws IOException
+    private final void _writeBytes(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6) throws JacksonException
     {
         if ((_outputTail + 5) >= _outputEnd) {
             _flushBuffer();
@@ -2233,7 +2249,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = b6;
     }
 
-    private final void _writeBytes(byte[] data, int offset, int len) throws IOException
+    private final void _writeBytes(byte[] data, int offset, int len) throws JacksonException
     {
         if (len == 0) {
             return;
@@ -2247,7 +2263,7 @@ public class SmileGenerator
         _outputTail += len;
     }
 
-    private final int _writeBytes(InputStream in, int bytesLeft) throws IOException
+    private final int _writeBytes(InputStream in, int bytesLeft) throws JacksonException
     {
         while (bytesLeft > 0) {
             int room = _outputEnd - _outputTail;
@@ -2258,7 +2274,12 @@ public class SmileGenerator
             if (room > bytesLeft) {
                 room = bytesLeft;
             }
-            int count = in.read(_outputBuffer, _outputTail, room);
+            int count;
+            try {
+                count = in.read(_outputBuffer, _outputTail, room);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count < 0) {
                 break;
             }
@@ -2268,7 +2289,7 @@ public class SmileGenerator
         return bytesLeft;
     }
     
-    private final void _writeBytesLong(byte[] data, int offset, int len) throws IOException
+    private final void _writeBytesLong(byte[] data, int offset, int len) throws JacksonException
     {
         if (_outputTail >= _outputEnd) {
             _flushBuffer();
@@ -2289,7 +2310,7 @@ public class SmileGenerator
      * Helper method for writing a 32-bit positive (really 31-bit then) value.
      * Value is NOT zigzag encoded (since there is no sign bit to worry about)
      */
-    private void _writePositiveVInt(int i) throws IOException
+    private void _writePositiveVInt(int i) throws JacksonException
     {
         // At most 5 bytes (4 * 7 + 6 bits == 34 bits)
         _ensureRoomForOutput(5);
@@ -2333,12 +2354,12 @@ public class SmileGenerator
      * sign bit is moved as LSB, rest of value shifted left by one)
      * coupled with basic variable length encoding
      */
-    private void _writeSignedVInt(int input) throws IOException
+    private void _writeSignedVInt(int input) throws JacksonException
     {
         _writePositiveVInt(SmileUtil.zigzagEncode(input));
     }
 
-    protected void _write7BitBinaryWithLength(byte[] data, int offset, int len) throws IOException
+    protected void _write7BitBinaryWithLength(byte[] data, int offset, int len) throws JacksonException
     {
         _writePositiveVInt(len);
         // first, let's handle full 7-byte chunks
@@ -2406,7 +2427,7 @@ public class SmileGenerator
     }
 
     protected int _write7BitBinaryWithLength(InputStream in, int bytesLeft, byte[] buffer) 
-        throws IOException
+        throws JacksonException
     {
         _writePositiveVInt(bytesLeft);
         int inputPtr = 0;
@@ -2495,7 +2516,7 @@ public class SmileGenerator
 
     private int _readMore(InputStream in,
             byte[] readBuffer, int inputPtr, int inputEnd,
-            int maxRead) throws IOException
+            int maxRead) throws JacksonException
     {
         // anything to shift to front?
         int i = 0;
@@ -2508,14 +2529,18 @@ public class SmileGenerator
         maxRead = Math.min(maxRead, readBuffer.length);
         
         do {
-            /* 26-Feb-2013, tatu: Similar to jackson-core issue #55, need to ensure
-             *   we have something to read.
-             */
+            // 26-Feb-2013, tatu: Similar to jackson-core issue #55, need to ensure
+            //   we have something to read.
             int length = maxRead - inputEnd;
             if (length == 0) {
                 break;
             }
-            int count = in.read(readBuffer, inputEnd, length);            
+            int count;
+            try {
+                count = in.read(readBuffer, inputEnd, length);            
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count < 0) {
                 return inputEnd;
             }
@@ -2569,11 +2594,15 @@ public class SmileGenerator
         }
     }
 
-    protected final void _flushBuffer() throws IOException
+    protected final void _flushBuffer() throws JacksonException
     {
         if (_outputTail > 0) {
             _bytesWritten += _outputTail;
-            _out.write(_outputBuffer, 0, _outputTail);
+            try {
+                _out.write(_outputBuffer, 0, _outputTail);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             _outputTail = 0;
         }
     }

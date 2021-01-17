@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.smile;
 
-import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -278,11 +277,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************
      */
 
-    protected abstract void _closeInput() throws IOException;
+    protected abstract void _closeInput() throws JacksonException;
 
-    protected abstract void _parseNumericValue() throws IOException;
+    protected abstract void _parseNumericValue() throws JacksonException;
 
-//  public abstract int releaseBuffered(OutputStream out) throws IOException;
+//  public abstract int releaseBuffered(OutputStream out) throws JacksonException;
 //  public abstract Object getInputSource();
     
     /*
@@ -329,7 +328,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * the current event.
      */
     @Override
-    public final String currentName() throws IOException
+    public final String currentName()
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             return _parsingContext.getParent().currentName();
@@ -338,7 +337,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final void close() throws IOException {
+    public final void close() throws JacksonException {
         if (!_closed) {
             _closed = true;
             _inputEnd = 0;
@@ -352,7 +351,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
     }
 
-    protected final void _releaseBuffers() throws IOException {
+    protected final void _releaseBuffers() {
         _textBuffer.releaseBuffers();
         String[] nameBuf = _seenNames;
         if (nameBuf != null && nameBuf.length > 0) {
@@ -385,8 +384,8 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************
      */
 
-    @Override // since 2.9
-    public final boolean isNaN() throws IOException {
+    @Override
+    public final boolean isNaN() throws JacksonException {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             if (_numTypesValid == NR_UNKNOWN) {
                 _parseNumericValue(); // will also check event type
@@ -405,7 +404,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final Number getNumberValue() throws IOException
+    public final Number getNumberValue() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _parseNumericValue(); // will also check event type
@@ -428,12 +427,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
-    public final Number getNumberValueExact() throws IOException {
+    public final Number getNumberValueExact() throws JacksonException {
         return getNumberValue();
     }
 
     @Override
-    public final NumberType getNumberType() throws IOException
+    public final NumberType getNumberType() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _parseNumericValue(); // will also check event type
@@ -442,7 +441,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final int getIntValue() throws IOException
+    public final int getIntValue() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -456,7 +455,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
     
     @Override
-    public final long getLongValue() throws IOException
+    public final long getLongValue() throws JacksonException
     {
         if ((_numTypesValid & NR_LONG) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -470,7 +469,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
     
     @Override
-    public final BigInteger getBigIntegerValue() throws IOException
+    public final BigInteger getBigIntegerValue() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGINT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -484,7 +483,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final float getFloatValue() throws IOException
+    public final float getFloatValue() throws JacksonException
     {
         if ((_numTypesValid & NR_FLOAT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -504,7 +503,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final double getDoubleValue() throws IOException
+    public final double getDoubleValue() throws JacksonException
     {
         if ((_numTypesValid & NR_DOUBLE) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -518,7 +517,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     @Override
-    public final BigDecimal getDecimalValue() throws IOException
+    public final BigDecimal getDecimalValue() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -537,7 +536,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************
      */    
 
-    protected final void convertNumberToInt() throws IOException
+    protected final void convertNumberToInt() throws JacksonException
     {
         // First, converting from long ought to be easy
         if ((_numTypesValid & NR_LONG) != 0) {
@@ -550,24 +549,24 @@ public abstract class SmileParserBase extends ParserMinimalBase
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigInt.intValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             // Need to check boundaries
             if (_numberDouble < MIN_INT_D || _numberDouble > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigDecimal.intValue();
         } else {
@@ -576,7 +575,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _numTypesValid |= NR_INT;
     }
     
-    protected final void convertNumberToLong() throws IOException
+    protected final void convertNumberToLong() throws JacksonException
     {
         int v = _numTypesValid;
         if ((v & NR_INT) != 0) {
@@ -584,23 +583,23 @@ public abstract class SmileParserBase extends ParserMinimalBase
         } else if ((v & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((v & NR_DOUBLE) != 0) {
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = (long) _numberDouble;
         } else if ((v & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberLong = (long) _numberFloat;
         } else if ((v & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigDecimal.longValue();
         } else {
@@ -609,7 +608,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _numTypesValid |= NR_LONG;
     }
     
-    protected final void convertNumberToBigInteger() throws IOException
+    protected final void convertNumberToBigInteger() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
@@ -628,7 +627,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _numTypesValid |= NR_BIGINT;
     }
 
-    protected final void convertNumberToFloat() throws IOException
+    protected final void convertNumberToFloat() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -648,7 +647,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _numTypesValid |= NR_FLOAT;
     }
     
-    protected final void convertNumberToDouble() throws IOException
+    protected final void convertNumberToDouble() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -668,7 +667,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _numTypesValid |= NR_DOUBLE;
     }
     
-    protected final void convertNumberToBigDecimal() throws IOException
+    protected final void convertNumberToBigDecimal() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
