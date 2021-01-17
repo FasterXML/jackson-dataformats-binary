@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 
 import org.apache.avro.generic.GenericArray;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 public class ArrayWriteContext
@@ -21,14 +20,14 @@ public class ArrayWriteContext
     public Object rawValue() { return _array; }
 
     @Override
-    public final AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException {
+    public final AvroWriteContext createChildArrayContext(Object currValue) {
         GenericArray<Object> arr = _createArray(_schema.getElementType());
         _array.add(arr);
         return new ArrayWriteContext(this, _generator, arr, currValue);
     }
 
     @Override
-    public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+    public AvroWriteContext createChildObjectContext(Object currValue) {
         AvroWriteContext child = _createObjectContext(_schema.getElementType(), currValue);
         _array.add(child.rawValue());
         return child;
@@ -45,7 +44,7 @@ public class ArrayWriteContext
     }
 
     @Override
-    public void writeNull() throws JsonMappingException {
+    public void writeNull() {
         _array.add(null);
     }
 

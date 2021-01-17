@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +43,8 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
     }
 
     @Override
-    protected JavaType _typeFromId(DatabindContext ctxt, String id) throws IOException {
+    protected JavaType _typeFromId(DatabindContext ctxt, String id)
+    {
         // primitive types don't have subclasses
         if (_baseType.isPrimitive()) {
             return _baseType;

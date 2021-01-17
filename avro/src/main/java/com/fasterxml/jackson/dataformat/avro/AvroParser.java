@@ -216,7 +216,7 @@ public abstract class AvroParser extends ParserBase
     protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
 
     @Override
-    public Object getTypeId() throws IOException {
+    public Object getTypeId() throws JacksonException {
         return _avroContext != null ? _avroContext.getTypeId() : null;
     }
 
@@ -244,7 +244,7 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
     
-//    public abstract JsonToken nextToken() throws IOException;
+//    public abstract JsonToken nextToken() throws JacksonException;
 
     /*
     /**********************************************************************
@@ -256,30 +256,30 @@ public abstract class AvroParser extends ParserBase
     public abstract boolean hasTextCharacters();
 
     @Override
-    public abstract String getText() throws IOException;
+    public abstract String getText() throws JacksonException;
 
     @Override
-    public abstract int getText(Writer writer) throws IOException;
+    public abstract int getText(Writer writer) throws JacksonException;
 
     @Override
-    public String currentName() throws IOException {
+    public String currentName() throws JacksonException {
         return _avroContext.currentName();
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException {
+    public char[] getTextCharacters() throws JacksonException {
         String text = getText();
         return (text == null) ? null : text.toCharArray();
     }
 
     @Override
-    public int getTextLength() throws IOException {
+    public int getTextLength() throws JacksonException {
         String text = getText();
         return (text == null) ? 0 : text.length();
     }
 
     @Override
-    public int getTextOffset() throws IOException {
+    public int getTextOffset() throws JacksonException {
         return 0;
     }
 
@@ -290,12 +290,12 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    public Object getEmbeddedObject() throws IOException {
+    public Object getEmbeddedObject() throws JacksonException {
         return _binaryValue;
     }
     
     @Override
-    public byte[] getBinaryValue(Base64Variant variant) throws IOException
+    public byte[] getBinaryValue(Base64Variant variant) throws JacksonException
     {
         // Usually we get properly declared byte[], and _binaryValue non null.
         // But we also support base64-encoded String as fallback
@@ -320,12 +320,12 @@ public abstract class AvroParser extends ParserBase
     // We should never end up here, as all numeric values are eagerly decoded...
 
     @Override
-    protected void _parseNumericValue(int expType) throws IOException {
+    protected void _parseNumericValue(int expType) throws JacksonException {
         VersionUtil.throwInternal();
     }
 
     @Override
-    protected int _parseIntValue() throws IOException {
+    protected int _parseIntValue() throws JacksonException {
         VersionUtil.throwInternal();
         return 0;
     }

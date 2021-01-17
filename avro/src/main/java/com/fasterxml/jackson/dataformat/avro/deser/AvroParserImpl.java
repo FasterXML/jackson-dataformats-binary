@@ -19,9 +19,9 @@ public abstract class AvroParserImpl
     extends AvroParser
 {
     /*
-    /**********************************************************
-    /* Other decoding state
-    /**********************************************************
+    /**********************************************************************
+    /* Decoding state
+    /**********************************************************************
      */
 
     /**
@@ -43,9 +43,9 @@ public abstract class AvroParserImpl
     protected float _numberFloat;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected AvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -57,20 +57,20 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         // 20-Apr-2017, tatu: Let's simplify some checks by changing context
         _avroContext = MissingReader.closedInstance;
         super.close();
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method impls, traversal, basic
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
@@ -78,7 +78,12 @@ public abstract class AvroParserImpl
         _branchIndex = -1;
         _enumIndex = -1;
         _binaryValue = null;
-        JsonToken t = _avroContext.nextToken();
+        JsonToken t;
+        try {
+            t = _avroContext.nextToken();
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         _currToken = t;
         return t;
     }
@@ -89,26 +94,35 @@ public abstract class AvroParserImpl
      * level instead of at the decoder level and advances the parsing context in addition
      * to consuming the data from the input.
      *
-     * @throws IOException If there was an issue advancing through the underlying data stream
+     * @throws JacksonException If there was an issue advancing through the underlying data stream
      */
-    public final void skipValue() throws IOException {
-        _avroContext.skipValue(this);
+    public final void skipValue() throws JacksonException {
+        try {
+            _avroContext.skipValue(this);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method impls, traversal, names
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public String nextFieldName() throws IOException
+    public String nextFieldName() throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
-        String name = _avroContext.nextFieldName();
+        String name;
+        try {
+            name = _avroContext.nextFieldName();
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         if (name == null) {
             _currToken = _avroContext.currentToken();
             return null;
@@ -118,13 +132,18 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public boolean nextFieldName(SerializableString sstr) throws IOException
+    public boolean nextFieldName(SerializableString sstr) throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
-        String name = _avroContext.nextFieldName();
+        String name;
+        try {
+            name = _avroContext.nextFieldName();
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         if (name == null) {
             _currToken = _avroContext.currentToken();
             return false;
@@ -138,14 +157,19 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
 
-        int match = _avroContext.nextFieldName(matcher);
+        int match;
+        try {
+            match = _avroContext.nextFieldName(matcher);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         // 20-Dec-2017, tatu: not sure check would be any faster
         _currToken = _avroContext.currentToken();
 /*
@@ -159,13 +183,13 @@ public abstract class AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method impls, traversal, values
-    /**********************************************************
+    /**********************************************************************
      */
-    
+
     @Override
-    public abstract String nextTextValue() throws IOException;
+    public abstract String nextTextValue() throws JacksonException;
 
     @Override
     public final void _initSchema(AvroSchema schema) throws JsonProcessingException {
@@ -173,12 +197,12 @@ public abstract class AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Numeric accessors of public API
-    /**********************************************************
+    /**********************************************************************
      */
 
-    @Override // since 2.9
+    @Override
     public final boolean isNaN() {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             if ((_numTypesValid & NR_DOUBLE) != 0) {
@@ -195,7 +219,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public final Number getNumberValue() throws IOException
+    public final Number getNumberValue() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _checkNumericValue(NR_UNKNOWN); // will also check event type
@@ -230,12 +254,12 @@ public abstract class AvroParserImpl
     }
 
     @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
-    public final Number getNumberValueExact() throws IOException {
+    public final Number getNumberValueExact() throws JacksonException {
         return getNumberValue();
     }
 
     @Override
-    public final NumberType getNumberType() throws IOException
+    public final NumberType getNumberType() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _checkNumericValue(NR_UNKNOWN); // will also check event type
@@ -263,7 +287,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public final float getFloatValue() throws IOException
+    public final float getFloatValue() throws JacksonException
     {
         if ((_numTypesValid & NR_FLOAT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -283,12 +307,12 @@ public abstract class AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Numeric conversions
-    /**********************************************************
+    /**********************************************************************
      */
 
-    protected final void _checkNumericValue(int expType) throws IOException
+    protected final void _checkNumericValue(int expType) throws JacksonException
     {
         // Int or float?
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
@@ -298,7 +322,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    protected final void convertNumberToInt() throws IOException
+    protected final void convertNumberToInt() throws JacksonException
     {
         // First, converting from long ought to be easy
         if ((_numTypesValid & NR_LONG) != 0) {
@@ -311,24 +335,24 @@ public abstract class AvroParserImpl
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigInt.intValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             // Need to check boundaries
             if (_numberDouble < MIN_INT_D || _numberDouble > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigDecimal.intValue();
         } else {
@@ -338,30 +362,30 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    protected final void convertNumberToLong() throws IOException
+    protected final void convertNumberToLong() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = (long) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigDecimal.longValue();
         } else {
@@ -371,7 +395,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    protected final void convertNumberToBigInteger() throws IOException
+    protected final void convertNumberToBigInteger() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
@@ -390,7 +414,7 @@ public abstract class AvroParserImpl
         _numTypesValid |= NR_BIGINT;
     }
 
-    protected final void convertNumberToFloat() throws IOException
+    protected final void convertNumberToFloat() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -411,7 +435,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    protected final void convertNumberToDouble() throws IOException
+    protected final void convertNumberToDouble() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -432,7 +456,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    protected final void convertNumberToBigDecimal() throws IOException
+    protected final void convertNumberToBigDecimal() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -455,9 +479,9 @@ public abstract class AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: state
-    /**********************************************************
+    /**********************************************************************
      */
     
     public abstract boolean checkInputEnd() throws IOException;
@@ -481,9 +505,9 @@ public abstract class AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding int
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract JsonToken decodeIntToken() throws IOException;
@@ -493,9 +517,9 @@ public abstract class AvroParserImpl
     public abstract void skipInt() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding long
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract JsonToken decodeLongToken() throws IOException;
@@ -505,9 +529,9 @@ public abstract class AvroParserImpl
     public abstract void skipLong() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding float/double
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract JsonToken decodeFloat() throws IOException;
@@ -519,9 +543,9 @@ public abstract class AvroParserImpl
     public abstract void skipDouble() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Strings
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract JsonToken decodeStringToken() throws IOException;
@@ -531,9 +555,9 @@ public abstract class AvroParserImpl
     public abstract void skipString() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Bytes
-    /**********************************************************
+    /**********************************************************************
      */
     
     public abstract JsonToken decodeBytes() throws IOException;
@@ -545,9 +569,9 @@ public abstract class AvroParserImpl
     public abstract void skipFixed(int size) throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Arrays
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract long decodeArrayStart() throws IOException;
@@ -561,9 +585,9 @@ public abstract class AvroParserImpl
     public abstract long skipArray() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Maps
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract String decodeMapKey() throws IOException;
@@ -577,9 +601,9 @@ public abstract class AvroParserImpl
     public abstract long skipMap() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: misc
-    /**********************************************************
+    /**********************************************************************
      */
 
     public abstract JsonToken decodeBoolean() throws IOException;
@@ -588,9 +612,9 @@ public abstract class AvroParserImpl
     public abstract int decodeEnum() throws IOException;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext impls, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     public final int branchIndex() {
@@ -610,9 +634,9 @@ public abstract class AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level methods: setting values from defaults
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected final JsonToken setBytes(byte[] b)

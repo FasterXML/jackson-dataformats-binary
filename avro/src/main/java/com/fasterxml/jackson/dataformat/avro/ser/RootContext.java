@@ -8,6 +8,7 @@ import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.*;
 import org.apache.avro.io.BinaryEncoder;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator.Feature;
@@ -40,7 +41,7 @@ class RootContext
     public Object rawValue() { return _rootValue; }
 
     @Override
-    public final AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException {
+    public final AvroWriteContext createChildArrayContext(Object currValue) {
         // verify that root type is array (or compatible)
         switch (_schema.getType()) {
         case ARRAY:
@@ -56,7 +57,7 @@ class RootContext
     }
 
     @Override
-    public final AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+    public final AvroWriteContext createChildObjectContext(Object currValue) {
         // verify that root type is record (or compatible)
         switch (_schema.getType()) {
         case RECORD:
