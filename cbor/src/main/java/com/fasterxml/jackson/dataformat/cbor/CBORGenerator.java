@@ -31,8 +31,6 @@ public class CBORGenerator extends GeneratorBase
     /**
      * The replacement character to use to fix invalid Unicode sequences
      * (mismatched surrogate pair).
-     *
-     * @since 2.12
      */
     final static int REPLACEMENT_CHAR = 0xfffd;
 
@@ -79,8 +77,6 @@ public class CBORGenerator extends GeneratorBase
          *<p>
          * Default value is {@code false} (for backwards compatibility) meaning that
          * an invalide surrogate will result in exception ({@link IllegalArgumentException}
-         *
-         * @since 2.12
          */
         LENIENT_UTF_ENCODING(false),
         ;
@@ -403,7 +399,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeFieldName(String name) throws IOException {
+    public final void writeFieldName(String name) throws JacksonException {
         if (!_tokenWriteContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
@@ -412,7 +408,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldName(SerializableString name)
-            throws IOException {
+            throws JacksonException {
         // Object is a value, need to verify it's allowed
         if (!_tokenWriteContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
@@ -428,7 +424,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeFieldId(long id) throws IOException {
+    public final void writeFieldId(long id) throws JacksonException {
         if (!_tokenWriteContext.writeFieldId(id)) {
             _reportError("Can not write a field id, expecting a value");
         }
@@ -445,7 +441,7 @@ public class CBORGenerator extends GeneratorBase
      * Specialize {@link JsonGenerator#copyCurrentEvent} to handle tags.
      */
     @Override
-    public void copyCurrentEvent(JsonParser p) throws IOException {
+    public void copyCurrentEvent(JsonParser p) throws JacksonException {
         maybeCopyTag(p);
         super.copyCurrentEvent(p);
     }
@@ -454,12 +450,12 @@ public class CBORGenerator extends GeneratorBase
      * Specialize {@link JsonGenerator#copyCurrentStructure} to handle tags.
      */
     @Override
-    public void copyCurrentStructure(JsonParser p) throws IOException {
+    public void copyCurrentStructure(JsonParser p) throws JacksonException {
         maybeCopyTag(p);
         super.copyCurrentStructure(p);
     }
 
-    protected void maybeCopyTag(JsonParser p) throws IOException {
+    protected void maybeCopyTag(JsonParser p) throws JacksonException {
         if (p instanceof CBORParser) {
             if (p.hasCurrentToken()) {
                 final int currentTag = ((CBORParser) p).getCurrentTag();
@@ -478,7 +474,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeStartArray() throws IOException {
+    public final void writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
         if (_elementCountsPtr > 0) {
@@ -489,7 +485,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeStartArray(Object currValue) throws IOException {
+    public void writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
         if (_elementCountsPtr > 0) {
@@ -500,7 +496,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
+    public void writeStartArray(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an array");
         _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
         _pushRemainingElements();
@@ -509,7 +505,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeEndArray() throws IOException {
+    public final void writeEndArray() throws JacksonException {
         if (!_tokenWriteContext.inArray()) {
             _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
         }
@@ -518,7 +514,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeStartObject() throws IOException {
+    public final void writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
         if (_elementCountsPtr > 0) {
@@ -529,7 +525,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeStartObject(Object forValue) throws IOException {
+    public final void writeStartObject(Object forValue) throws JacksonException {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
         if (_elementCountsPtr > 0) {
@@ -540,7 +536,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
+    public final void writeStartObject(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an object");
         _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
         _pushRemainingElements();
@@ -549,7 +545,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeEndObject() throws IOException {
+    public final void writeEndObject() throws JacksonException {
         if (!_tokenWriteContext.inObject()) {
             _reportError("Current context not Object but "+ _tokenWriteContext.typeDesc());
         }
@@ -558,7 +554,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeArray(int[] array, int offset, int length) throws IOException
+    public void writeArray(int[] array, int offset, int length) throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -587,7 +583,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeArray(long[] array, int offset, int length) throws IOException
+    public void writeArray(long[] array, int offset, int length) throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -599,7 +595,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeArray(double[] array, int offset, int length) throws IOException
+    public void writeArray(double[] array, int offset, int length) throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -617,7 +613,7 @@ public class CBORGenerator extends GeneratorBase
         _elementCounts[_elementCountsPtr++] = _currentRemainingElements;
     }
 
-    private final void _writeIntMinimal(int markerBase, int i) throws IOException
+    private final void _writeIntMinimal(int markerBase, int i) throws JacksonException
     {
         _ensureRoomForOutput(5);
         byte b0;
@@ -650,7 +646,7 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = b0;
     }
 
-    private final void _writeIntFull(int markerBase, int i) throws IOException
+    private final void _writeIntFull(int markerBase, int i) throws JacksonException
     {
         // if ((_outputTail + needed) >= _outputEnd) { _flushBuffer(); }
         _ensureRoomForOutput(5);
@@ -664,7 +660,7 @@ public class CBORGenerator extends GeneratorBase
 
     // Helper method that works like `writeNumber(long)` but DOES NOT
     // check internal output state. It does, however, check need for minimization
-    private final void _writeLongNoCheck(long l) throws IOException {
+    private final void _writeLongNoCheck(long l) throws JacksonException {
         if (_cfgMinimalInts) {
             if (l >= 0) {
                 if (l <= 0x100000000L) {
@@ -696,7 +692,7 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) i;
     }
 
-    private final void _writeDoubleNoCheck(double d) throws IOException {
+    private final void _writeDoubleNoCheck(double d) throws JacksonException {
         _ensureRoomForOutput(11);
         // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
         // more accurate to use exact representation; and possibly faster.
@@ -724,7 +720,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeString(String text) throws IOException {
+    public void writeString(String text) throws JacksonException {
         if (text == null) {
             writeNull();
             return;
@@ -734,7 +730,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeString(SerializableString sstr) throws IOException {
+    public final void writeString(SerializableString sstr) throws JacksonException {
         _verifyValueWrite("write String value");
         byte[] raw = sstr.asUnquotedUTF8();
         final int len = raw.length;
@@ -748,7 +744,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public void writeString(char[] text, int offset, int len)
-            throws IOException {
+            throws JacksonException {
         _verifyValueWrite("write String value");
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
@@ -759,7 +755,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public void writeRawUTF8String(byte[] raw, int offset, int len)
-            throws IOException
+            throws JacksonException
     {
         _verifyValueWrite("write String value");
         if (len == 0) {
@@ -772,7 +768,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeUTF8String(byte[] text, int offset, int len)
-            throws IOException {
+            throws JacksonException {
         // Since no escaping is needed, same as 'writeRawUTF8String'
         writeRawUTF8String(text, offset, len);
     }
@@ -784,39 +780,39 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeRaw(String text) throws IOException {
+    public void writeRaw(String text) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(String text, int offset, int len) throws IOException {
+    public void writeRaw(String text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(char[] text, int offset, int len) throws IOException {
+    public void writeRaw(char[] text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(char c) throws IOException {
+    public void writeRaw(char c) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(String text) throws IOException {
+    public void writeRawValue(String text) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
     public void writeRawValue(String text, int offset, int len)
-            throws IOException {
+            throws JacksonException {
         throw _notSupported();
     }
 
     @Override
     public void writeRawValue(char[] text, int offset, int len)
-            throws IOException {
+            throws JacksonException {
         throw _notSupported();
     }
 
@@ -828,7 +824,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public void writeBinary(Base64Variant b64variant, byte[] data, int offset,
-            int len) throws IOException {
+            int len) throws JacksonException {
         if (data == null) {
             writeNull();
             return;
@@ -839,7 +835,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public int writeBinary(InputStream data, int dataLength) throws IOException {
+    public int writeBinary(InputStream data, int dataLength) throws JacksonException {
         /*
          * 28-Mar-2014, tatu: Theoretically we could implement encoder that uses
          * chunking to output binary content of unknown (a priori) length. But
@@ -864,7 +860,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public int writeBinary(Base64Variant b64variant, InputStream data,
-            int dataLength) throws IOException {
+            int dataLength) throws JacksonException {
         return writeBinary(data, dataLength);
     }
 
@@ -875,7 +871,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeBoolean(boolean state) throws IOException {
+    public void writeBoolean(boolean state) throws JacksonException {
         _verifyValueWrite("write boolean value");
         if (state) {
             _writeByte(BYTE_TRUE);
@@ -885,19 +881,19 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNull() throws IOException {
+    public void writeNull() throws JacksonException {
         _verifyValueWrite("write null value");
         _writeByte(BYTE_NULL);
     }
 
     @Override
-    public void writeNumber(short v) throws IOException {
+    public void writeNumber(short v) throws JacksonException {
         // !!! TODO 25-May-2020, tatu: Should we try to check for more optimal form?
         writeNumber((int) v);
     }
 
     @Override
-    public void writeNumber(int i) throws IOException {
+    public void writeNumber(int i) throws JacksonException {
         _verifyValueWrite("write number");
         int marker;
         if (i < 0) {
@@ -938,7 +934,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(long l) throws IOException {
+    public void writeNumber(long l) throws JacksonException {
         _verifyValueWrite("write number");
         if (_cfgMinimalInts) { // maybe 32 bits is enough?
             if (l >= 0) {
@@ -972,7 +968,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(BigInteger v) throws IOException {
+    public void writeNumber(BigInteger v) throws JacksonException {
         if (v == null) {
             writeNull();
             return;
@@ -983,7 +979,7 @@ public class CBORGenerator extends GeneratorBase
 
     // Main write method isolated so that it can be called directly
     // in cases where that is needed (to encode BigDecimal)
-    protected void _write(BigInteger v) throws IOException {
+    protected void _write(BigInteger v) throws JacksonException {
         /*
          * Supported by using type tags, as per spec: major type for tag '6'; 5
          * LSB either 2 for positive bignum or 3 for negative bignum. And then
@@ -1002,7 +998,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(double d) throws IOException {
+    public void writeNumber(double d) throws JacksonException {
         _verifyValueWrite("write number");
         _ensureRoomForOutput(11);
         /*
@@ -1027,7 +1023,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(float f) throws IOException {
+    public void writeNumber(float f) throws JacksonException {
         // Ok, now, we needed token type byte plus 5 data bytes (7 bits each)
         _ensureRoomForOutput(6);
         _verifyValueWrite("write number");
@@ -1047,7 +1043,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(BigDecimal dec) throws IOException {
+    public void writeNumber(BigDecimal dec) throws JacksonException {
         if (dec == null) {
             writeNull();
             return;
@@ -1079,7 +1075,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(String encodedValue) throws IOException,
+    public void writeNumber(String encodedValue) throws JacksonException,
             JsonGenerationException, UnsupportedOperationException {
         // just write as a String -- CBOR does not require schema, so
         // databinding
@@ -1094,7 +1090,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    protected final void _verifyValueWrite(String typeMsg) throws IOException {
+    protected final void _verifyValueWrite(String typeMsg) throws JacksonException {
         if (!_tokenWriteContext.writeValue()) {
             _reportError("Can not " + typeMsg + ", expecting field name/id");
         }
@@ -1114,7 +1110,7 @@ public class CBORGenerator extends GeneratorBase
         }
     }
 
-    private void _failSizedArrayOrObject() throws IOException
+    private void _failSizedArrayOrObject() throws JacksonException
     {
         _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
                 _tokenWriteContext.typeDesc()));
@@ -1127,15 +1123,19 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public final void flush() throws IOException {
+    public final void flush() throws JacksonException {
         _flushBuffer();
         if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-            _out.flush();
+            try {
+                _out.flush();
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
         }
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws JacksonException {
         // First: let's see that we still have buffers...
         if ((_outputBuffer != null)
                 && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
@@ -1154,13 +1154,17 @@ public class CBORGenerator extends GeneratorBase
         super.close();
         _flushBuffer();
 
-        if (_ioContext.isResourceManaged()
-                || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
-            _out.close();
-        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-            // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
-            // If we can't close it, we should at least flush
-            _out.flush();
+        try {
+            if (_ioContext.isResourceManaged()
+                    || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
+                _out.close();
+            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
+                // If we can't close it, we should at least flush
+                _out.flush();
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         // Internal buffer(s) generator has can now be released as well
         _releaseBuffers();
@@ -1175,12 +1179,9 @@ public class CBORGenerator extends GeneratorBase
     /**
      * Method for writing out an explicit CBOR Tag.
      * 
-     * @param tagId
-     *            Positive integer (0 or higher)
-     * 
-     * @since 2.5
+     * @param tagId Positive integer (0 or higher)
      */
-    public void writeTag(int tagId) throws IOException {
+    public void writeTag(int tagId) throws JacksonException {
         if (tagId < 0) {
             throw new IllegalArgumentException(
                     "Can not write negative tag ids (" + tagId + ")");
@@ -1200,7 +1201,7 @@ public class CBORGenerator extends GeneratorBase
      * <p>
      * NOTE: only use this method if you really know what you are doing.
      */
-    public void writeRaw(byte b) throws IOException {
+    public void writeRaw(byte b) throws JacksonException {
         _writeByte(b);
     }
 
@@ -1210,7 +1211,7 @@ public class CBORGenerator extends GeneratorBase
      * <p>
      * NOTE: only use this method if you really know what you are doing.
      */
-    public void writeBytes(byte[] data, int offset, int len) throws IOException {
+    public void writeBytes(byte[] data, int offset, int len) throws JacksonException {
         _writeBytes(data, offset, len);
     }
 
@@ -1228,7 +1229,7 @@ public class CBORGenerator extends GeneratorBase
     // in case it's > 255 bytes
     private final static int MAX_MEDIUM_STRING_BYTES = 255 * 3 + 3;
 
-    protected final void _writeString(String name) throws IOException {
+    protected final void _writeString(String name) throws JacksonException {
         int len = name.length();
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
@@ -1263,14 +1264,14 @@ public class CBORGenerator extends GeneratorBase
         _writeString(cbuf, 0, len);
     }
 
-    protected final void _ensureSpace(int needed) throws IOException {
+    protected final void _ensureSpace(int needed) throws JacksonException {
         if ((_outputTail + needed + 3) > _outputEnd) {
             _flushBuffer();
         }
     }
 
     protected final void _writeString(char[] text, int offset, int len)
-            throws IOException
+            throws JacksonException
     {
         if (len <= MAX_SHORT_STRING_CHARS) { // possibly short string (not necessarily)
             _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
@@ -1325,7 +1326,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     protected final void _writeChunkedString(char[] text, int offset, int len)
-        throws IOException
+        throws JacksonException
     {
         // need to use a marker first
         _writeByte(BYTE_STRING_INDEFINITE);
@@ -1536,13 +1537,13 @@ surr1, surr2));
     /**********************************************************************
      */
 
-    private final void _ensureRoomForOutput(int needed) throws IOException {
+    private final void _ensureRoomForOutput(int needed) throws JacksonException {
         if ((_outputTail + needed) >= _outputEnd) {
             _flushBuffer();
         }
     }
 
-    private final void _writeIntValue(int i) throws IOException {
+    private final void _writeIntValue(int i) throws JacksonException {
         int marker;
         if (i < 0) {
             i = -i - 1;
@@ -1553,7 +1554,7 @@ surr1, surr2));
         _writeLengthMarker(marker, i);
     }
 
-    private final void _writeLongValue(long l) throws IOException {
+    private final void _writeLongValue(long l) throws JacksonException {
         _ensureRoomForOutput(9);
         if (l < 0) {
             l += 1;
@@ -1575,7 +1576,7 @@ surr1, surr2));
     }
 
     private final void _writeLengthMarker(int majorType, int i)
-            throws IOException {
+            throws JacksonException {
         _ensureRoomForOutput(5);
         if (i < 24) {
             _outputBuffer[_outputTail++] = (byte) (majorType + i);
@@ -1601,7 +1602,7 @@ surr1, surr2));
         _outputBuffer[_outputTail++] = b0;
     }
 
-    private final void _writeByte(byte b) throws IOException {
+    private final void _writeByte(byte b) throws JacksonException {
         if (_outputTail >= _outputEnd) {
             _flushBuffer();
         }
@@ -1609,13 +1610,13 @@ surr1, surr2));
     }
 
     /*
-     * private final void _writeBytes(byte b1, byte b2) throws IOException { if
+     * private final void _writeBytes(byte b1, byte b2) throws JacksonException { if
      * ((_outputTail + 1) >= _outputEnd) { _flushBuffer(); }
      * _outputBuffer[_outputTail++] = b1; _outputBuffer[_outputTail++] = b2; }
      */
 
     private final void _writeBytes(byte[] data, int offset, int len)
-            throws IOException {
+            throws JacksonException {
         if (len == 0) {
             return;
         }
@@ -1629,14 +1630,19 @@ surr1, surr2));
     }
 
     private final int _writeBytes(InputStream in, int bytesLeft)
-            throws IOException {
+            throws JacksonException {
         while (bytesLeft > 0) {
             int room = _outputEnd - _outputTail;
             if (room <= 0) {
                 _flushBuffer();
                 room = _outputEnd - _outputTail;
             }
-            int count = in.read(_outputBuffer, _outputTail, room);
+            int count;
+            try {
+                count = in.read(_outputBuffer, _outputTail, room);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count < 0) {
                 break;
             }
@@ -1647,7 +1653,7 @@ surr1, surr2));
     }
 
     private final void _writeBytesLong(byte[] data, int offset, int len)
-            throws IOException {
+            throws JacksonException {
         if (_outputTail >= _outputEnd) {
             _flushBuffer();
         }
@@ -1683,10 +1689,14 @@ surr1, surr2));
         }
     }
 
-    protected final void _flushBuffer() throws IOException {
+    protected final void _flushBuffer() throws JacksonException {
         if (_outputTail > 0) {
             _bytesWritten += _outputTail;
-            _out.write(_outputBuffer, 0, _outputTail);
+            try {
+                _out.write(_outputBuffer, 0, _outputTail);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             _outputTail = 0;
         }
     }
@@ -1697,7 +1707,7 @@ surr1, surr2));
     /**********************************************************************
 	*/
 
-    private final void closeComplexElement() throws IOException {
+    private final void closeComplexElement() throws JacksonException {
         switch (_currentRemainingElements) {
         case INDEFINITE_LENGTH:
             _writeByte(BYTE_BREAK);

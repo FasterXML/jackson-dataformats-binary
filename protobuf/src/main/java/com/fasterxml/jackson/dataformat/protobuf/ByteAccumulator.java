@@ -36,8 +36,6 @@ public class ByteAccumulator
     /**
      * Pointer to start of contents provided by parent, preceding room
      * for prefix (that is, same as or less than `_prefixOffset`)
-     * 
-     * @since 2.8.8
      */
     protected int _parentStart;
 

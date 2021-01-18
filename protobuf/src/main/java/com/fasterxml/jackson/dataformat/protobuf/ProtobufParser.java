@@ -348,7 +348,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public int releaseBuffered(OutputStream out) throws IOException
+    public int releaseBuffered(OutputStream out)
     {
         int count = _inputEnd - _inputPtr;
         if (count < 1) {
@@ -356,7 +356,11 @@ public class ProtobufParser extends ParserMinimalBase
         }
         // let's just advance ptr to end
         int origPtr = _inputPtr;
-        out.write(_inputBuffer, origPtr, count);
+        try {
+            out.write(_inputBuffer, origPtr, count);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         return count;
     }
     
@@ -396,7 +400,7 @@ public class ProtobufParser extends ParserMinimalBase
      * the current event.
      */
     @Override
-    public String currentName() throws IOException
+    public String currentName()
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ProtobufReadContext parent = _parsingContext.getParent();
@@ -406,7 +410,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public void close() throws IOException
+    public void close()
     {
         _state = STATE_CLOSED;
         if (!_closed) {
@@ -461,7 +465,7 @@ public class ProtobufParser extends ParserMinimalBase
         return false;
     }
 
-    protected void _releaseBuffers() throws IOException
+    protected void _releaseBuffers()
     {
          if (_bufferRecyclable) {
              byte[] buf = _inputBuffer;
@@ -486,7 +490,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         JsonToken t = nextTokenX();
         if (t == JsonToken.FIELD_NAME) {
@@ -502,11 +506,11 @@ public class ProtobufParser extends ParserMinimalBase
         return t;
     }
 
-    public JsonToken nextTokenX() throws IOException {
+    public JsonToken nextTokenX() throws JacksonException {
     */
 
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         _numTypesValid = NR_UNKNOWN;
         // For longer tokens (text, binary), we'll only read when requested
@@ -657,7 +661,7 @@ public class ProtobufParser extends ParserMinimalBase
         return null;
     }
 
-    private boolean _checkEnd() throws IOException
+    private boolean _checkEnd() throws JacksonException
     {
         if (_inputPtr < _currentEndOffset) {
             return false;
@@ -681,7 +685,7 @@ public class ProtobufParser extends ParserMinimalBase
         return true;
     }
 
-    private JsonToken _handleRootKey(int tag) throws IOException
+    private JsonToken _handleRootKey(int tag) throws JacksonException
     {
         int wireType = (tag & 0x7);
         final int id = (tag >> 3);
@@ -717,7 +721,7 @@ public class ProtobufParser extends ParserMinimalBase
         return (_currToken = JsonToken.FIELD_NAME);
     }
 
-    private JsonToken _handleNestedKey(int tag) throws IOException
+    private JsonToken _handleNestedKey(int tag) throws JacksonException
     {
         int wireType = (tag & 0x7);
         int id = (tag >> 3);
@@ -761,7 +765,7 @@ public class ProtobufParser extends ParserMinimalBase
         return (_currToken = JsonToken.FIELD_NAME);
     }
 
-    private JsonToken _readNextValue(FieldType t, int nextState) throws IOException
+    private JsonToken _readNextValue(FieldType t, int nextState) throws JacksonException
     {
         JsonToken type;
 
@@ -901,7 +905,7 @@ public class ProtobufParser extends ParserMinimalBase
         return type;
     }
 
-    private JsonToken _skipUnknownField(int tag, int wireType) throws IOException
+    private JsonToken _skipUnknownField(int tag, int wireType) throws JacksonException
     {
         // First: is this even allowed?
         if (!isEnabled(StreamReadFeature.IGNORE_UNDEFINED)) {
@@ -943,7 +947,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
     }
         
-    private void _skipUnknownValue(int wireType) throws IOException
+    private void _skipUnknownValue(int wireType) throws JacksonException
     {
         switch (wireType) {
         case WireType.VINT:
@@ -972,7 +976,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public String nextFieldName() throws IOException
+    public String nextFieldName() throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
@@ -1059,7 +1063,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public boolean nextFieldName(SerializableString sstr) throws IOException
+    public boolean nextFieldName(SerializableString sstr) throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
@@ -1144,7 +1148,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
@@ -1233,7 +1237,7 @@ public class ProtobufParser extends ParserMinimalBase
         return _nextFieldName2(matcher);
     }
 
-    private int _nextFieldName2(FieldNameMatcher matcher) throws IOException
+    private int _nextFieldName2(FieldNameMatcher matcher) throws JacksonException
     {
         JsonToken t = nextToken();
         if (t == JsonToken.FIELD_NAME) {
@@ -1252,7 +1256,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public String nextTextValue() throws IOException
+    public String nextTextValue() throws JacksonException
     {
         // Copied from `nexdtToken()`, as appropriate
         _numTypesValid = NR_UNKNOWN;
@@ -1374,7 +1378,7 @@ public class ProtobufParser extends ParserMinimalBase
      * Method can be called for any event.
      */
     @Override    
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             if (_tokenIncomplete) {
@@ -1403,7 +1407,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException
+    public char[] getTextCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1427,7 +1431,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override    
-    public int getTextLength() throws IOException
+    public int getTextLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1451,12 +1455,12 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int getTextOffset() throws IOException {
+    public int getTextOffset() throws JacksonException {
         return 0;
     }
 
     @Override
-    public String getValueAsString() throws IOException
+    public String getValueAsString() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             if (_tokenIncomplete) {
@@ -1477,7 +1481,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public String getValueAsString(String defaultValue) throws IOException
+    public String getValueAsString(String defaultValue) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
@@ -1488,34 +1492,38 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override // since 2.8
-    public int getText(Writer writer) throws IOException
+    public int getText(Writer writer) throws JacksonException
     {
-        JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            if (_tokenIncomplete) {
-                // inlined '_finishToken()`
-                final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
-                    _tokenIncomplete = false;
-                    _finishShortText(len);
-                } else {
-                    _finishToken();
+        try {
+            JsonToken t = _currToken;
+            if (t == JsonToken.VALUE_STRING) {
+                if (_tokenIncomplete) {
+                    // inlined '_finishToken()`
+                    final int len = _decodedLength;
+                    if ((_inputPtr + len) <= _inputEnd) {
+                        _tokenIncomplete = false;
+                        _finishShortText(len);
+                    } else {
+                        _finishToken();
+                    }
                 }
-            }
-            return _textBuffer.contentsToWriter(writer);
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.currentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
                 return _textBuffer.contentsToWriter(writer);
             }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
+            if (t == JsonToken.FIELD_NAME) {
+                String n = _parsingContext.currentName();
+                writer.write(n);
+                return n.length();
+            }
+            if (t != null) {
+                if (t.isNumeric()) {
+                    return _textBuffer.contentsToWriter(writer);
+                }
+                char[] ch = t.asCharArray();
+                writer.write(ch);
+                return ch.length;
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         return 0;
     }
@@ -1527,7 +1535,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public byte[] getBinaryValue(Base64Variant b64variant) throws IOException
+    public byte[] getBinaryValue(Base64Variant b64variant) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1540,7 +1548,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public Object getEmbeddedObject() throws IOException
+    public Object getEmbeddedObject() throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1552,7 +1560,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws IOException
+    public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             _reportError("Current token ("+_currToken+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
@@ -1585,7 +1593,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public Number getNumberValue() throws IOException
+    public Number getNumberValue() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _checkNumericValue(NR_UNKNOWN); // will also check event type
@@ -1620,12 +1628,12 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
-    public final Number getNumberValueExact() throws IOException {
+    public final Number getNumberValueExact() throws JacksonException {
         return getNumberValue();
     }
 
     @Override
-    public NumberType getNumberType() throws IOException
+    public NumberType getNumberType() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _checkNumericValue(NR_UNKNOWN); // will also check event type
@@ -1656,7 +1664,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int getIntValue() throws IOException
+    public int getIntValue() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) { // not parsed at all
@@ -1670,7 +1678,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
     
     @Override
-    public long getLongValue() throws IOException
+    public long getLongValue() throws JacksonException
     {
         if ((_numTypesValid & NR_LONG) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -1684,7 +1692,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
     
     @Override
-    public BigInteger getBigIntegerValue() throws IOException
+    public BigInteger getBigIntegerValue() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGINT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -1698,7 +1706,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
     
     @Override
-    public float getFloatValue() throws IOException
+    public float getFloatValue() throws JacksonException
     {
         if ((_numTypesValid & NR_FLOAT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -1718,7 +1726,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
     
     @Override
-    public double getDoubleValue() throws IOException
+    public double getDoubleValue() throws JacksonException
     {
         if ((_numTypesValid & NR_DOUBLE) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -1732,7 +1740,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
     
     @Override
-    public BigDecimal getDecimalValue() throws IOException
+    public BigDecimal getDecimalValue() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -1751,7 +1759,7 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */    
 
-    protected void _checkNumericValue(int expType) throws IOException
+    protected void _checkNumericValue(int expType) throws JacksonException
     {
         // Int or float?
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
@@ -1760,7 +1768,7 @@ public class ProtobufParser extends ParserMinimalBase
         _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
     }
 
-    protected void convertNumberToInt() throws IOException
+    protected void convertNumberToInt() throws JacksonException
     {
         // First, converting from long ought to be easy
         if ((_numTypesValid & NR_LONG) != 0) {
@@ -1773,24 +1781,24 @@ public class ProtobufParser extends ParserMinimalBase
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigInt.intValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             // Need to check boundaries
             if (_numberDouble < MIN_INT_D || _numberDouble > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigDecimal.intValue();
         } else {
@@ -1799,30 +1807,30 @@ public class ProtobufParser extends ParserMinimalBase
         _numTypesValid |= NR_INT;
     }
     
-    protected void convertNumberToLong() throws IOException
+    protected void convertNumberToLong() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = (long) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigDecimal.longValue();
         } else {
@@ -1831,7 +1839,7 @@ public class ProtobufParser extends ParserMinimalBase
         _numTypesValid |= NR_LONG;
     }
     
-    protected void convertNumberToBigInteger() throws IOException
+    protected void convertNumberToBigInteger() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
@@ -1850,7 +1858,7 @@ public class ProtobufParser extends ParserMinimalBase
         _numTypesValid |= NR_BIGINT;
     }
 
-    protected void convertNumberToFloat() throws IOException
+    protected void convertNumberToFloat() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -1870,7 +1878,7 @@ public class ProtobufParser extends ParserMinimalBase
         _numTypesValid |= NR_FLOAT;
     }
 
-    protected void convertNumberToDouble() throws IOException
+    protected void convertNumberToDouble() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -1890,7 +1898,7 @@ public class ProtobufParser extends ParserMinimalBase
         _numTypesValid |= NR_DOUBLE;
     }
     
-    protected void convertNumberToBigDecimal() throws IOException
+    protected void convertNumberToBigDecimal() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -1920,7 +1928,7 @@ public class ProtobufParser extends ParserMinimalBase
      * Method called to finish parsing of a token so that token contents
      * are retriable
      */
-    protected void _finishToken() throws IOException
+    protected void _finishToken() throws JacksonException
     {
         _tokenIncomplete = false;
 
@@ -1947,7 +1955,7 @@ public class ProtobufParser extends ParserMinimalBase
         _throwInternal();
     }
 
-    protected byte[] _finishBytes(int len) throws IOException
+    protected byte[] _finishBytes(int len) throws JacksonException
     {
         byte[] b = new byte[len];
         if (_inputPtr >= _inputEnd) {
@@ -1967,7 +1975,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
     }
 
-    private final String _finishShortText(int len) throws IOException
+    private final String _finishShortText(int len) throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length < len) { // one minor complication
@@ -2021,7 +2029,7 @@ public class ProtobufParser extends ParserMinimalBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final void _finishLongText(int len) throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -2036,7 +2044,7 @@ public class ProtobufParser extends ParserMinimalBase
                 continue;
             }
             if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+                throw _constructReadException("Malformed UTF-8 character at end of long (non-chunked) text segment");
             }
             
             switch (code) {
@@ -2082,7 +2090,7 @@ public class ProtobufParser extends ParserMinimalBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final int _decodeUTF8_3(int c1) throws IOException
+    private final int _decodeUTF8_3(int c1) throws JacksonException
     {
         c1 &= 0x0F;
         int d = _nextByte();
@@ -2102,7 +2110,7 @@ public class ProtobufParser extends ParserMinimalBase
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUTF8_4(int c) throws IOException
+    private final int _decodeUTF8_4(int c) throws JacksonException
     {
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
@@ -2121,7 +2129,7 @@ public class ProtobufParser extends ParserMinimalBase
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
     
-    private final int _nextByte() throws IOException {
+    private final int _nextByte() throws JacksonException {
         int inPtr = _inputPtr;
         if (inPtr < _inputEnd) {
             int ch = _inputBuffer[inPtr];
@@ -2138,12 +2146,17 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    protected final boolean loadMore() throws IOException
+    protected final boolean loadMore() throws JacksonException
     {
         if (_inputStream != null) {
             _currInputProcessed += _inputEnd;
 
-            int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count > 0) {
                 _currentEndOffset = _parsingContext.adjustEnd(_inputEnd);
                 _inputPtr = 0;
@@ -2154,13 +2167,13 @@ public class ProtobufParser extends ParserMinimalBase
             _closeInput();
             // Should never return 0, so let's fail
             if (count == 0) {
-                throw new IOException("InputStream.read() returned 0 characters when trying to read "+_inputBuffer.length+" bytes");
+                _reportBadInputStream(_inputBuffer.length);
             }
         }
         return false;
     }
 
-    protected final void loadMoreGuaranteed() throws IOException {
+    protected final void loadMoreGuaranteed() throws JacksonException {
         if (!loadMore()) { _reportInvalidEOF(); }
     }
     
@@ -2168,11 +2181,11 @@ public class ProtobufParser extends ParserMinimalBase
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary
      */
-    protected final void _loadToHaveAtLeast(int minAvailable) throws IOException
+    protected final void _loadToHaveAtLeast(int minAvailable) throws JacksonException
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            throw _constructError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            throw _constructReadException("Needed to read "+minAvailable+" bytes, reached end-of-input");
         }
         // Need to move remaining data in front?
         int ptr = _inputPtr;
@@ -2188,15 +2201,21 @@ public class ProtobufParser extends ParserMinimalBase
         _inputPtr = 0;
         _inputEnd = amount;
         while (_inputEnd < minAvailable) {
-            int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            final int toRead = _inputBuffer.length - _inputEnd;
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, _inputEnd, toRead);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count < 1) {
                 // End of input
                 _closeInput();
                 // Should never return 0, so let's fail
                 if (count == 0) {
-                    throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
+                    _reportBadInputStream(toRead);
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructReadException("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
             }
             _inputEnd += count;
         }
@@ -2217,10 +2236,14 @@ public class ProtobufParser extends ParserMinimalBase
         return _byteArrayBuilder;
     }
 
-    protected void _closeInput() throws IOException {
+    protected void _closeInput() throws JacksonException {
         if (_inputStream != null) {
             if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
-                _inputStream.close();
+                try {
+                    _inputStream.close();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
             _inputStream = null;
         }
@@ -2245,7 +2268,7 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    protected void _skipBytes(int len) throws IOException
+    protected void _skipBytes(int len) throws JacksonException
     {
         while (true) {
             int toAdd = Math.min(len, _inputEnd - _inputPtr);
@@ -2258,7 +2281,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
     }
 
-    protected void _skipVInt() throws IOException
+    protected void _skipVInt() throws JacksonException
     {
         int ptr = _inputPtr;
         if ((ptr + 10) > _inputEnd) {
@@ -2281,7 +2304,7 @@ public class ProtobufParser extends ParserMinimalBase
         _reportTooLongVInt(buf[ptr-1]);
     }
 
-    protected void _skipVIntSlow() throws IOException
+    protected void _skipVIntSlow() throws JacksonException
     {
         for (int i = 0; i < 10; ++i) {
             if (_inputPtr >= _inputEnd) {
@@ -2301,7 +2324,7 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    private int _decodeVInt() throws IOException
+    private int _decodeVInt() throws JacksonException
     {
         int ptr = _inputPtr;
         // 5 x 7 = 35 bits -> all we need is 32
@@ -2349,7 +2372,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     // Similar to '_decodeVInt()', but also ensure that no
     // negative values allowed
-    private int _decodeLength() throws IOException
+    private int _decodeLength() throws JacksonException
     {
         int ptr = _inputPtr;
 
@@ -2402,7 +2425,7 @@ public class ProtobufParser extends ParserMinimalBase
         return v;
     }
     
-    protected int _decodeVIntSlow() throws IOException
+    protected int _decodeVIntSlow() throws JacksonException
     {
         int v = 0;
         int shift = 0;
@@ -2426,7 +2449,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
     }
     
-    private long _decodeVLong() throws IOException
+    private long _decodeVLong() throws JacksonException
     {
         // 10 x 7 = 70 bits -> all we need is 64
         if ((_inputPtr + 10) > _inputEnd) {
@@ -2501,7 +2524,7 @@ public class ProtobufParser extends ParserMinimalBase
         return (((long) v) << 56) | l;
     }
 
-    protected long _decodeVLongSlow() throws IOException
+    protected long _decodeVLongSlow() throws JacksonException
     {
         // since only called rarely, no need to optimize int vs long
         long v = 0;
@@ -2529,7 +2552,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
     }
     
-    protected final int _decode32Bits() throws IOException {
+    protected final int _decode32Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 3) >= _inputEnd) {
             return _slow32();
@@ -2541,7 +2564,7 @@ public class ProtobufParser extends ParserMinimalBase
         return v;
     }
 
-    protected final int _slow32() throws IOException {
+    protected final int _slow32() throws JacksonException {
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
         }
@@ -2560,7 +2583,7 @@ public class ProtobufParser extends ParserMinimalBase
         return v | (_inputBuffer[_inputPtr++] << 24); // sign will shift away
     }
 
-    protected final long _decode64Bits() throws IOException {
+    protected final long _decode64Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 7) >= _inputEnd) {
             return _slow64();
@@ -2574,7 +2597,7 @@ public class ProtobufParser extends ParserMinimalBase
         return _long(i1, i2);
     }
 
-    protected final long _slow64() throws IOException {
+    protected final long _slow64() throws JacksonException {
         return _long(_decode32Bits(), _decode32Bits());
     }
 

@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.WrappedIOException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
@@ -82,7 +83,7 @@ public class CBORParserBootstrapper
             int factoryFeatures,
             int generalParserFeatures, int formatFeatures,
             ByteQuadsCanonicalizer rootByteSymbols)
-        throws IOException, JsonParseException
+        throws JacksonException
     {
         ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
         // We just need a single byte to recognize possible "empty" document.
@@ -109,7 +110,7 @@ public class CBORParserBootstrapper
     /**********************************************************
      */
 
-    protected boolean ensureLoaded(int minimum) throws IOException
+    protected boolean ensureLoaded(int minimum) throws JacksonException
     {
         if (_in == null) { // block source; nothing more to load
             return false;
@@ -120,7 +121,12 @@ public class CBORParserBootstrapper
          */
         int gotten = (_inputEnd - _inputPtr);
         while (gotten < minimum) {
-            int count = _in.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            int count;
+            try {
+                count = _in.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            } catch (IOException e) {
+                throw WrappedIOException.construct(e);
+            }
             if (count < 1) {
                 return false;
             }

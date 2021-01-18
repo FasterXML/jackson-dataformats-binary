@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
-import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.*;
@@ -53,7 +52,6 @@ public class UnknownPropertyDeserTest
         public boolean handleUnknownProperty(DeserializationContext ctxt,
                 JsonParser jp, JsonDeserializer<?> deserializer,
                 Object bean, String propertyName)
-            throws IOException, JsonProcessingException
         {
             // very simple, just to verify that we do see correct token type
             ((TestBean) bean).markUnknown(propertyName+":"+jp.currentToken().toString());
@@ -285,7 +283,7 @@ public class UnknownPropertyDeserTest
         ObjectMapper mapper = cborMapperBuilder()
                 .addHandler(new DeserializationProblemHandler() {
                 @Override
-                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
+                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) {
                     p.skipChildren();
                     return true;
                 }

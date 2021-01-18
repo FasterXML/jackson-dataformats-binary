@@ -233,7 +233,7 @@ public class CBORParser extends ParserBase
     @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
 
     @Override
-    public int releaseBuffered(OutputStream out) throws IOException
+    public int releaseBuffered(OutputStream out)
     {
         int count = _inputEnd - _inputPtr;
         if (count < 1) {
@@ -241,7 +241,11 @@ public class CBORParser extends ParserBase
         }
         // let's just advance ptr to end
         int origPtr = _inputPtr;
-        out.write(_inputBuffer, origPtr, count);
+        try {
+            out.write(_inputBuffer, origPtr, count);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         return count;
     }
     
@@ -281,7 +285,7 @@ public class CBORParser extends ParserBase
      * the current event.
      */
     @Override
-    public String currentName() throws IOException
+    public String currentName()
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             return _parsingContext.getParent().currentName();
@@ -290,7 +294,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (!_closed) {
             _closed = true;
             _symbols.release();
@@ -328,7 +332,7 @@ public class CBORParser extends ParserBase
      * separately (if need be).
      */
     @Override
-    protected void _releaseBuffers() throws IOException
+    protected void _releaseBuffers()
     {
         super._releaseBuffers();
         if (_bufferRecyclable) {
@@ -347,7 +351,7 @@ public class CBORParser extends ParserBase
      */
 
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         _numTypesValid = NR_UNKNOWN;
         // For longer tokens (text, binary), we'll only read when requested
@@ -568,7 +572,7 @@ public class CBORParser extends ParserBase
         }
     }
 
-    protected String _numberToName(int ch, boolean neg) throws IOException
+    protected String _numberToName(int ch, boolean neg) throws JacksonException
     {
         final int lowBits = ch & 0x1F;
         int i;
@@ -594,7 +598,7 @@ public class CBORParser extends ParserBase
                     return String.valueOf(l);
                 }
             default:
-                throw _constructError("Invalid length indicator for ints ("+lowBits+"), token 0x"+Integer.toHexString(ch));
+                throw _constructReadException("Invalid length indicator for ints ("+lowBits+"), token 0x"+Integer.toHexString(ch));
             }
         }
         if (neg) {
@@ -603,7 +607,7 @@ public class CBORParser extends ParserBase
         return String.valueOf(i);
     }
 
-    protected JsonToken _handleTaggedBinary(int tag) throws IOException
+    protected JsonToken _handleTaggedBinary(int tag) throws JacksonException
     {
         // For now all we should get is BigInteger
         boolean neg;
@@ -630,7 +634,7 @@ public class CBORParser extends ParserBase
         return (_currToken = JsonToken.VALUE_NUMBER_INT);
     }
 
-    protected JsonToken _handleTaggedArray(int tag, int len) throws IOException
+    protected JsonToken _handleTaggedArray(int tag, int len) throws JacksonException
     {
         // For simplicity, let's create matching array context -- in perfect
         // world that wouldn't be necessarily, but in this one there are
@@ -689,7 +693,7 @@ public class CBORParser extends ParserBase
      * Note that in particular this method DOES NOT reset state that {@code nextToken()} would do,
      * but will change current token type to allow access.
      */
-    protected final boolean _checkNextIsIntInArray(final String typeDesc) throws IOException
+    protected final boolean _checkNextIsIntInArray(final String typeDesc) throws JacksonException
     {
         // We know we are in array, with length prefix so:
         if (!_parsingContext.expectMoreValues()) {
@@ -832,7 +836,7 @@ public class CBORParser extends ParserBase
         return false;
     }
 
-    protected final boolean _checkNextIsEndArray() throws IOException
+    protected final boolean _checkNextIsEndArray() throws JacksonException
     {
         // We know we are in array, with length prefix, and this is where we should be:
         if (!_parsingContext.expectMoreValues()) {
@@ -871,14 +875,14 @@ public class CBORParser extends ParserBase
     }
 
     // base impl is fine:
-    //public String currentName() throws IOException
+    //public String currentName() throws JacksonException
 
     /**
      * Method for forcing full read of current token, even if it might otherwise
      * only be read if data is accessed via {@link #getText} and similar methods.
      */
     @Override
-    public void finishToken() throws IOException
+    public void finishToken() throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -892,7 +896,7 @@ public class CBORParser extends ParserBase
      */
 
     @Override
-    public String nextFieldName() throws IOException
+    public String nextFieldName() throws JacksonException
     {
         if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
             _numTypesValid = NR_UNKNOWN;
@@ -961,7 +965,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public boolean nextFieldName(SerializableString str) throws IOException
+    public boolean nextFieldName(SerializableString str) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
@@ -1011,7 +1015,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if ((_currToken == JsonToken.FIELD_NAME) || !_parsingContext.inObject()) {
@@ -1072,7 +1076,7 @@ public class CBORParser extends ParserBase
         return match;
     }
 
-    private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int len) throws IOException
+    private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int len) throws JacksonException
     {
         // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
         String name;
@@ -1102,7 +1106,7 @@ public class CBORParser extends ParserBase
         return matcher.matchName(name);
     }
 
-    private int _nextFieldNameNonText(FieldNameMatcher matcher, int ch) throws IOException
+    private int _nextFieldNameNonText(FieldNameMatcher matcher, int ch) throws JacksonException
     {
         String name = _decodeNonStringName(ch); // NOTE: sets current name too
         _currToken = JsonToken.FIELD_NAME;
@@ -1111,13 +1115,13 @@ public class CBORParser extends ParserBase
     }
 
     // For presumable rare case of ""
-    private int _nextFieldNameEmpty(FieldNameMatcher matcher) throws IOException {
+    private int _nextFieldNameEmpty(FieldNameMatcher matcher) throws JacksonException {
         _parsingContext.setCurrentName("");
         _currToken = JsonToken.FIELD_NAME;
         return matcher.matchName("");
     }
 
-    private int _nextFieldNameLong(FieldNameMatcher matcher, int lenMarker) throws IOException
+    private int _nextFieldNameLong(FieldNameMatcher matcher, int lenMarker) throws JacksonException
     {
         final int actualLen = _decodeExplicitLength(lenMarker);
         String name;
@@ -1131,7 +1135,7 @@ public class CBORParser extends ParserBase
         return matcher.matchName(name);
     }
 
-    private final int _nextFieldOptimized(FieldNameMatcher matcher, final int len) throws IOException
+    private final int _nextFieldOptimized(FieldNameMatcher matcher, final int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -1209,7 +1213,7 @@ public class CBORParser extends ParserBase
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
     private final int _nextFieldFromSymbolsLong(FieldNameMatcher matcher, 
-            int len, int q1, int q2) throws IOException
+            int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -1256,7 +1260,7 @@ public class CBORParser extends ParserBase
      */
     
     @Override
-    public String nextTextValue() throws IOException
+    public String nextTextValue() throws JacksonException
     {
         _numTypesValid = NR_UNKNOWN;
         if (_tokenIncomplete) {
@@ -1486,7 +1490,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int nextIntValue(int defaultValue) throws IOException
+    public int nextIntValue(int defaultValue) throws JacksonException
     {
         if (nextToken() == JsonToken.VALUE_NUMBER_INT) {
             return getIntValue();
@@ -1495,7 +1499,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public long nextLongValue(long defaultValue) throws IOException
+    public long nextLongValue(long defaultValue) throws JacksonException
     {
         if (nextToken() == JsonToken.VALUE_NUMBER_INT) {
             return getLongValue();
@@ -1504,7 +1508,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public Boolean nextBooleanValue() throws IOException
+    public Boolean nextBooleanValue() throws JacksonException
     {
         JsonToken t = nextToken();
         if (t == JsonToken.VALUE_TRUE) {
@@ -1529,7 +1533,7 @@ public class CBORParser extends ParserBase
      * Method can be called for any event.
      */
     @Override    
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
         JsonToken t = _currToken;
         if (_tokenIncomplete) {
@@ -1553,7 +1557,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException
+    public char[] getTextCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1575,7 +1579,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override    
-    public int getTextLength() throws IOException
+    public int getTextLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1597,12 +1601,12 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int getTextOffset() throws IOException {
+    public int getTextOffset() throws JacksonException {
         return 0;
     }
 
     @Override
-    public String getValueAsString() throws IOException
+    public String getValueAsString() throws JacksonException
     {
         // inlined 'getText()' for common case of having String
         if (_tokenIncomplete) {
@@ -1620,7 +1624,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public String getValueAsString(String defaultValue) throws IOException
+    public String getValueAsString(String defaultValue) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
@@ -1630,28 +1634,32 @@ public class CBORParser extends ParserBase
         return getText();
     }
 
-    @Override // since 2.8
-    public int getText(Writer writer) throws IOException
+    @Override
+    public int getText(Writer writer) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
         }
-        JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(writer);
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.currentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
+        try {
+            JsonToken t = _currToken;
+            if (t == JsonToken.VALUE_STRING) {
                 return _textBuffer.contentsToWriter(writer);
             }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
+            if (t == JsonToken.FIELD_NAME) {
+                String n = _parsingContext.currentName();
+                writer.write(n);
+                return n.length();
+            }
+            if (t != null) {
+                if (t.isNumeric()) {
+                    return _textBuffer.contentsToWriter(writer);
+                }
+                char[] ch = t.asCharArray();
+                writer.write(ch);
+                return ch.length;
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         return 0;
     }
@@ -1663,7 +1671,7 @@ public class CBORParser extends ParserBase
      */
 
     @Override
-    public byte[] getBinaryValue(Base64Variant b64variant) throws IOException
+    public byte[] getBinaryValue(Base64Variant b64variant) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1676,7 +1684,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public Object getEmbeddedObject() throws IOException
+    public Object getEmbeddedObject() throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1688,7 +1696,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws IOException
+    public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // Todo, maybe: support base64 for text?
@@ -1699,7 +1707,11 @@ public class CBORParser extends ParserBase
                 return 0;
             }
             final int len = _binaryValue.length;
-            out.write(_binaryValue, 0, len);
+            try {
+                out.write(_binaryValue, 0, len);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             return len;
         }
 
@@ -1719,7 +1731,7 @@ public class CBORParser extends ParserBase
         }
     }
 
-    private int _readAndWriteBytes(OutputStream out, final int total) throws IOException
+    private int _readAndWriteBytes(OutputStream out, final int total) throws JacksonException
     {
         int left = total;
         while (left > 0) {
@@ -1731,7 +1743,11 @@ public class CBORParser extends ParserBase
                 avail = _inputEnd - _inputPtr;
             }
             int count = Math.min(avail, left);
-            out.write(_inputBuffer, _inputPtr, count);
+            try {
+                out.write(_inputBuffer, _inputPtr, count);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             _inputPtr += count;
             left -= count;
         }
@@ -1762,7 +1778,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public Number getNumberValue() throws IOException
+    public Number getNumberValue() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _checkNumericValue(NR_UNKNOWN); // will also check event type
@@ -1797,12 +1813,12 @@ public class CBORParser extends ParserBase
     }
 
     @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
-    public final Number getNumberValueExact() throws IOException {
+    public final Number getNumberValueExact() throws JacksonException {
         return getNumberValue();
     }
 
     @Override
-    public NumberType getNumberType() throws IOException
+    public NumberType getNumberType() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
             _checkNumericValue(NR_UNKNOWN); // will also check event type
@@ -1832,14 +1848,14 @@ public class CBORParser extends ParserBase
         return NumberType.FLOAT;
     }
 
-//    public int getIntValue() throws IOException
+//    public int getIntValue() throws JacksonException
 
-//    public long getLongValue() throws IOException
+//    public long getLongValue() throws JacksonException
 
-//    public BigInteger getBigIntegerValue() throws IOException
+//    public BigInteger getBigIntegerValue() throws JacksonException
 
     @Override
-    public float getFloatValue() throws IOException
+    public float getFloatValue() throws JacksonException
     {
         if ((_numTypesValid & NR_FLOAT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
@@ -1858,19 +1874,19 @@ public class CBORParser extends ParserBase
         return _numberFloat;
     }
 
-//    public double getDoubleValue() throws IOException
+//    public double getDoubleValue() throws JacksonException
 
-//    public BigDecimal getDecimalValue() throws IOException
+//    public BigDecimal getDecimalValue() throws JacksonException
 
     // Not needed since no lazy decoding for numbers
     @Override
-    protected void _parseNumericValue(int expType) throws IOException {
+    protected void _parseNumericValue(int expType) throws JacksonException {
         _throwInternal();
     }
 
     // Not needed since no lazy decoding for numbers
     @Override
-    protected int _parseIntValue() throws IOException {
+    protected int _parseIntValue() throws JacksonException {
         _throwInternal();
         return 0;
     }
@@ -1881,7 +1897,7 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */    
 
-    protected void _checkNumericValue(int expType) throws IOException
+    protected void _checkNumericValue(int expType) throws JacksonException
     {
         // Int or float?
         if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
@@ -1891,7 +1907,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override // due to addition of Float as type
-    protected void convertNumberToInt() throws IOException
+    protected void convertNumberToInt() throws JacksonException
     {
         // First, converting from long ought to be easy
         if ((_numTypesValid & NR_LONG) != 0) {
@@ -1904,24 +1920,24 @@ public class CBORParser extends ParserBase
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigInt.intValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             // Need to check boundaries
             if (_numberDouble < MIN_INT_D || _numberDouble > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberInt = _numberBigDecimal.intValue();
         } else {
@@ -1931,30 +1947,30 @@ public class CBORParser extends ParserBase
     }
     
     @Override // due to addition of Float as type
-    protected void convertNumberToLong() throws IOException
+    protected void convertNumberToLong() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = (long) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
-                reportOverflowInt();
+                _reportOverflowInt();
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowLong();
+                _reportOverflowLong();
             }
             _numberLong = _numberBigDecimal.longValue();
         } else {
@@ -1964,7 +1980,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override // due to addition of Float as type
-    protected void convertNumberToBigInteger() throws IOException
+    protected void convertNumberToBigInteger() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
@@ -1984,7 +2000,7 @@ public class CBORParser extends ParserBase
     }
 
     // Base class does not have this one...
-    protected void convertNumberToFloat() throws IOException
+    protected void convertNumberToFloat() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -2005,7 +2021,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override // due to addition of Float as type
-    protected void convertNumberToDouble() throws IOException
+    protected void convertNumberToDouble() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -2026,7 +2042,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override // due to addition of Float as type
-    protected void convertNumberToBigDecimal() throws IOException
+    protected void convertNumberToBigDecimal() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
@@ -2056,7 +2072,7 @@ public class CBORParser extends ParserBase
      * Method called to finish parsing of a token so that token contents
      * are retriable
      */
-    protected void _finishToken() throws IOException
+    protected void _finishToken() throws JacksonException
     {
         _tokenIncomplete = false;
         int ch = _typeByte;
@@ -2097,7 +2113,7 @@ public class CBORParser extends ParserBase
         _finishShortText(len);
     }
 
-    protected String _finishTextToken(int ch) throws IOException
+    protected String _finishTextToken(int ch) throws JacksonException
     {
         _tokenIncomplete = false;
         final int type = ((ch >> 5) & 0x7);
@@ -2133,7 +2149,7 @@ public class CBORParser extends ParserBase
         return _finishShortText(len);
     }
 
-    private final String _finishShortText(int len) throws IOException
+    private final String _finishShortText(int len) throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length < len) { // one minor complication
@@ -2188,7 +2204,7 @@ public class CBORParser extends ParserBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final void _finishLongText(int len) throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -2203,7 +2219,7 @@ public class CBORParser extends ParserBase
                 continue;
             }
             if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+                throw _constructReadException("Malformed UTF-8 character at end of long (non-chunked) text segment");
             }
             
             switch (code) {
@@ -2249,7 +2265,7 @@ public class CBORParser extends ParserBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final void _finishChunkedText() throws IOException
+    private final void _finishChunkedText() throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -2341,7 +2357,7 @@ public class CBORParser extends ParserBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final int _nextByte() throws IOException {
+    private final int _nextByte() throws JacksonException {
         int inPtr = _inputPtr;
         if (inPtr < _inputEnd) {
             int ch = _inputBuffer[inPtr];
@@ -2352,7 +2368,7 @@ public class CBORParser extends ParserBase
         return _inputBuffer[_inputPtr++];
     }
 
-    private final int _nextChunkedByte() throws IOException {
+    private final int _nextChunkedByte() throws JacksonException {
         int inPtr = _inputPtr;
         
         // NOTE: _chunkEnd less than or equal to _inputEnd
@@ -2364,7 +2380,7 @@ public class CBORParser extends ParserBase
         return ch;
     }
 
-    private final int _nextChunkedByte2() throws IOException
+    private final int _nextChunkedByte2() throws JacksonException
     {
         // two possibilities: either end of buffer (in which case, just load more),
         // or end of chunk
@@ -2407,7 +2423,7 @@ public class CBORParser extends ParserBase
      * case contents are needed.
      */
     @SuppressWarnings("resource")
-    protected byte[] _finishBytes(int len) throws IOException
+    protected byte[] _finishBytes(int len) throws JacksonException
     {
         // Chunked?
         // First, simple: non-chunked
@@ -2448,7 +2464,7 @@ public class CBORParser extends ParserBase
     }
 
     // @since 2.12
-    protected byte[] _finishChunkedBytes() throws IOException
+    protected byte[] _finishChunkedBytes() throws JacksonException
     {
         // or, if not, chunked...
         ByteArrayBuilder bb = _getByteArrayBuilder();
@@ -2463,12 +2479,12 @@ public class CBORParser extends ParserBase
             // verify that type matches
             int type = (ch >> 5);
             if (type != CBORConstants.MAJOR_TYPE_BYTES) {
-                throw _constructError("Mismatched chunk in chunked content: expected "+CBORConstants.MAJOR_TYPE_BYTES
+                throw _constructReadException("Mismatched chunk in chunked content: expected "+CBORConstants.MAJOR_TYPE_BYTES
                         +" but encountered "+type);
             }
             int len = _decodeExplicitLength(ch & 0x1F);
             if (len < 0) {
-                throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+CBORConstants.MAJOR_TYPE_BYTES+")");
+                throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type "+CBORConstants.MAJOR_TYPE_BYTES+")");
             }
             final int chunkLen = len;
             while (len > 0) {
@@ -2489,7 +2505,7 @@ public class CBORParser extends ParserBase
     }
 
     // @since 2.12
-    protected byte[] _finishLongContiguousBytes(final int expLen) throws IOException
+    protected byte[] _finishLongContiguousBytes(final int expLen) throws JacksonException
     {
         int left = expLen;
 
@@ -2514,7 +2530,7 @@ public class CBORParser extends ParserBase
         }
     }
 
-    protected final JsonToken _decodeFieldName() throws IOException
+    protected final JsonToken _decodeFieldName() throws JacksonException
     {     
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
@@ -2561,7 +2577,7 @@ public class CBORParser extends ParserBase
         return JsonToken.FIELD_NAME;
     }
     
-    private final String _decodeShortName(int len) throws IOException
+    private final String _decodeShortName(int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -2622,7 +2638,7 @@ public class CBORParser extends ParserBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final String _decodeLongerName(int len) throws IOException
+    private final String _decodeLongerName(int len) throws JacksonException
     {
         // Do we have enough buffered content to read?
         if ((_inputEnd - _inputPtr) < len) {
@@ -2643,7 +2659,7 @@ public class CBORParser extends ParserBase
         return _addDecodedToSymbols(len, name);
     }
     
-    private final String _decodeChunkedName() throws IOException
+    private final String _decodeChunkedName() throws JacksonException
     {
         _finishChunkedText();
         return _textBuffer.contentsAsString();
@@ -2653,7 +2669,7 @@ public class CBORParser extends ParserBase
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
      */
-    protected final String _decodeNonStringName(int ch) throws IOException
+    protected final String _decodeNonStringName(int ch) throws JacksonException
     {
         final int type = ((ch >> 5) & 0x7);
         String name;
@@ -2673,13 +2689,13 @@ public class CBORParser extends ParserBase
             if ((ch & 0xFF) == CBORConstants.INT_BREAK) {
                 _reportUnexpectedBreak();
             }
-            throw _constructError("Unsupported major type ("+type+") for CBOR Objects, not (yet?) supported, only Strings");
+            throw _constructReadException("Unsupported major type ("+type+") for CBOR Objects, not (yet?) supported, only Strings");
         }
         _parsingContext.setCurrentName(name);
         return name;
     }
 
-    private final String _findDecodedFromSymbols(final int len) throws IOException
+    private final String _findDecodedFromSymbols(final int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -2756,7 +2772,7 @@ public class CBORParser extends ParserBase
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
-    private final String _findDecodedLong(int len, int q1, int q2) throws IOException
+    private final String _findDecodedLong(int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -2824,7 +2840,7 @@ public class CBORParser extends ParserBase
      * contents themselves will not be needed any more.
      * Only called or byte array and text.
      */
-    protected void _skipIncomplete() throws IOException
+    protected void _skipIncomplete() throws JacksonException
     {
         _tokenIncomplete = false;
         final int type = ((_typeByte >> 5) & 0x7);
@@ -2863,7 +2879,7 @@ public class CBORParser extends ParserBase
         }
     }
     
-    protected void _skipChunked(int expectedType) throws IOException
+    protected void _skipChunked(int expectedType) throws JacksonException
     {
         while (true) {
             if (_inputPtr >= _inputEnd) {
@@ -2876,7 +2892,7 @@ public class CBORParser extends ParserBase
             // verify that type matches
             int type = (ch >> 5);
             if (type != expectedType) {
-                throw _constructError("Mismatched chunk in chunked content: expected "+expectedType
+                throw _constructReadException("Mismatched chunk in chunked content: expected "+expectedType
                         +" but encountered "+type);
             }
 
@@ -2902,14 +2918,14 @@ public class CBORParser extends ParserBase
                 _skipBytesL(_decode64Bits());
                 break;
             case 31:
-                throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+expectedType+")");
+                throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type "+expectedType+")");
             default:
                 _invalidToken(_typeByte);
             }
         }
     }
     
-    protected void _skipBytesL(long llen) throws IOException
+    protected void _skipBytesL(long llen) throws JacksonException
     {
         while (llen > MAX_INT_L) {
             _skipBytes((int) MAX_INT_L);
@@ -2918,7 +2934,7 @@ public class CBORParser extends ParserBase
         _skipBytes((int) llen);
     }
 
-    protected void _skipBytes(int len) throws IOException
+    protected void _skipBytes(int len) throws JacksonException
     {
         while (true) {
             int toAdd = Math.min(len, _inputEnd - _inputPtr);
@@ -2937,7 +2953,7 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    private final int _decodeTag(int lowBits) throws IOException
+    private final int _decodeTag(int lowBits) throws JacksonException
     {
         if (lowBits <= 23) {
             return lowBits;
@@ -2958,7 +2974,7 @@ public class CBORParser extends ParserBase
             }
             return (int) l;
         }
-        throw _constructError("Invalid low bits for Tag token: 0x"+Integer.toHexString(lowBits));
+        throw _constructReadException("Invalid low bits for Tag token: 0x"+Integer.toHexString(lowBits));
     }
     
     /**
@@ -2968,7 +2984,7 @@ public class CBORParser extends ParserBase
      * 32-bit signed int, for now; expectation being that longer values
      * are always encoded as chunks.
      */
-    private final int _decodeExplicitLength(int lowBits) throws IOException
+    private final int _decodeExplicitLength(int lowBits) throws JacksonException
     {
         // common case, indefinite length; relies on marker
         if (lowBits == 31) {
@@ -2987,14 +3003,14 @@ public class CBORParser extends ParserBase
         case 3:
             long l = _decode64Bits();
             if (l < 0 || l > MAX_INT_L) {
-                throw _constructError("Illegal length for "+currentToken()+": "+l);
+                throw _constructReadException("Illegal length for "+currentToken()+": "+l);
             }
             return (int) l;
         }
-        throw _constructError("Invalid length for "+currentToken()+": 0x"+Integer.toHexString(lowBits));
+        throw _constructReadException("Invalid length for "+currentToken()+": 0x"+Integer.toHexString(lowBits));
     }
 
-    private int _decodeChunkLength(int expType) throws IOException
+    private int _decodeChunkLength(int expType) throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
@@ -3005,17 +3021,17 @@ public class CBORParser extends ParserBase
         }
         int type = (ch >> 5);
         if (type != expType) {
-            throw _constructError("Mismatched chunk in chunked content: expected "
+            throw _constructReadException("Mismatched chunk in chunked content: expected "
                     +expType+" but encountered "+type+" (byte 0x"+Integer.toHexString(ch)+")");
         }
         int len = _decodeExplicitLength(ch & 0x1F);
         if (len < 0) {
-            throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+expType+")");
+            throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type "+expType+")");
         }
         return len;
     }
     
-    private float _decodeHalfSizeFloat() throws IOException
+    private float _decodeHalfSizeFloat() throws JacksonException
     {
         int i16 = _decode16Bits() & 0xFFFF;
 
@@ -3035,14 +3051,14 @@ public class CBORParser extends ParserBase
         return neg ? -result : result;
     }
 
-    private final int _decode8Bits() throws IOException {
+    private final int _decode8Bits() throws JacksonException {
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
         }
         return _inputBuffer[_inputPtr++] & 0xFF;
     }
     
-    private final int _decode16Bits() throws IOException {
+    private final int _decode16Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 1) >= _inputEnd) {
             return _slow16();
@@ -3053,7 +3069,7 @@ public class CBORParser extends ParserBase
         return v;
     }
 
-    private final int _slow16() throws IOException {
+    private final int _slow16() throws JacksonException {
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
         }
@@ -3064,7 +3080,7 @@ public class CBORParser extends ParserBase
         return (v << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
     }
     
-    private final int _decode32Bits() throws IOException {
+    private final int _decode32Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 3) >= _inputEnd) {
             return _slow32();
@@ -3076,7 +3092,7 @@ public class CBORParser extends ParserBase
         return v;
     }
 
-    private final int _slow32() throws IOException {
+    private final int _slow32() throws JacksonException {
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
         }
@@ -3095,7 +3111,7 @@ public class CBORParser extends ParserBase
         return (v << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
     }
     
-    private final long _decode64Bits() throws IOException {
+    private final long _decode64Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 7) >= _inputEnd) {
             return _slow64();
@@ -3109,7 +3125,7 @@ public class CBORParser extends ParserBase
         return _long(i1, i2);
     }
 
-    private final long _slow64() throws IOException {
+    private final long _slow64() throws JacksonException {
         return _long(_decode32Bits(), _decode32Bits());
     }
     
@@ -3129,7 +3145,7 @@ public class CBORParser extends ParserBase
      * for later versions it is likely that we will alternatively allow decoding as
      * {@link JsonToken#VALUE_EMBEDDED_OBJECT} with "embedded value" of `null`.
      */
-    protected JsonToken _decodeUndefinedValue() throws IOException {
+    protected JsonToken _decodeUndefinedValue() throws JacksonException {
         return JsonToken.VALUE_NULL;
     }
 
@@ -3143,7 +3159,7 @@ public class CBORParser extends ParserBase
      *
      * @since 2.12
      */
-    public JsonToken _decodeSimpleValue(int lowBits, int ch) throws IOException {
+    public JsonToken _decodeSimpleValue(int lowBits, int ch) throws JacksonException {
         if (lowBits > 24) {
             _invalidToken(ch);
         }
@@ -3157,7 +3173,7 @@ public class CBORParser extends ParserBase
             // As per CBOR spec, values below 32 not allowed to avoid
             // confusion (as well as guarantee uniqueness of encoding)
             if (_numberInt < 32) {
-                throw _constructError("Invalid second byte for simple value: 0x"
+                throw _constructReadException("Invalid second byte for simple value: 0x"
                         +Integer.toHexString(_numberInt)+" (only values 0x20 - 0xFF allowed)");
             }
         }
@@ -3178,7 +3194,7 @@ public class CBORParser extends ParserBase
      */
 
     /*
-    private final int X_decodeUTF8_2(int c) throws IOException {
+    private final int X_decodeUTF8_2(int c) throws JacksonException {
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
@@ -3187,7 +3203,7 @@ public class CBORParser extends ParserBase
     }
     */
 
-    private final int _decodeUTF8_3(int c1) throws IOException
+    private final int _decodeUTF8_3(int c1) throws JacksonException
     {
         c1 &= 0x0F;
         int d = _nextByte();
@@ -3203,7 +3219,7 @@ public class CBORParser extends ParserBase
         return c;
     }
 
-    private final int _decodeChunkedUTF8_3(int c1) throws IOException
+    private final int _decodeChunkedUTF8_3(int c1) throws JacksonException
     {
         c1 &= 0x0F;
         int d = _nextChunkedByte();
@@ -3223,7 +3239,7 @@ public class CBORParser extends ParserBase
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUTF8_4(int c) throws IOException
+    private final int _decodeUTF8_4(int c) throws JacksonException
     {
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
@@ -3242,7 +3258,7 @@ public class CBORParser extends ParserBase
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
 
-    private final int _decodeChunkedUTF8_4(int c) throws IOException
+    private final int _decodeChunkedUTF8_4(int c) throws JacksonException
     {
         int d = _nextChunkedByte();
         if ((d & 0xC0) != 0x080) {
@@ -3267,12 +3283,18 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    protected boolean loadMore() throws IOException
+    protected boolean loadMore() throws JacksonException
     {
         if (_inputStream != null) {
             _currInputProcessed += _inputEnd;
 
-            int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            final int toRead = _inputBuffer.length;
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, 0, toRead);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count > 0) {
                 _inputPtr = 0;
                 _inputEnd = count;
@@ -3282,13 +3304,13 @@ public class CBORParser extends ParserBase
             _closeInput();
             // Should never return 0, so let's fail
             if (count == 0) {
-                throw new IOException("InputStream.read() returned 0 characters when trying to read "+_inputBuffer.length+" bytes");
+                _reportBadInputStream(toRead);
             }
         }
         return false;
     }
 
-    protected void loadMoreGuaranteed() throws IOException {
+    protected void loadMoreGuaranteed() throws JacksonException {
         if (!loadMore()) { _reportInvalidEOF(); }
     }
     
@@ -3296,11 +3318,11 @@ public class CBORParser extends ParserBase
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary
      */
-    protected final void _loadToHaveAtLeast(int minAvailable) throws IOException
+    protected final void _loadToHaveAtLeast(int minAvailable) throws JacksonException
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            throw _constructError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            throw _constructReadException("Needed to read "+minAvailable+" bytes, reached end-of-input");
         }
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
@@ -3315,25 +3337,35 @@ public class CBORParser extends ParserBase
         _currInputProcessed += _inputPtr;
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
-            int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            int count;
+            final int toRead = _inputBuffer.length - _inputEnd;
+            try {
+                count = _inputStream.read(_inputBuffer, _inputEnd, toRead);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count < 1) {
                 // End of input
                 _closeInput();
                 // Should never return 0, so let's fail
                 if (count == 0) {
-                    throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
+                    _reportBadInputStream(toRead);
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructReadException("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
             }
             _inputEnd += count;
         }
     }
 
     @Override
-    protected void _closeInput() throws IOException {
+    protected void _closeInput() {
         if (_inputStream != null) {
             if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
-                _inputStream.close();
+                try {
+                    _inputStream.close();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
             _inputStream = null;
         }
@@ -3357,7 +3389,7 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    protected JsonToken _handleCBOREOF() throws IOException {
+    protected JsonToken _handleCBOREOF() throws JacksonException {
         /* NOTE: here we can and should close input, release buffers,
          * since this is "hard" EOF, not a boundary imposed by
          * header token.
@@ -3370,16 +3402,16 @@ public class CBORParser extends ParserBase
     protected void _invalidToken(int ch) throws JsonParseException {
         ch &= 0xFF;
         if (ch == 0xFF) {
-            throw _constructError("Mismatched BREAK byte (0xFF): encountered where value expected");
+            throw _constructReadException("Mismatched BREAK byte (0xFF): encountered where value expected");
         }
-        throw _constructError("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
+        throw _constructReadException("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
     }
 
-    protected void _reportUnexpectedBreak() throws IOException {
+    protected void _reportUnexpectedBreak() throws JacksonException {
         if (_parsingContext.inRoot()) {
-            throw _constructError("Unexpected Break (0xFF) token in Root context");
+            throw _constructReadException("Unexpected Break (0xFF) token in Root context");
         }
-        throw _constructError("Unexpected Break (0xFF) token in definite length ("
+        throw _constructReadException("Unexpected Break (0xFF) token in definite length ("
                 +_parsingContext.getExpectedLength()+") "
                 +(_parsingContext.inObject() ? "Object" : "Array" ));
     }
@@ -3405,8 +3437,7 @@ public class CBORParser extends ParserBase
         _reportInvalidOther(mask);
     }
 
-    // @since 2.12
-    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws IOException
+    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws JacksonException
     {
         _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
                 expLen, actLen), _currToken);

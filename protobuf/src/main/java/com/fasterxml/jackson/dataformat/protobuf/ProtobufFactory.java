@@ -146,7 +146,7 @@ public class ProtobufFactory
 
     @Override
     protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            InputStream in) throws IOException
+            InputStream in)
     {
         byte[] buf = ioCtxt.allocReadIOBuffer();
         return new ProtobufParser(readCtxt, ioCtxt,
@@ -157,7 +157,7 @@ public class ProtobufFactory
 
     @Override
     protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            byte[] data, int offset, int len) throws IOException
+            byte[] data, int offset, int len)
     {
         return new ProtobufParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
@@ -167,7 +167,8 @@ public class ProtobufFactory
 
     @Override
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            DataInput input) throws IOException {
+            DataInput input)
+    {
         // 30-Sep-2017, tatu: As of now not supported although should be quite possible
         //    to support
         return _unsupported();
@@ -181,7 +182,7 @@ public class ProtobufFactory
 
     @Override
     protected ProtobufGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            IOContext ioCtxt, OutputStream out) throws IOException
+            IOContext ioCtxt, OutputStream out)
     {
         return new ProtobufGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
