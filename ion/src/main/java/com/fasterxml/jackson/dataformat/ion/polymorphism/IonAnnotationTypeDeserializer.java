@@ -14,12 +14,12 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase;
+
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 
 /**
@@ -65,7 +66,9 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
                 "Can only use IonAnnotationTypeDeserializer with IonParser");
     }
 
-    private Object _deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    private Object _deserialize(JsonParser p, DeserializationContext ctxt)
+        throws JacksonException
+    {
         String[] typeIds = ionParser(p).getTypeAnnotations(); //cannot return null
         String typeIdToUse = null;
         TypeIdResolver typeIdResolver = super.getTypeIdResolver();
@@ -95,22 +98,22 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
     }
 
     @Override
-    public Object deserializeTypedFromObject(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Object deserializeTypedFromObject(JsonParser p, DeserializationContext ctxt) {
         return _deserialize(p, ctxt);
     }
 
     @Override
-    public Object deserializeTypedFromArray(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Object deserializeTypedFromArray(JsonParser p, DeserializationContext ctxt) {
         return _deserialize(p, ctxt);
     }
 
     @Override
-    public Object deserializeTypedFromScalar(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Object deserializeTypedFromScalar(JsonParser p, DeserializationContext ctxt) {
         return _deserialize(p, ctxt);
     }
 
     @Override
-    public Object deserializeTypedFromAny(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Object deserializeTypedFromAny(JsonParser p, DeserializationContext ctxt) {
         return _deserialize(p, ctxt);
     }
 

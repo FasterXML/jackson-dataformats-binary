@@ -14,8 +14,6 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
@@ -33,7 +31,8 @@ class TimestampSerializer extends StdScalarSerializer<Timestamp>
     }
 
     @Override
-    public void serialize(Timestamp value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+    public void serialize(Timestamp value, JsonGenerator jgen, SerializerProvider provider)
+    {
         IonGenerator joiGenerator = (IonGenerator) jgen;
         joiGenerator.writeValue(value);
     }

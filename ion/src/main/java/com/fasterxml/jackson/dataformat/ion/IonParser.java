@@ -157,9 +157,9 @@ public class IonParser
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonParser implementation: state handling
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -168,13 +168,17 @@ public class IonParser
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (!_closed) {
             // should only close if manage the resource
             if (_ioContext.isResourceManaged()) {
                 Object src = _ioContext.getSourceReference();
                 if (src instanceof Closeable) {
-                    ((Closeable) src).close();
+                    try {
+                        ((Closeable) src).close();
+                    } catch (IOException e) {
+                        throw _wrapIOFailure(e);
+                    }
                 }
             }
             _closed = true;
@@ -187,13 +191,13 @@ public class IonParser
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonParser implementation: Text value access
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
@@ -221,59 +225,59 @@ public class IonParser
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException {
+    public char[] getTextCharacters() throws JacksonException {
         String str = getText();
         return (str == null) ? null : str.toCharArray();
     }
 
     @Override
-    public int getTextLength() throws IOException {
+    public int getTextLength() throws JacksonException {
         return getText().length();
     }
 
     @Override
-    public int getTextOffset() throws IOException {
+    public int getTextOffset() throws JacksonException {
         return 0;
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonParser implementation: Numeric value access
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
-    public BigInteger getBigIntegerValue() throws IOException {
+    public BigInteger getBigIntegerValue() throws JacksonException {
         return _reader.bigIntegerValue();
     }
 
     @Override
-    public BigDecimal getDecimalValue() throws IOException {
+    public BigDecimal getDecimalValue() throws JacksonException {
         return _reader.bigDecimalValue();
     }
 
     @Override
-    public double getDoubleValue() throws IOException {
+    public double getDoubleValue() throws JacksonException {
         return _reader.doubleValue();
     }
 
     @Override
-    public float getFloatValue() throws IOException {
+    public float getFloatValue() throws JacksonException {
         return (float) _reader.doubleValue();
     }
 
     @Override
-    public int getIntValue() throws IOException {
+    public int getIntValue() throws JacksonException {
         return _reader.intValue();
     }
 
     @Override
-    public long getLongValue() throws IOException {
+    public long getLongValue() throws JacksonException {
         return _reader.longValue();
     }
 
     @Override
-    public NumberType getNumberType() throws IOException
+    public NumberType getNumberType() throws JacksonException
     {
         IonType type = _reader.getType();
         if (type != null) {
@@ -302,7 +306,7 @@ public class IonParser
     }
 
     @Override
-    public Number getNumberValue() throws IOException {
+    public Number getNumberValue() throws JacksonException {
         NumberType nt = getNumberType();
         if (nt != null) {
             switch (nt) {
@@ -324,7 +328,7 @@ public class IonParser
     }
 
     @Override
-    public final Number getNumberValueExact() throws IOException {
+    public final Number getNumberValueExact() throws JacksonException {
         return getNumberValue();
     }
 
@@ -332,18 +336,18 @@ public class IonParser
     //  and I _think_ this should be implemented, assuming Ion allows some Not-a-Number
     //  values for floating-point types?
     @Override
-    public boolean isNaN() throws IOException {
+    public boolean isNaN() throws JacksonException {
         return false;
     }
 
     /*
-    /****************************************************************
+    /**********************************************************************
     /* JsonParser implementation: Access to other (non-text/number) values
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
-    public byte[] getBinaryValue(Base64Variant arg0) throws IOException
+    public byte[] getBinaryValue(Base64Variant arg0) throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
@@ -359,21 +363,25 @@ public class IonParser
     }
 
     @SuppressWarnings("resource")
-    private IonValue getIonValue() throws IOException {
+    private IonValue getIonValue() throws JacksonException {
         if (_system == null) {
             throw new IllegalStateException("This "+getClass().getSimpleName()+" instance cannot be used for IonValue mapping");
         }
         _currToken = JsonToken.VALUE_EMBEDDED_OBJECT;
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
-        writer.writeValue(_reader);
+        try {
+            writer.writeValue(_reader);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         IonValue v = l.get(0);
         v.removeFromContainer();
         return v;
     }
 
     @Override
-    public Object getEmbeddedObject() throws IOException {
+    public Object getEmbeddedObject() throws JacksonException {
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
             case TIMESTAMP:
@@ -389,9 +397,9 @@ public class IonParser
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API, Native Ids (type, object)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /* getTypeId() wants to return a single type, but there may be multiple type annotations on an Ion value.
@@ -399,16 +407,16 @@ public class IonParser
      * MultipleClassNameIdResolver#selectId
      */
     @Override
-    public Object getTypeId() throws IOException {
+    public Object getTypeId() throws JacksonException {
         String[] typeAnnotations = getTypeAnnotations();
         // getTypeAnnotations signals "none" with an empty array, but getTypeId is allowed to return null
         return typeAnnotations.length == 0 ? null : typeAnnotations[0];
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonParser implementation: traversal
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -417,7 +425,7 @@ public class IonParser
     }
 
     @Override
-    public String currentName() throws IOException {
+    public String currentName() throws JacksonException {
         return _parsingContext.currentName();
     }
 
@@ -431,7 +439,7 @@ public class IonParser
     }
 
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         // special case: if we return field name, we know value type, return it:
         if (_currToken == JsonToken.FIELD_NAME) {
@@ -483,7 +491,7 @@ public class IonParser
     }
 
     @Override
-    public JsonParser skipChildren() throws IOException
+    public JsonParser skipChildren() throws JacksonException
     {
        if (_currToken != JsonToken.START_OBJECT
             && _currToken != JsonToken.START_ARRAY) {
@@ -517,9 +525,9 @@ public class IonParser
     }
 
     /*
-     *****************************************************************
-     * Internal helper methods
-     *****************************************************************
+    /**********************************************************************
+    /* Internal helper methods
+    /**********************************************************************
       */
 
     protected JsonToken _tokenFromType(IonType type)

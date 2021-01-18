@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.ion.jsr310;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -11,8 +10,10 @@ import java.time.temporal.Temporal;
 import java.util.function.BiFunction;
 
 import com.amazon.ion.Timestamp;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -61,7 +62,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
 
     @SuppressWarnings("unchecked")
     @Override
-    public T deserialize(JsonParser p, DeserializationContext context) throws IOException {
+    public T deserialize(JsonParser p, DeserializationContext context) throws JacksonException {
         final ZoneId defaultZoneId = context.getTimeZone().toZoneId().normalized();
         switch (p.currentToken()) {
         case VALUE_NUMBER_FLOAT:
@@ -74,13 +75,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
                 return fromTimestamp((Timestamp)embeddedObject, defaultZoneId);
             }
         default:
-            try {
-                return (T) context.handleUnexpectedToken(getValueType(context), p);
-            } catch (JsonMappingException e) {
-                throw e;
-            } catch (IOException e) {
-                throw JsonMappingException.fromUnexpectedIOE(e);
-            }
+            return (T) context.handleUnexpectedToken(getValueType(context), p);
         }
     }
 

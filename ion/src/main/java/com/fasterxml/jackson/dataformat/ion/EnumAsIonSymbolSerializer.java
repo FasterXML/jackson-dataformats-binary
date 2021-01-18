@@ -14,13 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
@@ -44,7 +41,7 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
     }
 
     @Override
-    public void serialize(Enum<?> value, JsonGenerator g, SerializerProvider provider) throws IOException {
+    public void serialize(Enum<?> value, JsonGenerator g, SerializerProvider provider) {
         if (IonGenerator.class.isAssignableFrom(g.getClass())) {
             ((IonGenerator) g).writeSymbol(value.name());
         } else {
@@ -53,7 +50,7 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
     }
 
     @Override
-    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException {
+    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) {
         visitStringFormat(visitor, typeHint);
     }
 }

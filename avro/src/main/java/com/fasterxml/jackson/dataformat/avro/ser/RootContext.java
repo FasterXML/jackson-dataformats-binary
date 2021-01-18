@@ -8,8 +8,6 @@ import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.*;
 import org.apache.avro.io.BinaryEncoder;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator.Feature;
 
