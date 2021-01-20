@@ -216,7 +216,7 @@ public class CBORFactory
      */
     @Override
     protected CBORParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            InputStream in) throws IOException
+            InputStream in)
     {
         return new CBORParserBootstrapper(ioCtxt, in).constructParser(readCtxt,
                 _factoryFeatures,
@@ -231,7 +231,7 @@ public class CBORFactory
      */
     @Override
     protected CBORParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            byte[] data, int offset, int len) throws IOException
+            byte[] data, int offset, int len)
     {
         return new CBORParserBootstrapper(ioCtxt, data, offset, len).constructParser(readCtxt,
                 _factoryFeatures,
@@ -243,7 +243,7 @@ public class CBORFactory
     @Override
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ctxt,
             DataInput input)
-            throws IOException {
+    {
         // 30-Sep-2017, tatu: As of now not supported although should be quite possible
         //    to support
         return _unsupported();
@@ -257,7 +257,8 @@ public class CBORFactory
     
     @Override
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            IOContext ioCtxt, OutputStream out) throws IOException {
+            IOContext ioCtxt, OutputStream out)
+    {
         CBORGenerator gen = new CBORGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),

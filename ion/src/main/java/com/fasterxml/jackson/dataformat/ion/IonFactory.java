@@ -246,36 +246,41 @@ public class IonFactory
      */
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, File f) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, File f) {
         // true, since we create InputStream from File
+        InputStream in;
+        try {
+            in = new FileInputStream(f);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         IOContext ioCtxt = _createContext(f, true);
-        InputStream in = new FileInputStream(f);
         return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, URL url) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, URL url) {
         // true, since we create InputStream from URL
-        IOContext ioCtxt = _createContext(url, true);
         InputStream in = _optimizedStreamFromURL(url);
+        IOContext ioCtxt = _createContext(url, true);
         return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, InputStream in) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, InputStream in) {
         IOContext ioCtxt = _createContext(in, false);
         return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, Reader r) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, Reader r) {
         // false -> we do NOT own Reader (did not create it)
         IOContext ioCtxt = _createContext(r, false);
         return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, r));
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data) {
         IOContext ioCtxt = _createContext(data, true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ioCtxt, data, 0, data.length);
@@ -287,7 +292,8 @@ public class IonFactory
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data, int offset, int len) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data, int offset, int len) 
+    {
         IOContext ioCtxt = _createContext(data, true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ioCtxt, data, offset, len);
@@ -299,13 +305,13 @@ public class IonFactory
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, String content) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, String content) {
         return createParser(readCtxt, new StringReader(content));
     }
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt,
-            char[] content, int offset, int len) throws IOException {
+            char[] content, int offset, int len) {
         if (_inputDecorator != null) { // easier to just wrap in a Reader than extend InputDecorator
             return createParser(readCtxt, new CharArrayReader(content, offset, len));
         }
@@ -316,7 +322,7 @@ public class IonFactory
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, DataInput in) throws IOException {
+    public JsonParser createParser(ObjectReadContext readCtxt, DataInput in) {
         return _unsupported();
     }        
 
@@ -328,14 +334,13 @@ public class IonFactory
 
     @Override
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
-            OutputStream out, JsonEncoding enc) throws IOException
+            OutputStream out, JsonEncoding enc)
     {
         return _createGenerator(writeCtxt, out, enc, false);
     }
 
     @Override
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, Writer out)
-        throws IOException
     {
          // First things first: no binary writer for Writers:
         if (_cfgBinaryWriters) {
@@ -348,10 +353,13 @@ public class IonFactory
     @Override
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
             File f, JsonEncoding enc)
-        throws IOException
     {
-        return _createGenerator(writeCtxt,
-                new FileOutputStream(f), enc, true);
+        try {
+            return _createGenerator(writeCtxt,
+                    new FileOutputStream(f), enc, true);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
     }
 
     /*
@@ -389,7 +397,6 @@ public class IonFactory
      */
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, InputStream in)
-        throws IOException
     {
         IonReader ion = _system.newReader(in);
         return new IonParser(readCtxt, ioCtxt,
@@ -398,7 +405,6 @@ public class IonFactory
     }
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, Reader r)
-        throws IOException
     {
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
@@ -407,7 +413,7 @@ public class IonFactory
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             char[] data, int offset, int len,
-            boolean recyclable) throws IOException
+            boolean recyclable)
     {
         return _createParser(readCtxt, ioCtxt,
                 new CharArrayReader(data, offset, len));
@@ -415,7 +421,6 @@ public class IonFactory
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             byte[] data, int offset, int len)
-        throws IOException
     {
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
@@ -430,7 +435,6 @@ public class IonFactory
 
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             OutputStream out, JsonEncoding enc, boolean isManaged)
-         throws IOException
      {
         IonWriter ion;
         IOContext ioCtxt = _createContext(out, isManaged);
@@ -443,7 +447,8 @@ public class IonFactory
             dst = out;
         } else {
             if (enc != JsonEncoding.UTF8) { // not sure if non-UTF-8 encodings would be legal...
-                throw new IOException("Ion only supports UTF-8 encoding, can not use "+enc);
+                throw _wrapIOFailure(
+                        new IOException("Ion only supports UTF-8 encoding, can not use "+enc));
             }
             // In theory Ion package could take some advantage of getting OutputStream.
             // In practice we seem to be better off using Jackson's efficient buffering encoder

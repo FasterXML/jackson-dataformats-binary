@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectReadContext;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
@@ -77,7 +78,7 @@ public class NonBlockingByteArrayParser
     }
 
     @Override
-    public void feedInput(byte[] buf, int start, int end) throws IOException
+    public void feedInput(byte[] buf, int start, int end) throws JacksonException
     {
         // Must not have remaining input
         if (_inputPtr < _inputEnd) {
@@ -116,17 +117,21 @@ public class NonBlockingByteArrayParser
      * implementation
      */
 
-//    public boolean nextFieldName(SerializableString str) throws IOException
-//    public String nextTextValue() throws IOException
-//    public int nextIntValue(int defaultValue) throws IOException
-//    public long nextLongValue(long defaultValue) throws IOException
-//    public Boolean nextBooleanValue() throws IOException
+//    public boolean nextFieldName(SerializableString str) throws JacksonException
+//    public String nextTextValue() throws JacksonException
+//    public int nextIntValue(int defaultValue) throws JacksonException
+//    public long nextLongValue(long defaultValue) throws JacksonException
+//    public Boolean nextBooleanValue() throws JacksonException
 
     @Override
-    public int releaseBuffered(OutputStream out) throws IOException {
+    public int releaseBuffered(OutputStream out) throws JacksonException {
         int avail = _inputEnd - _inputPtr;
         if (avail > 0) {
-            out.write(_inputBuffer, _inputPtr, avail);
+            try {
+                out.write(_inputBuffer, _inputPtr, avail);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
         }
         return avail;
     }
@@ -138,7 +143,7 @@ public class NonBlockingByteArrayParser
      */
 
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         // First: regardless of where we really are, need at least one more byte;
         // can simplify some of the checks by short-circuiting right away
@@ -205,7 +210,7 @@ public class NonBlockingByteArrayParser
      * Method called when a (scalar) value type has been detected, but not all of
      * contents have been decoded due to incomplete input available.
      */
-    protected final JsonToken _finishToken() throws IOException
+    protected final JsonToken _finishToken() throws JacksonException
     {
         // NOTE: caller ensures availability of at least one byte
 
@@ -334,7 +339,7 @@ public class NonBlockingByteArrayParser
      * Helper method that will decode information from a header block that has been
      * detected.
      */
-    protected JsonToken _finishHeader(int state) throws IOException
+    protected JsonToken _finishHeader(int state) throws JacksonException
     {
         int ch = 0;
         String errorDesc = null;
@@ -410,7 +415,7 @@ public class NonBlockingByteArrayParser
      * decode it if contained in input buffer.
      * Note that possible header has been ruled out by caller and is not checked here.
      */
-    private final JsonToken _startValue(int ch) throws IOException
+    private final JsonToken _startValue(int ch) throws JacksonException
     {
         main_switch:
         switch ((ch >> 5) & 0x7) {
@@ -523,7 +528,7 @@ public class NonBlockingByteArrayParser
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
      */
-    protected final JsonToken _startFieldName(int ch) throws IOException
+    protected final JsonToken _startFieldName(int ch) throws JacksonException
     {
         switch ((ch >> 6) & 3) {
         case 0: // misc, including end marker
@@ -631,7 +636,7 @@ public class NonBlockingByteArrayParser
         return null;
     }
 
-    private final JsonToken _finishLongFieldName(int outPtr) throws IOException
+    private final JsonToken _finishLongFieldName(int outPtr) throws JacksonException
     {
         byte[] srcBuffer = _inputBuffer;
         byte[] copyBuffer = _inputCopy;
@@ -714,7 +719,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    private final JsonToken _startShortASCII(final int len) throws IOException
+    private final JsonToken _startShortASCII(final int len) throws JacksonException
     {
         final int inputPtr = _inputPtr;
         final int left = _inputEnd - inputPtr;
@@ -737,7 +742,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _startShortUnicode(final int len) throws IOException
+    private final JsonToken _startShortUnicode(final int len) throws JacksonException
     {
         final int inPtr = _inputPtr;
         final int left = _inputEnd - inPtr;
@@ -766,7 +771,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    private final JsonToken _startLongASCII() throws IOException
+    private final JsonToken _startLongASCII() throws JacksonException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -796,7 +801,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishLongASCII() throws IOException
+    private final JsonToken _finishLongASCII() throws JacksonException
     {
         char[] outBuf = _textBuffer.getBufferWithoutReset();
         int outPtr = _textBuffer.getCurrentSegmentSize();
@@ -825,7 +830,7 @@ public class NonBlockingByteArrayParser
         return JsonToken.NOT_AVAILABLE;
     }
 
-    protected final JsonToken _startLongUnicode() throws IOException
+    protected final JsonToken _startLongUnicode() throws JacksonException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -936,7 +941,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishLongUnicode() throws IOException
+    private final JsonToken _finishLongUnicode() throws JacksonException
     {
         // First things first: did we have partially decoded multi-byte UTF-8 character?
         if (_inputCopyLen > 0) {
@@ -1048,7 +1053,7 @@ public class NonBlockingByteArrayParser
         return JsonToken.NOT_AVAILABLE;
     }
 
-    private final boolean _finishPartialUnicodeChar() throws IOException
+    private final boolean _finishPartialUnicodeChar() throws JacksonException
     {
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         int c;
@@ -1122,7 +1127,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    private final int _decodeUTF8_2(int c, int d) throws IOException
+    private final int _decodeUTF8_2(int c, int d) throws JacksonException
     {
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
@@ -1130,7 +1135,7 @@ public class NonBlockingByteArrayParser
         return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
-    private final int _decodeUTF8_3(int c, int d, int e) throws IOException
+    private final int _decodeUTF8_3(int c, int d, int e) throws JacksonException
     {
         c &= 0x0F;
         if ((d & 0xC0) != 0x080) {
@@ -1145,7 +1150,7 @@ public class NonBlockingByteArrayParser
 
     // @return Character value <b>minus 0x10000</c>; this so that caller
     //    can readily expand it to actual surrogates
-    private final int _decodeUTF8_4(int c, int d, int e, int f) throws IOException
+    private final int _decodeUTF8_4(int c, int d, int e, int f) throws JacksonException
     {
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
@@ -1167,7 +1172,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    private final JsonToken _startInt() throws IOException
+    private final JsonToken _startInt() throws JacksonException
     {
         // common case first: have all we need
         if ((_inputPtr + 5) > _inputEnd) {
@@ -1180,7 +1185,7 @@ public class NonBlockingByteArrayParser
         return _valueComplete(JsonToken.VALUE_NUMBER_INT);
     }
 
-    private final JsonToken _finishInt(int value, int bytesRead) throws IOException
+    private final JsonToken _finishInt(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1203,7 +1208,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _startLong() throws IOException
+    private final JsonToken _startLong() throws JacksonException
     {
         // common case first: have all we need
         int ptr = _inputPtr;
@@ -1234,7 +1239,7 @@ public class NonBlockingByteArrayParser
         }
     }
 
-    private final JsonToken _finishLong(long value, int bytesRead) throws IOException
+    private final JsonToken _finishLong(long value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1257,7 +1262,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _startBigInt() throws IOException
+    private final JsonToken _startBigInt() throws JacksonException
     {
         _initByteArrayBuilder();
         if ((_inputPtr + 5) > _inputEnd) {
@@ -1268,7 +1273,7 @@ public class NonBlockingByteArrayParser
         return _finishBigIntBody();
     }
 
-    private final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
+    private final JsonToken _finishBigIntLen(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1289,7 +1294,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishBigIntBody() throws IOException
+    private final JsonToken _finishBigIntBody() throws JacksonException
     {
         if (_decode7BitEncoded()) { // got it all!
             _numberBigInt = new BigInteger(_byteArrayBuilder.toByteArray());
@@ -1307,7 +1312,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    protected final JsonToken _startFloat() throws IOException
+    protected final JsonToken _startFloat() throws JacksonException
     {
         int ptr = _inputPtr;
         if ((ptr + 5) > _inputEnd) {
@@ -1324,7 +1329,7 @@ public class NonBlockingByteArrayParser
         return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
     }
 
-    protected final JsonToken _finishFloat(int value, int bytesRead) throws IOException
+    protected final JsonToken _finishFloat(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             value = (value << 7) + _inputBuffer[_inputPtr++];
@@ -1341,7 +1346,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
     
-    protected final JsonToken _startDouble() throws IOException
+    protected final JsonToken _startDouble() throws JacksonException
     {
         int ptr = _inputPtr;
         if ((ptr + 10) > _inputEnd) {
@@ -1363,7 +1368,7 @@ public class NonBlockingByteArrayParser
         return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
     }
 
-    protected final JsonToken _finishDouble(long value, int bytesRead) throws IOException
+    protected final JsonToken _finishDouble(long value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             value = (value << 7) + _inputBuffer[_inputPtr++];
@@ -1380,7 +1385,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _startBigDecimal() throws IOException
+    private final JsonToken _startBigDecimal() throws JacksonException
     {
         _initByteArrayBuilder();
         if ((_inputPtr + 5) > _inputEnd) {
@@ -1391,7 +1396,7 @@ public class NonBlockingByteArrayParser
         return _finishBigDecimalLen(0, 0);
     }
 
-    private final JsonToken _finishBigDecimalScale(int value, int bytesRead) throws IOException
+    private final JsonToken _finishBigDecimalScale(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1413,7 +1418,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishBigDecimalLen(int value, int bytesRead) throws IOException
+    private final JsonToken _finishBigDecimalLen(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1434,7 +1439,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishBigDecimalBody() throws IOException
+    private final JsonToken _finishBigDecimalBody() throws JacksonException
     {
         if (_decode7BitEncoded()) { // got it all!
             // note: scale value is signed, needs zigzag, so:
@@ -1455,7 +1460,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
     
-    protected final JsonToken _startRawBinary() throws IOException
+    protected final JsonToken _startRawBinary() throws JacksonException
     {
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishRawBinaryLen(0, 0);
@@ -1467,7 +1472,7 @@ public class NonBlockingByteArrayParser
         return _finishRawBinaryBody();
     }
 
-    private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
+    private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1490,7 +1495,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finishRawBinaryBody() throws IOException
+    private final JsonToken _finishRawBinaryBody() throws JacksonException
     {
         int totalLen = _pending32;
         int offset = _inputCopyLen;
@@ -1512,7 +1517,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
     
-    private final JsonToken _start7BitBinary() throws IOException
+    private final JsonToken _start7BitBinary() throws JacksonException
     {
         _initByteArrayBuilder();
         if ((_inputPtr + 5) > _inputEnd) {
@@ -1523,7 +1528,7 @@ public class NonBlockingByteArrayParser
         return _finish7BitBinaryBody();
     }
 
-    private final JsonToken _finish7BitBinaryLen(int value, int bytesRead) throws IOException
+    private final JsonToken _finish7BitBinaryLen(int value, int bytesRead) throws JacksonException
     {
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
@@ -1544,7 +1549,7 @@ public class NonBlockingByteArrayParser
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
 
-    private final JsonToken _finish7BitBinaryBody() throws IOException
+    private final JsonToken _finish7BitBinaryBody() throws JacksonException
     {
         if (_decode7BitEncoded()) { // got it all!
             _binaryValue = _byteArrayBuilder.toByteArray();
@@ -1560,7 +1565,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    private final String _decodeASCIIText(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeASCIIText(byte[] inBuf, int inPtr, int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -1593,7 +1598,7 @@ public class NonBlockingByteArrayParser
      * 
      * @param len Length between 1 and 64
      */
-    private final String _decodeShortUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeShortUnicodeText(byte[] inBuf, int inPtr, int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -1633,7 +1638,7 @@ public class NonBlockingByteArrayParser
         return _textBuffer.contentsAsString();
     }
 
-    private final String _decodeLongUnicodeName(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeLongUnicodeName(byte[] inBuf, int inPtr, int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -1689,7 +1694,7 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    private final int _fourBytesToInt(int ptr)  throws IOException
+    private final int _fourBytesToInt(int ptr)  throws JacksonException
     {
         int i = _inputBuffer[ptr++]; // first 7 bits
         i = (i << 7) + _inputBuffer[ptr++]; // 14 bits
@@ -1698,7 +1703,7 @@ public class NonBlockingByteArrayParser
         return i;
     }
 
-    private final int _decodeVInt() throws IOException
+    private final int _decodeVInt() throws JacksonException
     {
         int ptr = _inputPtr;
         int value = _inputBuffer[ptr++];
@@ -1727,7 +1732,7 @@ public class NonBlockingByteArrayParser
         return (value << 6) + (i & 0x3F);
     }
 
-    private final boolean _decode7BitEncoded() throws IOException
+    private final boolean _decode7BitEncoded() throws JacksonException
     {
         int bytesToDecode = _pending32;
         int buffered = _inputCopyLen;
@@ -1807,7 +1812,7 @@ public class NonBlockingByteArrayParser
         return true;
     }
 
-    protected final boolean _decode7BitEncodedTail(int bytesToDecode, int buffered) throws IOException
+    protected final boolean _decode7BitEncodedTail(int bytesToDecode, int buffered) throws JacksonException
     {
         if (bytesToDecode == 0) {
             return true;

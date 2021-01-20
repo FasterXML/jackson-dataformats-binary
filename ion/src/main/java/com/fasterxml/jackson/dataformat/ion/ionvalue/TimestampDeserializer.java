@@ -14,8 +14,6 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -27,7 +25,8 @@ import com.amazon.ion.Timestamp;
 class TimestampDeserializer extends JsonDeserializer<Timestamp> {
 
     @Override
-    public Timestamp deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-        return (Timestamp) jp.getEmbeddedObject();
+    public Timestamp deserialize(JsonParser p, DeserializationContext ctxt)
+    {
+        return (Timestamp) p.getEmbeddedObject();
     }
 }

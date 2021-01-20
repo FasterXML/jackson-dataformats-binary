@@ -16,6 +16,7 @@ import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.reflect.ReflectData;
 
 import com.fasterxml.jackson.core.TokenStreamContext;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
@@ -69,9 +70,9 @@ public abstract class AvroWriteContext
         return NullContext.instance;
     }
 
-    public abstract AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException;
+    public abstract AvroWriteContext createChildArrayContext(Object currValue);
 
-    public abstract AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException;
+    public abstract AvroWriteContext createChildObjectContext(Object currValue);
 
     public void complete() throws IOException {
         throw new IllegalStateException("Can not be called on "+getClass().getName());
@@ -155,7 +156,7 @@ public abstract class AvroWriteContext
 
     // // // Shared helper methods
 
-    protected GenericRecord _createRecord(Schema schema, Object currValue) throws JsonMappingException
+    protected GenericRecord _createRecord(Schema schema, Object currValue)
     {
         Type type = schema.getType();
         if (type == Schema.Type.UNION) {
@@ -177,7 +178,7 @@ public abstract class AvroWriteContext
         }
     }
 
-    protected GenericRecord _createRecord(Schema schema) throws JsonMappingException
+    protected GenericRecord _createRecord(Schema schema)
     {
         // Quick check: if type is Union, need to find actual record type...
         Type type = schema.getType();

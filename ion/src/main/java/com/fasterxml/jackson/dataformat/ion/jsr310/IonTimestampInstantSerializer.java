@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.ion.jsr310;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -12,6 +11,7 @@ import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -90,7 +90,9 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
     }
 
     @Override
-    public void serialize(T value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(T value, JsonGenerator gen, SerializerProvider provider)
+        throws JacksonException
+    {
         final Instant instant = getInstant.apply(value);
         if (provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
             if (shouldWriteTimestampsAsNanos(provider)) {

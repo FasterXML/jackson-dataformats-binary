@@ -14,7 +14,6 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -36,7 +35,7 @@ public class IonTimestampSerializers {
         }
 
         @Override
-        public void serialize(java.util.Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException
+        public void serialize(java.util.Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
         {
             // Still respect writing dates as millis if desired
             if (serializerProvider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
@@ -56,7 +55,7 @@ public class IonTimestampSerializers {
         }
 
         @Override
-        public void serialize(java.sql.Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException
+        public void serialize(java.sql.Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
         {
             // Still respect writing dates as millis if desired
             if (serializerProvider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {

@@ -14,13 +14,13 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers.DateDeserializer;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers.SqlDateDeserializer;
+
 import com.amazon.ion.Timestamp;
 
 /**
@@ -30,7 +30,7 @@ public class IonTimestampDeserializers {
 
     public static class IonTimestampJavaDateDeserializer extends DateDeserializer {
         @Override
-        public java.util.Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+        public java.util.Date deserialize(JsonParser p, DeserializationContext ctxt)
         {
             if (p.hasToken(JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 Object embedded = p.getEmbeddedObject();
@@ -44,7 +44,7 @@ public class IonTimestampDeserializers {
     
     public static class IonTimestampSQLDateDeserializer extends SqlDateDeserializer {
         @Override
-        public java.sql.Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+        public java.sql.Date deserialize(JsonParser p, DeserializationContext ctxt)
         {
             if (p.hasToken(JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 Object embedded = p.getEmbeddedObject();

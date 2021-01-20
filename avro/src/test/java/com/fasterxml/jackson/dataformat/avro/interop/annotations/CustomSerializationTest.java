@@ -40,11 +40,10 @@ public final class CustomSerializationTest {
 
         public static class Serializer extends JsonSerializer<House> {
             @Override
-            public void serialize(
-                final House house,
+            public void serialize(final House house,
                 final JsonGenerator generator,
-                final SerializerProvider serializers
-            ) throws IOException {
+                final SerializerProvider serializers)
+            {
                 generator.writeStartObject();
                 generator.writeFieldName("owner");
                 generator.writeStartObject();
@@ -57,10 +56,9 @@ public final class CustomSerializationTest {
 
         public static class Deserializer extends JsonDeserializer<House> {
             @Override
-            public House deserialize(
-                final JsonParser parser,
-                final DeserializationContext context
-            ) throws IOException {
+            public House deserialize(final JsonParser parser,
+                final DeserializationContext context)
+            {
                 // startObject
                 parser.nextToken();
                 // fieldName("owner")

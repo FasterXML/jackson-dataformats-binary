@@ -371,7 +371,7 @@ public class BasicParserTest extends BaseTestForSmile
         try {
             JsonToken t = p.nextToken();
             fail("Expected parse error, got: "+t);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             verifyException(e, "Invalid type marker byte 0x0");
         }
         p.close();

@@ -228,7 +228,7 @@ public class AvroFactory
      */
     @Override
     protected AvroParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            InputStream in) throws IOException
+            InputStream in) throws JacksonException
     {
         if (_useApacheLibDecoder) {
           return new ApacheAvroParserImpl(readCtxt, ioCtxt,
@@ -246,7 +246,8 @@ public class AvroFactory
 
     @Override
     protected AvroParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            byte[] data, int offset, int len) throws IOException
+            byte[] data, int offset, int len)
+        throws JacksonException
     {
         if (_useApacheLibDecoder) {
             return new ApacheAvroParserImpl(readCtxt, ioCtxt,
@@ -264,7 +265,8 @@ public class AvroFactory
 
     @Override
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            DataInput input) throws IOException {
+            DataInput input)
+    {
         // 30-Sep-2017, tatu: As of now not supported although should be quite possible
         //    to support
         return _unsupported();
@@ -278,7 +280,8 @@ public class AvroFactory
     
     @Override
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            IOContext ioCtxt, OutputStream out) throws IOException
+            IOContext ioCtxt, OutputStream out)
+        throws JacksonException
     {
         return new AvroGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),

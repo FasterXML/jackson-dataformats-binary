@@ -57,9 +57,9 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Input source config, state (from ex StreamBasedParserBase)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -86,9 +86,9 @@ public class SmileParser extends SmileParserBase
     protected boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Additional parsing state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -104,9 +104,9 @@ public class SmileParser extends SmileParserBase
     protected boolean _tokenIncomplete = false;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileParser(ObjectReadContext readCtxt, IOContext ctxt,
@@ -130,7 +130,8 @@ public class SmileParser extends SmileParserBase
      * 
      * @return True if valid signature was found and handled; false if not
      */
-    protected boolean handleSignature(boolean consumeFirstByte, boolean throwException) throws IOException
+    protected boolean handleSignature(boolean consumeFirstByte, boolean throwException)
+        throws JacksonException
     {
         if (consumeFirstByte) {
             ++_inputPtr;
@@ -172,13 +173,13 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Implementations for JsonParser/ParserBase
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public int releaseBuffered(OutputStream out) throws IOException
+    public int releaseBuffered(OutputStream out) throws JacksonException
     {
         int count = _inputEnd - _inputPtr;
         if (count < 1) {
@@ -186,7 +187,11 @@ public class SmileParser extends SmileParserBase
         }
         // let's just advance ptr to end
         int origPtr = _inputPtr;
-        out.write(_inputBuffer, origPtr, count);
+        try {
+            out.write(_inputBuffer, origPtr, count);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         return count;
     }
     
@@ -196,13 +201,13 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level reading, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     // @since 2.8
-    private final byte _nextByteGuaranteed() throws IOException
+    private final byte _nextByteGuaranteed() throws JacksonException
     {
         int ptr = _inputPtr;
         if (ptr < _inputEnd) {
@@ -214,16 +219,21 @@ public class SmileParser extends SmileParserBase
         return _inputBuffer[_inputPtr++];
     }
 
-    protected final void _loadMoreGuaranteed() throws IOException {
+    protected final void _loadMoreGuaranteed() throws JacksonException {
         if (!_loadMore()) { _reportInvalidEOF(); }
     }
     
-    protected final boolean _loadMore() throws IOException
+    protected final boolean _loadMore() throws JacksonException
     {
         //_currInputRowStart -= _inputEnd;
         
         if (_inputStream != null) {
-            int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             _currInputProcessed += _inputEnd;
             _inputPtr = 0;
             if (count > 0) {
@@ -236,7 +246,7 @@ public class SmileParser extends SmileParserBase
             _closeInput();
             // Should never return 0, so let's fail
             if (count == 0) {
-                throw new IOException("InputStream.read() returned 0 characters when trying to read "+_inputBuffer.length+" bytes");
+                _reportBadInputStream(_inputBuffer.length);
             }
         }
         return false;
@@ -246,11 +256,11 @@ public class SmileParser extends SmileParserBase
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary
      */
-    protected final void _loadToHaveAtLeast(int minAvailable) throws IOException
+    protected final void _loadToHaveAtLeast(int minAvailable) throws JacksonException
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            throw _constructError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            throw _constructReadException("Needed to read "+minAvailable+" bytes, reached end-of-input");
         }
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
@@ -264,35 +274,45 @@ public class SmileParser extends SmileParserBase
         }
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
-            int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            final int toRead = _inputBuffer.length - _inputEnd;
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, _inputEnd, toRead);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count < 1) {
                 // End of input
                 _closeInput();
                 // Should never return 0, so let's fail
                 if (count == 0) {
-                    throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
+                    _reportBadInputStream(toRead);
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructReadException("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
             }
             _inputEnd += count;
         }
     }
 
     @Override
-    protected void _closeInput() throws IOException
+    protected void _closeInput()
     {
         if (_inputStream != null) {
             if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
-                _inputStream.close();
+                try {
+                    _inputStream.close();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
             _inputStream = null;
         }
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -325,13 +345,13 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* JsonParser impl: generic traversal
-    /**********************************************************
+    /**********************************************************************
      */
     
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken() throws JacksonException
     {
         _numTypesValid = NR_UNKNOWN;
         // For longer tokens (text, binary), we'll only read when requested
@@ -468,7 +488,7 @@ public class SmileParser extends SmileParserBase
         return null;
     }
 
-    private final JsonToken _handleSharedString(int index) throws IOException
+    private final JsonToken _handleSharedString(int index) throws JacksonException
     {
         if (index >= _seenStringValueCount) {
             _reportInvalidSharedStringValue(index);
@@ -477,7 +497,7 @@ public class SmileParser extends SmileParserBase
         return (_currToken = JsonToken.VALUE_STRING);
     }
 
-    private final JsonToken _addSeenStringValue() throws IOException
+    private final JsonToken _addSeenStringValue() throws JacksonException
     {
         _finishToken();
         String v = _textBuffer.contentsAsString();
@@ -516,7 +536,7 @@ public class SmileParser extends SmileParserBase
      * only be read if data is accessed via {@link #getText} and similar methods.
      */
     @Override
-    public void finishToken() throws IOException
+    public void finishToken()
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -524,9 +544,9 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Optimized traversal: field names
-    /**********************************************************
+    /**********************************************************************
      */
 
     // Not (yet?) overridden, as of 2.6
@@ -541,7 +561,7 @@ public class SmileParser extends SmileParserBase
     //public boolean isExpectedStartObjectToken() { return currentToken() == JsonToken.START_OBJECT; }
 
     @Override
-    public String nextFieldName() throws IOException
+    public String nextFieldName() throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, if not offline:
         if ((_currToken == JsonToken.FIELD_NAME) || !_parsingContext.inObject()) {
@@ -664,7 +684,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public boolean nextFieldName(SerializableString str) throws IOException
+    public boolean nextFieldName(SerializableString str) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if (_currToken != JsonToken.FIELD_NAME && _parsingContext.inObject()) {
@@ -797,7 +817,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException
+    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if ((_currToken == JsonToken.FIELD_NAME) || !_parsingContext.inObject()) {
@@ -916,7 +936,7 @@ public class SmileParser extends SmileParserBase
         return FieldNameMatcher.MATCH_ODD_TOKEN; // never gets here
     }
 
-    private final int _nextFieldOptimized(FieldNameMatcher matcher, int len) throws IOException
+    private final int _nextFieldOptimized(FieldNameMatcher matcher, int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -994,7 +1014,7 @@ public class SmileParser extends SmileParserBase
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
     private final int _nextFieldFromSymbolsLong(FieldNameMatcher matcher, 
-            int len, int q1, int q2) throws IOException
+            int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -1033,7 +1053,7 @@ public class SmileParser extends SmileParserBase
         return matcher.matchByQuad(_quadBuffer, offset);
     }
 
-    private int _nextFieldAsciiDecodeAndAdd(FieldNameMatcher matcher, int len) throws IOException
+    private int _nextFieldAsciiDecodeAndAdd(FieldNameMatcher matcher, int len) throws JacksonException
     {
         String name;
         final int qlen = (len + 3) >> 2;
@@ -1068,7 +1088,7 @@ public class SmileParser extends SmileParserBase
         return matcher.matchName(name);
     }
 
-    private int _nextFieldUnicodeDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws IOException
+    private int _nextFieldUnicodeDecodeAndAdd(FieldNameMatcher matcher, int lenMarker) throws JacksonException
     {
         String name;
         switch (lenMarker >> 2) {
@@ -1101,13 +1121,13 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Optimized traversal: scalars
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public String nextTextValue() throws IOException
+    public String nextTextValue() throws JacksonException
     {
         // can't get text value if expecting name, so
         if (!_parsingContext.inObject() || _currToken == JsonToken.FIELD_NAME) {
@@ -1223,7 +1243,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public int nextIntValue(int defaultValue) throws IOException
+    public int nextIntValue(int defaultValue) throws JacksonException
     {
         if (nextToken() == JsonToken.VALUE_NUMBER_INT) {
             return getIntValue();
@@ -1232,7 +1252,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public long nextLongValue(long defaultValue) throws IOException
+    public long nextLongValue(long defaultValue) throws JacksonException
     {
         if (nextToken() == JsonToken.VALUE_NUMBER_INT) {
             return getLongValue();
@@ -1241,7 +1261,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public Boolean nextBooleanValue() throws IOException
+    public Boolean nextBooleanValue() throws JacksonException
     {
         JsonToken t = nextToken();
         if (t == JsonToken.VALUE_TRUE) {
@@ -1254,9 +1274,9 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API, access to token information, text
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -1266,7 +1286,7 @@ public class SmileParser extends SmileParserBase
      * Method can be called for any event.
      */
     @Override    
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
         if (_tokenIncomplete) {
             _tokenIncomplete = false;
@@ -1299,7 +1319,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public char[] getTextCharacters() throws IOException
+    public char[] getTextCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1320,7 +1340,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override    
-    public int getTextLength() throws IOException
+    public int getTextLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1343,12 +1363,12 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public int getTextOffset() throws IOException {
+    public int getTextOffset() throws JacksonException {
         return 0;
     }
 
     @Override
-    public String getValueAsString() throws IOException
+    public String getValueAsString() throws JacksonException
     {
         // inlined 'getText()' for common case of having String
         if (_tokenIncomplete) {
@@ -1373,7 +1393,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public String getValueAsString(String defaultValue) throws IOException
+    public String getValueAsString(String defaultValue) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
@@ -1384,39 +1404,43 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override // since 2.8
-    public int getText(Writer writer) throws IOException
+    public int getText(Writer writer) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
         }
         JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(writer);
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.currentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
+        try {
+            if (t == JsonToken.VALUE_STRING) {
                 return _textBuffer.contentsToWriter(writer);
             }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
+            if (t == JsonToken.FIELD_NAME) {
+                String n = _parsingContext.currentName();
+                writer.write(n);
+                return n.length();
+            }
+            if (t != null) {
+                if (t.isNumeric()) {
+                    return _textBuffer.contentsToWriter(writer);
+                }
+                char[] ch = t.asCharArray();
+                writer.write(ch);
+                return ch.length;
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         return 0;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API, access to token information, binary
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public byte[] getBinaryValue(Base64Variant b64variant) throws IOException
+    public byte[] getBinaryValue(Base64Variant b64variant) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1429,7 +1453,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public Object getEmbeddedObject() throws IOException
+    public Object getEmbeddedObject() throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1441,7 +1465,7 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws IOException
+    public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // Todo, maybe: support base64 for text?
@@ -1453,7 +1477,11 @@ public class SmileParser extends SmileParserBase
                 return 0;
             }
             final int len = _binaryValue.length;
-            out.write(_binaryValue, 0, len);
+            try {
+                out.write(_binaryValue, 0, len);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             return len;
         }
 
@@ -1469,7 +1497,11 @@ public class SmileParser extends SmileParserBase
                     avail = _inputEnd - _inputPtr;
                 }
                 int count = Math.min(avail, left);
-                out.write(_inputBuffer, _inputPtr, count);
+                try {
+                    out.write(_inputBuffer, _inputPtr, count);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
                 _inputPtr += count;
                 left -= count;
             }
@@ -1491,7 +1523,7 @@ public class SmileParser extends SmileParserBase
         return totalCount;
     }
 
-    private void _readBinaryEncoded(OutputStream out, int length, byte[] buffer) throws IOException
+    private void _readBinaryEncoded(OutputStream out, int length, byte[] buffer) throws JacksonException
     {
         int outPtr = 0;
         final int lastSafeOut = buffer.length - 7;
@@ -1521,7 +1553,11 @@ public class SmileParser extends SmileParserBase
             length -= 7;
             // ensure there's always room for at least 7 bytes more after looping:
             if (outPtr > lastSafeOut) {
-                out.write(buffer, 0, outPtr);
+                try {
+                    out.write(buffer, 0, outPtr);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
                 outPtr = 0;
             }
         }
@@ -1540,21 +1576,25 @@ public class SmileParser extends SmileParserBase
             buffer[outPtr++] = (byte) (value + _inputBuffer[_inputPtr++]);
         }
         if (outPtr > 0) {
-            out.write(buffer, 0, outPtr);
+            try {
+                out.write(buffer, 0, outPtr);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
         }
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, field name parsing
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
      */
-    protected final JsonToken _handleFieldName() throws IOException
+    protected final JsonToken _handleFieldName() throws JacksonException
     {    	
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -1693,7 +1733,7 @@ public class SmileParser extends SmileParserBase
         return _symbols.addName(name, _quadBuffer, qlen);
     }
 
-    private final String _decodeShortAsciiName(int len) throws IOException
+    private final String _decodeShortAsciiName(int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         // also note that since it's a short name (64 bytes), segment WILL have enough space
@@ -1738,7 +1778,7 @@ public class SmileParser extends SmileParserBase
      * @param len Length between 1 and 64
      */
     private final String _decodeShortUnicodeName(int len)
-        throws IOException
+        throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -1782,7 +1822,7 @@ public class SmileParser extends SmileParserBase
 
     // note: slightly edited copy of UTF8StreamParser.addName()
     private final String _decodeLongUnicodeName(int[] quads, int byteLen, int quadLen)
-        throws IOException
+        throws JacksonException
     {
         int lastQuadBytes = byteLen & 3;
         // Ok: must decode UTF-8 chars. No other validation SHOULD be needed (except bounds checks?)
@@ -1884,7 +1924,7 @@ public class SmileParser extends SmileParserBase
         return _symbols.addName(baseName, quads, quadLen);
     }
 
-    private final void _handleLongFieldName() throws IOException
+    private final void _handleLongFieldName() throws JacksonException
     {
         // First: gather quads we need, looking for end marker
         final byte[] inBuf = _inputBuffer;
@@ -1961,7 +2001,7 @@ public class SmileParser extends SmileParserBase
      * Helper method for trying to find specified encoded UTF-8 byte sequence
      * from symbol table; if successful avoids actual decoding to String
      */
-    private final String _findDecodedFromSymbols(final int len) throws IOException
+    private final String _findDecodedFromSymbols(final int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -2038,7 +2078,7 @@ public class SmileParser extends SmileParserBase
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
-    private final String _findDecodedLong(int len, int q1, int q2) throws IOException
+    private final String _findDecodedLong(int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -2086,13 +2126,13 @@ public class SmileParser extends SmileParserBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, secondary parsing
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    protected void _parseNumericValue() throws IOException
+    protected void _parseNumericValue() throws JacksonException
     {
         if (!_tokenIncomplete) {
             _reportError("Internal error: number token (%s) decoded, no value set", _currToken);
@@ -2108,7 +2148,7 @@ public class SmileParser extends SmileParserBase
 
     /*
     @Override // since 2.6
-    protected int _parseIntValue() throws IOException
+    protected int _parseIntValue() throws JacksonException
     {
         // Inlined variant of: _parseNumericValue(NR_INT)
         if (_tokenIncomplete) {
@@ -2130,7 +2170,7 @@ public class SmileParser extends SmileParserBase
      * Method called to finish parsing of a token so that token contents
      * are retrievable
      */
-    protected final void _finishToken() throws IOException
+    protected final void _finishToken() throws JacksonException
     {
         _tokenIncomplete = false;
         int tb = _typeAsInt;
@@ -2171,7 +2211,7 @@ public class SmileParser extends SmileParserBase
         _throwInternal();
     }
 
-    protected final void _finishNumberToken(int tb) throws IOException
+    protected final void _finishNumberToken(int tb) throws JacksonException
     {
         switch (tb & 0x1F) {
         case 4:
@@ -2197,12 +2237,12 @@ public class SmileParser extends SmileParserBase
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, secondary Number parsing
-    /**********************************************************
+    /**********************************************************************
      */
 
-    private final void _finishInt() throws IOException
+    private final void _finishInt() throws JacksonException
     {
         _numTypesValid = NR_INT;
         _numberType = NumberType.INT;
@@ -2239,7 +2279,7 @@ public class SmileParser extends SmileParserBase
         _numberInt = SmileUtil.zigzagDecode(value);
     }
     
-    private final void _finishIntSlow() throws IOException
+    private final void _finishIntSlow() throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -2283,7 +2323,7 @@ public class SmileParser extends SmileParserBase
         _numberInt = SmileUtil.zigzagDecode(value);
     }
 
-    private final void  _finishLong() throws IOException
+    private final void  _finishLong() throws JacksonException
     {
         _numTypesValid = NR_LONG;
         _numberType = NumberType.LONG;
@@ -2313,7 +2353,7 @@ public class SmileParser extends SmileParserBase
         _reportError("Corrupt input; 64-bit VInt extends beyond 11 data bytes");
     }
 
-    private final void  _finishLongSlow() throws IOException
+    private final void  _finishLongSlow() throws JacksonException
     {
         // Ok, first, will always get 4 full data bytes first; 1 was already passed
         long l = (long) _fourBytesToInt();
@@ -2332,7 +2372,7 @@ public class SmileParser extends SmileParserBase
     	    }
     }
 
-    private final int _fourBytesToInt()  throws IOException
+    private final int _fourBytesToInt()  throws JacksonException
     {
         int ptr = _inputPtr;
         if ((ptr + 3) >= _inputEnd) {
@@ -2346,7 +2386,7 @@ public class SmileParser extends SmileParserBase
         return i;
     }
 
-    private final int _fourBytesToIntSlow()  throws IOException
+    private final int _fourBytesToIntSlow()  throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -2366,7 +2406,7 @@ public class SmileParser extends SmileParserBase
         return (i << 7) + _inputBuffer[_inputPtr++];
     }
     
-    private final void _finishBigInteger() throws IOException
+    private final void _finishBigInteger() throws JacksonException
     {
         byte[] raw = _read7BitBinaryWithLength();
         _numberBigInt = new BigInteger(raw);
@@ -2374,7 +2414,7 @@ public class SmileParser extends SmileParserBase
         _numberType = NumberType.BIG_INTEGER;
     }
 
-    private final void _finishFloat() throws IOException
+    private final void _finishFloat() throws JacksonException
     {
         // just need 5 bytes to get int32 first; all are unsigned
         int i = _fourBytesToInt();
@@ -2388,7 +2428,7 @@ public class SmileParser extends SmileParserBase
     	    _numTypesValid = NR_FLOAT;
     }
 
-    private final void _finishDouble() throws IOException
+    private final void _finishDouble() throws JacksonException
     {
         // ok; let's take two sets of 4 bytes (each is int)
         long hi = _fourBytesToInt();
@@ -2407,7 +2447,7 @@ public class SmileParser extends SmileParserBase
         _numTypesValid = NR_DOUBLE;
     }
 	
-    private final void _finishBigDecimal() throws IOException
+    private final void _finishBigDecimal() throws JacksonException
     {
         int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         byte[] raw = _read7BitBinaryWithLength();
@@ -2416,7 +2456,7 @@ public class SmileParser extends SmileParserBase
         _numberType = NumberType.BIG_DECIMAL;
     }
 
-    private final int _readUnsignedVInt() throws IOException
+    private final int _readUnsignedVInt() throws JacksonException
     {
         int value = 0;
         while (true) {
@@ -2432,7 +2472,7 @@ public class SmileParser extends SmileParserBase
         }
     }
 
-    private final byte[] _read7BitBinaryWithLength() throws IOException
+    private final byte[] _read7BitBinaryWithLength() throws JacksonException
     {
         int byteLen = _readUnsignedVInt();
         byte[] result = new byte[byteLen];
@@ -2480,14 +2520,14 @@ public class SmileParser extends SmileParserBase
         }
         return result;
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, secondary String parsing
-    /**********************************************************
+    /**********************************************************************
      */
 
-    protected final String _decodeShortAsciiValue(int len) throws IOException
+    protected final String _decodeShortAsciiValue(int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -2506,7 +2546,7 @@ public class SmileParser extends SmileParserBase
         return _textBuffer.setCurrentAndReturn(len);
     }
 
-    protected final String _decodeShortUnicodeValue(int len) throws IOException
+    protected final String _decodeShortUnicodeValue(int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -2550,7 +2590,7 @@ public class SmileParser extends SmileParserBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _decodeLongAscii() throws IOException
+    private final void _decodeLongAscii() throws JacksonException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -2579,7 +2619,7 @@ public class SmileParser extends SmileParserBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final void _decodeLongUnicode() throws IOException
+    private final void _decodeLongUnicode() throws JacksonException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -2660,7 +2700,7 @@ public class SmileParser extends SmileParserBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final void _finishRawBinary() throws IOException
+    private final void _finishRawBinary() throws JacksonException
     {
         int byteLen = _readUnsignedVInt();
         _binaryValue = new byte[byteLen];
@@ -2682,16 +2722,16 @@ public class SmileParser extends SmileParserBase
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, skipping
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
      * Method called to skip remainders of an incomplete token, when
      * contents themselves will not be needed any more
      */
-    protected void _skipIncomplete() throws IOException
+    protected void _skipIncomplete() throws JacksonException
     {
         _tokenIncomplete = false;
         int tb = _typeAsInt;
@@ -2782,7 +2822,7 @@ public class SmileParser extends SmileParserBase
     	_throwInternal();
     }
 
-    protected void _skipBytes(int len) throws IOException
+    protected void _skipBytes(int len) throws JacksonException
     {
         while (true) {
             int toAdd = Math.min(len, _inputEnd - _inputPtr);
@@ -2799,7 +2839,7 @@ public class SmileParser extends SmileParserBase
      * Helper method for skipping length-prefixed binary data
      * section
      */
-    protected void _skip7BitBinary() throws IOException
+    protected void _skip7BitBinary() throws JacksonException
     {
         int origBytes = _readUnsignedVInt();
         // Ok; 8 encoded bytes for 7 payload bytes first
@@ -2812,14 +2852,14 @@ public class SmileParser extends SmileParserBase
         }
         _skipBytes(encBytes);
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, UTF8 decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
-    private final int _decodeUtf8_2(int c) throws IOException
+    private final int _decodeUtf8_2(int c) throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -2831,7 +2871,7 @@ public class SmileParser extends SmileParserBase
         return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
-    private final int _decodeUtf8_3(int c1) throws IOException
+    private final int _decodeUtf8_3(int c1) throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -2853,7 +2893,7 @@ public class SmileParser extends SmileParserBase
         return c;
     }
 
-    private final int _decodeUtf8_3fast(int c1) throws IOException
+    private final int _decodeUtf8_3fast(int c1) throws JacksonException
     {
         c1 &= 0x0F;
         int d = (int) _inputBuffer[_inputPtr++];
@@ -2873,7 +2913,7 @@ public class SmileParser extends SmileParserBase
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUtf8_4(int c) throws IOException
+    private final int _decodeUtf8_4(int c) throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -2900,19 +2940,18 @@ public class SmileParser extends SmileParserBase
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
 
-        /* note: won't change it to negative here, since caller
-         * already knows it'll need a surrogate
-         */
+        // note: won't change it to negative here, since caller
+        // already knows it'll need a surrogate
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, error reporting
-    /**********************************************************
+    /**********************************************************************
      */
 
-    protected void _reportInvalidSharedName(int index) throws IOException
+    protected void _reportInvalidSharedName(int index) throws JacksonException
     {
         if (_seenNames == null) {
             _reportError("Encountered shared name reference, even though document header explicitly declared no shared name references are included");
@@ -2920,7 +2959,7 @@ public class SmileParser extends SmileParserBase
        _reportError("Invalid shared name reference "+index+"; only got "+_seenNameCount+" names in buffer (invalid content)");
     }
 
-    protected void _reportInvalidSharedStringValue(int index) throws IOException
+    protected void _reportInvalidSharedStringValue(int index) throws JacksonException
     {
         if (_seenStringValues == null) {
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
@@ -2940,14 +2979,14 @@ public class SmileParser extends SmileParserBase
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
-	
-    protected void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
-    }
-	
+
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
+    }
+
+    protected void _reportInvalidOther(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 
     /*
@@ -2956,7 +2995,7 @@ public class SmileParser extends SmileParserBase
     /**********************************************************
      */
 
-    private final JsonToken _eofAsNextToken() throws IOException {
+    private final JsonToken _eofAsNextToken() throws JacksonException {
         if (!_parsingContext.inRoot()) {
             _handleEOF();
         }

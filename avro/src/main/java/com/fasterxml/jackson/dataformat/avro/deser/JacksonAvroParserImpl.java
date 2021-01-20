@@ -69,9 +69,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     protected boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public JacksonAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -98,7 +98,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    protected void _releaseBuffers() throws IOException {
+    protected void _releaseBuffers() {
         super._releaseBuffers();
         if (_bufferRecyclable) {
             byte[] buf = _inputBuffer;
@@ -110,9 +110,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method impls, i/o access
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -131,7 +131,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    public int releaseBuffered(OutputStream out) throws IOException
+    public int releaseBuffered(OutputStream out)
     {
         int count = _inputEnd - _inputPtr;
         if (count < 1) {
@@ -139,19 +139,23 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         // let's just advance ptr to end
         int origPtr = _inputPtr;
-        out.write(_inputBuffer, origPtr, count);
+        try {
+            out.write(_inputBuffer, origPtr, count);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         return count;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method impls, traversal
-    /**********************************************************
+    /**********************************************************************
      */
 
     // !!! TODO: optimize
     @Override
-    public String nextTextValue() throws IOException {
+    public String nextTextValue() throws JacksonException {
         if (nextToken() == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
         }
@@ -159,9 +163,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method impls, text
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -172,7 +176,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
         JsonToken t = _currToken;
         if (t == JsonToken.VALUE_STRING) {
@@ -190,33 +194,38 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         return null;
     }
 
-    @Override // since 2.8
-    public int getText(Writer writer) throws IOException
+    @Override
+    public int getText(Writer writer) throws JacksonException
     {
         JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(writer);
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _avroContext.currentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
+
+        try {
+            if (t == JsonToken.VALUE_STRING) {
                 return _textBuffer.contentsToWriter(writer);
             }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
+            if (t == JsonToken.FIELD_NAME) {
+                String n = _avroContext.currentName();
+                writer.write(n);
+                return n.length();
+            }
+            if (t != null) {
+                if (t.isNumeric()) {
+                    return _textBuffer.contentsToWriter(writer);
+                }
+                char[] ch = t.asCharArray();
+                writer.write(ch);
+                return ch.length;
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         return 0;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding int
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -328,9 +337,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding long
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -502,9 +511,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding float/double
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -555,9 +564,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Strings
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -672,7 +681,8 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 continue;
             }
             if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+                _reportError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+                return; // never gets here
             }
             
             switch (code) {
@@ -775,9 +785,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Bytes
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -839,7 +849,12 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         int left = len - available;
         // and rest we can read straight from input
         do {
-            int count = _inputStream.read(target, offset, left);
+            int count;
+            try {
+                count = _inputStream.read(target, offset, left);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
             if (count <= 0) {
                 _reportError("Needed to read "+len+" bytes, reached end-of-input after reading "+(len - left));
             }
@@ -860,11 +875,15 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr = _inputEnd; // mark all used, whatever it was
         if (_inputStream != null) {
             do {
-                int skipped = (int) _inputStream.skip(left);
-                if (skipped < 0) {
-                    break;
+                try {
+                    int skipped = (int) _inputStream.skip(left);
+                    if (skipped < 0) {
+                        break;
+                    }
+                    left -= skipped;
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
                 }
-                left -= skipped;
             } while (left > 0);
         }
         if (left > 0) {
@@ -884,11 +903,15 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr = _inputEnd; // mark all used, whatever it was
         if (_inputStream != null) {
             do {
-                int skipped = (int) _inputStream.skip(left);
-                if (skipped < 0) {
-                    break;
+                try {
+                    int skipped = (int) _inputStream.skip(left);
+                    if (skipped < 0) {
+                        break;
+                    }
+                    left -= skipped;
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
                 }
-                left -= skipped;
             } while (left > 0L);
         }
         if (left > 0L) {
@@ -897,9 +920,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Arrays
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -938,9 +961,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Maps
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -965,9 +988,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Methods for AvroReadContext implementations: misc
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1005,9 +1028,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level methods: setting values from defaults
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1017,9 +1040,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level reading, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final byte _nextByteGuaranteed() throws IOException
@@ -1058,7 +1081,12 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     {
         //_currInputRowStart -= _inputEnd;
         if (_inputStream != null) {
-            int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e); 
+            }
             _currInputProcessed += _inputEnd;
             _inputPtr = 0;
             if (count > 0) {
@@ -1071,7 +1099,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _closeInput();
             // Should never return 0, so let's fail
             if (count == 0) {
-                throw new IOException("InputStream.read() returned 0 characters when trying to read "+_inputBuffer.length+" bytes");
+                _reportBadInputStream(_inputBuffer.length);
             }
         }
         return false;
@@ -1102,13 +1130,20 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             return; // never gets here, but sec tools complain without
         }
         while (_inputEnd < minAvailable) {
-            int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            final int toRead = _inputBuffer.length - _inputEnd;
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, _inputEnd, toRead);
+                        
+            } catch (IOException e) {
+                throw _wrapIOFailure(e); 
+            }
             if (count < 1) {
                 // End of input
                 _closeInput();
                 // Should never return 0, so let's fail
                 if (count == 0) {
-                    throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
+                    _reportBadInputStream(toRead);
                 }
                 _reportError("Needed to read %d bytes, missed %d before end-of-input",
                         minAvailable, minAvailable);
@@ -1117,7 +1152,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
     }
 
-    private void _reportInvalidNegative(int v) throws IOException
+    private void _reportInvalidNegative(int v) throws JacksonException
     {
         _reportError("Invalid negative byte %x at end of VInt", v);
     }

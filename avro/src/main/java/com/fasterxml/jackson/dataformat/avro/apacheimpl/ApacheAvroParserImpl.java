@@ -88,7 +88,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    protected void _releaseBuffers() throws IOException {
+    protected void _releaseBuffers() {
         super._releaseBuffers();
         if (_bufferRecyclable) {
             byte[] buf = _inputBuffer;
@@ -136,12 +136,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    public String nextTextValue() throws IOException {
+    public String nextTextValue() throws JacksonException {
         return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
     }
 
     @Override
-    public String getText() throws IOException
+    public String getText() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textValue;
@@ -159,25 +159,29 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    public int getText(Writer writer) throws IOException
+    public int getText(Writer writer) throws JacksonException
     {
         JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
-            writer.write(_textValue);
-            return _textValue.length();
-        }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.currentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
-                return _textBuffer.contentsToWriter(writer);
+        try {
+            if (t == JsonToken.VALUE_STRING) {
+                writer.write(_textValue);
+                return _textValue.length();
             }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
+            if (t == JsonToken.FIELD_NAME) {
+                String n = _parsingContext.currentName();
+                writer.write(n);
+                return n.length();
+            }
+            if (t != null) {
+                if (t.isNumeric()) {
+                    return _textBuffer.contentsToWriter(writer);
+                }
+                char[] ch = t.asCharArray();
+                writer.write(ch);
+                return ch.length;
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
         return 0;
     }

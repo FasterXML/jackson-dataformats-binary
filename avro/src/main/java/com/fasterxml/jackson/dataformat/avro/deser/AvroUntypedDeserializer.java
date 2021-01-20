@@ -1,10 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -48,7 +48,7 @@ public class AvroUntypedDeserializer
     }
 
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException
     {
         // Make sure we have a native type ID *AND* that we can resolve it to a type; otherwise, we'll end up in a recursive loop
         if (p.canReadTypeId()) {
@@ -67,7 +67,7 @@ public class AvroUntypedDeserializer
 
     @Override
     public Object deserializeWithType(JsonParser p, DeserializationContext ctxt,
-            TypeDeserializer typeDeserializer) throws IOException {
+            TypeDeserializer typeDeserializer) throws JacksonException {
         // Use type deserializer if we have type information, even for scalar values
         if (typeDeserializer != null) {
             if (p.canReadTypeId()) {
@@ -89,7 +89,7 @@ public class AvroUntypedDeserializer
      */
     // Would we just be better off deferring to the Map<Object,Object> deserializer?
     @Override
-    protected Object mapObject(JsonParser p, DeserializationContext ctxt) throws IOException {
+    protected Object mapObject(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         Object key1;
         JsonToken t = p.currentToken();
 

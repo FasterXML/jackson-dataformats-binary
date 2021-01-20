@@ -208,7 +208,6 @@ public class SmileFactory
 
     @Override
     public NonBlockingByteArrayParser createNonBlockingByteArrayParser(ObjectReadContext readCtxt)
-            throws IOException
     {
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
@@ -228,7 +227,7 @@ public class SmileFactory
      */
     @Override
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            InputStream in) throws IOException
+            InputStream in)
     {
         return new SmileParserBootstrapper(ioCtxt, in)
             .constructParser(readCtxt, _factoryFeatures,
@@ -239,7 +238,7 @@ public class SmileFactory
 
     @Override
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            byte[] data, int offset, int len) throws IOException
+            byte[] data, int offset, int len)
     {
         return new SmileParserBootstrapper(ioCtxt, data, offset, len)
             .constructParser(readCtxt, _factoryFeatures,
@@ -250,7 +249,7 @@ public class SmileFactory
 
     @Override
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            DataInput input) throws IOException {
+            DataInput input) {
         // 30-Sep-2017, tatu: As of now not supported (but would be possible)
         return _unsupported();
     }
@@ -263,7 +262,7 @@ public class SmileFactory
 
     @Override
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
-            IOContext ioCtxt, OutputStream out) throws IOException
+            IOContext ioCtxt, OutputStream out)
     {
         int smileFeatures = writeCtxt.getFormatWriteFeatures(_formatWriteFeatures);
         /* One sanity check: MUST write header if shared string values setting is enabled,

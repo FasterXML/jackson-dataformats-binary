@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -15,6 +14,7 @@ import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 
 import com.fasterxml.jackson.databind.*;
@@ -383,7 +383,7 @@ public abstract class AvroSchemaHelper
         }
         try {
             return DEFAULT_VALUE_MAPPER.readTree(defaultValue);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             if (e instanceof JsonMappingException) {
                 throw (JsonMappingException) e;
             }

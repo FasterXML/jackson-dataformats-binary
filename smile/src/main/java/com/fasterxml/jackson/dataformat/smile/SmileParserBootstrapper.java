@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.WrappedIOException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
@@ -12,9 +13,9 @@ import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 public class SmileParserBootstrapper
 {
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected final IOContext _ioContext;
@@ -22,9 +23,9 @@ public class SmileParserBootstrapper
     protected final InputStream _in;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Input buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected final byte[] _inputBuffer;
@@ -40,9 +41,9 @@ public class SmileParserBootstrapper
     protected final boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Input location
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -55,9 +56,9 @@ public class SmileParserBootstrapper
     protected int _inputProcessed;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileParserBootstrapper(IOContext ctxt, InputStream in)
@@ -86,15 +87,19 @@ public class SmileParserBootstrapper
             int factoryFeatures,
             int generalParserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer rootByteSymbols)
-        throws IOException, JsonParseException
+        throws JacksonException
     {
         ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
         // We just need a single byte, really, to know if it starts with header
         int end = _inputEnd;
         if ((_inputPtr < end) && (_in != null)) {
-            int count = _in.read(_inputBuffer, end, _inputBuffer.length - end);
-            if (count > 0) {
-                _inputEnd += count;
+            try {
+                int count = _in.read(_inputBuffer, end, _inputBuffer.length - end);
+                if (count > 0) {
+                    _inputEnd += count;
+                }
+            } catch (IOException e) {
+                throw WrappedIOException.construct(e);
             }
         }
 

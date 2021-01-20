@@ -20,9 +20,9 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.WireType;
 public class ProtobufGenerator extends GeneratorBase
 {
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Constants
-    /**********************************************************
+    /**********************************************************************
      */
     /**
      * This instance is used as a placeholder for cases where we do not know
@@ -38,9 +38,9 @@ public class ProtobufGenerator extends GeneratorBase
     protected final static ProtobufMessage UNKNOWN_MESSAGE = ProtobufMessage.bogusMessage("<unknown>");
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     final protected IOContext _ioContext;
@@ -48,9 +48,9 @@ public class ProtobufGenerator extends GeneratorBase
     final protected ProtobufSchema _schema;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -85,9 +85,9 @@ public class ProtobufGenerator extends GeneratorBase
     protected ProtobufField _currField;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -122,15 +122,14 @@ public class ProtobufGenerator extends GeneratorBase
     protected int _currPtr;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public ProtobufGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
             int streamWriteFeatures, ProtobufSchema schema,
             OutputStream output)
-        throws IOException
     {
         super(writeCtxt, streamWriteFeatures);
         _ioContext = ctxt;
@@ -156,10 +155,10 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
 
-    /*                                                                                       
-    /**********************************************************                              
+    /*
+    /**********************************************************************
     /* Versioned                                                                             
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override
@@ -168,9 +167,9 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Capability introspection
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -184,9 +183,9 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods, configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -220,7 +219,7 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeFieldName(String name) throws IOException {
+    public final void writeFieldName(String name) throws JacksonException {
         if (!_inObject) {
             _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
@@ -251,7 +250,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeFieldName(SerializableString sstr) throws IOException {
+    public final void writeFieldName(SerializableString sstr) throws JacksonException {
         if (!_inObject) {
             _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
@@ -285,38 +284,42 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeFieldId(long id) throws IOException {
+    public void writeFieldId(long id) throws JacksonException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
         writeFieldName(idStr);
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API: low-level I/O
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public final void flush() throws IOException
+    public final void flush() throws JacksonException
     {
         // can only flush if we do not need accumulation for length prefixes
-        if (_buffered == null) {
-            int start = _currStart;
-            int len = _currPtr - start;
-            if (len > 0) {
-                _currStart = 0;
-                _currPtr = 0;
-                _output.write(_currBuffer, start, len);
+        try {
+            if (_buffered == null) {
+                int start = _currStart;
+                int len = _currPtr - start;
+                if (len > 0) {
+                    _currStart = 0;
+                    _currPtr = 0;
+                    _output.write(_currBuffer, start, len);
+                }
             }
-        }
-        if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-            _output.flush();
+            if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                _output.flush();
+            }
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
     }
 
     @Override
-    public void close() throws IOException
+    public void close() throws JacksonException
     {
         super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
@@ -336,12 +339,16 @@ public class ProtobufGenerator extends GeneratorBase
             _complete();
         }
         if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
-                _output.close();
-            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
-                // If we can't close it, we should at least flush
-                _output.flush();
+            try {
+                if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
+                    _output.close();
+                } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                    // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
+                    // If we can't close it, we should at least flush
+                    _output.flush();
+                }
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
             }
         }
         // Internal buffer(s) generator has can now be released as well
@@ -349,13 +356,13 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API: structural output
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public final void writeStartArray() throws IOException
+    public final void writeStartArray() throws JacksonException
     {
         // First: arrays only legal as Message (~= Object) fields:
         if (!_inObject) {
@@ -384,13 +391,13 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeStartArray(Object currValue) throws IOException {
+    public final void writeStartArray(Object currValue) throws JacksonException {
         writeStartArray();
         _tokenWriteContext.setCurrentValue(currValue);
     }
 
     @Override
-    public final void writeEndArray() throws IOException
+    public final void writeEndArray() throws JacksonException
     {
         if (!_tokenWriteContext.inArray()) {
             _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
@@ -414,13 +421,13 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeStartObject(Object currValue) throws IOException {
+    public final void writeStartObject(Object currValue) throws JacksonException {
         writeStartObject();
         _tokenWriteContext.setCurrentValue(currValue);
     }
 
     @Override
-    public final void writeStartObject() throws IOException
+    public final void writeStartObject() throws JacksonException
     {
         if (_currField == null) {
             // root?
@@ -457,7 +464,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeEndObject() throws IOException
+    public final void writeEndObject() throws JacksonException
     {
         if (!_inObject) {
             _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
@@ -481,7 +488,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeArray(int[] array, int offset, int length) throws IOException
+    public void writeArray(int[] array, int offset, int length) throws JacksonException
     {
         _verifyArrayWrite(array);
         _verifyOffsets(array.length, offset, length);
@@ -501,7 +508,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeArray(long[] array, int offset, int length) throws IOException
+    public void writeArray(long[] array, int offset, int length) throws JacksonException
     {
         _verifyArrayWrite(array);
         _verifyOffsets(array.length, offset, length);
@@ -521,7 +528,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeArray(double[] array, int offset, int length) throws IOException
+    public void writeArray(double[] array, int offset, int length) throws JacksonException
     {
         _verifyArrayWrite(array);
         _verifyOffsets(array.length, offset, length);
@@ -540,7 +547,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
-    private void _verifyArrayWrite(Object array) throws IOException
+    private void _verifyArrayWrite(Object array) throws JacksonException
     {
         if (array == null) {
             throw new IllegalArgumentException("null array");
@@ -557,7 +564,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
-    private void _writePackedArray(int[] array, int i, int end) throws IOException
+    private void _writePackedArray(int[] array, int i, int end) throws JacksonException
     {
         _startBuffering(_currField.typedTag);
         final int type = _currField.wireType;
@@ -586,7 +593,7 @@ public class ProtobufGenerator extends GeneratorBase
         _finishBuffering();
     }
 
-    private void _writePackedArray(long[] array, int i, int end) throws IOException
+    private void _writePackedArray(long[] array, int i, int end) throws JacksonException
     {
         _startBuffering(_currField.typedTag);
         final int type = _currField.wireType;
@@ -614,7 +621,7 @@ public class ProtobufGenerator extends GeneratorBase
         _finishBuffering();
     }
 
-    private void _writePackedArray(double[] array, int i, int end) throws IOException
+    private void _writePackedArray(double[] array, int i, int end) throws JacksonException
     {
         _startBuffering(_currField.typedTag);
         final int type = _currField.wireType;
@@ -634,7 +641,7 @@ public class ProtobufGenerator extends GeneratorBase
         _finishBuffering();
     }
 
-    private void _writeNonPackedArray(int[] array, int i, int end) throws IOException
+    private void _writeNonPackedArray(int[] array, int i, int end) throws JacksonException
     {
         final int type = _currField.wireType;
 
@@ -660,7 +667,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
-    private void _writeNonPackedArray(long[] array, int i, int end) throws IOException
+    private void _writeNonPackedArray(long[] array, int i, int end) throws JacksonException
     {
         final int type = _currField.wireType;
 
@@ -686,7 +693,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
-    private void _writeNonPackedArray(double[] array, int i, int end) throws IOException
+    private void _writeNonPackedArray(double[] array, int i, int end) throws JacksonException
     {
         final int type = _currField.wireType;
 
@@ -705,13 +712,13 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, textual
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public void writeString(String text) throws IOException
+    public void writeString(String text) throws JacksonException
     {
         if (text == null) {
             writeNull();
@@ -810,7 +817,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeString(char[] text, int offset, int clen) throws IOException
+    public void writeString(char[] text, int offset, int clen) throws JacksonException
     {
         if (text == null) {
             writeNull();
@@ -897,7 +904,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeString(SerializableString sstr) throws IOException
+    public final void writeString(SerializableString sstr) throws JacksonException
     {
         _verifyValueWrite();
         if (_currField.wireType == WireType.LENGTH_PREFIXED) {
@@ -915,7 +922,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeRawUTF8String(byte[] text, int offset, int len) throws IOException
+    public void writeRawUTF8String(byte[] text, int offset, int len) throws JacksonException
     {
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _reportWrongWireType("string");
@@ -926,7 +933,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeUTF8String(byte[] text, int offset, int len) throws IOException
+    public final void writeUTF8String(byte[] text, int offset, int len) throws JacksonException
     {
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _reportWrongWireType("string");
@@ -936,7 +943,7 @@ public class ProtobufGenerator extends GeneratorBase
         _writeLengthPrefixed(text, offset, len);
     }
 
-    protected void _writeEmptyString() throws IOException
+    protected void _writeEmptyString() throws JacksonException
     {
         _verifyValueWrite();
         _ensureRoom(6); // up to 5 bytes for tag + 1 for length
@@ -944,7 +951,7 @@ public class ProtobufGenerator extends GeneratorBase
         _currBuffer[_currPtr++] = 0; // length
     }
 
-    protected void _writeEnum(String str) throws IOException
+    protected void _writeEnum(String str) throws JacksonException
     {
         if (_currField.type != FieldType.ENUM) {
             _reportWrongWireType("string");
@@ -967,7 +974,7 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr = ptr;
     }
 
-    protected void _writeEnum(int index) throws IOException
+    protected void _writeEnum(int index) throws JacksonException
     {
         // basically, _writeVInt, but very likely to be very short; but if not:
         final int tag = _currField.typedTag;
@@ -982,61 +989,61 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr = ptr;
     }
 
-    protected void _reportEnumError(Object enumValue) throws IOException
+    protected void _reportEnumError(Object enumValue) throws JacksonException
     {
         _reportErrorF("No Enum '%s' found for property '%s'; valid values = %s"
                 +_currField.getEnumValues(), _currField.name, enumValue);
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, unprocessed ("raw")
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public void writeRaw(String text) throws IOException {
+    public void writeRaw(String text) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(String text, int offset, int len) throws IOException {
+    public void writeRaw(String text, int offset, int len) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(char[] text, int offset, int len) throws IOException {
+    public void writeRaw(char[] text, int offset, int len) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(char c) throws IOException {
+    public void writeRaw(char c) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(String text) throws IOException {
+    public void writeRawValue(String text) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(String text, int offset, int len) throws IOException {
+    public void writeRawValue(String text, int offset, int len) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(char[] text, int offset, int len) throws IOException {
+    public void writeRawValue(char[] text, int offset, int len) throws JacksonException {
         _reportUnsupportedOperation();
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, base64-encoded binary
-    /**********************************************************
+    /**********************************************************************
      */
     
     @Override
-    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws IOException
+    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
     {
         if (data == null) {
             writeNull();
@@ -1056,13 +1063,13 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, primitive
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public void writeBoolean(boolean state) throws IOException
+    public void writeBoolean(boolean state) throws JacksonException
     {
         _verifyValueWrite();
 
@@ -1091,7 +1098,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNull() throws IOException
+    public void writeNull() throws JacksonException
     {
         _verifyValueWrite();
         if (_currField == UNKNOWN_FIELD) {
@@ -1111,12 +1118,12 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(short v) throws IOException {
+    public void writeNumber(short v) throws JacksonException {
         writeNumber((int) v);
     }
 
     @Override
-    public void writeNumber(int v) throws IOException
+    public void writeNumber(int v) throws JacksonException
     {
         _verifyValueWrite();
 
@@ -1141,7 +1148,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(long v) throws IOException
+    public void writeNumber(long v) throws JacksonException
     {
         _verifyValueWrite();
         final int type = _currField.wireType;
@@ -1166,7 +1173,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(BigInteger v) throws IOException
+    public void writeNumber(BigInteger v) throws JacksonException
     {
         if (v == null) {
             writeNull();
@@ -1180,7 +1187,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(double d) throws IOException
+    public void writeNumber(double d) throws JacksonException
     {
         _verifyValueWrite();
         final int type = _currField.wireType;
@@ -1203,7 +1210,7 @@ public class ProtobufGenerator extends GeneratorBase
     }    
 
     @Override
-    public void writeNumber(float f) throws IOException
+    public void writeNumber(float f) throws JacksonException
     {
         _verifyValueWrite();
         final int type = _currField.wireType;
@@ -1224,7 +1231,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(BigDecimal v) throws IOException
+    public void writeNumber(BigDecimal v) throws JacksonException
     {
         if (v == null) {
             writeNull();
@@ -1238,24 +1245,24 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(String encodedValue) throws IOException {
+    public void writeNumber(String encodedValue) throws JacksonException {
         throw new UnsupportedOperationException("Can not write 'untyped' numbers");
     }
 
-    protected final void _verifyValueWrite() throws IOException {
+    protected final void _verifyValueWrite() throws JacksonException {
         if (_currField == null) {
             _reportError("Can not write value without indicating field first (in message of type "+_currMessage.getName()+")");
         }
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Implementations for methods from base class
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    protected void _verifyValueWrite(String typeMsg) throws IOException {
+    protected void _verifyValueWrite(String typeMsg) throws JacksonException {
         _throwInternal();
     }
 
@@ -1274,28 +1281,28 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal text/binary writes
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final static Charset UTF8 = Charset.forName("UTF-8");
     
-    protected void _encodeLongerString(char[] text, int offset, int clen) throws IOException
+    protected void _encodeLongerString(char[] text, int offset, int clen) throws JacksonException
     {
         _verifyValueWrite();
         byte[] b = new String(text, offset, clen).getBytes(UTF8);
         _writeLengthPrefixed(b, 0, b.length);
     }
 
-    protected void _encodeLongerString(String text) throws IOException
+    protected void _encodeLongerString(String text) throws JacksonException
     {
         byte[] b = text.getBytes(UTF8);
         _writeLengthPrefixed(b, 0, b.length);
     }
     
     
-    protected void _writeLengthPrefixed(byte[] data, int offset, int len) throws IOException
+    protected void _writeLengthPrefixed(byte[] data, int offset, int len) throws JacksonException
     {
         // 15-Jun-2017, tatu: [dataformats-binary#94]: need to ensure there is actually
         //    enough space for simple add; if not, need more checking
@@ -1323,7 +1330,11 @@ public class ProtobufGenerator extends GeneratorBase
             // without accumulation, we know buffer is free for reuse
             if (acc == null) {
                 if (toFlush > 0) {
-                    _output.write(_currBuffer, start, toFlush);
+                    try {
+                        _output.write(_currBuffer, start, toFlush);
+                    } catch (IOException e) {
+                        throw _wrapIOFailure(e);
+                    }
                 }
                 ptr = 0;
                 continue;
@@ -1338,12 +1349,12 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal scalar value writes
-    /**********************************************************
+    /**********************************************************************
      */
 
-    private final void _writeVInt(int v) throws IOException
+    private final void _writeVInt(int v) throws JacksonException
     {
         // Max tag length 5 bytes, then at most 5 bytes
         _ensureRoom(10);
@@ -1384,7 +1395,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     // @since 2.8
-    private final void _writeVIntNoTag(int v) throws IOException
+    private final void _writeVIntNoTag(int v) throws JacksonException
     {
         // Max at most 5 bytes
         _ensureRoom(5);
@@ -1425,7 +1436,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
     
     // off-lined version for 5-byte VInts
-    private final int _writeVIntMax(int v, int ptr) throws IOException
+    private final int _writeVIntMax(int v, int ptr) throws JacksonException
     {
         final byte[] buf = _currBuffer;
         buf[ptr++] = (byte) ((v & 0x7F) + 0x80);
@@ -1440,7 +1451,7 @@ public class ProtobufGenerator extends GeneratorBase
         return ptr;
     }
 
-    private final void _writeVLong(long v) throws IOException
+    private final void _writeVLong(long v) throws JacksonException
     {
         // Max tag length 5 bytes, then at most 10 bytes
         _ensureRoom(16);
@@ -1498,7 +1509,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     // @since 2.8
-    private final void _writeVLongNoTag(long v) throws IOException
+    private final void _writeVLongNoTag(long v) throws JacksonException
     {
         // Max: 10 bytes
         _ensureRoom(10);
@@ -1556,7 +1567,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
     
     // off-lined version for 10-byte VLongs
-    private final int _writeVLongMax(long v, int ptr) throws IOException
+    private final int _writeVLongMax(long v, int ptr) throws JacksonException
     {
         final byte[] buf = _currBuffer;
         // first, LSB 28 bits
@@ -1587,7 +1598,7 @@ public class ProtobufGenerator extends GeneratorBase
         return ptr;
     }
 
-    private final void _writeInt32(int v) throws IOException
+    private final void _writeInt32(int v) throws JacksonException
     {
         _ensureRoom(9); // max tag 5 bytes
         int ptr = _writeTag(_currPtr);
@@ -1602,7 +1613,7 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr =  ptr;
     }
 
-    private final void _writeInt32NoTag(int v) throws IOException
+    private final void _writeInt32NoTag(int v) throws JacksonException
     {
         _ensureRoom(4);
         int ptr = _currPtr;
@@ -1617,7 +1628,7 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr =  ptr;
     }
 
-    private final void _writeInt64(long v64) throws IOException
+    private final void _writeInt64(long v64) throws JacksonException
     {
         _ensureRoom(13); // max tag 5 bytes
         int ptr = _writeTag(_currPtr);
@@ -1646,7 +1657,7 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr =  ptr;
     }
 
-    private final void _writeInt64NoTag(long v64) throws IOException
+    private final void _writeInt64NoTag(long v64) throws JacksonException
     {
         _ensureRoom(8);
         int ptr = _currPtr;
@@ -1676,9 +1687,9 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper methods, buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final int _writeTag(int ptr)
@@ -1704,7 +1715,7 @@ public class ProtobufGenerator extends GeneratorBase
      * Method called when buffering an entry that should be prefixed
      * with a type tag.
      */
-    private final void _startBuffering(int typedTag) throws IOException
+    private final void _startBuffering(int typedTag) throws JacksonException
     {
         // need to ensure room for tag id, length (10 bytes); might as well ask for bit more
         _ensureRoom(20);
@@ -1717,7 +1728,11 @@ public class ProtobufGenerator extends GeneratorBase
             int len = ptr - start;
             if (len > 0) {
                 ptr = start = 0;
-                _output.write(_currBuffer, start, len);
+                try {
+                    _output.write(_currBuffer, start, len);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
         }
         _buffered = new ByteAccumulator(_buffered, typedTag, _currBuffer, ptr, _currStart);
@@ -1730,7 +1745,7 @@ public class ProtobufGenerator extends GeneratorBase
      * Method called when buffering an entry that should not be prefixed
      * with a type tag.
      */
-    private final void _startBuffering() throws IOException
+    private final void _startBuffering() throws JacksonException
     {
         // since no tag written, could skimp on space needed
         _ensureRoom(16);
@@ -1763,14 +1778,18 @@ public class ProtobufGenerator extends GeneratorBase
      * when packed array is completed (`writeEndArray()`) or record is
      * completed (`writeEndObject()`).
      */
-    private final void _finishBuffering() throws IOException
+    private final void _finishBuffering() throws JacksonException
     {
         final int start = _currStart;
         final int newStart = _currPtr;        
         final int currLen = newStart - start;
 
         ByteAccumulator acc = _buffered;
-        acc = acc.finish(_output, _currBuffer, start, currLen);
+        try {
+            acc = acc.finish(_output, _currBuffer, start, currLen);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
         _buffered = acc;
         if (acc == null) {
             _currStart = 0;
@@ -1782,7 +1801,7 @@ public class ProtobufGenerator extends GeneratorBase
 //      _currPtr = newStart;
     }
 
-    protected final void _ensureRoom(int needed) throws IOException
+    protected final void _ensureRoom(int needed) throws JacksonException
     {
         // common case: we got it already
         if ((_currPtr + needed) > _currBuffer.length) {
@@ -1790,7 +1809,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
-    protected final void _ensureMore() throws IOException
+    protected final void _ensureMore() throws JacksonException
     {
         // if not, either simple (flush), or 
         final int start = _currStart;
@@ -1803,7 +1822,11 @@ public class ProtobufGenerator extends GeneratorBase
         if (acc == null) {
             // without accumulation, we know buffer is free for reuse
             if (currLen > 0) {
-                _output.write(_currBuffer, start, currLen);
+                try {
+                    _output.write(_currBuffer, start, currLen);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
             return;
         }
@@ -1815,7 +1838,7 @@ public class ProtobufGenerator extends GeneratorBase
         _currBuffer = ProtobufUtil.allocSecondary(_currBuffer);
     }
 
-    protected void _complete() throws IOException
+    protected void _complete() throws JacksonException
     {
         _complete = true;
         final int start = _currStart;
@@ -1823,28 +1846,32 @@ public class ProtobufGenerator extends GeneratorBase
         _currPtr = start;
 
         ByteAccumulator acc = _buffered;
-        if (acc == null) {
-            if (currLen > 0) {
-                _output.write(_currBuffer, start, currLen);
-                _currStart = 0;
-                _currPtr = 0;
+        try {
+            if (acc == null) {
+                if (currLen > 0) {
+                    _output.write(_currBuffer, start, currLen);
+                    _currStart = 0;
+                    _currPtr = 0;
+                }
+            } else {
+                acc = acc.finish(_output, _currBuffer, start, currLen);
+                while (acc != null) {
+                    acc = acc.finish(_output, _currBuffer);
+                }
+                _buffered = null;
             }
-        } else {
-            acc = acc.finish(_output, _currBuffer, start, currLen);
-            while (acc != null) {
-                acc = acc.finish(_output, _currBuffer);
-            }
-            _buffered = null;
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
         }
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper methods, error reporting
-    /**********************************************************
+    /**********************************************************************
      */
 
-    protected void _reportWrongWireType(String typeStr) throws IOException {
+    protected void _reportWrongWireType(String typeStr) throws JacksonException {
         if (_currField == UNKNOWN_FIELD) {
             return;
         }

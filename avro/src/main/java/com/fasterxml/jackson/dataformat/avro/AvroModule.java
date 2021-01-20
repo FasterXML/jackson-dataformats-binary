@@ -1,10 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.avro.Schema;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;
 
@@ -121,7 +121,8 @@ public class AvroModule extends Module
 
         @Override
         public void serialize(Schema value, JsonGenerator gen, SerializerProvider prov)
-                throws IOException {
+            throws JacksonException
+        {
             // Let's simply write as String, for now
             gen.writeString(value.toString());
         }

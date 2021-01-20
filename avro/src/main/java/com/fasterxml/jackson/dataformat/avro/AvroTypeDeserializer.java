@@ -1,9 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -33,22 +34,22 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
     }
 
     @Override
-    public Object deserializeTypedFromObject(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Object deserializeTypedFromObject(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         return deserializeTypedFromAny(p, ctxt);
     }
 
     @Override
-    public Object deserializeTypedFromArray(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Object deserializeTypedFromArray(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         return deserializeTypedFromAny(p, ctxt);
     }
 
     @Override
-    public Object deserializeTypedFromScalar(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Object deserializeTypedFromScalar(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         return deserializeTypedFromAny(p, ctxt);
     }
 
     @Override
-    public Object deserializeTypedFromAny(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Object deserializeTypedFromAny(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         if (p.getTypeId() == null && getDefaultImpl() == null) {
             JsonDeserializer<Object> deser = _findDeserializer(ctxt, AvroSchemaHelper.getTypeId(_baseType));
             if (deser == null) {
@@ -62,7 +63,7 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
 
     @Override
     protected JavaType _handleUnknownTypeId(DeserializationContext ctxt, String typeId)
-        throws IOException
+        throws JacksonException
     {
         // 29-Jan-2018, tatu: No idea why this was added in 2.x.
         /*

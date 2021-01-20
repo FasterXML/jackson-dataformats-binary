@@ -1,13 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import java.io.IOException;
-
 import org.apache.avro.reflect.CustomEncoding;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
@@ -30,13 +28,15 @@ public class CustomEncodingSerializer<T> extends JsonSerializer<T> {
 
     @Override
     public void serialize(T t, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
-    throws IOException, JsonProcessingException {
+        throws JacksonException
+    {
         jsonGenerator.writeEmbeddedObject(new CustomEncodingDatum<>(encoding, t));
 
     }
 
     @Override
-    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type) throws JsonMappingException {
+    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type)
+    {
         if (visitor instanceof VisitorFormatWrapperImpl) {
             ((VisitorFormatWrapperImpl) visitor).expectAvroFormat(new AvroSchema(encoding.getSchema()));
         } else {
