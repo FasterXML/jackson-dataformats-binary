@@ -5,11 +5,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.SerializedString;
+
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
 public class POJOSimpleReadTest extends AvroTestBase
@@ -134,7 +135,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         try {
             p.nextToken();
             fail("Should not pass");
-        } catch (JsonParseException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "No AvroSchema set");
         }
         p.close();

@@ -763,7 +763,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
 
-    protected void _reportInvalidChar(int c) throws JsonParseException {
+    protected void _reportInvalidChar(int c) throws JacksonException {
         // Either invalid WS or illegal UTF-8 start char
         if (c < ' ') {
             _throwInvalidSpace(c);
@@ -771,15 +771,15 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _reportInvalidInitial(c);
     }
 
-    private void _reportInvalidInitial(int mask) throws JsonParseException {
+    private void _reportInvalidInitial(int mask) throws JacksonException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
-    private void _reportInvalidOther(int mask) throws JsonParseException {
+    private void _reportInvalidOther(int mask) throws JacksonException {
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 
-    private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
+    private void _reportInvalidOther(int mask, int ptr) throws JacksonException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }

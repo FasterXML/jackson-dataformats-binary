@@ -3,8 +3,9 @@ package com.fasterxml.jackson.dataformat.protobuf;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.StreamWriteFeature;
+
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -39,7 +40,7 @@ public class WriteErrorsTest extends ProtobufTestBase
             /*byte[] bytes =*/ w
                 .without(StreamWriteFeature.IGNORE_UNKNOWN)
                 .writeValueAsBytes(new Point3D(1, 2, 3));
-        } catch (JsonProcessingException e) {
+        } catch (DatabindException e) {
             verifyException(e, "Unrecognized field 'z'");
         }
 

@@ -17,8 +17,8 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -58,11 +58,11 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
         return null;
     }
 
-    private IonParser ionParser(JsonParser p) throws JsonParseException {
+    private IonParser ionParser(JsonParser p) throws StreamReadException {
         if (p instanceof IonParser) {
             return (IonParser) p;
         }
-        throw new JsonParseException(p,
+        throw new StreamReadException(p,
                 "Can only use IonAnnotationTypeDeserializer with IonParser");
     }
 

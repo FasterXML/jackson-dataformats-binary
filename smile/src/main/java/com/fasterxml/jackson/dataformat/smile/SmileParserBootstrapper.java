@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.exc.WrappedIOException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
@@ -132,7 +133,7 @@ public class SmileParserBootstrapper
                 msg = "Input does not start with Smile format header (first byte = 0x"
                 +Integer.toHexString(firstByte & 0xFF)+") and parser has REQUIRE_HEADER enabled: can not parse";
             }
-            throw new JsonParseException(p, msg);
+            throw new StreamReadException(p, msg);
         }
         return p;
     }

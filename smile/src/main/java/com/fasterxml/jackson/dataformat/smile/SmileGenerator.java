@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 
@@ -1771,7 +1772,7 @@ public class SmileGenerator
                 writeNumber(new BigInteger(enc));
             }
         } catch (NumberFormatException e) {
-            throw new JsonGenerationException("Invalid String representation for Number ('"+enc
+            throw new StreamWriteException("Invalid String representation for Number ('"+enc
                     +"'); can not write using Smile format", this);
         }
     }
@@ -1781,7 +1782,7 @@ public class SmileGenerator
         try {
             writeNumber(new BigDecimal(enc));
         } catch (NumberFormatException e) {
-            throw new JsonGenerationException("Invalid String representation for Number ('"+enc
+            throw new StreamWriteException("Invalid String representation for Number ('"+enc
                     +"'); can not write using Smile format", this);
         }
     }

@@ -9,7 +9,8 @@ import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
 
 import com.fasterxml.jackson.core.FormatSchema;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReaderFactory;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroStructureReader;
@@ -58,13 +59,11 @@ public class AvroSchema implements FormatSchema
      *    reader wants to see the data; specifies part of translation needed along with this
      *    schema (which would be "Writer Schema" in Avro terms).
      *
-     * @throws JsonProcessingException If given reader schema is incompatible with (writer-)
+     * @throws DatabindException If given reader schema is incompatible with (writer-)
      *     schema this instance was constructed with, 
-     * 
-     * @since 2.9
      */
     public AvroSchema withReaderSchema(AvroSchema readerSchema)
-        throws JsonProcessingException
+        throws DatabindException
     {
         Schema w = _writerSchema;
         Schema r = readerSchema.getAvroSchema();
@@ -126,11 +125,9 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
      * field) that would be caught at construction may be surfaced later when using
      * schema. This is, however, sometimes necessary to work around potential BUT NOT ACTUAL
      * problems.
-     *
-     * @since 2.9
      */
     public AvroSchema withUnsafeReaderSchema(AvroSchema readerSchema)
-        throws JsonProcessingException
+        throws DatabindException
     {
         Schema w = _writerSchema;
         Schema r = readerSchema.getAvroSchema();

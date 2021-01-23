@@ -1879,7 +1879,7 @@ public class ProtobufGenerator extends GeneratorBase
                 _currField.name, _currField.type);
     }
 
-    private void _reportErrorF(String format, Object... args) throws JsonGenerationException {
+    private void _reportErrorF(String format, Object... args) throws JacksonException {
         _reportError(String.format(format, args));
     }
 

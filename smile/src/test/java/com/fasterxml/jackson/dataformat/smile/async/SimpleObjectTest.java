@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 public class SimpleObjectTest extends AsyncTestBase
 {
@@ -82,13 +82,13 @@ public class SimpleObjectTest extends AsyncTestBase
         try {
             r.getDoubleValue();
             fail("Should not pass");
-        } catch (JsonProcessingException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Current token (VALUE_FALSE) not numeric");
         }
         try {
             r.parser().getBinaryValue();
             fail("Should not pass");
-        } catch (JsonProcessingException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Current token (VALUE_FALSE) not");
             verifyException(e, "can not access as binary");
         }

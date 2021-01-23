@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
@@ -2951,23 +2952,23 @@ public class SmileParser extends SmileParserBase
     /**********************************************************************
      */
 
-    protected void _reportInvalidSharedName(int index) throws JacksonException
+    protected void _reportInvalidSharedName(int index) throws StreamReadException
     {
         if (_seenNames == null) {
             _reportError("Encountered shared name reference, even though document header explicitly declared no shared name references are included");
         }
-       _reportError("Invalid shared name reference "+index+"; only got "+_seenNameCount+" names in buffer (invalid content)");
+        throw _constructReadException("Invalid shared name reference "+index+"; only got "+_seenNameCount+" names in buffer (invalid content)");
     }
 
-    protected void _reportInvalidSharedStringValue(int index) throws JacksonException
+    protected void _reportInvalidSharedStringValue(int index) throws StreamReadException
     {
         if (_seenStringValues == null) {
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
-       _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
+        throw _constructReadException("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
     }
     
-    protected void _reportInvalidChar(int c) throws JsonParseException
+    protected void _reportInvalidChar(int c) throws StreamReadException
     {
         // Either invalid WS or illegal UTF-8 start char
         if (c < ' ') {
@@ -2976,23 +2977,23 @@ public class SmileParser extends SmileParserBase
         _reportInvalidInitial(c);
     }
 	
-    protected void _reportInvalidInitial(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
+    protected void _reportInvalidInitial(int mask) throws StreamReadException {
+        throw _constructReadException("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
-    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
+    protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }
 
-    protected void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
+    protected void _reportInvalidOther(int mask) throws StreamReadException {
+        throw _constructReadException("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, other
-    /**********************************************************
+    /**********************************************************************
      */
 
     private final JsonToken _eofAsNextToken() throws JacksonException {

@@ -1,12 +1,13 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class ParserDupHandlingTest extends BaseTestForSmile
 {
-    public void testSimpleDups() throws Exception
+    public void testSimpleDups()
     {
         for (String json : new String[] {
                 "{ \"a\":1, \"a\":2 }",
@@ -24,7 +25,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         }
     }
 
-    private void _testSimpleDupsOk(final byte[] doc, SmileFactory f) throws Exception
+    private void _testSimpleDupsOk(final byte[] doc, SmileFactory f)
     {
         JsonParser jp = f.createParser(ObjectReadContext.empty(), doc);
         JsonToken t = jp.nextToken();
@@ -34,7 +35,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         jp.close();
     }
 
-    private void _testSimpleDupsFail(final byte[] doc, SmileFactory f, String name) throws Exception
+    private void _testSimpleDupsFail(final byte[] doc, SmileFactory f, String name)
     {
         JsonParser p = f.createParser(ObjectReadContext.empty(), doc);
         JsonToken t = p.nextToken();
@@ -43,7 +44,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         try {
             while (p.nextToken() != null) { }
             fail("Should have caught dups in document: "+doc);
-        } catch (JsonParseException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "duplicate field '"+name+"'");
         }
         p.close();

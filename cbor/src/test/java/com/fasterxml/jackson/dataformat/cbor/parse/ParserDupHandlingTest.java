@@ -1,12 +1,13 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class ParserDupHandlingTest extends CBORTestBase
 {
-    public void testSimpleDups() throws Exception
+    public void testSimpleDups()
     {
         for (String json : new String[] {
                 "{ \"a\":1, \"a\":2 }",
@@ -23,7 +24,7 @@ public class ParserDupHandlingTest extends CBORTestBase
         }
     }
 
-    private void _testSimpleDupsOk(final byte[] doc, ObjectReader r) throws Exception
+    private void _testSimpleDupsOk(final byte[] doc, ObjectReader r)
     {
         JsonParser p = r.createParser(doc);
         JsonToken t = p.nextToken();
@@ -33,7 +34,7 @@ public class ParserDupHandlingTest extends CBORTestBase
         p.close();
     }
 
-    private void _testSimpleDupsFail(final byte[] doc, ObjectReader r, String name) throws Exception
+    private void _testSimpleDupsFail(final byte[] doc, ObjectReader r, String name)
     {
         JsonParser p = r.createParser(doc);
         JsonToken t = p.nextToken();
@@ -42,7 +43,7 @@ public class ParserDupHandlingTest extends CBORTestBase
         try {
             while (p.nextToken() != null) { }
             fail("Should have caught dups in document: "+doc);
-        } catch (JsonParseException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "duplicate field '"+name+"'");
         }
         p.close();

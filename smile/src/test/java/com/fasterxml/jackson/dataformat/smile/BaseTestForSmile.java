@@ -127,12 +127,12 @@ public abstract class BaseTestForSmile
                 .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
     }
     
-    protected byte[] _smileDoc(String json) throws IOException
+    protected byte[] _smileDoc(String json)
     {
         return _smileDoc(json, true);
     }
 
-    protected byte[] _smileDoc(ObjectMapper mapper, String json, boolean writeHeader) throws IOException
+    protected byte[] _smileDoc(ObjectMapper mapper, String json, boolean writeHeader)
     {
         ObjectWriter w = mapper.writer();
         if (writeHeader) {
@@ -144,7 +144,6 @@ public abstract class BaseTestForSmile
     }
 
     protected byte[] _smileDoc(ObjectWriter w, String json)
-        throws IOException
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -155,7 +154,7 @@ public abstract class BaseTestForSmile
         }
     }
     
-    protected byte[] _smileDoc(String json, boolean writeHeader) throws IOException
+    protected byte[] _smileDoc(String json, boolean writeHeader)
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -166,7 +165,7 @@ public abstract class BaseTestForSmile
         }
     }
 
-    private void _copy(JsonParser p, JsonGenerator g) throws IOException
+    private void _copy(JsonParser p, JsonGenerator g)
     {
         while (p.nextToken() != null) {
         	g.copyCurrentEvent(p);
@@ -174,7 +173,6 @@ public abstract class BaseTestForSmile
     }
 
     protected SmileGenerator _smileGenerator(OutputStream result, boolean addHeader)
-        throws IOException
     {
         return  (SmileGenerator) _smileWriter(addHeader).createGenerator(result);
     }

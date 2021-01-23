@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 
 public class GeneratorDupHandlingTest extends CBORTestBase
 {
@@ -36,7 +37,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         try {
             _writeSimple0(g1, "a");
             fail("Should have gotten exception");
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "duplicate field 'a'");
         }
 
@@ -50,7 +51,7 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         try {
             _writeSimple1(g2, "x");
             fail("Should have gotten exception");
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "duplicate field 'x'");
         }
     }

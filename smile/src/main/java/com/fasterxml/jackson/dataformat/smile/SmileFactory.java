@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.BinaryNameMatcher;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
@@ -206,6 +207,7 @@ public class SmileFactory
     /**********************************************************************
      */
 
+    @SuppressWarnings("unchecked")
     @Override
     public NonBlockingByteArrayParser createNonBlockingByteArrayParser(ObjectReadContext readCtxt)
     {
@@ -278,13 +280,13 @@ public class SmileFactory
             gen.writeHeader();
         } else {
             if (SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
-                throw new JsonGenerationException(
+                throw new StreamWriteException(
                         "Inconsistent settings: WRITE_HEADER disabled, but CHECK_SHARED_STRING_VALUES enabled; can not construct generator"
                         +" due to possible data loss (either enable WRITE_HEADER, or disable CHECK_SHARED_STRING_VALUES to resolve)",
                         gen);
             }
             if (!SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT.enabledIn(smileFeatures)) {
-                throw new JsonGenerationException(
+                throw new StreamWriteException(
         			"Inconsistent settings: WRITE_HEADER disabled, but ENCODE_BINARY_AS_7BIT disabled; can not construct generator"
         			+" due to possible data loss (either enable WRITE_HEADER, or ENCODE_BINARY_AS_7BIT to resolve)",
         			gen);

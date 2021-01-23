@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 /**
@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.sym.FieldNameMatcher;
  * <li>Parser has been closed (explicitly or implicitly)
  *  </li>
  *</ol>
- * In former case, attempts to read will result in a {@link JsonParseException};
+ * In former case, attempts to read will result in a {@link StreamReadException};
  * in latter case, results will simply indicate unavailability of content
  * (return `null` in most cases)
  */
@@ -65,9 +65,9 @@ public class MissingReader extends AvroReadContext
         _checkSchemaSet();
     }
 
-    protected void _checkSchemaSet() throws IOException {
+    protected void _checkSchemaSet() {
         if (!_schemaSet) {
-            throw new JsonParseException(null, "No AvroSchema set, can not parse");
+            throw new StreamReadException(null, "No AvroSchema set, can not parse");
         }
     }
 }

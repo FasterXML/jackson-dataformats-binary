@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
@@ -2250,7 +2251,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    protected void _handleEOF() throws JsonParseException {
+    protected void _handleEOF() throws StreamReadException {
         if (!_parsingContext.inRoot()) {
             String marker = _parsingContext.inArray() ? "Array" : "Object";
             _reportInvalidEOF(String.format(
@@ -2617,43 +2618,43 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************
      */
 
-    private void _reportErrorF(String format, Object... args) throws JsonParseException {
-        _reportError(String.format(format, args));
+    private void _reportErrorF(String format, Object... args) throws StreamReadException {
+        throw _constructReadException(String.format(format, args));
     }
 
-    private void _reportIncompatibleType(ProtobufField field, int wireType) throws JsonParseException
+    private void _reportIncompatibleType(ProtobufField field, int wireType) throws StreamReadException
     {
-        _reportError(String.format
+        throw _constructReadException(String.format
                 ("Incompatible wire type (0x%x) for field '%s': not valid for field of type %s (expected 0x%x)",
                         wireType, field.name, field.type, field.type.getWireType()));
     }
 
-    private void _reportInvalidLength(int len) throws JsonParseException {
-        _reportError("Invalid length (%d): must be positive number", len);
+    private void _reportInvalidLength(int len) throws StreamReadException {
+        throw _constructReadException("Invalid length (%d): must be positive number", len);
     }
 
-    private void _reportTooLongVInt(int fifth) throws JsonParseException {
-        _reportError("Too long tag VInt: fifth byte 0x%x", fifth);
+    private void _reportTooLongVInt(int fifth) throws StreamReadException {
+        throw _constructReadException("Too long tag VInt: fifth byte 0x%x", fifth);
     }
 
-    private void _reportTooLongVLong(int fifth) throws JsonParseException {
-        _reportError("Too long tag VLong: tenth byte 0x%x", fifth);
+    private void _reportTooLongVLong(int fifth) throws StreamReadException {
+        throw _constructReadException("Too long tag VLong: tenth byte 0x%x", fifth);
     }
 
-    private void _reportInvalidInitial(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 start byte 0x%x", mask);
+    private void _reportInvalidInitial(int mask) throws StreamReadException {
+        throw _constructReadException("Invalid UTF-8 start byte 0x%x", mask);
     }
 
-    private void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x%x", mask);
+    private void _reportInvalidOther(int mask) throws StreamReadException {
+        throw _constructReadException("Invalid UTF-8 middle byte 0x%x", mask);
     }
 
-    private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
+    private void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }
 
-    private void _reportInvalidChar(int c) throws JsonParseException {
+    private void _reportInvalidChar(int c) throws StreamReadException {
         // Either invalid WS or illegal UTF-8 start char
         if (c < ' ') {
             _throwInvalidSpace(c);

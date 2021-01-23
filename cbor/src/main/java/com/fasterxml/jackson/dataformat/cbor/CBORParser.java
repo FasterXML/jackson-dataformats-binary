@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
@@ -3372,7 +3373,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    protected void _handleEOF() throws JsonParseException {
+    protected void _handleEOF() throws StreamReadException {
         if (!_parsingContext.inRoot()) {
             String marker = _parsingContext.inArray() ? "Array" : "Object";
             _reportInvalidEOF(String.format(
@@ -3399,7 +3400,7 @@ public class CBORParser extends ParserBase
         return (_currToken = null);
     }
 
-    protected void _invalidToken(int ch) throws JsonParseException {
+    protected void _invalidToken(int ch) throws StreamReadException {
         ch &= 0xFF;
         if (ch == 0xFF) {
             throw _constructReadException("Mismatched BREAK byte (0xFF): encountered where value expected");
@@ -3407,7 +3408,7 @@ public class CBORParser extends ParserBase
         throw _constructReadException("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
     }
 
-    protected void _reportUnexpectedBreak() throws JacksonException {
+    protected void _reportUnexpectedBreak() throws StreamReadException {
         if (_parsingContext.inRoot()) {
             throw _constructReadException("Unexpected Break (0xFF) token in Root context");
         }
@@ -3416,7 +3417,7 @@ public class CBORParser extends ParserBase
                 +(_parsingContext.inObject() ? "Object" : "Array" ));
     }
 
-    protected void _reportInvalidChar(int c) throws JsonParseException {
+    protected void _reportInvalidChar(int c) throws StreamReadException {
         // Either invalid WS or illegal UTF-8 start char
         if (c < ' ') {
             _throwInvalidSpace(c);
@@ -3424,20 +3425,20 @@ public class CBORParser extends ParserBase
         _reportInvalidInitial(c);
     }
 
-    protected void _reportInvalidInitial(int mask) throws JsonParseException {
+    protected void _reportInvalidInitial(int mask) throws StreamReadException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
-    protected void _reportInvalidOther(int mask) throws JsonParseException {
+    protected void _reportInvalidOther(int mask) throws StreamReadException {
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
 
-    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
+    protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }
 
-    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws JacksonException
+    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws StreamReadException
     {
         _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
                 expLen, actLen), _currToken);

@@ -21,6 +21,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
@@ -571,7 +572,7 @@ public class IonParser
      * Method called when an EOF is encountered between tokens.
      */
     @Override
-    protected void _handleEOF() throws JsonParseException
+    protected void _handleEOF() throws StreamReadException
     {
         if (!_parsingContext.inRoot()) {
             _reportError(": expected close marker for "+_parsingContext.typeDesc()+" (from "+_parsingContext.getStartLocation(_ioContext.getSourceReference())+")");

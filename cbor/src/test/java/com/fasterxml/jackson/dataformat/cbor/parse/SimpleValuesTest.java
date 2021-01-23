@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
@@ -39,7 +39,8 @@ public class SimpleValuesTest extends CBORTestBase
         }
     }
 
-    public void testInvalidByteLengthMinimalValues() throws Exception {
+    public void testInvalidByteLengthMinimalValues()
+    {
         // Values 0..31 are invalid for variant that takes 2 bytes...
         for (int v = 0; v <= 31; ++v) {
             byte[] doc = { (byte) (CBORConstants.PREFIX_TYPE_MISC + 24), (byte) v };
@@ -47,7 +48,7 @@ public class SimpleValuesTest extends CBORTestBase
                 try {
                     p.nextToken();
                     fail("Should not pass");
-                } catch (JsonParseException e) {
+                } catch (StreamReadException e) {
                     verifyException(e, "Invalid second byte for simple value:");
                     verifyException(e, "0x"+Integer.toHexString(v));
                 }

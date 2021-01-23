@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 
 /**
@@ -68,7 +68,7 @@ final class UnionReader extends AvroStructureReader
 
     private final int _decodeIndex(int index) throws IOException {
         if (index < 0 || index >= _memberReaders.length) {
-            throw new JsonParseException(_parser, String.format
+            throw new StreamReadException(_parser, String.format
                     ("Invalid index (%s); union only has %d types", index, _memberReaders.length));
         }
         return index;

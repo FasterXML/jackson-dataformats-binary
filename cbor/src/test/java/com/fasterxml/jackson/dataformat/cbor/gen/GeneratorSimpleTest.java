@@ -3,12 +3,12 @@ package com.fasterxml.jackson.dataformat.cbor.gen;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.junit.Assert;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
@@ -179,7 +179,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
     }
 
-    public void testLongValues() throws Exception
+    public void testLongValues()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
@@ -198,7 +198,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0, b[3]);
     }
     
-    public void testFloatValues() throws Exception
+    public void testFloatValues()
     {
         // first, 32-bit float
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -234,7 +234,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
     // [dataformats-binary#139]: wrong encoding of BigDecimal
-    public void testBigDecimalValues() throws Exception
+    public void testBigDecimalValues()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
@@ -254,7 +254,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         Assert.assertArrayEquals(spec, b);
     }
     
-    public void testEmptyArray() throws Exception
+    public void testEmptyArray()
     {
         // First: empty array (2 bytes)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -266,7 +266,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                CBORConstants.BYTE_BREAK);
     }
 
-    public void testEmptyObject() throws Exception
+    public void testEmptyObject()
     {
         // First: empty array (2 bytes)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -278,7 +278,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                CBORConstants.BYTE_BREAK);
     }
     
-    public void testIntArray() throws Exception
+    public void testIntArray()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
@@ -313,7 +313,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         _verifyBytes(b, EXP);
     }
 
-    public void testTrivialObject() throws Exception
+    public void testTrivialObject()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
@@ -344,7 +344,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         _verifyBytes(b, EXP);
     }
 
-    public void testLongerText() throws Exception
+    public void testLongerText()
     {
         // First, something with 8-bit length
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -352,7 +352,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         final String SHORT_ASCII = generateLongAsciiString(240);
         gen.writeString(SHORT_ASCII);
         gen.close();
-        byte[] b = SHORT_ASCII.getBytes("UTF-8");
+        byte[] b = SHORT_ASCII.getBytes(StandardCharsets.UTF_8);
         int len = b.length;
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + 24), (byte) len, b);
@@ -363,7 +363,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         final String SHORT_UNICODE = generateUnicodeString(160);
         gen.writeString(SHORT_UNICODE);
         gen.close();
-        b = SHORT_UNICODE.getBytes("UTF-8");
+        b = SHORT_UNICODE.getBytes(StandardCharsets.UTF_8);
         len = b.length;
         // just a sanity check; will break if generation changes
         assertEquals(196, len);
@@ -376,7 +376,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         final String MEDIUM_UNICODE = generateUnicodeString(800);
         gen.writeString(MEDIUM_UNICODE);
         gen.close();
-        b = MEDIUM_UNICODE.getBytes("UTF-8");
+        b = MEDIUM_UNICODE.getBytes(StandardCharsets.UTF_8);
         len = b.length;
         // just a sanity check; will break if generation changes
         assertEquals(926, len);
@@ -386,7 +386,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 b);
     }
 
-    public void testInvalidWrites() throws Exception
+    public void testInvalidWrites()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
@@ -395,7 +395,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         try {
             gen.writeString("test");
             fail("Should NOT allow write of anything but FIELD_NAME or END_OBJECT at this point");
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "expecting field name");
         }
         gen.close();
@@ -408,13 +408,13 @@ public class GeneratorSimpleTest extends CBORTestBase
         try {
             gen.writeString("BAR");
             fail("Should NOT allow write of anything but FIELD_NAME or END_OBJECT at this point");
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "expecting field name");
         }
         gen.close();
     }
 
-    public void testCopyCurrentEventWithTag() throws Exception {
+    public void testCopyCurrentEventWithTag() {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
         sourceGen.writeNumber(BigDecimal.ONE);
@@ -440,7 +440,8 @@ public class GeneratorSimpleTest extends CBORTestBase
             targetBytes.toByteArray());
     }
 
-    public void testCopyCurrentStructureWithTaggedArray() throws Exception {
+    public void testCopyCurrentStructureWithTaggedArray()
+    {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
         sourceGen.writeNumber(BigDecimal.ONE);
@@ -466,7 +467,8 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
 
-    public void testCopyCurrentStructureWithTaggedBinary() throws Exception {
+    public void testCopyCurrentStructureWithTaggedBinary()
+    {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
         sourceGen.writeNumber(BigInteger.ZERO);

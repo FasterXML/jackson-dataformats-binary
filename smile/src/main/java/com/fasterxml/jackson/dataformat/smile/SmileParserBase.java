@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
@@ -699,7 +700,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * is no open non-root context.
      */
     @Override
-    protected void _handleEOF() throws JsonParseException {
+    protected void _handleEOF() throws StreamReadException {
         if (!_parsingContext.inRoot()) {
             String marker = _parsingContext.inArray() ? "Array" : "Object";
             _reportInvalidEOF(String.format(
@@ -710,7 +711,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
     }
 
-    protected void _reportMismatchedEndMarker(int actCh, char expCh) throws JsonParseException {
+    protected void _reportMismatchedEndMarker(int actCh, char expCh) throws StreamReadException {
         JsonReadContext ctxt = getParsingContext();
         _reportError(String.format(
                 "Unexpected close marker '%s': expected '%c' (for %s starting at %s)",
@@ -720,8 +721,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**
      * Helper method used to encapsulate logic of including (or not) of
      * "source reference" when constructing {@link JsonLocation} instances.
-     *
-     * @since 2.9
      */
     protected Object _getSourceReference() {
         if (isEnabled(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)) {

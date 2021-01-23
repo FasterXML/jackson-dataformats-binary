@@ -201,19 +201,15 @@ public abstract class AvroParser extends ParserBase
         return _rootSchema;
     }
 
-    protected void setSchema(AvroSchema schema)
+    protected void setSchema(AvroSchema schema) throws JacksonException
     {
         if (_rootSchema == schema) {
             return;
         }
-        try {
-            _initSchema((AvroSchema) schema);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException(e);
-        }
+        _initSchema((AvroSchema) schema);
     }
 
-    protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
+    protected abstract void _initSchema(AvroSchema schema) throws JacksonException;
 
     @Override
     public Object getTypeId() throws JacksonException {

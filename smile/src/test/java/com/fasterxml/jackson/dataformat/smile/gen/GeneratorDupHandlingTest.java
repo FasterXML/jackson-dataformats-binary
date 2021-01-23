@@ -3,12 +3,13 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class GeneratorDupHandlingTest extends BaseTestForSmile
 {
-    public void testSimpleDupsEagerlyBytes() throws Exception {
+    public void testSimpleDupsEagerlyBytes() {
         _testSimpleDups(false, new SmileFactory());
     }
 
@@ -16,7 +17,6 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
     
     @SuppressWarnings("resource")
     protected void _testSimpleDups(boolean lazySetting, TokenStreamFactory f)
-        throws Exception
     {
         // First: fine, when not checking
         if (!lazySetting) {
@@ -37,7 +37,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         try {
             _writeSimple0(g1, "a");
             fail("Should have gotten exception");
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "duplicate field 'a'");
         }
 
@@ -51,17 +51,17 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         try {
             _writeSimple1(g2, "x");
             fail("Should have gotten exception");
-        } catch (JsonGenerationException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "duplicate field 'x'");
         }
     }
 
-    protected JsonGenerator _generator(TokenStreamFactory f) throws IOException
+    protected JsonGenerator _generator(TokenStreamFactory f)
     {
         return f.createGenerator(ObjectWriteContext.empty(), new ByteArrayOutputStream());
     }
 
-    protected void _writeSimple0(JsonGenerator g, String name) throws IOException
+    protected void _writeSimple0(JsonGenerator g, String name)
     {
         g.writeStartObject();
         g.writeNumberField(name, 1);
@@ -70,7 +70,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         g.close();
     }
 
-    protected void _writeSimple1(JsonGenerator g, String name) throws IOException
+    protected void _writeSimple1(JsonGenerator g, String name)
     {
         g.writeStartArray();
         g.writeNumber(3);

@@ -14,9 +14,8 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
@@ -45,7 +44,7 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
         if (IonGenerator.class.isAssignableFrom(g.getClass())) {
             ((IonGenerator) g).writeSymbol(value.name());
         } else {
-            throw new JsonGenerationException("Can only use EnumAsIonSymbolSerializer with IonGenerator", g);
+            throw new StreamWriteException("Can only use EnumAsIonSymbolSerializer with IonGenerator", g);
         }
     }
 

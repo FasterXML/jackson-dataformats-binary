@@ -6,13 +6,11 @@ import java.lang.ref.SoftReference;
 
 import org.apache.avro.io.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JacksonException;
 
 /**
  * Simple helper class that contains extracted functionality for
  * simple encoder/decoder recycling.
- *
- * @since 2.8.7
  */
 public final class ApacheCodecRecycler
 {
@@ -99,7 +97,7 @@ public final class ApacheCodecRecycler
     /**********************************************************
      */
 
-    public static class BadSchemaException extends JsonProcessingException
+    public static class BadSchemaException extends JacksonException
     {
         private static final long serialVersionUID = 1L;
 

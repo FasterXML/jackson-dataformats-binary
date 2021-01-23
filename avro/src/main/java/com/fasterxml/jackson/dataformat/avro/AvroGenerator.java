@@ -11,6 +11,7 @@ import org.apache.avro.io.BinaryEncoder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
@@ -347,7 +348,7 @@ public class AvroGenerator extends GeneratorBase
             try {
                 _complete();
             } catch (Exception e) {
-                throw new JsonGenerationException("Failed to close AvroGenerator: ("
+                throw new StreamWriteException("Failed to close AvroGenerator: ("
                         +e.getClass().getName()+"): "+e.getMessage(), e, this);
             }
         }

@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.CharTypes;
 import com.fasterxml.jackson.core.json.DupDetector;
 
@@ -163,7 +164,7 @@ public final class CBORReadContext
     /**********************************************************
      */
 
-    public void setCurrentName(String name) throws JsonProcessingException
+    public void setCurrentName(String name) throws StreamReadException
     {
         _currentName = name;
         if (_dups != null) {
@@ -171,11 +172,11 @@ public final class CBORReadContext
         }
     }
 
-    private void _checkDup(DupDetector dd, String name) throws JsonProcessingException
+    private void _checkDup(DupDetector dd, String name) throws StreamReadException
     {
         if (dd.isDup(name)) {
             // 04-MAy-2016, tatu: Would be great to pass JsonParser, alas, not available so:
-            throw new JsonParseException(null,
+            throw new StreamReadException(null,
                     "Duplicate field '"+name+"'", dd.findLocation());
         }
     }

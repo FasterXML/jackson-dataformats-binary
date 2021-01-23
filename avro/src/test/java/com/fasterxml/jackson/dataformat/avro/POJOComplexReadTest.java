@@ -1,11 +1,9 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
@@ -22,7 +20,7 @@ public class POJOComplexReadTest extends AvroTestBase
 
     private final AvroSchema MEDIA_ITEM_SCHEMA;
 
-    public POJOComplexReadTest() throws JsonMappingException {
+    public POJOComplexReadTest() {
         MEDIA_ITEM_SCHEMA = NATIVE_MAPPER.schemaFor(MediaItem.class);
     }
 
@@ -32,14 +30,14 @@ public class POJOComplexReadTest extends AvroTestBase
     /**********************************************************
      */
 
-    public void testRoundtrip() throws Exception
+    public void testRoundtrip()
     {
         final byte[] doc = getStdItemBytes(NATIVE_MAPPER);
         _testRoundtrip(NATIVE_MAPPER, doc);
         _testRoundtrip(APACHE_MAPPER, doc);
     }
 
-    public void _testRoundtrip(ObjectMapper mapper, byte[] doc) throws Exception
+    public void _testRoundtrip(ObjectMapper mapper, byte[] doc)
     {
         _testRoundtrip(mapper, doc, false);
         _testRoundtrip(mapper, doc, true);
@@ -47,7 +45,7 @@ public class POJOComplexReadTest extends AvroTestBase
 
     @SuppressWarnings("resource")
     private void _testRoundtrip(ObjectMapper mapper,
-            byte[] avro, boolean smallReads) throws Exception
+            byte[] avro, boolean smallReads)
     {
         InputStream in = new ByteArrayInputStream(avro);
         if (smallReads) {
@@ -56,7 +54,11 @@ public class POJOComplexReadTest extends AvroTestBase
         MediaItem output = mapper.readerFor(MediaItem.class)
                 .with(MEDIA_ITEM_SCHEMA)
                 .readValue(in);
-        in.close();
+        try {
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         assertNotNull(output);
         assertNotNull(output.getContent());
         assertEquals("None", output.getContent().getCopyright());
@@ -71,7 +73,7 @@ public class POJOComplexReadTest extends AvroTestBase
     /**********************************************************
      */
 
-    protected final byte[] getStdItemBytes(ObjectMapper mapper) throws JsonProcessingException
+    protected final byte[] getStdItemBytes(ObjectMapper mapper)
     {
         MediaItem input = getStdItem();
         byte[] avro = mapper.writerFor(MediaItem.class)

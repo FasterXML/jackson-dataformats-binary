@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.core.json.DupDetector;
 
 /**
@@ -19,18 +20,18 @@ public final class CBORWriteContext extends TokenStreamContext
     protected DupDetector _dups;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Simple instance reuse slots; speed up things a bit (10-15%)
     /* for docs with lots of small arrays/objects
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected CBORWriteContext _childToRecycle;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Location/state information (minus source reference)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -53,9 +54,9 @@ public final class CBORWriteContext extends TokenStreamContext
     protected boolean _gotFieldId;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected CBORWriteContext(int type, CBORWriteContext parent, DupDetector dups,
@@ -94,9 +95,9 @@ public final class CBORWriteContext extends TokenStreamContext
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Factory methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     public static CBORWriteContext createRootContext(DupDetector dd) {
@@ -160,7 +161,7 @@ public final class CBORWriteContext extends TokenStreamContext
      *
      * @return Ok if name writing should proceed
      */
-    public boolean writeFieldName(String name) throws JsonProcessingException {
+    public boolean writeFieldName(String name) throws StreamWriteException {
         if ((_type != TYPE_OBJECT) || _gotFieldId) {
             return false;
         }
@@ -170,7 +171,7 @@ public final class CBORWriteContext extends TokenStreamContext
         return true;
     }
 
-    public boolean writeFieldId(long fieldId) throws JsonProcessingException {
+    public boolean writeFieldId(long fieldId) throws StreamWriteException {
         if ((_type != TYPE_OBJECT) || _gotFieldId) {
             return false;
         }
@@ -180,10 +181,10 @@ public final class CBORWriteContext extends TokenStreamContext
         return true;
     }
 
-    private final void _checkDup(DupDetector dd, String name) throws JsonProcessingException {
+    private final void _checkDup(DupDetector dd, String name) throws StreamWriteException {
         if (dd.isDup(name)) {
             Object src = dd.getSource();
-            throw new JsonGenerationException("Duplicate field '"+name+"'",
+            throw new StreamWriteException("Duplicate field '"+name+"'",
                     ((src instanceof JsonGenerator) ? ((JsonGenerator) src) : null));
         }
     }

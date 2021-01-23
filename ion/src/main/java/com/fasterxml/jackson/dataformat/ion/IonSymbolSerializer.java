@@ -14,14 +14,13 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-
 
 /**
  * Serializes members as IonSymbols.
@@ -46,7 +45,7 @@ public class IonSymbolSerializer extends StdScalarSerializer<String>
         if (IonGenerator.class.isAssignableFrom(g.getClass())) {
             ((IonGenerator) g).writeSymbol(value);
         } else {
-            throw new JsonGenerationException("Can only use IonSymbolSerializer with IonGenerator", g);
+            throw new StreamWriteException("Can only use IonSymbolSerializer with IonGenerator", g);
         }
     }
 

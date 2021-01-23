@@ -3,9 +3,8 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
-
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // Mostly for [dataformats-binary#186]: corrupt encoding indicating humongous payload
@@ -31,14 +30,14 @@ public class BrokenLongBinary186Test extends CBORTestBase
         _testCorruptLong(CBORParser.LONGEST_NON_CHUNKED_BINARY >> 1, 37);
     }
 
-    private void _testCorruptLong(int allegedLength, int actualIncluded) throws Exception
+    private void _testCorruptLong(int allegedLength, int actualIncluded)
     {
         JsonParser p = MAPPER.createParser(_createBrokenDoc(allegedLength, actualIncluded));
         assertEquals(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         try {
             p.getBinaryValue();
             fail("Should fail");
-        } catch (JsonProcessingException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Unexpected end-of-input for Binary value");
             verifyException(e, "expected "+allegedLength+" bytes, only found "+actualIncluded);
         }
@@ -62,13 +61,13 @@ public class BrokenLongBinary186Test extends CBORTestBase
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             p.readBinaryValue(bytes);
             fail("Should fail");
-        } catch (JsonProcessingException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Unexpected end-of-input for Binary value");
             verifyException(e, "expected "+allegedLength+" bytes, only found 72000");
         }
     }
 
-    private byte[] _createBrokenDoc(int allegedLength, int actualIncluded) throws Exception
+    private byte[] _createBrokenDoc(int allegedLength, int actualIncluded)
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 

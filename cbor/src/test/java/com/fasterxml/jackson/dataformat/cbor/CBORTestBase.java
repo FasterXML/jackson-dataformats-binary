@@ -56,15 +56,15 @@ public abstract class CBORTestBase
     /**********************************************************
      */
 
-    protected CBORParser cborParser(ByteArrayOutputStream bytes) throws IOException {
+    protected CBORParser cborParser(ByteArrayOutputStream bytes) {
         return cborParser(bytes.toByteArray());
     }
 
-    protected CBORParser cborParser(byte[] input) throws IOException {
+    protected CBORParser cborParser(byte[] input) {
         return (CBORParser) sharedMapper().createParser(input);
     }
 
-    protected CBORParser cborParser(InputStream in) throws IOException {
+    protected CBORParser cborParser(InputStream in) {
         return (CBORParser) sharedMapper().createParser(in);
     }
 
@@ -93,7 +93,6 @@ public abstract class CBORTestBase
     }
 
     protected CBORGenerator cborGenerator(OutputStream result)
-        throws IOException
     {
         return (CBORGenerator) CBORMapper.shared().createGenerator(result);
     }
@@ -104,13 +103,13 @@ public abstract class CBORTestBase
     /**********************************************************
      */
 
-    protected byte[] cborDoc(ObjectMapper cborMapper, String json) throws IOException {
+    protected byte[] cborDoc(ObjectMapper cborMapper, String json) {
         return cborDoc(cborMapper.writer(), json);
     }
 
     /*
     @Deprecated
-    protected byte[] cborDoc(TokenStreamFactory f, String json) throws IOException
+    protected byte[] cborDoc(TokenStreamFactory f, String json)
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -123,7 +122,6 @@ public abstract class CBORTestBase
     */
 
     protected byte[] cborDoc(ObjectWriter w, String json)
-        throws IOException
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -134,7 +132,7 @@ public abstract class CBORTestBase
         }
     }
     
-    protected byte[] cborDoc(String json) throws IOException
+    protected byte[] cborDoc(String json)
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -145,7 +143,7 @@ public abstract class CBORTestBase
         }
     }
 
-    protected void _copy(JsonParser p, JsonGenerator g) throws IOException
+    protected void _copy(JsonParser p, JsonGenerator g)
     {
         while (p.nextToken() != null) {
           g.copyCurrentEvent(p);
@@ -153,7 +151,6 @@ public abstract class CBORTestBase
     }
 
     protected CBORGenerator lenientUnicodeCborGenerator(ByteArrayOutputStream result)
-        throws IOException
     {
         return (CBORGenerator) cborFactoryBuilder()
                 .enable(CBORGenerator.Feature.LENIENT_UTF_ENCODING)

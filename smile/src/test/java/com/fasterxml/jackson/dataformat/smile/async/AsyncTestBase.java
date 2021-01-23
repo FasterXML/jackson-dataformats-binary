@@ -1,11 +1,10 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectReadContext;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+
 import com.fasterxml.jackson.dataformat.smile.*;
 
 abstract class AsyncTestBase extends BaseTestForSmile
@@ -19,25 +18,16 @@ abstract class AsyncTestBase extends BaseTestForSmile
 
     protected AsyncReaderWrapper asyncForBytes(ObjectMapper mapper,
             int bytesPerRead,
-            byte[] bytes, int padding) throws IOException
+            byte[] bytes, int padding)
     {
         return asyncForBytes(mapper.reader(), bytesPerRead, bytes, padding);
     }
     
     protected AsyncReaderWrapper asyncForBytes(ObjectReader r,
             int bytesPerRead,
-            byte[] bytes, int padding) throws IOException
+            byte[] bytes, int padding)
     {
         return new AsyncReaderWrapperForByteArray(r.createNonBlockingByteArrayParser(),
-                bytesPerRead, bytes, padding);
-    }
-
-    @Deprecated
-    protected AsyncReaderWrapper asyncForBytes(SmileFactory f,
-            int bytesPerRead,
-            byte[] bytes, int padding) throws IOException
-    {
-        return new AsyncReaderWrapperForByteArray(f.createNonBlockingByteArrayParser(ObjectReadContext.empty()),
                 bytesPerRead, bytes, padding);
     }
 
@@ -46,7 +36,7 @@ abstract class AsyncTestBase extends BaseTestForSmile
         return SPACES.substring(0, Math.min(SPACES.length(), count));
     }
 
-    protected final JsonToken verifyStart(AsyncReaderWrapper reader) throws Exception
+    protected final JsonToken verifyStart(AsyncReaderWrapper reader)
     {
         assertToken(JsonToken.NOT_AVAILABLE, reader.currentToken());
         return reader.nextToken();

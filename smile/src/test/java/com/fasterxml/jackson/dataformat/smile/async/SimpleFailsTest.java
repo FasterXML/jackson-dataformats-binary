@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 public class SimpleFailsTest extends AsyncTestBase
@@ -15,7 +15,7 @@ public class SimpleFailsTest extends AsyncTestBase
     /**********************************************************************
      */
 
-    public void testHeaderFailWithSmile() throws IOException
+    public void testHeaderFailWithSmile()
     {
         byte[] data = _smileDoc("[ true, false ]", false);
         // and finally, error case too
@@ -25,26 +25,26 @@ public class SimpleFailsTest extends AsyncTestBase
     }
 
     private void _testHeaderFailWithSmile(ObjectReader or,
-            byte[] data, int offset, int readSize) throws IOException
+            byte[] data, int offset, int readSize)
     {
         AsyncReaderWrapper r = asyncForBytes(or, 100, data, 0);
         try {
             r.nextToken();
             fail("Should not pass");
-        } catch (JsonParseException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Input does not start with Smile format header");
         }
     }
     
-    public void testHeaderFailWithJSON() throws IOException
+    public void testHeaderFailWithJSON()
     {
-        byte[] data = "[ true ]".getBytes("UTF-8");
+        byte[] data = "[ true ]".getBytes(StandardCharsets.UTF_8);
         // and finally, error case too
         _testHeaderFailWithJSON(READER, data, 0, 100);
         _testHeaderFailWithJSON(READER, data, 0, 3);
         _testHeaderFailWithJSON(READER, data, 0, 1);
 
-        data = "{\"f\" : 123 }".getBytes("UTF-8");
+        data = "{\"f\" : 123 }".getBytes(StandardCharsets.UTF_8);
         // and finally, error case too
         _testHeaderFailWithJSON(READER, data, 0, 100);
         _testHeaderFailWithJSON(READER, data, 0, 3);
@@ -52,13 +52,13 @@ public class SimpleFailsTest extends AsyncTestBase
     }
 
     private void _testHeaderFailWithJSON(ObjectReader or,
-            byte[] data, int offset, int readSize) throws IOException
+            byte[] data, int offset, int readSize)
     {
         AsyncReaderWrapper r = asyncForBytes(or, 100, data, 0);
         try {
             r.nextToken();
             fail("Should not pass");
-        } catch (JsonParseException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Input does not start with Smile format header");
             verifyException(e, "plain JSON input?");
         }
