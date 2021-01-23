@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
@@ -49,14 +48,12 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
     
     @Override
     public void keyFormat(JsonFormatVisitable handler, JavaType keyType)
-        throws JsonMappingException
     {
         _keyType = keyType;
     }
 
     @Override
     public void valueFormat(JsonFormatVisitable handler, JavaType valueType)
-        throws JsonMappingException
     {
         VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
         handler.acceptJsonFormatVisitor(wrapper, valueType);

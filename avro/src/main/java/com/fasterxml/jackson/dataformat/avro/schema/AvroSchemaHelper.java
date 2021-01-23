@@ -375,17 +375,17 @@ public abstract class AvroSchemaHelper
      *
      * @param defaultValue The default value to parse, in the form of a JSON string
      * @return a parsed JSON representation of the default value
-     * @throws JsonMappingException If {@code defaultValue} is not valid JSON
+     * @throws DatabindException If {@code defaultValue} is not valid JSON
      */
-    public static JsonNode parseDefaultValue(String defaultValue) throws JsonMappingException {
+    public static JsonNode parseDefaultValue(String defaultValue) throws DatabindException {
         if (defaultValue == null) {
             return null;
         }
         try {
             return DEFAULT_VALUE_MAPPER.readTree(defaultValue);
         } catch (JacksonException e) {
-            if (e instanceof JsonMappingException) {
-                throw (JsonMappingException) e;
+            if (e instanceof DatabindException) {
+                throw (DatabindException) e;
             }
             throw new JsonMappingException(null, "Failed to parse default value", e);
         }

@@ -4,7 +4,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
 import com.fasterxml.jackson.core.StreamWriteFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 public final class ObjectWriteContext
@@ -44,7 +43,7 @@ public final class ObjectWriteContext
     }
 
     @Override
-    public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+    public AvroWriteContext createChildObjectContext(Object currValue) {
         _verifyValueWrite();
         Schema.Field field = _findField();
         if (field == null) { // unknown, to ignore
@@ -71,7 +70,8 @@ public final class ObjectWriteContext
     }
     
     @Override
-    public void writeValue(Object value) throws JsonMappingException {
+    public void writeValue(Object value)
+    {
         _verifyValueWrite();
         if (_nextField != null) {
             // 26-Nov-2019, tatu: Should not be needed any more, handled at a later

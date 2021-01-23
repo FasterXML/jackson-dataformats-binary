@@ -66,18 +66,14 @@ public class RecordVisitor
             _overridden = true;
         } else if (subTypes != null && !subTypes.isEmpty()) {
             List<Schema> unionSchemas = new ArrayList<>();
-            try {
-                for (NamedType subType : subTypes) {
-                    JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
-                    VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, getProvider());
-                    ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
-                    unionSchemas.add(visitor.getAvroSchema());
-                }
-                _avroSchema = Schema.createUnion(unionSchemas);
-                _overridden = true;
-            } catch (JsonMappingException jme) {
-                throw new RuntimeException("Failed to build schema", jme);
+            for (NamedType subType : subTypes) {
+                JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
+                VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, getProvider());
+                ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
+                unionSchemas.add(visitor.getAvroSchema());
             }
+            _avroSchema = Schema.createUnion(unionSchemas);
+            _overridden = true;
         } else {
             _avroSchema = AvroSchemaHelper.initializeRecordSchema(p.getConfig(), _type, annotations);
             _overridden = false;
@@ -105,7 +101,7 @@ public class RecordVisitor
      */
 
     @Override
-    public void property(BeanProperty writer) throws JsonMappingException
+    public void property(BeanProperty writer)
     {
         if (_overridden) {
             return;
@@ -115,7 +111,7 @@ public class RecordVisitor
 
     @Override
     public void property(String name, JsonFormatVisitable handler,
-            JavaType type) throws JsonMappingException
+            JavaType type)
     {
         if (_overridden) {
             return;
@@ -127,7 +123,7 @@ public class RecordVisitor
     }
 
     @Override
-    public void optionalProperty(BeanProperty writer) throws JsonMappingException {
+    public void optionalProperty(BeanProperty writer) {
         if (_overridden) {
             return;
         }
@@ -136,7 +132,7 @@ public class RecordVisitor
 
     @Override
     public void optionalProperty(String name, JsonFormatVisitable handler,
-            JavaType type) throws JsonMappingException
+            JavaType type)
     {
         if (_overridden) {
             return;
@@ -156,7 +152,7 @@ public class RecordVisitor
     /**********************************************************************
      */
 
-    protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional) throws JsonMappingException
+    protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional)
     {
         Schema writerSchema;
         // Check if schema for property is overridden

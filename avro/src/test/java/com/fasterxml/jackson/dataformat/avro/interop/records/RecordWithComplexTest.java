@@ -7,7 +7,9 @@ import java.util.Map;
 import org.apache.avro.AvroTypeException;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JacksonException;
+
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -58,29 +60,32 @@ public class RecordWithComplexTest extends InteropTestBase
         try {
             roundTrip(RecursiveDummyRecord.class, original);
             fail("Should throw an exception");
-        } catch (IOException e) { // sometimes we get this
-            assertThat(e).isInstanceOf(JsonMappingException.class);
+        } catch (JacksonException e) { // sometimes we get this
+            assertThat(e).isInstanceOf(DatabindException.class);
         } catch (AvroTypeException e) { // sometimes (not wrapped)
             ;
         }
     }
 
     @Test
-    public void testRecordWithNullRequiredFields() throws IOException {
+    public void testRecordWithNullRequiredFields()
+    {
         RecursiveDummyRecord original = new RecursiveDummyRecord(null, 12353, new DummyRecord("World", 234));
         //
         try {
             roundTrip(RecursiveDummyRecord.class, original);
             fail("Should throw an exception");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             // 28-Feb-2017, tatu: Sometimes we get this (probably when using ObjectWriter)
         } catch (NullPointerException e) {
             // 28-Feb-2017, tatu: Should NOT just pass NPE, but for now nothing much we can do
+            // !!! 22-Feb-2021, tatu: Really should figure out how to improve...
         }
     }
 
     @Test
-    public void testRecordWithOptionalEnumField() throws IOException {
+    public void testRecordWithOptionalEnumField()
+    {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.optionalEnum = DummyEnum.SOUTH;
         //
@@ -90,7 +95,8 @@ public class RecordWithComplexTest extends InteropTestBase
     }
 
     @Test
-    public void testRecordWithRecordValues() throws IOException {
+    public void testRecordWithRecordValues()
+    {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         //
         RecursiveDummyRecord result = roundTrip(RecursiveDummyRecord.class, original);

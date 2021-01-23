@@ -213,7 +213,7 @@ public class AvroMapper extends ObjectMapper
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
      */
-    public AvroSchema schemaFor(Class<?> type) throws JsonMappingException
+    public AvroSchema schemaFor(Class<?> type)
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         acceptJsonFormatVisitor(type, gen);
@@ -226,7 +226,7 @@ public class AvroMapper extends ObjectMapper
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
      */
-    public AvroSchema schemaFor(JavaType type) throws JsonMappingException
+    public AvroSchema schemaFor(JavaType type)
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         acceptJsonFormatVisitor(type, gen);

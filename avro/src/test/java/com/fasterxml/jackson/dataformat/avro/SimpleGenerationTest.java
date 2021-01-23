@@ -6,8 +6,10 @@ import java.io.IOException;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import com.fasterxml.jackson.core.StreamWriteFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SimpleGenerationTest extends AvroTestBase
@@ -118,7 +120,7 @@ public class SimpleGenerationTest extends AvroTestBase
         try {
              mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(b, input);
              fail("Should have thrown exception");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             verifyException(e, "no field named");
         }
 
@@ -144,7 +146,7 @@ public class SimpleGenerationTest extends AvroTestBase
         try {
              mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValueAsBytes(input);
              fail("Should have thrown exception");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             verifyException(e, "no field named 'stuff'");
         }
 

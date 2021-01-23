@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 /**
@@ -36,7 +35,8 @@ public final class MapWriteContext
     }
 
     @Override
-    public final AvroWriteContext createChildArrayContext(Object currValue) {
+    public final AvroWriteContext createChildArrayContext(Object currValue)
+    {
         _verifyValueWrite();
         AvroWriteContext child = new ArrayWriteContext(this, _generator,
                 _createArray(_schema.getValueType()), currValue);
@@ -45,7 +45,8 @@ public final class MapWriteContext
     }
 
     @Override
-    public final AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+    public final AvroWriteContext createChildObjectContext(Object currValue)
+    {
         _verifyValueWrite();
         AvroWriteContext child = _createObjectContext(_schema.getValueType(), currValue);
         _data.put(_currentName, child.rawValue());

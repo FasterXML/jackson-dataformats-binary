@@ -210,7 +210,7 @@ public abstract class AvroWriteContext
 
     // Removed from 2.10, should not be needed any more
     /*
-    protected AvroWriteContext _createObjectContext(Schema schema) throws JsonMappingException {
+    protected AvroWriteContext _createObjectContext(Schema schema) {
         if (schema.getType() == Type.UNION) {
             schema = _recordOrMapFromUnion(schema);
         }
@@ -219,7 +219,6 @@ public abstract class AvroWriteContext
     */
 
     protected AvroWriteContext _createObjectContext(Schema schema, Object currValue)
-            throws JsonMappingException
     {
         Type type = schema.getType();
         if (type == Schema.Type.UNION) {

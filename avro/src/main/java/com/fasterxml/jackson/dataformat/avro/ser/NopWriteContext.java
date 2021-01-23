@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.ser;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 /**
@@ -17,12 +16,12 @@ public class NopWriteContext extends AvroWriteContext
     public Object rawValue() { return null; }
 
     @Override
-    public final AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException {
+    public final AvroWriteContext createChildArrayContext(Object currValue) {
         return new NopWriteContext(TYPE_ARRAY, this, _generator, currValue);
     }
 
     @Override
-    public final AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
+    public final AvroWriteContext createChildObjectContext(Object currValue) {
         return new NopWriteContext(TYPE_OBJECT, this, _generator, currValue);
     }
 

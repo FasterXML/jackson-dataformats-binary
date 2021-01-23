@@ -15,6 +15,7 @@ import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectData;
 
+import com.fasterxml.jackson.core.exc.WrappedIOException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
@@ -30,7 +31,7 @@ public class ApacheAvroInteropUtil {
      */
     public static final BiFunction<Schema, Object, byte[]> jacksonSerializer = new BiFunction<Schema, Object, byte[]>() {
         @Override
-        public byte[] apply(Schema schema, Object originalObject) throws IOException {
+        public byte[] apply(Schema schema, Object originalObject) {
             return jacksonSerialize(schema, originalObject);
         }
     };
@@ -39,7 +40,7 @@ public class ApacheAvroInteropUtil {
      */
     public static final Function<Type, Schema> getJacksonSchema = new Function<Type, Schema>() {
         @Override
-        public Schema apply(Type input) throws IOException {
+        public Schema apply(Type input) {
             return getJacksonSchema(input);
         }
     };
@@ -49,7 +50,7 @@ public class ApacheAvroInteropUtil {
      */
     public static final  BiFunction<Schema, byte[], Object> jacksonDeserializer = new BiFunction<Schema, byte[], Object>() {
         @Override
-        public Object apply(Schema schema, byte[] originalObject) throws IOException {
+        public Object apply(Schema schema, byte[] originalObject) {
             return jacksonDeserialize(schema, Object.class, originalObject);
         }
     };
@@ -67,7 +68,7 @@ public class ApacheAvroInteropUtil {
      */
     public static final BiFunction<Schema, byte[], Object> apacheDeserializer = new BiFunction<Schema, byte[], Object>() {
         @Override
-        public Object apply(Schema first, byte[] second) throws IOException {
+        public Object apply(Schema first, byte[] second) {
             return apacheDeserialize(first, second);
         }
     };
@@ -76,7 +77,7 @@ public class ApacheAvroInteropUtil {
      */
     public static final  BiFunction<Schema, Object, byte[]> apacheSerializer = new BiFunction<Schema, Object, byte[]>() {
         @Override
-        public byte[] apply(Schema schema, Object originalObject) throws IOException {
+        public byte[] apply(Schema schema, Object originalObject) {
             return apacheSerialize(schema, originalObject);
         }
     };
@@ -167,9 +168,13 @@ public class ApacheAvroInteropUtil {
      * @return Deserialized payload
      */
     @SuppressWarnings("unchecked")
-    public static <T> T apacheDeserialize(Schema schema, byte[] data) throws IOException {
+    public static <T> T apacheDeserialize(Schema schema, byte[] data) {
         Decoder encoder = DecoderFactory.get().binaryDecoder(data, null);
-        return (T) PATCHED_AVRO_REFLECT_DATA.createDatumReader(schema).read(null, encoder);
+        try {
+            return (T) PATCHED_AVRO_REFLECT_DATA.createDatumReader(schema).read(null, encoder);
+        } catch (IOException e) {
+            throw WrappedIOException.construct(e);
+        }
     }
 
     /**
@@ -183,11 +188,15 @@ public class ApacheAvroInteropUtil {
      * @return Payload containing the Avro-serialized form of {@code object}
      */
     @SuppressWarnings("unchecked")
-    public static byte[] apacheSerialize(Schema schema, Object object) throws IOException {
+    public static byte[] apacheSerialize(Schema schema, Object object) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Encoder encoder = EncoderFactory.get().binaryEncoder(baos, null);
-        PATCHED_AVRO_REFLECT_DATA.createDatumWriter(schema).write(object, encoder);
-        encoder.flush();
+        try {
+            PATCHED_AVRO_REFLECT_DATA.createDatumWriter(schema).write(object, encoder);
+            encoder.flush();
+        } catch (IOException e) {
+            throw WrappedIOException.construct(e);
+        }
         return baos.toByteArray();
     }
 
@@ -211,7 +220,7 @@ public class ApacheAvroInteropUtil {
      *
      * @return Schema for {@code type}
      */
-    public static Schema getJacksonSchema(Type type) throws IOException {
+    public static Schema getJacksonSchema(Type type) {
         return MAPPER.schemaFor(MAPPER.constructType(type)).getAvroSchema();
     }
 
@@ -229,7 +238,7 @@ public class ApacheAvroInteropUtil {
      *
      * @return Deserialized payload
      */
-    public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) throws IOException {
+    public static <T> T jacksonDeserialize(Schema schema, JavaType type, byte[] data) {
         return MAPPER.readerFor(type).with(new AvroSchema(schema)).readValue(data, 0, data.length);
     }
 
@@ -247,7 +256,7 @@ public class ApacheAvroInteropUtil {
      *
      * @return Deserialized payload
      */
-    public static <T> T jacksonDeserialize(Schema schema, Type type, byte[] data) throws IOException {
+    public static <T> T jacksonDeserialize(Schema schema, Type type, byte[] data) {
         return jacksonDeserialize(schema, MAPPER.constructType(type), data);
     }
 
@@ -261,7 +270,7 @@ public class ApacheAvroInteropUtil {
      *
      * @return Payload containing the Avro-serialized form of {@code object}
      */
-    public static byte[] jacksonSerialize(Schema schema, Object object) throws IOException {
+    public static byte[] jacksonSerialize(Schema schema, Object object) {
         return MAPPER.writer().with(new AvroSchema(schema)).writeValueAsBytes(object);
     }
 }

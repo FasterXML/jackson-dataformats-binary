@@ -6,7 +6,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
@@ -51,7 +50,6 @@ public class ArrayVisitor
 
     @Override
     public void itemsFormat(JsonFormatVisitable visitable, JavaType type)
-            throws JsonMappingException
     {
         VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
         visitable.acceptJsonFormatVisitor(wrapper, type);
@@ -59,7 +57,7 @@ public class ArrayVisitor
     }
 
     @Override
-    public void itemsFormat(JsonFormatTypes type) throws JsonMappingException
+    public void itemsFormat(JsonFormatTypes type)
     {
         // Unlike Jackson, Avro treats character arrays as an array of ints with the java.lang.Character class type.
         if (_type.hasRawClass(char[].class)) {

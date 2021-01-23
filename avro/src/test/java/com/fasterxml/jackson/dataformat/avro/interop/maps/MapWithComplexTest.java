@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class MapWithComplexTest extends InteropTestBase
 {
-
     @Test
     public void testMapWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
@@ -46,9 +45,10 @@ public class MapWithComplexTest extends InteropTestBase
         try {
             roundTrip(type(Map.class, String.class, DummyRecord.class), original);
             fail("Should throw an NPE");
-        } catch (Throwable e) {
+        } catch (Exception e0) { // apparently is plain NPE which is... not great
+            Throwable e = e0;
             // Avro NullPointerException
-            // Jackson RuntimeException -> JsonMappingException -> NullPointerException
+            // Jackson RuntimeException -> DatabindException -> NullPointerException
             while (e.getCause() != null && e.getCause() != e) {
                 e = e.getCause();
             }

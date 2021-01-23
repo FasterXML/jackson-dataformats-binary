@@ -5,10 +5,10 @@ import org.apache.avro.Schema;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
 public class VisitorFormatWrapperImpl
@@ -168,7 +168,7 @@ public class VisitorFormatWrapperImpl
     }
 
     @Override
-    public JsonAnyFormatVisitor expectAnyFormat(JavaType convertedType) throws JsonMappingException {
+    public JsonAnyFormatVisitor expectAnyFormat(JavaType convertedType) {
         // could theoretically create union of all possible types but...
         final String msg = "\"Any\" type (usually for `java.lang.Object`) not supported: `expectAnyFormat` called with type "+convertedType;
         throw InvalidDefinitionException.from((JsonGenerator) null, msg, convertedType);

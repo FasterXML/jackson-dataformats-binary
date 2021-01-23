@@ -74,7 +74,7 @@ public class ListWithComplexTest extends InteropTestBase
             fail("Should throw an NPE");
         } catch (Throwable e) {
             // Avro NullPointerException
-            // Jackson RuntimeException -> JsonMappingException -> NullPointerException
+            // Jackson RuntimeException -> DatabindException -> NullPointerException
             while (e.getCause() != null && e.getCause() != e) {
                 e = e.getCause();
             }

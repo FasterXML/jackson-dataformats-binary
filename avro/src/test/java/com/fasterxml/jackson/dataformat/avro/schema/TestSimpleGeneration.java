@@ -6,8 +6,9 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+
 import com.fasterxml.jackson.dataformat.avro.*;
 
 import org.apache.avro.JsonProperties;
@@ -211,7 +212,8 @@ public class TestSimpleGeneration extends AvroTestBase
     }
 
     // for [dataformats-binary#146]
-    public void testDefaultValues() throws JsonMappingException {
+    public void testDefaultValues()
+    {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         MAPPER.acceptJsonFormatVisitor(WithDefaults.class, gen);
         Schema schema = gen.getAvroSchema();
@@ -225,7 +227,8 @@ public class TestSimpleGeneration extends AvroTestBase
     }
 
     // for [dataformats-binary#146]
-    public void testEnabledDefaultValues() throws JsonMappingException {
+    public void testEnabledDefaultValues()
+    {
         AvroMapper mapper = new AvroMapper(AvroFactory.builder()
                 .enable(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA)
                 .build());

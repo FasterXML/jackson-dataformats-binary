@@ -7,9 +7,9 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
@@ -39,7 +39,6 @@ public class AvroUntypedDeserializer
 
     @Override
     public void resolve(DeserializationContext ctxt)
-        throws JsonMappingException
     {
         JavaType obType = ctxt.constructType(Object.class);
         // 26-Sep-2017, tatu: I think this is wrong, but has been that way for a while

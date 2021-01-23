@@ -4,7 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
 
@@ -320,7 +321,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         try {
             srcSchema.withReaderSchema(dstSchema);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             // 06-Feb-2017, tatu: Extremely lame error message by avro lib. Should consider
             //    rewriting to give some indication of issues...
             verifyException(e, "Incompatible writer/reader schemas");
@@ -340,7 +341,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         try {
             srcSchema.withReaderSchema(dstSchema);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             // 16-Jun-2017, tatu: As is, names must match, so...
             verifyException(e, "Incompatible writer/reader schemas");
             verifyException(e, "root records have different names");

@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.interop;
 
-import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -127,7 +126,7 @@ public abstract class InteropTestBase
      *
      * @return A recreated version of the original object
      */
-    protected <T> T roundTrip(T object) throws IOException {
+    protected <T> T roundTrip(T object) {
         return roundTrip(object.getClass(), object);
     }
 
@@ -146,7 +145,8 @@ public abstract class InteropTestBase
      * @return A recreated version of the original object
      */
     @SuppressWarnings("unchecked")
-    protected <T> T roundTrip(Type schemaType, T object) throws IOException {
+    protected <T> T roundTrip(Type schemaType, T object)
+    {
         Schema schema = schemaFunctor.apply(schemaType);
         return (T) deserializeFunctor.apply(schema, serializeFunctor.apply(schema, object));
     }

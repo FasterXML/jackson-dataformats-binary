@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.DatabindException;
 
 import com.fasterxml.jackson.dataformat.avro.*;
 
@@ -141,7 +141,7 @@ public class ArrayEvolutionTest extends AvroTestBase
         try {
             srcSchema.withReaderSchema(dstSchema);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
             // 06-Feb-2016, tatu: Extremely lame error message by avro lib. Should consider
             //    rewriting to give some indication of issues...
             verifyException(e, "Data encoded using writer schema");
