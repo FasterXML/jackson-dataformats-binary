@@ -8,7 +8,6 @@ import java.net.URL;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
@@ -167,7 +166,7 @@ public class ProtobufMapper extends ObjectMapper
      *
      * @return Generated {@link ProtobufSchema}
      */
-    public ProtobufSchema generateSchemaFor(JavaType type) throws JsonMappingException
+    public ProtobufSchema generateSchemaFor(JavaType type)
     {
         ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
         acceptJsonFormatVisitor(type, gen);
@@ -182,7 +181,7 @@ public class ProtobufMapper extends ObjectMapper
      *
      * @return Generated {@link ProtobufSchema}
      */
-    public ProtobufSchema generateSchemaFor(Class<?> type) throws JsonMappingException
+    public ProtobufSchema generateSchemaFor(Class<?> type)
     {
         ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
         acceptJsonFormatVisitor(type, gen);
@@ -197,7 +196,7 @@ public class ProtobufMapper extends ObjectMapper
      *
      * @return Generated {@link ProtobufSchema}
      */
-    public ProtobufSchema generateSchemaFor(TypeReference<?> type) throws JsonMappingException {
+    public ProtobufSchema generateSchemaFor(TypeReference<?> type) {
         return generateSchemaFor(_typeFactory.constructType(type));
     }
 

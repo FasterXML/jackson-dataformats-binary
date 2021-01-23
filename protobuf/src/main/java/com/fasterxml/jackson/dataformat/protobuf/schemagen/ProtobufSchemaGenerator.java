@@ -5,7 +5,6 @@ import java.util.*;
 import com.squareup.protoparser.TypeElement;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.NativeProtobufSchema;
@@ -28,11 +27,12 @@ public class ProtobufSchemaGenerator extends ProtoBufSchemaVisitor
         super();
     }
 
-    public ProtobufSchema getGeneratedSchema() throws JsonMappingException {
+    public ProtobufSchema getGeneratedSchema() {
         return getGeneratedSchema(true);
     }
 
-    public ProtobufSchema getGeneratedSchema(boolean appendDependencies) throws JsonMappingException {
+    public ProtobufSchema getGeneratedSchema(boolean appendDependencies)
+    {
         if (_rootType == null || _builder == null) {
             throw new IllegalStateException(
                     "No visit methods called on " + getClass().getName() + ": no schema generated");

@@ -18,10 +18,10 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.type.CollectionType;
+
 import com.amazon.ion.IonContainer;
 import com.amazon.ion.IonValue;
 
@@ -33,7 +33,7 @@ class DeserializersEx extends SimpleDeserializers
 
     @Override
     public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config,
-            BeanDescription beanDesc) throws JsonMappingException
+            BeanDescription beanDesc)
     {
         if (IonValue.class.isAssignableFrom(type.getRawClass())) {
             return ION_VALUE_DESERIALIZER;
@@ -45,7 +45,6 @@ class DeserializersEx extends SimpleDeserializers
     public JsonDeserializer<?>
             findCollectionDeserializer(CollectionType type, DeserializationConfig config, BeanDescription beanDesc,
                     TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer)
-        throws JsonMappingException
     {
         if (IonContainer.class.isAssignableFrom(type.getRawClass())) {
             return ION_VALUE_DESERIALIZER;

@@ -179,12 +179,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         ObjectMapper mapper = smileMapperBuilder()
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .build();
-        TestBean result = null;
-        try {
-            result = mapper.readValue(_smileDoc(JSON_UNKNOWN_FIELD), TestBean.class);
-        } catch (JsonMappingException jex) {
-            fail("Did not expect a problem, got: "+jex.getMessage());
-        }
+        TestBean result = mapper.readValue(_smileDoc(JSON_UNKNOWN_FIELD), TestBean.class);
         assertNotNull(result);
         assertEquals(1, result._a);
         assertNull(result._unknown);

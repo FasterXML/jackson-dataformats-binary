@@ -30,8 +30,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
@@ -265,7 +265,7 @@ public class PolymorphicRoundtripTest
         try {
             deserialized = mapper.readValue(serialized, Bean.class);
             Assert.fail("Expected jackson to complain about casting a (concrete) Object into a ChildBean.");
-        } catch (JsonMappingException e) {
+        } catch (DatabindException e) {
         }
     }
     

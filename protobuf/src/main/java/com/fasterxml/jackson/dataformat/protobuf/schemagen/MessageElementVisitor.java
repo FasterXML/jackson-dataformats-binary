@@ -45,7 +45,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     }
 
     @Override
-    public void property(BeanProperty writer) throws JsonMappingException {
+    public void property(BeanProperty writer) {
         _builder.addField(buildFieldElement(writer, Label.REQUIRED));
     }
 
@@ -55,7 +55,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     }
 
     @Override
-    public void optionalProperty(BeanProperty writer) throws JsonMappingException {
+    public void optionalProperty(BeanProperty writer) {
         _builder.addField(buildFieldElement(writer, Label.OPTIONAL));
     }
 
@@ -64,7 +64,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
         throw new UnsupportedOperationException();
     }
 
-    protected FieldElement buildFieldElement(BeanProperty writer, Label label) throws JsonMappingException
+    protected FieldElement buildFieldElement(BeanProperty writer, Label label)
     {
         FieldElement.Builder fBuilder = FieldElement.builder();
 
@@ -103,7 +103,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
         }
     }
 
-    protected DataType getDataType(JavaType type) throws JsonMappingException
+    protected DataType getDataType(JavaType type)
     {
         if (!_definedTypeElementBuilders.containsBuilderFor(type)) { // No self ref
             if (isNested(type)) {
@@ -130,7 +130,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     }
 
     private ProtoBufSchemaVisitor acceptTypeElement(SerializerProvider provider, JavaType type,
-            DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested) throws JsonMappingException
+            DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested)
     {
         // 20-Apr-2018, tatu: not 100% certain if we should get type-wrapped serializer, but
         //    since protobuf doesn't exactly support fancier features, assuming... nope

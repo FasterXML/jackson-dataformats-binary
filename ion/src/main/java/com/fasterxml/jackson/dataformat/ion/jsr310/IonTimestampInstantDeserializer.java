@@ -13,13 +13,14 @@ import com.amazon.ion.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
+
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
 /**
@@ -81,7 +82,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
 
     @Override
     public JsonDeserializer<T> createContextual(DeserializationContext ctxt, BeanProperty property)
-            throws JsonMappingException {
+    {
 
         final JsonFormat.Value format = findFormatOverrides(ctxt, property, handledType());
         if (format != null) {
