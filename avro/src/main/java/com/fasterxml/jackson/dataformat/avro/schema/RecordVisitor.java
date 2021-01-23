@@ -179,7 +179,7 @@ public class RecordVisitor
                 final SerializerProvider prov = getProvider();
                 if (ser == null) {
                     if (prov == null) {
-                        throw JsonMappingException.from(prov, "SerializerProvider missing for RecordVisitor");
+                        throw DatabindException.from(prov, "SerializerProvider missing for RecordVisitor");
                     }
                     ser = prov.findPrimaryPropertySerializer(prop.getType(), prop);
                 }
@@ -224,7 +224,7 @@ public class RecordVisitor
 
     /**
      * A union schema with a default value must always have the schema branch corresponding to the default value first, or Avro will print a
-     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Schema.Type#UNION UNION} schema and
+     * warning complaining that the default value is not compatible. If {@code schema} is a {@code Schema.Type.UNION} schema and
      * {@code defaultValue} is non-{@code null}, this finds the appropriate branch in the union and reorders the union so that it is first.
      *
      * @param schema

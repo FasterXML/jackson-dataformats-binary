@@ -9,9 +9,8 @@ import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
 
 import com.fasterxml.jackson.core.FormatSchema;
-
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReaderFactory;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroStructureReader;
 
@@ -80,7 +79,7 @@ public class AvroSchema implements FormatSchema
         //   to match; so let's check that first
         if (r.getType() == w.getType()) {
             if (!_schemaNamesEqual(w, r)) {
-                throw new JsonMappingException(null, String.format(
+                throw DatabindException.from((JsonParser) null, String.format(
 "Incompatible writer/reader schemas: root %ss have different names (\"%s\" vs \"%s\"), no match via aliases",
 r.getType().getName(), w.getFullName(), r.getFullName()));
             }
@@ -90,12 +89,12 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
         try {
             comp = SchemaCompatibility.checkReaderWriterCompatibility(r, w);
         } catch (Exception e) {
-            throw new JsonMappingException(null, String.format(
+            throw DatabindException.from((JsonParser) null, String.format(
                     "Failed to resolve given writer/reader schemas, problem: (%s) %s",
                     e.getClass().getName(), e.getMessage()));
         }
         if (comp.getType() != SchemaCompatibilityType.COMPATIBLE) {
-            throw new JsonMappingException(null, String.format("Incompatible writer/reader schemas: %s",
+            throw DatabindException.from((JsonParser) null, String.format("Incompatible writer/reader schemas: %s",
                     comp.getDescription()));
         }
         return Resolving.create(w, r);

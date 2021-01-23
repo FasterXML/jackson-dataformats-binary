@@ -15,9 +15,10 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.reflect.ReflectData;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.TokenStreamContext;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -174,7 +175,7 @@ public abstract class AvroWriteContext
             return new GenericData.Record(schema);
         } catch (RuntimeException e) {
             // alas, generator not passed to us
-            throw new JsonMappingException(null, "Failed to create Record type from "+type, e);
+            throw DatabindException.from((JsonGenerator) null, "Failed to create Record type from "+type, e);
         }
     }
 
@@ -192,7 +193,7 @@ public abstract class AvroWriteContext
             return new GenericData.Record(schema);
         } catch (RuntimeException e) {
             // alas, generator not passed to us
-            throw new JsonMappingException(null, "Failed to create Record type from "+type, e);
+            throw DatabindException.from((JsonGenerator) null, "Failed to create Record type from "+type, e);
         }
     }
 

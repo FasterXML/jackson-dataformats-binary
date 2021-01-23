@@ -387,7 +387,7 @@ public abstract class AvroSchemaHelper
             if (e instanceof DatabindException) {
                 throw (DatabindException) e;
             }
-            throw new JsonMappingException(null, "Failed to parse default value", e);
+            throw DatabindException.from((JsonParser) null, "Failed to parse default value", e);
         }
     }
 
