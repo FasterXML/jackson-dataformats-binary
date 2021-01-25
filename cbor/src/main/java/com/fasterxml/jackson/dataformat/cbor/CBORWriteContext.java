@@ -85,12 +85,12 @@ public final class CBORWriteContext extends TokenStreamContext
     }
 
     @Override
-    public Object getCurrentValue() {
+    public Object currentValue() {
         return _currentValue;
     }
 
     @Override
-    public void setCurrentValue(Object v) {
+    public void assignCurrentValue(Object v) {
         _currentValue = v;
     }
 
@@ -140,7 +140,7 @@ public final class CBORWriteContext extends TokenStreamContext
 
     /**
      * Method that can be used to both clear the accumulated references
-     * (specifically value set with {@link #setCurrentValue(Object)})
+     * (specifically value set with {@link #assignCurrentValue(Object)})
      * that should not be retained, and returns parent (as would
      * {@link #getParent()} do). Typically called when closing the active
      * context when encountering {@link JsonToken#END_ARRAY} or
@@ -184,11 +184,11 @@ public final class CBORWriteContext extends TokenStreamContext
     private final void _checkDup(DupDetector dd, String name) throws StreamWriteException {
         if (dd.isDup(name)) {
             Object src = dd.getSource();
-            throw new StreamWriteException("Duplicate field '"+name+"'",
-                    ((src instanceof JsonGenerator) ? ((JsonGenerator) src) : null));
+            throw new StreamWriteException(((src instanceof JsonGenerator) ? ((JsonGenerator) src) : null),
+                    "Duplicate field '"+name+"'");
         }
     }
-    
+
     public boolean writeValue() {
         // Only limitation is with OBJECTs:
         if (_type == TYPE_OBJECT) {

@@ -53,12 +53,12 @@ public abstract class AvroReadContext extends TokenStreamContext
     }
 
     @Override
-    public Object getCurrentValue() {
+    public Object currentValue() {
         return _currentValue;
     }
 
     @Override
-    public void setCurrentValue(Object v) {
+    public void assignCurrentValue(Object v) {
         _currentValue = v;
     }
 

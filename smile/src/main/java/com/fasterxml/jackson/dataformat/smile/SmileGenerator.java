@@ -12,7 +12,6 @@ import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 
@@ -425,15 +424,15 @@ public class SmileGenerator
         return true;
     }
 
-    @Override // @since 2.12
+    @Override
     public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden methods, configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -453,13 +452,13 @@ public class SmileGenerator
      */
 
     @Override
-    public Object getCurrentValue() {
-        return _tokenWriteContext.getCurrentValue();
+    public Object currentValue() {
+        return _tokenWriteContext.currentValue();
     }
 
     @Override
-    public void setCurrentValue(Object v) {
-        _tokenWriteContext.setCurrentValue(v);
+    public void assignCurrentValue(Object v) {
+        _tokenWriteContext.assignCurrentValue(v);
     }
 
     @Override
@@ -1210,9 +1209,9 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, unprocessed ("raw")
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1249,11 +1248,11 @@ public class SmileGenerator
     public void writeRawValue(char[] text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, base64-encoded binary
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1313,9 +1312,9 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output method implementations, primitive
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1772,8 +1771,8 @@ public class SmileGenerator
                 writeNumber(new BigInteger(enc));
             }
         } catch (NumberFormatException e) {
-            throw new StreamWriteException("Invalid String representation for Number ('"+enc
-                    +"'); can not write using Smile format", this);
+            throw _constructWriteException("Invalid String representation for Number ('"+enc
+                    +"'); can not write using Smile format");
         }
     }
 
@@ -1782,17 +1781,17 @@ public class SmileGenerator
         try {
             writeNumber(new BigDecimal(enc));
         } catch (NumberFormatException e) {
-            throw new StreamWriteException("Invalid String representation for Number ('"+enc
-                    +"'); can not write using Smile format", this);
+            throw _constructWriteException("Invalid String representation for Number ('"+enc
+                    +"'); can not write using Smile format");
         }
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Implementations for other methods
-    /**********************************************************
+    /**********************************************************************
      */
-    
+
     @Override
     protected final void _verifyValueWrite(String typeMsg)
         throws JacksonException
@@ -1803,9 +1802,9 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Low-level output handling
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1862,10 +1861,10 @@ public class SmileGenerator
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, UTF-8 encoding
-    /**********************************************************
-    */
+    /**********************************************************************
+     */
 
     /**
      * Helper method called when the whole character sequence is known to
@@ -2175,10 +2174,10 @@ public class SmileGenerator
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal methods, writing bytes
-    /**********************************************************
-    */
+    /**********************************************************************
+     */
 
     private final void _ensureRoomForOutput(int needed) throws JacksonException
     {
@@ -2549,7 +2548,7 @@ public class SmileGenerator
         } while (inputEnd < 7);
         return inputEnd;
     }
-    
+
     /*
     /**********************************************************************
     /* Internal methods, buffer handling

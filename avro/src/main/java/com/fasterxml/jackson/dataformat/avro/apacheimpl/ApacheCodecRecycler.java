@@ -27,9 +27,9 @@ public final class ApacheCodecRecycler
     private ApacheCodecRecycler() { }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API
-    /**********************************************************
+    /**********************************************************************
      */
 
     public static BinaryDecoder decoder(InputStream in, boolean buffering)
@@ -63,9 +63,9 @@ public final class ApacheCodecRecycler
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal per-instance methods
-    /**********************************************************
+    /**********************************************************************
      */
     
     private static ApacheCodecRecycler _recycler() {
@@ -92,17 +92,23 @@ public final class ApacheCodecRecycler
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper class
-    /**********************************************************
+    /**********************************************************************
      */
 
+    // 24-Jan-2021, tatu: Is this actually used? If not, maybe remove from Jackson 3.0
     public static class BadSchemaException extends JacksonException
     {
         private static final long serialVersionUID = 1L;
 
         public BadSchemaException(String msg, Throwable src) {
             super(msg, src);
+        }
+
+        @Override
+        public Object processor() {
+            return null;
         }
     }
 }

@@ -45,7 +45,7 @@ public class IonSymbolSerializer extends StdScalarSerializer<String>
         if (IonGenerator.class.isAssignableFrom(g.getClass())) {
             ((IonGenerator) g).writeSymbol(value);
         } else {
-            throw new StreamWriteException("Can only use IonSymbolSerializer with IonGenerator", g);
+            throw new StreamWriteException(g, "Can only use IonSymbolSerializer with IonGenerator");
         }
     }
 

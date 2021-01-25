@@ -86,12 +86,12 @@ public abstract class AvroWriteContext
      */
 
     @Override
-    public Object getCurrentValue() {
+    public Object currentValue() {
         return _currentValue;
     }
 
     @Override
-    public void setCurrentValue(Object v) {
+    public void assignCurrentValue(Object v) {
         _currentValue = v;
     }
     

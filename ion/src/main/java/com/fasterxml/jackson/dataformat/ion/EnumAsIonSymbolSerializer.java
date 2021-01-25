@@ -44,7 +44,7 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
         if (IonGenerator.class.isAssignableFrom(g.getClass())) {
             ((IonGenerator) g).writeSymbol(value.name());
         } else {
-            throw new StreamWriteException("Can only use EnumAsIonSymbolSerializer with IonGenerator", g);
+            throw new StreamWriteException(g, "Can only use EnumAsIonSymbolSerializer with IonGenerator");
         }
     }
 

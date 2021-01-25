@@ -143,13 +143,13 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final Object getCurrentValue() {
-        return _tokenWriteContext.getCurrentValue();
+    public final Object currentValue() {
+        return _tokenWriteContext.currentValue();
     }
 
     @Override
-    public final void setCurrentValue(Object v) {
-        _tokenWriteContext.setCurrentValue(v);
+    public final void assignCurrentValue(Object v) {
+        _tokenWriteContext.assignCurrentValue(v);
     }
 
     @Override
@@ -393,7 +393,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeStartArray(Object currValue) throws JacksonException {
         writeStartArray();
-        _tokenWriteContext.setCurrentValue(currValue);
+        _tokenWriteContext.assignCurrentValue(currValue);
     }
 
     @Override
@@ -423,7 +423,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object currValue) throws JacksonException {
         writeStartObject();
-        _tokenWriteContext.setCurrentValue(currValue);
+        _tokenWriteContext.assignCurrentValue(currValue);
     }
 
     @Override

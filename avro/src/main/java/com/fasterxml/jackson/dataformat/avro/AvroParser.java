@@ -145,8 +145,8 @@ public abstract class AvroParser extends ParserBase
 
     @Override public TokenStreamContext getParsingContext() { return _parsingContext; }
 
-    @Override public void setCurrentValue(Object v) { _parsingContext.setCurrentValue(v); }
-    @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
+    @Override public void assignCurrentValue(Object v) { _parsingContext.assignCurrentValue(v); }
+    @Override public Object currentValue() { return _parsingContext.currentValue(); }
 
     @Override
     protected abstract void _closeInput() throws IOException;

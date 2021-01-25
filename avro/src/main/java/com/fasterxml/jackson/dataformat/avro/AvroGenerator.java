@@ -11,9 +11,9 @@ import org.apache.avro.io.BinaryEncoder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
 import com.fasterxml.jackson.dataformat.avro.ser.EncodedDatum;
@@ -184,13 +184,13 @@ public class AvroGenerator extends GeneratorBase
     public TokenStreamContext getOutputContext() { return _tokenWriteContext; }
 
     @Override
-    public Object getCurrentValue() {
-        return _tokenWriteContext.getCurrentValue();
+    public Object currentValue() {
+        return _tokenWriteContext.currentValue();
     }
 
     @Override
-    public void setCurrentValue(Object v) {
-        _tokenWriteContext.setCurrentValue(v);
+    public void assignCurrentValue(Object v) {
+        _tokenWriteContext.assignCurrentValue(v);
     }
 
     /*
@@ -348,8 +348,9 @@ public class AvroGenerator extends GeneratorBase
             try {
                 _complete();
             } catch (Exception e) {
-                throw new StreamWriteException("Failed to close AvroGenerator: ("
-                        +e.getClass().getName()+"): "+e.getMessage(), e, this);
+                throw _constructWriteException(
+"Failed to close AvroGenerator: ("+e.getClass().getName()+"): "+e.getMessage(),
+                        e);
             }
         }
         if (_output != null) {

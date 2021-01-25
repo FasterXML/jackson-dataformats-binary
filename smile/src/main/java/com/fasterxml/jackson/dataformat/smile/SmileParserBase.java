@@ -292,8 +292,8 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     @Override public final JsonReadContext getParsingContext() { return _parsingContext; }
-    @Override public void setCurrentValue(Object v) { _parsingContext.setCurrentValue(v); }
-    @Override public Object getCurrentValue() { return _parsingContext.getCurrentValue(); }
+    @Override public void assignCurrentValue(Object v) { _parsingContext.assignCurrentValue(v); }
+    @Override public Object currentValue() { return _parsingContext.currentValue(); }
     @Override public final boolean isClosed() { return _closed; }
 
     /**
