@@ -99,15 +99,15 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertEquals("name", p.currentName());
         // and then skip various bits and pieces
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertTrue(p.nextFieldName(new SerializedString("age")));
+        assertTrue(p.nextName(new SerializedString("age")));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        String n = p.nextFieldName();
+        String n = p.nextName();
         assertEquals("emails", n);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
-        assertNull(p.nextFieldName());
+        assertNull(p.nextName());
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        assertFalse(p.nextFieldName(new SerializedString("bossy")));
+        assertFalse(p.nextName(new SerializedString("bossy")));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("boss", p.currentName());
         assertToken(JsonToken.VALUE_NULL, p.nextToken());

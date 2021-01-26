@@ -6,8 +6,9 @@ import com.fasterxml.jackson.core.io.CharTypes;
 import com.fasterxml.jackson.core.json.DupDetector;
 
 /**
- * Replacement of {@link com.fasterxml.jackson.core.json.JsonReadContext}
- * to support features needed by CBOR format.
+ * Extension of {@link com.fasterxml.jackson.core.TokenStreamContext}
+ * to support features needed by CBOR format (mainly limits of expected
+ * entries to output).
  */
 public final class CBORReadContext
     extends TokenStreamContext

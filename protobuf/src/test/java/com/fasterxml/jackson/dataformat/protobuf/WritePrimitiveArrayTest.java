@@ -260,7 +260,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // skip value
-        assertNull(p.nextFieldName()); // just for funsies
+        assertNull(p.nextName()); // just for funsies
 
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(inputValues[3], p.getLongValue());
@@ -341,7 +341,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertEquals(new BigDecimal(inputValues[0]), p.getDecimalValue());
 
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-        assertNull(p.nextFieldName()); // just for funsies
+        assertNull(p.nextName()); // just for funsies
 
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(Double.valueOf(inputValues[3]), p.getDoubleValue());

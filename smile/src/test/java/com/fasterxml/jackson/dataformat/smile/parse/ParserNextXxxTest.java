@@ -16,7 +16,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         _testIsNextTokenName2();
     }
 
-    public void testNextFieldName() throws Exception
+    public void testnextName() throws Exception
     {
         final int TESTROUNDS = 223;
 
@@ -38,7 +38,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
             assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
             // These will succeed
-            assertTrue(parser.nextFieldName(fieldName));
+            assertTrue(parser.nextName(fieldName));
 
             parser.nextLongValue(-1);
             assertEquals(JsonToken.END_OBJECT, parser.nextToken());
@@ -47,7 +47,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
         // This will fail
-        assertTrue(parser.nextFieldName(fieldName));
+        assertTrue(parser.nextName(fieldName));
         parser.close();
     }
 
@@ -58,7 +58,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         SerializableString fieldName = new SerializedString("field");
         JsonParser parser = _smileParser(DOC);
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertTrue(parser.nextFieldName(fieldName));
+        assertTrue(parser.nextName(fieldName));
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("value", parser.getText());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
@@ -94,7 +94,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         for (int i = 0; i < count; ++i) {
             int exp = rnd.nextInt();
             SerializableString expName = new SerializedString("f"+exp);
-            assertTrue(parser.nextFieldName(expName));
+            assertTrue(parser.nextName(expName));
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(exp % 1000, parser.getIntValue());
         }
@@ -158,32 +158,32 @@ public class ParserNextXxxTest extends BaseTestForSmile
         final byte[] DOC = _smileDoc("{\"name\":123,\"name2\":14,\"x\":\"name\"}", true);
         JsonParser p = _smileParser(DOC);
         final SerializedString NAME = new SerializedString("name");
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
-        assertTrue(p.nextFieldName(NAME));
+        assertTrue(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("x", p.currentName());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.END_OBJECT, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertNull(p.currentToken());
 
         p.close();
@@ -191,30 +191,30 @@ public class ParserNextXxxTest extends BaseTestForSmile
         // Actually, try again with slightly different sequence...
         p = _smileParser(DOC);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertFalse(p.nextFieldName(new SerializedString("Nam")));
+        assertFalse(p.nextName(new SerializedString("Nam")));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("x", p.currentName());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.END_OBJECT, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertNull(p.currentToken());
 
         p.close();
@@ -225,32 +225,32 @@ public class ParserNextXxxTest extends BaseTestForSmile
         final byte[] DOC = _smileDoc("{\"name\":123,\"name2\":14,\"x\":\"name\"}", true);
         JsonParser p = _smileParser(DOC);
         SerializableString NAME = new SerializedString("name");
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
-        assertTrue(p.nextFieldName(NAME));
+        assertTrue(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("x", p.currentName());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.END_OBJECT, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertNull(p.currentToken());
 
         p.close();

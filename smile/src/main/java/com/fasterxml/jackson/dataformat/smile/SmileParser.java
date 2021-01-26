@@ -207,7 +207,6 @@ public class SmileParser extends SmileParserBase
     /**********************************************************************
      */
 
-    // @since 2.8
     private final byte _nextByteGuaranteed() throws JacksonException
     {
         int ptr = _inputPtr;
@@ -364,7 +363,7 @@ public class SmileParser extends SmileParserBase
         // also: clear any data retained so far
         _binaryValue = null;
         // Two main modes: values, and property names.
-        if ((_currToken != JsonToken.PROPERTY_NAME) && _parsingContext.inObject()) {
+        if ((_currToken != JsonToken.PROPERTY_NAME) && _streamReadContext.inObject()) {
             return (_currToken = _handlePropertyName());
         }
         if (_inputPtr >= _inputEnd) {
@@ -463,16 +462,16 @@ public class SmileParser extends SmileParserBase
                 }
                 return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
             case 0x18: // START_ARRAY
-                _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
+                _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
                 return (_currToken = JsonToken.START_ARRAY);
             case 0x19: // END_ARRAY
-                if (!_parsingContext.inArray()) {
+                if (!_streamReadContext.inArray()) {
                     _reportMismatchedEndMarker(']', '}');
                 }
-                _parsingContext = _parsingContext.getParent();
+                _streamReadContext = _streamReadContext.getParent();
                 return (_currToken = JsonToken.END_ARRAY);
             case 0x1A: // START_OBJECT
-                _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
+                _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
                 return (_currToken = JsonToken.START_OBJECT);
             case 0x1B: // not used in this mode; would be END_OBJECT
                 _reportError("Invalid type marker byte 0xFB in value mode (would be END_OBJECT in key mode)");
@@ -562,10 +561,10 @@ public class SmileParser extends SmileParserBase
     //public boolean isExpectedStartObjectToken() { return currentToken() == JsonToken.START_OBJECT; }
 
     @Override
-    public String nextFieldName() throws JacksonException
+    public String nextName() throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting a property name, if not offline:
-        if ((_currToken == JsonToken.PROPERTY_NAME) || !_parsingContext.inObject()) {
+        if ((_currToken == JsonToken.PROPERTY_NAME) || !_streamReadContext.inObject()) {
             // otherwise just fall back to default handling; should occur rarely
             return (nextToken() == JsonToken.PROPERTY_NAME) ? currentName() : null;
         }
@@ -587,7 +586,7 @@ public class SmileParser extends SmileParserBase
         case 0: // misc, including end marker
             switch (ch) {
             case 0x20: // empty String as name, legal if unusual
-                _parsingContext.setCurrentName("");
+                _streamReadContext.setCurrentName("");
                 _currToken = JsonToken.PROPERTY_NAME;
                 return "";
             case 0x30: // long shared
@@ -603,7 +602,7 @@ public class SmileParser extends SmileParserBase
                         _reportInvalidSharedName(index);
                     }
                     String name = _seenNames[index];
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     _currToken = JsonToken.PROPERTY_NAME;
                     return name;
                 }
@@ -620,7 +619,7 @@ public class SmileParser extends SmileParserBase
                     _reportInvalidSharedName(index);
                 }
                 String name = _seenNames[index];
-                _parsingContext.setCurrentName(name);
+                _streamReadContext.setCurrentName(name);
                 _currToken = JsonToken.PROPERTY_NAME;
                 return name;
             }
@@ -640,7 +639,7 @@ public class SmileParser extends SmileParserBase
                     }
                     _seenNames[_seenNameCount++] = name;
                 }
-                _parsingContext.setCurrentName(name);
+                _streamReadContext.setCurrentName(name);
                 _currToken = JsonToken.PROPERTY_NAME;
                 return name;
             }
@@ -650,10 +649,10 @@ public class SmileParser extends SmileParserBase
             {
                 if (ch > 0x37) {
                     if (ch == 0x3B) {
-                        if (!_parsingContext.inObject()) {
+                        if (!_streamReadContext.inObject()) {
                             _reportMismatchedEndMarker('}', ']');
                         }
-                        _parsingContext = _parsingContext.getParent();
+                        _streamReadContext = _streamReadContext.getParent();
                         _currToken = JsonToken.END_OBJECT;
                         return null;
                     }
@@ -672,7 +671,7 @@ public class SmileParser extends SmileParserBase
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     _currToken = JsonToken.PROPERTY_NAME;
                     return name;
                 }
@@ -685,10 +684,10 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public boolean nextFieldName(SerializableString str) throws JacksonException
+    public boolean nextName(SerializableString str) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting a property name, so handle that first:
-        if (_currToken != JsonToken.PROPERTY_NAME && _parsingContext.inObject()) {
+        if (_currToken != JsonToken.PROPERTY_NAME && _streamReadContext.inObject()) {
             // first, clear up state
             _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
@@ -712,7 +711,7 @@ public class SmileParser extends SmileParserBase
                     case 0x20: // empty String as name, legal if unusual
                         _currToken = JsonToken.PROPERTY_NAME;
                         _inputPtr = ptr;
-                        _parsingContext.setCurrentName("");
+                        _streamReadContext.setCurrentName("");
                         return (byteLen == 0);
                     case 0x30: // long shared
                     case 0x31:
@@ -724,7 +723,7 @@ public class SmileParser extends SmileParserBase
                                 _reportInvalidSharedName(index);
                             }
                             String name = _seenNames[index];
-                            _parsingContext.setCurrentName(name);
+                            _streamReadContext.setCurrentName(name);
                             _inputPtr = ptr;
                             _currToken = JsonToken.PROPERTY_NAME;
                             return (name.equals(str.getValue()));
@@ -738,9 +737,9 @@ public class SmileParser extends SmileParserBase
                         if (index >= _seenNameCount) {
                             _reportInvalidSharedName(index);
                         }
-                        _parsingContext.setCurrentName(_seenNames[index]);
+                        _streamReadContext.setCurrentName(_seenNames[index]);
                         String name = _seenNames[index];
-                        _parsingContext.setCurrentName(name);
+                        _streamReadContext.setCurrentName(name);
                         _inputPtr = ptr;
                         _currToken = JsonToken.PROPERTY_NAME;
                         return (name.equals(str.getValue()));
@@ -763,7 +762,7 @@ public class SmileParser extends SmileParserBase
                                }
                                _seenNames[_seenNameCount++] = name;
                             }
-                            _parsingContext.setCurrentName(name);
+                            _streamReadContext.setCurrentName(name);
                             _currToken = JsonToken.PROPERTY_NAME;
                             return true;
                         }
@@ -776,11 +775,11 @@ public class SmileParser extends SmileParserBase
                         if (len > 0x37) {
                             if (len == 0x3B) {
                                 _currToken = JsonToken.END_OBJECT;
-                                if (!_parsingContext.inObject()) {
+                                if (!_streamReadContext.inObject()) {
                                     _reportMismatchedEndMarker('}', ']');
                                 }
                                 _inputPtr = ptr;
-                                _parsingContext = _parsingContext.getParent();
+                                _streamReadContext = _streamReadContext.getParent();
                                 return false;
                             }
                             // error, but let's not worry about that here
@@ -803,7 +802,7 @@ public class SmileParser extends SmileParserBase
                                }
                                _seenNames[_seenNameCount++] = name;
                             }
-                            _parsingContext.setCurrentName(name);
+                            _streamReadContext.setCurrentName(name);
                             _currToken = JsonToken.PROPERTY_NAME;
                             return true;
                         }
@@ -818,10 +817,10 @@ public class SmileParser extends SmileParserBase
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
+    public int nextNameMatch(PropertyNameMatcher matcher) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting a property name, so handle that first:
-        if ((_currToken == JsonToken.PROPERTY_NAME) || !_parsingContext.inObject()) {
+        if ((_currToken == JsonToken.PROPERTY_NAME) || !_streamReadContext.inObject()) {
             nextToken();
             return PropertyNameMatcher.MATCH_ODD_TOKEN;
         }
@@ -845,7 +844,7 @@ public class SmileParser extends SmileParserBase
             switch (ch) {
             case 0x20: // empty String as name, legal if unusual
                 _currToken = JsonToken.PROPERTY_NAME;
-                _parsingContext.setCurrentName("");
+                _streamReadContext.setCurrentName("");
                 return matcher.matchName("");
             case 0x30: // long shared
             case 0x31:
@@ -860,7 +859,7 @@ public class SmileParser extends SmileParserBase
                         _reportInvalidSharedName(index);
                     }
                     String name = _seenNames[index];
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     _currToken = JsonToken.PROPERTY_NAME;
                     return matcher.matchName(name);
                 }
@@ -877,7 +876,7 @@ public class SmileParser extends SmileParserBase
                     _reportInvalidSharedName(index);
                 }
                 String name = _seenNames[index];
-                _parsingContext.setCurrentName(name);
+                _streamReadContext.setCurrentName(name);
                 _currToken = JsonToken.PROPERTY_NAME;
                 return matcher.matchName(name);
             }
@@ -888,7 +887,7 @@ public class SmileParser extends SmileParserBase
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
                     final String name = matcher.nameLookup()[match];
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
                             _seenNames = _expandSeenNames(_seenNames);
@@ -905,10 +904,10 @@ public class SmileParser extends SmileParserBase
             ch &= 0x3F;
             if (ch > 0x37) {
                 if (ch == 0x3B) {
-                    if (!_parsingContext.inObject()) {
+                    if (!_streamReadContext.inObject()) {
                         _reportMismatchedEndMarker('}', ']');
                     }
-                    _parsingContext = _parsingContext.getParent();
+                    _streamReadContext = _streamReadContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
                     return PropertyNameMatcher.MATCH_END_OBJECT;
                 }
@@ -919,7 +918,7 @@ public class SmileParser extends SmileParserBase
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
                     final String name = matcher.nameLookup()[match];
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
                             _seenNames = _expandSeenNames(_seenNames);
@@ -1085,7 +1084,7 @@ public class SmileParser extends SmileParserBase
             }
             _seenNames[_seenNameCount++] = name;
         }
-        _parsingContext.setCurrentName(name);
+        _streamReadContext.setCurrentName(name);
         _currToken = JsonToken.PROPERTY_NAME;
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
         return matcher.matchName(name);
@@ -1117,7 +1116,7 @@ public class SmileParser extends SmileParserBase
             }
             _seenNames[_seenNameCount++] = name;
         }
-        _parsingContext.setCurrentName(name);
+        _streamReadContext.setCurrentName(name);
         _currToken = JsonToken.PROPERTY_NAME;
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
         return matcher.matchName(name);
@@ -1133,7 +1132,7 @@ public class SmileParser extends SmileParserBase
     public String nextTextValue() throws JacksonException
     {
         // can't get text value if expecting name, so
-        if (!_parsingContext.inObject() || _currToken == JsonToken.PROPERTY_NAME) {
+        if (!_streamReadContext.inObject() || _currToken == JsonToken.PROPERTY_NAME) {
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
@@ -1313,7 +1312,7 @@ public class SmileParser extends SmileParserBase
             return null;
         }
         if (t == JsonToken.PROPERTY_NAME) {
-            return _parsingContext.currentName();
+            return _streamReadContext.currentName();
         }
         if (t.isNumeric()) { // TODO: optimize?
             return getNumberValue().toString();
@@ -1332,7 +1331,7 @@ public class SmileParser extends SmileParserBase
                 return _textBuffer.getTextBuffer();
             }
             if (_currToken == JsonToken.PROPERTY_NAME) {
-                return _parsingContext.currentName().toCharArray();
+                return _streamReadContext.currentName().toCharArray();
             }
             if (_currToken.isNumeric()) { // TODO: optimize?
                 return getNumberValue().toString().toCharArray();
@@ -1353,7 +1352,7 @@ public class SmileParser extends SmileParserBase
                 return _textBuffer.size();                
             }
             if (_currToken == JsonToken.PROPERTY_NAME) {
-                return _parsingContext.currentName().length();
+                return _streamReadContext.currentName().length();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
                     || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
@@ -1418,7 +1417,7 @@ public class SmileParser extends SmileParserBase
                 return _textBuffer.contentsToWriter(writer);
             }
             if (t == JsonToken.PROPERTY_NAME) {
-                String n = _parsingContext.currentName();
+                String n = _streamReadContext.currentName();
                 writer.write(n);
                 return n.length();
             }
@@ -1609,7 +1608,7 @@ public class SmileParser extends SmileParserBase
         case 0: // misc, including end marker
             switch (ch) {
             case 0x20: // empty String as name, legal if unusual
-                _parsingContext.setCurrentName("");
+                _streamReadContext.setCurrentName("");
                 return JsonToken.PROPERTY_NAME;
             case 0x30: // long shared
             case 0x31:
@@ -1623,7 +1622,7 @@ public class SmileParser extends SmileParserBase
                     if (index >= _seenNameCount) {
                         _reportInvalidSharedName(index);
                     }
-                    _parsingContext.setCurrentName(_seenNames[index]);
+                    _streamReadContext.setCurrentName(_seenNames[index]);
                 }
                 return JsonToken.PROPERTY_NAME;
             case 0x34: // long ASCII/Unicode name
@@ -1637,7 +1636,7 @@ public class SmileParser extends SmileParserBase
                 if (index >= _seenNameCount) {
                     _reportInvalidSharedName(index);
                 }
-                _parsingContext.setCurrentName(_seenNames[index]);
+                _streamReadContext.setCurrentName(_seenNames[index]);
             }
             return JsonToken.PROPERTY_NAME;
         case 2: // short ASCII
@@ -1656,7 +1655,7 @@ public class SmileParser extends SmileParserBase
                     }
                     _seenNames[_seenNameCount++] = name;
                 }
-                _parsingContext.setCurrentName(name);
+                _streamReadContext.setCurrentName(name);
             }
             return JsonToken.PROPERTY_NAME;                
         case 3: // short Unicode
@@ -1665,10 +1664,10 @@ public class SmileParser extends SmileParserBase
             {
                 if (ch > 0x37) {
                     if (ch == 0x3B) {
-                        if (!_parsingContext.inObject()) {
+                        if (!_streamReadContext.inObject()) {
                             _reportMismatchedEndMarker('}', ']');
                         }
-                        _parsingContext = _parsingContext.getParent();
+                        _streamReadContext = _streamReadContext.getParent();
                         return JsonToken.END_OBJECT;
                     }
                 } else {
@@ -1686,7 +1685,7 @@ public class SmileParser extends SmileParserBase
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     return JsonToken.PROPERTY_NAME;                
                 }
             }
@@ -1997,7 +1996,7 @@ public class SmileParser extends SmileParserBase
            }
            _seenNames[_seenNameCount++] = name;
         }
-        _parsingContext.setCurrentName(name);
+        _streamReadContext.setCurrentName(name);
     }
 
     /**
@@ -2999,7 +2998,7 @@ public class SmileParser extends SmileParserBase
      */
 
     private final JsonToken _eofAsNextToken() throws JacksonException {
-        if (!_parsingContext.inRoot()) {
+        if (!_streamReadContext.inRoot()) {
             _handleEOF();
         }
         close();

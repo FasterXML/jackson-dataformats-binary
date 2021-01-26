@@ -23,8 +23,9 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
+import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+
 import com.amazon.ion.*;
 
 /**
@@ -96,20 +97,20 @@ public class IonParser
      */  
 
     /**
-     * Whether this logical parser has been closed or not
-     */
-    protected boolean _closed;
-
-    /**
      * Information about context in structure hierarchy
      */
-    protected SimpleTokenReadContext _parsingContext;
+    protected SimpleStreamReadContext _StreamReadContext;
 
     /**
      * Type of value token we have; used to temporarily hold information
      * when pointing to field name
      */
     protected JsonToken _valueToken;
+
+    /**
+     * Whether this logical parser has been closed or not
+     */
+    protected boolean _closed;
 
     /*
     /**********************************************************************
@@ -124,7 +125,7 @@ public class IonParser
         _reader = r;
         _ioContext = ioCtxt;
         // No DupDetector in use (yet?)
-        _parsingContext = SimpleTokenReadContext.createRootContext(-1, -1, null);
+        _StreamReadContext = SimpleStreamReadContext.createRootContext(-1, -1, null);
         _system = system;
     }
 
@@ -152,7 +153,7 @@ public class IonParser
     }
 
     @Override
-    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+    public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;
     }
@@ -421,18 +422,18 @@ public class IonParser
      */
 
     @Override
-    public JsonLocation getCurrentLocation() {
+    public JsonLocation currentLocation() {
         return JsonLocation.NA;
     }
 
     @Override
     public String currentName() throws JacksonException {
-        return _parsingContext.currentName();
+        return _StreamReadContext.currentName();
     }
 
-    @Override public TokenStreamContext getParsingContext() {  return _parsingContext; }
-    @Override public void assignCurrentValue(Object v) { _parsingContext.assignCurrentValue(v); }
-    @Override public Object currentValue() { return _parsingContext.currentValue(); }
+    @Override public TokenStreamContext streamReadContext() {  return _StreamReadContext; }
+    @Override public void assignCurrentValue(Object v) { _StreamReadContext.assignCurrentValue(v); }
+    @Override public Object currentValue() { return _StreamReadContext.currentValue(); }
 
     @Override
     public JsonLocation getTokenLocation() {
@@ -448,31 +449,31 @@ public class IonParser
         }
         // also, when starting array/object, need to create new context
         if (_currToken == JsonToken.START_OBJECT) {
-            _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
+            _StreamReadContext = _StreamReadContext.createChildObjectContext(-1, -1);
             _reader.stepIn();
         } else if (_currToken == JsonToken.START_ARRAY) {
-            _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
+            _StreamReadContext = _StreamReadContext.createChildArrayContext(-1, -1);
             _reader.stepIn();
         }
 
         // any more tokens in this scope?
         IonType type = _reader.next();
         if (type == null) {
-            if (_parsingContext.inRoot()) { // EOF?
+            if (_StreamReadContext.inRoot()) { // EOF?
                 close();
                 _currToken = null;
             } else {
-                _parsingContext = _parsingContext.getParent();
+                _StreamReadContext = _StreamReadContext.getParent();
                 _currToken = _reader.isInStruct() ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
                 _reader.stepOut();
             }
             return _currToken;
         }
         // Structs have field names; need to keep track:
-        boolean inStruct = !_parsingContext.inRoot() && _reader.isInStruct();
+        boolean inStruct = !_StreamReadContext.inRoot() && _reader.isInStruct();
         // (isInStruct can return true for the first value read if the reader
         // was created from an IonValue that has a parent container)
-        _parsingContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
+        _StreamReadContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
         JsonToken t = _tokenFromType(type);
         // and return either field name first
         if (inStruct) {
@@ -574,8 +575,8 @@ public class IonParser
     @Override
     protected void _handleEOF() throws StreamReadException
     {
-        if (!_parsingContext.inRoot()) {
-            _reportError(": expected close marker for "+_parsingContext.typeDesc()+" (from "+_parsingContext.getStartLocation(_ioContext.getSourceReference())+")");
+        if (!_StreamReadContext.inRoot()) {
+            _reportError(": expected close marker for "+_StreamReadContext.typeDesc()+" (from "+_StreamReadContext.getStartLocation(_ioContext.getSourceReference())+")");
         }
     }
 }

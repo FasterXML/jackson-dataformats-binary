@@ -192,9 +192,9 @@ public class TestGenerator extends BaseTestForSmile
         final byte[] b = out.toByteArray();
 
         _verifyWithEmpty(f, b, 0); // simple
-        _verifyWithEmpty(f, b, 1); // nextFieldName, any
-        _verifyWithEmpty(f, b, 2); // nextFieldName, mismatch
-        _verifyWithEmpty(f, b, 3); // nextFieldName, match
+        _verifyWithEmpty(f, b, 1); // nextName, any
+        _verifyWithEmpty(f, b, 2); // nextName, mismatch
+        _verifyWithEmpty(f, b, 3); // nextName, match
     }
         
     private void _verifyWithEmpty(SmileFactory f, byte[] b, int mode) throws Exception
@@ -224,14 +224,14 @@ public class TestGenerator extends BaseTestForSmile
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             break;
         case 1:
-            String name = p.nextFieldName();
+            String name = p.nextName();
             assertEquals(exp, name);
             break;
         case 2:
-            assertFalse(p.nextFieldName(new SerializedString(exp+"1")));
+            assertFalse(p.nextName(new SerializedString(exp+"1")));
             break;
         default:
-            assertTrue(p.nextFieldName(new SerializedString(exp)));
+            assertTrue(p.nextName(new SerializedString(exp)));
         }
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(exp, p.currentName());

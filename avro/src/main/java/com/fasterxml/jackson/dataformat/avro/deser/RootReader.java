@@ -47,14 +47,14 @@ public class RootReader extends AvroReadContext
     }
 
     @Override
-    public String nextFieldName() throws IOException {
+    public String nextName() throws IOException {
         // Could create etc, but realistically no names at root level so:
         return null;
 //        return _valueReader.newReader(this, _parser).nextFieldName();
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+    public int nextNameMatch(PropertyNameMatcher matcher) throws IOException {
         return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }
     

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.*;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
+import com.fasterxml.jackson.core.util.SimpleStreamWriteContext;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
@@ -189,7 +189,7 @@ public class SmileGenerator
     /**
      * Object that keeps track of the current contextual state of the generator.
      */
-    protected SimpleTokenWriteContext _tokenWriteContext;
+    protected SimpleStreamWriteContext _streamWriteContext;
 
     /*
     /**********************************************************
@@ -287,7 +287,7 @@ public class SmileGenerator
         _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _tokenWriteContext = SimpleTokenWriteContext.createRootContext(dups);
+        _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
@@ -332,7 +332,7 @@ public class SmileGenerator
         _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-                _tokenWriteContext = SimpleTokenWriteContext.createRootContext(dups);
+                _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -425,7 +425,7 @@ public class SmileGenerator
     }
 
     @Override
-    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+    public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
@@ -453,17 +453,17 @@ public class SmileGenerator
 
     @Override
     public Object currentValue() {
-        return _tokenWriteContext.currentValue();
+        return _streamWriteContext.currentValue();
     }
 
     @Override
     public void assignCurrentValue(Object v) {
-        _tokenWriteContext.assignCurrentValue(v);
+        _streamWriteContext.assignCurrentValue(v);
     }
 
     @Override
-    public TokenStreamContext getOutputContext() {
-        return _tokenWriteContext;
+    public TokenStreamContext streamWriteContext() {
+        return _streamWriteContext;
     }
 
     /*
@@ -479,7 +479,7 @@ public class SmileGenerator
     @Override
     public final void writeName(String name)  throws JacksonException
     {
-        if (!_tokenWriteContext.writeName(name)) {
+        if (!_streamWriteContext.writeName(name)) {
             throw _constructWriteException("Cannot write a property name, expecting a value");
         }
         _writeName(name);
@@ -490,7 +490,7 @@ public class SmileGenerator
         throws JacksonException
     {
         // Object is a value, need to verify it's allowed
-        if (!_tokenWriteContext.writeName(name.getValue())) {
+        if (!_streamWriteContext.writeName(name.getValue())) {
             throw _constructWriteException("Cannot write a property name, expecting a value");
         }
         _writeName(name);
@@ -500,7 +500,7 @@ public class SmileGenerator
     public void writePropertyId(long id) throws JacksonException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        if (!_tokenWriteContext.writeName(idStr)) {
+        if (!_streamWriteContext.writeName(idStr)) {
             throw _constructWriteException("Cannot write a property id, expecting a value");
         }
         _writeName(idStr);
@@ -575,7 +575,7 @@ public class SmileGenerator
     public final void writeStartArray() throws JacksonException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -583,7 +583,7 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue) throws JacksonException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -591,25 +591,25 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue, int size) throws JacksonException
     {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
     @Override
     public final void writeEndArray() throws JacksonException
     {
-        if (!_tokenWriteContext.inArray()) {
-            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
         _writeByte(TOKEN_LITERAL_END_ARRAY);
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws JacksonException
     {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
@@ -617,7 +617,7 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue) throws JacksonException
     {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     
@@ -625,17 +625,17 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue, int size) throws JacksonException
     {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
     @Override
     public final void writeEndObject() throws JacksonException
     {
-        if (!_tokenWriteContext.inObject()) {
-            _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inObject()) {
+            _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
         }
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);
     }
 
@@ -1796,7 +1796,7 @@ public class SmileGenerator
     protected final void _verifyValueWrite(String typeMsg)
         throws JacksonException
     {
-        if (!_tokenWriteContext.writeValue()) {
+        if (!_streamWriteContext.writeValue()) {
             throw _constructWriteException("Cannot "+typeMsg+", expecting a property name");
         }
     }
@@ -1827,7 +1827,7 @@ public class SmileGenerator
         if (_outputBuffer != null
             && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             while (true) {
-                TokenStreamContext ctxt = getOutputContext();
+                TokenStreamContext ctxt = streamWriteContext();
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {

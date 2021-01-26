@@ -38,7 +38,7 @@ public class MapperSimpleReadTest extends CBORTestBase
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("a", p.currentName());
-        assertEquals("{\"a\"}", p.getParsingContext().toString());
+        assertEquals("{\"a\"}", p.streamReadContext().toString());
 
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(1, p.getIntValue());

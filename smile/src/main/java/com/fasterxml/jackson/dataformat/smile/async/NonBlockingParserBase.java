@@ -6,9 +6,9 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 public abstract class NonBlockingParserBase
@@ -256,7 +256,7 @@ public abstract class NonBlockingParserBase
             return null;
         }
         if (t == JsonToken.PROPERTY_NAME) {
-            return _parsingContext.currentName();
+            return _streamReadContext.currentName();
         }
         if (t.isNumeric()) {
             // TODO: optimize?
@@ -272,7 +272,7 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_STRING:
             return _textBuffer.getTextBuffer();
         case JsonTokenId.ID_PROPERTY_NAME:
-            return _parsingContext.currentName().toCharArray();
+            return _streamReadContext.currentName().toCharArray();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
             return getNumberValue().toString().toCharArray();
@@ -291,7 +291,7 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_STRING:
             return _textBuffer.size();
         case JsonTokenId.ID_PROPERTY_NAME:
-            return _parsingContext.currentName().length();
+            return _streamReadContext.currentName().length();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
             return getNumberValue().toString().length();
@@ -371,7 +371,7 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _startArrayScope() throws JacksonException
     {
-        _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
+        _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
         _majorState = MAJOR_ARRAY_ELEMENT;
         _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
         return (_currToken = JsonToken.START_ARRAY);
@@ -379,7 +379,7 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _startObjectScope() throws JacksonException
     {
-        _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
+        _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
         _majorState = MAJOR_OBJECT_FIELD;
         _majorStateAfterValue = MAJOR_OBJECT_FIELD;
         return (_currToken = JsonToken.START_OBJECT);
@@ -387,11 +387,11 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _closeArrayScope() throws JacksonException
     {
-        if (!_parsingContext.inArray()) {
+        if (!_streamReadContext.inArray()) {
             _reportMismatchedEndMarker(']', '}');
         }
-        JsonReadContext ctxt = _parsingContext.getParent();
-        _parsingContext = ctxt;
+        SimpleStreamReadContext ctxt = _streamReadContext.getParent();
+        _streamReadContext = ctxt;
         int st;
         if (ctxt.inObject()) {
             st = MAJOR_OBJECT_FIELD;
@@ -407,11 +407,11 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _closeObjectScope() throws JacksonException
     {
-        if (!_parsingContext.inObject()) {
+        if (!_streamReadContext.inObject()) {
             _reportMismatchedEndMarker('}', ']');
         }
-        JsonReadContext ctxt = _parsingContext.getParent();
-        _parsingContext = ctxt;
+        SimpleStreamReadContext ctxt = _streamReadContext.getParent();
+        _streamReadContext = ctxt;
         int st;
         if (ctxt.inObject()) {
             st = MAJOR_OBJECT_FIELD;
@@ -560,7 +560,7 @@ public abstract class NonBlockingParserBase
      */
     protected final JsonToken _eofAsNextToken() throws JacksonException {
         _majorState = MAJOR_CLOSED;
-        if (!_parsingContext.inRoot()) {
+        if (!_streamReadContext.inRoot()) {
             _handleEOF();
         }
         close();
@@ -588,7 +588,7 @@ public abstract class NonBlockingParserBase
         if (index >= _seenNameCount) {
             _reportInvalidSharedName(index);
         }
-        _parsingContext.setCurrentName(_seenNames[index]);
+        _streamReadContext.setCurrentName(_seenNames[index]);
         _majorState = MAJOR_OBJECT_VALUE;
         return (_currToken = JsonToken.PROPERTY_NAME);
     }

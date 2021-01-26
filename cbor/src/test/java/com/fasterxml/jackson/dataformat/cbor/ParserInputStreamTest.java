@@ -46,13 +46,13 @@ public class ParserInputStreamTest extends CBORTestBase
             parser.nextToken();
             parser.finishToken();
     
-            final long start = parser.getCurrentLocation().getByteOffset();
+            final long start = parser.currentLocation().getByteOffset();
             assertEquals(7999, start);
     
             parser.nextToken();
             parser.finishToken();
     
-            final long end = parser.getCurrentLocation().getByteOffset();
+            final long end = parser.currentLocation().getByteOffset();
             assertEquals(8001, end);
         }
     }

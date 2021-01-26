@@ -65,7 +65,7 @@ public class NumberTest extends AvroTestBase
                 .createParser(LimitingInputStream.wrap(bytes, 42));
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-        assertTrue(p.nextFieldName(new SerializedString("i")));
+        assertTrue(p.nextName(new SerializedString("i")));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
         assertFalse(p.isNaN());
@@ -76,7 +76,7 @@ public class NumberTest extends AvroTestBase
         assertEquals(BigInteger.valueOf(input.i), p.getBigIntegerValue());
         assertEquals(BigDecimal.valueOf(input.i), p.getDecimalValue());
 
-        assertTrue(p.nextFieldName(new SerializedString("l")));
+        assertTrue(p.nextName(new SerializedString("l")));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.LONG, p.getNumberType());
         assertFalse(p.isNaN());
@@ -87,7 +87,7 @@ public class NumberTest extends AvroTestBase
         assertEquals((double) input.l, p.getDoubleValue());
         assertEquals(BigInteger.valueOf(input.l), p.getBigIntegerValue());
 
-        assertTrue(p.nextFieldName(new SerializedString("f")));
+        assertTrue(p.nextName(new SerializedString("f")));
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.FLOAT, p.getNumberType());
         assertFalse(p.isNaN());
@@ -100,7 +100,7 @@ public class NumberTest extends AvroTestBase
         assertEquals((int) input.f, p.getIntValue());
         assertEquals((long) input.f, p.getLongValue());
 
-        assertTrue(p.nextFieldName(new SerializedString("d")));
+        assertTrue(p.nextName(new SerializedString("d")));
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.DOUBLE, p.getNumberType());
         assertFalse(p.isNaN());

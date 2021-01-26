@@ -160,7 +160,7 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    protected CBORWriteContext _tokenWriteContext;
+    protected CBORWriteContext _streamWriteContext;
 
     /*
     /**********************************************************************
@@ -245,7 +245,7 @@ public class CBORGenerator extends GeneratorBase
         DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
-        _tokenWriteContext = CBORWriteContext.createRootContext(dups);
+        _streamWriteContext = CBORWriteContext.createRootContext(dups);
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = true;
@@ -281,7 +281,7 @@ public class CBORGenerator extends GeneratorBase
         DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
-        _tokenWriteContext = CBORWriteContext.createRootContext(dups);
+        _streamWriteContext = CBORWriteContext.createRootContext(dups);
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -320,8 +320,8 @@ public class CBORGenerator extends GeneratorBase
         return true;
     }
 
-    @Override // @since 2.12
-    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+    @Override
+    public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
@@ -349,17 +349,17 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public Object currentValue() {
-        return _tokenWriteContext.currentValue();
+        return _streamWriteContext.currentValue();
     }
 
     @Override
     public void assignCurrentValue(Object v) {
-        _tokenWriteContext.assignCurrentValue(v);
+        _streamWriteContext.assignCurrentValue(v);
     }
 
     @Override
-    public TokenStreamContext getOutputContext() {
-        return _tokenWriteContext;
+    public TokenStreamContext streamWriteContext() {
+        return _streamWriteContext;
     }
 
     /*
@@ -400,7 +400,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeName(String name) throws JacksonException {
-        if (!_tokenWriteContext.writeName(name)) {
+        if (!_streamWriteContext.writeName(name)) {
             _reportError("Can not write a property name, expecting a value");
         }
         _writeString(name);
@@ -410,7 +410,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeName(SerializableString name)
             throws JacksonException {
         // Object is a value, need to verify it's allowed
-        if (!_tokenWriteContext.writeName(name.getValue())) {
+        if (!_streamWriteContext.writeName(name.getValue())) {
             _reportError("Can not write a property name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
@@ -425,7 +425,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writePropertyId(long id) throws JacksonException {
-        if (!_tokenWriteContext.writePropertyId(id)) {
+        if (!_streamWriteContext.writePropertyId(id)) {
             _reportError("Can not write a property id, expecting a value");
         }
         _writeLongNoCheck(id);
@@ -476,7 +476,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -487,7 +487,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -498,7 +498,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeStartArray(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -506,17 +506,17 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndArray() throws JacksonException {
-        if (!_tokenWriteContext.inArray()) {
-            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
         closeComplexElement();
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -527,7 +527,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object forValue) throws JacksonException {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -538,7 +538,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
@@ -546,11 +546,11 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndObject() throws JacksonException {
-        if (!_tokenWriteContext.inObject()) {
-            _reportError("Current context not Object but "+ _tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inObject()) {
+            _reportError("Current context not Object but "+ _streamWriteContext.typeDesc());
         }
         closeComplexElement();
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
     }
 
     @Override
@@ -1091,7 +1091,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws JacksonException {
-        if (!_tokenWriteContext.writeValue()) {
+        if (!_streamWriteContext.writeValue()) {
             _reportError("Cannot " + typeMsg + ", expecting a property name/id");
         }
         // decrementElementsRemainingCount()
@@ -1113,7 +1113,7 @@ public class CBORGenerator extends GeneratorBase
     private void _failSizedArrayOrObject() throws JacksonException
     {
         _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
-                _tokenWriteContext.typeDesc()));
+                _streamWriteContext.typeDesc()));
     }
 
     /*
@@ -1140,7 +1140,7 @@ public class CBORGenerator extends GeneratorBase
         if ((_outputBuffer != null)
                 && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             while (true) {
-                TokenStreamContext ctxt = getOutputContext();
+                TokenStreamContext ctxt = streamWriteContext();
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -1716,7 +1716,7 @@ surr1, surr2));
             break;
         default:
             _reportError(String.format("%s size mismatch: expected %d more elements",
-                    _tokenWriteContext.typeDesc(), _currentRemainingElements));
+                    _streamWriteContext.typeDesc(), _currentRemainingElements));
         }
         _currentRemainingElements = (_elementCountsPtr == 0) 
                 ? INDEFINITE_LENGTH

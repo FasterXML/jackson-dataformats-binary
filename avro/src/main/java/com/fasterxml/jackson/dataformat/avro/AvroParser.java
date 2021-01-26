@@ -8,8 +8,9 @@ import com.fasterxml.jackson.core.base.ParserBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.SimpleTokenReadContext;
+import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
 import com.fasterxml.jackson.core.util.VersionUtil;
+
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 import com.fasterxml.jackson.dataformat.avro.deser.MissingReader;
 
@@ -86,7 +87,7 @@ public abstract class AvroParser extends ParserBase
      * Information about parser context, context in which
      * the next token is to be parsed (root, array, object).
      */
-    protected SimpleTokenReadContext _parsingContext;
+    protected SimpleStreamReadContext _streamReadContext;
 
     protected AvroReadContext _avroContext;
 
@@ -102,7 +103,7 @@ public abstract class AvroParser extends ParserBase
         super(readCtxt, ioCtxt, parserFeatures);    
         _formatFeatures = avroFeatures;
         // null -> No dup checks in Avro (would only be relevant for Maps)
-        _parsingContext = SimpleTokenReadContext.createRootContext(null);
+        _streamReadContext = SimpleStreamReadContext.createRootContext(null);
         _avroContext = MissingReader.instance;
     }
 
@@ -132,7 +133,7 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+    public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;
     }
@@ -143,10 +144,10 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************************
      */
 
-    @Override public TokenStreamContext getParsingContext() { return _parsingContext; }
+    @Override public TokenStreamContext streamReadContext() { return _streamReadContext; }
 
-    @Override public void assignCurrentValue(Object v) { _parsingContext.assignCurrentValue(v); }
-    @Override public Object currentValue() { return _parsingContext.currentValue(); }
+    @Override public void assignCurrentValue(Object v) { _streamReadContext.assignCurrentValue(v); }
+    @Override public Object currentValue() { return _streamReadContext.currentValue(); }
 
     @Override
     protected abstract void _closeInput() throws IOException;
@@ -229,7 +230,7 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public JsonLocation getCurrentLocation() {
+    public JsonLocation currentLocation() {
         // !!! TODO
         return null;
     }

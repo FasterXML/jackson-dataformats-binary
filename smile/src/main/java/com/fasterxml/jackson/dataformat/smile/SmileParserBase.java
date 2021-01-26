@@ -11,9 +11,9 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
-import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
 public abstract class SmileParserBase extends ParserMinimalBase
@@ -21,9 +21,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected final static String[] NO_STRINGS = new String[0];
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Config
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -45,9 +45,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected boolean _mayContainRawBinary;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Generic I/O state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -64,9 +64,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected boolean _closed;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Current input data
-    /**********************************************************
+    /**********************************************************************
      */
 
     // Note: type of actual buffer depends on sub-class, can't include
@@ -82,9 +82,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected int _inputEnd = 0;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Parsing state, location
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -103,12 +103,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Information about parser context, context in which
      * the next token is to be parsed (root, array, object).
      */
-    protected JsonReadContext _parsingContext;
-    
+    protected SimpleStreamReadContext _streamReadContext;
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Decoded values, text, binary
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -127,9 +127,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected byte[] _binaryValue;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Decoded values, numbers
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected NumberType _numberType;
@@ -153,9 +153,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected double _numberDouble;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Symbol handling, decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -192,9 +192,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected int _seenStringValueCount = -1;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Thread-local recycling
-    /**********************************************************
+    /**********************************************************************
      */
     
     /**
@@ -202,19 +202,19 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * to a buffer recycler used to provide a low-cost
      * buffer recycling for Smile-specific buffers.
      */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
+    protected final static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
         = new ThreadLocal<SoftReference<SmileBufferRecycler<String>>>();
 
     /**
      * Helper object used for low-level recycling of Smile-generator
      * specific buffers.
      */
-    final protected SmileBufferRecycler<String> _smileBufferRecycler;
+    protected final SmileBufferRecycler<String> _smileBufferRecycler;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileParserBase(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -227,7 +227,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _symbols = sym;
         DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _parsingContext = JsonReadContext.createRootContext(dups);
+        _streamReadContext = SimpleStreamReadContext.createRootContext(dups);
 
         _textBuffer = ioCtxt.constructTextBuffer();
         _smileBufferRecycler = _smileBufferRecycler();
@@ -246,9 +246,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     /*                                                                                       
-    /**********************************************************                              
+    /**********************************************************************
     /* Versioned                                                                             
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override
@@ -263,7 +263,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     @Override
-    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+    public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;
     }
@@ -273,9 +273,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract methods for sub-classes to provide
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected abstract void _closeInput() throws JacksonException;
@@ -286,14 +286,14 @@ public abstract class SmileParserBase extends ParserMinimalBase
 //  public abstract Object getInputSource();
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract impls
-    /**********************************************************
+    /**********************************************************************
      */
 
-    @Override public final JsonReadContext getParsingContext() { return _parsingContext; }
-    @Override public void assignCurrentValue(Object v) { _parsingContext.assignCurrentValue(v); }
-    @Override public Object currentValue() { return _parsingContext.currentValue(); }
+    @Override public final SimpleStreamReadContext streamReadContext() { return _streamReadContext; }
+    @Override public void assignCurrentValue(Object v) { _streamReadContext.assignCurrentValue(v); }
+    @Override public Object currentValue() { return _streamReadContext.currentValue(); }
     @Override public final boolean isClosed() { return _closed; }
 
     /**
@@ -316,7 +316,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public final JsonLocation getCurrentLocation()
+    public final JsonLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
         return new JsonLocation(_ioContext.getSourceReference(),
@@ -332,9 +332,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final String currentName()
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            return _parsingContext.getParent().currentName();
+            return _streamReadContext.getParent().currentName();
         }
-        return _parsingContext.currentName();
+        return _streamReadContext.currentName();
     }
 
     @Override
@@ -380,9 +380,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected abstract void _releaseBuffers2();
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Numeric accessors of public API
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -532,9 +532,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Numeric conversions
-    /**********************************************************
+    /**********************************************************************
      */    
 
     protected final void convertNumberToInt() throws JacksonException
@@ -689,9 +689,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Internal/package methods: other
-    /**********************************************************
+    /**********************************************************************
      */
     
     /**
@@ -701,18 +701,18 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
     @Override
     protected void _handleEOF() throws StreamReadException {
-        if (!_parsingContext.inRoot()) {
-            String marker = _parsingContext.inArray() ? "Array" : "Object";
+        if (!_streamReadContext.inRoot()) {
+            String marker = _streamReadContext.inArray() ? "Array" : "Object";
             _reportInvalidEOF(String.format(
                     ": expected close marker for %s (start marker at %s)",
                     marker,
-                    _parsingContext.getStartLocation(_getSourceReference())),
+                    _streamReadContext.getStartLocation(_getSourceReference())),
                     null);
         }
     }
 
     protected void _reportMismatchedEndMarker(int actCh, char expCh) throws StreamReadException {
-        JsonReadContext ctxt = getParsingContext();
+        TokenStreamContext ctxt = streamReadContext();
         _reportError(String.format(
                 "Unexpected close marker '%s': expected '%c' (for %s starting at %s)",
                 (char) actCh, expCh, ctxt.typeDesc(), ctxt.getStartLocation(_getSourceReference())));

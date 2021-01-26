@@ -56,7 +56,7 @@ public abstract class MapReader extends AvroStructureReader
     public abstract long getRemainingElements();
 
     @Override
-    public String nextFieldName() throws IOException {
+    public String nextName() throws IOException {
         JsonToken t = nextToken();
         if (t == JsonToken.PROPERTY_NAME) {
             return _currentName;
@@ -65,7 +65,7 @@ public abstract class MapReader extends AvroStructureReader
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+    public int nextNameMatch(PropertyNameMatcher matcher) throws IOException {
         JsonToken t = nextToken();
         if (t == JsonToken.PROPERTY_NAME) {
             // 15-Nov-2017, tatu: Non interned key names

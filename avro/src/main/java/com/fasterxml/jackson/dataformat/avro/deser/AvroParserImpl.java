@@ -111,7 +111,7 @@ public abstract class AvroParserImpl
      */
 
     @Override
-    public String nextFieldName() throws JacksonException
+    public String nextName() throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
@@ -119,7 +119,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name;
         try {
-            name = _avroContext.nextFieldName();
+            name = _avroContext.nextName();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -132,7 +132,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public boolean nextFieldName(SerializableString sstr) throws JacksonException
+    public boolean nextName(SerializableString sstr) throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
@@ -140,7 +140,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name;
         try {
-            name = _avroContext.nextFieldName();
+            name = _avroContext.nextName();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -157,7 +157,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
+    public int nextNameMatch(PropertyNameMatcher matcher) throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
@@ -166,7 +166,7 @@ public abstract class AvroParserImpl
 
         int match;
         try {
-            match = _avroContext.nextFieldName(matcher);
+            match = _avroContext.nextNameMatch(matcher);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }

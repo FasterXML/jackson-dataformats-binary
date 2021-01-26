@@ -103,7 +103,7 @@ public class ProtobufGenerator extends GeneratorBase
     /**
      * Current context, in form we can use it.
      */
-    protected ProtobufWriteContext _tokenWriteContext;
+    protected ProtobufWriteContext _streamWriteContext;
 
     /**
      * Currently active output buffer, place where appends occur.
@@ -134,26 +134,26 @@ public class ProtobufGenerator extends GeneratorBase
         super(writeCtxt, streamWriteFeatures);
         _ioContext = ctxt;
         _output = output;
-        _tokenWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
+        _streamWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
         _schema = Objects.requireNonNull(schema, "Can not pass `null` 'schema'");
         // start with temporary root...
 //        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);
-        _tokenWriteContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
+        _streamWriteContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
     }
 
     @Override
     public final Object currentValue() {
-        return _tokenWriteContext.currentValue();
+        return _streamWriteContext.currentValue();
     }
 
     @Override
     public final void assignCurrentValue(Object v) {
-        _tokenWriteContext.assignCurrentValue(v);
+        _streamWriteContext.assignCurrentValue(v);
     }
 
     @Override
-    public final TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+    public final TokenStreamContext streamWriteContext() { return _streamWriteContext; }
 
     /*
     /**********************************************************************
@@ -178,7 +178,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+    public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
@@ -220,12 +220,12 @@ public class ProtobufGenerator extends GeneratorBase
     public final void writeName(String name) throws JacksonException
     {
         if (!_inObject) {
-            _reportError("Cannot write a property name: current context not Object but "+_tokenWriteContext.typeDesc());
+            _reportError("Cannot write a property name: current context not Object but "+_streamWriteContext.typeDesc());
         }
         ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
         // field means an array until START_OBJECT
-        if (f != null && _tokenWriteContext.notArray()) {
+        if (f != null && _streamWriteContext.notArray()) {
             f = f.nextIf(name);
             if (f == null) {
                 f = _currMessage.field(name);
@@ -244,14 +244,14 @@ public class ProtobufGenerator extends GeneratorBase
                         
             }
         }
-        _tokenWriteContext.setField(f);
+        _streamWriteContext.setField(f);
         _currField = f;
     }
 
     @Override
     public final void writeName(SerializableString sstr) throws JacksonException {
         if (!_inObject) {
-            _reportError("Cannot write a property name: current context not Object but "+_tokenWriteContext.typeDesc());
+            _reportError("Cannot write a property name: current context not Object but "+_streamWriteContext.typeDesc());
         }
         ProtobufField f = _currField;
         final String name = sstr.getValue();
@@ -259,7 +259,7 @@ public class ProtobufGenerator extends GeneratorBase
         // field means an array until START_OBJECT
         // NOTE: not ideal -- depends on if it really is sibling field of an array,
         // or an entry within
-        if (f != null && _tokenWriteContext.notArray()) {
+        if (f != null && _streamWriteContext.notArray()) {
             f = f.nextIf(name);
             if (f == null) {
                 f = _currMessage.field(name);
@@ -278,7 +278,7 @@ public class ProtobufGenerator extends GeneratorBase
                         
             }
         }
-        _tokenWriteContext.setField(f);
+        _streamWriteContext.setField(f);
         _currField = f;
     }
 
@@ -323,7 +323,7 @@ public class ProtobufGenerator extends GeneratorBase
         super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             ProtobufWriteContext ctxt;
-            while ((ctxt = _tokenWriteContext) != null) {
+            while ((ctxt = _streamWriteContext) != null) {
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -377,7 +377,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         // NOTE: do NOT clear _currField; needed for actual element type
 
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext();
+        _streamWriteContext = _streamWriteContext.createChildArrayContext();
         _writeTag = !_currField.packed;
         /* Unpacked vs packed: if unpacked, nothing special is needed, since it
          * is equivalent to just replicating same field N times.
@@ -392,23 +392,23 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeStartArray(Object currValue) throws JacksonException {
         writeStartArray();
-        _tokenWriteContext.assignCurrentValue(currValue);
+        _streamWriteContext.assignCurrentValue(currValue);
     }
 
     @Override
     public final void writeEndArray() throws JacksonException
     {
-        if (!_tokenWriteContext.inArray()) {
-            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
-        _tokenWriteContext = _tokenWriteContext.getParent();
-        if (_tokenWriteContext.inRoot()) {
+        _streamWriteContext = _streamWriteContext.getParent();
+        if (_streamWriteContext.inRoot()) {
             if (!_complete) {
                 _complete();
             }
             _inObject = false;
         } else {
-            _inObject = _tokenWriteContext.inObject();
+            _inObject = _streamWriteContext.inObject();
         }
 
         // no arrays inside arrays, so parent can't be array and so:
@@ -422,7 +422,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeStartObject(Object currValue) throws JacksonException {
         writeStartObject();
-        _tokenWriteContext.assignCurrentValue(currValue);
+        _streamWriteContext.assignCurrentValue(currValue);
     }
 
     @Override
@@ -430,7 +430,7 @@ public class ProtobufGenerator extends GeneratorBase
     {
         if (_currField == null) {
             // root?
-            if (!_tokenWriteContext.inRoot()) {
+            if (!_streamWriteContext.inRoot()) {
                 _reportError("Can not write START_OBJECT without field (message type "+_currMessage.getName()+")");
             }
             _currMessage = _schema.getRootType();
@@ -451,10 +451,10 @@ public class ProtobufGenerator extends GeneratorBase
         }
         
         if (_inObject) {
-            _tokenWriteContext = _tokenWriteContext.createChildObjectContext(_currMessage);
+            _streamWriteContext = _streamWriteContext.createChildObjectContext(_currMessage);
             _currField = null;
         } else { // must be array, then
-            _tokenWriteContext = _tokenWriteContext.createChildObjectContext(_currMessage);
+            _streamWriteContext = _streamWriteContext.createChildObjectContext(_currMessage);
             // but do NOT clear next field here
             _inObject = true;
         }
@@ -466,21 +466,21 @@ public class ProtobufGenerator extends GeneratorBase
     public final void writeEndObject() throws JacksonException
     {
         if (!_inObject) {
-            _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
+            _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
         }
-        _tokenWriteContext = _tokenWriteContext.getParent();
-        if (_tokenWriteContext.inRoot()) {
+        _streamWriteContext = _streamWriteContext.getParent();
+        if (_streamWriteContext.inRoot()) {
             if (!_complete) {
                 _complete();
             }
         } else {
-            _currMessage = _tokenWriteContext.getMessageType();
+            _currMessage = _streamWriteContext.getMessageType();
         }
-        _currField = _tokenWriteContext.getField();
+        _currField = _streamWriteContext.getField();
         // possible that we might be within array, which might be packed:
-        boolean inObj = _tokenWriteContext.inObject();
+        boolean inObj = _streamWriteContext.inObject();
         _inObject = inObj;
-        _writeTag = inObj || !_tokenWriteContext.inArray() || !_currField.packed;
+        _writeTag = inObj || !_streamWriteContext.inArray() || !_currField.packed;
         if (_buffered != null) { // null for root
             _finishBuffering();
         }

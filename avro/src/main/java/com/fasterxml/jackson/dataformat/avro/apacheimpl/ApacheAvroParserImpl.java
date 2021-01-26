@@ -168,7 +168,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
                 return _textValue.length();
             }
             if (t == JsonToken.PROPERTY_NAME) {
-                String n = _parsingContext.currentName();
+                String n = _streamReadContext.currentName();
                 writer.write(n);
                 return n.length();
             }

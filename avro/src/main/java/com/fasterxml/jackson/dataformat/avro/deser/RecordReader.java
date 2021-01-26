@@ -153,7 +153,7 @@ abstract class RecordReader extends AvroStructureReader
         }
 
         @Override
-        public String nextFieldName() throws IOException
+        public String nextName() throws IOException
         {
             if (_state == STATE_NAME) {
                 if (_index < _count) {
@@ -173,7 +173,7 @@ abstract class RecordReader extends AvroStructureReader
         }
 
         @Override
-        public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+        public int nextNameMatch(PropertyNameMatcher matcher) throws IOException {
             if (_state == STATE_NAME) {
                 if (_index < _count) {
                     String name = _fieldReaders[_index].getName();
@@ -250,7 +250,7 @@ abstract class RecordReader extends AvroStructureReader
         }
 
         @Override
-        public String nextFieldName() throws IOException
+        public String nextName() throws IOException
         {
             if (_state == STATE_NAME) {
                 while (_index < _count) {
@@ -274,7 +274,7 @@ abstract class RecordReader extends AvroStructureReader
         }
 
         @Override
-        public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+        public int nextNameMatch(PropertyNameMatcher matcher) throws IOException {
             if (_state == STATE_NAME) {
                 while (_index < _count) {
                     AvroFieldReader r = _fieldReaders[_index];

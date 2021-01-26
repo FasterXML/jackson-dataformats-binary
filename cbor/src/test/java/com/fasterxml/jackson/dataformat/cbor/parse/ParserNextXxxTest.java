@@ -39,7 +39,7 @@ public class ParserNextXxxTest extends CBORTestBase
             assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
             // These will succeed
-            assertTrue(parser.nextFieldName(fieldName));
+            assertTrue(parser.nextName(fieldName));
 
             parser.nextLongValue(-1);
             assertEquals(JsonToken.END_OBJECT, parser.nextToken());
@@ -48,7 +48,7 @@ public class ParserNextXxxTest extends CBORTestBase
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
         // This will fail
-        assertTrue(parser.nextFieldName(fieldName));
+        assertTrue(parser.nextName(fieldName));
         parser.close();
     }
 
@@ -59,7 +59,7 @@ public class ParserNextXxxTest extends CBORTestBase
         SerializableString fieldName = new SerializedString("field");
         JsonParser parser = cborParser(DOC);
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertTrue(parser.nextFieldName(fieldName));
+        assertTrue(parser.nextName(fieldName));
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("value", parser.getText());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
@@ -95,7 +95,7 @@ public class ParserNextXxxTest extends CBORTestBase
         for (int i = 0; i < count; ++i) {
             int exp = rnd.nextInt();
             SerializableString expName = new SerializedString("f"+exp);
-            assertTrue(parser.nextFieldName(expName));
+            assertTrue(parser.nextName(expName));
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(exp % 1000, parser.getIntValue());
         }
@@ -110,24 +110,24 @@ public class ParserNextXxxTest extends CBORTestBase
         SerializableString fieldName = new SerializedString("field");
         JsonParser parser = cborParser(DOC);
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertTrue(parser.nextFieldName(fieldName));
+        assertTrue(parser.nextName(fieldName));
 
         assertEquals("value", parser.nextTextValue());
         assertEquals("value", parser.getText());
 
-        assertEquals("array", parser.nextFieldName());
+        assertEquals("array", parser.nextName());
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals("foo", parser.nextTextValue());
         assertEquals(Boolean.TRUE, parser.nextBooleanValue());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
 
-        assertNull(parser.nextFieldName());
+        assertNull(parser.nextName());
         assertEquals(JsonToken.END_OBJECT, parser.currentToken());
         assertNull(parser.nextToken());
 
         assertNull(parser.nextBooleanValue());
         assertNull(parser.nextTextValue());
-        assertNull(parser.nextFieldName());
+        assertNull(parser.nextName());
         
         parser.close();
     }
@@ -203,32 +203,32 @@ public class ParserNextXxxTest extends CBORTestBase
         final byte[] DOC = cborDoc("{\"name\":123,\"name2\":14,\"x\":\"name\"}");
         JsonParser p = cborParser(DOC);
         final SerializedString NAME = new SerializedString("name");
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
-        assertTrue(p.nextFieldName(NAME));
+        assertTrue(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("x", p.currentName());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.END_OBJECT, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertNull(p.currentToken());
 
         p.close();
@@ -236,30 +236,30 @@ public class ParserNextXxxTest extends CBORTestBase
         // Actually, try again with slightly different sequence...
         p = cborParser(DOC);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertFalse(p.nextFieldName(new SerializedString("Nam")));
+        assertFalse(p.nextName(new SerializedString("Nam")));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("x", p.currentName());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.END_OBJECT, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertNull(p.currentToken());
 
         p.close();
@@ -270,32 +270,32 @@ public class ParserNextXxxTest extends CBORTestBase
         final byte[] DOC = cborDoc("{\"name\":123,\"name2\":-9999999999,\"x\":\"name\"}");
         JsonParser p = cborParser(DOC);
         SerializableString NAME = new SerializedString("name");
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
-        assertTrue(p.nextFieldName(NAME));
+        assertTrue(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(NAME.getValue(), p.currentName());
         assertEquals(NAME.getValue(), p.getText());
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.currentToken());
         assertEquals(123, p.getIntValue());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("name2", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("x", p.currentName());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
 
-        assertFalse(p.nextFieldName(NAME));
+        assertFalse(p.nextName(NAME));
         assertToken(JsonToken.END_OBJECT, p.currentToken());
 
-        assertNull(p.nextFieldName());
+        assertNull(p.nextName());
         assertNull(p.currentToken());
 
         p.close();

@@ -37,16 +37,16 @@ public class NextXxxParsingTest extends ProtobufTestBase
                 .with(schema)
                 .createParser(bytes);
 
-        assertFalse(p.nextFieldName(new SerializedString("values")));
+        assertFalse(p.nextName(new SerializedString("values")));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
         
-        assertTrue(p.nextFieldName(new SerializedString("values")));
+        assertTrue(p.nextName(new SerializedString("values")));
         assertEquals("values", p.currentName());
 
         // 23-May-2016, tatu: Not working properly yet:
 //        assertEquals("{values}", p.getParsingContext().toString());
 
-        assertNull(p.nextFieldName());
+        assertNull(p.nextName());
         assertToken(JsonToken.START_ARRAY, p.currentToken());
 
         assertEquals(input.values[0], p.nextTextValue());
@@ -78,9 +78,9 @@ public class NextXxxParsingTest extends ProtobufTestBase
         assertEquals(-1, p.nextIntValue(-1));
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(Integer.MAX_VALUE, p.nextIntValue(0));
-        assertEquals("y", p.nextFieldName());
+        assertEquals("y", p.nextName());
         assertEquals(-1L, p.nextLongValue(0L));
-        assertEquals("z", p.nextFieldName());
+        assertEquals("z", p.nextName());
         assertEquals(Integer.MIN_VALUE, p.nextIntValue(0));
         assertNull(p.nextBooleanValue());
         assertToken(JsonToken.END_OBJECT, p.currentToken());

@@ -126,7 +126,7 @@ public class AvroGenerator extends GeneratorBase
     /**
      * Current context
      */
-    protected AvroWriteContext _tokenWriteContext;
+    protected AvroWriteContext _streamWriteContext;
 
     /**
      * Lazily constructed encoder; reused in case of writing root-value sequences.
@@ -155,11 +155,11 @@ public class AvroGenerator extends GeneratorBase
         _ioContext = ctxt;
         _formatWriteFeatures = avroFeatures;
         _output = output;
-        _tokenWriteContext = AvroWriteContext.nullContext();
+        _streamWriteContext = AvroWriteContext.nullContext();
         _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
         _rootSchema = Objects.requireNonNull(schema, "Can not pass `null` 'schema'");
         // start with temporary root...
-        _tokenWriteContext = _rootContext = AvroWriteContext.createRootContext(this,
+        _streamWriteContext = _rootContext = AvroWriteContext.createRootContext(this,
                 schema.getAvroSchema(), _encoder);
     }
 
@@ -181,16 +181,16 @@ public class AvroGenerator extends GeneratorBase
      */
     
     @Override
-    public TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+    public TokenStreamContext streamWriteContext() { return _streamWriteContext; }
 
     @Override
     public Object currentValue() {
-        return _tokenWriteContext.currentValue();
+        return _streamWriteContext.currentValue();
     }
 
     @Override
     public void assignCurrentValue(Object v) {
-        _tokenWriteContext.assignCurrentValue(v);
+        _streamWriteContext.assignCurrentValue(v);
     }
 
     /*
@@ -229,7 +229,7 @@ public class AvroGenerator extends GeneratorBase
     public boolean canWriteBinaryNatively() { return true; }
 
     @Override // @since 2.12
-    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+    public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
@@ -276,7 +276,7 @@ public class AvroGenerator extends GeneratorBase
     public final void writeName(String name) throws JacksonException
     {
         try {
-            _tokenWriteContext.writeName(name);
+            _streamWriteContext.writeName(name);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -287,7 +287,7 @@ public class AvroGenerator extends GeneratorBase
         throws JacksonException
     {
         try {
-            _tokenWriteContext.writeName(name.getValue());
+            _streamWriteContext.writeName(name.getValue());
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -298,7 +298,7 @@ public class AvroGenerator extends GeneratorBase
         try {
             // TODO: Should not force construction of a String here...
             String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-            _tokenWriteContext.writeName(idStr);
+            _streamWriteContext.writeName(idStr);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -327,7 +327,7 @@ public class AvroGenerator extends GeneratorBase
         super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             AvroWriteContext ctxt;
-            while ((ctxt = _tokenWriteContext) != null) {
+            while ((ctxt = _streamWriteContext) != null) {
                 if (ctxt.inArray()) {
                     writeEndArray();
                 } else if (ctxt.inObject()) {
@@ -377,58 +377,58 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeStartArray() throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         _complete = false;
     }
 
     @Override
     public final void writeStartArray(Object currValue) throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         _complete = false;
     }
 
     @Override
     public final void writeStartArray(Object currValue, int len) throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         _complete = false;
     }
     
     @Override
     public final void writeEndArray() throws JacksonException
     {
-        if (!_tokenWriteContext.inArray()) {
-            _reportError("Current context not Array but "+_tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
-        _tokenWriteContext = _tokenWriteContext.getParent();
-        if (_tokenWriteContext.inRoot() && !_complete) {
+        _streamWriteContext = _streamWriteContext.getParent();
+        if (_streamWriteContext.inRoot() && !_complete) {
             _complete();
         }
     }
 
     @Override
     public final void writeStartObject() throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         _complete = false;
     }
 
     @Override
     public void writeStartObject(Object forValue) throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _complete = false;
     }
 
     @Override
     public final void writeEndObject() throws JacksonException
     {
-        if (!_tokenWriteContext.inObject()) {
-            _reportError("Current context not Object but "+_tokenWriteContext.typeDesc());
+        if (!_streamWriteContext.inObject()) {
+            _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
         }
-        if (!_tokenWriteContext.canClose()) {
+        if (!_streamWriteContext.canClose()) {
             _reportError("Can not write END_OBJECT after writing FIELD_NAME but not value");
         }
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
 
-        if (_tokenWriteContext.inRoot() && !_complete) {
+        if (_streamWriteContext.inRoot() && !_complete) {
             _complete();
         }
     }
@@ -447,7 +447,7 @@ public class AvroGenerator extends GeneratorBase
             return;
         }
         try {
-            _tokenWriteContext.writeString(text);
+            _streamWriteContext.writeString(text);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -483,7 +483,7 @@ public class AvroGenerator extends GeneratorBase
     public void writeEmbeddedObject(Object object) throws JacksonException {
         if (object instanceof EncodedDatum) {
             try {
-                _tokenWriteContext.writeValue(object);
+                _streamWriteContext.writeValue(object);
             } catch (IOException e) {
                 throw _wrapIOFailure(e);
             }
@@ -541,7 +541,7 @@ public class AvroGenerator extends GeneratorBase
             return;
         }
         try {
-            _tokenWriteContext.writeBinary(data, offset, len);
+            _streamWriteContext.writeBinary(data, offset, len);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -556,7 +556,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeBoolean(boolean state) throws JacksonException {
         try {
-            _tokenWriteContext.writeValue(state ? Boolean.TRUE : Boolean.FALSE);
+            _streamWriteContext.writeValue(state ? Boolean.TRUE : Boolean.FALSE);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -565,7 +565,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeNull() throws JacksonException {
         try {
-            _tokenWriteContext.writeNull();
+            _streamWriteContext.writeNull();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -574,7 +574,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeNumber(short v) throws JacksonException {
         try {
-            _tokenWriteContext.writeValue(Short.valueOf(v));
+            _streamWriteContext.writeValue(Short.valueOf(v));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -583,7 +583,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeNumber(int v) throws JacksonException {
         try {
-            _tokenWriteContext.writeValue(Integer.valueOf(v));
+            _streamWriteContext.writeValue(Integer.valueOf(v));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -592,7 +592,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeNumber(long v) throws JacksonException {
         try {
-            _tokenWriteContext.writeValue(Long.valueOf(v));
+            _streamWriteContext.writeValue(Long.valueOf(v));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -606,7 +606,7 @@ public class AvroGenerator extends GeneratorBase
             return;
         }
         try {
-            _tokenWriteContext.writeValue(v);
+            _streamWriteContext.writeValue(v);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -615,7 +615,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeNumber(double d) throws JacksonException {
         try {
-            _tokenWriteContext.writeValue(Double.valueOf(d));
+            _streamWriteContext.writeValue(Double.valueOf(d));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -624,7 +624,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void writeNumber(float f) throws JacksonException {
         try {
-            _tokenWriteContext.writeValue(Float.valueOf(f));
+            _streamWriteContext.writeValue(Float.valueOf(f));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
@@ -638,7 +638,7 @@ public class AvroGenerator extends GeneratorBase
                 writeNull();
                 return;
             }
-            _tokenWriteContext.writeValue(dec);
+            _streamWriteContext.writeValue(dec);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }

@@ -192,7 +192,7 @@ public class ReadSimpleTest extends ProtobufTestBase
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-        assertEquals("/", p.getParsingContext().toString());
+        assertEquals("/", p.streamReadContext().toString());
         
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("values", p.currentName());

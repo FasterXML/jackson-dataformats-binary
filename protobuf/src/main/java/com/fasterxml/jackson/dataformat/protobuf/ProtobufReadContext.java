@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
 /**
- * Replacement of {@link com.fasterxml.jackson.core.json.JsonReadContext}
+ * Extension of {@link com.fasterxml.jackson.core.TokenStreamContext}
  * to support features needed to decode nested Protobuf messages.
  */
 public final class ProtobufReadContext

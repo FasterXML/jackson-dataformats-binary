@@ -41,10 +41,10 @@ public abstract class AvroReadContext extends TokenStreamContext
 
     public abstract JsonToken nextToken() throws IOException;
 
-    public abstract String nextFieldName() throws IOException;
+    public abstract String nextName() throws IOException;
 
     // @since 3.0
-    public abstract int nextFieldName(PropertyNameMatcher matcher) throws IOException;
+    public abstract int nextNameMatch(PropertyNameMatcher matcher) throws IOException;
 
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 

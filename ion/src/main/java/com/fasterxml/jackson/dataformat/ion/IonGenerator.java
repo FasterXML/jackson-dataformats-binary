@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.SimpleTokenWriteContext;
+import com.fasterxml.jackson.core.util.SimpleStreamWriteContext;
 
 import com.amazon.ion.IonType;
 import com.amazon.ion.IonValue;
@@ -135,7 +135,7 @@ public class IonGenerator
     /**
      * Object that keeps track of the current contextual state of the generator.
      */
-    protected SimpleTokenWriteContext _tokenWriteContext;
+    protected SimpleStreamWriteContext _streamWriteContext;
 
     /*
     /**********************************************************************
@@ -156,7 +156,7 @@ public class IonGenerator
 
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _tokenWriteContext = SimpleTokenWriteContext.createRootContext(dups);
+        _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
     }
 
     @Override
@@ -171,16 +171,16 @@ public class IonGenerator
      */
 
     @Override
-    public TokenStreamContext getOutputContext() { return _tokenWriteContext; }
+    public TokenStreamContext streamWriteContext() { return _streamWriteContext; }
 
     @Override
     public Object currentValue() {
-        return _tokenWriteContext.currentValue();
+        return _streamWriteContext.currentValue();
     }
 
     @Override
     public void assignCurrentValue(Object v) {
-        _tokenWriteContext.assignCurrentValue(v);
+        _streamWriteContext.assignCurrentValue(v);
     }
 
     /*
@@ -260,8 +260,8 @@ public class IonGenerator
     @Override
     public boolean canWriteBinaryNatively() { return true; }
 
-    @Override // @since 2.12
-    public JacksonFeatureSet<StreamWriteCapability> getWriteCapabilities() {
+    @Override
+    public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
 
@@ -566,7 +566,7 @@ public class IonGenerator
     @Override
     protected void _verifyValueWrite(String msg) throws JacksonException
     {
-        if (!_tokenWriteContext.writeValue()) {
+        if (!_streamWriteContext.writeValue()) {
             _reportError("Can not "+msg+", expecting a property name");
         }
         // 05-Oct-2017, tatu: I don't think pretty-printing is supported... is it?
@@ -602,7 +602,7 @@ public class IonGenerator
 
     @Override
     public void writeEndArray() throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
         try {
             _writer.stepOut();
         } catch (IOException e) {
@@ -612,7 +612,7 @@ public class IonGenerator
 
     @Override
     public void writeEndObject() throws JacksonException {
-        _tokenWriteContext = _tokenWriteContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
         try {
             _writer.stepOut();
         } catch (IOException e) {
@@ -623,7 +623,7 @@ public class IonGenerator
     @Override
     public void writeName(String value) throws JacksonException {
         //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
-        if (!_tokenWriteContext.writeName(value)) {
+        if (!_streamWriteContext.writeName(value)) {
             throw _constructWriteException("Can not write a property name, expecting a value");
         }
 
@@ -646,7 +646,7 @@ public class IonGenerator
     @Override
     public void writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         try {
             _writer.stepIn(IonType.LIST);
         } catch (IOException e) {
@@ -657,7 +657,7 @@ public class IonGenerator
     @Override
     public void writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
-        _tokenWriteContext = _tokenWriteContext.createChildArrayContext(currValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         try {
             _writer.stepIn(IonType.LIST);
         } catch (IOException e) {
@@ -668,7 +668,7 @@ public class IonGenerator
     @Override
     public void writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         try {
             _writer.stepIn(IonType.STRUCT);
         } catch (IOException e) {
@@ -679,7 +679,7 @@ public class IonGenerator
     @Override
     public void writeStartObject(Object currValue) throws JacksonException {
         _verifyValueWrite("start an object");
-        _tokenWriteContext = _tokenWriteContext.createChildObjectContext(currValue);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(currValue);
         try {
             _writer.stepIn(IonType.STRUCT);
         } catch (IOException e) {

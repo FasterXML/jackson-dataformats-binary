@@ -65,7 +65,7 @@ public class MapTest extends AvroTestBase
         assertEquals("stuff", p.currentName());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-        String n = p.nextFieldName();
+        String n = p.nextName();
 
         // NOTE: Avro codec does NOT retain ordering, need to accept either ordering
 
@@ -74,7 +74,7 @@ public class MapTest extends AvroTestBase
         }
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
 
-        n = p.nextFieldName();
+        n = p.nextName();
         if (!"a".equals(n) && !"foo".equals(n)) {
             fail("Should get 'foo' or 'a', got '"+n+"'");
         }

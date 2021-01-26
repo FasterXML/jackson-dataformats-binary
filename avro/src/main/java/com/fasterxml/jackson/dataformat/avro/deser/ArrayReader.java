@@ -36,13 +36,13 @@ public abstract class ArrayReader extends AvroStructureReader
     }
 
     @Override
-    public String nextFieldName() throws IOException {
+    public String nextName() throws IOException {
         nextToken();
         return null;
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+    public int nextNameMatch(PropertyNameMatcher matcher) throws IOException {
         nextToken();
         return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }

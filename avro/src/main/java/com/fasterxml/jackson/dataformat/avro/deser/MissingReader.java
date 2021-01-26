@@ -49,13 +49,13 @@ public class MissingReader extends AvroReadContext
     }
 
     @Override
-    public String nextFieldName() throws IOException {
+    public String nextName() throws IOException {
         _checkSchemaSet();
         return null;
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+    public int nextNameMatch(PropertyNameMatcher matcher) throws IOException {
         _checkSchemaSet();
         return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }

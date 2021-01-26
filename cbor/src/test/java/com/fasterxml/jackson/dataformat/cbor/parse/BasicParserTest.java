@@ -22,7 +22,7 @@ public class BasicParserTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = cborGenerator(out);
         gen.writeBoolean(true);
-        assertEquals("/", gen.getOutputContext().toString());
+        assertEquals("/", gen.streamWriteContext().toString());
         gen.close();
         JsonParser p = cborParser(out);
         assertEquals(JsonToken.VALUE_TRUE, p.nextToken());
@@ -35,7 +35,7 @@ public class BasicParserTest extends CBORTestBase
         gen.close();
         p = cborParser(out);
         assertEquals(JsonToken.VALUE_FALSE, p.nextToken());
-        assertEquals("/", p.getParsingContext().toString());
+        assertEquals("/", p.streamReadContext().toString());
         
         assertNull(p.nextToken());
         p.close();
@@ -92,20 +92,20 @@ public class BasicParserTest extends CBORTestBase
         JsonParser p = cborParser(b);
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(1, p.getCurrentLocation().getByteOffset());
+        assertEquals(1, p.currentLocation().getByteOffset());
         p.getText(); // fully read token.
-        assertEquals(11, p.getCurrentLocation().getByteOffset());
+        assertEquals(11, p.currentLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(12, p.getCurrentLocation().getByteOffset());
+        assertEquals(12, p.currentLocation().getByteOffset());
         p.getText();
-        assertEquals(22, p.getCurrentLocation().getByteOffset());
+        assertEquals(22, p.currentLocation().getByteOffset());
 
         assertNull(p.nextToken());
-        assertEquals(22, p.getCurrentLocation().getByteOffset());
+        assertEquals(22, p.currentLocation().getByteOffset());
 
         p.close();
-        assertEquals(22, p.getCurrentLocation().getByteOffset());
+        assertEquals(22, p.currentLocation().getByteOffset());
     }
 
     public void testLongNonChunkedText() throws Exception

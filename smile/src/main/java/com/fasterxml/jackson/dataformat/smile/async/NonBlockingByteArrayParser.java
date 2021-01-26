@@ -68,7 +68,7 @@ public class NonBlockingByteArrayParser
      */
 
     @Override
-    public ByteArrayFeeder getNonBlockingInputFeeder() {
+    public ByteArrayFeeder nonBlockingInputFeeder() {
         return this;
     }
 
@@ -249,7 +249,7 @@ public class NonBlockingByteArrayParser
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
                     return (_currToken = JsonToken.PROPERTY_NAME);
                 }
@@ -534,7 +534,7 @@ public class NonBlockingByteArrayParser
         case 0: // misc, including end marker
             switch (ch) {
             case 0x20: // empty String as name, legal if unusual
-                _parsingContext.setCurrentName("");
+                _streamReadContext.setCurrentName("");
                 _majorState = MAJOR_OBJECT_VALUE;
                 return (_currToken = JsonToken.PROPERTY_NAME);
             case 0x30: // long shared
@@ -574,7 +574,7 @@ public class NonBlockingByteArrayParser
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
                     return (_currToken = JsonToken.PROPERTY_NAME);
                 }
@@ -616,7 +616,7 @@ public class NonBlockingByteArrayParser
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
-                    _parsingContext.setCurrentName(name);
+                    _streamReadContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
                     return (_currToken = JsonToken.PROPERTY_NAME);
                 }
@@ -708,7 +708,7 @@ public class NonBlockingByteArrayParser
            }
            _seenNames[_seenNameCount++] = name;
         }
-        _parsingContext.setCurrentName(name);
+        _streamReadContext.setCurrentName(name);
         _majorState = MAJOR_OBJECT_VALUE;
         return (_currToken = JsonToken.PROPERTY_NAME);
     }

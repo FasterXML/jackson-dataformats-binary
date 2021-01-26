@@ -94,7 +94,7 @@ public class AvroUntypedDeserializer
 
         if (t == JsonToken.START_OBJECT) {
 
-            key1 = p.nextFieldName();
+            key1 = p.nextName();
         } else if (t == JsonToken.PROPERTY_NAME) {
             key1 = p.currentName();
         } else {
@@ -124,7 +124,7 @@ public class AvroUntypedDeserializer
         p.nextToken();
         Object value1 = deserialize(p, ctxt);
 
-        Object key2 = p.nextFieldName();
+        Object key2 = p.nextName();
         if (key2 == null) { // has to be END_OBJECT, then
             // single entry; but we want modifiable
             LinkedHashMap<Object, Object> result = new LinkedHashMap<>(2);
@@ -138,7 +138,7 @@ public class AvroUntypedDeserializer
         p.nextToken();
         Object value2 = deserialize(p, ctxt);
 
-        Object key = p.nextFieldName();
+        Object key = p.nextName();
 
         if (key == null) {
             LinkedHashMap<Object, Object> result = new LinkedHashMap<>(4);
@@ -157,7 +157,7 @@ public class AvroUntypedDeserializer
             }
             p.nextToken();
             result.put(key, deserialize(p, ctxt));
-        } while ((key = p.nextFieldName()) != null);
+        } while ((key = p.nextName()) != null);
         return result;
     }
 }

@@ -152,7 +152,7 @@ public class ProtobufParser extends ParserMinimalBase
      * Information about parser context, context in which
      * the next token is to be parsed (root, array, object).
      */
-    protected ProtobufReadContext _parsingContext;
+    protected ProtobufReadContext _streamReadContext;
 
     /**
      * Buffer that contains contents of String values, including
@@ -298,7 +298,7 @@ public class ProtobufParser extends ParserMinimalBase
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
         _textBuffer = ioCtxt.constructTextBuffer();
-        _parsingContext = ProtobufReadContext.createRootContext();
+        _streamReadContext = ProtobufReadContext.createRootContext();
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
@@ -337,7 +337,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
+    public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
         // Defaults are fine
         return DEFAULT_READ_CAPABILITIES;
     }
@@ -388,7 +388,7 @@ public class ProtobufParser extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public JsonLocation getCurrentLocation()
+    public JsonLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
         return new JsonLocation(_ioContext.getSourceReference(),
@@ -404,10 +404,10 @@ public class ProtobufParser extends ParserMinimalBase
     public String currentName()
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            ProtobufReadContext parent = _parsingContext.getParent();
+            ProtobufReadContext parent = _streamReadContext.getParent();
             return parent.currentName();
         }
-        return _parsingContext.currentName();
+        return _streamReadContext.currentName();
     }
 
     @Override
@@ -430,18 +430,18 @@ public class ProtobufParser extends ParserMinimalBase
     public boolean isClosed() { return _closed; }
 
     @Override
-    public ProtobufReadContext getParsingContext() {
-        return _parsingContext;
+    public ProtobufReadContext streamReadContext() {
+        return _streamReadContext;
     }
 
     @Override
     public void assignCurrentValue(Object v) {
-        _parsingContext.assignCurrentValue(v);
+        _streamReadContext.assignCurrentValue(v);
     }
 
     @Override
     public Object currentValue() {
-        return _parsingContext.currentValue();
+        return _streamReadContext.currentValue();
     }
     
     /*
@@ -532,7 +532,7 @@ public class ProtobufParser extends ParserMinimalBase
             _currentMessage = _schema.getRootType();
             _currentField = _currentMessage.firstField();
             _state = STATE_ROOT_KEY;
-            _parsingContext.setMessageType(_currentMessage);            
+            _streamReadContext.setMessageType(_currentMessage);            
             return (_currToken = JsonToken.START_OBJECT);
 
         case STATE_ROOT_KEY:
@@ -557,7 +557,7 @@ public class ProtobufParser extends ParserMinimalBase
             return _handleNestedKey(_decodeVInt());
 
         case STATE_ARRAY_START:
-            _parsingContext = _parsingContext.createChildArrayContext(_currentField);            
+            _streamReadContext = _streamReadContext.createChildArrayContext(_currentField);            
             _state = STATE_ARRAY_VALUE_FIRST;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -567,14 +567,14 @@ public class ProtobufParser extends ParserMinimalBase
             int newEnd = _inputPtr + len;
 
             // First: validate that we do not extend past end offset of enclosing message
-            if (!_parsingContext.inRoot()) {
+            if (!_streamReadContext.inRoot()) {
                 if (newEnd > _currentEndOffset) {
                     _reportErrorF("Packed array for field '%s' (of type %s) extends past end of enclosing message: %d > %d (length: %d)",
                             _currentField.name, _currentMessage.getName(), newEnd, _currentEndOffset, len);
                 }
             }
             _currentEndOffset = newEnd; 
-            _parsingContext = _parsingContext.createChildArrayContext(_currentField, newEnd);            
+            _streamReadContext = _streamReadContext.createChildArrayContext(_currentField, newEnd);            
             _state = STATE_ARRAY_VALUE_PACKED;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -592,12 +592,12 @@ public class ProtobufParser extends ParserMinimalBase
             }
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    ProtobufReadContext parent = _parsingContext.getParent();
+                    ProtobufReadContext parent = _streamReadContext.getParent();
                     // Ok to end if and only if root value
                     if (!parent.inRoot()) {
                         _reportInvalidEOF();
                     }
-                    _parsingContext = parent;
+                    _streamReadContext = parent;
                     _currentField = parent.getField();
                     _state = STATE_MESSAGE_END;
                     return (_currToken = JsonToken.END_ARRAY);
@@ -614,8 +614,8 @@ public class ProtobufParser extends ParserMinimalBase
                 }
                 // otherwise, different field, need to end this array
                 _nextTag = tag;
-                ProtobufReadContext parent = _parsingContext.getParent();
-                _parsingContext = parent;
+                ProtobufReadContext parent = _streamReadContext.getParent();
+                _streamReadContext = parent;
                 _currentField = parent.getField();
                 _state = STATE_ARRAY_END;
                 return (_currToken = JsonToken.END_ARRAY);
@@ -637,7 +637,7 @@ public class ProtobufParser extends ParserMinimalBase
             // We have returned END_ARRAY; now back to similar to STATE_ROOT_KEY / STATE_NESTED_KEY
             
             // First, similar to STATE_ROOT_KEY:
-            if (_parsingContext.inRoot()) {
+            if (_streamReadContext.inRoot()) {
                 return _handleRootKey(_nextTag);
             }
             return _handleNestedKey(_nextTag);
@@ -671,14 +671,14 @@ public class ProtobufParser extends ParserMinimalBase
             _reportErrorF("Decoding: current inputPtr (%d) exceeds end offset (%d) (for message of type %s): corrupt content?",
                     _inputPtr, _currentEndOffset, _currentMessage.getName());
         }
-        ProtobufReadContext parentCtxt = _parsingContext.getParent();
-        _parsingContext = parentCtxt;
+        ProtobufReadContext parentCtxt = _streamReadContext.getParent();
+        _streamReadContext = parentCtxt;
         _currentMessage = parentCtxt.getMessageType();
         _currentEndOffset = parentCtxt.getEndOffset();
         _currentField = parentCtxt.getField();
-        if (_parsingContext.inRoot()) {
+        if (_streamReadContext.inRoot()) {
             _state =  STATE_ROOT_KEY;
-        } else if (_parsingContext.inArray()) {
+        } else if (_streamReadContext.inArray()) {
             _state = _currentField.packed ? STATE_ARRAY_VALUE_PACKED : STATE_ARRAY_VALUE_OTHER;
         } else {
             _state = STATE_NESTED_KEY;
@@ -703,7 +703,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return _skipUnknownField(id, wireType);
             }
         }
-        _parsingContext.setCurrentName(f.name);
+        _streamReadContext.setCurrentName(f.name);
         // otherwise quickly validate compatibility
         if (!f.isValidFor(wireType)) {
             _reportIncompatibleType(f, wireType);
@@ -747,7 +747,7 @@ public class ProtobufParser extends ParserMinimalBase
         if (f == null) {
             return _skipUnknownField(id, wireType);
         }
-        _parsingContext.setCurrentName(f.name);
+        _streamReadContext.setCurrentName(f.name);
         if (!f.isValidFor(wireType)) {
             _reportIncompatibleType(f, wireType);
         }
@@ -894,7 +894,7 @@ public class ProtobufParser extends ParserMinimalBase
                 }
                 _currentEndOffset = newEnd; 
                 _state = STATE_NESTED_KEY;
-                _parsingContext = _parsingContext.createChildObjectContext(msg, _currentField, newEnd);            
+                _streamReadContext = _streamReadContext.createChildObjectContext(msg, _currentField, newEnd);            
                 _currentField = msg.firstField();
             }
             return JsonToken.START_OBJECT;
@@ -938,7 +938,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_currentField == null) {
                 continue;
             }
-            _parsingContext.setCurrentName(_currentField.name);
+            _streamReadContext.setCurrentName(_currentField.name);
             _state = STATE_ROOT_VALUE;
             // otherwise quickly validate compatibility
             if (!_currentField.isValidFor(wireType)) {
@@ -972,12 +972,12 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Public API, traversal, optimized: nextFieldName()
+    /* Public API, traversal, optimized: nextName()
     /**********************************************************************
      */
 
     @Override
-    public String nextFieldName() throws JacksonException
+    public String nextName() throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
@@ -1001,7 +1001,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // sub-optimal as skip method already set it, but:
             }
             String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
@@ -1038,7 +1038,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // sub-optimal as skip method already set it, but:
             }
             final String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
@@ -1064,7 +1064,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public boolean nextFieldName(SerializableString sstr) throws JacksonException
+    public boolean nextName(SerializableString sstr) throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
@@ -1087,7 +1087,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return false;
             }
             String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
@@ -1123,7 +1123,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return false;
             }
             final String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
@@ -1149,7 +1149,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
+    public int nextNameMatch(PropertyNameMatcher matcher) throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
@@ -1177,7 +1177,7 @@ public class ProtobufParser extends ParserMinimalBase
                 wireType = _currentField.wireType;
             }
             String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
@@ -1215,7 +1215,7 @@ public class ProtobufParser extends ParserMinimalBase
                 wireType = _currentField.wireType;
             }
             final String name = _currentField.name;
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
@@ -1235,10 +1235,10 @@ public class ProtobufParser extends ParserMinimalBase
             return PropertyNameMatcher.MATCH_END_OBJECT;
         }
         // 13-Nov-2017, tatu: Can this ever return a field name?
-        return _nextFieldName2(matcher);
+        return _nextNameMatch2(matcher);
     }
 
-    private int _nextFieldName2(PropertyNameMatcher matcher) throws JacksonException
+    private int _nextNameMatch2(PropertyNameMatcher matcher) throws JacksonException
     {
         JsonToken t = nextToken();
         if (t == JsonToken.PROPERTY_NAME) {
@@ -1295,12 +1295,12 @@ public class ProtobufParser extends ParserMinimalBase
             }
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    ProtobufReadContext parent = _parsingContext.getParent();
+                    ProtobufReadContext parent = _streamReadContext.getParent();
                     // Ok to end if and only if root value
                     if (!parent.inRoot()) {
                         _reportInvalidEOF();
                     }
-                    _parsingContext = parent;
+                    _streamReadContext = parent;
                     _currentField = parent.getField();
                     _state = STATE_MESSAGE_END;
                     _currToken = JsonToken.END_ARRAY;
@@ -1319,8 +1319,8 @@ public class ProtobufParser extends ParserMinimalBase
                 }
                 // otherwise, different field, need to end this array
                 _nextTag = tag;
-                ProtobufReadContext parent = _parsingContext.getParent();
-                _parsingContext = parent;
+                ProtobufReadContext parent = _streamReadContext.getParent();
+                _streamReadContext = parent;
                 _currentField = parent.getField();
             }
             _state = STATE_ARRAY_END;
@@ -1399,7 +1399,7 @@ public class ProtobufParser extends ParserMinimalBase
             return null;
         }
         if (t == JsonToken.PROPERTY_NAME) {
-            return _parsingContext.currentName();
+            return _streamReadContext.currentName();
         }
         if (t.isNumeric()) {
             return getNumberValue().toString();
@@ -1418,7 +1418,7 @@ public class ProtobufParser extends ParserMinimalBase
             case VALUE_STRING:
                 return _textBuffer.getTextBuffer();
             case PROPERTY_NAME:
-                return _parsingContext.currentName().toCharArray();
+                return _streamReadContext.currentName().toCharArray();
                 // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -1442,7 +1442,7 @@ public class ProtobufParser extends ParserMinimalBase
             case VALUE_STRING:
                 return _textBuffer.size();                
             case PROPERTY_NAME:
-                return _parsingContext.currentName().length();
+                return _streamReadContext.currentName().length();
                 // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -1511,7 +1511,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return _textBuffer.contentsToWriter(writer);
             }
             if (t == JsonToken.PROPERTY_NAME) {
-                String n = _parsingContext.currentName();
+                String n = _streamReadContext.currentName();
                 writer.write(n);
                 return n.length();
             }
@@ -2159,7 +2159,7 @@ public class ProtobufParser extends ParserMinimalBase
                 throw _wrapIOFailure(e);
             }
             if (count > 0) {
-                _currentEndOffset = _parsingContext.adjustEnd(_inputEnd);
+                _currentEndOffset = _streamReadContext.adjustEnd(_inputEnd);
                 _inputPtr = 0;
                 _inputEnd = count;
                 return true;
@@ -2197,7 +2197,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (amount > 0) {
                 System.arraycopy(_inputBuffer, ptr, _inputBuffer, 0, amount);
             }
-            _currentEndOffset = _parsingContext.adjustEnd(ptr);
+            _currentEndOffset = _streamReadContext.adjustEnd(ptr);
         }
         _inputPtr = 0;
         _inputEnd = amount;
@@ -2252,12 +2252,12 @@ public class ProtobufParser extends ParserMinimalBase
 
     @Override
     protected void _handleEOF() throws StreamReadException {
-        if (!_parsingContext.inRoot()) {
-            String marker = _parsingContext.inArray() ? "Array" : "Object";
+        if (!_streamReadContext.inRoot()) {
+            String marker = _streamReadContext.inArray() ? "Array" : "Object";
             _reportInvalidEOF(String.format(
                     ": expected close marker for %s (start marker at %s)",
                     marker,
-                    _parsingContext.getStartLocation(
+                    _streamReadContext.getStartLocation(
                             _ioContext.getSourceReference(),  _currInputProcessed)),
                     null);
         }

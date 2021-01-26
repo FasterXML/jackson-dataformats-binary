@@ -26,7 +26,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
             p.nextToken();
         }
         assertToken(JsonToken.START_OBJECT, p.currentToken()); // main object
-        assertEquals("{?}", p.getParsingContext().toString());
+        assertEquals("{?}", p.streamReadContext().toString());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Image'
         if (verifyContents) {
@@ -94,7 +94,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
 
         assertToken(JsonToken.END_OBJECT, p.nextToken()); // 'thumbnail' object
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'IDs'
-        assertEquals("{\"IDs\"}", p.getParsingContext().toString());
+        assertEquals("{\"IDs\"}", p.streamReadContext().toString());
         assertToken(JsonToken.START_ARRAY, p.nextToken()); // 'ids' array
         verifyIntToken(p.nextToken(), requireNumbers); // ids[0]
         if (verifyContents) {
@@ -105,7 +105,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
             verifyIntValue(p, SAMPLE_SPEC_VALUE_TN_ID2);
         }
         verifyIntToken(p.nextToken(), requireNumbers); // ids[2]
-        assertEquals("[2]", p.getParsingContext().toString());
+        assertEquals("[2]", p.streamReadContext().toString());
         if (verifyContents) {
             verifyIntValue(p, SAMPLE_SPEC_VALUE_TN_ID3);
         }
@@ -118,7 +118,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken()); // 'image' object
 
         assertToken(JsonToken.END_OBJECT, p.nextToken()); // main object
-        assertEquals("/", p.getParsingContext().toString());
+        assertEquals("/", p.streamReadContext().toString());
     }
 
     private void verifyIntToken(JsonToken t, boolean requireNumbers)
