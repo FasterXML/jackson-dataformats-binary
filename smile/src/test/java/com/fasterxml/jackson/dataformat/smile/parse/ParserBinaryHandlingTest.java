@@ -146,7 +146,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
             JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bo);
             g.writeStartObject();
-            g.writeFieldName("binary");
+            g.writeName("binary");
             g.writeBinary(data);
             g.writeEndObject();
             g.close();
@@ -156,7 +156,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             JsonParser p = _smileParser(smile);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("binary", p.currentName());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] result = p.getBinaryValue();
@@ -168,7 +168,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             // and second time around, skipping
             p = _smileParser(smile);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
@@ -186,7 +186,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size+10);            
             JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), bo);
             g.writeStartObject();
-            g.writeFieldName("b");
+            g.writeName("b");
             g.writeBinary(data);
             g.writeEndObject();
             g.close();
@@ -196,7 +196,7 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
             JsonParser p = _smileParser(smile);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("b", p.currentName());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             ByteArrayOutputStream result = new ByteArrayOutputStream(size);

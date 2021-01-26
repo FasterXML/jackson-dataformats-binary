@@ -37,7 +37,7 @@ public class TestParserNames extends BaseTestForSmile
         JsonParser p = _smileParser(new ByteArrayInputStream(data));
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(name, p.currentName());
 
         // but also let's verify we can override the name if need be

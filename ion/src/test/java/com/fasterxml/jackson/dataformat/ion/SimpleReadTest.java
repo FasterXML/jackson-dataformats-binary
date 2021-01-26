@@ -33,7 +33,7 @@ public class SimpleReadTest
     {
         JsonParser p = MAPPER.createParser("{a:\"value\",b:42, c:null}");
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("a", p.currentName());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("value", p.getText());
@@ -66,7 +66,7 @@ public class SimpleReadTest
     {
         JsonParser p = MAPPER.createParser("{a:[\"b\",\"c\"], b:null}");
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("a", p.currentName());
         assertEquals(JsonToken.START_ARRAY, p.nextToken());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
@@ -74,7 +74,7 @@ public class SimpleReadTest
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("c", p.getText());
         assertEquals(JsonToken.END_ARRAY, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("b", p.currentName());
         assertEquals(JsonToken.VALUE_NULL, p.nextToken());
         assertEquals("b", p.currentName());
@@ -114,7 +114,7 @@ public class SimpleReadTest
     public void testNullIonType() throws IOException {
         JsonParser p = MAPPER.createParser("{a:\"value\",b:42, c:null.int}");
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("a", p.currentName());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("value", p.getText());

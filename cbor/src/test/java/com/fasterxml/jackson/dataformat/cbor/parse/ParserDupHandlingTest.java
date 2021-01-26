@@ -44,7 +44,7 @@ public class ParserDupHandlingTest extends CBORTestBase
             while (p.nextToken() != null) { }
             fail("Should have caught dups in document: "+doc);
         } catch (StreamReadException e) {
-            verifyException(e, "duplicate field '"+name+"'");
+            verifyException(e, "duplicate Object property \""+name+"\"");
         }
         p.close();
     }

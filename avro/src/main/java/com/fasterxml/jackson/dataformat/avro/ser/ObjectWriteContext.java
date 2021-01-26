@@ -55,7 +55,7 @@ public final class ObjectWriteContext
     }
 
     @Override
-    public final boolean writeFieldName(String name)
+    public final boolean writeName(String name)
     {
         _currentName = name;
         _expectValue = true;

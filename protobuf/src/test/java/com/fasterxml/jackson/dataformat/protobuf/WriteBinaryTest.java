@@ -58,13 +58,13 @@ public class WriteBinaryTest extends ProtobufTestBase
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertFalse(p.hasTextCharacters());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(input.trailer, p.getIntValue());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("data", p.currentName());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         _verify(data, p.getBinaryValue());
@@ -77,11 +77,11 @@ public class WriteBinaryTest extends ProtobufTestBase
                 .with(schema)
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(input.trailer, p.nextIntValue(-1));
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();

@@ -27,7 +27,7 @@ public final class MapWriteContext
     public Object rawValue() { return _data; }
 
     @Override
-    public final boolean writeFieldName(String name)
+    public final boolean writeName(String name)
     {
         _currentName = name;
         _expectValue = true;

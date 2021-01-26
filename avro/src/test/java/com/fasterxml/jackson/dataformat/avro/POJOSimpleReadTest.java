@@ -57,7 +57,7 @@ public class POJOSimpleReadTest extends AvroTestBase
             assertSame(in, p.getInputSource());
         }
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertFalse(p.hasTextCharacters());
         assertEquals("name", p.currentName());
         assertEquals("name", p.getText());
@@ -69,7 +69,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertEquals(empl.name, sw.toString());
 
         assertTrue(p.hasTextCharacters());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("age", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
@@ -77,7 +77,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertEquals(empl.age, p.getIntValue());
         assertFalse(p.isNaN());
         assertEquals((double) empl.age, p.getDoubleValue());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
 
         assertEquals("emails", p.currentName());
         sw  = new StringWriter();
@@ -91,11 +91,11 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertEquals(empl.emails[1], p.getText());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("boss", p.currentName());
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("name", p.currentName());
         // and then skip various bits and pieces
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -108,7 +108,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertToken(JsonToken.VALUE_STRING, p.currentToken());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertFalse(p.nextFieldName(new SerializedString("bossy")));
-        assertToken(JsonToken.FIELD_NAME, p.currentToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals("boss", p.currentName());
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
 

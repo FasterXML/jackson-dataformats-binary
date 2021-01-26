@@ -33,17 +33,17 @@ public final class CBORReadContext
     protected Object _currentValue;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Simple instance reuse slots
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected CBORReadContext _child = null;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Instance construction, reuse
-    /**********************************************************
+    /**********************************************************************
      */
 
     public CBORReadContext(CBORReadContext parent, DupDetector dups,
@@ -112,9 +112,9 @@ public final class CBORReadContext
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Abstract method implementation
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -124,9 +124,9 @@ public final class CBORReadContext
     public CBORReadContext getParent() { return _parent; }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Extended API
-    /**********************************************************
+    /**********************************************************************
      */
 
     public boolean hasExpectedLength() { return (_expEntryCount >= 0); }
@@ -159,9 +159,9 @@ public final class CBORReadContext
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* State changes
-    /**********************************************************
+    /**********************************************************************
      */
 
     public void setCurrentName(String name) throws StreamReadException
@@ -175,16 +175,16 @@ public final class CBORReadContext
     private void _checkDup(DupDetector dd, String name) throws StreamReadException
     {
         if (dd.isDup(name)) {
-            // 04-MAy-2016, tatu: Would be great to pass JsonParser, alas, not available so:
-            throw new StreamReadException(null,
-                    "Duplicate field '"+name+"'", dd.findLocation());
+            Object src = dd.getSource();
+            throw new StreamReadException(((src instanceof JsonParser) ? ((JsonParser) src) : null),
+                    "Duplicate Object property \""+name+"\"");
         }
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overridden standard methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**

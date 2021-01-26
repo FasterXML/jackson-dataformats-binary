@@ -21,10 +21,10 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartArray();
         gen.writeStartObject();
-        gen.writeNumberField("abc", 1);
+        gen.writeNumberProperty("abc", 1);
         gen.writeEndObject();
         gen.writeStartObject();
-        gen.writeNumberField("abc", 2);
+        gen.writeNumberProperty("abc", 2);
         gen.writeEndObject();
         gen.writeEndArray();
         gen.close();
@@ -57,10 +57,10 @@ public class TestGeneratorSymbols extends BaseTestForSmile
             SmileGenerator gen = _smileGenerator(out, false);
             gen.writeStartArray();
             gen.writeStartObject();
-            gen.writeNumberField(field, 1);
+            gen.writeNumberProperty(field, 1);
             gen.writeEndObject();
             gen.writeStartObject();
-            gen.writeNumberField(field, 2);
+            gen.writeNumberProperty(field, 2);
             gen.writeEndObject();
             gen.writeEndArray();
             gen.close();
@@ -72,14 +72,14 @@ public class TestGeneratorSymbols extends BaseTestForSmile
             assertToken(JsonToken.START_ARRAY, parser.nextToken());
     
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
-            assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
             assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(1, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
     
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
-            assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
             assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(2, parser.getIntValue());
@@ -211,7 +211,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     public void _testLongNames(boolean shareNames) throws Exception
     {
         // 68 bytes long (on boundary)
-        final String FIELD_NAME = "dossier.domaine.supportsDeclaratifsForES.SupportDeclaratif.reference";
+        final String PROPERTY_NAME = "dossier.domaine.supportsDeclaratifsForES.SupportDeclaratif.reference";
         final String VALUE = "11111";
         
         SmileFactory factory = SmileFactory.builder()
@@ -220,8 +220,8 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         JsonGenerator gen = factory.createGenerator(ObjectWriteContext.empty(), os);
         gen.writeStartObject();
-        gen.writeObjectFieldStart("query");
-        gen.writeStringField(FIELD_NAME, VALUE);
+        gen.writeObjectPropertyStart("query");
+        gen.writeStringProperty(PROPERTY_NAME, VALUE);
         gen.writeEndObject();
         gen.writeEndObject();
         gen.close();
@@ -230,11 +230,11 @@ public class TestGeneratorSymbols extends BaseTestForSmile
                 os.toByteArray());
         assertNull(parser.currentToken());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
-        assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("query", parser.currentName());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
-        assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals(FIELD_NAME, parser.currentName());
+        assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
+        assertEquals(PROPERTY_NAME, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals(VALUE, parser.getText());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());

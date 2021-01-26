@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 
 public abstract class ArrayReader extends AvroStructureReader
 {
@@ -42,9 +42,9 @@ public abstract class ArrayReader extends AvroStructureReader
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
         nextToken();
-        return FieldNameMatcher.MATCH_ODD_TOKEN;
+        return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }
 
     @Override

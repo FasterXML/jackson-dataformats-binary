@@ -399,19 +399,19 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeFieldName(String name) throws JacksonException {
-        if (!_tokenWriteContext.writeFieldName(name)) {
-            _reportError("Can not write a field name, expecting a value");
+    public final void writeName(String name) throws JacksonException {
+        if (!_tokenWriteContext.writeName(name)) {
+            _reportError("Can not write a property name, expecting a value");
         }
         _writeString(name);
     }
 
     @Override
-    public final void writeFieldName(SerializableString name)
+    public final void writeName(SerializableString name)
             throws JacksonException {
         // Object is a value, need to verify it's allowed
-        if (!_tokenWriteContext.writeFieldName(name.getValue())) {
-            _reportError("Can not write a field name, expecting a value");
+        if (!_tokenWriteContext.writeName(name.getValue())) {
+            _reportError("Can not write a property name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
         final int len = raw.length;
@@ -424,9 +424,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeFieldId(long id) throws JacksonException {
-        if (!_tokenWriteContext.writeFieldId(id)) {
-            _reportError("Can not write a field id, expecting a value");
+    public final void writePropertyId(long id) throws JacksonException {
+        if (!_tokenWriteContext.writePropertyId(id)) {
+            _reportError("Can not write a property id, expecting a value");
         }
         _writeLongNoCheck(id);
     }

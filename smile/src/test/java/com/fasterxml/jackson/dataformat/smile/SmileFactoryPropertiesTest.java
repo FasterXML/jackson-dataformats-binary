@@ -60,7 +60,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
 
         SmileParser sp = (SmileParser) f2.createParser(ObjectReadContext.empty(), doc);
         assertToken(JsonToken.START_OBJECT, sp.nextToken());
-        assertToken(JsonToken.FIELD_NAME, sp.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, sp.nextToken());
         sp.close();
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

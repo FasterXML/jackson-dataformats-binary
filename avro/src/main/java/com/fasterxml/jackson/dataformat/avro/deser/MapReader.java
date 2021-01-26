@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 
 public abstract class MapReader extends AvroStructureReader
 {
@@ -58,23 +58,23 @@ public abstract class MapReader extends AvroStructureReader
     @Override
     public String nextFieldName() throws IOException {
         JsonToken t = nextToken();
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             return _currentName;
         }
         return null;
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
         JsonToken t = nextToken();
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             // 15-Nov-2017, tatu: Non interned key names
             return matcher.matchName(_currentName);
         }
         if (t == JsonToken.END_OBJECT) {
-            return FieldNameMatcher.MATCH_END_OBJECT;
+            return PropertyNameMatcher.MATCH_END_OBJECT;
         }
-        return FieldNameMatcher.MATCH_ODD_TOKEN;
+        return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }
 
     @Override
@@ -96,7 +96,7 @@ public abstract class MapReader extends AvroStructureReader
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.END_OBJECT) {
             return super.getTypeId();
         }
-        if (_currToken == JsonToken.FIELD_NAME && _state == STATE_VALUE) {
+        if (_currToken == JsonToken.PROPERTY_NAME && _state == STATE_VALUE) {
             return _keyTypeId;
         }
         return _valueTypeId;
@@ -147,7 +147,7 @@ public abstract class MapReader extends AvroStructureReader
                 if (_index < _count) {
                     _state = STATE_VALUE;
                     _currentName = _parser.decodeMapKey();
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // need more data...
                 _count = _parser.decodeMapNext();
@@ -155,7 +155,7 @@ public abstract class MapReader extends AvroStructureReader
                 if (_count > 0L) {
                     _index = 0;
                     _currentName = _parser.decodeMapKey();
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // otherwise fall through:
             case STATE_END:
@@ -224,7 +224,7 @@ public abstract class MapReader extends AvroStructureReader
                 if (_index < _count) {
                     _state = STATE_VALUE;
                     _currentName = _parser.decodeMapKey();
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // need more data...
                 _count = _parser.decodeMapNext();
@@ -232,7 +232,7 @@ public abstract class MapReader extends AvroStructureReader
                 if (_count > 0L) {
                     _index = 0;
                     _currentName = _parser.decodeMapKey();
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // otherwise fall through:
             case STATE_END:

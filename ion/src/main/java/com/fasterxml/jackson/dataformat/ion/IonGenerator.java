@@ -567,7 +567,7 @@ public class IonGenerator
     protected void _verifyValueWrite(String msg) throws JacksonException
     {
         if (!_tokenWriteContext.writeValue()) {
-            _reportError("Can not "+msg+", expecting field name");
+            _reportError("Can not "+msg+", expecting a property name");
         }
         // 05-Oct-2017, tatu: I don't think pretty-printing is supported... is it?
         
@@ -621,20 +621,20 @@ public class IonGenerator
     }
 
     @Override
-    public void writeFieldName(String value) throws JacksonException {
+    public void writeName(String value) throws JacksonException {
         //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
-        if (!_tokenWriteContext.writeFieldName(value)) {
-            throw _constructWriteException("Can not write a field name, expecting a value");
+        if (!_tokenWriteContext.writeName(value)) {
+            throw _constructWriteException("Can not write a property name, expecting a value");
         }
 
         _writeFieldName(value);
     }
 
     @Override
-    public void writeFieldId(long id) throws JacksonException {
+    public void writePropertyId(long id) throws JacksonException {
         // Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        writeFieldName(idStr);
+        writeName(idStr);
     }
 
     protected void _writeFieldName(String value) throws JacksonException {

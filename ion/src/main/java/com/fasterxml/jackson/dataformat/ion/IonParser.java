@@ -202,7 +202,7 @@ public class IonParser
     {
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
-            case FIELD_NAME:
+            case PROPERTY_NAME:
                 return currentName();
             case VALUE_STRING:
                 return _reader.stringValue();
@@ -443,7 +443,7 @@ public class IonParser
     public JsonToken nextToken() throws JacksonException
     {
         // special case: if we return field name, we know value type, return it:
-        if (_currToken == JsonToken.FIELD_NAME) {
+        if (_currToken == JsonToken.PROPERTY_NAME) {
             return (_currToken = _valueToken);
         }
         // also, when starting array/object, need to create new context
@@ -477,7 +477,7 @@ public class IonParser
         // and return either field name first
         if (inStruct) {
             _valueToken = t;
-            return (_currToken = JsonToken.FIELD_NAME);
+            return (_currToken = JsonToken.PROPERTY_NAME);
         }
         // or just the value (for lists, root value)
         return (_currToken = t);

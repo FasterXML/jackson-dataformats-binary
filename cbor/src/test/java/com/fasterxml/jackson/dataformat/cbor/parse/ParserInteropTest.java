@@ -28,7 +28,7 @@ public class ParserInteropTest extends CBORTestBase
         JsonParser p = cborParser(INPUT);
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("query", p.currentName());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());

@@ -130,12 +130,12 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .createGenerator(bytes);
 
         g.writeStartObject();
-        g.writeFieldName("last");
+        g.writeName("last");
         char[] ch = "Ford".toCharArray();
         g.writeString(ch, 0, ch.length);
         // call flush() for fun, at root level, to verify that works
         g.flush();
-        g.writeFieldName(new SerializedString("last"));
+        g.writeName(new SerializedString("last"));
         byte[] b = "Bob".getBytes("UTF-8");
         g.writeRawUTF8String(b, 0, b.length);
         g.writeEndObject();
@@ -157,9 +157,9 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .createGenerator(bytes);
 
         g.writeStartObject();
-        g.writeFieldName("x");
+        g.writeName("x");
         g.writeNumber(Long.MAX_VALUE);
-        g.writeFieldName("y");
+        g.writeName("y");
         g.writeNumber(Long.MAX_VALUE);
         g.writeEndObject();
         g.close();

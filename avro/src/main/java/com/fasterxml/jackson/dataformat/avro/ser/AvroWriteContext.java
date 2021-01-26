@@ -40,9 +40,9 @@ public abstract class AvroWriteContext
     protected Object _currentValue;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected AvroWriteContext(int type, AvroWriteContext parent,
@@ -80,9 +80,9 @@ public abstract class AvroWriteContext
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Accessors
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -102,18 +102,18 @@ public abstract class AvroWriteContext
     public String currentName() { return null; }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Write methods
-    /**********************************************************
+    /**********************************************************************
      */
     
     /**
-     * Method that writer is to call before it writes a field name.
+     * Method that writer is to call before it writes an Object property name.
      *
      * @return True if writing succeeded (for {@link ObjectWriteContext},
      *    iff column was recognized)
      */
-    public boolean writeFieldName(String name) throws IOException {
+    public boolean writeName(String name) throws IOException {
         // To be overridden by Record/Map contexts
         return false;
     }
@@ -512,9 +512,9 @@ public abstract class AvroWriteContext
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Implementations
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**

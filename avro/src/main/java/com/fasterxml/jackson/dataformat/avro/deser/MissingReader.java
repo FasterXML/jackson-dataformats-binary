@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 
 /**
  * Bogus {@link AvroReadContext} implementation used in two cases:
@@ -55,9 +55,9 @@ public class MissingReader extends AvroReadContext
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
         _checkSchemaSet();
-        return FieldNameMatcher.MATCH_ODD_TOKEN;
+        return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }
 
     @Override

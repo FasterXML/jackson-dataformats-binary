@@ -76,7 +76,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         assertEquals(-1, p.nextIntValue(-1));
         assertToken(JsonToken.START_OBJECT, p.currentToken());
         assertEquals(-1, p.nextIntValue(-1));
-        assertToken(JsonToken.FIELD_NAME, p.currentToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(Integer.MAX_VALUE, p.nextIntValue(0));
         assertEquals("y", p.nextFieldName());
         assertEquals(-1L, p.nextLongValue(0L));

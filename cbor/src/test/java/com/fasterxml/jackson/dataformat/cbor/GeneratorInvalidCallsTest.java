@@ -9,13 +9,13 @@ public class GeneratorInvalidCallsTest extends CBORTestBase
     public void testInvalidFieldNameInRoot()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CBORGenerator gen = cborGenerator(out);
+        CBORGenerator g = cborGenerator(out);
         try {
-            gen.writeStringField("a", "b");
+            g.writeStringProperty("a", "b");
             fail("Should NOT allow writing of FIELD_NAME in root context");
         } catch (StreamWriteException e) {
-            verifyException(e, "Can not write a field name");
+            verifyException(e, "Can not write a property name, expecting a value");
         }
-        gen.close();
+        g.close();
     }
 }

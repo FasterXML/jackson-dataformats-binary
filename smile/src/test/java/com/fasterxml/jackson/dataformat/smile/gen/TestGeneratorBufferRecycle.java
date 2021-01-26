@@ -65,7 +65,7 @@ public class TestGeneratorBufferRecycle extends BaseTestForSmile
         gen.writeStartObject();
 
         for (Map.Entry<?,?> entry : map.entrySet()) {
-            gen.writeFieldName((String) entry.getKey());
+            gen.writeName((String) entry.getKey());
             Object value = entry.getValue();
             if (value == null) {
                 gen.writeNull();

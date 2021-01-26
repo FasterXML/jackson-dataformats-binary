@@ -63,7 +63,7 @@ public class StructDefaults
                 if (_index < _fieldReaders.length) {
                     _state = STATE_VALUE;
                     _currentName = _fieldReaders[_index].getName();
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 final AvroReadContext parent = getParent();
                 _state = STATE_DONE;

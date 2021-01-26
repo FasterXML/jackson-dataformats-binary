@@ -123,7 +123,7 @@ public class TestGenerator extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartObject();
-        gen.writeNumberField("a", 6);
+        gen.writeNumberProperty("a", 6);
         gen.writeEndObject();
         gen.close();
         _verifyBytes(out.toByteArray(), SmileConstants.TOKEN_LITERAL_START_OBJECT,
@@ -136,8 +136,8 @@ public class TestGenerator extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartObject();
-        gen.writeNumberField("a", 1);
-        gen.writeNumberField("b", 2);
+        gen.writeNumberProperty("a", 1);
+        gen.writeNumberProperty("b", 2);
         gen.writeEndObject();
         gen.close();
         _verifyBytes(out.toByteArray(), SmileConstants.TOKEN_LITERAL_START_OBJECT,
@@ -151,18 +151,18 @@ public class TestGenerator extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator gen = _smileGenerator(out, false);
         gen.writeStartObject();
-        gen.writeNumberField("a", 8);
-        gen.writeFieldName("b");
+        gen.writeNumberProperty("a", 8);
+        gen.writeName("b");
         gen.writeStartArray();
         gen.writeBoolean(true);
         gen.writeEndArray();
-        gen.writeFieldName("c");
+        gen.writeName("c");
         gen.writeStartObject();
         gen.writeEndObject();
 
-        gen.writeFieldName("d");
+        gen.writeName("d");
         gen.writeStartObject();
-        gen.writeFieldName("3");
+        gen.writeName("3");
         gen.writeNull();
         gen.writeEndObject();
         
@@ -181,9 +181,9 @@ public class TestGenerator extends BaseTestForSmile
                 .build();
         JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), out);
         gen.writeStartObject();
-        gen.writeFieldName("foo");
+        gen.writeName("foo");
         gen.writeStartObject();
-        gen.writeFieldName("");
+        gen.writeName("");
         gen.writeString("bar");
         gen.writeEndObject();
         gen.writeEndObject();
@@ -221,7 +221,7 @@ public class TestGenerator extends BaseTestForSmile
     {
         switch (mode) {
         case 0:
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             break;
         case 1:
             String name = p.nextFieldName();
@@ -233,7 +233,7 @@ public class TestGenerator extends BaseTestForSmile
         default:
             assertTrue(p.nextFieldName(new SerializedString(exp)));
         }
-        assertToken(JsonToken.FIELD_NAME, p.currentToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(exp, p.currentName());
     }
     

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
@@ -460,7 +460,7 @@ public class ProtobufParser extends ParserMinimalBase
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.hasTextAsCharacters();
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
+        if (_currToken == JsonToken.PROPERTY_NAME) {
             return _nameCopied;
         }
         return false;
@@ -494,7 +494,7 @@ public class ProtobufParser extends ParserMinimalBase
     public JsonToken nextToken() throws JacksonException
     {
         JsonToken t = nextTokenX();
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             System.out.print("Field name: "+currentName());
         } else if (t == JsonToken.VALUE_NUMBER_INT) {
             System.out.print("Int: "+getIntValue());
@@ -719,7 +719,7 @@ public class ProtobufParser extends ParserMinimalBase
             _state = STATE_ROOT_VALUE;
         }
         _currentField = f;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return (_currToken = JsonToken.PROPERTY_NAME);
     }
 
     private JsonToken _handleNestedKey(int tag) throws JacksonException
@@ -763,7 +763,7 @@ public class ProtobufParser extends ParserMinimalBase
             _state = STATE_NESTED_VALUE;
         }
         _currentField = f;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return (_currToken = JsonToken.PROPERTY_NAME);
     }
 
     private JsonToken _readNextValue(FieldType t, int nextState) throws JacksonException
@@ -944,7 +944,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
-            return (_currToken = JsonToken.FIELD_NAME);
+            return (_currToken = JsonToken.PROPERTY_NAME);
         }
     }
         
@@ -995,7 +995,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                if (_skipUnknownField(id, wireType) != JsonToken.FIELD_NAME) {
+                if (_skipUnknownField(id, wireType) != JsonToken.PROPERTY_NAME) {
                     return null;
                 }
                 // sub-optimal as skip method already set it, but:
@@ -1016,7 +1016,7 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_ROOT_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return name;
         }
         if (_state == STATE_NESTED_KEY) {
@@ -1032,7 +1032,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                if (_skipUnknownField(id, wireType) != JsonToken.FIELD_NAME) {
+                if (_skipUnknownField(id, wireType) != JsonToken.PROPERTY_NAME) {
                     return null;
                 }
                 // sub-optimal as skip method already set it, but:
@@ -1053,14 +1053,14 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_NESTED_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return name;
         }
         if (_state == STATE_MESSAGE_END) {
             _currToken = JsonToken.END_OBJECT;
             return null;
         }
-        return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
+        return (nextToken() == JsonToken.PROPERTY_NAME) ? currentName() : null;
     }
 
     @Override
@@ -1102,7 +1102,7 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_ROOT_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_NESTED_KEY) {
@@ -1138,25 +1138,25 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_NESTED_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_MESSAGE_END) {
             _currToken = JsonToken.END_OBJECT;
             return false;
         }
-        return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(currentName());
+        return (nextToken() == JsonToken.PROPERTY_NAME) && sstr.getValue().equals(currentName());
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
+    public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
     {
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     close();
                     _currToken = JsonToken.END_OBJECT;
-                    return FieldNameMatcher.MATCH_END_OBJECT;
+                    return PropertyNameMatcher.MATCH_END_OBJECT;
                 }
             }
             final int tag = _decodeVInt();
@@ -1168,9 +1168,9 @@ public class ProtobufParser extends ParserMinimalBase
             ProtobufField f = _findField(id);
             if (f == null) {
                 JsonToken t = _skipUnknownField(id, wireType);
-                if (t != JsonToken.FIELD_NAME) {
+                if (t != JsonToken.PROPERTY_NAME) {
                     return (t == JsonToken.END_OBJECT)
-                            ? FieldNameMatcher.MATCH_END_OBJECT : FieldNameMatcher.MATCH_ODD_TOKEN;
+                            ? PropertyNameMatcher.MATCH_END_OBJECT : PropertyNameMatcher.MATCH_ODD_TOKEN;
                 }
                 // sub-optimal as skip method already set it, but:
                 // [dataformats-binary#202]: need to reset after skipping
@@ -1189,13 +1189,13 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_ROOT_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return matcher.matchName(name);
         }
         if (_state == STATE_NESTED_KEY) {
             if (_checkEnd()) {
                 _currToken = JsonToken.END_OBJECT;
-                return FieldNameMatcher.MATCH_END_OBJECT;
+                return PropertyNameMatcher.MATCH_END_OBJECT;
             }
             final int tag = _decodeVInt();
             // inlined '_handleNestedKey()'
@@ -1206,9 +1206,9 @@ public class ProtobufParser extends ParserMinimalBase
             ProtobufField f = _findField(id);
             if (f == null) {
                 JsonToken t = _skipUnknownField(id, wireType);
-                if (t != JsonToken.FIELD_NAME) {
+                if (t != JsonToken.PROPERTY_NAME) {
                     return (t == JsonToken.END_OBJECT)
-                            ? FieldNameMatcher.MATCH_END_OBJECT : FieldNameMatcher.MATCH_ODD_TOKEN;
+                            ? PropertyNameMatcher.MATCH_END_OBJECT : PropertyNameMatcher.MATCH_ODD_TOKEN;
                 }
                 // sub-optimal as skip method already set it, but:
                 // [dataformats-binary#202]: need to reset after skipping
@@ -1227,27 +1227,27 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_NESTED_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return matcher.matchName(name);
         }
         if (_state == STATE_MESSAGE_END) {
             _currToken = JsonToken.END_OBJECT;
-            return FieldNameMatcher.MATCH_END_OBJECT;
+            return PropertyNameMatcher.MATCH_END_OBJECT;
         }
         // 13-Nov-2017, tatu: Can this ever return a field name?
         return _nextFieldName2(matcher);
     }
 
-    private int _nextFieldName2(FieldNameMatcher matcher) throws JacksonException
+    private int _nextFieldName2(PropertyNameMatcher matcher) throws JacksonException
     {
         JsonToken t = nextToken();
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             return matcher.matchName(currentName());
         }
         if (t == JsonToken.END_OBJECT) {
-            return FieldNameMatcher.MATCH_END_OBJECT;
+            return PropertyNameMatcher.MATCH_END_OBJECT;
         }
-        return FieldNameMatcher.MATCH_ODD_TOKEN;
+        return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }
 
     /*
@@ -1398,7 +1398,7 @@ public class ProtobufParser extends ParserMinimalBase
         if (t == null) { // null only before/after document
             return null;
         }
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
@@ -1417,7 +1417,7 @@ public class ProtobufParser extends ParserMinimalBase
             switch (_currToken) {                
             case VALUE_STRING:
                 return _textBuffer.getTextBuffer();
-            case FIELD_NAME:
+            case PROPERTY_NAME:
                 return _parsingContext.currentName().toCharArray();
                 // fall through
             case VALUE_NUMBER_INT:
@@ -1441,7 +1441,7 @@ public class ProtobufParser extends ParserMinimalBase
             switch (_currToken) {
             case VALUE_STRING:
                 return _textBuffer.size();                
-            case FIELD_NAME:
+            case PROPERTY_NAME:
                 return _parsingContext.currentName().length();
                 // fall through
             case VALUE_NUMBER_INT:
@@ -1510,7 +1510,7 @@ public class ProtobufParser extends ParserMinimalBase
                 }
                 return _textBuffer.contentsToWriter(writer);
             }
-            if (t == JsonToken.FIELD_NAME) {
+            if (t == JsonToken.PROPERTY_NAME) {
                 String n = _parsingContext.currentName();
                 writer.write(n);
                 return n.length();

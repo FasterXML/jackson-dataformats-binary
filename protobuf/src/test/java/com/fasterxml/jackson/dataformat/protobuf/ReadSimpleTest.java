@@ -81,11 +81,11 @@ public class ReadSimpleTest extends ProtobufTestBase
                 .with(schema)
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(input.x, p.getIntValue());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("y", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(input.y, p.getIntValue());
@@ -115,11 +115,11 @@ public class ReadSimpleTest extends ProtobufTestBase
                 .with(schema)
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(input.x, p.getIntValue());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("y", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(input.y, p.getIntValue());
@@ -194,7 +194,7 @@ public class ReadSimpleTest extends ProtobufTestBase
 
         assertEquals("/", p.getParsingContext().toString());
         
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("values", p.currentName());
 
         // 23-May-2016, tatu: Not working properly yet:
@@ -222,7 +222,7 @@ public class ReadSimpleTest extends ProtobufTestBase
                 .with(schema)
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -282,12 +282,12 @@ public class ReadSimpleTest extends ProtobufTestBase
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("name", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(input.name, p.getText());
         
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("values", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
@@ -310,7 +310,7 @@ public class ReadSimpleTest extends ProtobufTestBase
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("name", p.currentName());
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         int count = p.releaseBuffered(b);

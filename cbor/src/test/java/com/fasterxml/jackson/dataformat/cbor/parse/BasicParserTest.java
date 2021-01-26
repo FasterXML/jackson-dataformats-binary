@@ -240,13 +240,13 @@ public class BasicParserTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
         generator.writeStartObject();
-        generator.writeStringField("a", "b");
+        generator.writeStringProperty("a", "b");
         generator.writeEndObject();
         generator.close();
 
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("a", parser.currentName());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("a", parser.currentName());
@@ -266,11 +266,11 @@ public class BasicParserTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
         generator.writeStartObject();
-        generator.writeFieldName("ob");
+        generator.writeName("ob");
         generator.writeStartObject();
-        generator.writeNumberField("num", 3);
+        generator.writeNumberProperty("num", 3);
         generator.writeEndObject();
-        generator.writeFieldName("arr");
+        generator.writeName("arr");
         generator.writeStartArray();
         generator.writeEndArray();
         generator.writeEndObject();
@@ -279,15 +279,15 @@ public class BasicParserTest extends CBORTestBase
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("ob", parser.currentName());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("num", parser.currentName());
         assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("arr", parser.currentName());
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
@@ -301,7 +301,7 @@ public class BasicParserTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
         generator.writeStartObject();
-        generator.writeStringField("a", "1");
+        generator.writeStringProperty("a", "1");
         generator.writeEndObject();
         generator.flush();
         // add stuff that is NOT part of the Object
@@ -310,7 +310,7 @@ public class BasicParserTest extends CBORTestBase
 
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 

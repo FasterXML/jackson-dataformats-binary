@@ -41,16 +41,16 @@ public final class CustomSerializationTest {
         public static class Serializer extends JsonSerializer<House> {
             @Override
             public void serialize(final House house,
-                final JsonGenerator generator,
+                final JsonGenerator g,
                 final SerializerProvider serializers)
             {
-                generator.writeStartObject();
-                generator.writeFieldName("owner");
-                generator.writeStartObject();
-                generator.writeFieldName("name");
-                generator.writeObject(house.ownerName);
-                generator.writeEndObject();
-                generator.writeEndObject();
+                g.writeStartObject();
+                g.writeName("owner");
+                g.writeStartObject();
+                g.writeName("name");
+                g.writePOJO(house.ownerName);
+                g.writeEndObject();
+                g.writeEndObject();
             }
         }
 

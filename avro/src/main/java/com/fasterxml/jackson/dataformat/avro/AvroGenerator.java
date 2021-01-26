@@ -273,32 +273,32 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeFieldName(String name) throws JacksonException
+    public final void writeName(String name) throws JacksonException
     {
         try {
-            _tokenWriteContext.writeFieldName(name);
+            _tokenWriteContext.writeName(name);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
     }
 
     @Override
-    public final void writeFieldName(SerializableString name)
+    public final void writeName(SerializableString name)
         throws JacksonException
     {
         try {
-            _tokenWriteContext.writeFieldName(name.getValue());
+            _tokenWriteContext.writeName(name.getValue());
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
     }
 
     @Override
-    public void writeFieldId(long id) throws JacksonException {
+    public void writePropertyId(long id) throws JacksonException {
         try {
             // TODO: Should not force construction of a String here...
             String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-            _tokenWriteContext.writeFieldName(idStr);
+            _tokenWriteContext.writeName(idStr);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }

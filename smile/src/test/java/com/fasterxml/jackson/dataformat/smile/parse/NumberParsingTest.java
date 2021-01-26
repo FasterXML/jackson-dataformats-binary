@@ -65,11 +65,11 @@ public class NumberParsingTest
     	byte[] data = _smileDoc("{\"a\":200,\"b\":200}");
     	JsonParser p = _smileParser(data);
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("a", p.currentName());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	// let's NOT access value, forcing skipping
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("b", p.currentName());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	// let's NOT access value, forcing skipping
@@ -283,8 +283,8 @@ public class NumberParsingTest
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         SmileGenerator g = _smileGenerator(bo, false);
         g.writeStartObject();
-        g.writeNumberField("x", 0.5);
-        g.writeNumberField("y", 0.01338);
+        g.writeNumberProperty("x", 0.5);
+        g.writeNumberProperty("y", 0.01338);
         g.writeEndObject();
         g.close();
         
@@ -293,9 +293,9 @@ public class NumberParsingTest
         // first let's just skip 
         JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
@@ -303,11 +303,11 @@ public class NumberParsingTest
         // and then check data too (skip codepath distinct)
         p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("x", p.getText());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(0.5, p.getDoubleValue());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("y", p.getText());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(0.01338, p.getDoubleValue());

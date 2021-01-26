@@ -26,7 +26,7 @@ public class TreeReadViaMapperTest extends BaseTestForSmile
         assertTrue(result.isObject());
         
         ObjectNode main = (ObjectNode) result;
-        assertEquals("Image", main.fieldNames().next());
+        assertEquals("Image", main.propertyNames().next());
         JsonNode ob = main.elements().next();
         assertType(ob, ObjectNode.class);
         ObjectNode imageMap = (ObjectNode) ob;

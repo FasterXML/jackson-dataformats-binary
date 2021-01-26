@@ -61,7 +61,7 @@ public class MapTest extends AvroTestBase
                 .with(schema)
                 .createParser(bytes);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("stuff", p.currentName());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 

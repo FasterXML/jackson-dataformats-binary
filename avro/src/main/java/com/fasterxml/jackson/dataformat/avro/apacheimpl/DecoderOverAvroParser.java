@@ -51,7 +51,7 @@ public class DecoderOverAvroParser extends Decoder {
     protected JsonToken nextValue() throws IOException {
         // Decoders don't care about start and end of records, or field names in records; swallow them
         while (((_parser.currentToken() == JsonToken.START_OBJECT || _parser.currentToken() == JsonToken.END_OBJECT
-            || _parser.currentToken() == JsonToken.FIELD_NAME) && _parser.isRecord()) || _parser.currentToken() == null
+            || _parser.currentToken() == JsonToken.PROPERTY_NAME) && _parser.isRecord()) || _parser.currentToken() == null
             || _parser.currentToken() == JsonToken.END_ARRAY) {
             _parser.nextToken();
             if (_parser.currentToken() == null) {
@@ -73,7 +73,7 @@ public class DecoderOverAvroParser extends Decoder {
      */
     protected JsonToken nextUnionValue() throws IOException {
         // Decoders don't care about end of records, or field names in records; swallow them
-        while (((_parser.currentToken() == JsonToken.END_OBJECT || _parser.currentToken() == JsonToken.FIELD_NAME) && _parser.isRecord())
+        while (((_parser.currentToken() == JsonToken.END_OBJECT || _parser.currentToken() == JsonToken.PROPERTY_NAME) && _parser.isRecord())
             || _parser.currentToken() == null || _parser.currentToken() == JsonToken.END_ARRAY) {
             _parser.nextToken();
             if (_parser.currentToken() == null) {

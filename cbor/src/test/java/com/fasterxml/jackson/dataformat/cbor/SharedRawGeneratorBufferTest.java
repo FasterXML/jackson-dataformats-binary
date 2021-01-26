@@ -35,12 +35,12 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         
         CBORGenerator cborGen = (CBORGenerator) cborMapper.createGenerator(bytes);
-        cborGen.writeObject(1);
+        cborGen.writePOJO(1);
         cborGen.close();
         bytes.reset();
 
         JsonGenerator jsonGen = jsonMapper.createGenerator(bytes);
-        jsonGen.writeObject(bean);
+        jsonGen.writePOJO(bean);
         jsonGen.close();
 
         // should not fail, that's all

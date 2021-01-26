@@ -38,7 +38,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
             _writeSimple0(g1, "a");
             fail("Should have gotten exception");
         } catch (StreamWriteException e) {
-            verifyException(e, "duplicate field 'a'");
+            verifyException(e, "duplicate Object property \"a\"");
         }
 
         JsonGenerator g2;
@@ -52,7 +52,7 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
             _writeSimple1(g2, "x");
             fail("Should have gotten exception");
         } catch (StreamWriteException e) {
-            verifyException(e, "duplicate field 'x'");
+            verifyException(e, "duplicate Object property \"x\"");
         }
     }
 
@@ -64,8 +64,8 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
     protected void _writeSimple0(JsonGenerator g, String name)
     {
         g.writeStartObject();
-        g.writeNumberField(name, 1);
-        g.writeNumberField(name, 2);
+        g.writeNumberProperty(name, 1);
+        g.writeNumberProperty(name, 2);
         g.writeEndObject();
         g.close();
     }
@@ -75,11 +75,11 @@ public class GeneratorDupHandlingTest extends BaseTestForSmile
         g.writeStartArray();
         g.writeNumber(3);
         g.writeStartObject();
-        g.writeNumberField("foo", 1);
-        g.writeNumberField("bar", 1);
-        g.writeNumberField(name, 1);
-        g.writeNumberField("bar2", 1);
-        g.writeNumberField(name, 2);
+        g.writeNumberProperty("foo", 1);
+        g.writeNumberProperty("bar", 1);
+        g.writeNumberProperty(name, 1);
+        g.writeNumberProperty("bar2", 1);
+        g.writeNumberProperty(name, 2);
         g.writeEndObject();
         g.writeEndArray();
         g.close();

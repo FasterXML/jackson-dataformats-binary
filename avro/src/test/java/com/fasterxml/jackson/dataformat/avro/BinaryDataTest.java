@@ -58,14 +58,14 @@ public class BinaryDataTest extends AvroTestBase
                 .createParser(ThrottledInputStream.wrap(
                 new ByteArrayInputStream(ser), 7));
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("filename", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("data", p.currentName());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         // skip, don't read!
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("size", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(result.size, p.getLongValue());

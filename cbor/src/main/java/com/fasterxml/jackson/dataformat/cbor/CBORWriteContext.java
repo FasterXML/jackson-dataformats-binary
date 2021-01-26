@@ -35,7 +35,7 @@ public final class CBORWriteContext extends TokenStreamContext
      */
 
     /**
-     * Name of the field of which value is to be written; only
+     * Name of the Object property of which value is to be written; only
      * used for OBJECT contexts
      */
     protected String _currentName;
@@ -45,13 +45,13 @@ public final class CBORWriteContext extends TokenStreamContext
     /**
      * Alternative to {@code _currentName} used for integer/long-valued Maps.
      */
-    protected long _currentFieldId;
+    protected long _currentPropertyId;
 
     /**
-     * Marker used to indicate that we just wrote a field name (or Map name / id)
+     * Marker used to indicate that we just wrote a property name (or Map name / id)
      * and now expect a value to write
      */
-    protected boolean _gotFieldId;
+    protected boolean _gotPropertyId;
 
     /*
     /**********************************************************************
@@ -73,7 +73,7 @@ public final class CBORWriteContext extends TokenStreamContext
         _type = type;
         _index = -1;
         // as long as _gotFieldId false, current name/id can be left as-is
-        _gotFieldId = false;
+        _gotPropertyId = false;
         _currentValue = currentValue;
         if (_dups != null) { _dups.reset(); }
         return this;
@@ -127,16 +127,16 @@ public final class CBORWriteContext extends TokenStreamContext
     @Override public final CBORWriteContext getParent() { return _parent; }
 
     @Override public final String currentName() {
-        if (_gotFieldId) {
+        if (_gotPropertyId) {
             if (_currentName != null) {
                 return _currentName;
             }
-            return String.valueOf(_currentFieldId);
+            return String.valueOf(_currentPropertyId);
         }
         return null;
     }
 
-    @Override public boolean hasCurrentName() { return _gotFieldId; }
+    @Override public boolean hasCurrentName() { return _gotPropertyId; }
 
     /**
      * Method that can be used to both clear the accumulated references
@@ -157,26 +157,26 @@ public final class CBORWriteContext extends TokenStreamContext
     }
 
     /**
-     * Method that writer is to call before it writes a field name.
+     * Method that writer is to call before it writes an Object property name.
      *
      * @return Ok if name writing should proceed
      */
-    public boolean writeFieldName(String name) throws StreamWriteException {
-        if ((_type != TYPE_OBJECT) || _gotFieldId) {
+    public boolean writeName(String name) throws StreamWriteException {
+        if ((_type != TYPE_OBJECT) || _gotPropertyId) {
             return false;
         }
-        _gotFieldId = true;
+        _gotPropertyId = true;
         _currentName = name;
         if (_dups != null) { _checkDup(_dups, name); }
         return true;
     }
 
-    public boolean writeFieldId(long fieldId) throws StreamWriteException {
-        if ((_type != TYPE_OBJECT) || _gotFieldId) {
+    public boolean writePropertyId(long propertyId) throws StreamWriteException {
+        if ((_type != TYPE_OBJECT) || _gotPropertyId) {
             return false;
         }
-        _gotFieldId = true;
-        _currentFieldId = fieldId;
+        _gotPropertyId = true;
+        _currentPropertyId = propertyId;
         // 14-Aug-2019, tatu: No dup deps for non-String keys, for now at least
         return true;
     }
@@ -185,17 +185,17 @@ public final class CBORWriteContext extends TokenStreamContext
         if (dd.isDup(name)) {
             Object src = dd.getSource();
             throw new StreamWriteException(((src instanceof JsonGenerator) ? ((JsonGenerator) src) : null),
-                    "Duplicate field '"+name+"'");
+                    "Duplicate Object property \""+name+"\"");
         }
     }
 
     public boolean writeValue() {
         // Only limitation is with OBJECTs:
         if (_type == TYPE_OBJECT) {
-            if (!_gotFieldId) {
+            if (!_gotPropertyId) {
                 return false;
             }
-            _gotFieldId = false;
+            _gotPropertyId = false;
         }
         ++_index;
         return true;

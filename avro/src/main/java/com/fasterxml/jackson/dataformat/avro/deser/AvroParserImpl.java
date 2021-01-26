@@ -6,7 +6,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
@@ -127,7 +127,7 @@ public abstract class AvroParserImpl
             _currToken = _avroContext.currentToken();
             return null;
         }
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         return name;
     }
 
@@ -148,7 +148,7 @@ public abstract class AvroParserImpl
             _currToken = _avroContext.currentToken();
             return false;
         }
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         String toMatch = sstr.getValue();
         if (toMatch == name) {
             return true;
@@ -157,7 +157,7 @@ public abstract class AvroParserImpl
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
+    public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
     {
         // note: closed-ness check by context, not needed here
         _numTypesValid = NR_UNKNOWN;
@@ -173,10 +173,10 @@ public abstract class AvroParserImpl
         // 20-Dec-2017, tatu: not sure check would be any faster
         _currToken = _avroContext.currentToken();
 /*
-        if (match < 0) { // END_OBJECT, mismatching FIELD_NAME or something else:
+        if (match < 0) { // END_OBJECT, mismatching PROPERTY_NAME or something else:
             _currToken = _avroContext.currentToken();
         } else {
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
         }
 */
         return match;

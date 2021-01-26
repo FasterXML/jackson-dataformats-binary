@@ -62,7 +62,7 @@ public class UnicodeHandlingTest extends CBORTestBase
 
         p = _parser(data, throttling);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(TEXT, p.currentName());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -72,7 +72,7 @@ public class UnicodeHandlingTest extends CBORTestBase
         // and skipping
         p = _parser(data, throttling);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();

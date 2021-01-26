@@ -146,7 +146,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textValue;
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
+        if (_currToken == JsonToken.PROPERTY_NAME) {
             return _avroContext.currentName();
         }
         if (_currToken != null) {
@@ -167,7 +167,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
                 writer.write(_textValue);
                 return _textValue.length();
             }
-            if (t == JsonToken.FIELD_NAME) {
+            if (t == JsonToken.PROPERTY_NAME) {
                 String n = _parsingContext.currentName();
                 writer.write(n);
                 return n.length();

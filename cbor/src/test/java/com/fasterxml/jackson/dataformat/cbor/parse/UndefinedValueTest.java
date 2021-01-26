@@ -41,7 +41,7 @@ public class UndefinedValueTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator g = cborGenerator(out);
         g.writeStartObject();
-        g.writeFieldName("bar");
+        g.writeName("bar");
         g.writeBoolean(true);
         g.writeEndObject();
         g.close();
@@ -52,7 +52,7 @@ public class UndefinedValueTest extends CBORTestBase
         
         JsonParser p = cborParser(doc);
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("bar", p.currentName());
         assertEquals(JsonToken.VALUE_NULL, p.nextToken());
         assertEquals(JsonToken.END_OBJECT, p.nextToken());

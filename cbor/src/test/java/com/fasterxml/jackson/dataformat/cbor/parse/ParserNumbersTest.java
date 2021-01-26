@@ -294,14 +294,14 @@ public class ParserNumbersTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
         generator.writeStartObject();
-        generator.writeFieldName("foo");
+        generator.writeName("foo");
         generator.writeNumber(3f);
         generator.writeEndObject();
         generator.close();
 
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
         assertEquals(NumberType.FLOAT, parser.getNumberType());
         assertEquals(3f, parser.getFloatValue());

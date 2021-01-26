@@ -38,15 +38,15 @@ public class AsyncParserNamesTest extends AsyncTestBase
         assertEquals(0, symbols1.size());
      
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(STR1, p.currentName());
         assertEquals(1, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("foobar", p.currentName());
         assertEquals(2, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("longername", p.currentName());
         assertEquals(3, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -64,15 +64,15 @@ public class AsyncParserNamesTest extends AsyncTestBase
         assertEquals(3, symbols2.size());
 
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(STR1, p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("foobar", p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("longername", p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -98,7 +98,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
 
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(name, p.currentName());
 
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());

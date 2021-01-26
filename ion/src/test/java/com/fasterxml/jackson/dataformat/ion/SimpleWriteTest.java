@@ -79,9 +79,9 @@ public class SimpleWriteTest
     private void _writeSimple(JsonGenerator gen) throws IOException
     {
         gen.writeStartObject();
-        gen.writeStringField("a", "value");
-        gen.writeNumberField("b", 42);
-        ((IonGenerator)gen).writeFieldName("c");
+        gen.writeStringProperty("a", "value");
+        gen.writeNumberProperty("b", 42);
+        ((IonGenerator)gen).writeName("c");
         ((IonGenerator)gen).writeNull(IonType.INT);
         gen.writeEndObject();
         gen.close();

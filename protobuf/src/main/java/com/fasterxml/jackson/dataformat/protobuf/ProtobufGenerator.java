@@ -79,7 +79,7 @@ public class ProtobufGenerator extends GeneratorBase
     protected ProtobufMessage _currMessage;
 
     /**
-     * Field to be output next; set when {@link JsonToken#FIELD_NAME} is written,
+     * Field to be output next; set when {@link JsonToken#PROPERTY_NAME} is written,
      * cleared once value has been written
      */
     protected ProtobufField _currField;
@@ -219,7 +219,7 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeFieldName(String name) throws JacksonException {
+    public final void writeName(String name) throws JacksonException {
         if (!_inObject) {
             _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
@@ -250,7 +250,7 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public final void writeFieldName(SerializableString sstr) throws JacksonException {
+    public final void writeName(SerializableString sstr) throws JacksonException {
         if (!_inObject) {
             _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
@@ -284,10 +284,10 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeFieldId(long id) throws JacksonException {
+    public void writePropertyId(long id) throws JacksonException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        writeFieldName(idStr);
+        writeName(idStr);
     }
 
     /*

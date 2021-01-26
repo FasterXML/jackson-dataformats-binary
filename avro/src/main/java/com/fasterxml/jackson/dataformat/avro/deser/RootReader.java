@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 
 /**
  * Context used at root level; basically just a container
@@ -54,8 +54,8 @@ public class RootReader extends AvroReadContext
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws IOException {
-        return FieldNameMatcher.MATCH_ODD_TOKEN;
+    public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
+        return PropertyNameMatcher.MATCH_ODD_TOKEN;
     }
     
     @Override

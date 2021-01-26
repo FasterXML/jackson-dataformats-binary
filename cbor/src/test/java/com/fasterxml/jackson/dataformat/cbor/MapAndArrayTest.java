@@ -26,8 +26,8 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeBooleanField("Fun", true);
-        gen.writeNumberField("Amt", -2);
+        gen.writeBooleanProperty("Fun", true);
+        gen.writeNumberProperty("Amt", -2);
         gen.writeEndObject();
         gen.close();
 
@@ -62,13 +62,13 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeFieldName("Fun");
+        gen.writeName("Fun");
         gen.writeBoolean(true);
-        gen.writeFieldId(1504);
+        gen.writePropertyId(1504);
         gen.writeNumber(-33);
-        gen.writeFieldId(1505);
+        gen.writePropertyId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldId(13171233041L);
+        gen.writePropertyId(13171233041L);
         gen.writeNumber(22);
         gen.close();
 
@@ -108,18 +108,18 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject(null, 5);
-        gen.writeFieldId(1504);
+        gen.writePropertyId(1504);
         gen.writeNumber(-33);
-        gen.writeFieldId(1505);
+        gen.writePropertyId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldId(1506);
+        gen.writePropertyId(1506);
         gen.writeString("Fun");
-        gen.writeFieldName("Amt");
+        gen.writeName("Amt");
         gen.writeStartArray(null, 2);
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
-        gen.writeFieldId(1507);
+        gen.writePropertyId(1507);
         gen.writeBoolean(false);
         gen.writeEndObject();
         gen.close();
@@ -157,19 +157,19 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeFieldId(1504);
+        gen.writePropertyId(1504);
         gen.writeNumber(-33);
-        gen.writeFieldId(1505);
+        gen.writePropertyId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldId(1506);
+        gen.writePropertyId(1506);
         gen.writeString("Fun");
-        gen.writeFieldId(1507);
+        gen.writePropertyId(1507);
         gen.writeStartArray();
         gen.writeString("c");
         gen.writeNumber(3);
         gen.writeBoolean(false);
         gen.writeEndArray();
-        gen.writeFieldId(13171233041L);
+        gen.writePropertyId(13171233041L);
         gen.writeBoolean(false);
         gen.writeEndObject();
         gen.close();
@@ -198,9 +198,9 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeFieldName("a");
+        gen.writeName("a");
         gen.writeNumber(1);
-        gen.writeFieldName("b");
+        gen.writeName("b");
         gen.writeStartArray();
         gen.writeNumber(2);
         gen.writeNumber(3);
@@ -221,15 +221,15 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject(null, 4);
-        gen.writeFieldName("a");
+        gen.writeName("a");
         gen.writeNumber(1);
 
-        gen.writeFieldName("b");
+        gen.writeName("b");
         gen.writeStartArray();
         gen.writeNumber(2);
         gen.writeNumber(3);
         gen.writeEndArray();
-        gen.writeFieldId(1501);
+        gen.writePropertyId(1501);
         gen.writeStartArray(null, 5);
         gen.writeString("Fun");
         gen.writeNumber(44);
@@ -242,25 +242,25 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeEndArray();
         gen.writeEndArray();
         gen.writeStartObject(null, 2);
-        gen.writeFieldName("key");
+        gen.writeName("key");
         gen.writeStartObject();
-        gen.writeFieldName("complex");
+        gen.writeName("complex");
         gen.writeNumber(50);
         gen.writeEndObject();
-        gen.writeFieldId(51);
+        gen.writePropertyId(51);
         gen.writeString("52");
         gen.writeEndObject();   //
         gen.writeNumber(53);
         gen.writeEndArray();
-        gen.writeFieldId(1502);
+        gen.writePropertyId(1502);
         gen.writeStartObject();
-        gen.writeFieldId(54);
+        gen.writePropertyId(54);
         gen.writeString("value");
-        gen.writeFieldId(55);
+        gen.writePropertyId(55);
         gen.writeStartObject(null, 2);
-        gen.writeFieldId(56);
+        gen.writePropertyId(56);
         gen.writeNumber(61);
-        gen.writeFieldId(57);
+        gen.writePropertyId(57);
         gen.writeNumber(62);
         gen.writeEndObject();
         gen.writeEndObject();
@@ -281,22 +281,22 @@ public class MapAndArrayTest extends CBORTestBase
         CBORGenerator gen = cborGenerator(payloadOut);
 
         gen.writeStartObject();
-        gen.writeFieldId(1504);
+        gen.writePropertyId(1504);
         gen.writeStartObject(null, 1);
-        gen.writeFieldId(2504);
+        gen.writePropertyId(2504);
         gen.writeNumber(-33);
         gen.writeEndObject();
-        gen.writeFieldId(1505);
+        gen.writePropertyId(1505);
         gen.writeBoolean(false);
-        gen.writeFieldId(1506);
+        gen.writePropertyId(1506);
         gen.writeString("Fun");
-        gen.writeFieldId(1507);
+        gen.writePropertyId(1507);
         gen.writeStartArray();
         gen.writeString("c");
         gen.writeNumber(3);
         gen.writeBoolean(false);
         gen.writeEndArray();
-        gen.writeFieldId(13171233041L);
+        gen.writePropertyId(13171233041L);
         gen.writeBoolean(false);
         gen.writeEndObject();
         gen.close();
@@ -470,9 +470,9 @@ public class MapAndArrayTest extends CBORTestBase
         gen.writeStartArray(null, 2);
         gen.writeString("a");
         gen.writeStartObject();
-        gen.writeFieldName("b");
+        gen.writeName("b");
         gen.writeString("c");
-        gen.writeFieldName("d");
+        gen.writeName("d");
         gen.writeString("e");
         gen.writeEndObject();
         gen.writeEndArray();

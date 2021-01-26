@@ -182,7 +182,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         if (t == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
         }
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             return _avroContext.currentName();
         }
         if (t != null) {
@@ -203,7 +203,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             if (t == JsonToken.VALUE_STRING) {
                 return _textBuffer.contentsToWriter(writer);
             }
-            if (t == JsonToken.FIELD_NAME) {
+            if (t == JsonToken.PROPERTY_NAME) {
                 String n = _avroContext.currentName();
                 writer.write(n);
                 return n.length();

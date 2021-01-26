@@ -46,7 +46,7 @@ public class BigNumbersTest extends CBORTestBase
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
         sourceGen.writeStartObject();
-        sourceGen.writeFieldName("a");
+        sourceGen.writeName("a");
         sourceGen.writeNumber(expValue);
         sourceGen.writeEndObject();
         sourceGen.close();
@@ -56,7 +56,7 @@ public class BigNumbersTest extends CBORTestBase
         // but verify that the original content can be parsed
         CBORParser parser = cborParser(b);
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
-        assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("a", parser.currentName());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
         assertEquals(expValue, parser.getDecimalValue());

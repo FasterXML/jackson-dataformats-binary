@@ -477,33 +477,33 @@ public class SmileGenerator
      */
 
     @Override
-    public final void writeFieldName(String name)  throws JacksonException
+    public final void writeName(String name)  throws JacksonException
     {
-        if (!_tokenWriteContext.writeFieldName(name)) {
+        if (!_tokenWriteContext.writeName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
-        _writeFieldName(name);
+        _writeName(name);
     }
 
     @Override
-    public final void writeFieldName(SerializableString name)
+    public final void writeName(SerializableString name)
         throws JacksonException
     {
         // Object is a value, need to verify it's allowed
-        if (!_tokenWriteContext.writeFieldName(name.getValue())) {
+        if (!_tokenWriteContext.writeName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
-        _writeFieldName(name);
+        _writeName(name);
     }
 
     @Override
-    public void writeFieldId(long id) throws JacksonException {
+    public void writePropertyId(long id) throws JacksonException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        if (!_tokenWriteContext.writeFieldName(idStr)) {
+        if (!_tokenWriteContext.writeName(idStr)) {
             _reportError("Can not write a field name, expecting a value");
         }
-        _writeFieldName(idStr);
+        _writeName(idStr);
     }
 
     /*
@@ -709,7 +709,7 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_END_ARRAY);
     }
     
-    private final void _writeFieldName(String name) throws JacksonException
+    private final void _writeName(String name) throws JacksonException
     {
         int len = name.length();
         if (len == 0) {
@@ -789,7 +789,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;                
     }
     
-    protected final void _writeFieldName(SerializableString name) throws JacksonException
+    protected final void _writeName(SerializableString name) throws JacksonException
     {
         final int charLen = name.charLength();
         if (charLen == 0) {
@@ -807,7 +807,7 @@ public class SmileGenerator
         final byte[] bytes = name.asUnquotedUTF8();
         final int byteLen = bytes.length;
         if (byteLen != charLen) {
-            _writeFieldNameUnicode(name, bytes);
+            _writeNameUnicode(name, bytes);
             return;
         }
         // Common case: short ASCII name that fits in buffer as is
@@ -862,7 +862,7 @@ public class SmileGenerator
         _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;
     }
 
-    protected final void _writeFieldNameUnicode(SerializableString name, byte[] bytes)
+    protected final void _writeNameUnicode(SerializableString name, byte[] bytes)
         throws JacksonException
     {
         final int byteLen = bytes.length;

@@ -219,14 +219,14 @@ public class NonBlockingByteArrayParser
         case MINOR_HEADER_INLINE:
             return _finishHeader(_pending32);
 
-        case MINOR_FIELD_NAME_2BYTE:
+        case MINOR_PROPERTY_NAME_2BYTE:
             return _handleSharedName(_pending32 + (_inputBuffer[_inputPtr++] & 0xFF));
 
-        case MINOR_FIELD_NAME_LONG:
+        case MINOR_PROPERTY_NAME_LONG:
             return _finishLongFieldName(_inputCopyLen);
 
-        case MINOR_FIELD_NAME_SHORT_ASCII:
-        case MINOR_FIELD_NAME_SHORT_UNICODE:
+        case MINOR_PROPERTY_NAME_SHORT_ASCII:
+        case MINOR_PROPERTY_NAME_SHORT_UNICODE:
             {
                 final int fullLen = _pending32;
                 final int needed = fullLen - _inputCopyLen;
@@ -236,7 +236,7 @@ public class NonBlockingByteArrayParser
                     _inputPtr += needed;
                     String name = _findDecodedFromSymbols(_inputCopy, 0, fullLen);
                     if (name == null) {
-                        name = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
+                        name = (_minorState == MINOR_PROPERTY_NAME_SHORT_ASCII)
                                 ? _decodeASCIIText(_inputCopy, 0, fullLen)
                                 : _decodeShortUnicodeText(_inputCopy, 0, fullLen)
                                 ;
@@ -251,7 +251,7 @@ public class NonBlockingByteArrayParser
                     }
                     _parsingContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // Otherwise append to buffer, not done
                 System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, avail);
@@ -291,7 +291,7 @@ public class NonBlockingByteArrayParser
                 if (avail >= needed) { // got it all
                     System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
                     _inputPtr += needed;
-                    String text = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
+                    String text = (_minorState == MINOR_PROPERTY_NAME_SHORT_ASCII)
                             ? _decodeASCIIText(_inputCopy, 0, fullLen)
                             : _decodeShortUnicodeText(_inputCopy, 0, fullLen);
                     if (_seenStringValueCount >= 0) { // shared text values enabled
@@ -526,7 +526,7 @@ public class NonBlockingByteArrayParser
 
     /**
      * Method that handles initial token type recognition for token
-     * that has to be either FIELD_NAME or END_OBJECT.
+     * that has to be either PROPERTY_NAME or END_OBJECT.
      */
     protected final JsonToken _startFieldName(int ch) throws JacksonException
     {
@@ -536,7 +536,7 @@ public class NonBlockingByteArrayParser
             case 0x20: // empty String as name, legal if unusual
                 _parsingContext.setCurrentName("");
                 _majorState = MAJOR_OBJECT_VALUE;
-                return (_currToken = JsonToken.FIELD_NAME);
+                return (_currToken = JsonToken.PROPERTY_NAME);
             case 0x30: // long shared
             case 0x31:
             case 0x32:
@@ -545,7 +545,7 @@ public class NonBlockingByteArrayParser
                     return _handleSharedName(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
                 }
                 {
-                    _minorState = MINOR_FIELD_NAME_2BYTE;
+                    _minorState = MINOR_PROPERTY_NAME_2BYTE;
                     _pending32 = (ch & 0x3) << 8;
                     return (_currToken = JsonToken.NOT_AVAILABLE);
                 }
@@ -576,7 +576,7 @@ public class NonBlockingByteArrayParser
                     }
                     _parsingContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // Nope: need to copy
                 _pending32 = len;
@@ -586,7 +586,7 @@ public class NonBlockingByteArrayParser
                     System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
                 }
             }
-            _minorState = MINOR_FIELD_NAME_SHORT_ASCII;
+            _minorState = MINOR_PROPERTY_NAME_SHORT_ASCII;
             return (_currToken = JsonToken.NOT_AVAILABLE);
 
         case 3: // short Unicode; possibly doable
@@ -618,7 +618,7 @@ public class NonBlockingByteArrayParser
                     }
                     _parsingContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 // Nope: need to copy
                 _pending32 = len;
@@ -627,7 +627,7 @@ public class NonBlockingByteArrayParser
                     _inputPtr = inputPtr + left;
                     System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
                 }
-                _minorState = MINOR_FIELD_NAME_SHORT_UNICODE;
+                _minorState = MINOR_PROPERTY_NAME_SHORT_UNICODE;
                 return (_currToken = JsonToken.NOT_AVAILABLE);
             }
         }
@@ -657,7 +657,7 @@ public class NonBlockingByteArrayParser
             // If end of input, bail out
             if (srcPtr == _inputEnd) {
                 _inputPtr = srcPtr;
-                _minorState = MINOR_FIELD_NAME_LONG;
+                _minorState = MINOR_PROPERTY_NAME_LONG;
                 _inputCopyLen = outPtr;
                 return (_currToken = JsonToken.NOT_AVAILABLE);
             }
@@ -710,7 +710,7 @@ public class NonBlockingByteArrayParser
         }
         _parsingContext.setCurrentName(name);
         _majorState = MAJOR_OBJECT_VALUE;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return (_currToken = JsonToken.PROPERTY_NAME);
     }
 
     /*

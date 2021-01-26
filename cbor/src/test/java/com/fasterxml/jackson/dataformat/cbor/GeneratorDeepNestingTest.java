@@ -76,7 +76,7 @@ ObjectWriteContext writeCtxt, IOContext ctxt,
             gen.writeStartObject(gen); // bogus "current" object
             break;
         }
-        gen.writeFieldName("level"+levelsLeft);
+        gen.writeName("level"+levelsLeft);
         _writeNestedMap(gen, levelsLeft-1);
         gen.writeEndObject();
     }

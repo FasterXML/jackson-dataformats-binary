@@ -17,7 +17,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
 
     private final ObjectMapper MAPPER = smileMapper();
 
-    public void testSimple() throws Exception
+    public void testSimple()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator g = MAPPER.createGenerator(out);
@@ -33,55 +33,55 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
     /**********************************************************
      */
     
-    private void _writeSimple(JsonGenerator jgen) throws Exception
+    private void _writeSimple(JsonGenerator jgen)
     {
         // Let's just write array of 2 objects
         jgen.writeStartArray();
 
         jgen.writeStartObject();
-        jgen.writeFieldName(quotedName);
+        jgen.writeName(quotedName);
         jgen.writeString("a");
-        jgen.writeFieldName(latin1Name);
+        jgen.writeName(latin1Name);
         jgen.writeString("b");
         jgen.writeEndObject();
 
         jgen.writeStartObject();
-        jgen.writeFieldName(latin1Name);
+        jgen.writeName(latin1Name);
         jgen.writeString("c");
-        jgen.writeFieldName(quotedName);
+        jgen.writeName(quotedName);
         jgen.writeString("d");
         jgen.writeEndObject();
         
         jgen.writeEndArray();
     }
 
-    private void _verifySimple(JsonParser jp) throws Exception
+    private void _verifySimple(JsonParser p)
     {
-        assertToken(JsonToken.START_ARRAY, jp.nextToken());
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
 
-        assertToken(JsonToken.START_OBJECT, jp.nextToken());
-        assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals(NAME_WITH_QUOTES, jp.getText());
-        assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-        assertEquals("a", jp.getText());
-        assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals(NAME_WITH_LATIN1, jp.getText());
-        assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-        assertEquals("b", jp.getText());
-        assertToken(JsonToken.END_OBJECT, jp.nextToken());
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals(NAME_WITH_QUOTES, p.getText());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("a", p.getText());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals(NAME_WITH_LATIN1, p.getText());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("b", p.getText());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
 
-        assertToken(JsonToken.START_OBJECT, jp.nextToken());
-        assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals(NAME_WITH_LATIN1, jp.getText());
-        assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-        assertEquals("c", jp.getText());
-        assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals(NAME_WITH_QUOTES, jp.getText());
-        assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-        assertEquals("d", jp.getText());
-        assertToken(JsonToken.END_OBJECT, jp.nextToken());
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals(NAME_WITH_LATIN1, p.getText());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("c", p.getText());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals(NAME_WITH_QUOTES, p.getText());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+        assertEquals("d", p.getText());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
         
-        assertToken(JsonToken.END_ARRAY, jp.nextToken());
-        assertNull(jp.nextToken());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        assertNull(p.nextToken());
     }
 }

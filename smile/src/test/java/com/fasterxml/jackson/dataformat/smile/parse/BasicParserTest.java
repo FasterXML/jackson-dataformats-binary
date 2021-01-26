@@ -105,7 +105,7 @@ public class BasicParserTest extends BaseTestForSmile
         JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("", p.currentName());
 
         StringWriter w = new StringWriter();
@@ -122,7 +122,7 @@ public class BasicParserTest extends BaseTestForSmile
         p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("abc", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("", p.getText());
@@ -135,11 +135,11 @@ public class BasicParserTest extends BaseTestForSmile
         p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("", p.getText());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("", p.getText());
@@ -210,7 +210,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.currentToken());
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("abc", p.currentName());
         assertEquals("abc", p.getText());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -226,28 +226,28 @@ public class BasicParserTest extends BaseTestForSmile
     	assertNull(p.currentToken());
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("a", p.currentName());
     	assertEquals("a", p.getText());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	assertEquals(8, p.getIntValue());
 
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("b", p.currentName());
     	assertToken(JsonToken.START_ARRAY, p.nextToken());
     	assertToken(JsonToken.VALUE_TRUE, p.nextToken());
     	assertToken(JsonToken.END_ARRAY, p.nextToken());
 
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("c", p.currentName());
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
     	assertToken(JsonToken.END_OBJECT, p.nextToken());
 
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("d", p.currentName());
 
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
-    	assertToken(JsonToken.FIELD_NAME, p.nextToken());
+    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("e", p.currentName());
     	assertToken(JsonToken.VALUE_NULL, p.nextToken());
     	assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -263,10 +263,10 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.currentToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // a
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // a
         assertEquals("a", p.currentName());
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // b
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // b
         assertEquals("b", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertEquals("b", p.currentName());
@@ -340,7 +340,7 @@ public class BasicParserTest extends BaseTestForSmile
         // First, just skipping
         JsonParser p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
@@ -349,7 +349,7 @@ public class BasicParserTest extends BaseTestForSmile
         // Then accessing data
         p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(uc, p.currentName());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -401,7 +401,7 @@ public class BasicParserTest extends BaseTestForSmile
             do {
                 gen.writeStartObject();
                 // importa
-                gen.writeNumberField(FIELD, count % 17);
+                gen.writeNumberProperty(FIELD, count % 17);
                 gen.writeEndObject();
                 ++count;
             } while (bytes.size() < (LEN - 100));
@@ -414,7 +414,7 @@ public class BasicParserTest extends BaseTestForSmile
 
             while (i < count) {
                 assertToken(JsonToken.START_OBJECT, p.nextToken());
-                assertToken(JsonToken.FIELD_NAME, p.nextToken());
+                assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
                 assertEquals(FIELD, p.currentName());
                 assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
                 assertEquals((i % 17), p.getIntValue());
@@ -439,10 +439,10 @@ public class BasicParserTest extends BaseTestForSmile
         JsonGenerator jgen = sf.createGenerator(ObjectWriteContext.empty(), bytes);
         jgen.writeStartArray();
         jgen.writeStartObject();
-        jgen.writeStringField("key", "value");
+        jgen.writeStringProperty("key", "value");
         jgen.writeEndObject();
         jgen.writeStartObject();
-        jgen.writeStringField("key", "value");
+        jgen.writeStringProperty("key", "value");
         jgen.writeEndObject();
         jgen.writeEndArray();
         jgen.close();
@@ -453,7 +453,7 @@ public class BasicParserTest extends BaseTestForSmile
         String str;
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
         assertEquals("key", str);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -462,7 +462,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
         assertEquals("key", str);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -481,7 +481,7 @@ public class BasicParserTest extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator generator = _smileGenerator(out, true);
         generator.writeStartObject();
-        generator.writeStringField("a", "1");
+        generator.writeStringProperty("a", "1");
         generator.writeEndObject();
         generator.flush();
         // add stuff that is NOT part of the Object
@@ -490,7 +490,7 @@ public class BasicParserTest extends BaseTestForSmile
 
         JsonParser parser = _smileParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
@@ -527,16 +527,16 @@ public class BasicParserTest extends BaseTestForSmile
         }
         assertToken(JsonToken.START_OBJECT, p.currentToken()); // main object
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Image'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Image'
         if (verifyContents) {
-            verifyFieldName(p, "Image");
+            verifyPropertyName(p, "Image");
         }
 
         assertToken(JsonToken.START_OBJECT, p.nextToken()); // 'image' object
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Width'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Width'
         if (verifyContents) {
-            verifyFieldName(p, "Width");
+            verifyPropertyName(p, "Width");
         }
 
         verifyIntToken(p.nextToken(), requireNumbers);
@@ -544,46 +544,46 @@ public class BasicParserTest extends BaseTestForSmile
             verifyIntValue(p, SAMPLE_SPEC_VALUE_WIDTH);
         }
 
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Height'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Height'
         if (verifyContents) {
-            verifyFieldName(p, "Height");
+            verifyPropertyName(p, "Height");
         }
 
         verifyIntToken(p.nextToken(), requireNumbers);
         if (verifyContents) {
             verifyIntValue(p, SAMPLE_SPEC_VALUE_HEIGHT);
         }
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Title'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Title'
         if (verifyContents) {
-            verifyFieldName(p, "Title");
+            verifyPropertyName(p, "Title");
         }
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(SAMPLE_SPEC_VALUE_TITLE, getAndVerifyText(p));
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Thumbnail'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Thumbnail'
         if (verifyContents) {
-            verifyFieldName(p, "Thumbnail");
+            verifyPropertyName(p, "Thumbnail");
         }
 
         assertToken(JsonToken.START_OBJECT, p.nextToken()); // 'thumbnail' object
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Url'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Url'
         if (verifyContents) {
-            verifyFieldName(p, "Url");
+            verifyPropertyName(p, "Url");
         }
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         if (verifyContents) {
             assertEquals(SAMPLE_SPEC_VALUE_TN_URL, getAndVerifyText(p));
         }
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Height'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Height'
         if (verifyContents) {
-            verifyFieldName(p, "Height");
+            verifyPropertyName(p, "Height");
         }
         verifyIntToken(p.nextToken(), requireNumbers);
         if (verifyContents) {
             verifyIntValue(p, SAMPLE_SPEC_VALUE_TN_HEIGHT);
         }
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'Width'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'Width'
         if (verifyContents) {
-            verifyFieldName(p, "Width");
+            verifyPropertyName(p, "Width");
         }
         // Width value is actually a String in the example
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -592,7 +592,7 @@ public class BasicParserTest extends BaseTestForSmile
         }
 
         assertToken(JsonToken.END_OBJECT, p.nextToken()); // 'thumbnail' object
-        assertToken(JsonToken.FIELD_NAME, p.nextToken()); // 'IDs'
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken()); // 'IDs'
         assertToken(JsonToken.START_ARRAY, p.nextToken()); // 'ids' array
         verifyIntToken(p.nextToken(), requireNumbers); // ids[0]
         if (verifyContents) {
@@ -631,7 +631,7 @@ public class BasicParserTest extends BaseTestForSmile
         }
     }
     
-    protected void verifyFieldName(JsonParser p, String expName)
+    protected void verifyPropertyName(JsonParser p, String expName)
         throws IOException
     {
         assertEquals(expName, p.getText());

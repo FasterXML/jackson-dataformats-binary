@@ -14,7 +14,7 @@ public class GeneratorInvalidCallsTest extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = _smileGenerator(out, true);
         try {
-            gen.writeStringField("a", "b");
+            gen.writeStringProperty("a", "b");
             fail("Should NOT allow writing of FIELD_NAME in root context");
         } catch (StreamWriteException e) {
             verifyException(e, "Can not write a field name");

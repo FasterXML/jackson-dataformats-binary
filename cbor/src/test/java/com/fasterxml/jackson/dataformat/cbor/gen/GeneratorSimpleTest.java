@@ -320,8 +320,8 @@ public class GeneratorSimpleTest extends CBORTestBase
         
         // currently will produce indefinite-length Object
         gen.writeStartObject();
-        gen.writeNumberField("a", 1);
-        gen.writeNumberField("b", 2);
+        gen.writeNumberProperty("a", 1);
+        gen.writeNumberProperty("b", 2);
         gen.writeEndObject();
         gen.close();
 

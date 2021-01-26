@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 abstract class RecordReader extends AvroStructureReader
@@ -62,7 +62,7 @@ abstract class RecordReader extends AvroStructureReader
     {
         _state = STATE_DONE;
         _parser.setAvroContext(getParent());
-        return FieldNameMatcher.MATCH_END_OBJECT;
+        return PropertyNameMatcher.MATCH_END_OBJECT;
     }
 
     @Override
@@ -84,7 +84,7 @@ abstract class RecordReader extends AvroStructureReader
         if (_currToken == JsonToken.END_OBJECT || _currToken == JsonToken.START_OBJECT) {
             return super.getTypeId();
         }
-        if (_currToken == JsonToken.FIELD_NAME) {
+        if (_currToken == JsonToken.PROPERTY_NAME) {
             return AvroSchemaHelper.getTypeId(String.class);
         }
         // When reading a value type ID, the index pointer has already advanced to the next field, so look at the previous
@@ -130,7 +130,7 @@ abstract class RecordReader extends AvroStructureReader
                     _currentName = _fieldReaders[_index].getName();
                     _state = STATE_VALUE;
                     {
-                        JsonToken t = JsonToken.FIELD_NAME;
+                        JsonToken t = JsonToken.PROPERTY_NAME;
                         _currToken = t;
                         return t;
                     }
@@ -160,7 +160,7 @@ abstract class RecordReader extends AvroStructureReader
                     String name = _fieldReaders[_index].getName();
                     _currentName = name;
                     _state = STATE_VALUE;
-                    _currToken = JsonToken.FIELD_NAME;
+                    _currToken = JsonToken.PROPERTY_NAME;
                     return name;
                 }
                 _nextAtEndObject();
@@ -173,13 +173,13 @@ abstract class RecordReader extends AvroStructureReader
         }
 
         @Override
-        public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
             if (_state == STATE_NAME) {
                 if (_index < _count) {
                     String name = _fieldReaders[_index].getName();
                     _currentName = name;
                     _state = STATE_VALUE;
-                    _currToken = JsonToken.FIELD_NAME;
+                    _currToken = JsonToken.PROPERTY_NAME;
                     return matcher.matchName(name);
                 }
                 return _matchAtEndObject();
@@ -189,7 +189,7 @@ abstract class RecordReader extends AvroStructureReader
             }
             // 26-Aug-2019, tatu: Is this correct thing to do?
             nextToken();
-            return FieldNameMatcher.MATCH_ODD_TOKEN;
+            return PropertyNameMatcher.MATCH_ODD_TOKEN;
         }
     }
 
@@ -230,7 +230,7 @@ abstract class RecordReader extends AvroStructureReader
                     }
                     _currentName = r.getName();
                     _state = STATE_VALUE;
-                    return (_currToken = JsonToken.FIELD_NAME);
+                    return (_currToken = JsonToken.PROPERTY_NAME);
                 }
                 return _nextAtEndObject();
             case STATE_VALUE:
@@ -263,7 +263,7 @@ abstract class RecordReader extends AvroStructureReader
                     String name = r.getName();
                     _currentName = name;
                     _state = STATE_VALUE;
-                    _currToken = JsonToken.FIELD_NAME;
+                    _currToken = JsonToken.PROPERTY_NAME;
                     return name;
                 }
                 _nextAtEndObject();
@@ -274,7 +274,7 @@ abstract class RecordReader extends AvroStructureReader
         }
 
         @Override
-        public int nextFieldName(FieldNameMatcher matcher) throws IOException {
+        public int nextFieldName(PropertyNameMatcher matcher) throws IOException {
             if (_state == STATE_NAME) {
                 while (_index < _count) {
                     AvroFieldReader r = _fieldReaders[_index];
@@ -286,13 +286,13 @@ abstract class RecordReader extends AvroStructureReader
                     String name = r.getName();
                     _currentName = name;
                     _state = STATE_VALUE;
-                    _currToken = JsonToken.FIELD_NAME;
+                    _currToken = JsonToken.PROPERTY_NAME;
                     return matcher.matchName(name);
                 }
                 return _matchAtEndObject();
             }
             nextToken();
-            return FieldNameMatcher.MATCH_ODD_TOKEN;
+            return PropertyNameMatcher.MATCH_ODD_TOKEN;
         }
     }
 }

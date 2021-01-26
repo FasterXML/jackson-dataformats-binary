@@ -105,16 +105,16 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         SmileGenerator generator = (SmileGenerator) MAPPER.createGenerator(out);
         
         generator.writeStartObject();
-        generator.writeFieldName("name");
+        generator.writeName("name");
         if (asUtf8String) {
             byte[] text = "PojoFoo".getBytes("ASCII");
             generator.writeUTF8String(text, 0, text.length);
         } else {
             generator.writeString("PojoFoo");
         }
-        generator.writeFieldName("collection");
+        generator.writeName("collection");
         generator.writeStartObject();
-        generator.writeFieldName("v");
+        generator.writeName("v");
         generator.writeStartArray();
         if(asUtf8String) {
             byte[] text = "1".getBytes("ASCII");
@@ -135,16 +135,16 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
         
-        assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
+        assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals(parser.currentName(), "name");
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
         assertEquals(parser.getText(), "PojoFoo");
         
-        assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
+        assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals(parser.currentName(), "collection");
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
         
-        assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
+        assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals("Should have property with name 'v'", parser.currentName(), "v");
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
         

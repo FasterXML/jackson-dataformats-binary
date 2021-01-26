@@ -48,11 +48,11 @@ public abstract class NonBlockingParserBase
     protected final static int MINOR_HEADER_INITIAL = 1;
     protected final static int MINOR_HEADER_INLINE = 2;
 
-    protected final static int MINOR_FIELD_NAME_2BYTE = 3;
+    protected final static int MINOR_PROPERTY_NAME_2BYTE = 3;
 
-    protected final static int MINOR_FIELD_NAME_LONG = 4;
-    protected final static int MINOR_FIELD_NAME_SHORT_ASCII = 5;
-    protected final static int MINOR_FIELD_NAME_SHORT_UNICODE = 6;
+    protected final static int MINOR_PROPERTY_NAME_LONG = 4;
+    protected final static int MINOR_PROPERTY_NAME_SHORT_ASCII = 5;
+    protected final static int MINOR_PROPERTY_NAME_SHORT_UNICODE = 6;
 
     protected final static int MINOR_VALUE_NUMBER_INT = 7;
     protected final static int MINOR_VALUE_NUMBER_LONG = 8;
@@ -255,7 +255,7 @@ public abstract class NonBlockingParserBase
         if (t == null || _currToken == JsonToken.NOT_AVAILABLE) { // null only before/after document
             return null;
         }
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
@@ -271,7 +271,7 @@ public abstract class NonBlockingParserBase
         switch (currentTokenId()) {
         case JsonTokenId.ID_STRING:
             return _textBuffer.getTextBuffer();
-        case JsonTokenId.ID_FIELD_NAME:
+        case JsonTokenId.ID_PROPERTY_NAME:
             return _parsingContext.currentName().toCharArray();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
@@ -290,7 +290,7 @@ public abstract class NonBlockingParserBase
         switch (currentTokenId()) {
         case JsonTokenId.ID_STRING:
             return _textBuffer.size();
-        case JsonTokenId.ID_FIELD_NAME:
+        case JsonTokenId.ID_PROPERTY_NAME:
             return _parsingContext.currentName().length();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
@@ -590,7 +590,7 @@ public abstract class NonBlockingParserBase
         }
         _parsingContext.setCurrentName(_seenNames[index]);
         _majorState = MAJOR_OBJECT_VALUE;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return (_currToken = JsonToken.PROPERTY_NAME);
     }
 
     protected final void _addSeenStringValue(String v) throws JacksonException

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.BinaryNameMatcher;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 import com.fasterxml.jackson.core.util.Named;
 
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
@@ -300,12 +300,12 @@ public class SmileFactory
      */
 
     @Override
-    public FieldNameMatcher constructFieldNameMatcher(List<Named> matches, boolean alreadyInterned) {
+    public PropertyNameMatcher constructNameMatcher(List<Named> matches, boolean alreadyInterned) {
         return BinaryNameMatcher.constructFrom(matches, alreadyInterned);
     }
 
     @Override
-    public FieldNameMatcher constructCIFieldNameMatcher(List<Named> matches, boolean alreadyInterned,
+    public PropertyNameMatcher constructCINameMatcher(List<Named> matches, boolean alreadyInterned,
             Locale locale) {
         return BinaryNameMatcher.constructCaseInsensitive(locale, matches, alreadyInterned);
     }

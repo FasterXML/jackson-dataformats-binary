@@ -106,7 +106,7 @@ public class NumberBeanTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("nr", 123);
+            g.writeNumberProperty("nr", 123);
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
@@ -115,7 +115,7 @@ public class NumberBeanTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("nr", Long.MAX_VALUE);
+            g.writeNumberProperty("nr", Long.MAX_VALUE);
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
@@ -124,7 +124,7 @@ public class NumberBeanTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("nr", BigInteger.valueOf(-42L));
+            g.writeNumberProperty("nr", BigInteger.valueOf(-42L));
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
@@ -139,7 +139,7 @@ public class NumberBeanTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("nr", 0.25f);
+            g.writeNumberProperty("nr", 0.25f);
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
@@ -148,7 +148,7 @@ public class NumberBeanTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("nr", 0.5);
+            g.writeNumberProperty("nr", 0.5);
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
@@ -157,7 +157,7 @@ public class NumberBeanTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("nr", new BigDecimal("0.100"));
+            g.writeNumberProperty("nr", new BigDecimal("0.100"));
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
@@ -229,7 +229,7 @@ public class NumberBeanTest extends CBORTestBase
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
             g.writeStartObject();
-            g.writeNumberField("value", VALUE);
+            g.writeNumberProperty("value", VALUE);
             g.writeEndObject();
         }
         

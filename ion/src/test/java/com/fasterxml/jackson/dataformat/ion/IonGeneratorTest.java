@@ -76,7 +76,7 @@ public class IonGeneratorTest {
 
     @Test
     public void testObjectWrite() throws Exception {
-        joiGenerator.writeObject(testObject);
+        joiGenerator.writePOJO(testObject);
         assertThat(output.get(0), is(testObjectIon));
     }
 
@@ -91,8 +91,8 @@ public class IonGeneratorTest {
         final String FIELD = "field";
         // We can test this by writing into a context where only a single object can be written
         joiGenerator.writeStartObject();
-        joiGenerator.writeFieldName(FIELD);
-        joiGenerator.writeObject(testObject);
+        joiGenerator.writeName(FIELD);
+        joiGenerator.writePOJO(testObject);
         joiGenerator.writeEndObject();
 
 
@@ -105,7 +105,7 @@ public class IonGeneratorTest {
         final String FIELD = "field";
         // We can test this by writing into a context where only a single object can be written
         joiGenerator.writeStartObject();
-        joiGenerator.writeFieldName(FIELD);
+        joiGenerator.writeName(FIELD);
         joiGenerator.writeTree(testObjectTree);
         joiGenerator.writeEndObject();
 

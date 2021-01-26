@@ -95,7 +95,7 @@ public class AvroUntypedDeserializer
         if (t == JsonToken.START_OBJECT) {
 
             key1 = p.nextFieldName();
-        } else if (t == JsonToken.FIELD_NAME) {
+        } else if (t == JsonToken.PROPERTY_NAME) {
             key1 = p.currentName();
         } else {
             if (t != JsonToken.END_OBJECT) {

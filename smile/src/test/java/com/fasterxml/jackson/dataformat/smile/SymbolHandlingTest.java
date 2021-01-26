@@ -21,15 +21,15 @@ public class SymbolHandlingTest extends BaseTestForSmile
         assertEquals(0, symbols1.size());
      
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(STR1, p.currentName());
         assertEquals(1, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("foobar", p.currentName());
         assertEquals(2, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("longername", p.currentName());
         assertEquals(3, symbols1.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -46,15 +46,15 @@ public class SymbolHandlingTest extends BaseTestForSmile
         assertEquals(3, symbols2.size());
 
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(STR1, p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("foobar", p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("longername", p.currentName());
         assertEquals(3, symbols2.size());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());

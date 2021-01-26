@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 
@@ -368,7 +368,7 @@ public class CBORParser extends ParserBase
          * as well as handle names for Object entries.
          */
         if (_parsingContext.inObject()) {
-            if (_currToken != JsonToken.FIELD_NAME) {
+            if (_currToken != JsonToken.PROPERTY_NAME) {
                 _tagValue = -1;
                 // completed the whole Object?
                 if (!_parsingContext.expectMoreValues()) {
@@ -899,7 +899,7 @@ public class CBORParser extends ParserBase
     @Override
     public String nextFieldName() throws JacksonException
     {
-        if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
+        if (_parsingContext.inObject() && _currToken != JsonToken.PROPERTY_NAME) {
             _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
                 _skipIncomplete();
@@ -932,7 +932,7 @@ public class CBORParser extends ParserBase
                     _reportUnexpectedBreak();
                 }
                 String name = _decodeNonStringName(ch);
-                _currToken = JsonToken.FIELD_NAME;
+                _currToken = JsonToken.PROPERTY_NAME;
                 return name;
             }
             final int lenMarker = ch & 0x1F;
@@ -958,18 +958,18 @@ public class CBORParser extends ParserBase
                 }
             }
             _parsingContext.setCurrentName(name);
-            _currToken = JsonToken.FIELD_NAME;
+            _currToken = JsonToken.PROPERTY_NAME;
             return name;
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
+        return (nextToken() == JsonToken.PROPERTY_NAME) ? currentName() : null;
     }
 
     @Override
     public boolean nextFieldName(SerializableString str) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
-        if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
+        if (_parsingContext.inObject() && _currToken != JsonToken.PROPERTY_NAME) {
             _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
                 _skipIncomplete();
@@ -1004,7 +1004,7 @@ public class CBORParser extends ParserBase
                             }
                             _inputPtr = ptr + byteLen;
                             _parsingContext.setCurrentName(str.getValue());
-                            _currToken = JsonToken.FIELD_NAME;
+                            _currToken = JsonToken.PROPERTY_NAME;
                             return true;
                         }
                     }
@@ -1016,12 +1016,12 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int nextFieldName(FieldNameMatcher matcher) throws JacksonException
+    public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
-        if ((_currToken == JsonToken.FIELD_NAME) || !_parsingContext.inObject()) {
+        if ((_currToken == JsonToken.PROPERTY_NAME) || !_parsingContext.inObject()) {
             nextToken();
-            return FieldNameMatcher.MATCH_ODD_TOKEN;
+            return PropertyNameMatcher.MATCH_ODD_TOKEN;
         }
 
         if (_tokenIncomplete) {
@@ -1035,7 +1035,7 @@ public class CBORParser extends ParserBase
         if (!_parsingContext.expectMoreValues()) {
             _parsingContext = _parsingContext.getParent();
             _currToken = JsonToken.END_OBJECT;
-            return FieldNameMatcher.MATCH_END_OBJECT;
+            return PropertyNameMatcher.MATCH_END_OBJECT;
         }
         // inlined "_decodeFieldName()"
 
@@ -1051,7 +1051,7 @@ public class CBORParser extends ParserBase
                 if (!_parsingContext.hasExpectedLength()) {
                     _parsingContext = _parsingContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
-                    return FieldNameMatcher.MATCH_END_OBJECT;
+                    return PropertyNameMatcher.MATCH_END_OBJECT;
                 }
                 _reportUnexpectedBreak();
             }
@@ -1073,11 +1073,11 @@ public class CBORParser extends ParserBase
         _inputPtr += lenMarker;
         final String name = matcher.nameLookup()[match];
         _parsingContext.setCurrentName(name);
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         return match;
     }
 
-    private int _nextFieldDecodeAndAdd(FieldNameMatcher matcher, int len) throws JacksonException
+    private int _nextFieldDecodeAndAdd(PropertyNameMatcher matcher, int len) throws JacksonException
     {
         // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
         String name;
@@ -1102,27 +1102,27 @@ public class CBORParser extends ParserBase
             _inputPtr += len;
         }
         _parsingContext.setCurrentName(name);
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
         return matcher.matchName(name);
     }
 
-    private int _nextFieldNameNonText(FieldNameMatcher matcher, int ch) throws JacksonException
+    private int _nextFieldNameNonText(PropertyNameMatcher matcher, int ch) throws JacksonException
     {
         String name = _decodeNonStringName(ch); // NOTE: sets current name too
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         /// 15-Nov-2017, tatu: Is this correct? Copied from `nextFieldName()` but...
         return matcher.matchName(name);
     }
 
     // For presumable rare case of ""
-    private int _nextFieldNameEmpty(FieldNameMatcher matcher) throws JacksonException {
+    private int _nextFieldNameEmpty(PropertyNameMatcher matcher) throws JacksonException {
         _parsingContext.setCurrentName("");
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         return matcher.matchName("");
     }
 
-    private int _nextFieldNameLong(FieldNameMatcher matcher, int lenMarker) throws JacksonException
+    private int _nextFieldNameLong(PropertyNameMatcher matcher, int lenMarker) throws JacksonException
     {
         final int actualLen = _decodeExplicitLength(lenMarker);
         String name;
@@ -1132,11 +1132,11 @@ public class CBORParser extends ParserBase
             name = _decodeLongerName(actualLen);
         }
         _parsingContext.setCurrentName(name);
-        _currToken = JsonToken.FIELD_NAME;
+        _currToken = JsonToken.PROPERTY_NAME;
         return matcher.matchName(name);
     }
 
-    private final int _nextFieldOptimized(FieldNameMatcher matcher, final int len) throws JacksonException
+    private final int _nextFieldOptimized(PropertyNameMatcher matcher, final int len) throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
@@ -1213,7 +1213,7 @@ public class CBORParser extends ParserBase
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
-    private final int _nextFieldFromSymbolsLong(FieldNameMatcher matcher, 
+    private final int _nextFieldFromSymbolsLong(PropertyNameMatcher matcher, 
             int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
@@ -1272,7 +1272,7 @@ public class CBORParser extends ParserBase
         _tagValue = -1;
 
         if (_parsingContext.inObject()) {
-            if (_currToken != JsonToken.FIELD_NAME) {
+            if (_currToken != JsonToken.PROPERTY_NAME) {
                 _tagValue = -1;
                 // completed the whole Object?
                 if (!_parsingContext.expectMoreValues()) {
@@ -1548,7 +1548,7 @@ public class CBORParser extends ParserBase
         if (t == null) { // null only before/after document
             return null;
         }
-        if (t == JsonToken.FIELD_NAME) {
+        if (t == JsonToken.PROPERTY_NAME) {
             return _parsingContext.currentName();
         }
         if (t.isNumeric()) {
@@ -1567,7 +1567,7 @@ public class CBORParser extends ParserBase
             if (_currToken == JsonToken.VALUE_STRING) {
                 return _textBuffer.getTextBuffer();
             }
-            if (_currToken == JsonToken.FIELD_NAME) {
+            if (_currToken == JsonToken.PROPERTY_NAME) {
                 return _parsingContext.currentName().toCharArray();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
@@ -1589,7 +1589,7 @@ public class CBORParser extends ParserBase
             if (_currToken == JsonToken.VALUE_STRING) {
                 return _textBuffer.size();                
             }
-            if (_currToken == JsonToken.FIELD_NAME) {
+            if (_currToken == JsonToken.PROPERTY_NAME) {
                 return _parsingContext.currentName().length();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
@@ -1646,7 +1646,7 @@ public class CBORParser extends ParserBase
             if (t == JsonToken.VALUE_STRING) {
                 return _textBuffer.contentsToWriter(writer);
             }
-            if (t == JsonToken.FIELD_NAME) {
+            if (t == JsonToken.PROPERTY_NAME) {
                 String n = _parsingContext.currentName();
                 writer.write(n);
                 return n.length();
@@ -2550,7 +2550,7 @@ public class CBORParser extends ParserBase
             }
             // offline non-String cases, as they are expected to be rare
             _decodeNonStringName(ch);
-            return JsonToken.FIELD_NAME;
+            return JsonToken.PROPERTY_NAME;
         }
         final int lenMarker = ch & 0x1F;
         String name;
@@ -2575,7 +2575,7 @@ public class CBORParser extends ParserBase
             }
         }
         _parsingContext.setCurrentName(name);
-        return JsonToken.FIELD_NAME;
+        return JsonToken.PROPERTY_NAME;
     }
     
     private final String _decodeShortName(int len) throws JacksonException
@@ -2668,7 +2668,7 @@ public class CBORParser extends ParserBase
     
     /**
      * Method that handles initial token type recognition for token
-     * that has to be either FIELD_NAME or END_OBJECT.
+     * that has to be either PROPERTY_NAME or END_OBJECT.
      */
     protected final String _decodeNonStringName(int ch) throws JacksonException
     {

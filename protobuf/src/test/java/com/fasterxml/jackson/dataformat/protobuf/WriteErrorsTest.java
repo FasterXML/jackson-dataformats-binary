@@ -52,10 +52,10 @@ public class WriteErrorsTest extends ProtobufTestBase
                 .createGenerator(bytes);
 
         g.writeStartObject();
-        g.writeFieldName("x");
+        g.writeName("x");
         g.writeNumber((short) 290);
         // unknown field
-        g.writeFieldName("foo");
+        g.writeName("foo");
         g.writeNumber(1.0f);
         // also, should be fine to let generator close the object...
         g.close();

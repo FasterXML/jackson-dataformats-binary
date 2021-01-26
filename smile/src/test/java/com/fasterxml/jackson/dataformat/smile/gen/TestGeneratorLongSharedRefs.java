@@ -21,20 +21,20 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         
         JsonGenerator generator =  mapper.createGenerator(byteOut);
         generator.writeStartObject();
-        generator.writeFieldName("a");
+        generator.writeName("a");
         generator.writeStartObject();
 
         final int FIELD_COUNT = 300;
 
         for (int i=0; i < FIELD_COUNT; i++) {
-            generator.writeNumberField("f_"+i, i);
+            generator.writeNumberProperty("f_"+i, i);
             generator.flush();
         }
         generator.writeEndObject();
-        generator.writeFieldName("b");
+        generator.writeName("b");
         generator.writeStartObject();
         for (int i=0; i < FIELD_COUNT; i++) {
-            generator.writeNumberField("f_"+i, i);
+            generator.writeNumberProperty("f_"+i, i);
             generator.flush();
         }
         generator.writeEndObject();
@@ -47,22 +47,22 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         JsonParser p = _smileParser(new ByteArrayInputStream(smile));
         assertToken(p.nextToken(), JsonToken.START_OBJECT);
 
-        assertToken(p.nextToken(), JsonToken.FIELD_NAME);
+        assertToken(p.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals("a", p.currentName());
         assertToken(p.nextToken(), JsonToken.START_OBJECT);
         for (int i=0; i < FIELD_COUNT; i++) {
-            assertToken(p.nextToken(), JsonToken.FIELD_NAME);
+            assertToken(p.nextToken(), JsonToken.PROPERTY_NAME);
             assertEquals("f_"+i, p.currentName());
             assertToken(p.nextToken(), JsonToken.VALUE_NUMBER_INT);
             assertEquals(i, p.getIntValue());
         }
         assertToken(p.nextToken(), JsonToken.END_OBJECT);
 
-        assertToken(p.nextToken(), JsonToken.FIELD_NAME);
+        assertToken(p.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals("b", p.currentName());
         assertToken(p.nextToken(), JsonToken.START_OBJECT);
         for (int i=0; i < FIELD_COUNT; i++) {
-            assertToken(p.nextToken(), JsonToken.FIELD_NAME);
+            assertToken(p.nextToken(), JsonToken.PROPERTY_NAME);
             assertEquals("f_"+i, p.currentName());
             assertToken(p.nextToken(), JsonToken.VALUE_NUMBER_INT);
             assertEquals(i, p.getIntValue());

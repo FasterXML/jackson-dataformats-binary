@@ -154,7 +154,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
             g.writeStartObject();
             for (int ix = 0; ix < 1000; ++ix) {
                 String name = "" + ((char) c) + ix;
-                g.writeNumberField(name, ix);
+                g.writeNumberProperty(name, ix);
             }
             g.writeEndObject();
         }

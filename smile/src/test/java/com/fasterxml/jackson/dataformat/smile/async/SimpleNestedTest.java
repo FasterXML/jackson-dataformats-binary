@@ -33,7 +33,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.START_OBJECT, r.nextToken());
         assertFalse(r.parser().hasTextCharacters());
 
-        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         assertEquals("foobar", r.currentName());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
         assertEquals("[", r.currentText());
@@ -45,10 +45,10 @@ public class SimpleNestedTest extends AsyncTestBase
         assertEquals(-999, r.getIntValue());
         assertToken(JsonToken.END_ARRAY, r.nextToken());
 
-        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         assertEquals("other", r.currentName());
         assertToken(JsonToken.START_OBJECT, r.nextToken());
-        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         assertEquals("", r.currentName());
         assertToken(JsonToken.VALUE_NULL, r.nextToken());
         assertToken(JsonToken.END_OBJECT, r.nextToken());
@@ -58,7 +58,7 @@ public class SimpleNestedTest extends AsyncTestBase
         // another twist: close in the middle, verify
         r = asyncForBytes(READER, readSize, data, offset);
         assertToken(JsonToken.START_OBJECT, r.nextToken());
-        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         r.parser().close();
         assertTrue(r.parser().isClosed());
         assertNull(r.parser().nextToken());
@@ -86,7 +86,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
         assertToken(JsonToken.START_OBJECT, r.nextToken());
         assertEquals("{", r.currentText());
-        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         assertEquals("extraOrdinary", r.currentName());
         assertToken(JsonToken.VALUE_STRING, r.nextToken());
         assertEquals("", r.currentText());
@@ -97,7 +97,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.END_ARRAY, r.nextToken());
 
         assertToken(JsonToken.START_OBJECT, r.nextToken());
-        assertToken(JsonToken.FIELD_NAME, r.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         assertEquals("extraOrdinary", r.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
         assertEquals(23, r.getIntValue());
