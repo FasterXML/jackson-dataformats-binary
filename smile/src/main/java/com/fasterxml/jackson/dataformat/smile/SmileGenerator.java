@@ -63,12 +63,12 @@ public class SmileGenerator
         ENCODE_BINARY_AS_7BIT(true),
 
         /**
-         * Whether generator should check if it can "share" field names during generating
-         * content or not. If enabled, can replace repeating field names with back references,
+         * Whether generator should check if it can "share" property names during generating
+         * content or not. If enabled, can replace repeating property names with back references,
          * which are more compact and should faster to decode. Downside is that there is some
          * overhead for writing (need to track existing values, check), as well as decoding.
          *<p>
-         * Since field names tend to repeat quite often, this setting is enabled by default.
+         * Since property names tend to repeat quite often, this setting is enabled by default.
          */
         CHECK_SHARED_NAMES(true),
 
@@ -116,7 +116,7 @@ public class SmileGenerator
 
     /**
      * Helper class used for keeping track of possibly shareable String
-     * references (for field names and/or short String values)
+     * references (for property names and/or short String values)
      */
     protected final static class SharedStringNode
     {
@@ -229,7 +229,7 @@ public class SmileGenerator
      */
 
     /**
-     * Raw data structure used for checking whether field name to
+     * Raw data structure used for checking whether property name to
      * write can be output using back reference or not.
      */
     protected SharedStringNode[] _seenNames;
@@ -480,7 +480,7 @@ public class SmileGenerator
     public final void writeName(String name)  throws JacksonException
     {
         if (!_tokenWriteContext.writeName(name)) {
-            _reportError("Can not write a field name, expecting a value");
+            throw _constructWriteException("Cannot write a property name, expecting a value");
         }
         _writeName(name);
     }
@@ -491,7 +491,7 @@ public class SmileGenerator
     {
         // Object is a value, need to verify it's allowed
         if (!_tokenWriteContext.writeName(name.getValue())) {
-            _reportError("Can not write a field name, expecting a value");
+            throw _constructWriteException("Cannot write a property name, expecting a value");
         }
         _writeName(name);
     }
@@ -501,7 +501,7 @@ public class SmileGenerator
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
         if (!_tokenWriteContext.writeName(idStr)) {
-            _reportError("Can not write a field name, expecting a value");
+            throw _constructWriteException("Cannot write a property id, expecting a value");
         }
         _writeName(idStr);
     }
@@ -1797,7 +1797,7 @@ public class SmileGenerator
         throws JacksonException
     {
         if (!_tokenWriteContext.writeValue()) {
-            _reportError("Can not "+typeMsg+", expecting field name");
+            throw _constructWriteException("Cannot "+typeMsg+", expecting a property name");
         }
     }
     

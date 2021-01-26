@@ -396,7 +396,7 @@ public class GeneratorSimpleTest extends CBORTestBase
             gen.writeString("test");
             fail("Should NOT allow write of anything but FIELD_NAME or END_OBJECT at this point");
         } catch (StreamWriteException e) {
-            verifyException(e, "expecting field name");
+            verifyException(e, "expecting a property name");
         }
         gen.close();
 
@@ -409,7 +409,7 @@ public class GeneratorSimpleTest extends CBORTestBase
             gen.writeString("BAR");
             fail("Should NOT allow write of anything but FIELD_NAME or END_OBJECT at this point");
         } catch (StreamWriteException e) {
-            verifyException(e, "expecting field name");
+            verifyException(e, "expecting a property name");
         }
         gen.close();
     }

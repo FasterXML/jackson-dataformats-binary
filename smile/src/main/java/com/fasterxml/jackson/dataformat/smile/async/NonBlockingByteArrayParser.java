@@ -632,8 +632,8 @@ public class NonBlockingByteArrayParser
             }
         }
         // Other byte values are illegal
-        _reportError("Invalid type marker byte 0x%02x for expected field name (or END_OBJECT marker)", ch & 0xFF);
-        return null;
+        throw _constructReadException(
+"Invalid type marker byte 0x%02x for expected property name (or END_OBJECT marker)", ch & 0xFF);
     }
 
     private final JsonToken _finishLongFieldName(int outPtr) throws JacksonException

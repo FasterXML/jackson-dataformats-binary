@@ -210,18 +210,17 @@ public class ProtobufGenerator extends GeneratorBase
 
     /*
     /**********************************************************************
-    /* Overridden methods; writing field names
+    /* Overridden methods; writing property names
     /**********************************************************************
      */
 
-    /* And then methods overridden to make final, streamline some
-     * aspects...
-     */
+    // And then methods overridden to make final, streamline some aspects...
 
     @Override
-    public final void writeName(String name) throws JacksonException {
+    public final void writeName(String name) throws JacksonException
+    {
         if (!_inObject) {
-            _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
+            _reportError("Cannot write a property name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
         ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
@@ -252,7 +251,7 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public final void writeName(SerializableString sstr) throws JacksonException {
         if (!_inObject) {
-            _reportError("Can not write field name: current context not Object but "+_tokenWriteContext.typeDesc());
+            _reportError("Cannot write a property name: current context not Object but "+_tokenWriteContext.typeDesc());
         }
         ProtobufField f = _currField;
         final String name = sstr.getValue();

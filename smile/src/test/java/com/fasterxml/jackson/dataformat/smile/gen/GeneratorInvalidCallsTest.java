@@ -15,9 +15,9 @@ public class GeneratorInvalidCallsTest extends BaseTestForSmile
         JsonGenerator gen = _smileGenerator(out, true);
         try {
             gen.writeStringProperty("a", "b");
-            fail("Should NOT allow writing of FIELD_NAME in root context");
+            fail("Should NOT allow writing of PROPERTY_NAME in root context");
         } catch (StreamWriteException e) {
-            verifyException(e, "Can not write a field name");
+            verifyException(e, "Cannot write a property name");
         }
         gen.close();
     }

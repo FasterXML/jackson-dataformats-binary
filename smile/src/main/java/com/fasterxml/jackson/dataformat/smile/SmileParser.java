@@ -363,9 +363,9 @@ public class SmileParser extends SmileParserBase
 //        _tokenInputTotal = _currInputProcessed + _inputPtr;
         // also: clear any data retained so far
         _binaryValue = null;
-        // Two main modes: values, and field names.
+        // Two main modes: values, and property names.
         if ((_currToken != JsonToken.PROPERTY_NAME) && _parsingContext.inObject()) {
-            return (_currToken = _handleFieldName());
+            return (_currToken = _handlePropertyName());
         }
         if (_inputPtr >= _inputEnd) {
             if (!_loadMore()) {
@@ -546,7 +546,7 @@ public class SmileParser extends SmileParserBase
 
     /*
     /**********************************************************************
-    /* Optimized traversal: field names
+    /* Optimized traversal: property names
     /**********************************************************************
      */
 
@@ -564,7 +564,7 @@ public class SmileParser extends SmileParserBase
     @Override
     public String nextFieldName() throws JacksonException
     {
-        // Two parsing modes; can only succeed if expecting field name, if not offline:
+        // Two parsing modes; can only succeed if expecting a property name, if not offline:
         if ((_currToken == JsonToken.PROPERTY_NAME) || !_parsingContext.inObject()) {
             // otherwise just fall back to default handling; should occur rarely
             return (nextToken() == JsonToken.PROPERTY_NAME) ? currentName() : null;
@@ -680,14 +680,14 @@ public class SmileParser extends SmileParserBase
             break;
         }
         // Other byte values are illegal
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
-        return null;
+        throw _constructReadException("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)
+            +" for expected property name (or END_OBJECT marker)");
     }
 
     @Override
     public boolean nextFieldName(SerializableString str) throws JacksonException
     {
-        // Two parsing modes; can only succeed if expecting field name, so handle that first:
+        // Two parsing modes; can only succeed if expecting a property name, so handle that first:
         if (_currToken != JsonToken.PROPERTY_NAME && _parsingContext.inObject()) {
             // first, clear up state
             _numTypesValid = NR_UNKNOWN;
@@ -820,7 +820,7 @@ public class SmileParser extends SmileParserBase
     @Override
     public int nextFieldName(PropertyNameMatcher matcher) throws JacksonException
     {
-        // Two parsing modes; can only succeed if expecting field name, so handle that first:
+        // Two parsing modes; can only succeed if expecting a property name, so handle that first:
         if ((_currToken == JsonToken.PROPERTY_NAME) || !_parsingContext.inObject()) {
             nextToken();
             return PropertyNameMatcher.MATCH_ODD_TOKEN;
@@ -933,8 +933,8 @@ public class SmileParser extends SmileParserBase
             }
         }
         // Other byte values are illegal
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
-        return PropertyNameMatcher.MATCH_ODD_TOKEN; // never gets here
+        throw _constructReadException("Invalid type marker byte 0x"
++Integer.toHexString(_typeAsInt)+" for expected property name (or END_OBJECT marker)");
     }
 
     private final int _nextNameOptimized(PropertyNameMatcher matcher, int len) throws JacksonException
@@ -1589,7 +1589,7 @@ public class SmileParser extends SmileParserBase
     
     /*
     /**********************************************************************
-    /* Internal methods, field name parsing
+    /* Internal methods, property name parsing
     /**********************************************************************
      */
 
@@ -1597,7 +1597,7 @@ public class SmileParser extends SmileParserBase
      * Method that handles initial token type recognition for token
      * that has to be either PROPERTY_NAME or END_OBJECT.
      */
-    protected final JsonToken _handleFieldName() throws JacksonException
+    protected final JsonToken _handlePropertyName() throws JacksonException
     {    	
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
@@ -1693,8 +1693,8 @@ public class SmileParser extends SmileParserBase
             break;
         }
         // Other byte values are illegal
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
-        return null;
+        throw _constructReadException("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)
+                +" for expected property name (or END_OBJECT marker)");
     }
 
     /**
@@ -1869,9 +1869,9 @@ public class SmileParser extends SmileParserBase
                     needed = ch = 1; // never really gets this far
                 }
                 if ((ix + needed) > byteLen) {
-                    _reportInvalidEOF(" in long field name", JsonToken.PROPERTY_NAME);
+                    _reportInvalidEOF(" in long property name", JsonToken.PROPERTY_NAME);
                 }
-                
+
                 // Ok, always need at least one more:
                 int ch2 = quads[ix >> 2]; // current quad, need to shift+mask
                 byteIx = (ix & 3);

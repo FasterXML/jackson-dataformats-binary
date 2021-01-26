@@ -1092,7 +1092,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws JacksonException {
         if (!_tokenWriteContext.writeValue()) {
-            _reportError("Can not " + typeMsg + ", expecting field name/id");
+            _reportError("Cannot " + typeMsg + ", expecting a property name/id");
         }
         // decrementElementsRemainingCount()
         int count = _currentRemainingElements;

@@ -77,7 +77,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
 
     public void testInabilityToReadChars() throws Exception
     {
-        final String EXP = "Can not create parser for character-based (not byte-based)";
+        final String EXP = "Cannot create parser for character-based (not byte-based)";
         try {
             sharedMapper().createParser("foo");
             fail();
@@ -104,7 +104,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
             sharedMapper().createGenerator(new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
-            verifyException(e, "Can not create generator for character-based (not byte-based)");
+            verifyException(e, "Cannot create generator for character-based (not byte-based)");
         }
     }
 

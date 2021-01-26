@@ -66,7 +66,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
 
     public void testInabilityToReadChars() throws Exception
     {
-        final String EXP = "Can not create parser for character-based";
+        final String EXP = "Cannot create parser for character-based";
         try {
             MAPPER.createParser("foo");
             fail();
@@ -93,7 +93,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
             MAPPER.createGenerator(new StringWriter());
             fail();
         } catch (UnsupportedOperationException e) {
-            verifyException(e, "Can not create generator for character-based");
+            verifyException(e, "Cannot create generator for character-based");
         }
     }
 
