@@ -190,10 +190,10 @@ public class IonGenerator
      */
 
     @Override
-    public int getOutputBuffered() { return -1; }
+    public int streamWriteOutputBuffered() { return -1; }
 
     @Override
-    public Object getOutputTarget() {
+    public Object streamWriteTarget() {
         // 25-May-2020, tatu: Tricky one here; should we return `IonWriter` or
         //    actual underlying Writer/OutputStream?
         //    For now, return underlying Writer/OutputStream

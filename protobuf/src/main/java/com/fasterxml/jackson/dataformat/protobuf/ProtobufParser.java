@@ -366,7 +366,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
     
     @Override
-    public Object getInputSource() {
+    public Object streamReadSource() {
         return _inputStream;
     }
 
@@ -375,7 +375,7 @@ public class ProtobufParser extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public JsonLocation getTokenLocation()
+    public JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
         return new JsonLocation(_ioContext.getSourceReference(),

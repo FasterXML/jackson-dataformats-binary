@@ -197,7 +197,7 @@ public class SmileParser extends SmileParserBase
     }
     
     @Override
-    public Object getInputSource() {
+    public Object streamReadSource() {
         return _inputStream;
     }
 

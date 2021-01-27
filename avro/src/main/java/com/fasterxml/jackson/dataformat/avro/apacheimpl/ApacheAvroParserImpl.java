@@ -112,7 +112,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      */
 
     @Override
-    public Object getInputSource() {
+    public Object streamReadSource() {
         return _inputStream;
     }
 

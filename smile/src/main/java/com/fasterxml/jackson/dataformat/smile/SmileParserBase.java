@@ -301,7 +301,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public final JsonLocation getTokenLocation()
+    public final JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;

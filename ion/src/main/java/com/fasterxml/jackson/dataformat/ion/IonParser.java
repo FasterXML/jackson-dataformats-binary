@@ -188,7 +188,7 @@ public class IonParser
     }
 
     @Override
-    public IonReader getInputSource() {
+    public IonReader streamReadSource() {
         return _reader;
     }
 
@@ -436,7 +436,7 @@ public class IonParser
     @Override public Object currentValue() { return _StreamReadContext.currentValue(); }
 
     @Override
-    public JsonLocation getTokenLocation() {
+    public JsonLocation currentTokenLocation() {
         return JsonLocation.NA;
     }
 

@@ -14,7 +14,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
 
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Invalid first surrogate character
         try { 
@@ -24,7 +24,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
             verifyException(e, "0xD83D");
             verifyException(e, "without low surrogate");
         }
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Missing second surrogate character
         try { 
@@ -34,7 +34,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
             verifyException(e, "0xDE01");
             verifyException(e, "invalid high surrogate");
         }
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Invalid second surrogate character (1)
         try { 
@@ -46,7 +46,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
             verifyException(e, "valid high surrogate");
             verifyException(e, "invalid low surrogate");
         }
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Invalid second surrogate character (2)
         try { 
@@ -58,7 +58,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
             verifyException(e, "valid high surrogate");
             verifyException(e, "invalid low surrogate");
         }
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
     }
 
     /**
@@ -72,7 +72,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = lenientUnicodeCborGenerator(out);
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Unmatched first surrogate character
         gen.writeString("x\ud83d");
@@ -83,7 +83,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = lenientUnicodeCborGenerator(out);
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Unmatched second surrogate character
         gen.writeString("x\ude01");
@@ -94,7 +94,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = lenientUnicodeCborGenerator(out);
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Unmatched second surrogate character (2)
         gen.writeString("x\ude01x");
@@ -112,7 +112,7 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
 
         out = new ByteArrayOutputStream();
         gen = lenientUnicodeCborGenerator(out);
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Broken surrogate pair
         gen.writeString("X\ud83dY");

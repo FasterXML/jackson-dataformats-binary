@@ -251,7 +251,7 @@ public class CBORParser extends ParserBase
     }
     
     @Override
-    public Object getInputSource() {
+    public Object streamReadSource() {
         return _inputStream;
     }
 
@@ -260,7 +260,7 @@ public class CBORParser extends ParserBase
      * but we do have byte offset to specify.
      */
     @Override
-    public JsonLocation getTokenLocation()
+    public JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
         return new JsonLocation(_ioContext.getSourceReference(),

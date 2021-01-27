@@ -189,7 +189,7 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public Object getOutputTarget() {
+    public Object streamWriteTarget() {
         return _output;
     }
 
@@ -200,7 +200,7 @@ public class ProtobufGenerator extends GeneratorBase
      * improved if and as needed.
      */
     @Override
-    public int getOutputBuffered() {
+    public int streamWriteOutputBuffered() {
         return -1;
     }
 

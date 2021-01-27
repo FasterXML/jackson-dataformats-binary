@@ -200,7 +200,7 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public Object getOutputTarget() {
+    public Object streamWriteTarget() {
         return _output;
     }
 
@@ -209,7 +209,7 @@ public class AvroGenerator extends GeneratorBase
      * and need to return <code>-1</code> to reflect that lack of knowledge.
      */
     @Override
-    public int getOutputBuffered() {
+    public int streamWriteOutputBuffered() {
         return -1;
     }
 

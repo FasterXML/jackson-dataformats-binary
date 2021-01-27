@@ -190,7 +190,7 @@ public abstract class NonBlockingParserBase
     public abstract int releaseBuffered(OutputStream out);
 
     @Override
-    public Object getInputSource() {
+    public Object streamReadSource() {
         // since input is "pushed", to traditional source...
         return null;
     }

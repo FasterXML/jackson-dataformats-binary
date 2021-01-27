@@ -28,30 +28,30 @@ public class ParserLocationTest
         // array marker is a single byte, so:
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertEquals(5, p.currentLocation().getByteOffset());
-        assertEquals(4, p.getTokenLocation().getByteOffset());
+        assertEquals(4, p.currentTokenLocation().getByteOffset());
 
         // same for true and others except for last int
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertEquals(6, p.currentLocation().getByteOffset());
-        assertEquals(5, p.getTokenLocation().getByteOffset());
+        assertEquals(5, p.currentTokenLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
         assertEquals(7, p.currentLocation().getByteOffset());
-        assertEquals(6, p.getTokenLocation().getByteOffset());
+        assertEquals(6, p.currentTokenLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_FALSE, p.nextToken());
         assertEquals(8, p.currentLocation().getByteOffset());
-        assertEquals(7, p.getTokenLocation().getByteOffset());
+        assertEquals(7, p.currentTokenLocation().getByteOffset());
 
         // 0x1FF takes 3 bytes (type byte, 7/6 bit segments)
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(511, p.getIntValue());
         assertEquals(11, p.currentLocation().getByteOffset());
-        assertEquals(8, p.getTokenLocation().getByteOffset());
+        assertEquals(8, p.currentTokenLocation().getByteOffset());
         
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertEquals(12, p.currentLocation().getByteOffset());
-        assertEquals(11, p.getTokenLocation().getByteOffset());
+        assertEquals(11, p.currentTokenLocation().getByteOffset());
 
         assertNull(p.nextToken());
         p.close();

@@ -25,11 +25,11 @@ public class TestGenerator extends BaseTestForSmile
         // false, no header (or frame marker)
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator gen = _smileGenerator(out, false);
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
         gen.writeBoolean(true);
-        assertEquals(1, gen.getOutputBuffered());
+        assertEquals(1, gen.streamWriteOutputBuffered());
         gen.close();
-        assertEquals(0, gen.getOutputBuffered());
+        assertEquals(0, gen.streamWriteOutputBuffered());
         _verifyBytes(out.toByteArray(), SmileConstants.TOKEN_LITERAL_TRUE);
 
         // false, no header or frame marker
@@ -66,7 +66,7 @@ public class TestGenerator extends BaseTestForSmile
         gen.enable(SmileGenerator.Feature.WRITE_END_MARKER);
         gen.writeNull();
         // header (4 bytes) and boolen (1 byte)
-        assertEquals(5, gen.getOutputBuffered());
+        assertEquals(5, gen.streamWriteOutputBuffered());
         gen.close();
         _verifyBytes(out.toByteArray(),
                 HEADER_BYTE_1, HEADER_BYTE_2, HEADER_BYTE_3, (byte) b4,

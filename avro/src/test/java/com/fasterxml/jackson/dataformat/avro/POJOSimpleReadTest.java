@@ -54,7 +54,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         if (!smallReads) {
-            assertSame(in, p.getInputSource());
+            assertSame(in, p.streamReadSource());
         }
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());

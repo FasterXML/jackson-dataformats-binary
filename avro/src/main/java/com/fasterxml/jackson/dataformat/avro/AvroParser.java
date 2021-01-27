@@ -108,7 +108,7 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public abstract Object getInputSource();
+    public abstract Object streamReadSource();
 
     /*                                                                                       
     /**********************************************************************
@@ -224,7 +224,7 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    public JsonLocation getTokenLocation() {
+    public JsonLocation currentTokenLocation() {
         // !!! TODO
         return null;
     }
