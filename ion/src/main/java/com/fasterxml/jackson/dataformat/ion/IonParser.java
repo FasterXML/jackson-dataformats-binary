@@ -188,7 +188,7 @@ public class IonParser
     }
 
     @Override
-    public IonReader streamReadSource() {
+    public IonReader streamReadInputSource() {
         return _reader;
     }
 

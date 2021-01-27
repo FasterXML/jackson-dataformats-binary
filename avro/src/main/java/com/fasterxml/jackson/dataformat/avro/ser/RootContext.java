@@ -106,7 +106,7 @@ class RootContext
         // 21-Feb-2017, tatu: As per [dataformats-binary#15], need to ensure schema gets
         //   written, if using "File" format (not raw "rpc" one)
         if (_generator.isEnabled(Feature.AVRO_FILE_OUTPUT)) {
-            OutputStream outputStream = (OutputStream) _generator.streamWriteTarget();
+            OutputStream outputStream = (OutputStream) _generator.streamWriteOutputTarget();
             DatumWriter<Object> datumWriter = new NonBSGenericDatumWriter<>(_schema);
             DataFileWriter<Object> dataFileWriter = new DataFileWriter<>(datumWriter);
 

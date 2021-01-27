@@ -251,7 +251,7 @@ public class CBORParser extends ParserBase
     }
     
     @Override
-    public Object streamReadSource() {
+    public Object streamReadInputSource() {
         return _inputStream;
     }
 

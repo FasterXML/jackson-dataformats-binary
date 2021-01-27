@@ -108,7 +108,7 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public abstract Object streamReadSource();
+    public abstract Object streamReadInputSource();
 
     /*                                                                                       
     /**********************************************************************

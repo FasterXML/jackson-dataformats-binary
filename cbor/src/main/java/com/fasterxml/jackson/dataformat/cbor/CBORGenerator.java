@@ -332,7 +332,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public Object streamWriteTarget() {
+    public Object streamWriteOutputTarget() {
         return _out;
     }
 

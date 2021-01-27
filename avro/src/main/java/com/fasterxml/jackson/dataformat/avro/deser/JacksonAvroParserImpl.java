@@ -45,9 +45,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Input source config
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected InputStream _inputStream;
@@ -116,7 +116,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
      */
 
     @Override
-    public Object streamReadSource() {
+    public Object streamReadInputSource() {
         return _inputStream;
     }
 

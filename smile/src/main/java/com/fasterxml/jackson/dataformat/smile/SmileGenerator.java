@@ -436,7 +436,7 @@ public class SmileGenerator
      */
 
     @Override
-    public Object streamWriteTarget() {
+    public Object streamWriteOutputTarget() {
         return _out;
     }
 

@@ -200,7 +200,7 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public Object streamWriteTarget() {
+    public Object streamWriteOutputTarget() {
         return _output;
     }
 
