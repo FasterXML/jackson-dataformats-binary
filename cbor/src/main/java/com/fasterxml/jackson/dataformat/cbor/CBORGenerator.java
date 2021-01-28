@@ -400,9 +400,19 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
+    @Override // since 2.13
+    public Object currentValue() {
+        return _cborContext.getCurrentValue();
+    }
+
     @Override
     public Object getCurrentValue() {
         return _cborContext.getCurrentValue();
+    }
+
+    @Override
+    public void assignCurrentValue(Object v) {
+        _cborContext.setCurrentValue(v);
     }
 
     @Override

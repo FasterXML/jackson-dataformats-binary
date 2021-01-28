@@ -483,9 +483,19 @@ public class SmileGenerator
     /**********************************************************
      */
 
+    @Override // since 2.13
+    public Object currentValue() {
+        return _smileContext.getCurrentValue();
+    }
+
     @Override
     public Object getCurrentValue() {
         return _smileContext.getCurrentValue();
+    }
+
+    @Override // since 2.13
+    public void assignCurrentValue(Object v) {
+        _smileContext.setCurrentValue(v);
     }
 
     @Override
