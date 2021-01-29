@@ -173,11 +173,6 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public boolean canWriteBinaryNatively() {
-        return true;
-    }
-
-    @Override
     public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }

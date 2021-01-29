@@ -223,11 +223,6 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    // 26-Nov-2019, tatu: [dataformats-binary#179] needed this; could
-    //   only add in 2.11
-    @Override // since 2.11
-    public boolean canWriteBinaryNatively() { return true; }
-
     @Override // @since 2.12
     public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;

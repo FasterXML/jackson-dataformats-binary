@@ -258,9 +258,6 @@ public class IonGenerator
     }
 
     @Override
-    public boolean canWriteBinaryNatively() { return true; }
-
-    @Override
     public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
     }
