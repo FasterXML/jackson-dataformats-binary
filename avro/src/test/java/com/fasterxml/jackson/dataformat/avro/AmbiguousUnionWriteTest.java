@@ -1,8 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-
 /* 23-Aug-2017, tatu: There was some confusion on whether potential ambiguity
  *   might be problematic (compared to actual one) -- this test verifies
  *   it should not be.
