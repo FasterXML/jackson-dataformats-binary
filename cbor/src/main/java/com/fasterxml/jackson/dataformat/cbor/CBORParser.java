@@ -2137,17 +2137,21 @@ public class CBORParser extends ParserBase
             _finishChunkedText();
             return _textBuffer.contentsAsString();
         }
-        if (len > (_inputEnd - _inputPtr)) {
-            // or if not, could we read?
-            if (len >= _inputBuffer.length) {
-                // If not enough space, need handling similar to chunked
-                _finishLongText(len);
-                return _textBuffer.contentsAsString();
-            }
-            _loadToHaveAtLeast(len);
+        // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
+        //    the longest individual unit is 4 bytes (surrogate pair) so we
+        //    actually need len+3 bytes to avoid bounds checks
+        final int needed = len + 3;
+        final int available = _inputEnd - _inputPtr;
+
+        if ((available >= needed)
+            // if not, could we read? NOTE: we do not require it, just attempt to read
+                || ((_inputBuffer.length >= needed)
+                        && _tryToLoadToHaveAtLeast(needed))) {
+            return _finishShortText(len);
         }
-        // offline for better optimization
-        return _finishShortText(len);
+        // If not enough space, need handling similar to chunked
+        _finishLongText(len);
+        return _textBuffer.contentsAsString();
     }
 
     private final String _finishShortText(int len) throws JacksonException
@@ -2220,9 +2224,9 @@ public class CBORParser extends ParserBase
                 continue;
             }
             if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructReadException("Malformed UTF-8 character at end of long (non-chunked) text segment");
+                throw _constructReadException("Malformed UTF-8 character at the end of a long (non-chunked) text segment");
             }
-            
+
             switch (code) {
             case 0:
                 break;
@@ -2240,13 +2244,13 @@ public class CBORParser extends ParserBase
                 break;
             case 3: // 4-byte UTF
                 c = _decodeUTF8_4(c);
-                // Let's add first part right away:
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
                     outEnd = outBuf.length;
                 }
+                // Let's add first part right away:
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 c = 0xDC00 | (c & 0x3FF);
                 // And let the other char output down below
                 break;
@@ -3356,6 +3360,42 @@ public class CBORParser extends ParserBase
             }
             _inputEnd += count;
         }
+    }
+
+    // @since 2.12.2
+    protected final boolean _tryToLoadToHaveAtLeast(int minAvailable) throws JacksonException
+    {
+        // No input stream, no leading (either we are closed, or have non-stream input source)
+        if (_inputStream == null) {
+            return false;
+        }
+        // Need to move remaining data in front?
+        int amount = _inputEnd - _inputPtr;
+        if (amount > 0 && _inputPtr > 0) {
+            //_currInputRowStart -= _inputPtr;
+            System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
+            _inputEnd = amount;
+        } else {
+            _inputEnd = 0;
+        }
+        // Needs to be done here, as per [dataformats-binary#178]
+        _currInputProcessed += _inputPtr;
+        _inputPtr = 0;
+        while (_inputEnd < minAvailable) {
+            int count;
+            try {
+                count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
+            if (count < 1) {
+                // End of input; not ideal but we'll accept it here
+                _closeInput();
+                return false;
+            }
+            _inputEnd += count;
+        }
+        return true;
     }
 
     @Override

@@ -157,3 +157,9 @@ Josh Barr (jobarr-amzn@github)
 
 * Contributed #232: (ion) Allow disabling native type ids in IonMapper
  (2.12.1)
+
+Fabian Meumertzheim (fmeum@github)
+
+* Reported #236: `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
+ (2.12.2)
+
