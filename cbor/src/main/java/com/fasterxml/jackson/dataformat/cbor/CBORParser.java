@@ -386,7 +386,7 @@ public class CBORParser extends ParserBase
         }
         if (_inputPtr >= _inputEnd) {
             if (!loadMore()) {
-                return _handleCBOREOF();
+                return _eofAsNextToken();
             }
         }
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
@@ -398,7 +398,7 @@ public class CBORParser extends ParserBase
             _tagValue = Integer.valueOf(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    return _handleCBOREOF();
+                    return _eofAsNextToken();
                 }
             }
             ch = _inputBuffer[_inputPtr++] & 0xFF;
@@ -706,7 +706,7 @@ public class CBORParser extends ParserBase
 
         if (_inputPtr >= _inputEnd) {
             if (!loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return false;
             }
         }
@@ -720,7 +720,7 @@ public class CBORParser extends ParserBase
         if (type == 6) {
             tagValue = _decodeTag(lowBits);
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return false;
             }
             ch = _inputBuffer[_inputPtr++] & 0xFF;
@@ -858,7 +858,7 @@ public class CBORParser extends ParserBase
         if (type == 6) {
             tagValue = _decodeTag(ch & 0x1F);
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return false;
             }
             ch = _inputBuffer[_inputPtr++];
@@ -1295,7 +1295,7 @@ public class CBORParser extends ParserBase
         }
         if (_inputPtr >= _inputEnd) {
             if (!loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return null;
             }
         }
@@ -1308,7 +1308,7 @@ public class CBORParser extends ParserBase
             _tagValue = Integer.valueOf(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    _handleCBOREOF();
+                    _eofAsNextToken();
                     return null;
                 }
             }
@@ -3460,7 +3460,7 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    protected JsonToken _handleCBOREOF() throws JacksonException {
+    protected JsonToken _eofAsNextToken() throws JacksonException {
         // NOTE: here we can and should close input, release buffers, since
         // this is "hard" EOF, not a boundary imposed by header token.
         _tagValue = -1;
