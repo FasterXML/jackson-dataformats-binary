@@ -605,7 +605,7 @@ public class CBORParser extends ParserMinimalBase
                     _streamReadContext = _streamReadContext.getParent();
                     return (_currToken = JsonToken.END_OBJECT);
                 }
-                return (_currToken = _decodeFieldName());
+                return (_currToken = _decodePropertyName());
             }
         } else {
             if (!_streamReadContext.expectMoreValues()) {
@@ -1270,7 +1270,7 @@ public class CBORParser extends ParserMinimalBase
                     _currToken = JsonToken.END_OBJECT;
                     return null;
                 }
-                _currToken = _decodeFieldName();
+                _currToken = _decodePropertyName();
                 return null;
             }
         } else {
@@ -2557,7 +2557,7 @@ public class CBORParser extends ParserMinimalBase
         }
     }
 
-    protected final JsonToken _decodeFieldName() throws IOException
+    protected final JsonToken _decodePropertyName() throws IOException
     {     
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
@@ -3427,12 +3427,35 @@ public class CBORParser extends ParserMinimalBase
         if (_streamReadContext.inRoot()) {
             return;
         }
-        String marker = _streamReadContext.inArray() ? "Array" : "Object";
-        _reportInvalidEOF(String.format(
-                ": expected close marker for %s (start marker at %s)",
-                marker,
-                _streamReadContext.getStartLocation(_ioContext.getSourceReference())),
-                null);
+        // Ok; end-marker or fixed-length Array/Object?
+        final JsonLocation loc = _streamReadContext.getStartLocation(_ioContext.getSourceReference());
+        final String startLocDesc = (loc == null) ? "[N/A]" : loc.sourceDescription();
+        if (_streamReadContext.hasExpectedLength()) { // specific length
+            final int expMore = _streamReadContext.getRemainingExpectedLength();
+            if (_streamReadContext.inArray()) {
+                _reportInvalidEOF(String.format(
+                        " in Array value: expected %d more elements (start token at %s)",
+                        expMore, startLocDesc),
+                        null);
+            } else {
+                _reportInvalidEOF(String.format(
+                        " in Object value: expected %d more properties (start token at %s)",
+                        expMore, startLocDesc),
+                        null);
+            }
+        } else {
+            if (_streamReadContext.inArray()) {
+                _reportInvalidEOF(String.format(
+                        " in Array value: expected an element or close marker (0xFF) (start token at %s)",
+                        startLocDesc),
+                        null);
+            } else {
+                _reportInvalidEOF(String.format(
+                        " in Object value: expected a property or close marker (0xFF) (start token at %s)",
+                        startLocDesc),
+                        null);
+            }
+        }
     }
 
     // Was "_handleCBOREOF()" before 2.13
