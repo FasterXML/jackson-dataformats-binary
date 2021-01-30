@@ -591,10 +591,9 @@ public class CBORParser extends ParserMinimalBase
         // also: clear any data retained so far
         _binaryValue = null;
 
-        /* First: need to keep track of lengths of defined-length Arrays and
-         * Objects (to materialize END_ARRAY/END_OBJECT as necessary);
-         * as well as handle names for Object entries.
-         */
+        // First: need to keep track of lengths of defined-length Arrays and
+        // Objects (to materialize END_ARRAY/END_OBJECT as necessary);
+        // as well as handle names for Object entries.
         if (_parsingContext.inObject()) {
             if (_currToken != JsonToken.FIELD_NAME) {
                 _tagValue = -1;
@@ -3422,14 +3421,26 @@ public class CBORParser extends ParserMinimalBase
 
     @Override
     protected void _handleEOF() throws JsonParseException {
-        if (!_parsingContext.inRoot()) {
-            String marker = _parsingContext.inArray() ? "Array" : "Object";
-            _reportInvalidEOF(String.format(
-                    ": expected close marker for %s (start marker at %s)",
-                    marker,
-                    _parsingContext.getStartLocation(_ioContext.getSourceReference())),
-                    null);
+        if (_parsingContext.inRoot()) {
+            return;
         }
+        String marker = _parsingContext.inArray() ? "Array" : "Object";
+        _reportInvalidEOF(String.format(
+                ": expected close marker for %s (start marker at %s)",
+                marker,
+                _parsingContext.getStartLocation(_ioContext.getSourceReference())),
+                null);
+    }
+
+    protected JsonToken _handleCBOREOF() throws IOException {
+        // NOTE: here we can and should close input, release buffers, since
+        // this is "hard" EOF, not a boundary imposed by header token.
+        _tagValue = -1;
+        close();
+        // 30-Jan-2021, tatu: But also MUST verify that end-of-content is actually
+        //   allowed (see [dataformats-binary#240] for example)
+        _handleEOF();
+        return (_currToken = null);
     }
 
     /*
@@ -3437,16 +3448,6 @@ public class CBORParser extends ParserMinimalBase
     /* Internal methods, error handling, reporting
     /**********************************************************
      */
-
-    protected JsonToken _handleCBOREOF() throws IOException {
-        /* NOTE: here we can and should close input, release buffers,
-         * since this is "hard" EOF, not a boundary imposed by
-         * header token.
-         */
-        _tagValue = -1;
-        close();
-        return (_currToken = null);
-    }
 
     protected void _invalidToken(int ch) throws JsonParseException {
         ch &= 0xFF;
