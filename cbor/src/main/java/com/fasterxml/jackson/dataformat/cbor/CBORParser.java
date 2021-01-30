@@ -4,6 +4,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
@@ -57,7 +58,7 @@ public class CBORParser extends ParserBase
         @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
     }
 
-    private final static Charset UTF8 = Charset.forName("UTF-8");
+    private final static Charset UTF8 = StandardCharsets.UTF_8;
 
     private final static int[] UTF8_UNIT_CODES = CBORConstants.sUtf8UnitLengths;
 
@@ -65,7 +66,7 @@ public class CBORParser extends ParserBase
     private final static double MATH_POW_2_10 = Math.pow(2, 10);
     private final static double MATH_POW_2_NEG14 = Math.pow(2, -14);
 
-    // 2.11.4: [dataformats-binary#186] Avoid OOME/DoS for bigger binary;
+    // [dataformats-binary#186] Avoid OOME/DoS for bigger binary;
     //  read only up to 250k
     protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
 
