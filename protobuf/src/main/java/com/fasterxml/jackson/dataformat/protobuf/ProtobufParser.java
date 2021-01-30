@@ -59,24 +59,24 @@ public class ProtobufParser extends ParserMinimalBase
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected ProtobufSchema _schema;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Generic I/O state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
      * I/O context for this reader. It handles buffer allocation
      * for the reader.
      */
-    final protected IOContext _ioContext;
+    protected final IOContext _ioContext;
 
     /**
      * Flag that indicates whether parser is closed or not. Gets
