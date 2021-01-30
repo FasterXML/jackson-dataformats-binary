@@ -363,10 +363,9 @@ public class CBORParser extends ParserBase
         // also: clear any data retained so far
         _binaryValue = null;
 
-        /* First: need to keep track of lengths of defined-length Arrays and
-         * Objects (to materialize END_ARRAY/END_OBJECT as necessary);
-         * as well as handle names for Object entries.
-         */
+        // First: need to keep track of lengths of defined-length Arrays and
+        // Objects (to materialize END_ARRAY/END_OBJECT as necessary);
+        // as well as handle names for Object entries.
         if (_streamReadContext.inObject()) {
             if (_currToken != JsonToken.PROPERTY_NAME) {
                 _tagValue = -1;
@@ -3414,14 +3413,15 @@ public class CBORParser extends ParserBase
 
     @Override
     protected void _handleEOF() throws StreamReadException {
-        if (!_streamReadContext.inRoot()) {
-            String marker = _streamReadContext.inArray() ? "Array" : "Object";
-            _reportInvalidEOF(String.format(
-                    ": expected close marker for %s (start marker at %s)",
-                    marker,
-                    _streamReadContext.getStartLocation(_ioContext.getSourceReference())),
-                    null);
+        if (_streamReadContext.inRoot()) {
+            return;
         }
+        String marker = _streamReadContext.inArray() ? "Array" : "Object";
+        _reportInvalidEOF(String.format(
+                ": expected close marker for %s (start marker at %s)",
+                marker,
+                _streamReadContext.getStartLocation(_ioContext.getSourceReference())),
+                null);
     }
 
     /*
@@ -3431,14 +3431,21 @@ public class CBORParser extends ParserBase
      */
 
     protected JsonToken _handleCBOREOF() throws JacksonException {
-        /* NOTE: here we can and should close input, release buffers,
-         * since this is "hard" EOF, not a boundary imposed by
-         * header token.
-         */
+        // NOTE: here we can and should close input, release buffers, since
+        // this is "hard" EOF, not a boundary imposed by header token.
         _tagValue = -1;
         close();
+        // 30-Jan-2021, tatu: But also MUST verify that end-of-content is actually
+        //   allowed (see [dataformats-binary#240] for example)
+        _handleEOF();
         return (_currToken = null);
     }
+
+    /*
+    /**********************************************************
+    /* Internal methods, error handling, reporting
+    /**********************************************************
+     */
 
     protected void _invalidToken(int ch) throws StreamReadException {
         ch &= 0xFF;

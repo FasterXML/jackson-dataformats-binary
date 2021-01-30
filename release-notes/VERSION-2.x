@@ -17,6 +17,7 @@ No changes since 2.12
 
 #236: `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
  (reported by Fabian M)
+#240: Handle invalid CBOR content like `[ 0x84 ]` (incomplete array)
 
 2.12.1 (08-Jan-2021)
 

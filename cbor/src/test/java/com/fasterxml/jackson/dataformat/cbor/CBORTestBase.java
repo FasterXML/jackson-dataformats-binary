@@ -64,6 +64,10 @@ public abstract class CBORTestBase
         return (CBORParser) sharedMapper().createParser(input);
     }
 
+    protected CBORParser cborParser(CBORFactory f, byte[] input) {
+        return (CBORParser) f.createParser(ObjectReadContext.empty(), input);
+    }
+
     protected CBORParser cborParser(InputStream in) {
         return (CBORParser) sharedMapper().createParser(in);
     }
