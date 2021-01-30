@@ -134,14 +134,25 @@ public final class CBORReadContext
     public boolean hasExpectedLength() { return (_expEntryCount >= 0); }
     public int getExpectedLength() { return _expEntryCount; }
 
+    // @since 2.13
+    public int getRemainingExpectedLength() {
+        int diff = _expEntryCount - _index;
+        // Negative values would occur when expected count is -1
+        return Math.max(0, -diff);
+    }
+
     public boolean acceptsBreakMarker() {
         return (_expEntryCount < 0) && _type != TYPE_ROOT;
     }
-    
+
     /**
-     * Method called to see if a new value is expected for this
-     * Array or Object. Checks against expected length, if one known,
-     * updating count of current entries if limit not yet reached.
+     * Method called to increment the current entry count (Object property, Array
+     * element or Root value) for this context level
+     * and then see if more entries are accepted.
+     * The only case where more entries are NOT expected is for fixed-count
+     * Objects and Arrays that just reached the entry count.
+     *<p>
+     * Note that since the entry count is updated this is a state-changing method.
      */
     public boolean expectMoreValues() {
         if (++_index == _expEntryCount) {

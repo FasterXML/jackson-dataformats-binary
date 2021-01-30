@@ -4,6 +4,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
@@ -56,7 +57,7 @@ public class CBORParser extends ParserMinimalBase
         @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
     }
 
-    private final static Charset UTF8 = Charset.forName("UTF-8");
+    private final static Charset UTF8 = StandardCharsets.UTF_8;
 
     private final static int[] UTF8_UNIT_CODES = CBORConstants.sUtf8UnitLengths;
 
@@ -178,8 +179,10 @@ public class CBORParser extends ParserMinimalBase
     /**
      * Information about parser context, context in which
      * the next token is to be parsed (root, array, object).
+     *<p>
+     * NOTE: before 2.13 was "_parsingContext"
      */
-    protected CBORReadContext _parsingContext;
+    protected CBORReadContext _streamReadContext;
 
     /**
      * Buffer that contains contents of String values, including
@@ -361,7 +364,7 @@ public class CBORParser extends ParserMinimalBase
         _textBuffer = ctxt.constructTextBuffer();
         DupDetector dups = JsonParser.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _parsingContext = CBORReadContext.createRootContext(dups);
+        _streamReadContext = CBORReadContext.createRootContext(dups);
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
@@ -484,17 +487,17 @@ public class CBORParser extends ParserMinimalBase
     public String getCurrentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            CBORReadContext parent = _parsingContext.getParent();
+            CBORReadContext parent = _streamReadContext.getParent();
             return parent.getCurrentName();
         }
-        return _parsingContext.getCurrentName();
+        return _streamReadContext.getCurrentName();
     }
 
     @Override
     public void overrideCurrentName(String name)
     {
         // Simple, but need to look for START_OBJECT/ARRAY's "off-by-one" thing:
-        CBORReadContext ctxt = _parsingContext;
+        CBORReadContext ctxt = _streamReadContext;
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ctxt = ctxt.getParent();
         }
@@ -526,7 +529,7 @@ public class CBORParser extends ParserMinimalBase
 
     @Override
     public CBORReadContext getParsingContext() {
-        return _parsingContext;
+        return _streamReadContext;
     }
 
     /*
@@ -594,26 +597,26 @@ public class CBORParser extends ParserMinimalBase
         // First: need to keep track of lengths of defined-length Arrays and
         // Objects (to materialize END_ARRAY/END_OBJECT as necessary);
         // as well as handle names for Object entries.
-        if (_parsingContext.inObject()) {
+        if (_streamReadContext.inObject()) {
             if (_currToken != JsonToken.FIELD_NAME) {
                 _tagValue = -1;
                 // completed the whole Object?
-                if (!_parsingContext.expectMoreValues()) {
-                    _parsingContext = _parsingContext.getParent();
+                if (!_streamReadContext.expectMoreValues()) {
+                    _streamReadContext = _streamReadContext.getParent();
                     return (_currToken = JsonToken.END_OBJECT);
                 }
                 return (_currToken = _decodeFieldName());
             }
         } else {
-            if (!_parsingContext.expectMoreValues()) {
+            if (!_streamReadContext.expectMoreValues()) {
                 _tagValue = -1;
-                _parsingContext = _parsingContext.getParent();
+                _streamReadContext = _streamReadContext.getParent();
                 return (_currToken = JsonToken.END_ARRAY);
             }
         }
         if (_inputPtr >= _inputEnd) {
             if (!loadMore()) {
-                return _handleCBOREOF();
+                return _eofAsNextToken();
             }
         }
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
@@ -625,7 +628,7 @@ public class CBORParser extends ParserMinimalBase
             _tagValue = Integer.valueOf(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    return _handleCBOREOF();
+                    return _eofAsNextToken();
                 }
             }
             ch = _inputBuffer[_inputPtr++] & 0xFF;
@@ -742,7 +745,7 @@ public class CBORParser extends ParserMinimalBase
                 if (_tagValue >= 0) {
                     return _handleTaggedArray(_tagValue, len);
                 }
-                _parsingContext = _parsingContext.createChildArrayContext(len);
+                _streamReadContext = _streamReadContext.createChildArrayContext(len);
             }
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -750,7 +753,7 @@ public class CBORParser extends ParserMinimalBase
             _currToken = JsonToken.START_OBJECT;
             {
                 int len = _decodeExplicitLength(lowBits);
-                _parsingContext = _parsingContext.createChildObjectContext(len);
+                _streamReadContext = _streamReadContext.createChildObjectContext(len);
             }
             return _currToken;
 
@@ -787,9 +790,9 @@ public class CBORParser extends ParserMinimalBase
                 _numTypesValid = NR_DOUBLE;
                 return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
             case 31: // Break
-                if (_parsingContext.inArray()) {
-                    if (!_parsingContext.hasExpectedLength()) {
-                        _parsingContext = _parsingContext.getParent();
+                if (_streamReadContext.inArray()) {
+                    if (!_streamReadContext.hasExpectedLength()) {
+                        _streamReadContext = _streamReadContext.getParent();
                         return (_currToken = JsonToken.END_ARRAY);
                     }
                 }
@@ -867,7 +870,7 @@ public class CBORParser extends ParserMinimalBase
         // For simplicity, let's create matching array context -- in perfect
         // world that wouldn't be necessarily, but in this one there are
         // some constraints that make it necessary
-        _parsingContext = _parsingContext.createChildArrayContext(len);
+        _streamReadContext = _streamReadContext.createChildArrayContext(len);
 
         // BigDecimal is the only thing we know for sure
         if (tag != CBORConstants.TAG_DECIMAL_FRACTION) {
@@ -924,16 +927,16 @@ public class CBORParser extends ParserMinimalBase
     protected final boolean _checkNextIsIntInArray(final String typeDesc) throws IOException
     {
         // We know we are in array, with length prefix so:
-        if (!_parsingContext.expectMoreValues()) {
+        if (!_streamReadContext.expectMoreValues()) {
             _tagValue = -1;
-            _parsingContext = _parsingContext.getParent();
+            _streamReadContext = _streamReadContext.getParent();
             _currToken = JsonToken.END_ARRAY;
             return false;
         }
 
         if (_inputPtr >= _inputEnd) {
             if (!loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return false;
             }
         }
@@ -947,7 +950,7 @@ public class CBORParser extends ParserMinimalBase
         if (type == 6) {
             tagValue = _decodeTag(lowBits);
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return false;
             }
             ch = _inputBuffer[_inputPtr++] & 0xFF;
@@ -1067,9 +1070,9 @@ public class CBORParser extends ParserMinimalBase
     protected final boolean _checkNextIsEndArray() throws IOException
     {
         // We know we are in array, with length prefix, and this is where we should be:
-        if (!_parsingContext.expectMoreValues()) {
+        if (!_streamReadContext.expectMoreValues()) {
             _tagValue = -1;
-            _parsingContext = _parsingContext.getParent();
+            _streamReadContext = _streamReadContext.getParent();
             _currToken = JsonToken.END_ARRAY;
             return true;
         }
@@ -1085,7 +1088,7 @@ public class CBORParser extends ParserMinimalBase
         if (type == 6) {
             tagValue = _decodeTag(ch & 0x1F);
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return false;
             }
             ch = _inputBuffer[_inputPtr++];
@@ -1127,7 +1130,7 @@ public class CBORParser extends ParserMinimalBase
     public boolean nextFieldName(SerializableString str) throws IOException
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
-        if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
+        if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
             _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
                 _skipIncomplete();
@@ -1136,8 +1139,8 @@ public class CBORParser extends ParserMinimalBase
             _binaryValue = null;
             _tagValue = -1;
             // completed the whole Object?
-            if (!_parsingContext.expectMoreValues()) {
-                _parsingContext = _parsingContext.getParent();
+            if (!_streamReadContext.expectMoreValues()) {
+                _streamReadContext = _streamReadContext.getParent();
                 _currToken = JsonToken.END_OBJECT;
                 return false;
             }
@@ -1159,7 +1162,7 @@ public class CBORParser extends ParserMinimalBase
 			            	while (true) {
 			            		if (i == lenMarker) {
 		                            _inputPtr = ptr+i;
-		                            _parsingContext.setCurrentName(str.getValue());
+		                            _streamReadContext.setCurrentName(str.getValue());
 		                            _currToken = JsonToken.FIELD_NAME;
 		                            return true;
 			            		}
@@ -1181,7 +1184,7 @@ public class CBORParser extends ParserMinimalBase
     @Override
     public String nextFieldName() throws IOException
     {
-        if (_parsingContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
+        if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
             _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
                 _skipIncomplete();
@@ -1190,8 +1193,8 @@ public class CBORParser extends ParserMinimalBase
             _binaryValue = null;
             _tagValue = -1;
             // completed the whole Object?
-            if (!_parsingContext.expectMoreValues()) {
-                _parsingContext = _parsingContext.getParent();
+            if (!_streamReadContext.expectMoreValues()) {
+                _streamReadContext = _streamReadContext.getParent();
                 _currToken = JsonToken.END_OBJECT;
                 return null;
             }
@@ -1206,8 +1209,8 @@ public class CBORParser extends ParserMinimalBase
             // offline non-String cases, as they are expected to be rare
             if (type != CBORConstants.MAJOR_TYPE_TEXT) {
                 if (ch == -1) { // end-of-object, common
-                    if (!_parsingContext.hasExpectedLength()) {
-                        _parsingContext = _parsingContext.getParent();
+                    if (!_streamReadContext.hasExpectedLength()) {
+                        _streamReadContext = _streamReadContext.getParent();
                         _currToken = JsonToken.END_OBJECT;
                         return null;
                     }
@@ -1239,7 +1242,7 @@ public class CBORParser extends ParserMinimalBase
                     name = _decodeLongerName(actualLen);
                 }
             }
-            _parsingContext.setCurrentName(name);
+            _streamReadContext.setCurrentName(name);
             _currToken = JsonToken.FIELD_NAME;
             return name;
         }
@@ -1258,12 +1261,12 @@ public class CBORParser extends ParserMinimalBase
         _binaryValue = null;
         _tagValue = -1;
 
-        if (_parsingContext.inObject()) {
+        if (_streamReadContext.inObject()) {
             if (_currToken != JsonToken.FIELD_NAME) {
                 _tagValue = -1;
                 // completed the whole Object?
-                if (!_parsingContext.expectMoreValues()) {
-                    _parsingContext = _parsingContext.getParent();
+                if (!_streamReadContext.expectMoreValues()) {
+                    _streamReadContext = _streamReadContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
                     return null;
                 }
@@ -1271,16 +1274,16 @@ public class CBORParser extends ParserMinimalBase
                 return null;
             }
         } else {
-            if (!_parsingContext.expectMoreValues()) {
+            if (!_streamReadContext.expectMoreValues()) {
                 _tagValue = -1;
-                _parsingContext = _parsingContext.getParent();
+                _streamReadContext = _streamReadContext.getParent();
                 _currToken = JsonToken.END_ARRAY;
                 return null;
             }
         }
         if (_inputPtr >= _inputEnd) {
             if (!loadMore()) {
-                _handleCBOREOF();
+                _eofAsNextToken();
                 return null;
             }
         }
@@ -1293,7 +1296,7 @@ public class CBORParser extends ParserMinimalBase
             _tagValue = Integer.valueOf(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    _handleCBOREOF();
+                    _eofAsNextToken();
                     return null;
                 }
             }
@@ -1410,7 +1413,7 @@ public class CBORParser extends ParserMinimalBase
             _currToken = JsonToken.START_ARRAY;
             {
                 int len = _decodeExplicitLength(lowBits);
-                _parsingContext = _parsingContext.createChildArrayContext(len);
+                _streamReadContext = _streamReadContext.createChildArrayContext(len);
             }
             return null;
 
@@ -1418,7 +1421,7 @@ public class CBORParser extends ParserMinimalBase
             _currToken = JsonToken.START_OBJECT;
             {
                 int len = _decodeExplicitLength(lowBits);
-                _parsingContext = _parsingContext.createChildObjectContext(len);
+                _streamReadContext = _streamReadContext.createChildObjectContext(len);
             }
             return null;
 
@@ -1462,9 +1465,9 @@ public class CBORParser extends ParserMinimalBase
                 _currToken = JsonToken.VALUE_NUMBER_FLOAT;
                 return null;
             case 31: // Break
-                if (_parsingContext.inArray()) {
-                    if (!_parsingContext.hasExpectedLength()) {
-                        _parsingContext = _parsingContext.getParent();
+                if (_streamReadContext.inArray()) {
+                    if (!_streamReadContext.hasExpectedLength()) {
+                        _streamReadContext = _streamReadContext.getParent();
                         _currToken = JsonToken.END_ARRAY;
                         return null;
                     }
@@ -1536,7 +1539,7 @@ public class CBORParser extends ParserMinimalBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _streamReadContext.getCurrentName();
         }
         if (t.isNumeric()) {
             return getNumberValue().toString();
@@ -1555,7 +1558,7 @@ public class CBORParser extends ParserMinimalBase
                 return _textBuffer.getTextBuffer();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
-                return _parsingContext.getCurrentName().toCharArray();
+                return _streamReadContext.getCurrentName().toCharArray();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
                     || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
@@ -1577,7 +1580,7 @@ public class CBORParser extends ParserMinimalBase
                 return _textBuffer.size();                
             }
             if (_currToken == JsonToken.FIELD_NAME) {
-                return _parsingContext.getCurrentName().length();
+                return _streamReadContext.getCurrentName().length();
             }
             if ((_currToken == JsonToken.VALUE_NUMBER_INT)
                     || (_currToken == JsonToken.VALUE_NUMBER_FLOAT)) {
@@ -1633,7 +1636,7 @@ public class CBORParser extends ParserMinimalBase
             return _textBuffer.contentsToWriter(writer);
         }
         if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
+            String n = _streamReadContext.getCurrentName();
             writer.write(n);
             return n.length();
         }
@@ -2565,8 +2568,8 @@ public class CBORParser extends ParserMinimalBase
         // Expecting a String, but may need to allow other types too
         if (type != CBORConstants.MAJOR_TYPE_TEXT) { // the usual case
             if (ch == -1) {
-                if (!_parsingContext.hasExpectedLength()) {
-                    _parsingContext = _parsingContext.getParent();
+                if (!_streamReadContext.hasExpectedLength()) {
+                    _streamReadContext = _streamReadContext.getParent();
                     return JsonToken.END_OBJECT;
                 }
                 _reportUnexpectedBreak();
@@ -2597,7 +2600,7 @@ public class CBORParser extends ParserMinimalBase
                 name = _decodeLongerName(actualLen);
             }
         }
-        _parsingContext.setCurrentName(name);
+        _streamReadContext.setCurrentName(name);
         return JsonToken.FIELD_NAME;
     }
     
@@ -2715,7 +2718,7 @@ public class CBORParser extends ParserMinimalBase
             }
             throw _constructError("Unsupported major type ("+type+") for CBOR Objects, not (yet?) supported, only Strings");
         }
-        _parsingContext.setCurrentName(name);
+        _streamReadContext.setCurrentName(name);
     }
     
     private final String _findDecodedFromSymbols(final int len) throws IOException
@@ -3421,18 +3424,19 @@ public class CBORParser extends ParserMinimalBase
 
     @Override
     protected void _handleEOF() throws JsonParseException {
-        if (_parsingContext.inRoot()) {
+        if (_streamReadContext.inRoot()) {
             return;
         }
-        String marker = _parsingContext.inArray() ? "Array" : "Object";
+        String marker = _streamReadContext.inArray() ? "Array" : "Object";
         _reportInvalidEOF(String.format(
                 ": expected close marker for %s (start marker at %s)",
                 marker,
-                _parsingContext.getStartLocation(_ioContext.getSourceReference())),
+                _streamReadContext.getStartLocation(_ioContext.getSourceReference())),
                 null);
     }
 
-    protected JsonToken _handleCBOREOF() throws IOException {
+    // Was "_handleCBOREOF()" before 2.13
+    protected JsonToken _eofAsNextToken() throws IOException {
         // NOTE: here we can and should close input, release buffers, since
         // this is "hard" EOF, not a boundary imposed by header token.
         _tagValue = -1;
@@ -3458,12 +3462,12 @@ public class CBORParser extends ParserMinimalBase
     }
 
     protected void _reportUnexpectedBreak() throws IOException {
-        if (_parsingContext.inRoot()) {
+        if (_streamReadContext.inRoot()) {
             throw _constructError("Unexpected Break (0xFF) token in Root context");
         }
         throw _constructError("Unexpected Break (0xFF) token in definite length ("
-                +_parsingContext.getExpectedLength()+") "
-                +(_parsingContext.inObject() ? "Object" : "Array" ));
+                +_streamReadContext.getExpectedLength()+") "
+                +(_streamReadContext.inObject() ? "Object" : "Array" ));
     }
 
     protected void _reportInvalidChar(int c) throws JsonParseException {
