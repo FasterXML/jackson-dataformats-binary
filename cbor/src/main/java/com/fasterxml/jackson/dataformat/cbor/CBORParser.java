@@ -916,7 +916,9 @@ public class CBORParser extends ParserBase
             // inlined "_decodeFieldName()"
 
             if (_inputPtr >= _inputEnd) {
-                loadMoreGuaranteed();
+                if (!loadMore()) {
+                    _eofAsNextToken();
+                }
             }
             final int ch = _inputBuffer[_inputPtr++];
             final int type = ((ch >> 5) & 0x7);
@@ -2538,7 +2540,11 @@ public class CBORParser extends ParserBase
     protected final JsonToken _decodePropertyName() throws JacksonException
     {     
         if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+            // 30-Jan-2021, tatu: To get more specific exception, won't use
+            //   "loadMoreGuaranteed()" but instead:
+            if (!loadMore()) {
+                _eofAsNextToken();
+            }
         }
         final int ch = _inputBuffer[_inputPtr++];
         final int type = ((ch >> 5) & 0x7);

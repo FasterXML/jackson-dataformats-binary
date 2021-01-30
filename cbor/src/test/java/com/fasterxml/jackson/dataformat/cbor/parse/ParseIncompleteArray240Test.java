@@ -40,7 +40,6 @@ public class ParseIncompleteArray240Test extends CBORTestBase
     }
 
     // And might as well do the same for Objects too
-    /*
     public void testIncompleteFixedSizeObject() throws Exception
     {
         final byte[] input = {  (byte) 0xA3 };
@@ -50,7 +49,6 @@ public class ParseIncompleteArray240Test extends CBORTestBase
                 p.nextToken();
                 fail("Should NOT pass");
             } catch (StreamReadException e) {
-                e.printStackTrace();
                 verifyException(e, "Unexpected end-of-input in Object value: expected 3 more");
             }
         }
@@ -65,9 +63,9 @@ public class ParseIncompleteArray240Test extends CBORTestBase
                 p.nextToken();
                 fail("Should NOT pass");
             } catch (StreamReadException e) {
-                verifyException(e, "Unexpected end-of-input in Object value: expected an element or ");
+                verifyException(e,
+                        "Unexpected end-of-input in Object value: expected a property or close marker");
             }
         }
     }
-*/
 }
