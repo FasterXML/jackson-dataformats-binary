@@ -137,7 +137,7 @@ public final class CBORReadContext
     public int getRemainingExpectedLength() {
         int diff = _expEntryCount - _index;
         // Negative values would occur when expected count is -1
-        return Math.max(0, -diff);
+        return Math.max(0, diff);
     }
 
     public boolean acceptsBreakMarker() {
