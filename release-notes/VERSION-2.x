@@ -9,6 +9,11 @@ Project: jackson-datatypes-binaryModules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.12.2 (not yet released)
+
+#236: `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
+ (reported by Fabian M)
+
 2.12.1 (08-Jan-2021)
 
 #232: (ion) Allow disabling native type ids in IonMapper
