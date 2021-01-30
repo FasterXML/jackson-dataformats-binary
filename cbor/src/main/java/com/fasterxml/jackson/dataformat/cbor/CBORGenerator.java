@@ -166,11 +166,9 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    /**
-     * @since 2.10
-     */
-    protected CBORWriteContext _cborContext;
-    
+    // @since 2.10 (named _cborContext before 2.13)
+    protected CBORWriteContext _streamWriteContext;
+
     /*
     /**********************************************************
     /* Output buffering
@@ -251,7 +249,7 @@ public class CBORGenerator extends GeneratorBase
                 ? DupDetector.rootDetector(this)
                 : null;
         // NOTE: we passed `null` for default write context
-        _cborContext = CBORWriteContext.createRootContext(dups);
+        _streamWriteContext = CBORWriteContext.createRootContext(dups);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;
@@ -286,7 +284,7 @@ public class CBORGenerator extends GeneratorBase
                 ? DupDetector.rootDetector(this)
                 : null;
         // NOTE: we passed `null` for default write context
-        _cborContext = CBORWriteContext.createRootContext(dups);
+        _streamWriteContext = CBORWriteContext.createRootContext(dups);
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _ioContext = ctxt;
@@ -402,27 +400,27 @@ public class CBORGenerator extends GeneratorBase
 
     @Override // since 2.13
     public Object currentValue() {
-        return _cborContext.getCurrentValue();
+        return _streamWriteContext.getCurrentValue();
     }
 
     @Override
     public Object getCurrentValue() {
-        return _cborContext.getCurrentValue();
+        return _streamWriteContext.getCurrentValue();
     }
 
     @Override
     public void assignCurrentValue(Object v) {
-        _cborContext.setCurrentValue(v);
+        _streamWriteContext.setCurrentValue(v);
     }
 
     @Override
     public void setCurrentValue(Object v) {
-        _cborContext.setCurrentValue(v);
+        _streamWriteContext.setCurrentValue(v);
     }
 
     @Override
     public JsonStreamContext getOutputContext() {
-        return _cborContext;
+        return _streamWriteContext;
     }
 
     /*
@@ -472,7 +470,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeFieldName(String name) throws IOException {
-        if (!_cborContext.writeFieldName(name)) {
+        if (!_streamWriteContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeString(name);
@@ -482,7 +480,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeFieldName(SerializableString name)
             throws IOException {
         // Object is a value, need to verify it's allowed
-        if (!_cborContext.writeFieldName(name.getValue())) {
+        if (!_streamWriteContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
         byte[] raw = name.asUnquotedUTF8();
@@ -497,7 +495,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override // since 2.8
     public final void writeFieldId(long id) throws IOException {
-        if (!_cborContext.writeFieldId(id)) {
+        if (!_streamWriteContext.writeFieldId(id)) {
             _reportError("Can not write a field id, expecting a value");
         }
         _writeLongNoCheck(id);
@@ -548,7 +546,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
-        _cborContext = _cborContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -559,7 +557,7 @@ public class CBORGenerator extends GeneratorBase
     @Override // since 2.12
     public void writeStartArray(Object forValue) throws IOException {
         _verifyValueWrite("start an array");
-        _cborContext = _cborContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -574,7 +572,7 @@ public class CBORGenerator extends GeneratorBase
     @Override // since 2.12
     public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
-        _cborContext = _cborContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -584,7 +582,7 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
-        _cborContext = _cborContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -592,17 +590,17 @@ public class CBORGenerator extends GeneratorBase
     
     @Override
     public final void writeEndArray() throws IOException {
-        if (!_cborContext.inArray()) {
-            _reportError("Current context not Array but "+_cborContext.typeDesc());
+        if (!_streamWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
         closeComplexElement();
-        _cborContext = _cborContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
-        _cborContext = _cborContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -614,8 +612,8 @@ public class CBORGenerator extends GeneratorBase
     // since 2.8
     public final void writeStartObject(Object forValue) throws IOException {
         _verifyValueWrite("start an object");
-        CBORWriteContext ctxt = _cborContext.createChildObjectContext(forValue);
-        _cborContext = ctxt;
+        CBORWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = ctxt;
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -625,7 +623,7 @@ public class CBORGenerator extends GeneratorBase
 
     public final void writeStartObject(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
-        _cborContext = _cborContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
@@ -633,11 +631,11 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public final void writeEndObject() throws IOException {
-        if (!_cborContext.inObject()) {
-            _reportError("Current context not Object but "+ _cborContext.typeDesc());
+        if (!_streamWriteContext.inObject()) {
+            _reportError("Current context not Object but "+ _streamWriteContext.typeDesc());
         }
         closeComplexElement();
-        _cborContext = _cborContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
     }
 
     @Override // since 2.8
@@ -1173,7 +1171,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws IOException {
-        if (!_cborContext.writeValue()) {
+        if (!_streamWriteContext.writeValue()) {
             _reportError("Can not " + typeMsg + ", expecting field name/id");
         }
         // decrementElementsRemainingCount()
@@ -1195,7 +1193,7 @@ public class CBORGenerator extends GeneratorBase
     private void _failSizedArrayOrObject() throws IOException
     {
         _reportError(String.format("%s size mismatch: number of element encoded is not equal to reported array/map size.",
-                _cborContext.typeDesc()));
+                _streamWriteContext.typeDesc()));
     }
 
     /*
@@ -1784,7 +1782,7 @@ surr1, surr2));
             break;
         default:
             _reportError(String.format("%s size mismatch: expected %d more elements",
-                    _cborContext.typeDesc(), _currentRemainingElements));
+                    _streamWriteContext.typeDesc(), _currentRemainingElements));
         }
         _currentRemainingElements = (_elementCountsPtr == 0) 
                 ? INDEFINITE_LENGTH

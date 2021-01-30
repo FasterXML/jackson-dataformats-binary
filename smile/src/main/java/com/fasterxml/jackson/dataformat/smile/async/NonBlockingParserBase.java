@@ -271,7 +271,7 @@ public abstract class NonBlockingParserBase
             return null;
         }
         if (t == JsonToken.FIELD_NAME) {
-            return _parsingContext.getCurrentName();
+            return _streamReadContext.getCurrentName();
         }
         if (t.isNumeric()) {
             // TODO: optimize?
@@ -288,7 +288,7 @@ public abstract class NonBlockingParserBase
             return _textBuffer.getTextBuffer();
         case JsonTokenId.ID_FIELD_NAME:
             if (!_nameCopied) {
-                String name = _parsingContext.getCurrentName();
+                String name = _streamReadContext.getCurrentName();
                 int nameLen = name.length();
                 if (_nameCopyBuffer == null) {
                     _nameCopyBuffer = _ioContext.allocNameCopyBuffer(nameLen);
@@ -317,7 +317,7 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_STRING:
             return _textBuffer.size();
         case JsonTokenId.ID_FIELD_NAME:
-            return _parsingContext.getCurrentName().length();
+            return _streamReadContext.getCurrentName().length();
         case JsonTokenId.ID_NUMBER_INT:
         case JsonTokenId.ID_NUMBER_FLOAT:
             return getNumberValue().toString().length();
@@ -389,7 +389,7 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _startArrayScope() throws IOException
     {
-        _parsingContext = _parsingContext.createChildArrayContext(-1, -1);
+        _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
         _majorState = MAJOR_ARRAY_ELEMENT;
         _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
         return (_currToken = JsonToken.START_ARRAY);
@@ -397,7 +397,7 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _startObjectScope() throws IOException
     {
-        _parsingContext = _parsingContext.createChildObjectContext(-1, -1);
+        _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
         _majorState = MAJOR_OBJECT_FIELD;
         _majorStateAfterValue = MAJOR_OBJECT_FIELD;
         return (_currToken = JsonToken.START_OBJECT);
@@ -405,11 +405,11 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _closeArrayScope() throws IOException
     {
-        if (!_parsingContext.inArray()) {
+        if (!_streamReadContext.inArray()) {
             _reportMismatchedEndMarker(']', '}');
         }
-        JsonReadContext ctxt = _parsingContext.getParent();
-        _parsingContext = ctxt;
+        JsonReadContext ctxt = _streamReadContext.getParent();
+        _streamReadContext = ctxt;
         int st;
         if (ctxt.inObject()) {
             st = MAJOR_OBJECT_FIELD;
@@ -425,11 +425,11 @@ public abstract class NonBlockingParserBase
 
     protected final JsonToken _closeObjectScope() throws IOException
     {
-        if (!_parsingContext.inObject()) {
+        if (!_streamReadContext.inObject()) {
             _reportMismatchedEndMarker('}', ']');
         }
-        JsonReadContext ctxt = _parsingContext.getParent();
-        _parsingContext = ctxt;
+        JsonReadContext ctxt = _streamReadContext.getParent();
+        _streamReadContext = ctxt;
         int st;
         if (ctxt.inObject()) {
             st = MAJOR_OBJECT_FIELD;
@@ -578,7 +578,7 @@ public abstract class NonBlockingParserBase
      */
     protected final JsonToken _eofAsNextToken() throws IOException {
         _majorState = MAJOR_CLOSED;
-        if (!_parsingContext.inRoot()) {
+        if (!_streamReadContext.inRoot()) {
             _handleEOF();
         }
         close();
@@ -606,7 +606,7 @@ public abstract class NonBlockingParserBase
         if (index >= _seenNameCount) {
             _reportInvalidSharedName(index);
         }
-        _parsingContext.setCurrentName(_seenNames[index]);
+        _streamReadContext.setCurrentName(_seenNames[index]);
         _majorState = MAJOR_OBJECT_VALUE;
         return (_currToken = JsonToken.FIELD_NAME);
     }

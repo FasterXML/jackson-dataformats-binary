@@ -162,9 +162,9 @@ public class SmileGenerator
     /**********************************************************
      */
 
-    final protected IOContext _ioContext;
+    protected final IOContext _ioContext;
 
-    final protected OutputStream _out;
+    protected final OutputStream _out;
 
     /**
      * Bit flag composed of bits that indicate which
@@ -177,7 +177,7 @@ public class SmileGenerator
      * Helper object used for low-level recycling of Smile-generator
      * specific buffers.
      */
-    final protected SmileBufferRecycler<SharedStringNode> _smileBufferRecycler;
+    protected final SmileBufferRecycler<SharedStringNode> _smileBufferRecycler;
     
     /*
     /**********************************************************
@@ -185,10 +185,8 @@ public class SmileGenerator
     /**********************************************************
      */
 
-    /**
-     * @since 2.10
-     */
-    protected SmileWriteContext _smileContext;
+    // @since 2.10 (named _smileContext before 2.13)
+    protected SmileWriteContext _streamWriteContext;
 
     /*
     /**********************************************************
@@ -285,7 +283,7 @@ public class SmileGenerator
                 ? DupDetector.rootDetector(this)
                 : null;
                 // NOTE: we passed `null` for default write context
-        _smileContext = SmileWriteContext.createRootContext(dups);
+        _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
         _ioContext = ctxt;
         _smileBufferRecycler = _smileBufferRecycler();
@@ -331,7 +329,7 @@ public class SmileGenerator
                 ? DupDetector.rootDetector(this)
                 : null;
                 // NOTE: we passed `null` for default write context
-        _smileContext = SmileWriteContext.createRootContext(dups);
+        _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
         _ioContext = ctxt;
         _smileBufferRecycler = _smileBufferRecycler();
@@ -485,27 +483,27 @@ public class SmileGenerator
 
     @Override // since 2.13
     public Object currentValue() {
-        return _smileContext.getCurrentValue();
+        return _streamWriteContext.getCurrentValue();
     }
 
     @Override
     public Object getCurrentValue() {
-        return _smileContext.getCurrentValue();
+        return _streamWriteContext.getCurrentValue();
     }
 
     @Override // since 2.13
     public void assignCurrentValue(Object v) {
-        _smileContext.setCurrentValue(v);
+        _streamWriteContext.setCurrentValue(v);
     }
 
     @Override
     public void setCurrentValue(Object v) {
-        _smileContext.setCurrentValue(v);
+        _streamWriteContext.setCurrentValue(v);
     }
 
     @Override
     public JsonStreamContext getOutputContext() {
-        return _smileContext;
+        return _streamWriteContext;
     }
 
     /*
@@ -521,7 +519,7 @@ public class SmileGenerator
     @Override
     public final void writeFieldName(String name)  throws IOException
     {
-        if (!_smileContext.writeFieldName(name)) {
+        if (!_streamWriteContext.writeFieldName(name)) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -532,7 +530,7 @@ public class SmileGenerator
         throws IOException
     {
         // Object is a value, need to verify it's allowed
-        if (!_smileContext.writeFieldName(name.getValue())) {
+        if (!_streamWriteContext.writeFieldName(name.getValue())) {
             _reportError("Can not write a field name, expecting a value");
         }
         _writeFieldName(name);
@@ -608,7 +606,7 @@ public class SmileGenerator
     public final void writeStartArray() throws IOException
     {
         _verifyValueWrite("start an array");
-        _smileContext = _smileContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -616,7 +614,7 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue) throws IOException
     {
         _verifyValueWrite("start an array");
-        _smileContext = _smileContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -624,7 +622,7 @@ public class SmileGenerator
     public final void writeStartArray(Object forValue, int elementsToWrite) throws IOException
     {
         _verifyValueWrite("start an array");
-        _smileContext = _smileContext.createChildArrayContext(forValue);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -633,25 +631,25 @@ public class SmileGenerator
     public final void writeStartArray(int size) throws IOException
     {
         _verifyValueWrite("start an array");
-        _smileContext = _smileContext.createChildArrayContext(null);
+        _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
     @Override
     public final void writeEndArray() throws IOException
     {
-        if (!_smileContext.inArray()) {
-            _reportError("Current context not Array but "+_smileContext.typeDesc());
+        if (!_streamWriteContext.inArray()) {
+            _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
         _writeByte(TOKEN_LITERAL_END_ARRAY);
-        _smileContext = _smileContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
     }
 
     @Override
     public final void writeStartObject() throws IOException
     {
         _verifyValueWrite("start an object");
-        _smileContext = _smileContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
@@ -659,18 +657,18 @@ public class SmileGenerator
     public final void writeStartObject(Object forValue) throws IOException
     {
         _verifyValueWrite("start an object");
-        SmileWriteContext ctxt = _smileContext.createChildObjectContext(forValue);
-        _smileContext = ctxt;
+        SmileWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
     
     @Override
     public final void writeEndObject() throws IOException
     {
-        if (!_smileContext.inObject()) {
-            _reportError("Current context not Object but "+_smileContext.typeDesc());
+        if (!_streamWriteContext.inObject()) {
+            _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
         }
-        _smileContext = _smileContext.getParent();
+        _streamWriteContext = _streamWriteContext.getParent();
         _writeByte(TOKEN_LITERAL_END_OBJECT);
     }
 
@@ -1818,7 +1816,7 @@ public class SmileGenerator
     protected final void _verifyValueWrite(String typeMsg)
         throws IOException
     {
-        if (!_smileContext.writeValue()) {
+        if (!_streamWriteContext.writeValue()) {
             _reportError("Can not "+typeMsg+", expecting field name");
         }
     }

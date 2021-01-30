@@ -105,8 +105,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**
      * Information about parser context, context in which
      * the next token is to be parsed (root, array, object).
+     *<p>
+     * NOTE: before 2.13 was "_parsingContext"
      */
-    protected JsonReadContext _parsingContext;
+    protected JsonReadContext _streamReadContext;
     
     /*
     /**********************************************************
@@ -243,7 +245,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _symbols = sym;
         DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _parsingContext = JsonReadContext.createRootContext(dups);
+        _streamReadContext = JsonReadContext.createRootContext(dups);
 
         _textBuffer = ctxt.constructTextBuffer();
         _smileBufferRecycler = _smileBufferRecycler();
@@ -360,16 +362,16 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final String getCurrentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
-            return _parsingContext.getParent().getCurrentName();
+            return _streamReadContext.getParent().getCurrentName();
         }
-        return _parsingContext.getCurrentName();
+        return _streamReadContext.getCurrentName();
     }
 
     @Override
     public final void overrideCurrentName(String name)
     {
         // Simple, but need to look for START_OBJECT/ARRAY's "off-by-one" thing:
-        JsonReadContext ctxt = _parsingContext;
+        JsonReadContext ctxt = _streamReadContext;
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ctxt = ctxt.getParent();
         }
@@ -429,7 +431,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected abstract void _releaseBuffers2();
     
     @Override public final boolean isClosed() { return _closed; }
-    @Override public final JsonReadContext getParsingContext() { return _parsingContext; }
+    @Override public final JsonReadContext getParsingContext() { return _streamReadContext; }
 
     /*
     /**********************************************************
@@ -753,12 +755,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
     @Override
     protected void _handleEOF() throws JsonParseException {
-        if (!_parsingContext.inRoot()) {
-            String marker = _parsingContext.inArray() ? "Array" : "Object";
+        if (!_streamReadContext.inRoot()) {
+            String marker = _streamReadContext.inArray() ? "Array" : "Object";
             _reportInvalidEOF(String.format(
                     ": expected close marker for %s (start marker at %s)",
                     marker,
-                    _parsingContext.getStartLocation(_getSourceReference())),
+                    _streamReadContext.getStartLocation(_getSourceReference())),
                     null);
         }
     }
