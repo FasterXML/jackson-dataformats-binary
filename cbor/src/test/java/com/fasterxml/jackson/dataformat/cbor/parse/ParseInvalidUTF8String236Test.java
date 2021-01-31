@@ -54,4 +54,74 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
             }
         }
     }
+
+    public void testShortString237InvalidTextValue() throws Exception
+    {
+        // String with length of 2 bytes, but a few null bytes as fillers to
+        // avoid buffer boundary
+        // (2nd byte implies 2-byte sequence but 3rd byte does not have high-bit set)
+        byte[] input2 = {0x62, (byte) 0xCF, 0x2d,
+                0, 0, 0, 0, 0, 0};
+        try (CBORParser p = cborParser(input2)) {
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            try {
+                String str = p.getText();
+                fail("Should have failed, did not, String = '"+str+"'");
+            } catch (StreamReadException e) {
+                verifyException(e, "Invalid UTF-8 middle byte 0x2d");
+            }
+        }
+
+        // but let's also validate 3-byte variant as well
+        byte[] input3 = {0x63, (byte) 0xEF, (byte) 0x8e, 0x2d,
+                0, 0, 0, 0, 0, 0};
+        try (CBORParser p = cborParser(input3)) {
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            try {
+                String str = p.getText();
+                fail("Should have failed, did not, String = '"+str+"'");
+            } catch (StreamReadException e) {
+                verifyException(e, "Invalid UTF-8 middle byte 0x2d");
+            }
+        }
+    }
+
+    public void testShortString237InvalidName() throws Exception
+    {
+        // Object with 2-byte invalid name
+        byte[] input2 = { (byte) 0xBF, // Object, indefinite length
+                0x62, (byte) 0xCF, 0x2e, // 2-byte name but invalid second byte
+                0x21, // int value of 33
+                (byte) 0xFF, // Object END marker
+                0, 0, 0, 0 // padding
+        };
+        try (CBORParser p = cborParser(input2)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            try {
+                p.nextToken();
+                String str = p.getText();
+                fail("Should have failed, did not, String = '"+str+"'");
+            } catch (StreamReadException e) {
+                verifyException(e, "Invalid UTF-8 middle byte 0x2e");
+            }
+        }
+
+        // but let's also validate 3-byte variant as well
+        byte[] input3 = { (byte) 0xBF, // Object, indefinite length
+                0x62, (byte) 0xEF, (byte) 0x8e, 0x2f, // 3-byte name but invalid third byte
+                0x22, // int value of 34
+                (byte) 0xFF, // Object END marker
+                0, 0, 0, 0 // padding
+        };
+        try (CBORParser p = cborParser(input3)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            try {
+                p.nextToken();
+                String str = p.getText();
+                fail("Should have failed, did not, String = '"+str+"'");
+            } catch (StreamReadException e) {
+                verifyException(e, "Invalid UTF-8 middle byte 0x2f");
+            }
+        }
+    }
 }
