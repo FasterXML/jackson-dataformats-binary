@@ -947,7 +947,7 @@ public class CBORParser extends ParserBase
                     if (name != null) {
                         _inputPtr += lenMarker;
                     } else {
-                        name = _decodeShortName(lenMarker);
+                        name = _decodeContiguousName(lenMarker);
                         name = _addDecodedToSymbols(lenMarker, name);
                     }
                 }
@@ -1098,7 +1098,7 @@ public class CBORParser extends ParserBase
             name = _symbols.findName(_quadBuffer, qlen);
         }
         if (name == null) {
-            name = _decodeShortName(len);
+            name = _decodeContiguousName(len);
             name = _addDecodedToSymbols(len, name);
         } else {
             _inputPtr += len;
@@ -2103,17 +2103,21 @@ public class CBORParser extends ParserBase
             }
             return;
         }
-        if (len > (_inputEnd - _inputPtr)) {
-            // or if not, could we read?
-            if (len >= _inputBuffer.length) {
-                // If not enough space, need handling similar to chunked
-                _finishLongText(len);
+        // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
+        //    the longest individual unit is 4 bytes (surrogate pair) so we
+        //    actually need len+3 bytes to avoid bounds checks
+        final int needed = len + 3;
+        final int available = _inputEnd - _inputPtr;
+
+        if ((available >= needed)
+                // if not, could we read? NOTE: we do not require it, just attempt to read
+                    || ((_inputBuffer.length >= needed)
+                            && _tryToLoadToHaveAtLeast(needed))) {
+                _finishShortText(len);
                 return;
-            }
-            _loadToHaveAtLeast(len);
         }
-        // offline for better optimization
-        _finishShortText(len);
+        // If not enough space, need handling similar to chunked
+        _finishLongText(len);
     }
 
     protected String _finishTextToken(int ch) throws JacksonException
@@ -2162,7 +2166,7 @@ public class CBORParser extends ParserBase
         if (outBuf.length < len) { // one minor complication
             outBuf = _textBuffer.expandCurrentSegment(len);
         }
-        
+
         int outPtr = 0;
         int inPtr = _inputPtr;
         _inputPtr += len;
@@ -2178,7 +2182,6 @@ public class CBORParser extends ParserBase
                 return _textBuffer.setCurrentAndReturn(outPtr);
             }
         }
-
         final int[] codes = UTF8_UNIT_CODES;
         do {
             i = inputBuf[inPtr++] & 0xFF;
@@ -2186,25 +2189,40 @@ public class CBORParser extends ParserBase
             case 0:
                 break;
             case 1:
-                i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
+                {
+                    final int c2 = inputBuf[inPtr++];
+                    if ((c2 & 0xC0) != 0x080) {
+                        _reportInvalidOther(c2 & 0xFF, inPtr);
+                    }
+                    i = ((i & 0x1F) << 6) | (c2 & 0x3F);
+                }
                 break;
             case 2:
-                i = ((i & 0x0F) << 12)
-                   | ((inputBuf[inPtr++] & 0x3F) << 6)
-                   | (inputBuf[inPtr++] & 0x3F);
+                {
+                    final int c2 = inputBuf[inPtr++];
+                    if ((c2 & 0xC0) != 0x080) {
+                        _reportInvalidOther(c2 & 0xFF, inPtr);
+                    }
+                    final int c3 = inputBuf[inPtr++];
+                    if ((c3 & 0xC0) != 0x080) {
+                        _reportInvalidOther(c3 & 0xFF, inPtr);
+                    }
+                    i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                }
                 break;
             case 3:
+                // 30-Jan-2021, tatu: TODO - validate these too?
                 i = ((i & 0x07) << 18)
-                 | ((inputBuf[inPtr++] & 0x3F) << 12)
-                 | ((inputBuf[inPtr++] & 0x3F) << 6)
-                 | (inputBuf[inPtr++] & 0x3F);
+                    | ((inputBuf[inPtr++] & 0x3F) << 12)
+                    | ((inputBuf[inPtr++] & 0x3F) << 6)
+                    | (inputBuf[inPtr++] & 0x3F);
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
                 outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportError("Invalid byte "+Integer.toHexString(i)+" in Unicode text block");
+                _reportInvalidInitial(i);
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
@@ -2572,7 +2590,7 @@ public class CBORParser extends ParserBase
                 if (name != null) {
                     _inputPtr += lenMarker;
                 } else {
-                    name = _decodeShortName(lenMarker);
+                    name = _decodeContiguousName(lenMarker);
                     name = _addDecodedToSymbols(lenMarker, name);
                 }
             }
@@ -2587,8 +2605,8 @@ public class CBORParser extends ParserBase
         _streamReadContext.setCurrentName(name);
         return JsonToken.PROPERTY_NAME;
     }
-    
-    private final String _decodeShortName(int len) throws JacksonException
+
+    private final String _decodeContiguousName(int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -2601,7 +2619,7 @@ public class CBORParser extends ParserBase
         final int[] codes = UTF8_UNIT_CODES;
         final byte[] inBuf = _inputBuffer;
 
-        // First a tight loop for Ascii
+        // First a tight loop for ASCII
         final int end = inPtr + len;
         while (true) {
             int i = inBuf[inPtr] & 0xFF;
@@ -2623,25 +2641,40 @@ public class CBORParser extends ParserBase
                 // trickiest one, need surrogate handling
                 switch (code) {
                 case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
+                    {
+                        final int c2 = inBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x1F) << 6) | (c2 & 0x3F);
+                    }
                     break;
                 case 2:
-                    i = ((i & 0x0F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                    {
+                        final int c2 = inBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    }
                     break;
                 case 3:
+                    // 30-Jan-2021, tatu: TODO - validate surrogate case too?
                     i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                        | ((inBuf[inPtr++] & 0x3F) << 12)
+                        | ((inBuf[inPtr++] & 0x3F) << 6)
+                        | (inBuf[inPtr++] & 0x3F);
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _reportError("Invalid byte "+Integer.toHexString(i)+" in Object name");
+                    _reportError("Invalid UTF-8 byte 0x"+Integer.toHexString(i)+" in Object property name");
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -2666,7 +2699,7 @@ public class CBORParser extends ParserBase
             _inputPtr += len;
             return name;
         }
-        name = _decodeShortName(len);
+        name = _decodeContiguousName(len);
         return _addDecodedToSymbols(len, name);
     }
     
