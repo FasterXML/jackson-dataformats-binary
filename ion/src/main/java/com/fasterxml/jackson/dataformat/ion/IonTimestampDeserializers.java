@@ -18,8 +18,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.DateDeserializers.DateDeserializer;
-import com.fasterxml.jackson.databind.deser.std.DateDeserializers.SqlDateDeserializer;
+import com.fasterxml.jackson.databind.deser.jdk.JavaUtilDateDeserializer;
+import com.fasterxml.jackson.databind.ext.sql.JavaSqlDateDeserializer;
 
 import com.amazon.ion.Timestamp;
 
@@ -28,7 +28,7 @@ import com.amazon.ion.Timestamp;
  */
 public class IonTimestampDeserializers {
 
-    public static class IonTimestampJavaDateDeserializer extends DateDeserializer {
+    public static class IonTimestampJavaDateDeserializer extends JavaUtilDateDeserializer {
         @Override
         public java.util.Date deserialize(JsonParser p, DeserializationContext ctxt)
         {
@@ -42,7 +42,7 @@ public class IonTimestampDeserializers {
         }
     }
     
-    public static class IonTimestampSQLDateDeserializer extends SqlDateDeserializer {
+    public static class IonTimestampSQLDateDeserializer extends JavaSqlDateDeserializer {
         @Override
         public java.sql.Date deserialize(JsonParser p, DeserializationContext ctxt)
         {

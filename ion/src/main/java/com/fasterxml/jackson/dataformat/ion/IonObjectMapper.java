@@ -24,9 +24,9 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
-import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
+import com.fasterxml.jackson.databind.deser.DeserializationContextExt;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.fasterxml.jackson.databind.ser.SerializationContextExt;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueModule;
 
 import com.amazon.ion.IonDatagram;
@@ -174,7 +174,7 @@ public class IonObjectMapper extends ObjectMapper
      * @since 3.0
      */
     public IonParser createParser(IonReader src) {
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (IonParser) ctxt.assignAndReturnParser(tokenStreamFactory().createParser(ctxt, src));
     }
 
@@ -182,7 +182,7 @@ public class IonObjectMapper extends ObjectMapper
      * @since 3.0
      */
     public IonParser createParser(IonValue value) {
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (IonParser) ctxt.assignAndReturnParser(tokenStreamFactory().createParser(ctxt, value));
     }
 
@@ -208,7 +208,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, Class<T> valueType) throws IOException {
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueType));
     }
@@ -221,7 +221,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws IOException {
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueTypeRef));
     }
@@ -234,7 +234,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     @SuppressWarnings("unchecked")
     public <T> T readValue(IonReader r, JavaType valueType) throws IOException {
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r), valueType);
     }
 
@@ -246,7 +246,7 @@ public class IonObjectMapper extends ObjectMapper
         if (value == null) {
             return null;
         }
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueType));
     }
@@ -259,7 +259,7 @@ public class IonObjectMapper extends ObjectMapper
         if (value == null) {
             return null;
         }
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value),
                 _typeFactory.constructType(valueTypeRef));
     }
@@ -272,7 +272,7 @@ public class IonObjectMapper extends ObjectMapper
         if (value == null) {
             return null;
         }
-        DefaultDeserializationContext ctxt = _deserializationContext();
+        DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, value), valueType);
     }
 
@@ -283,7 +283,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying writer explicitly
      */
     public void writeValue(IonWriter w, Object value) throws IOException {
-        DefaultSerializerProvider prov = _serializerProvider();
+        SerializationContextExt prov = _serializerProvider();
         _configAndWriteValue(prov,
                 tokenStreamFactory().createGenerator(prov, w), value);
     }
