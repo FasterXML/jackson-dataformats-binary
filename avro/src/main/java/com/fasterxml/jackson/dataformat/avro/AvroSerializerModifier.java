@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.ValueSerializerModifier;
 
 /**
  * Serializer modifier used to suppress serialization of "schema"
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
  * @since 2.7.2
  */
 public class AvroSerializerModifier
-    extends BeanSerializerModifier
+    extends ValueSerializerModifier
 {
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
