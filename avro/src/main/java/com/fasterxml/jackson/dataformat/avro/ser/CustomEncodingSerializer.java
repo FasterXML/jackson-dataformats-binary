@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.dataformat.avro.schema.VisitorFormatWrapperImpl;
  *
  * @see com.fasterxml.jackson.dataformat.avro.AvroAnnotationIntrospector
  */
-public class CustomEncodingSerializer<T> extends JsonSerializer<T> {
+public class CustomEncodingSerializer<T> extends ValueSerializer<T> {
 
     private final CustomEncodingWrapper<T> encoding;
 

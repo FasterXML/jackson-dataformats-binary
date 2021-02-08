@@ -134,7 +134,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     {
         // 20-Apr-2018, tatu: not 100% certain if we should get type-wrapped serializer, but
         //    since protobuf doesn't exactly support fancier features, assuming... nope
-        JsonSerializer<Object> serializer = provider.findRootValueSerializer(type);
+        ValueSerializer<Object> serializer = provider.findRootValueSerializer(type);
         ProtoBufSchemaVisitor visitor = new ProtoBufSchemaVisitor(provider, definedTypeElementBuilders, isNested);
         serializer.acceptJsonFormatVisitor(visitor, type);
         return visitor;

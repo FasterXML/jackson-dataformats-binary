@@ -67,7 +67,7 @@ public class RecordVisitor
         } else if (subTypes != null && !subTypes.isEmpty()) {
             List<Schema> unionSchemas = new ArrayList<>();
             for (NamedType subType : subTypes) {
-                JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
+                ValueSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
                 VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, getProvider());
                 ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
                 unionSchemas.add(visitor.getAvroSchema());
@@ -165,7 +165,7 @@ public class RecordVisitor
             if (fixedSize != null) {
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
             } else {
-                JsonSerializer<?> ser = null;
+                ValueSerializer<?> ser = null;
 
                 // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
                 if (prop instanceof BeanPropertyWriter) {
