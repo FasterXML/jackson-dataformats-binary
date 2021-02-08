@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.exc.WrappedIOException;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.dataformat.avro.CustomEncodingWrapper;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
  *
  * @see com.fasterxml.jackson.dataformat.avro.AvroAnnotationIntrospector
  */
-public class CustomEncodingDeserializer<T> extends JsonDeserializer<T> {
+public class CustomEncodingDeserializer<T> extends ValueDeserializer<T> {
 
     private final CustomEncodingWrapper<T> encoding;
 

@@ -51,7 +51,7 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
     @Override
     public Object deserializeTypedFromAny(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         if (p.getTypeId() == null && getDefaultImpl() == null) {
-            JsonDeserializer<Object> deser = _findDeserializer(ctxt, AvroSchemaHelper.getTypeId(_baseType));
+            ValueDeserializer<Object> deser = _findDeserializer(ctxt, AvroSchemaHelper.getTypeId(_baseType));
             if (deser == null) {
                 ctxt.reportInputMismatch(_baseType, "No (native) type id found when one was expected for polymorphic type handling");
                 return null;

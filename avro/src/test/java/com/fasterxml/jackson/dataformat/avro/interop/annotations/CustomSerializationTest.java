@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -54,7 +54,7 @@ public final class CustomSerializationTest {
             }
         }
 
-        public static class Deserializer extends JsonDeserializer<House> {
+        public static class Deserializer extends ValueDeserializer<House> {
             @Override
             public House deserialize(final JsonParser parser,
                 final DeserializationContext context)

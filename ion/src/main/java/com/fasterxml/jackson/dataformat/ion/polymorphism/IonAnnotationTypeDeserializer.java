@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase;
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.dataformat.ion.IonParser;
 /**
  * This is a {@link com.fasterxml.jackson.databind.jsontype.TypeDeserializer} that reads typing metadata from Ion type
  * annotations. Annotations found are processed by the configured {@link TypeIdResolver} to provide a concrete Java
- * class, which is in turn used to find the appropriate {@link JsonDeserializer}, and execute it.
+ * class, which is in turn used to find the appropriate {@link ValueDeserializer}, and execute it.
  * <p>
  * If multiple annotations are found, the first annotation to resolve to a non-null {@link JavaType} using the
  * configured {@link TypeIdResolver} is used. Ion provides type annotations in alphabetic order.
@@ -83,7 +83,7 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
                 }
             }
         }
-        JsonDeserializer<?> deserializer;
+        ValueDeserializer<?> deserializer;
         if (null == typeIdToUse) {
             deserializer = _findDefaultImplDeserializer(ctxt);
         } else {

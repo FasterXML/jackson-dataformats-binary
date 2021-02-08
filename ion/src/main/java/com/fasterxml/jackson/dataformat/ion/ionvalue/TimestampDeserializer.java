@@ -16,13 +16,13 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.amazon.ion.Timestamp;
 
 /**
  * Deserializer that knows how to deserialize a Timestamp.
  */
-class TimestampDeserializer extends JsonDeserializer<Timestamp> {
+class TimestampDeserializer extends ValueDeserializer<Timestamp> {
 
     @Override
     public Timestamp deserialize(JsonParser p, DeserializationContext ctxt)

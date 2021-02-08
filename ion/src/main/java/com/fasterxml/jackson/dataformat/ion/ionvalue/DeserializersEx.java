@@ -17,7 +17,7 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.type.CollectionType;
@@ -32,7 +32,7 @@ class DeserializersEx extends SimpleDeserializers
     private static final IonValueDeserializer ION_VALUE_DESERIALIZER = new IonValueDeserializer();
 
     @Override
-    public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config,
+    public ValueDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config,
             BeanDescription beanDesc)
     {
         if (IonValue.class.isAssignableFrom(type.getRawClass())) {
@@ -42,9 +42,9 @@ class DeserializersEx extends SimpleDeserializers
     }
 
     @Override
-    public JsonDeserializer<?>
+    public ValueDeserializer<?>
             findCollectionDeserializer(CollectionType type, DeserializationConfig config, BeanDescription beanDesc,
-                    TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer)
+                    TypeDeserializer elementTypeDeserializer, ValueDeserializer<?> elementDeserializer)
     {
         if (IonContainer.class.isAssignableFrom(type.getRawClass())) {
             return ION_VALUE_DESERIALIZER;

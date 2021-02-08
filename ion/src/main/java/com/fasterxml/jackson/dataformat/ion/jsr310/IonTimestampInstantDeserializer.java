@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
 /**
@@ -81,7 +81,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
     }
 
     @Override
-    public JsonDeserializer<T> createContextual(DeserializationContext ctxt, BeanProperty property)
+    public ValueDeserializer<T> createContextual(DeserializationContext ctxt, BeanProperty property)
     {
 
         final JsonFormat.Value format = findFormatOverrides(ctxt, property, handledType());

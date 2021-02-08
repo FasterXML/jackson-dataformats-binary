@@ -16,13 +16,13 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ValueDeserializer;
 import com.amazon.ion.IonValue;
 
 /**
  * Deserializer that knows how to deserialize an IonValue.
  */
-class IonValueDeserializer extends JsonDeserializer<IonValue> {
+class IonValueDeserializer extends ValueDeserializer<IonValue> {
 
     @Override
     public IonValue deserialize(JsonParser p, DeserializationContext ctxt)  {
