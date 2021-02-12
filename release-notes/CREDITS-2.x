@@ -163,3 +163,7 @@ Fabian Meumertzheim (fmeum@github)
 * Reported #236: `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
  (2.12.2)
 
+(jhhladky@github)
+
+* Contributed #241: (ion) Respect `WRITE_ENUMS_USING_TO_STRING` in `EnumAsIonSymbolSerializer`
+ (2.12.2)
