@@ -159,6 +159,10 @@ public class IonParser
         return PackageVersion.VERSION;
     }
 
+    public IonSystem getIonSystem() {
+        return _system;
+    }
+
     /*
     /**********************************************************
     /* Capability introspection
