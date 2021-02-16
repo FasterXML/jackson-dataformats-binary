@@ -20,6 +20,8 @@ Project: jackson-datatypes-binaryModules:
 #240: (cbor) Handle invalid CBOR content like `[ 0x84 ]` (incomplete array)
 #241: (ion) Respect `WRITE_ENUMS_USING_TO_STRING` in `EnumAsIonSymbolSerializer`
  (contributed by jhhladky@github)
+#244: (ion) Add support for deserializing IonTimestamps and IonBlobs
+ (contributed by jessbrya-amzn@github)
 
 2.12.1 (08-Jan-2021)
 

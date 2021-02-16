@@ -159,6 +159,18 @@ public class IonParser
         return PackageVersion.VERSION;
     }
 
+    /**
+     * Accessor for {@link IonSystem} this parser instance was construted
+     * with
+     *
+     * @return {@link IonSystem} instance
+     *
+     * @since 2.12.2
+     */
+    public IonSystem getIonSystem() {
+        return _system;
+    }
+
     /*
     /**********************************************************
     /* Capability introspection

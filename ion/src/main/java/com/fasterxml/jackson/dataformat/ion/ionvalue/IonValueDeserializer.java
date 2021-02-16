@@ -18,8 +18,12 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.dataformat.ion.IonParser;
+import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
+import com.amazon.ion.Timestamp;
 
 /**
  * Deserializer that knows how to deserialize an IonValue.
@@ -28,6 +32,25 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
 
     @Override
     public IonValue deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-        return (IonValue) jp.getEmbeddedObject();
+        Object embeddedObject = jp.getEmbeddedObject();
+        if (embeddedObject instanceof IonValue) {
+            return (IonValue) embeddedObject;
+        }
+        // We rely on the IonParser's IonSystem to wrap supported types into an IonValue
+        if (!(jp instanceof IonParser)) {
+            throw JsonMappingException.from(jp, "Unsupported parser for deserializing "
+                    + embeddedObject.getClass().getCanonicalName() + " into IonValue");
+        }
+
+        IonSystem ionSystem = ((IonParser) jp).getIonSystem();
+        if (embeddedObject instanceof Timestamp) {
+            return ionSystem.newTimestamp((Timestamp) embeddedObject);
+        }
+        if (embeddedObject instanceof byte[]) {
+            // The parser provides no distinction between BLOB and CLOB, deserializing to a BLOB is the safest choice.
+            return ionSystem.newBlob((byte[]) embeddedObject);
+        }
+        throw JsonMappingException.from(jp, "Cannot deserialize embedded object type "
+                + embeddedObject.getClass().getCanonicalName() + " into IonValue");
     }
 }
