@@ -21,7 +21,17 @@ import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class EnumAsIonSymbolSerializationTest {
+public class EnumAsIonSymbolSerializationTest
+{
+    private enum SomeEnum {
+        SOME_VALUE;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
+    }
+
     private static final IonSystem ION_SYSTEM = IonSystemBuilder.standard().build();
 
     @Test
@@ -56,14 +66,5 @@ public class EnumAsIonSymbolSerializationTest {
                 .addModule(new EnumAsIonSymbolModule())
                 .build();
         return mapper;
-    }
-
-    private enum SomeEnum {
-        SOME_VALUE;
-
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
     }
 }
