@@ -163,17 +163,53 @@ public class IonValueMapperTest {
     }
 
     @Test
+    public void testPojo2WithTimestamp() throws Exception {
+        String value = "{" +
+                "raw_value:2017-05-25T15:33:08Z," +
+                "raw_sexp:(this that)," +
+                "wrapped_sexp:{sexp:(other)}," +
+                "}";
+
+        TestPojo2 t = ionValueMapper.readValue(ionSystem.singleValue(value), TestPojo2.class);
+        assertEquals(ionSystem.singleValue("2017-05-25T15:33:08Z"), t.rawValue);
+        assertEquals(ionSystem.singleValue("(this that)"), t.rawSexp);
+        assertEquals(ionSystem.singleValue("(other)"), t.wrappedSexp.sexp);
+
+        assertRoundTrip(value, TestPojo2.class);
+    }
+
+    @Test
+    public void testPojo2WithBlob() throws Exception {
+        String value = "{" +
+                "raw_value:{{YmxvYl92YWx1ZQ==}}," +
+                "raw_sexp:(this that)," +
+                "wrapped_sexp:{sexp:(other)}," +
+                "}";
+
+        TestPojo2 t = ionValueMapper.readValue(ionSystem.singleValue(value), TestPojo2.class);
+        assertEquals(ionSystem.newBlob("blob_value".getBytes()), t.rawValue);
+        assertEquals(ionSystem.singleValue("(this that)"), t.rawSexp);
+        assertEquals(ionSystem.singleValue("(other)"), t.wrappedSexp.sexp);
+
+        assertRoundTrip(value, TestPojo2.class);
+    }
+
+    @Test
     public void testPojo3WithOpenContent() throws Exception {
         String value = "{" +
                 "expected:1," +
                 "something_unexpected:(boo!)," +
                 "another_random_struct:{yikes:scared}," +
+                "timestamp_att:2021-02-15T18:40:40Z," +
+                "blob_att:{{YmxvYl92YWx1ZQ==}}," +
                 "}";
 
         TestPojo3 t = ionValueMapper.readValue(ionSystem.singleValue(value), TestPojo3.class);
         assertEquals(1, t.expected);
         assertEquals(ionSystem.singleValue("(boo!)"), t.any().get("something_unexpected"));
         assertEquals(ionSystem.singleValue("{yikes:scared}"), t.any().get("another_random_struct"));
+        assertEquals(ionSystem.singleValue("2021-02-15T18:40:40Z"), t.any().get("timestamp_att"));
+        assertEquals(ionSystem.newBlob("blob_value".getBytes()), t.any().get("blob_att"));
 
         assertRoundTrip(value, TestPojo3.class);
     }

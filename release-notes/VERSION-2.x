@@ -15,9 +15,13 @@ Project: jackson-datatypes-binaryModules:
 
 2.12.2 (not yet released)
 
-#236: `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
+#236: (cbor) `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
  (reported by Fabian M)
-#240: Handle invalid CBOR content like `[ 0x84 ]` (incomplete array)
+#240: (cbor) Handle invalid CBOR content like `[ 0x84 ]` (incomplete array)
+#241: (ion) Respect `WRITE_ENUMS_USING_TO_STRING` in `EnumAsIonSymbolSerializer`
+ (contributed by jhhladky@github)
+#244: (ion) Add support for deserializing IonTimestamps and IonBlobs
+ (contributed by jessbrya-amzn@github)
 
 2.12.1 (08-Jan-2021)
 

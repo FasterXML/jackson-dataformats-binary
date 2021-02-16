@@ -16,20 +16,22 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
+
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 
 /**
  * Serializes enumeration members as IonSymbols.
- * 
+ *
  * Use annotation
- * 
+ *
  * <pre>
  * &#64;JsonSerialize(using=EnumAsIonSymbolSerializer.class)
  * </pre>
- * 
+ *
  * on enumeration members that should serialize at symbols (which amounts to serializing without being surrounded by
  * double-quotes)
  */
@@ -41,8 +43,12 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
 
     @Override
     public void serialize(Enum<?> value, JsonGenerator g, SerializerProvider provider) {
-        if (IonGenerator.class.isAssignableFrom(g.getClass())) {
-            ((IonGenerator) g).writeSymbol(value.name());
+        if (g instanceof IonGenerator) {
+            String valueString = provider.isEnabled(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+                ? value.toString()
+                : value.name();
+
+            ((IonGenerator) g).writeSymbol(valueString);
         } else {
             throw new StreamWriteException(g, "Can only use EnumAsIonSymbolSerializer with IonGenerator");
         }
