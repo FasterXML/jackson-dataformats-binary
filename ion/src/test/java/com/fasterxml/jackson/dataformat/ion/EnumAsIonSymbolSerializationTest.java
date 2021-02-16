@@ -14,42 +14,15 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class EnumAsIonSymbolSerializationTest {
-    private static final IonSystem ION_SYSTEM = IonSystemBuilder.standard().build();
-
-    @Test
-    public void testUsingName() throws IOException {
-        final IonObjectMapper mapper = newMapper();
-
-        Assert.assertEquals(
-            ION_SYSTEM.singleValue("SOME_VALUE"),
-            mapper.writeValueAsIonValue(SomeEnum.SOME_VALUE));
-    }
-
-    @Test
-    public void testUsingToString() throws IOException {
-        final IonObjectMapper mapper = newMapper();
-
-        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-
-        Assert.assertEquals(
-            ION_SYSTEM.singleValue("some_value"),
-            mapper.writeValueAsIonValue(SomeEnum.SOME_VALUE));
-    }
-
-    private static IonObjectMapper newMapper() {
-        final IonObjectMapper mapper = new IonObjectMapper(new IonFactory(null, ION_SYSTEM));
-        mapper.registerModule(new EnumAsIonSymbolModule());
-        return mapper;
-    }
-
+public class EnumAsIonSymbolSerializationTest
+{
     private enum SomeEnum {
         SOME_VALUE;
 
@@ -57,5 +30,41 @@ public class EnumAsIonSymbolSerializationTest {
         public String toString() {
             return name().toLowerCase();
         }
+    }
+
+    private static final IonSystem ION_SYSTEM = IonSystemBuilder.standard().build();
+
+    @Test
+    public void testUsingName() throws Exception
+    {
+        final IonValue EXP = ION_SYSTEM.singleValue("SOME_VALUE");
+        Assert.assertEquals(EXP,
+                newMapper(false, false).writeValueAsIonValue(SomeEnum.SOME_VALUE));
+        Assert.assertEquals(EXP,
+                newMapper(true, false).writeValueAsIonValue(SomeEnum.SOME_VALUE));
+    }
+
+    @Test
+    public void testUsingToString() throws Exception
+    {
+        final IonValue EXP = ION_SYSTEM.singleValue("some_value");
+        Assert.assertEquals(EXP,
+                newMapper(false, true).writeValueAsIonValue(SomeEnum.SOME_VALUE));
+        Assert.assertEquals(EXP,
+                newMapper(true, true).writeValueAsIonValue(SomeEnum.SOME_VALUE));
+    }
+
+    private static IonObjectMapper newMapper(boolean textual, boolean usingToString) {
+        final IonFactory f = (textual
+                ? IonFactory.builderForTextualWriters()
+                : IonFactory.builderForBinaryWriters()
+                )
+                .ionSystem(ION_SYSTEM)
+                .build();
+        final IonObjectMapper mapper = IonObjectMapper.builder(f)
+                .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, usingToString)
+                .addModule(new EnumAsIonSymbolModule())
+                .build();
+        return mapper;
     }
 }
