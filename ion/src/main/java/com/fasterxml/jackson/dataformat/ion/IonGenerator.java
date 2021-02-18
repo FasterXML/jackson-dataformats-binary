@@ -492,6 +492,9 @@ public class IonGenerator
         _writer.stepOut();
     }
 
+    /**
+     * @since 2.12.2
+     */
     public void writeEndSexp() throws IOException, JsonGenerationException {
         _writeContext = _writeContext.getParent();
         _writer.stepOut();
@@ -528,8 +531,11 @@ public class IonGenerator
         _writer.stepIn(IonType.STRUCT);
     }
 
+    /**
+     * @since 2.12.2
+     */
     public void writeStartSexp() throws IOException, JsonGenerationException {
-        _verifyValueWrite("start a sexp");                      // <-- copied from UTF8JsonGenerator
+        _verifyValueWrite("start a sexp");
         _writeContext = ((IonWriteContext) _writeContext).createChildSexpContext();
         _writer.stepIn(IonType.SEXP);
     }
