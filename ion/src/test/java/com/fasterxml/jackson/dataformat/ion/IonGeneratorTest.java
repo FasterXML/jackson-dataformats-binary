@@ -14,8 +14,11 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;
+import org.junit.rules.ExpectedException;
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import com.amazon.ion.IonDatagram;
@@ -56,9 +59,12 @@ public class IonGeneratorTest {
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setUp() throws Exception {
-        final IonFactory factory = new IonFactory(); 
+        final IonFactory factory = new IonFactory();
 
         this.joiObjectMapper = IonObjectMapper.builder(factory).build();
         this.ionSystem = IonSystemBuilder.standard().build();
@@ -112,5 +118,21 @@ public class IonGeneratorTest {
 
         final IonStruct struct = (IonStruct) output.get(0);
         assertThat(struct.get(FIELD), is(testObjectIon));
+    }
+
+    @Test
+    public void testWriteFieldNameFailsInSexp() throws Exception {
+        joiGenerator.writeStartSexp();
+        thrown.expect(JsonGenerationException.class);
+        thrown.expectMessage("Can not write a field name, expecting a value");
+        joiGenerator.writeFieldName("foo");
+    }
+
+    @Test
+    public void testWriteStartSexpFailsWithoutWriteFieldName() throws Exception {
+        joiGenerator.writeStartObject();
+        thrown.expect(JsonGenerationException.class);
+        thrown.expectMessage("Can not start a sexp, expecting field name");
+        joiGenerator.writeStartSexp();
     }
 }
