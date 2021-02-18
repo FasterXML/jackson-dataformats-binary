@@ -23,9 +23,7 @@ import java.util.Calendar;
 
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.FormatFeature;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.StreamWriteCapability;
 import com.fasterxml.jackson.core.Version;
@@ -100,10 +98,10 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * Basic configuration
-     *****************************************************************
-      */
+    /**********************************************************************
+    /* Basic configuration
+    /**********************************************************************
+     */
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
@@ -126,13 +124,13 @@ public class IonGenerator
     protected final Closeable _destination;
 
     /*
-     *****************************************************************
-     * Instantiation
-     *****************************************************************
-      */
+    /**********************************************************************
+    /* Instantiation
+    /**********************************************************************
+     */
 
     public IonGenerator(int jsonFeatures, final int ionFeatures, ObjectCodec codec,
-                        IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
+            IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
         super(jsonFeatures, codec);
         //  Overwrite the writecontext with our own implementation
@@ -151,10 +149,10 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: state handling
-     *****************************************************************
-      */
+    /**********************************************************************
+    /* JsonGenerator implementation: state handling
+    /**********************************************************************
+     */
 
     @Override
     public void close() throws IOException
@@ -193,9 +191,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Capability introspection
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -214,25 +212,25 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonGenerator implementation: write numeric values
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
-    public void writeNumber(int value) throws IOException, JsonGenerationException {
+    public void writeNumber(int value) throws IOException {
         _verifyValueWrite("write numeric value");
         _writer.writeInt((long)value);
     }
 
     @Override
-    public void writeNumber(long value) throws IOException, JsonGenerationException {
+    public void writeNumber(long value) throws IOException {
         _verifyValueWrite("write numeric value");
         _writer.writeInt(value);
     }
 
     @Override
-    public void writeNumber(BigInteger value) throws IOException, JsonGenerationException {
+    public void writeNumber(BigInteger value) throws IOException {
         if (value == null) {
             writeNull();
         } else {
@@ -242,19 +240,19 @@ public class IonGenerator
     }
 
     @Override
-    public void writeNumber(double value) throws IOException, JsonGenerationException {
+    public void writeNumber(double value) throws IOException {
         _verifyValueWrite("write numeric value");
         _writer.writeFloat(value);
     }
 
     @Override
-    public void writeNumber(float value) throws IOException, JsonGenerationException {
+    public void writeNumber(float value) throws IOException {
         _verifyValueWrite("write numeric value");
         _writer.writeFloat((double) value);
     }
 
     @Override
-    public void writeNumber(BigDecimal value) throws IOException, JsonGenerationException {
+    public void writeNumber(BigDecimal value) throws IOException {
         if (value == null) {
             writeNull();
         } else {
@@ -264,12 +262,12 @@ public class IonGenerator
     }
 
     @Override
-    public void writeNumber(String value) throws IOException, JsonGenerationException, UnsupportedOperationException {
+    public void writeNumber(String value) throws IOException, UnsupportedOperationException {
         // will lose its identity... fine
         writeString(value);
     }
 
-    public void writeSymbol(String value) throws JsonGenerationException, IOException {
+    public void writeSymbol(String value) throws IOException {
         _verifyValueWrite("write symbol value");
         _writer.writeSymbol(value);
     }
@@ -290,112 +288,113 @@ public class IonGenerator
 
     // // // Ion Extensions
 
-    public void writeDate(Calendar value) throws JsonGenerationException, IOException {
+    public void writeDate(Calendar value) throws IOException {
         _verifyValueWrite("write date value");
         _writer.writeTimestamp(Timestamp.forCalendar(value));
     }
+
     /*
-     *****************************************************************
-     * JsonGenerator implementation: write textual values
-     *****************************************************************
+    /**********************************************************************
+    /* JsonGenerator implementation: write textual values
+    /**********************************************************************
       */
 
     @Override
-    public void writeString(String value) throws IOException, JsonGenerationException {
+    public void writeString(String value) throws IOException {
         _verifyValueWrite("write text value");
         _writer.writeString(value);
     }
 
     @Override
-    public void writeString(char[] buffer, int offset, int length) throws IOException, JsonGenerationException {
+    public void writeString(char[] buffer, int offset, int length) throws IOException {
         // Ion doesn't have matching optimized method, so:
         writeString(new String(buffer, offset, length));
     }
 
     @Override
-    public void writeUTF8String(byte[] buffer, int offset, int length) throws IOException, JsonGenerationException {
+    public void writeUTF8String(byte[] buffer, int offset, int length) throws IOException {
         // Ion doesn't have matching optimized method, so:
         writeString(new String(buffer, offset, length, "UTF-8"));
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: write raw JSON; N/A for Ion
-     *****************************************************************
+    /**********************************************************************
+    /* JsonGenerator implementation: write raw JSON; N/A for Ion
+    /**********************************************************************
      */
 
     @Override
-    public void writeRaw(String value) throws IOException, JsonGenerationException {
+    public void writeRaw(String value) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRaw(char value) throws IOException, JsonGenerationException {
+    public void writeRaw(char value) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRaw(String value, int arg1, int arg2) throws IOException, JsonGenerationException {
+    public void writeRaw(String value, int arg1, int arg2) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRaw(char[] value, int arg1, int arg2) throws IOException, JsonGenerationException {
+    public void writeRaw(char[] value, int arg1, int arg2) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRawValue(String value) throws IOException, JsonGenerationException {
+    public void writeRawValue(String value) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRawValue(String value, int arg1, int arg2) throws IOException, JsonGenerationException {
+    public void writeRawValue(String value, int arg1, int arg2) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRawValue(char[] value, int arg1, int arg2) throws IOException, JsonGenerationException {
+    public void writeRawValue(char[] value, int arg1, int arg2) throws IOException {
         _reportNoRaw();
     }
 
     @Override
-    public void writeRawUTF8String(byte[] text, int offset, int length) throws IOException, JsonGenerationException {
+    public void writeRawUTF8String(byte[] text, int offset, int length) throws IOException {
         _reportNoRaw();
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: write other types of values
-     *****************************************************************
-      */
+    /**********************************************************************
+    /* JsonGenerator implementation: write other types of values
+    /**********************************************************************
+     */
 
     @Override
-    public void writeBinary(Base64Variant b64v, byte[] data, int offset, int length) throws IOException, JsonGenerationException {
+    public void writeBinary(Base64Variant b64v, byte[] data, int offset, int length) throws IOException {
         _verifyValueWrite("write binary data");
         // no distinct variants for Ion; should produce plain binary
         _writer.writeBlob(data, offset, length);
     }
 
     @Override
-    public void writeBoolean(boolean value) throws IOException, JsonGenerationException {
+    public void writeBoolean(boolean value) throws IOException {
         _verifyValueWrite("write boolean");
         _writer.writeBool(value);
     }
 
     @Override
-    public void writeNull() throws IOException, JsonGenerationException {
+    public void writeNull() throws IOException {
         _verifyValueWrite("write null");
         _writer.writeNull();
     }
 
-    public void writeNull(IonType ionType) throws IOException, JsonGenerationException {
+    public void writeNull(IonType ionType) throws IOException {
         _verifyValueWrite("write null");
         _writer.writeNull(ionType);
     }
 
     @Override
-    public void writeObject(Object pojo) throws IOException, JsonProcessingException
+    public void writeObject(Object pojo) throws IOException
     {
         if (pojo == null) {
             // important: call method that does check value write:
@@ -428,9 +427,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Methods base impl needs
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -439,7 +438,7 @@ public class IonGenerator
     }
 
     @Override
-    protected void _verifyValueWrite(String msg) throws IOException, JsonGenerationException
+    protected void _verifyValueWrite(String msg) throws IOException
     {
         int status = _writeContext.writeValue();
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
@@ -485,13 +484,13 @@ public class IonGenerator
     }
 
     @Override
-    public void writeEndArray() throws IOException, JsonGenerationException {
+    public void writeEndArray() throws IOException {
         _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
 
     @Override
-    public void writeEndObject() throws IOException, JsonGenerationException {
+    public void writeEndObject() throws IOException {
         _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
         _writer.stepOut();
     }
@@ -499,13 +498,13 @@ public class IonGenerator
     /**
      * @since 2.12.2
      */
-    public void writeEndSexp() throws IOException, JsonGenerationException {
+    public void writeEndSexp() throws IOException {
         _writeContext = _writeContext.getParent();
         _writer.stepOut();
     }
 
     @Override
-    public void writeFieldName(String value) throws IOException, JsonGenerationException {
+    public void writeFieldName(String value) throws IOException {
         //This call to _writeContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
         int status = _writeContext.writeFieldName(value);
         if (status == JsonWriteContext.STATUS_EXPECT_VALUE) {
@@ -515,21 +514,21 @@ public class IonGenerator
         _writeFieldName(value);
     }
 
-    protected void _writeFieldName(String value) throws IOException, JsonGenerationException {
+    protected void _writeFieldName(String value) throws IOException {
         //Even though this is a one-liner, putting it into a function "_writeFieldName"
         //to keep this code matching the factoring in Jackson's UTF8JsonGenerator.
         _writer.setFieldName(value);
     }
 
     @Override
-    public void writeStartArray() throws IOException, JsonGenerationException {
+    public void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.LIST);
     }
 
     @Override
-    public void writeStartObject() throws IOException, JsonGenerationException {
+    public void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.STRUCT);
@@ -538,16 +537,16 @@ public class IonGenerator
     /**
      * @since 2.12.2
      */
-    public void writeStartSexp() throws IOException, JsonGenerationException {
+    public void writeStartSexp() throws IOException {
         _verifyValueWrite("start a sexp");
         _writeContext = ((IonWriteContext) _writeContext).createChildSexpContext();
         _writer.stepIn(IonType.SEXP);
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Support for type ids
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -569,9 +568,9 @@ public class IonGenerator
     // public WritableTypeId writeTypeSuffix(WritableTypeId typeIdDef) throws IOException
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Standard methods
-    *****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -580,9 +579,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Internal helper methods
-    /*****************************************************************
+    /**********************************************************************
      */
 
     protected void _reportNoRaw() throws IOException {
