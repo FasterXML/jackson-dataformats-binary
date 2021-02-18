@@ -25,9 +25,12 @@ import com.fasterxml.jackson.core.io.UTF8Writer;
  * This is simply a wrapper around the {@link UTF8Writer} to prevent it from throwing 
  * an NPE after closing. It would be easier to subclass it, but {@link UTF8Writer} is 
  * final, so we have to use delegation.
+ *
+ * @deprecated Since 2.13 should not be needed any more
  */
-public class CloseSafeUTF8Writer extends Writer {
-
+@Deprecated
+public class CloseSafeUTF8Writer extends Writer
+{
     UTF8Writer wrapped;
     boolean closed = false;
     Object closedLatch = new Object();

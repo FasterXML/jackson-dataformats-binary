@@ -31,8 +31,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.UTF8Writer;
 import com.fasterxml.jackson.core.util.TextBuffer;
-import com.fasterxml.jackson.dataformat.ion.util.CloseSafeUTF8Writer;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
@@ -457,13 +457,11 @@ public class IonFactory extends JsonFactory {
             if (enc != JsonEncoding.UTF8) { // not sure if non-UTF-8 encodings would be legal...
                 throw new IOException("Ion only supports UTF-8 encoding, can not use "+enc);
             }
-            /* In theory Ion package could take some advantage of getting OutputStream.
-             * In practice we seem to be better off using Jackson's efficient buffering
-             * encoder
-             */
+            // In theory Ion package could take some advantage of getting OutputStream.
+            // In practice we seem to be better off using Jackson's efficient buffering encoder
+
             ctxt.setEncoding(enc);
-            // This is bit unfortunate, since out != dst now...
-            Writer w = new CloseSafeUTF8Writer(ctxt, out);
+            Writer w = new UTF8Writer(ctxt, out);
             ion = _system.newTextWriter(w);
             dst = w;
         }
@@ -472,6 +470,7 @@ public class IonFactory extends JsonFactory {
 
     protected IonGenerator _createGenerator(IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
-        return new IonGenerator(_generatorFeatures, _ionGeneratorFeatures, _objectCodec, ion, ionWriterIsManaged, ctxt, dst);
+        return new IonGenerator(_generatorFeatures, _ionGeneratorFeatures, _objectCodec,
+                ion, ionWriterIsManaged, ctxt, dst);
     }
 }
