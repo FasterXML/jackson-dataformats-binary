@@ -14,6 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
@@ -22,9 +26,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
