@@ -14,7 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.amazon.ion.IonSexp;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
@@ -22,10 +25,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public class GenerateSexpTest {
         return bytes;
     }
 
-    private static class SexpObjectContainer {
+    static class SexpObjectContainer {
         private SexpObject sexpField;
 
         SexpObjectContainer(SexpObject sexpField) {
