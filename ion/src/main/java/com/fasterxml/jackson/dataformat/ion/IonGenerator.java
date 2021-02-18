@@ -135,6 +135,8 @@ public class IonGenerator
                         IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
         super(jsonFeatures, codec);
+        //  Overwrite the writecontext with our own implementation
+        _writeContext = IonWriteContext.createRootContext(_writeContext.getDupDetector());
         _formatFeatures = ionFeatures;
         _writer = ion;
         _ionWriterIsManaged = ionWriterIsManaged;
@@ -456,12 +458,20 @@ public class IonGenerator
             case JsonWriteContext.STATUS_OK_AFTER_SPACE:
                 _cfgPrettyPrinter.writeRootValueSeparator(this);
                 break;
+            case IonWriteContext.STATUS_OK_AFTER_SEXP_SEPARATOR:
+                // Special handling of sexp value separators can be added later. Root value
+                // separator will be whitespace which is sufficient to separate sexp values
+                _cfgPrettyPrinter.writeRootValueSeparator(this);
+                break;
             case JsonWriteContext.STATUS_OK_AS_IS:
                 // First entry, but of which context?
                 if (_writeContext.inArray()) {
                     _cfgPrettyPrinter.beforeArrayValues(this);
                 } else if (_writeContext.inObject()) {
                     _cfgPrettyPrinter.beforeObjectEntries(this);
+                } else if(((IonWriteContext) _writeContext).inSexp()) {
+                    // Format sexps like arrays
+                    _cfgPrettyPrinter.beforeArrayValues(this);
                 }
                 break;
             default:
@@ -479,6 +489,14 @@ public class IonGenerator
     @Override
     public void writeEndObject() throws IOException, JsonGenerationException {
         _writeContext = _writeContext.getParent();  // <-- copied from UTF8JsonGenerator
+        _writer.stepOut();
+    }
+
+    /**
+     * @since 2.12.2
+     */
+    public void writeEndSexp() throws IOException, JsonGenerationException {
+        _writeContext = _writeContext.getParent();
         _writer.stepOut();
     }
 
@@ -511,6 +529,15 @@ public class IonGenerator
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
         _writer.stepIn(IonType.STRUCT);
+    }
+
+    /**
+     * @since 2.12.2
+     */
+    public void writeStartSexp() throws IOException, JsonGenerationException {
+        _verifyValueWrite("start a sexp");
+        _writeContext = ((IonWriteContext) _writeContext).createChildSexpContext();
+        _writer.stepIn(IonType.SEXP);
     }
 
     /*
