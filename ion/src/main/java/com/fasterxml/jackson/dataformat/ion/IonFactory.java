@@ -20,14 +20,14 @@ import java.net.URL;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.DecorableTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
-
-import com.fasterxml.jackson.dataformat.ion.util.CloseSafeUTF8Writer;
+import com.fasterxml.jackson.core.io.UTF8Writer;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
+import com.amazon.ion.system.IonTextWriterBuilder;
 
 /**
  * Sub-class of {@link TokenStreamFactory} that will work on Ion content, instead of JSON
@@ -340,14 +340,15 @@ public class IonFactory
     }
 
     @Override
-    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, Writer out)
+    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt, Writer w)
     {
          // First things first: no binary writer for Writers:
         if (_cfgBinaryWriters) {
             throw new UnsupportedOperationException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(writeCtxt, _createContext(out, false),
-                _system.newTextWriter(out), true, out);
+        return _createGenerator(writeCtxt, _createContext(w, false),
+                _createTextualIonWriter(writeCtxt, w),
+                true, w);
     }
 
     @Override
@@ -453,13 +454,24 @@ public class IonFactory
             // In theory Ion package could take some advantage of getting OutputStream.
             // In practice we seem to be better off using Jackson's efficient buffering encoder
             ioCtxt.setEncoding(enc);
-            // This is bit unfortunate, since out != dst now...
-            Writer w = new CloseSafeUTF8Writer(ioCtxt, out);
-            ion = _system.newTextWriter(w);
+            final Writer w = new UTF8Writer(ioCtxt, out);
+            ion = _createTextualIonWriter(writeCtxt, w);
             dst = w;
         }
         // `true` for "ionWriterIsManaged" since we created it:
         return _createGenerator(writeCtxt, ioCtxt, ion, true, dst);
+    }
+
+    protected IonWriter _createTextualIonWriter(ObjectWriteContext writeCtxt,
+            Writer w)
+    {
+        // 18-Feb-2021, tatu: [dataformats-binary#245] pretty-printing.
+        //   note: Cannot really make use of Jackson PP, just rely on Ion default
+        //   (for now?)
+        if (writeCtxt.hasPrettyPrinter()) {
+            return IonTextWriterBuilder.pretty().build(w);
+        }
+        return _system.newTextWriter(w);
     }
 
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,

@@ -1,11 +1,10 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 // For [dataformats-binary#245]: no pretty-printing for textual format
 public class PrettyPrintWriteTest
@@ -19,9 +18,22 @@ public class PrettyPrintWriteTest
     @Test
     public void testBasicPrettyPrintTextual() throws Exception
     {
+        final String EXP = "{\n  x:1,\n  y:2\n}";
+
         IonObjectMapper mapper = IonObjectMapper.builder(IonFactory.forTextualWriters()).build();
-        Assert.assertEquals("{\n  x:1,\n  y:2\n}",
-                mapper.writerWithDefaultPrettyPrinter().writeValueAsString(new Point()));
+        String ion = mapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(new Point());
+        Assert.assertEquals(EXP, ion.trim());
+
+        ion = mapper.writer()
+                .with(SerializationFeature.INDENT_OUTPUT)
+                .writeValueAsString(new Point());
+        Assert.assertEquals(EXP, ion.trim());
+
+        // But also no indentation if not requested
+        ion = mapper.writer()
+                .writeValueAsString(new Point());
+        Assert.assertEquals("{x:1,y:2}", ion.trim());
     }
 
     // and with binary format, should simply be no-op
