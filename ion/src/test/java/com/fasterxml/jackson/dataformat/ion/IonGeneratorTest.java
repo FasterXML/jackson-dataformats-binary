@@ -116,6 +116,10 @@ public class IonGeneratorTest {
         joiGenerator.writeTree(testObjectTree);
         joiGenerator.writeEndObject();
 
+        // to try to trigger [dataformats-binary#248]
+        joiGenerator.close();
+        joiGenerator.close();
+
         final IonStruct struct = (IonStruct) output.get(0);
         assertThat(struct.get(FIELD), is(testObjectIon));
     }
