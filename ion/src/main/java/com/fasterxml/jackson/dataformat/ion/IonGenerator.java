@@ -44,7 +44,7 @@ public class IonGenerator
     /**
      * Enumeration that defines all toggleable features for Ion generators
      */
-    public enum Feature implements FormatFeature // since 2.12
+    public enum Feature implements FormatFeature
     {
         /**
          * Whether to use Ion native Type Id construct for indicating type (true);
@@ -376,6 +376,8 @@ public class IonGenerator
         _writer.addTypeAnnotation(annotation);
     }
 
+    // // // Ion Extensions
+
     public void writeDate(Calendar value) throws JacksonException {
         _verifyValueWrite("write date value");
         try {
@@ -386,9 +388,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* JsonGenerator implementation: write textual values
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -414,9 +416,9 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: write raw JSON; N/A for Ion
-     *****************************************************************
+    /**********************************************************************
+    /* JsonGenerator implementation: write raw JSON; N/A for Ion
+    /**********************************************************************
      */
 
     @Override
@@ -460,9 +462,9 @@ public class IonGenerator
     }
 
     /*
-     *****************************************************************
-     * JsonGenerator implementation: write other types of values
-     *****************************************************************
+    /**********************************************************************
+    /* JsonGenerator implementation: write other types of values
+    /**********************************************************************
       */
 
     @Override
@@ -550,9 +552,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Methods base impl needs
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -683,10 +685,11 @@ public class IonGenerator
             throw _wrapIOFailure(e);
         }
     }
+
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Support for type ids
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -708,9 +711,9 @@ public class IonGenerator
     // public WritableTypeId writeTypeSuffix(WritableTypeId typeIdDef) throws JacksonException
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Standard methods
-    /*****************************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -719,9 +722,9 @@ public class IonGenerator
     }
 
     /*
-    /*****************************************************************
+    /**********************************************************************
     /* Internal helper methods
-    /*****************************************************************
+    /**********************************************************************
      */
 
     protected void _reportNoRaw() throws JacksonException {
