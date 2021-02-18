@@ -286,9 +286,7 @@ public class IonGenerator
         _writer.addTypeAnnotation(annotation);
     }
 
-    /* Ion Exentions
-     *
-     */
+    // // // Ion Extensions
 
     public void writeDate(Calendar value) throws JsonGenerationException, IOException {
         _verifyValueWrite("write date value");
