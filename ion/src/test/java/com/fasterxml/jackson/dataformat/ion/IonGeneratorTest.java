@@ -19,8 +19,12 @@ import java.util.HashMap;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.Before;
+import org.junit.Rule;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import com.amazon.ion.IonDatagram;
@@ -56,6 +60,9 @@ public class IonGeneratorTest {
     private IonDatagram output;
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -111,5 +118,21 @@ public class IonGeneratorTest {
 
         final IonStruct struct = (IonStruct) output.get(0);
         assertThat(struct.get(FIELD), is(testObjectIon));
+    }
+
+    @Test
+    public void testWriteFieldNameFailsInSexp() throws Exception {
+        joiGenerator.writeStartSexp();
+        thrown.expect(StreamWriteException.class);
+        thrown.expectMessage("Can not write a property name, expecting a value");
+        joiGenerator.writeName("foo");
+    }
+
+    @Test
+    public void testWriteStartSexpFailsWithoutWriteFieldName() throws Exception {
+        joiGenerator.writeStartObject();
+        thrown.expect(StreamWriteException.class);
+        thrown.expectMessage("Can not start a sexp, expecting a property name");
+        joiGenerator.writeStartSexp();
     }
 }

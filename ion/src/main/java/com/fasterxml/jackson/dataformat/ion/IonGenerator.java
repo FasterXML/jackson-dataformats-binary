@@ -27,7 +27,6 @@ import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.SimpleStreamWriteContext;
 
 import com.amazon.ion.IonType;
 import com.amazon.ion.IonValue;
@@ -135,7 +134,7 @@ public class IonGenerator
     /**
      * Object that keeps track of the current contextual state of the generator.
      */
-    protected SimpleStreamWriteContext _streamWriteContext;
+    protected IonWriteContext _streamWriteContext;
 
     /*
     /**********************************************************************
@@ -156,7 +155,8 @@ public class IonGenerator
 
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
-        _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
+                //  Overwrite the writecontext with our own implementation
+        _streamWriteContext = IonWriteContext.createRootContext(dups);
     }
 
     @Override
@@ -584,12 +584,20 @@ public class IonGenerator
             case JsonWriteContext.STATUS_OK_AFTER_SPACE:
                 _cfgPrettyPrinter.writeRootValueSeparator(this);
                 break;
+            case IonWriteContext.STATUS_OK_AFTER_SEXP_SEPARATOR:
+                // Special handling of sexp value separators can be added later. Root value
+                // separator will be whitespace which is sufficient to separate sexp values
+                _cfgPrettyPrinter.writeRootValueSeparator(this);
+                break;
             case JsonWriteContext.STATUS_OK_AS_IS:
                 // First entry, but of which context?
                 if (_outputContext.inArray()) {
                     _cfgPrettyPrinter.beforeArrayValues(this);
                 } else if (_outputContext.inObject()) {
                     _cfgPrettyPrinter.beforeObjectEntries(this);
+                } else if(((IonWriteContext) _writeContext).inSexp()) {
+                    // Format sexps like arrays
+                    _cfgPrettyPrinter.beforeArrayValues(this);
                 }
                 break;
             default:
@@ -619,14 +627,26 @@ public class IonGenerator
         }
     }
 
+    /**
+     * @since 2.12.2
+     */
+    public void writeEndSexp() throws JacksonException {
+        _streamWriteContext = _streamWriteContext.getParent();
+        try {
+            _writer.stepOut();
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
+    }
+
     @Override
     public void writeName(String value) throws JacksonException {
-        //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeFieldName(String)
+        //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeName(String)
         if (!_streamWriteContext.writeName(value)) {
             throw _constructWriteException("Can not write a property name, expecting a value");
         }
 
-        _writeFieldName(value);
+        _writeName(value);
     }
 
     @Override
@@ -636,8 +656,8 @@ public class IonGenerator
         writeName(idStr);
     }
 
-    protected void _writeFieldName(String value) throws JacksonException {
-        //Even though this is a one-liner, putting it into a function "_writeFieldName"
+    protected void _writeName(String value) throws JacksonException {
+        //Even though this is a one-liner, putting it into a function "_writeName"
         //to keep this code matching the factoring in Jackson's UTF8JsonGenerator.
         _writer.setFieldName(value);
     }
@@ -681,6 +701,19 @@ public class IonGenerator
         _streamWriteContext = _streamWriteContext.createChildObjectContext(currValue);
         try {
             _writer.stepIn(IonType.STRUCT);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
+    }
+
+    /**
+     * @since 2.12.2
+     */
+    public void writeStartSexp() throws JacksonException {
+        _verifyValueWrite("start a sexp");
+        _streamWriteContext = _streamWriteContext.createChildSexpContext(null);
+        try {
+            _writer.stepIn(IonType.SEXP);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
