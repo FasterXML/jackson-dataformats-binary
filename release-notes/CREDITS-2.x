@@ -146,7 +146,10 @@ Michael Liedtke (mcliedtke@github)
 * Contributed fix for #212: (ion) Optimize `IonParser.getNumberType()` using
   `IonReader.getIntegerSize()`
  (2.12.0)
-
+* Contributed #246: (ion) Add `IonObjectMapper.builderForBinaryWriters()` / `.builderforTextualWriters()`
+  convenience methods
+ (2.12.2)
+ 
 Guillaume Bort (guillaumebort@github)
 
 * Contributed implementation of #222: (cbor) Add `CBORGenerator.Feature.LENIENT_UTF_ENCODING`
