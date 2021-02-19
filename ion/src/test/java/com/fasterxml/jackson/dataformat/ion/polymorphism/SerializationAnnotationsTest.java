@@ -4,7 +4,6 @@ import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.amazon.ion.util.Equivalence;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import org.junit.Assert;
@@ -53,11 +52,9 @@ public class SerializationAnnotationsTest {
 
     @Test
     public void mapper() throws IOException {
-        IonObjectMapper mapper = new IonObjectMapper(
-                IonFactory.builderForTextualWriters()
-                    .disable(IonGenerator.Feature.USE_NATIVE_TYPE_ID)
-                    .build()
-        );
+        IonObjectMapper mapper = IonObjectMapper.builderForTextualWriters()
+                .disable(IonGenerator.Feature.USE_NATIVE_TYPE_ID)
+                .build();
 
         IonValue subclassAsIon = mapper.writeValueAsIonValue(subclass);
         assertEqualIonValues(SUBCLASS_TYPED_AS_PROPERTY, subclassAsIon);
@@ -75,11 +72,9 @@ public class SerializationAnnotationsTest {
 
         assertEqualIonValues(SUBCLASS_TYPED_BY_ANNOTATION, subclassAsIon);
 
-        IonObjectMapper reader = new IonObjectMapper(
-                IonFactory.builderForTextualWriters()
-                    .disable(IonGenerator.Feature.USE_NATIVE_TYPE_ID)
-                    .build()
-        );
+        IonObjectMapper reader = IonObjectMapper.builderForTextualWriters()
+                .disable(IonGenerator.Feature.USE_NATIVE_TYPE_ID)
+                .build();
 
         BaseClass roundTripInstance = reader.readValue(subclassAsIon, BaseClass.class);
 
