@@ -1,4 +1,5 @@
-Project: jackson-datatypes-binaryModules:
+Project: jackson-datatypes-binary
+Modules:
   jackson-dataformat-avro
   jackson-dataformat-cbor
   jackson-dataformat-protobuf
@@ -11,7 +12,7 @@ Project: jackson-datatypes-binaryModules:
 2.11.4 (12-Dec-2020)
 
 #186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
-   exception
+   exception (CVE-2020-28491)
  (reported by Paul A)
 
 2.11.3 (02-Oct-2020)
