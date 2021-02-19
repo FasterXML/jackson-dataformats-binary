@@ -568,9 +568,9 @@ public class IonGenerator
         if (!_streamWriteContext.writeValue()) {
             _reportError("Can not "+msg+", expecting a property name");
         }
-        // 05-Oct-2017, tatu: I don't think pretty-printing is supported... is it?
-        
-/*
+        // 18-Feb-2021, tatu: as per [dataformats-binary#247], this does not work
+        //   (Ion impl must do pretty-printing), so
+        /*
         // Only additional work needed if we are pretty-printing
         if (_cfgPrettyPrinter != null) {
             // If we have a pretty printer, it knows what to do:
