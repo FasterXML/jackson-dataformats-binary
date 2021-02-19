@@ -18,6 +18,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
@@ -25,10 +29,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * End to end test verifying we can serialize sexps
@@ -41,7 +41,7 @@ public class GenerateSexpTest {
     @Before
     public void setup() {
         this.ionSystem = IonSystemBuilder.standard().build();
-        this.mapper = new IonObjectMapper(new IonFactory(null, ionSystem));
+        this.mapper = IonObjectMapper.builder(ionSystem).build();
     }
 
     @Test

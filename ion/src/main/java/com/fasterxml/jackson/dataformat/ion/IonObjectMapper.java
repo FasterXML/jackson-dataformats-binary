@@ -26,8 +26,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import com.amazon.ion.IonDatagram;
 import com.amazon.ion.IonReader;
+import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.IonWriter;
+import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Specialization of {@link ObjectMapper} that will set underlying
@@ -46,8 +48,57 @@ public class IonObjectMapper extends ObjectMapper
      */
     public static class Builder extends MapperBuilder<IonObjectMapper, Builder>
     {
+        protected final IonFactory _streamFactory;
+
         public Builder(IonObjectMapper m) {
             super(m);
+            _streamFactory = m.getFactory();
+        }
+
+        public Builder enable(IonParser.Feature... features) {
+            for (IonParser.Feature feature : features) {
+                _streamFactory.enable(feature);
+            }
+            return this;
+        }
+
+        public Builder disable(IonParser.Feature... features) {
+            for (IonParser.Feature feature : features) {
+                _streamFactory.disable(feature);
+            }
+            return this;
+        }
+
+        public Builder configure(IonParser.Feature feature, boolean state) {
+            if (state) {
+                _streamFactory.enable(feature);
+            } else {
+                _streamFactory.disable(feature);
+            }
+            return this;
+        }
+
+        public Builder enable(IonGenerator.Feature... features) {
+            for (IonGenerator.Feature feature : features) {
+                _streamFactory.enable(feature);
+            }
+            return this;
+        }
+
+        public Builder disable(IonGenerator.Feature... features) {
+            for (IonGenerator.Feature feature : features) {
+                _streamFactory.disable(feature);
+            }
+            return this;
+        }
+
+        public Builder configure(IonGenerator.Feature feature, boolean state) {
+            if (state) {
+                _streamFactory.enable(feature);
+            } else {
+                _streamFactory.disable(feature);
+            }
+            return this;
         }
     }
 
@@ -57,10 +108,17 @@ public class IonObjectMapper extends ObjectMapper
     /**********************************************************************
      */
 
+    /**
+     * Constructor that will construct the mapper with a standard {@link IonFactory}
+     * as codec, using textual writers by default.
+     */
     public IonObjectMapper() {
         this(new IonFactory());
     }
 
+    /**
+     * Constructor that will construct the mapper with a given {@link IonFactory}.
+     */
     public IonObjectMapper(IonFactory f) {
         super(f);
         f.setCodec(this);
@@ -77,8 +135,54 @@ public class IonObjectMapper extends ObjectMapper
         super(src);
     }
 
+    /**
+     * A builder for a mapper that will use textual writers by default. Same as
+     * {@link #builderForTextualWriters()}.
+     */
     public static Builder builder() {
-        return new Builder(new IonObjectMapper());
+        return builderForTextualWriters();
+    }
+
+    /**
+     * A builder for a mapper that will use textual writers by default and the
+     * provided {@link IonSystem}. Same as {@link #builderForTextualWriters(IonSystem)}.
+     */
+    public static Builder builder(IonSystem ionSystem) {
+        return builderForTextualWriters(ionSystem);
+    }
+
+    /**
+     * A builder for a mapper that will use binary writers by default.
+     */
+    public static Builder builderForBinaryWriters() {
+        return builderForBinaryWriters(IonSystemBuilder.standard().build());
+    }
+
+    /**
+     * A builder for a mapper that will use binary writers by default and the
+     * provided {@link IonSystem}
+     */
+    public static Builder builderForBinaryWriters(IonSystem ionSystem) {
+        return builder(IonFactory.builderForBinaryWriters()
+                .ionSystem(ionSystem)
+                .build());
+    }
+
+    /**
+     * A builder for a mapper that will use textual writers by default.
+     */
+    public static Builder builderForTextualWriters() {
+        return builderForTextualWriters(IonSystemBuilder.standard().build());
+    }
+
+    /**
+     * A builder for a mapper that will use textual writers by default and the
+     * provided {@link IonSystem}.
+     */
+    public static Builder builderForTextualWriters(IonSystem ionSystem) {
+        return builder(IonFactory.builderForTextualWriters()
+                .ionSystem(ionSystem)
+                .build());
     }
 
     public static Builder builder(IonFactory streamFactory) {
