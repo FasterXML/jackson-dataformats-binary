@@ -5,9 +5,10 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
-
 import com.fasterxml.jackson.dataformat.smile.PackageVersion;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 /**
  * Specialized {@link ObjectMapper} to use with Smile format backend.
@@ -40,6 +41,60 @@ public class SmileMapper extends ObjectMapper
             return new StateImpl(this);
         }
 
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        public Builder enable(SmileParser.Feature... features) {
+            for (SmileParser.Feature f : features) {
+                _formatReadFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(SmileParser.Feature... features) {
+            for (SmileParser.Feature f : features) {
+                _formatReadFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(SmileParser.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatReadFeatures |= feature.getMask();
+            } else {
+                _formatReadFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
+        public Builder enable(SmileGenerator.Feature... features) {
+            for (SmileGenerator.Feature f : features) {
+                _formatWriteFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(SmileGenerator.Feature... features) {
+            for (SmileGenerator.Feature f : features) {
+                _formatWriteFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(SmileGenerator.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatWriteFeatures |= feature.getMask();
+            } else {
+                _formatWriteFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
         protected static class StateImpl extends MapperBuilderState
             implements java.io.Serializable // important!
         {
@@ -59,9 +114,9 @@ public class SmileMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileMapper() {
@@ -123,9 +178,9 @@ public class SmileMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper class(es)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**

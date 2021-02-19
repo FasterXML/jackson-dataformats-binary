@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.PackageVersion;
 
 /**
@@ -40,6 +41,63 @@ public class CBORMapper extends ObjectMapper
             return new StateImpl(this);
         }
 
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        // 19-Feb-2021, tatu: No parser features for CBOR, yet
+        /*
+        public Builder enable(CBORParser.Feature... features) {
+            for (CBORParser.Feature f : features) {
+                _formatReadFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(CBORParser.Feature... features) {
+            for (CBORParser.Feature f : features) {
+                _formatReadFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(CBORParser.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatReadFeatures |= feature.getMask();
+            } else {
+                _formatReadFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+        */
+
+        public Builder enable(CBORGenerator.Feature... features) {
+            for (CBORGenerator.Feature f : features) {
+                _formatWriteFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(CBORGenerator.Feature... features) {
+            for (CBORGenerator.Feature f : features) {
+                _formatWriteFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(CBORGenerator.Feature feature, boolean state)
+        {
+            if (state) {
+                _formatWriteFeatures |= feature.getMask();
+            } else {
+                _formatWriteFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+        
         protected static class StateImpl extends MapperBuilderState
             implements java.io.Serializable // important!
         {
