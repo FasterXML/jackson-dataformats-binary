@@ -1,4 +1,5 @@
-Project: jackson-datatypes-binaryModules:
+Project: jackson-datatypes-binary
+Modules:
   jackson-dataformat-avro
   jackson-dataformat-cbor
   jackson-dataformat-ion (since 2.9)
@@ -26,7 +27,7 @@ Project: jackson-datatypes-binaryModules:
  (contributed by jhhladky@github)
 #244: (ion) Add support for deserializing IonTimestamps and IonBlobs
  (contributed by jessbrya-amzn@github)
-#246: (ion) Enabling pretty-printing fails Ion serialization
+#247: (ion) Enabling pretty-printing fails Ion serialization
 
 2.12.1 (08-Jan-2021)
 
@@ -51,7 +52,7 @@ Project: jackson-datatypes-binaryModules:
 2.11.4 (12-Dec-2020)
 
 #186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
-   exception
+   exception (CVE-2020-28491)
  (reported by Paul A)
 
 2.11.3 (02-Oct-2020)

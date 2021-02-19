@@ -444,7 +444,7 @@ public class IonGenerator
         if (status == JsonWriteContext.STATUS_EXPECT_NAME) {
             _reportError("Can not "+msg+", expecting field name");
         }
-        // 18-Feb-2021, tatu: as per [dataformats-binary#246], this does not work
+        // 18-Feb-2021, tatu: as per [dataformats-binary#247], this does not work
         //   (Ion impl must do pretty-printing), so
         /*
         // Only additional work needed if we are pretty-printing
