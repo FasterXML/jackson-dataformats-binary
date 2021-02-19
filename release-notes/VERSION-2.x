@@ -27,6 +27,9 @@ Modules:
  (contributed by jhhladky@github)
 #244: (ion) Add support for deserializing IonTimestamps and IonBlobs
  (contributed by jessbrya-amzn@github)
+#246: (ion) Add `IonObjectMapper.builderForBinaryWriters()` / `.builderforTextualWriters()`
+  convenience methods
+ (contributed by Michael L)
 #247: (ion) Enabling pretty-printing fails Ion serialization
 
 2.12.1 (08-Jan-2021)

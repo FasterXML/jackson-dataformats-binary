@@ -80,7 +80,7 @@ public class DataBindWriteTest {
     @Test
     public void testSimpleObjectWriteText() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper(IonFactory.forTextualWriters());
+        IonObjectMapper m = IonObjectMapper.builderForTextualWriters().build();
         // now parse it using IonLoader and compare
         IonDatagram loadedDatagram = ion.newLoader().load(m.writeValueAsString(new MyBean()));
         assertEquals(expectedMyBean, loadedDatagram);
@@ -154,7 +154,7 @@ public class DataBindWriteTest {
 
     private byte[] _writeAsBytes(Object ob) throws IOException
     {
-        IonObjectMapper m = new IonObjectMapper(IonFactory.forBinaryWriters());
+        IonObjectMapper m = IonObjectMapper.builderForBinaryWriters().build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         m.writeValue(out, ob);
         return out.toByteArray();

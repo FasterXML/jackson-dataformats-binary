@@ -55,16 +55,12 @@ public class EnumAsIonSymbolSerializationTest
     }
 
     private static IonObjectMapper newMapper(boolean textual, boolean usingToString) {
-        final IonFactory f = (textual
-                ? IonFactory.builderForTextualWriters()
-                : IonFactory.builderForBinaryWriters()
-                )
-                .ionSystem(ION_SYSTEM)
-                .build();
-        final IonObjectMapper mapper = IonObjectMapper.builder(f)
-                .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, usingToString)
+        IonObjectMapper.Builder builder = textual
+                ? IonObjectMapper.builderForTextualWriters(ION_SYSTEM)
+                : IonObjectMapper.builderForBinaryWriters(ION_SYSTEM);
+
+        return builder.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, usingToString)
                 .addModule(new EnumAsIonSymbolModule())
                 .build();
-        return mapper;
     }
 }
