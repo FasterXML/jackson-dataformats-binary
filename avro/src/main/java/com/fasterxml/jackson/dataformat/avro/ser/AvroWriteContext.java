@@ -32,9 +32,9 @@ public abstract class AvroWriteContext
     private final static Class<?> CLS_GENERIC_ARRAY = GenericData.Array.class;
 
     protected final AvroWriteContext _parent;
-    
+
     protected final AvroGenerator _generator;
-    
+
     protected final Schema _schema;
 
     protected Object _currentValue;
