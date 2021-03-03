@@ -16,7 +16,7 @@ Modules:
 #248: Deprecate `CloseSafeUTF8Writer`, remove use
 - `Ion-java` dep 1.4.0 -> 1.8.0
 
-2.12.2 (not yet released)
+2.12.2 (03-Mar-2021)
 
 #236: (cbor) `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
  (reported by Fabian M)
