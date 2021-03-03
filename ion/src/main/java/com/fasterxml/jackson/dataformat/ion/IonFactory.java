@@ -16,6 +16,7 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Path;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.DecorableTSFactory;
@@ -247,15 +248,20 @@ public class IonFactory
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, File f) {
-        // true, since we create InputStream from File
-        InputStream in;
-        try {
-            in = new FileInputStream(f);
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
-        }
+        final InputStream in = _fileInputStream(f);
         IOContext ioCtxt = _createContext(f, true);
-        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
+        return _createParser(readCtxt, ioCtxt,
+                _decorate(ioCtxt, in));
+    }
+
+    @Override
+    public JsonParser createParser(ObjectReadContext readCtxt,
+            Path p) throws JacksonException
+    {
+        final InputStream in = _pathInputStream(p);
+        IOContext ioCtxt = _createContext(p, true);
+        return _createParser(readCtxt, ioCtxt,
+                _decorate(ioCtxt, in));
     }
 
     @Override
@@ -263,13 +269,15 @@ public class IonFactory
         // true, since we create InputStream from URL
         InputStream in = _optimizedStreamFromURL(url);
         IOContext ioCtxt = _createContext(url, true);
-        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
+        return _createParser(readCtxt, ioCtxt,
+                _decorate(ioCtxt, in));
     }
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, InputStream in) {
         IOContext ioCtxt = _createContext(in, false);
-        return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, in));
+        return _createParser(readCtxt, ioCtxt,
+                _decorate(ioCtxt, in));
     }
 
     @Override
@@ -355,12 +363,17 @@ public class IonFactory
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
             File f, JsonEncoding enc)
     {
-        try {
-            return _createGenerator(writeCtxt,
-                    new FileOutputStream(f), enc, true);
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
-        }
+        final OutputStream out = _fileOutputStream(f);
+        return _createGenerator(writeCtxt, out, enc, true);
+    }
+
+    @Override
+    public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
+            Path p, JsonEncoding enc)
+        throws JacksonException
+    {
+        final OutputStream out = _pathOutputStream(p);
+        return _createGenerator(writeCtxt, out, enc, true);
     }
 
     /*

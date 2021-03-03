@@ -23,7 +23,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.Before;
 import org.junit.Rule;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.JsonNode;
 
