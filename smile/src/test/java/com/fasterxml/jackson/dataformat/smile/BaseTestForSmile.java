@@ -265,11 +265,36 @@ public abstract class BaseTestForSmile
     /**********************************************************
      */
 
+    protected static String aposToQuotes(String str) {
+        return a2q(str);
+    }
+
+    protected static String a2q(String str) {
+        return str.replace("'", "\"");
+    }
+
     public String quote(String str) {
+        return q(str);
+    }
+
+    public String q(String str) {
         return '"'+str+'"';
     }
 
-    protected static String aposToQuotes(String str) {
-        return str.replace("'", "\"");
+    protected static byte[] concat(byte[] ... chunks)
+    {
+        int len = 0;
+        for (byte[] chunk : chunks) {
+            len += chunk.length;
+        }
+        ByteArrayOutputStream bout = new ByteArrayOutputStream(len);
+        for (byte[] chunk : chunks) {
+            try {
+                bout.write(chunk);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return bout.toByteArray();
     }
 }

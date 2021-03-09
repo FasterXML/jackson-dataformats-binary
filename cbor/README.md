@@ -1,9 +1,14 @@
 ## Overview
 
-[Jackson](../../../../jackson) (Java) data format module that supports reading and writing 
+[Jackson](../../../../jackson) (Java) data format module that supports reading and writing
 [CBOR](https://www.rfc-editor.org/info/rfc7049)
 ("Concise Binary Object Representation") encoded data.
 Module extends standard Jackson streaming API (`JsonFactory`, `JsonParser`, `JsonGenerator`), and as such works seamlessly with all the higher level data abstractions (data binding, tree model, and pluggable extensions).
+
+It also supports:
+
+* CBOR Sequences ([RFC-8742](https://www.rfc-editor.org/rfc/rfc8742.html)) (root-level value sequences)
+    * uses standard Jackson databind `MappingIterator` and `SequenceWriter` abstractions
 
 ## Status
 
@@ -27,7 +32,11 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-cbor</artifactId>
+<<<<<<< HEAD
   <version>2.11.1</version>
+=======
+  <version>2.12.2</version>
+>>>>>>> 2.13
 </dependency>
 ```
 
@@ -35,11 +44,11 @@ To use this extension on Maven-based projects, use following dependency:
 
 ## Usage
 
-Basic usage is by using `CborFactory` in places where you would usually use `JsonFactory`:
+Basic usage is by using `CBORFactory` in places where you would usually use `JsonFactory`
+(or `CBORFactory` instead `JsonMapper`/`ObjectMapper`)
 
 ```java
-CBORFactory f = new CBORFactory();
-ObjectMapper mapper = new ObjectMapper(f);
+ObjectMapper mapper = new CBORMapper();
 // and then read/write data as usual
 SomeType value = ...;
 byte[] cborData = mapper.writeValueAsBytes(value);
@@ -50,6 +59,7 @@ Implementation allows use of any of 3 main operating modes:
 
 * Streaming API (`CBORParser` and `CBORGenerator`)
 * Databinding (via `ObjectMapper` / `ObjectReader` / `ObjectWriter`)
+    * Use subtype `CBORMapper`
 * Tree Model (using `TreeNode`, or its concrete subtype, `JsonNode` -- not JSON-specific despite the name)
 
 and all the usual data-binding use cases exactly like when using `JSON` or `Smile` (2 canonical 100% supported Jackson data formats).
