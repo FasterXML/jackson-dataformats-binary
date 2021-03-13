@@ -1046,25 +1046,30 @@ public class SmileParser extends SmileParserBase
         throws JacksonException
     {
         String name;
-        final int qlen = (len + 3) >> 2;
-        switch (qlen) {
-        case 1:
-            name = _symbols.findName(_quad1);
-            break;
-        case 2:
-            name = _symbols.findName(_quad1, _quad2);
-            break;
-        case 3:
-            name = _symbols.findName(_quad1, _quad2, _quad3);
-            break;
-        default:
-            name = _symbols.findName(_quadBuffer, qlen);
-        }
-        if (name == null) {
-            name = _decodeShortAsciiName(len);
-            name = _addDecodedToSymbols(len, name);
+
+        if (_symbolsCanonical) {
+            final int qlen = (len + 3) >> 2;
+            switch (qlen) {
+            case 1:
+                name = _symbols.findName(_quad1);
+                break;
+            case 2:
+                name = _symbols.findName(_quad1, _quad2);
+                break;
+            case 3:
+                name = _symbols.findName(_quad1, _quad2, _quad3);
+                break;
+            default:
+                name = _symbols.findName(_quadBuffer, qlen);
+            }
+            if (name == null) {
+                name = _decodeShortAsciiName(len);
+                name = _addDecodedToSymbols(len, name);
+            } else {
+                _inputPtr += len;
+            }
         } else {
-            _inputPtr += len;
+            name = _decodeShortAsciiName(len);
         }
         if (_seenNames != null) {
             if (_seenNameCount >= _seenNames.length) {
@@ -1081,22 +1086,27 @@ public class SmileParser extends SmileParserBase
     private int _nextNameUnicodeDecodeAndAdd(PropertyNameMatcher matcher, int lenMarker) throws JacksonException
     {
         String name;
-        switch (lenMarker >> 2) {
-        case 0:
-            name = _symbols.findName(_quad1);
-            break;
-        case 1:
-            name = _symbols.findName(_quad1, _quad2);
-            break;
-        case 2:
-            name = _symbols.findName(_quad1, _quad2, _quad3);
-            break;
-        default:
-            name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
-        }
-        if (name == null) {
+
+        if (_symbolsCanonical) {
+            switch (lenMarker >> 2) {
+            case 0:
+                name = _symbols.findName(_quad1);
+                break;
+            case 1:
+                name = _symbols.findName(_quad1, _quad2);
+                break;
+            case 2:
+                name = _symbols.findName(_quad1, _quad2, _quad3);
+                break;
+            default:
+                name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
+            }
+            if (name == null) {
+                name = _decodeShortUnicodeName(lenMarker);
+                name = _addDecodedToSymbols(lenMarker, name);
+            }
+        } else {
             name = _decodeShortUnicodeName(lenMarker);
-            name = _addDecodedToSymbols(lenMarker, name);
         }
         if (_seenNames != null) {
             if (_seenNameCount >= _seenNames.length) {

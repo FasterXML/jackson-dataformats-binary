@@ -3,8 +3,10 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.lang.reflect.Field;
 import java.util.Random;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
@@ -15,6 +17,19 @@ import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public class SymbolTableTest extends BaseTestForSmile
 {
+    static class Point {
+        public int x, ypsilon37;
+
+        // to give a Unicode name, make Nordic
+        @JsonProperty("F\u00F6\u00F6bar")
+        public int foobar;
+    }
+
+    private final SmileMapper NO_CAN_MAPPER = SmileMapper.builder(SmileFactory.builder()
+            .disable(JsonFactory.Feature.CANONICALIZE_PROPERTY_NAMES)
+            .build())
+            .build();
+
     public void testSimpleDefault() throws Exception
     {
         final SmileMapper vanillaMapper = smileMapper();
@@ -72,6 +87,19 @@ public class SymbolTableTest extends BaseTestForSmile
 
     // [dataformats-binary#252]: should be able to prevent canonicalization
     // Assumption: there is still non-null symbol table, but has "no canonicalization"
+    public void testNoCanonicalizeWithMapper() throws Exception
+    {
+        final byte[] doc = _smileDoc(a2q(
+                "{ 'x':13, 'ypsilon37':-999, 'F\u00F6\u00F6bar':72}"));
+        try (JsonParser p = NO_CAN_MAPPER.createParser(doc)) {
+            Point point = NO_CAN_MAPPER.readValue(p, Point.class);
+            assertEquals(13, point.x);
+            assertEquals(-999, point.ypsilon37);
+            assertEquals(72, point.foobar);
+        }
+    }
+
+    // [dataformats-binary#252]: should be able to prevent canonicalization
     public void testSimpleNoCanonicalize() throws Exception
     {
         final String[] fieldNames = new String[] {
@@ -89,12 +117,8 @@ public class SymbolTableTest extends BaseTestForSmile
             "end", // just simple end marker
         };
         final byte[] doc = _smileDoc(jsonFrom(fieldNames));
-        final SmileMapper mapper = SmileMapper.builder(SmileFactory.builder()
-                .disable(JsonFactory.Feature.CANONICALIZE_PROPERTY_NAMES)
-                .build())
-                .build();
 
-        try (JsonParser p = mapper.createParser(doc)) {
+        try (JsonParser p = NO_CAN_MAPPER.createParser(doc)) {
             ByteQuadsCanonicalizer syms = _findSymbols(p);
             assertFalse(syms.isCanonicalizing()); // added in 2.13
             assertEquals(-1, syms.size());
@@ -120,6 +144,50 @@ public class SymbolTableTest extends BaseTestForSmile
             assertNull(p.nextToken());
 
             assertEquals(-1, syms.size());
+        }
+
+        // But let's also try other accessors: first, nextName()
+        try (JsonParser p = NO_CAN_MAPPER.createParser(doc)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals(fieldNames[0], p.nextName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(0, p.getIntValue());
+
+            // and from thereon...
+            for (int i = 1; i < fieldNames.length; ++i) {
+                assertEquals(fieldNames[i], p.nextName());
+                assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+                assertEquals(i, p.getIntValue());
+            }
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.nextToken());
+
+            assertEquals(-1, _findSymbols(p).size());
+        }
+
+        // and then nextName(match)
+        try (JsonParser p = NO_CAN_MAPPER.createParser(doc)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertTrue(p.nextName(new SerializedString(fieldNames[0])));
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(0, p.getIntValue());
+
+            // and then negative match
+            assertFalse(p.nextName(new SerializedString("bogus")));
+            assertEquals(fieldNames[1], p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(1, p.getIntValue());
+
+            // and from thereon...
+            for (int i = 2; i < fieldNames.length; ++i) {
+                assertEquals(fieldNames[i], p.nextName());
+                assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+                assertEquals(i, p.getIntValue());
+            }
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.nextToken());
+
+            assertEquals(-1, _findSymbols(p).size());
         }
     }
 
