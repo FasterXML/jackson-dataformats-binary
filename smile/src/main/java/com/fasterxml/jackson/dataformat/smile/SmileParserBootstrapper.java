@@ -16,9 +16,9 @@ import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 public class SmileParserBootstrapper
 {
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected final IOContext _context;
@@ -26,9 +26,9 @@ public class SmileParserBootstrapper
     protected final InputStream _in;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Input buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected final byte[] _inputBuffer;
@@ -44,9 +44,9 @@ public class SmileParserBootstrapper
     protected final boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Input location
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -59,9 +59,9 @@ public class SmileParserBootstrapper
     protected int _inputProcessed;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileParserBootstrapper(IOContext ctxt, InputStream in)
@@ -91,7 +91,9 @@ public class SmileParserBootstrapper
             ObjectCodec codec, ByteQuadsCanonicalizer rootByteSymbols)
         throws IOException, JsonParseException
     {
-        ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
+        // 13-Mar-2021, tatu: [dataformats-binary#252] Create canonicalizing OR
+        //    placeholder, depending on settings
+        ByteQuadsCanonicalizer can = rootByteSymbols.makeChildOrPlaceholder(factoryFeatures);
         // We just need a single byte, really, to know if it starts with header
         int end = _inputEnd;
         if ((_inputPtr < end) && (_in != null)) {
@@ -136,9 +138,9 @@ public class SmileParserBootstrapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /*  Encoding detection for data format auto-detection
-    /**********************************************************
+    /**********************************************************************
      */
 
     public static MatchStrength hasSmileFormat(InputAccessor acc) throws IOException

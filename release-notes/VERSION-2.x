@@ -14,6 +14,7 @@ Modules:
 
 #239: Should validate UTF-8 multi-byte validity for short decode path too
 #248: Deprecate `CloseSafeUTF8Writer`, remove use
+#252: Make `SmileFactory` support `JsonFactory.Feature.CANONICALIZE_FIELD_NAMES`
 - `Ion-java` dep 1.4.0 -> 1.8.0
 
 2.12.2 (03-Mar-2021)
