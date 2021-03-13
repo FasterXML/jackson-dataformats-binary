@@ -2196,11 +2196,11 @@ public class SmileParser extends SmileParserBase
             // next 3 bytes define subtype
             switch (tb >> 2) {
             case 0: // long variable length ASCII
-            	_decodeLongAscii();
-            	return;
+                _decodeLongAsciiValue();
+                return;
             case 1: // long variable length Unicode
-            	_decodeLongUnicode();
-            	return;
+                _decodeLongUnicodeValue();
+                return;
             case 2: // binary, 7-bit
                 _binaryValue = _read7BitBinaryWithLength();
                 return;
@@ -2592,7 +2592,7 @@ public class SmileParser extends SmileParserBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _decodeLongAscii() throws JacksonException
+    private final void _decodeLongAsciiValue() throws JacksonException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
@@ -2621,7 +2621,7 @@ public class SmileParser extends SmileParserBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final void _decodeLongUnicode() throws JacksonException
+    private final void _decodeLongUnicodeValue() throws JacksonException
     {
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
