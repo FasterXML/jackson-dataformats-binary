@@ -82,7 +82,7 @@ public class SymbolTableTest extends BaseTestForSmile
             assertEquals(0, syms.size());
         }
     }
-    
+
     // Helper method to dig up symbol table reference for tests, without
     // exposing it to user code
     private ByteQuadsCanonicalizer _findSymbols(JsonParser p) throws Exception
