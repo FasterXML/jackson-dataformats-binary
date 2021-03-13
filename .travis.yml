@@ -14,9 +14,11 @@ branches:
     - "3.0"
 
 # 2020-08-02, tatu: Let's try caching Maven dependencies (but remove if snapshot builds fail)
-cache:
-  directories:
-    - $HOME/.m2
+# 2021-03-13, tatu: This has been an endless source of frustration, with not much speedup
+#    Pox on caches that will add spurious fails due to outdate snapsho deps:
+#cache:
+#  directories:
+#    - $HOME/.m2
 
 # Below this line is configuration for deploying to the Sonatype OSS repo
 # https://knowm.org/configure-travis-ci-to-deploy-snapshots/
