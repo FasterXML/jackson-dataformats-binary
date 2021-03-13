@@ -84,9 +84,6 @@ public class SymbolTableTest extends CBORTestBase
     // Assumption: there is still non-null symbol table, but has "no canonicalization"
     public void testNoCanonicalizeWithMapper() throws Exception
     {
-        if (true) {
-            return;
-        }
         final byte[] doc = cborDoc(a2q("{ 'x':13, 'y':-999}"));
         try (JsonParser p = NO_CAN_MAPPER.createParser(doc)) {
             Point point = NO_CAN_MAPPER.readValue(p, Point.class);
@@ -98,10 +95,6 @@ public class SymbolTableTest extends CBORTestBase
     // [dataformats-binary#252]: should be able to prevent canonicalization
     public void testSimpleNoCanonicalize() throws Exception
     {
-        // !!! TODO: enable
-        if (true) {
-            return;
-        }
         final String[] fieldNames = new String[] {
             // Ascii, various lengths
             "abc", "abcd123", "abcdefghi123940963", "",
