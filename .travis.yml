@@ -12,7 +12,7 @@ jdk:
 branches:
   only:
     - master
-    - "2.12"
+    - "2.13"
 
 # 2020-08-02, tatu: Let's try caching Maven dependencies (but remove if snapshot builds fail)
 cache:
