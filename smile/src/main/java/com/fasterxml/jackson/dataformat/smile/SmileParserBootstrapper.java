@@ -90,7 +90,9 @@ public class SmileParserBootstrapper
             ByteQuadsCanonicalizer rootByteSymbols)
         throws JacksonException
     {
-        ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
+        // 13-Mar-2021, tatu: [dataformats-binary#252] Create canonicalizing OR
+        //    placeholder, depending on settings
+        ByteQuadsCanonicalizer can = rootByteSymbols.makeChildOrPlaceholder(factoryFeatures);
         // We just need a single byte, really, to know if it starts with header
         int end = _inputEnd;
         if ((_inputPtr < end) && (_in != null)) {

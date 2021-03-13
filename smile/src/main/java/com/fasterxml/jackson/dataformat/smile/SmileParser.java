@@ -625,14 +625,8 @@ public class SmileParser extends SmileParserBase
             }
         case 2: // short ASCII
             {
-                int len = 1 + (ch & 0x3f);
-                String name = _findDecodedFromSymbols(len);
-                if (name != null) {
-                    _inputPtr += len;
-                } else {
-                    name = _decodeShortAsciiName(len);
-                    name = _addDecodedToSymbols(len, name);
-                }
+                final int len = 1 + (ch & 0x3f);
+                final String name = _findOrDecodeShortAsciiName(len);
                 if (_seenNames != null) {
                     if (_seenNameCount >= _seenNames.length) {
                         _seenNames = _expandSeenNames(_seenNames);
@@ -658,13 +652,7 @@ public class SmileParser extends SmileParserBase
                     }
                 } else {
                     final int len = ch + 2; // values from 2 to 57...
-                    String name = _findDecodedFromSymbols(len);
-                    if (name != null) {
-                        _inputPtr += len;
-                    } else {
-                        name = _decodeShortUnicodeName(len);
-                        name = _addDecodedToSymbols(len, name);
-                    }
+                    final String name = _findOrDecodeShortUnicodeName(len);
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
                          _seenNames = _expandSeenNames(_seenNames);
@@ -1076,7 +1064,7 @@ public class SmileParser extends SmileParserBase
             name = _decodeShortAsciiName(len);
             name = _addDecodedToSymbols(len, name);
         } else {
-        	_inputPtr += len;
+            _inputPtr += len;
         }
         if (_seenNames != null) {
             if (_seenNameCount >= _seenNames.length) {
@@ -1641,14 +1629,8 @@ public class SmileParser extends SmileParserBase
             return JsonToken.PROPERTY_NAME;
         case 2: // short ASCII
             {
-                int len = 1 + (ch & 0x3f);
-                String name = _findDecodedFromSymbols(len);
-                if (name != null) {
-                    _inputPtr += len;
-                } else {
-                    name = _decodeShortAsciiName(len);
-                    name = _addDecodedToSymbols(len, name);
-                }
+                final int len = 1 + (ch & 0x3f);
+                final String name = _findOrDecodeShortAsciiName(len);
                 if (_seenNames != null) {
                     if (_seenNameCount >= _seenNames.length) {
                         _seenNames = _expandSeenNames(_seenNames);
@@ -1672,16 +1654,10 @@ public class SmileParser extends SmileParserBase
                     }
                 } else {
                     final int len = ch + 2; // values from 2 to 57...
-                    String name = _findDecodedFromSymbols(len);
-                    if (name != null) {
-                        _inputPtr += len;
-                    } else {
-                        name = _decodeShortUnicodeName(len);
-                        name = _addDecodedToSymbols(len, name);
-                    }
+                    final String name = _findOrDecodeShortUnicodeName(len);
                     if (_seenNames != null) {
                         if (_seenNameCount >= _seenNames.length) {
-    	                    _seenNames = _expandSeenNames(_seenNames);
+                            _seenNames = _expandSeenNames(_seenNames);
                         }
                         _seenNames[_seenNameCount++] = name;
                     }
@@ -1694,6 +1670,46 @@ public class SmileParser extends SmileParserBase
         // Other byte values are illegal
         throw _constructReadException("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)
                 +" for expected property name (or END_OBJECT marker)");
+    }
+
+    private String _findOrDecodeShortAsciiName(final int len) throws JacksonException
+    {
+        // First things first: must ensure all in buffer
+        if ((_inputEnd - _inputPtr) < len) {
+            _loadToHaveAtLeast(len);
+        }
+        if (_symbolsCanonical) {
+            String name = _findDecodedFromSymbols(len);
+            if (name != null) {
+                _inputPtr += len;
+            } else {
+                name = _decodeShortAsciiName(len);
+                name = _addDecodedToSymbols(len, name);
+            }
+            return name;
+        }
+        // if not canonicalizing, much simpler:
+        return _decodeShortAsciiName(len);
+    }
+
+    private String _findOrDecodeShortUnicodeName(final int len) throws JacksonException
+    {
+        // First things first: must ensure all in buffer
+        if ((_inputEnd - _inputPtr) < len) {
+            _loadToHaveAtLeast(len);
+        }
+        if (_symbolsCanonical) {
+            String name = _findDecodedFromSymbols(len);
+            if (name != null) {
+                _inputPtr += len;
+            } else {
+                name = _decodeShortUnicodeName(len);
+                name = _addDecodedToSymbols(len, name);
+            }
+            return name;
+        }
+        // if not canonicalizing, much simpler:
+        return _decodeShortUnicodeName(len);
     }
 
     /**
@@ -1786,7 +1802,6 @@ public class SmileParser extends SmileParserBase
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int inPtr = _inputPtr;
-        _inputPtr += len;
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         final byte[] inBuf = _inputBuffer;
         for (int end = inPtr + len; inPtr < end; ) {
@@ -1814,16 +1829,21 @@ public class SmileParser extends SmileParserBase
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
+                    // Update pointer here to point to (more) correct location
+                    _inputPtr = inPtr;
+                    _reportError("Invalid byte 0x"+Integer.toHexString(i)+" in short Unicode text block");
                 }
             }
             outBuf[outPtr++] = (char) i;
         }
+        // let's only update offset here, so error message accurate
+        _inputPtr += len;
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
     // note: slightly edited copy of UTF8StreamParser.addName()
-    private final String _decodeLongUnicodeName(int[] quads, int byteLen, int quadLen)
+    private final String _decodeLongUnicodeName(int[] quads, int byteLen, int quadLen,
+            boolean addToSymbolTable)
         throws JacksonException
     {
         int lastQuadBytes = byteLen & 3;
@@ -1923,7 +1943,10 @@ public class SmileParser extends SmileParserBase
         if (lastQuadBytes > 0) {
             quads[quadLen-1] = lastQuad;
         }
-        return _symbols.addName(baseName, quads, quadLen);
+        if (addToSymbolTable) {
+            return _symbols.addName(baseName, quads, quadLen);
+        }
+        return baseName;
     }
 
     private final void _handleLongFieldName() throws JacksonException
@@ -1986,9 +2009,11 @@ public class SmileParser extends SmileParserBase
             byteLen += bytes;
         }
         // Know this name already?
-        String name = _symbols.findName(_quadBuffer, quads);
+        String name = _symbolsCanonical ? 
+            _symbols.findName(_quadBuffer, quads) : null;
         if (name == null) {
-            name = _decodeLongUnicodeName(_quadBuffer, byteLen, quads);
+            name = _decodeLongUnicodeName(_quadBuffer, byteLen, quads,
+                    _symbolsCanonical);
         }
         if (_seenNames != null) {
            if (_seenNameCount >= _seenNames.length) {
@@ -2001,13 +2026,12 @@ public class SmileParser extends SmileParserBase
 
     /**
      * Helper method for trying to find specified encoded UTF-8 byte sequence
-     * from symbol table; if successful avoids actual decoding to String
+     * from symbol table; if successful avoids actual decoding to String.
+     *<p>
+     * NOTE: caller MUST ensure input buffer has enough content.
      */
     private final String _findDecodedFromSymbols(final int len) throws JacksonException
     {
-        if ((_inputEnd - _inputPtr) < len) {
-            _loadToHaveAtLeast(len);
-        }
         // First: maybe we already have this name decoded?
         if (len < 5) {
             int inPtr = _inputPtr;
@@ -2074,13 +2098,13 @@ public class SmileParser extends SmileParserBase
             _quad3 = q3;
             return _symbols.findName(q1, q2, q3);
         }
-        return _findDecodedLong(len, q1, q2);
+        return _findDecodedFixed12(len, q1, q2);
     }
 
     /**
-     * Method for locating names longer than 8 bytes (in UTF-8)
+     * Method for locating names longer than 12 bytes (in UTF-8)
      */
-    private final String _findDecodedLong(int len, int q1, int q2) throws JacksonException
+    private final String _findDecodedFixed12(int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {

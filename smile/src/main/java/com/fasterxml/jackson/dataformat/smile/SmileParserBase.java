@@ -54,7 +54,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * I/O context for this reader. It handles buffer allocation
      * for the reader.
      */
-    final protected IOContext _ioContext;
+    protected final IOContext _ioContext;
 
     /**
      * Flag that indicates whether parser is closed or not. Gets
@@ -161,7 +161,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**
      * Symbol table that contains field names encountered so far
      */
-    final protected ByteQuadsCanonicalizer _symbols;
+    protected final ByteQuadsCanonicalizer _symbols;
     
     /**
      * Temporary buffer used for name parsing.
@@ -190,6 +190,18 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected String[] _seenStringValues = null;
 
     protected int _seenStringValueCount = -1;
+
+    /**
+     * Marker flag to indicate that standard symbol handling is used
+     * (one with symbol table assisted canonicalization. May be disabled
+     * in which case alternate stream-line, non-canonicalizing handling
+     * is used: usually due to set of symbols
+     * (Object property names) is unbounded and will not benefit from
+     * canonicalization attempts.
+     *
+     * @since 2.13
+     */
+    protected final boolean _symbolsCanonical;
 
     /*
     /**********************************************************************
@@ -225,6 +237,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _formatFeatures = formatFeatures;
         _ioContext = ioCtxt;
         _symbols = sym;
+        _symbolsCanonical = sym.isCanonicalizing();
         DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = SimpleStreamReadContext.createRootContext(dups);
