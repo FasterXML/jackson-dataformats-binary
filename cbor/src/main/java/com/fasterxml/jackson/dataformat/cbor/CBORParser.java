@@ -943,6 +943,9 @@ public class CBORParser extends ParserBase
                 if (lenMarker == 0) {
                     name = "";
                 } else {
+                    if ((_inputEnd - _inputPtr) < lenMarker) {
+                        _loadToHaveAtLeast(lenMarker);
+                    }
                     name = _findDecodedFromSymbols(lenMarker);
                     if (name != null) {
                         _inputPtr += lenMarker;
@@ -2586,6 +2589,9 @@ public class CBORParser extends ParserBase
             if (lenMarker == 0) {
                 name = "";
             } else {
+                if ((_inputEnd - _inputPtr) < lenMarker) {
+                    _loadToHaveAtLeast(lenMarker);
+                }
                 name = _findDecodedFromSymbols(lenMarker);
                 if (name != null) {
                     _inputPtr += lenMarker;
@@ -2739,11 +2745,14 @@ public class CBORParser extends ParserBase
         return name;
     }
 
+    /**
+     * Helper method for trying to find specified encoded UTF-8 byte sequence
+     * from symbol table; if successful avoids actual decoding to String.
+     *<p>
+     * NOTE: caller MUST ensure input buffer has enough content.
+     */
     private final String _findDecodedFromSymbols(final int len) throws JacksonException
     {
-        if ((_inputEnd - _inputPtr) < len) {
-            _loadToHaveAtLeast(len);
-        }
         // First: maybe we already have this name decoded?
         if (len < 5) {
             int inPtr = _inputPtr;

@@ -85,7 +85,9 @@ public class CBORParserBootstrapper
             ByteQuadsCanonicalizer rootByteSymbols)
         throws JacksonException
     {
-        ByteQuadsCanonicalizer can = rootByteSymbols.makeChild(factoryFeatures);
+        // 13-Mar-2021, tatu: [dataformats-binary#253] Create canonicalizing OR
+        //    placeholder, depending on settings
+        ByteQuadsCanonicalizer can = rootByteSymbols.makeChildOrPlaceholder(factoryFeatures);
         // We just need a single byte to recognize possible "empty" document.
         ensureLoaded(1);
         CBORParser p = new CBORParser(readCtxt, _ioContext,
@@ -95,10 +97,9 @@ public class CBORParserBootstrapper
         if (_inputPtr < _inputEnd) { // only false for empty doc
             ; // anything we should verify? In future, could verify
         } else {
-            /* 13-Jan-2014, tatu: Actually, let's allow empty documents even if
-             *   header signature would otherwise be needed. This is useful for
-             *   JAX-RS provider, empty PUT/POST payloads?
-             */
+            // 13-Jan-2014, tatu: Actually, let's allow empty documents even if
+            //   header signature would otherwise be needed. This is useful for
+            //   JAX-RS provider, empty PUT/POST payloads?
             ;
         }
         return p;
