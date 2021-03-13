@@ -157,6 +157,18 @@ public class CBORParser extends ParserBase
      */
     protected int _quad1, _quad2, _quad3;
 
+    /**
+     * Marker flag to indicate that standard symbol handling is used
+     * (one with symbol table assisted canonicalization. May be disabled
+     * in which case alternate stream-line, non-canonicalizing handling
+     * is used: usually due to set of symbols
+     * (Object property names) is unbounded and will not benefit from
+     * canonicalization attempts.
+     *
+     * @since 2.13
+     */
+    protected final boolean _symbolsCanonical;
+
     /*
     /**********************************************************************
     /* Life-cycle
@@ -171,6 +183,7 @@ public class CBORParser extends ParserBase
     {
         super(readCtxt, ioCtxt, parserFeatures);
         _symbols = sym;
+        _symbolsCanonical = sym.isCanonicalizing();
 
         _inputStream = in;
         _inputBuffer = inputBuffer;
@@ -946,12 +959,16 @@ public class CBORParser extends ParserBase
                     if ((_inputEnd - _inputPtr) < lenMarker) {
                         _loadToHaveAtLeast(lenMarker);
                     }
-                    name = _findDecodedFromSymbols(lenMarker);
-                    if (name != null) {
-                        _inputPtr += lenMarker;
+                    if (_symbolsCanonical) {
+                        name = _findDecodedFromSymbols(lenMarker);
+                        if (name != null) {
+                            _inputPtr += lenMarker;
+                        } else {
+                            name = _decodeContiguousName(lenMarker);
+                            name = _addDecodedToSymbols(lenMarker, name);
+                        }
                     } else {
                         name = _decodeContiguousName(lenMarker);
-                        name = _addDecodedToSymbols(lenMarker, name);
                     }
                 }
             } else {
@@ -2592,12 +2609,16 @@ public class CBORParser extends ParserBase
                 if ((_inputEnd - _inputPtr) < lenMarker) {
                     _loadToHaveAtLeast(lenMarker);
                 }
-                name = _findDecodedFromSymbols(lenMarker);
-                if (name != null) {
-                    _inputPtr += lenMarker;
+                if (_symbolsCanonical) {
+                    name = _findDecodedFromSymbols(lenMarker);
+                    if (name != null) {
+                        _inputPtr += lenMarker;
+                    } else {
+                        name = _decodeContiguousName(lenMarker);
+                        name = _addDecodedToSymbols(lenMarker, name);
+                    }
                 } else {
                     name = _decodeContiguousName(lenMarker);
-                    name = _addDecodedToSymbols(lenMarker, name);
                 }
             }
         } else {
@@ -2700,21 +2721,24 @@ public class CBORParser extends ParserBase
             }
             _loadToHaveAtLeast(len);
         }
-        String name = _findDecodedFromSymbols(len);
-        if (name != null) {
-            _inputPtr += len;
-            return name;
+        if (_symbolsCanonical) {
+            String name = _findDecodedFromSymbols(len);
+            if (name != null) {
+                _inputPtr += len;
+                return name;
+            }
+            name = _decodeContiguousName(len);
+            return _addDecodedToSymbols(len, name);
         }
-        name = _decodeContiguousName(len);
-        return _addDecodedToSymbols(len, name);
+        return _decodeContiguousName(len);
     }
-    
+
     private final String _decodeChunkedName() throws JacksonException
     {
         _finishChunkedText();
         return _textBuffer.contentsAsString();
     }
-    
+
     /**
      * Method that handles initial token type recognition for token
      * that has to be either PROPERTY_NAME or END_OBJECT.
