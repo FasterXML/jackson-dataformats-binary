@@ -1,7 +1,8 @@
 package com.fasterxml.jackson.dataformat.smile.fuzz;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import java.math.BigDecimal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
@@ -20,11 +21,9 @@ public class Fuzz32168BigDecimalTest extends BaseTestForSmile
                 (byte) 0xBF, // scale: -32
                 (byte) 0x80 // length: 0 (invalid
         };
-        try {
-            /*JsonNode root =*/ MAPPER.readTree(input);
-            fail("Should not pass");
-        } catch (StreamReadException e) {
-            verifyException(e, "Invalid encoding of `BigDecimal` value: length 0");
-        }
+        JsonNode root = MAPPER.readTree(input);
+        assertTrue(root.isNumber());
+        assertTrue(root.isBigDecimal());
+        assertEquals(BigDecimal.ZERO, root.decimalValue());
     }
 }
