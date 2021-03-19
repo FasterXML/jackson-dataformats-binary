@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.CharTypes;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.core.json.DupDetector;
 
 /**
@@ -166,9 +167,14 @@ public final class CBORReadContext
      *   start marker was found
      */
     @Override
-    public JsonLocation getStartLocation(Object srcRef) {
-        // not much we can tell
+    public JsonLocation startLocation(InputSourceReference srcRef) {
         return new JsonLocation(srcRef, 1L, -1, -1);
+    }
+
+    @Override
+    @Deprecated // since 2.13
+    public JsonLocation getStartLocation(Object rawSrc) {
+        return startLocation(InputSourceReference.rawSource(rawSrc));
     }
 
     /*

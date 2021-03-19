@@ -6,6 +6,7 @@ import java.util.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.core.util.BufferRecycler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,7 +38,8 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     @SuppressWarnings("unchecked")
     public void testDeeplyNestedWithAltConstructor() throws Exception
     {
-        IOContext ctxt = new IOContext(new BufferRecycler(), this, true);
+        IOContext ctxt = new IOContext(new BufferRecycler(),
+                InputSourceReference.rawSource("doc"), true);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = new CBORGenerator(ctxt, 0, 0,
                 (ObjectCodec) null, out, new byte[1000], 0, false);

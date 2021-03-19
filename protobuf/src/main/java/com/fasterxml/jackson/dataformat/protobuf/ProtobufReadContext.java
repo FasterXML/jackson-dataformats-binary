@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.CharTypes;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
@@ -189,7 +190,7 @@ public final class ProtobufReadContext
      * @return Location pointing to the point where the context
      *   start marker was found
      */
-    public JsonLocation getStartLocation(Object srcRef, long byteOffset) {
+    public JsonLocation startLocation(InputSourceReference srcRef, long byteOffset) {
         // not much we can tell
         return new JsonLocation(srcRef, byteOffset, -1, -1);
     }

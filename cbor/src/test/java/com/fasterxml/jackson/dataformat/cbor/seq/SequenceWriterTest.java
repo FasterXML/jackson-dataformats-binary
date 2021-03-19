@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.cbor.seq;
 
 import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonReadContext;
@@ -349,7 +350,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;
         // 2.4: used to be: _tokenInputTotal
-        return new JsonLocation(_ioContext.getSourceReference(),
+        return new JsonLocation(_ioContext.sourceReference(),
                 total, // bytes
                 -1, -1, (int) total); // char offset, line, column
     }
@@ -362,7 +363,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final JsonLocation getCurrentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.getSourceReference(),
+        return new JsonLocation(_ioContext.sourceReference(),
                 offset, // bytes
                 -1, -1, (int) offset); // char offset, line, column
     }
@@ -773,7 +774,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             _reportInvalidEOF(String.format(
                     ": expected close marker for %s (start marker at %s)",
                     marker,
-                    _streamReadContext.getStartLocation(_getSourceReference())),
+                    _streamReadContext.startLocation(_sourceReference())),
                     null);
         }
     }
@@ -782,19 +783,19 @@ public abstract class SmileParserBase extends ParserMinimalBase
         JsonReadContext ctxt = getParsingContext();
         _reportError(String.format(
                 "Unexpected close marker '%s': expected '%c' (for %s starting at %s)",
-                (char) actCh, expCh, ctxt.typeDesc(), ctxt.getStartLocation(_getSourceReference())));
+                (char) actCh, expCh, ctxt.typeDesc(), ctxt.startLocation(_sourceReference())));
     }
 
     /**
      * Helper method used to encapsulate logic of including (or not) of
      * "source reference" when constructing {@link JsonLocation} instances.
      *
-     * @since 2.9
+     * @since 2.13
      */
-    protected Object _getSourceReference() {
+    protected InputSourceReference _sourceReference() {
         if (isEnabled(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)) {
-            return _ioContext.getSourceReference();
+            return _ioContext.sourceReference();
         }
-        return null;
+        return InputSourceReference.unknown();
     }
 }

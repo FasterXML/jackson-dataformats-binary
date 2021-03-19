@@ -178,7 +178,7 @@ public class IonGenerator
     public void flush() throws IOException
     {
         if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
-            Object dst = _ioContext.getSourceReference();
+            Object dst = _ioContext.sourceReference().getSource();
             if (dst instanceof Flushable) {
                 ((Flushable) dst).flush();
             }
