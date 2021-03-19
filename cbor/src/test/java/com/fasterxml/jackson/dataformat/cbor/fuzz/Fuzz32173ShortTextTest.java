@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
-import com.fasterxml.jackson.core.io.JsonEOFException;
+import com.fasterxml.jackson.core.exc.UnexpectedEndOfInputException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,7 +19,7 @@ public class Fuzz32173ShortTextTest extends CBORTestBase
         try {
             /*JsonNode root =*/ MAPPER.readTree(input);
             fail("Should not pass, invalid content");
-        } catch (JsonEOFException e) {
+        } catch (UnexpectedEndOfInputException e) {
             verifyException(e, "Unexpected end-of-input in VALUE_STRING");
         }
     }
