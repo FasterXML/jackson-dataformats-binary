@@ -167,7 +167,6 @@ public final class CBORReadContext
      */
     @Override
     public JsonLocation startLocation(InputSourceReference srcRef) {
-        // not much we can tell
         return new JsonLocation(srcRef, 1L, -1, -1);
     }
 

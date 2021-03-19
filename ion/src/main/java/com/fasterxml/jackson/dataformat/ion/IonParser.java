@@ -99,7 +99,7 @@ public class IonParser
     /**
      * Information about context in structure hierarchy
      */
-    protected SimpleStreamReadContext _StreamReadContext;
+    protected SimpleStreamReadContext _streamReadContext;
 
     /**
      * Type of value token we have; used to temporarily hold information
@@ -125,7 +125,7 @@ public class IonParser
         _reader = r;
         _ioContext = ioCtxt;
         // No DupDetector in use (yet?)
-        _StreamReadContext = SimpleStreamReadContext.createRootContext(-1, -1, null);
+        _streamReadContext = SimpleStreamReadContext.createRootContext(-1, -1, null);
         _system = system;
     }
 
@@ -186,7 +186,7 @@ public class IonParser
         if (!_closed) {
             // should only close if manage the resource
             if (_ioContext.isResourceManaged()) {
-                Object src = _ioContext.sourceReference();
+                Object src = _ioContext.sourceReference().getSource();
                 if (src instanceof Closeable) {
                     try {
                         ((Closeable) src).close();
@@ -440,12 +440,12 @@ public class IonParser
 
     @Override
     public String currentName() throws JacksonException {
-        return _StreamReadContext.currentName();
+        return _streamReadContext.currentName();
     }
 
-    @Override public TokenStreamContext streamReadContext() {  return _StreamReadContext; }
-    @Override public void assignCurrentValue(Object v) { _StreamReadContext.assignCurrentValue(v); }
-    @Override public Object currentValue() { return _StreamReadContext.currentValue(); }
+    @Override public TokenStreamContext streamReadContext() {  return _streamReadContext; }
+    @Override public void assignCurrentValue(Object v) { _streamReadContext.assignCurrentValue(v); }
+    @Override public Object currentValue() { return _streamReadContext.currentValue(); }
 
     @Override
     public JsonLocation currentTokenLocation() {
@@ -461,31 +461,31 @@ public class IonParser
         }
         // also, when starting array/object, need to create new context
         if (_currToken == JsonToken.START_OBJECT) {
-            _StreamReadContext = _StreamReadContext.createChildObjectContext(-1, -1);
+            _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
             _reader.stepIn();
         } else if (_currToken == JsonToken.START_ARRAY) {
-            _StreamReadContext = _StreamReadContext.createChildArrayContext(-1, -1);
+            _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
             _reader.stepIn();
         }
 
         // any more tokens in this scope?
         IonType type = _reader.next();
         if (type == null) {
-            if (_StreamReadContext.inRoot()) { // EOF?
+            if (_streamReadContext.inRoot()) { // EOF?
                 close();
                 _currToken = null;
             } else {
-                _StreamReadContext = _StreamReadContext.getParent();
+                _streamReadContext = _streamReadContext.getParent();
                 _currToken = _reader.isInStruct() ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
                 _reader.stepOut();
             }
             return _currToken;
         }
         // Structs have field names; need to keep track:
-        boolean inStruct = !_StreamReadContext.inRoot() && _reader.isInStruct();
+        boolean inStruct = !_streamReadContext.inRoot() && _reader.isInStruct();
         // (isInStruct can return true for the first value read if the reader
         // was created from an IonValue that has a parent container)
-        _StreamReadContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
+        _streamReadContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
         JsonToken t = _tokenFromType(type);
         // and return either field name first
         if (inStruct) {
@@ -587,8 +587,9 @@ public class IonParser
     @Override
     protected void _handleEOF() throws StreamReadException
     {
-        if (!_StreamReadContext.inRoot()) {
-            _reportError(": expected close marker for "+_StreamReadContext.typeDesc()+" (from "+_StreamReadContext.startLocation(_ioContext.sourceReference())+")");
+        if (!_streamReadContext.inRoot()) {
+            _reportError(": expected close marker for "+_streamReadContext.typeDesc()+" (from "
+                    +_streamReadContext.startLocation(_ioContext.sourceReference())+")");
         }
     }
 }

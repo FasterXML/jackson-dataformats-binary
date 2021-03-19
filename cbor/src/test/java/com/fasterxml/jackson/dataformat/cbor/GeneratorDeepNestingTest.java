@@ -13,13 +13,7 @@ import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public class GeneratorDeepNestingTest extends CBORTestBase
 {
-    /*
-    /**********************************************************
-    /* Test methods
-    /**********************************************************
-     */
-
-    final ObjectMapper MAPPER =  CBORMapper.shared();
+    private final ObjectMapper MAPPER =  CBORMapper.shared();
 
     // for [dataformats-binary#62]
     @SuppressWarnings("unchecked")
@@ -39,13 +33,8 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     @SuppressWarnings("unchecked")
     public void testDeeplyNestedWithAltConstructor() throws Exception
     {
-        /*
-ObjectWriteContext writeCtxt, IOContext ctxt,
-            int streamWriteFeatures, int formatFeatures,
-            OutputStream out, byte[] outputBuffer,
-            int offset, boolean bufferRecyclable)         */
         IOContext ctxt = new IOContext(new BufferRecycler(),
-                InputSourceReference.rawSource("bogus"), true);
+                InputSourceReference.rawSource("doc"), true);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = new CBORGenerator(ObjectWriteContext.empty(),
                 ctxt, 0, 0,

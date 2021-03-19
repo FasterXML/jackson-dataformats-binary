@@ -5,6 +5,7 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.InputSourceReference;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertArrayEquals;
