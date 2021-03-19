@@ -24,6 +24,8 @@ Modules:
  (reported by Fabian M)
 #258: (smile) ArrayIndexOutOfBoundsException for malformed Smile header
  (reported by Fabian M)
+#259: (cbor) Failed to handle case of alleged String with length of Integer.MAX_VALUE
+ (reported by Fabian M)
 
 2.12.2 (03-Mar-2021)
 

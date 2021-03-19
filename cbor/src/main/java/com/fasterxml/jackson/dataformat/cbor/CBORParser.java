@@ -650,7 +650,6 @@ public class CBORParser extends ParserMinimalBase
         } else {
             _tagValue = -1;
         }
-        
         switch (type) {
         case 0: // positive int
             _numTypesValid = NR_INT;
@@ -2188,7 +2187,13 @@ public class CBORParser extends ParserMinimalBase
         // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
         //    the longest individual unit is 4 bytes (surrogate pair) so we
         //    actually need len+3 bytes to avoid bounds checks
-        final int needed = len + 3;
+
+        // 19-Mar-2021, tatu: [dataformats-binary#259] shows the case where length
+        //    we get is Integer.MAX_VALUE, leading to overflow. Could change values
+        //    to longs but simpler to truncate "needed" (will never pass following test
+        //    due to inputBuffer never being even close to that big)
+
+        final int needed = Math.max(len + 3, Integer.MAX_VALUE);
         final int available = _inputEnd - _inputPtr;
 
         if ((available >= needed)
