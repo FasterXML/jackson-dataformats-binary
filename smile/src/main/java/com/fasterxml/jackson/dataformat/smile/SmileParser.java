@@ -157,17 +157,19 @@ public class SmileParser extends SmileParserBase
         if (consumeFirstByte) {
             ++_inputPtr;
         }
-        if (_nextByteGuaranteed() != SmileConstants.HEADER_BYTE_2) {
+        byte b = _nextByteGuaranteed();
+        if (b != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
             	_reportError("Malformed content: signature not valid, starts with 0x3a but followed by 0x"
-            			+Integer.toHexString(_inputBuffer[_inputPtr])+", not 0x29");
+                   +Integer.toHexString(b & 0xFF)+", not 0x29");
             }
             return false;
         }
-        if (_nextByteGuaranteed() != SmileConstants.HEADER_BYTE_3) {
+        b = _nextByteGuaranteed();
+        if (b != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
             	_reportError("Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x"
-            			+Integer.toHexString(_inputBuffer[_inputPtr])+", not 0xA");
+                   +Integer.toHexString(b & 0xFF)+", not 0xA");
             }
             return false;
         }
@@ -2123,11 +2125,12 @@ public class SmileParser extends SmileParserBase
     private final void _finishBigInteger() throws IOException
     {
         byte[] raw = _read7BitBinaryWithLength();
+        // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
-            // [dataformats-binary#257]: illegal to have 0-length contents
-            _reportError("Invalid encoding of `BigInteger`: length 0");
+            _numberBigInt = BigInteger.ZERO;
+        } else {
+            _numberBigInt = new BigInteger(raw);
         }
-        _numberBigInt = new BigInteger(raw);
         _numTypesValid = NR_BIGINT;
         _numberType = NumberType.BIG_INTEGER;
     }
@@ -2169,11 +2172,13 @@ public class SmileParser extends SmileParserBase
     {
         int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         byte[] raw = _read7BitBinaryWithLength();
+        // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
-            // [dataformats-binary#257]: illegal to have 0-length contents
-            _reportError("Invalid encoding of `BigDecimal` value: length 0");
+            _numberBigDecimal = BigDecimal.ZERO;
+        } else {
+            BigInteger unscaledValue = new BigInteger(raw);
+            _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }
-        _numberBigDecimal = new BigDecimal(new BigInteger(raw), scale);
         _numTypesValid = NR_BIGDECIMAL;
         _numberType = NumberType.BIG_DECIMAL;
     }
