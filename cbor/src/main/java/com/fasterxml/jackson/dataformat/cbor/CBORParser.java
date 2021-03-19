@@ -2162,9 +2162,9 @@ public class CBORParser extends ParserMinimalBase
         // 19-Mar-2021, tatu: [dataformats-binary#259] shows the case where length
         //    we get is Integer.MAX_VALUE, leading to overflow. Could change values
         //    to longs but simpler to truncate "needed" (will never pass following test
-        //    due to inputBuffer never being even close to that big)
+        //    due to inputBuffer never being even close to that big).
 
-        final int needed = Math.max(len + 3, Integer.MAX_VALUE);
+        final int needed = Math.max(len + 3, len);
         final int available = _inputEnd - _inputPtr;
 
         if ((available >= needed)
