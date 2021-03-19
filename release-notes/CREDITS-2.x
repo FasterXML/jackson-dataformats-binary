@@ -167,6 +167,8 @@ Fabian Meumertzheim (fmeum@github)
  (2.12.2)
 * Reported #257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type
  (2.12.3)
+* Reported #258: (smile) ArrayIndexOutOfBoundsException for malformed Smile header
+ (2.12.3)
 
 (jhhladky@github)
 
