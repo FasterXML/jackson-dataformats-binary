@@ -169,6 +169,9 @@ Fabian Meumertzheim (fmeum@github)
  (2.12.3)
 * Reported #258: (smile) ArrayIndexOutOfBoundsException for malformed Smile header
  (2.12.3)
+* Reported #259: (cbor) Failed to handle case of alleged String with length of
+  Integer.MAX_VALUE
+ (2.12.3)
 
 (jhhladky@github)
 
