@@ -6,6 +6,7 @@ import java.util.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.ObjectWriteContext;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.core.util.BufferRecycler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
@@ -43,7 +44,8 @@ ObjectWriteContext writeCtxt, IOContext ctxt,
             int streamWriteFeatures, int formatFeatures,
             OutputStream out, byte[] outputBuffer,
             int offset, boolean bufferRecyclable)         */
-        IOContext ctxt = new IOContext(new BufferRecycler(), this, true);
+        IOContext ctxt = new IOContext(new BufferRecycler(),
+                InputSourceReference.rawSource("bogus"), true);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = new CBORGenerator(ObjectWriteContext.empty(),
                 ctxt, 0, 0,

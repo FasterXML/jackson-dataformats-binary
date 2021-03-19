@@ -165,6 +165,8 @@ Fabian Meumertzheim (fmeum@github)
 
 * Reported #236: `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
  (2.12.2)
+* Reported #257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type
+ (2.12.3)
 
 (jhhladky@github)
 

@@ -228,7 +228,7 @@ public class IonGenerator
     public void flush()
     {
         if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-            Object dst = _ioContext.getSourceReference();
+            Object dst = _ioContext.sourceReference().getSource();
             if (dst instanceof Flushable) {
                 try {
                     ((Flushable) dst).flush();

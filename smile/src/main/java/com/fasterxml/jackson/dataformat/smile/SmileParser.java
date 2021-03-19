@@ -2445,6 +2445,10 @@ public class SmileParser extends SmileParserBase
     private final void _finishBigInteger() throws JacksonException
     {
         byte[] raw = _read7BitBinaryWithLength();
+        if (raw.length == 0) {
+            // [dataformats-binary#257]: illegal to have 0-length contents
+            _reportError("Invalid encoding of `BigInteger`: length 0");
+        }
         _numberBigInt = new BigInteger(raw);
         _numTypesValid = NR_BIGINT;
         _numberType = NumberType.BIG_INTEGER;
@@ -2487,6 +2491,10 @@ public class SmileParser extends SmileParserBase
     {
         int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         byte[] raw = _read7BitBinaryWithLength();
+        if (raw.length == 0) {
+            // [dataformats-binary#257]: illegal to have 0-length contents
+            _reportError("Invalid encoding of `BigDecimal` value: length 0");
+        }
         _numberBigDecimal = new BigDecimal(new BigInteger(raw), scale);
         _numTypesValid = NR_BIGDECIMAL;
         _numberType = NumberType.BIG_DECIMAL;

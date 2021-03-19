@@ -4,6 +4,7 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -132,7 +133,8 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     public void testGeneratorConstruction() throws Exception
     {
         SmileFactory f = new SmileFactory();
-        IOContext ctxt = new IOContext(f._getBufferRecycler(), "doc", false);
+        IOContext ctxt = new IOContext(f._getBufferRecycler(),
+                InputSourceReference.rawSource("doc"), false);
         OutputStream bytes = new ByteArrayOutputStream();
         byte[] buf = new byte[1000];
         SmileGenerator g = new SmileGenerator(ObjectWriteContext.empty(), ctxt,

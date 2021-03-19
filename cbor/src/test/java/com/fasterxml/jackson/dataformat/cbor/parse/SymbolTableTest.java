@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.TokenStreamFactory;
 import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;

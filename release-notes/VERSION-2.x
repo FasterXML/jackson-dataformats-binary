@@ -18,6 +18,11 @@ Modules:
 #253: (cbor) Make `CBORFactory` support `JsonFactory.Feature.CANONICALIZE_FIELD_NAMES`
 - `Ion-java` dep 1.4.0 -> 1.8.0
 
+2.12.3 (not yet released)
+
+#257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type
+ (reported by Fabian M)
+
 2.12.2 (03-Mar-2021)
 
 #236: (cbor) `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String
