@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**
@@ -79,12 +80,12 @@ public class BiggerDataParseTest extends BaseTestForSmile
     /**********************************************************
      */
 
-	final ObjectMapper JSON_MAPPER = new ObjectMapper();
-	
-	public void testReading() throws Exception
-	{
-		Citm citm0 = JSON_MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
-				Citm.class);
+    private final ObjectMapper JSON_MAPPER = new JsonMapper();
+
+    public void testReading() throws Exception
+    {
+        Citm citm0 = JSON_MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+                Citm.class);
 
 		ObjectMapper smiler = smileMapper(false);
 		byte[] smile = smiler.writeValueAsBytes(citm0);
