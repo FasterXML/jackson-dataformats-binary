@@ -157,17 +157,19 @@ public class SmileParser extends SmileParserBase
         if (consumeFirstByte) {
             ++_inputPtr;
         }
-        if (_nextByteGuaranteed() != SmileConstants.HEADER_BYTE_2) {
+        byte b = _nextByteGuaranteed();
+        if (b != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
             	_reportError("Malformed content: signature not valid, starts with 0x3a but followed by 0x"
-            			+Integer.toHexString(_inputBuffer[_inputPtr])+", not 0x29");
+                   +Integer.toHexString(b & 0xFF)+", not 0x29");
             }
             return false;
         }
-        if (_nextByteGuaranteed() != SmileConstants.HEADER_BYTE_3) {
+        b = _nextByteGuaranteed();
+        if (b != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
             	_reportError("Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x"
-            			+Integer.toHexString(_inputBuffer[_inputPtr])+", not 0xA");
+                   +Integer.toHexString(b & 0xFF)+", not 0xA");
             }
             return false;
         }

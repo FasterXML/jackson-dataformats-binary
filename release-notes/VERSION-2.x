@@ -14,6 +14,8 @@ Modules:
 
 #257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type
  (reported by Fabian M)
+#258: (smile) ArrayIndexOutOfBoundsException for malformed Smile header
+ (reported by Fabian M)
 
 2.12.2 (03-Mar-2021)
 
