@@ -255,4 +255,23 @@ public abstract class BaseTestForSmile
         }
         return bout.toByteArray();
     }
+
+    protected byte[] readResource(String ref)
+    {
+       ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+       final byte[] buf = new byte[4000];
+
+       try (InputStream in = getClass().getResourceAsStream(ref)) {
+           int len;
+           while ((len = in.read(buf)) > 0) {
+               bytes.write(buf, 0, len);
+           }
+       } catch (IOException e) {
+           throw new RuntimeException("Failed to read resource '"+ref+"': "+e);
+       }
+       if (bytes.size() == 0) {
+           throw new IllegalArgumentException("Failed to read resource '"+ref+"': empty resource?");
+       }
+       return bytes.toByteArray();
+    }
 }
