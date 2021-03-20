@@ -21,6 +21,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
 {
     protected final static String[] NO_STRINGS = new String[0];
 
+    // 2.12.3: [dataformats-binary#260] Avoid OOME/DoS for bigger binary;
+    //  read only up to 250k
+    protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
+
     /*
     /**********************************************************************
     /* Config

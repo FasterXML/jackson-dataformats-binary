@@ -10,7 +10,7 @@ public class Fuzz32173LongTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
-    public void testInvalidShortText() throws Exception
+    public void testTruncatedLongText() throws Exception
     {
         final byte[] input = new byte[] {
                 0x7A, // Text value

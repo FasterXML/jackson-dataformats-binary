@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.BYTE_MARKER_END_OF_STRING;
 
@@ -222,7 +223,9 @@ public class SmileParser extends SmileParserBase
     }
 
     protected final void _loadMoreGuaranteed() throws JacksonException {
-        if (!_loadMore()) { _reportInvalidEOF(); }
+        if (!_loadMore()) {
+            _reportInvalidEOF();
+        }
     }
     
     protected final boolean _loadMore() throws JacksonException
@@ -2241,7 +2244,7 @@ public class SmileParser extends SmileParserBase
                 _binaryValue = _read7BitBinaryWithLength();
                 return;
             case 7: // binary, raw
-                _finishRawBinary();
+                _binaryValue = _finishRawBinary();
                 return;
             }
         }
@@ -2749,27 +2752,67 @@ public class SmileParser extends SmileParserBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final void _finishRawBinary() throws JacksonException
+    private final byte[] _finishRawBinary() throws JacksonException
     {
         int byteLen = _readUnsignedVInt();
-        _binaryValue = new byte[byteLen];
+
+        // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
+        //   for very large content
+        if (byteLen > LONGEST_NON_CHUNKED_BINARY) {
+            return _finishLongContiguousBytes(byteLen);
+        }
+
+        final int expLen = byteLen;
+        final byte[] b = new byte[byteLen];
+
         if (_inputPtr >= _inputEnd) {
+            if (!_loadMore()) {
+                _reportIncompleteBinaryRead(expLen, 0);
+            }
             _loadMoreGuaranteed();
         }
         int ptr = 0;
         while (true) {
             int toAdd = Math.min(byteLen, _inputEnd - _inputPtr);
-            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, ptr, toAdd);
+            System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
             _inputPtr += toAdd;
             ptr += toAdd;
             byteLen -= toAdd;
             if (byteLen <= 0) {
-                return;
+                return b;
             }
-            _loadMoreGuaranteed();
+            if (!_loadMore()) {
+                _reportIncompleteBinaryRead(expLen, ptr);
+            }
         }
     }
-    
+
+    // @since 2.12.3
+    protected byte[] _finishLongContiguousBytes(final int expLen) throws JacksonException
+    {
+        int left = expLen;
+
+        // 20-Mar-2021, tatu: Let's NOT use recycled instance since we have much
+        //   longer content and there is likely less benefit of trying to recycle
+        //   segments
+        try (final ByteArrayBuilder bb = new ByteArrayBuilder(LONGEST_NON_CHUNKED_BINARY >> 1)) {
+            while (left > 0) {
+                int avail = _inputEnd - _inputPtr;
+                if (avail <= 0) {
+                    if (!_loadMore()) {
+                        _reportIncompleteBinaryRead(expLen, expLen-left);
+                    }
+                    avail = _inputEnd - _inputPtr;
+                }
+                int count = Math.min(avail, left);
+                bb.write(_inputBuffer, _inputPtr, count);
+                _inputPtr += count;
+                left -= count;
+            }
+            return bb.toByteArray();
+        }
+    }
+
     /*
     /**********************************************************************
     /* Internal methods, skipping
@@ -3036,6 +3079,13 @@ public class SmileParser extends SmileParserBase
 
     protected void _reportInvalidOther(int mask) throws StreamReadException {
         throw _constructReadException("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
+    }
+
+    // @since 2.12.3
+    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws StreamReadException
+    {
+        _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
+                expLen, actLen), _currToken);
     }
 
     /*
