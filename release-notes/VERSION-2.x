@@ -26,6 +26,8 @@ Modules:
  (reported by Fabian M)
 #259: (cbor) Failed to handle case of alleged String with length of Integer.MAX_VALUE
  (reported by Fabian M)
+#261 (cbor) CBORParser need to validate zero-length byte[] for BigInteger 
+ (reported by Fabian M)
 
 2.12.2 (03-Mar-2021)
 

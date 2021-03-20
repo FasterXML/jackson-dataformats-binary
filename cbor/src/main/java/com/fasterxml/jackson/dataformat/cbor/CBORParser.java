@@ -867,11 +867,16 @@ public class CBORParser extends ParserMinimalBase
         // First: get the data
         _finishToken();
 
-        BigInteger nr = new BigInteger(_binaryValue);
-        if (neg) {
-            nr = nr.negate();
+        // [dataformats-binar#261]: handle this special case
+        if (_binaryValue.length == 0) {
+            _numberBigInt = BigInteger.ZERO;
+        } else {
+            BigInteger nr = new BigInteger(_binaryValue);
+            if (neg) {
+                nr = nr.negate();
+            }
+            _numberBigInt = nr;
         }
-        _numberBigInt = nr;
         _numTypesValid = NR_BIGINT;
         _tagValue = -1;
         return (_currToken = JsonToken.VALUE_NUMBER_INT);
