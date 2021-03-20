@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz32173ShortTextTest extends CBORTestBase
+public class Fuzz32173LongTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
@@ -23,5 +23,4 @@ public class Fuzz32173ShortTextTest extends CBORTestBase
             verifyException(e, "Unexpected end-of-input in VALUE_STRING");
         }
     }
-
 }
