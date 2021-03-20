@@ -172,6 +172,8 @@ Fabian Meumertzheim (fmeum@github)
 * Reported #259: (cbor) Failed to handle case of alleged String with length of
   Integer.MAX_VALUE
  (2.12.3)
+* Reported #260: (smile) Allocate byte[] lazily for longer Smile binary data payloads
+ (2.12.3)
 * Reported #261 (cbor) CBORParser need to validate zero-length byte[] for BigInteger
  (2.12.3)
 

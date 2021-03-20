@@ -2558,7 +2558,7 @@ public class CBORParser extends ParserMinimalBase
                 int count = Math.min(avail, left);
                 bb.write(_inputBuffer, _inputPtr, count);
                 _inputPtr += count;
-                left -= count;        
+                left -= count;
             }
             return bb.toByteArray();
         }
