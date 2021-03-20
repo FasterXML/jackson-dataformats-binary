@@ -84,6 +84,10 @@
             <excludes>
               <exclude>com/fasterxml/jackson/**/failing/*.java</exclude>
             </excludes>
+	    <!-- 20-Mar-2021, tatu: limit heap for tests to catch some
+		 of "too big allocation" cases
+	    -->
+            <argLine>-Xmx1024m</argLine>
           </configuration>
 	</plugin>
       </plugins>
