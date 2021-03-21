@@ -438,7 +438,8 @@ public class SmileParser extends SmileParserBase
             }
             _reportError("Unrecognized token byte 0x3A (malformed segment header?");
         }
-        
+        case 0x3B: case 0x3C: case 0x3D: case 0x3E: case 0x3F: // reserved for future use
+
         // MAJOR 2: tiny ASCII
         // MAJOR 3: short ASCII
         // MAJOR 4: tiny Unicode
@@ -461,7 +462,6 @@ public class SmileParser extends SmileParserBase
         case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
         case 0x90: case 0x91: case 0x92: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97:
         case 0x98: case 0x99: case 0x9A: case 0x9B: case 0x9C: case 0x9D: case 0x9E: case 0x9F:
-            // fall through
 
         case 0xA0: case 0xA1: case 0xA2: case 0xA3: case 0xA4: case 0xA5: case 0xA6: case 0xA7:
         case 0xA8: case 0xA9: case 0xAA: case 0xAB: case 0xAC: case 0xAD: case 0xAE: case 0xAF:
