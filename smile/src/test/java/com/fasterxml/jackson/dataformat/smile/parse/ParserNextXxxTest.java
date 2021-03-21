@@ -16,39 +16,43 @@ public class ParserNextXxxTest extends BaseTestForSmile
         _testIsNextTokenName2();
     }
 
-    public void testnextName() throws Exception
+    public void testNextName() throws Exception
     {
         final int TESTROUNDS = 223;
 
         // build the big document to trigger issue
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(2000);
-        JsonGenerator g = _smileGenerator(bytes, true);
-        for (int i = 0; i < TESTROUNDS; ++i) {
-            g.writeStartObject();
-            g.writeNumberProperty("fieldName", 1);
-            g.writeEndObject();
+        try (JsonGenerator g = _smileGenerator(bytes, true)) {
+            for (int i = 0; i < TESTROUNDS; ++i) {
+                g.writeStartObject();
+                g.writeNumberProperty("fieldName", 1);
+                g.writeEndObject();
+            }
         }
-        g.close();
         final byte[] DOC = bytes.toByteArray();
-        
+
         SerializableString fieldName = new SerializedString("fieldName");
-        JsonParser parser = _smileParser(DOC);
-
-        for (int i = 0; i < TESTROUNDS - 1; i++) {
+        try (JsonParser parser = _smileParser(DOC)) {
+            for (int i = 0; i < TESTROUNDS - 1; i++) {
+                assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+                // These will succeed
+                assertTrue(parser.nextName(fieldName));
+                parser.nextLongValue(-1);
+                assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+            }
             assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-
-            // These will succeed
+            // This will fail
             assertTrue(parser.nextName(fieldName));
-
-            parser.nextLongValue(-1);
-            assertEquals(JsonToken.END_OBJECT, parser.nextToken());
         }
-
-        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-
-        // This will fail
-        assertTrue(parser.nextName(fieldName));
-        parser.close();
+        // 20-Mar-2021, tatu: How about negative test too, just in case?
+        try (JsonParser parser = _smileParser(DOC)) {
+            assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+            assertFalse(parser.nextName(new SerializedString("fieldNamX")));
+            assertEquals(JsonToken.PROPERTY_NAME, parser.currentToken());
+            assertEquals("fieldName", parser.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
+            assertToken(JsonToken.END_OBJECT, parser.nextToken());
+        }
     }
 
     public void testIssue38() throws Exception
