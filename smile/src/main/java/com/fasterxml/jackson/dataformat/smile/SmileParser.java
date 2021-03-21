@@ -829,40 +829,41 @@ public class SmileParser extends SmileParserBase
                 }
             case 3: // short Unicode
                 // all valid, except for 0xFF
-                ch &= 0x3F;
-                {
-                    if (ch > 0x37) {
-                        if (ch == 0x3B) {
-                            if (!_streamReadContext.inObject()) {
-                                _reportMismatchedEndMarker('}', ']');
-                            }
-                            _streamReadContext = _streamReadContext.getParent();
-                            _currToken = JsonToken.END_OBJECT;
-                            return null;
-                        }
-                    } else {
-                        final int len = ch + 2; // values from 2 to 57...
-                        final String name = _findOrDecodeShortUnicodeName(len);
-                        if (_seenNames != null) {
-                            if (_seenNameCount >= _seenNames.length) {
-                                _seenNames = _expandSeenNames(_seenNames);
-                            }
-                            _seenNames[_seenNameCount++] = name;
-                        }
-                        _streamReadContext.setCurrentName(name);
-                        _currToken = JsonToken.FIELD_NAME;
-                        return name;
+                if (ch == 0xFB) {
+                    if (!_streamReadContext.inObject()) {
+                        _reportMismatchedEndMarker('}', ']');
                     }
+                    _streamReadContext = _streamReadContext.getParent();
+                    _currToken = JsonToken.END_OBJECT;
+                    return null;
+                }
+                ch &= 0x3F;
+                if (ch <= 0x37) {
+                    final int len = ch + 2; // values from 2 to 57...
+                    final String name = _findOrDecodeShortUnicodeName(len);
+                    if (_seenNames != null) {
+                        if (_seenNameCount >= _seenNames.length) {
+                            _seenNames = _expandSeenNames(_seenNames);
+                        }
+                        _seenNames[_seenNameCount++] = name;
+                    }
+                    _streamReadContext.setCurrentName(name);
+                    _currToken = JsonToken.FIELD_NAME;
+                    return name;
                 }
                 break;
             }
             // Other byte values are illegal
-            _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
-            return null;
+            return _reportUnknownNameToken(_typeAsInt);
         }
         
         // otherwise just fall back to default handling; should occur rarely
         return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+    }
+
+    private String _reportUnknownNameToken(int ch) throws IOException {
+        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected field name (or END_OBJECT marker)");
+        return null;
     }
 
     @Override
