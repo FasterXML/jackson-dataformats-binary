@@ -632,7 +632,7 @@ public class SmileParser extends SmileParserBase
             _tokenOffsetForTotal = _inputPtr;
             _binaryValue = null;
 
-            byte[] nameBytes = str.asQuotedUTF8();
+            final byte[] nameBytes = str.asQuotedUTF8();
             final int byteLen = nameBytes.length;
             // need room for type byte, name bytes, possibly end marker, so:
             if ((_inputPtr + byteLen + 1) < _inputEnd) { // maybe...
@@ -682,7 +682,7 @@ public class SmileParser extends SmileParserBase
                     }
                 case 2: // short ASCII
                     {
-                        int len = 1 + (ch & 0x3f);
+                        final int len = 1 + (ch & 0x3f);
                         if (len == byteLen) {
                             int i = 0;
                             for (; i < len; ++i) {
@@ -707,14 +707,6 @@ public class SmileParser extends SmileParserBase
                     break;
                 case 3: // short Unicode
                     {
-                        if (ch == 0xFB) {
-                            // 20-Mar-2021, tatu: We know we are in Object context was
-                            // checked earlier...
-                            _currToken = JsonToken.END_OBJECT;
-                            _inputPtr = ptr;
-                            _streamReadContext = _streamReadContext.getParent();
-                            return false;
-                        }
                         int len = (ch & 0x3F);
                         if (len <= 0x37) {
                             len += 2; // values from 2 to 57...
@@ -738,6 +730,14 @@ public class SmileParser extends SmileParserBase
                                 _currToken = JsonToken.FIELD_NAME;
                                 return true;
                             }
+                        }
+                        if (len == 0x3B) {
+                            // 20-Mar-2021, tatu: We know we are in Object context was
+                            // checked earlier...
+                            _currToken = JsonToken.END_OBJECT;
+                            _inputPtr = ptr;
+                            _streamReadContext = _streamReadContext.getParent();
+                            return false;
                         }
                     }
                     break;
@@ -824,14 +824,6 @@ public class SmileParser extends SmileParserBase
                     return name;
                 }
             case 3: // short Unicode
-                // all valid, except for 0xFF
-                if (ch == 0xFB) {
-                    // 20-Mar-2021, tatu: We know we are in Object context was
-                    // checked earlier...
-                    _streamReadContext = _streamReadContext.getParent();
-                    _currToken = JsonToken.END_OBJECT;
-                    return null;
-                }
                 ch &= 0x3F;
                 if (ch <= 0x37) {
                     final int len = ch + 2; // values from 2 to 57...
@@ -845,6 +837,13 @@ public class SmileParser extends SmileParserBase
                     _streamReadContext.setCurrentName(name);
                     _currToken = JsonToken.FIELD_NAME;
                     return name;
+                }
+                if (ch == 0x3B) {
+                    // 20-Mar-2021, tatu: We know we are in Object context was
+                    // checked earlier...
+                    _streamReadContext = _streamReadContext.getParent();
+                    _currToken = JsonToken.END_OBJECT;
+                    return null;
                 }
                 break;
             }
