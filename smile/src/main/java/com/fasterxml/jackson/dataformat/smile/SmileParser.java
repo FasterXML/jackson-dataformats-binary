@@ -141,16 +141,18 @@ public class SmileParser extends SmileParserBase
         byte b = _nextByteGuaranteed();
         if (b != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
-            	_reportError("Malformed content: signature not valid, starts with 0x3a but followed by 0x"
-                   +Integer.toHexString(b & 0xFF)+", not 0x29");
+                throw _constructReadException(
+"Malformed content: signature not valid, starts with 0x3a but followed by 0x%s, not 0x29",
+Integer.toHexString(b & 0xFF));
             }
             return false;
         }
         b = _nextByteGuaranteed();
         if (b != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
-            	_reportError("Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x"
-                   +Integer.toHexString(b & 0xFF)+", not 0xA");
+                throw _constructReadException(
+"Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x%s, not 0xA",
+Integer.toHexString(b & 0xFF));
             }
             return false;
         }
@@ -159,7 +161,9 @@ public class SmileParser extends SmileParserBase
         int versionBits = (ch >> 4) & 0x0F;
         // but failure with version number is fatal, can not ignore
         if (versionBits != SmileConstants.HEADER_VERSION_0) {
-            _reportError("Header version number bits (0x"+Integer.toHexString(versionBits)+") indicate unrecognized version; only 0x0 handled by parser");
+            throw _constructReadException(
+"Header version number bits (0x%s) indicate unrecognized version; only 0x0 handled by parser",
+Integer.toHexString(versionBits));
         }
 
         // can avoid tracking names, if explicitly disabled
@@ -265,7 +269,7 @@ public class SmileParser extends SmileParserBase
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            throw _constructReadException("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            throw _constructReadException("Needed to read %s bytes, reached end-of-input", minAvailable);
         }
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
@@ -293,7 +297,8 @@ public class SmileParser extends SmileParserBase
                 if (count == 0) {
                     _reportBadInputStream(toRead);
                 }
-                throw _constructReadException("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructReadException("Needed to read %d bytes, missed %d before end-of-input",
+                        minAvailable, minAvailable);
             }
             _inputEnd += count;
         }
@@ -376,7 +381,7 @@ public class SmileParser extends SmileParserBase
             	return _eofAsNextToken();
             }
         }
-        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        final int ch = _inputBuffer[_inputPtr++] & 0xFF;
         _typeAsInt = ch;
         switch (ch >> 5) {
         case 0: // short shared string value reference
@@ -416,17 +421,16 @@ public class SmileParser extends SmileParserBase
                 }
                 if (typeBits == 0x1A) { // == 0x3A == ':' -> possibly header signature for next chunk?
                     if (handleSignature(false, false)) {
-                        /* Ok, now; end-marker and header both imply doc boundary and a
-                         * 'null token'; but if both are seen, they are collapsed.
-                         * We can check this by looking at current token; if it's null,
-                         * need to get non-null token
-                         */
+                        // Ok, now; end-marker and header both imply doc boundary and a
+                        // 'null token'; but if both are seen, they are collapsed.
+                        // We can check this by looking at current token; if it's null,
+                        // need to get non-null token
                         if (_currToken == null) {
                             return nextToken();
                         }
                         return (_currToken = null);
                     }
-                    _reportError("Unrecognized token byte 0x3A (malformed segment header?");
+                    throw _constructReadException("Unrecognized token byte 0x3A (malformed segment header?");
             	}
             }
             // and everything else is reserved, for now
@@ -479,7 +483,7 @@ public class SmileParser extends SmileParserBase
                 _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
                 return (_currToken = JsonToken.START_OBJECT);
             case 0x1B: // not used in this mode; would be END_OBJECT
-                _reportError("Invalid type marker byte 0xFB in value mode (would be END_OBJECT in key mode)");
+                throw _constructReadException("Invalid type marker byte 0xFB in value mode (would be END_OBJECT in key mode)");
             case 0x1D: // binary, raw
                 _tokenIncomplete = true;
                 return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
@@ -489,8 +493,14 @@ public class SmileParser extends SmileParserBase
             break;
         }
         // If we get this far, type byte is corrupt
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected value token");
-        return null;
+        return _reportUnknownValueTypeToken(ch);
+    }
+
+    // should we change description based on reserved vs illegal? (special cases
+    // of null bytes etc)
+    private JsonToken _reportUnknownValueTypeToken(int ch) throws JacksonException {
+        throw _constructReadException("Invalid type marker byte 0x%s for expected value token",
+                Integer.toHexString(ch & 0xFF));
     }
 
     private final JsonToken _handleSharedString(int index) throws JacksonException
@@ -514,7 +524,7 @@ public class SmileParser extends SmileParserBase
         }
         return (_currToken = JsonToken.VALUE_STRING);
     }
-    
+
     private final void _expandSeenStringValues(String newText)
     {
         String[] oldShared = _seenStringValues;
@@ -672,8 +682,9 @@ public class SmileParser extends SmileParserBase
             break;
         }
         // Other byte values are illegal
-        throw _constructReadException("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)
-            +" for expected property name (or END_OBJECT marker)");
+        throw _constructReadException(
+"Invalid type marker byte 0x%s for expected property name (or END_OBJECT marker)",
+Integer.toHexString(_typeAsInt));
     }
 
     @Override
@@ -768,9 +779,7 @@ public class SmileParser extends SmileParserBase
                         if (len > 0x37) {
                             if (len == 0x3B) {
                                 _currToken = JsonToken.END_OBJECT;
-                                if (!_streamReadContext.inObject()) {
-                                    _reportMismatchedEndMarker('}', ']');
-                                }
+                                // 21-Mar-2021, tatu: We have `inObject()`, checked already
                                 _inputPtr = ptr;
                                 _streamReadContext = _streamReadContext.getParent();
                                 return false;
@@ -897,9 +906,7 @@ public class SmileParser extends SmileParserBase
             ch &= 0x3F;
             if (ch > 0x37) {
                 if (ch == 0x3B) {
-                    if (!_streamReadContext.inObject()) {
-                        _reportMismatchedEndMarker('}', ']');
-                    }
+                    // 21-Mar-2021, tatu: We have `inObject()`, checked already
                     _streamReadContext = _streamReadContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
                     return PropertyNameMatcher.MATCH_END_OBJECT;
@@ -925,8 +932,9 @@ public class SmileParser extends SmileParserBase
             }
         }
         // Other byte values are illegal
-        throw _constructReadException("Invalid type marker byte 0x"
-+Integer.toHexString(_typeAsInt)+" for expected property name (or END_OBJECT marker)");
+        throw _constructReadException(
+"Invalid type marker byte 0x%s for expected property name (or END_OBJECT marker)",
+Integer.toHexString(_typeAsInt));
     }
 
     private final int _nextNameOptimized(PropertyNameMatcher matcher, int len) throws JacksonException
@@ -960,7 +968,7 @@ public class SmileParser extends SmileParserBase
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        
+
         if (len < 9) {
             int q2 = (inBuf[inPtr++] & 0xFF);
             int left = len - 5;
@@ -1158,7 +1166,7 @@ public class SmileParser extends SmileParserBase
             switch (ch >> 5) {
             case 0: // short shared string value reference
                 if (ch != 0) {
-                // _handleSharedString...
+                    // _handleSharedString...
                     --ch;
                     if (ch >= _seenStringValueCount) {
                         _reportInvalidSharedStringValue(ch);
@@ -1170,7 +1178,7 @@ public class SmileParser extends SmileParserBase
                     return text;
                 } else {
                     // important: this is invalid, don't accept
-                    _reportError("Invalid token byte 0x00");
+                    throw _constructReadException("Invalid token byte 0x00");
                 }
 
             case 1: // simple literals, numbers
@@ -1452,7 +1460,8 @@ public class SmileParser extends SmileParserBase
         }
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT) {
             // Todo, maybe: support base64 for text?
-            _reportError("Current token ("+_currToken+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            throw _constructReadException("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary",
+                    _currToken);
         }
         return _binaryValue;
     }
@@ -1474,7 +1483,8 @@ public class SmileParser extends SmileParserBase
     {
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
             // Todo, maybe: support base64 for text?
-            _reportError("Current token ("+_currToken+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            throw _constructReadException(
+"Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
         }
         // Ok, first, unlikely (but legal?) case where someone already requested binary data:
         if (!_tokenIncomplete) {
@@ -1683,8 +1693,8 @@ public class SmileParser extends SmileParserBase
             break;
         }
         // Other byte values are illegal
-        throw _constructReadException("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)
-                +" for expected property name (or END_OBJECT marker)");
+        throw _constructReadException("Invalid type marker byte 0x%s for expected property name (or END_OBJECT marker)",
+                Integer.toHexString(_typeAsInt));
     }
 
     private String _findOrDecodeShortAsciiName(final int len) throws JacksonException
@@ -1846,7 +1856,8 @@ public class SmileParser extends SmileParserBase
                 default: // invalid
                     // Update pointer here to point to (more) correct location
                     _inputPtr = inPtr;
-                    _reportError("Invalid byte 0x"+Integer.toHexString(i)+" in short Unicode text block");
+                    throw _constructReadException("Invalid byte 0x%s in short Unicode text block",
+                            Integer.toHexString(i));
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -1964,7 +1975,7 @@ public class SmileParser extends SmileParserBase
         return baseName;
     }
 
-    private final void _handleLongFieldName() throws JacksonException
+    private final String _handleLongFieldName() throws JacksonException
     {
         // First: gather quads we need, looking for end marker
         final byte[] inBuf = _inputBuffer;
@@ -2037,6 +2048,7 @@ public class SmileParser extends SmileParserBase
            _seenNames[_seenNameCount++] = name;
         }
         _streamReadContext.setCurrentName(name);
+        return name;
     }
 
     /**
@@ -2176,13 +2188,13 @@ public class SmileParser extends SmileParserBase
     protected void _parseNumericValue() throws JacksonException
     {
         if (!_tokenIncomplete) {
-            _reportError("Internal error: number token (%s) decoded, no value set", _currToken);
+            throw _constructReadException("Internal error: number token (%s) decoded, no value set", _currToken);
         }
         _tokenIncomplete = false;
         int tb = _typeAsInt;
 	        // ensure we got a numeric type with value that is lazily parsed
         if ((tb >> 5) != 1) {
-            _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
+            throw _constructReadException("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
         }
         _finishNumberToken(tb);
     }
@@ -2309,7 +2321,7 @@ public class SmileParser extends SmileParserBase
                         // and then we must get negative
                         i = _inputBuffer[ptr++];
                         if (i >= 0) {
-                            _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                            throw _constructReadException("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
                         }
                     }
                 }
@@ -2354,7 +2366,7 @@ public class SmileParser extends SmileParserBase
     	                    }
     	                    i = _inputBuffer[_inputPtr++];
     	                    if (i >= 0) {
-    	                        _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+    	                        throw _constructReadException("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
     	                    }
     	                }
     	            }
@@ -2391,7 +2403,7 @@ public class SmileParser extends SmileParserBase
             }
             l = (l << 7) + value;
         } while (ptr < maxEnd);
-        _reportError("Corrupt input; 64-bit VInt extends beyond 11 data bytes");
+        throw _constructReadException("Corrupt input; 64-bit VInt extends beyond 11 data bytes");
     }
 
     private final void  _finishLongSlow() throws JacksonException
@@ -2634,7 +2646,8 @@ public class SmileParser extends SmileParserBase
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
+                    throw _constructReadException("Invalid byte %s in short Unicode text block",
+                            Integer.toHexString(i));
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -3046,17 +3059,19 @@ public class SmileParser extends SmileParserBase
     protected void _reportInvalidSharedName(int index) throws StreamReadException
     {
         if (_seenNames == null) {
-            _reportError("Encountered shared name reference, even though document header explicitly declared no shared name references are included");
+            throw _constructReadException("Encountered shared name reference, even though document header explicitly declared no shared name references are included");
         }
-        throw _constructReadException("Invalid shared name reference "+index+"; only got "+_seenNameCount+" names in buffer (invalid content)");
+        throw _constructReadException("Invalid shared name reference %d; only got %d names in buffer (invalid content)",
+                index, _seenNameCount);
     }
 
     protected void _reportInvalidSharedStringValue(int index) throws StreamReadException
     {
         if (_seenStringValues == null) {
-            _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
+            throw _constructReadException("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
-        throw _constructReadException("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
+        throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
+                index, _seenStringValueCount);
     }
     
     protected void _reportInvalidChar(int c) throws StreamReadException
@@ -3069,7 +3084,7 @@ public class SmileParser extends SmileParserBase
     }
 	
     protected void _reportInvalidInitial(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
+        throw _constructReadException("Invalid UTF-8 start byte 0x%s", Integer.toHexString(mask));
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
@@ -3078,7 +3093,7 @@ public class SmileParser extends SmileParserBase
     }
 
     protected void _reportInvalidOther(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
+        throw _constructReadException("Invalid UTF-8 middle byte 0x%s", Integer.toHexString(mask));
     }
 
     // @since 2.12.3
