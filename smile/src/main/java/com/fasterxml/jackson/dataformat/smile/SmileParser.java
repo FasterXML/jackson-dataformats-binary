@@ -706,42 +706,38 @@ public class SmileParser extends SmileParserBase
                     }
                     break;
                 case 3: // short Unicode
-                    // all valid, except for 0xFF
                     {
-                        int len = (ch & 0x3F);
-                        if (len > 0x37) {
-                            if (len == 0x3B) {
-                                _currToken = JsonToken.END_OBJECT;
-                                if (!_streamReadContext.inObject()) {
-                                    _reportMismatchedEndMarker('}', ']');
-                                }
-                                _inputPtr = ptr;
-                                _streamReadContext = _streamReadContext.getParent();
-                                return false;
-                            }
-                            // error, but let's not worry about that here
-                            break;
+                        if (ch == 0xFB) {
+                            // 20-Mar-2021, tatu: We know we are in Object context was
+                            // checked earlier...
+                            _currToken = JsonToken.END_OBJECT;
+                            _inputPtr = ptr;
+                            _streamReadContext = _streamReadContext.getParent();
+                            return false;
                         }
-                        len += 2; // values from 2 to 57...
-                        if (len == byteLen) {
-                            int i = 0;
-                            for (; i < len; ++i) {
-                                if (nameBytes[i] != _inputBuffer[ptr+i]) {
-                                    break main_switch;
+                        int len = (ch & 0x3F);
+                        if (len <= 0x37) {
+                            len += 2; // values from 2 to 57...
+                            if (len == byteLen) {
+                                int i = 0;
+                                for (; i < len; ++i) {
+                                    if (nameBytes[i] != _inputBuffer[ptr+i]) {
+                                        break main_switch;
+                                    }
                                 }
+                                // yes, does match...
+                                _inputPtr = ptr + len;
+                                final String name = str.getValue();
+                                if (_seenNames != null) {
+                                   if (_seenNameCount >= _seenNames.length) {
+                                       _seenNames = _expandSeenNames(_seenNames);
+                                   }
+                                   _seenNames[_seenNameCount++] = name;
+                                }
+                                _streamReadContext.setCurrentName(name);
+                                _currToken = JsonToken.FIELD_NAME;
+                                return true;
                             }
-                            // yes, does match...
-                            _inputPtr = ptr + len;
-                            final String name = str.getValue();
-                            if (_seenNames != null) {
-                               if (_seenNameCount >= _seenNames.length) {
-                                   _seenNames = _expandSeenNames(_seenNames);
-                               }
-                               _seenNames[_seenNameCount++] = name;
-                            }
-                            _streamReadContext.setCurrentName(name);
-                            _currToken = JsonToken.FIELD_NAME;
-                            return true;
                         }
                     }
                     break;
@@ -830,9 +826,8 @@ public class SmileParser extends SmileParserBase
             case 3: // short Unicode
                 // all valid, except for 0xFF
                 if (ch == 0xFB) {
-                    if (!_streamReadContext.inObject()) {
-                        _reportMismatchedEndMarker('}', ']');
-                    }
+                    // 20-Mar-2021, tatu: We know we are in Object context was
+                    // checked earlier...
                     _streamReadContext = _streamReadContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
                     return null;
