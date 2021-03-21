@@ -383,7 +383,7 @@ public class SmileParser extends SmileParserBase
             	return _eofAsNextToken();
             }
         }
-        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        final int ch = _inputBuffer[_inputPtr++] & 0xFF;
         _typeAsInt = ch;
         switch (ch >> 5) {
         case 0: // short shared string value reference
@@ -423,11 +423,10 @@ public class SmileParser extends SmileParserBase
                 }
                 if (typeBits == 0x1A) { // == 0x3A == ':' -> possibly header signature for next chunk?
                     if (handleSignature(false, false)) {
-                        /* Ok, now; end-marker and header both imply doc boundary and a
-                         * 'null token'; but if both are seen, they are collapsed.
-                         * We can check this by looking at current token; if it's null,
-                         * need to get non-null token
-                         */
+                        // Ok, now; end-marker and header both imply doc boundary and a
+                        // 'null token'; but if both are seen, they are collapsed.
+                        // We can check this by looking at current token; if it's null,
+                        // need to get non-null token
                         if (_currToken == null) {
                             return nextToken();
                         }
@@ -496,6 +495,12 @@ public class SmileParser extends SmileParserBase
             break;
         }
         // If we get this far, type byte is corrupt
+        return _reportUnknownValueTypeToken(ch);
+    }
+
+    // should we change description based on reserved vs illegal? (special cases
+    // of null bytes etc)
+    private JsonToken _reportUnknownValueTypeToken(int ch) throws IOException {
         _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected value token");
         return null;
     }
@@ -521,7 +526,7 @@ public class SmileParser extends SmileParserBase
         }
         return (_currToken = JsonToken.VALUE_STRING);
     }
-    
+
     private final void _expandSeenStringValues(String newText)
     {
         String[] oldShared = _seenStringValues;
@@ -571,7 +576,7 @@ public class SmileParser extends SmileParserBase
     //public boolean isExpectedStartArrayToken() { return currentToken() == JsonToken.START_ARRAY; }
 
     //public boolean isExpectedStartObjectToken() { return currentToken() == JsonToken.START_OBJECT; }
-    
+
     @Override
     public boolean nextFieldName(SerializableString str) throws IOException
     {
@@ -665,9 +670,7 @@ public class SmileParser extends SmileParserBase
                         if (len > 0x37) {
                             if (len == 0x3B) {
                                 _currToken = JsonToken.END_OBJECT;
-                                if (!_streamReadContext.inObject()) {
-                                    _reportMismatchedEndMarker('}', ']');
-                                }
+                                // 21-Mar-2021, tatu: We have `inObject()`, checked already
                                 _inputPtr = ptr;
                                 _streamReadContext = _streamReadContext.getParent();
                                 return false;
@@ -703,7 +706,7 @@ public class SmileParser extends SmileParserBase
             // wouldn't fit in buffer, just fall back to default processing
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
+        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(currentName());
     }
 
     @Override
@@ -750,9 +753,8 @@ public class SmileParser extends SmileParserBase
                         return name;
                     }
                 case 0x34: // long ASCII/Unicode name
-                    _handleLongFieldName();
                     _currToken = JsonToken.FIELD_NAME;
-                    return getCurrentName();
+                    return _handleLongFieldName();
                 }
                 break;
             case 1: // short shared, can fully process
@@ -786,9 +788,7 @@ public class SmileParser extends SmileParserBase
                 {
                     if (ch > 0x37) {
                         if (ch == 0x3B) {
-                            if (!_streamReadContext.inObject()) {
-                                _reportMismatchedEndMarker('}', ']');
-                            }
+                            // 21-Mar-2021, tatu: We have `inObject()`, checked already
                             _streamReadContext = _streamReadContext.getParent();
                             _currToken = JsonToken.END_OBJECT;
                             return null;
@@ -810,12 +810,18 @@ public class SmileParser extends SmileParserBase
                 break;
             }
             // Other byte values are illegal
-            _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
-            return null;
+            return _reportUnknownNameToken(_typeAsInt);
         }
         
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
+        return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
+    }
+
+    // Should we try to give more information on kind of problem (reserved vs
+    // illegal by definition; suggesting likely problem)
+    private String _reportUnknownNameToken(int ch) throws IOException {
+        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected field name (or END_OBJECT marker)");
+        return null;
     }
 
     @Override
@@ -845,7 +851,7 @@ public class SmileParser extends SmileParserBase
             switch (ch >> 5) {
             case 0: // short shared string value reference
                 if (ch != 0) {
-                // _handleSharedString...
+                    // _handleSharedString...
                     --ch;
                     if (ch >= _seenStringValueCount) {
                         _reportInvalidSharedStringValue(ch);
@@ -1642,7 +1648,7 @@ public class SmileParser extends SmileParserBase
         return baseName;
     }
 
-    private final void _handleLongFieldName() throws IOException
+    private final String _handleLongFieldName() throws IOException
     {
         // First: gather quads we need, looking for end marker
         final byte[] inBuf = _inputBuffer;
@@ -1715,6 +1721,7 @@ public class SmileParser extends SmileParserBase
            _seenNames[_seenNameCount++] = name;
         }
         _streamReadContext.setCurrentName(name);
+        return name;
     }
 
     /**
