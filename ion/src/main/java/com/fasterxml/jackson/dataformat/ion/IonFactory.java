@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.DecorableTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.core.io.UTF8Writer;
 
 import com.amazon.ion.IonReader;
@@ -376,6 +377,26 @@ public class IonFactory
         return _createGenerator(writeCtxt, out, enc, true);
     }
 
+    /*
+    /**********************************************************************
+    /* Factory methods: context objects (since we don't extend textual or
+    /* binary factory)
+    /**********************************************************************
+     */
+
+    @Override
+    protected InputSourceReference _createSourceOrTargetReference(Object contentRef) {
+        return new InputSourceReference(!_cfgBinaryWriters, contentRef);
+    }
+
+    @Override
+    protected InputSourceReference _createSourceOrTargetReference(Object contentRef,
+            int offset, int length)
+    {
+        return new InputSourceReference(!_cfgBinaryWriters,
+                contentRef, offset, length);
+    }
+    
     /*
     /**********************************************************************
     /* Extended API: additional factory methods, accessors
