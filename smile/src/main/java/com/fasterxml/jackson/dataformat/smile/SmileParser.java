@@ -2193,20 +2193,98 @@ public class SmileParser extends SmileParserBase
         _numberType = NumberType.BIG_DECIMAL;
     }
 
-    private final int _readUnsignedVInt() throws IOException
+    protected final int _readUnsignedVInt() throws IOException
+    {
+        // 23-Mar-2021, tatu: Let's optimize a bit here: if we have 5 bytes
+        //   available, can avoid further boundary checks
+        if ((_inputPtr + 5) > _inputEnd) {
+            return _readUnsignedVIntSlow();
+        }
+
+        int ch = _inputBuffer[_inputPtr++];
+        if (ch < 0) {
+            return ch & 0x3F;
+        }
+        int value = ch;
+
+        // 2nd byte
+        ch = _inputBuffer[_inputPtr++];
+        if (ch < 0) {
+            return (value << 6) + (ch & 0x3F);
+        }
+        value = (value << 7) + ch;
+
+        // 3rd byte
+        ch = _inputBuffer[_inputPtr++];
+        if (ch < 0) {
+            return (value << 6) + (ch & 0x3F);
+        }
+        value = (value << 7) + ch;
+
+        // 4th byte
+        ch = _inputBuffer[_inputPtr++];
+        if (ch < 0) {
+            return (value << 6) + (ch & 0x3F);
+        }
+        value = (value << 7) + ch;
+
+        // 5th byte
+        ch = _inputBuffer[_inputPtr++];
+        if ((ch >= 0) // invalid, should end
+                // Must validate no overflow, as well. We can have at most 31 bits
+                // for unsigned int, but with 4 x 7 + 6 == 34 we could have 3 "extra" bits;
+                // at this point we have accumulated 28 bits, so shifting right by 25 should
+                // not leave any 1 bits left:
+                || ((value >>> 25) != 0) // overflow in first byte
+                ) {
+            _reportInvalidUnsignedVInt(value >>> 21, ch);
+        }
+        return (value << 6) + (ch & 0x3F);
+    }
+
+    // @since 2.12.3
+    protected final int _readUnsignedVIntSlow() throws IOException
     {
         int value = 0;
-        while (true) {
+        int count = 0;
+
+        // Read first 4 bytes
+        do {
             if (_inputPtr >= _inputEnd) {
                 _loadMoreGuaranteed();
             }
-            int i = _inputBuffer[_inputPtr++];
-            if (i < 0) { // last byte
-                value = (value << 6) + (i & 0x3F);
+            int ch = _inputBuffer[_inputPtr++];
+            if (ch < 0) { // last byte
+                value = (value << 6) + (ch & 0x3F);
                 return value;
             }
-            value = (value << 7) + i;
+            value = (value << 7) + ch;
+        } while (++count < 4);
+
+        // but if we need fifth, require validation
+        if (_inputPtr >= _inputEnd) {
+            _loadMoreGuaranteed();
         }
+        int ch = _inputBuffer[_inputPtr++];
+        // same validation as in optimized cvase
+        if ((ch >= 0) // invalid, did not end with high-bit set
+                || ((value >>> 25) != 0) // overflow in first byte
+                ) {
+            _reportInvalidUnsignedVInt(value >>> 21, ch);
+        }
+        return (value << 6) + (ch & 0x3F);
+    }
+
+    protected final void _reportInvalidUnsignedVInt(int firstCh, int lastCh) throws IOException
+    {
+        if (lastCh >= 0) {
+            _reportError(
+"Overflow in VInt (current token %s): 5th byte (0x%2X) of 5-byte sequence must have its highest bit set to indicate end",
+currentToken(), lastCh);
+        }
+        _reportError(
+"Overflow in VInt (current token %s): 1st byte (0x%2X) of 5-byte sequence must have its top 4 bits zeroes",
+currentToken(), firstCh);
     }
 
     private final byte[] _read7BitBinaryWithLength() throws IOException
@@ -2771,7 +2849,7 @@ public class SmileParser extends SmileParserBase
     protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws IOException
     {
         _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
-                expLen, actLen), _currToken);
+                expLen, actLen), currentToken());
     }
 
     /*
