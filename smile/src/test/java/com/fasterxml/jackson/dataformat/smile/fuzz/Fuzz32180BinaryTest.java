@@ -8,13 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-// For [dataformats-binary#]
+// For [dataformats-binary#260]
 public class Fuzz32180BinaryTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
-    // Payload:
-    public void testInvalidBinary() throws Exception
+    public void testInvalidRawBinary() throws Exception
     {
         final byte[] input0 = new byte[] {
                 0x3A, 0x29, 0x0A, 0x00, // smile signature
