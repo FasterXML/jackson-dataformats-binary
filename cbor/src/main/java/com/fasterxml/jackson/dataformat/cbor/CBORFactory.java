@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 
 /**
  * Factory used for constructing {@link CBORParser} and {@link CBORGenerator}
@@ -308,19 +309,19 @@ public class CBORFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public CBORParser createParser(File f) throws IOException {
-        IOContext ctxt = _createContext(f, true);
+        IOContext ctxt = _createContext(_createContentReference(f), true);
         return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
     @Override
     public CBORParser createParser(URL url) throws IOException {
-        IOContext ctxt = _createContext(url, true);
+        IOContext ctxt = _createContext(_createContentReference(url), true);
         return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
     }
 
     @Override
     public CBORParser createParser(InputStream in) throws IOException {
-        IOContext ctxt = _createContext(in, false);
+        IOContext ctxt = _createContext(_createContentReference(in), false);
         return _createParser(_decorate(in, ctxt), ctxt);
     }
 
@@ -332,7 +333,7 @@ public class CBORFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public CBORParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
+        IOContext ctxt = _createContext(_createContentReference(data, offset, len), true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
             if (in != null) {
@@ -357,7 +358,7 @@ public class CBORFactory extends JsonFactory
      */
     @Override
     public CBORGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
-        final IOContext ctxt = _createContext(out, false);
+        final IOContext ctxt = _createContext(_createContentReference(out), false);
         return _createCBORGenerator(ctxt,
                 _generatorFeatures, _formatGeneratorFeatures, _objectCodec,
                 _decorate(out, ctxt));
@@ -372,7 +373,7 @@ public class CBORFactory extends JsonFactory
      */
     @Override
     public CBORGenerator createGenerator(OutputStream out) throws IOException {
-        final IOContext ctxt = _createContext(out, false);
+        final IOContext ctxt = _createContext(_createContentReference(out), false);
         return _createCBORGenerator(ctxt,
                 _generatorFeatures, _formatGeneratorFeatures, _objectCodec,
                 _decorate(out, ctxt));
@@ -385,8 +386,8 @@ public class CBORFactory extends JsonFactory
      */
 
     @Override
-    protected IOContext _createContext(Object srcRef, boolean resourceManaged) {
-        return super._createContext(srcRef, resourceManaged);
+    protected IOContext _createContext(InputSourceReference contentRef, boolean resourceManaged) {
+        return super._createContext(contentRef, resourceManaged);
     }
 
     /**

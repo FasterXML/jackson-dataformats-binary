@@ -291,7 +291,8 @@ public class IonFactory extends JsonFactory {
      * @since 2.7
      */
     public IonParser createParser(IonReader in) {
-        return new IonParser(in, _system, _createContext(in, false), getCodec());
+        return new IonParser(in, _system,
+                _createContext(_createContentReference(in), false), getCodec());
     }
 
     /**
@@ -299,7 +300,8 @@ public class IonFactory extends JsonFactory {
      */
     public IonParser createParser(IonValue value) {
         IonReader in = value.getSystem().newReader(value);
-        return new IonParser(in, _system, _createContext(in, true), getCodec());
+        return new IonParser(in, _system,
+                _createContext(_createContentReference(in), true), getCodec());
     }
 
     // NOTE! Suboptimal return type -- but can't change safely before 3.0 as return
@@ -308,7 +310,8 @@ public class IonFactory extends JsonFactory {
      * @since 2.7
      */
     public JsonGenerator createGenerator(IonWriter out) {
-        return _createGenerator(out, false, _createContext(out, false), out);
+        return _createGenerator(out, false,
+                _createContext(_createContentReference(out), false), out);
     }
 
     // actually added in 2.10.5 / 2.11.1 but officially part of 2.12 API
@@ -324,7 +327,7 @@ public class IonFactory extends JsonFactory {
      */
     @Deprecated
     public IonParser createJsonParser(IonReader in) {
-        return new IonParser(in, _system, _createContext(in, false), getCodec());
+        return createParser(in);
     }
 
     /**
@@ -332,8 +335,7 @@ public class IonFactory extends JsonFactory {
      */
     @Deprecated
     public IonParser createJsonParser(IonValue value) {
-        IonReader in = value.getSystem().newReader(value);
-        return new IonParser(in, _system, _createContext(in, true), getCodec());
+        return createParser(value);
     }
 
     /**
@@ -341,7 +343,7 @@ public class IonFactory extends JsonFactory {
      */
     @Deprecated
     public JsonGenerator createJsonGenerator(IonWriter out) {
-        return _createGenerator(out, false, _createContext(out, false), out);
+        return createGenerator(out);
     }
 
     /*
@@ -394,7 +396,8 @@ public class IonFactory extends JsonFactory {
         if (createBinaryWriters()) {
             throw new IOException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(_system.newTextWriter(out), true, _createContext(out, false), out);
+        return _createGenerator(_system.newTextWriter(out), true,
+                _createContext(_createContentReference(out), false), out);
     }
 
     @Override
@@ -405,9 +408,9 @@ public class IonFactory extends JsonFactory {
     }
 
     /*
-    ***************************************************************
-    * Helper methods
-    ***************************************************************
+    /***************************************************************
+    /* Helper methods
+    /***************************************************************
      */
 
     @Deprecated
@@ -445,7 +448,7 @@ public class IonFactory extends JsonFactory {
          throws IOException
      {
         IonWriter ion;
-        IOContext ctxt = _createContext(out, isManaged);
+        IOContext ctxt = _createContext(_createContentReference(out), isManaged);
         Closeable dst; // not necessarily same as 'out'...
 
         // Binary writers are simpler: no alternate encodings
@@ -468,7 +471,8 @@ public class IonFactory extends JsonFactory {
         return _createGenerator(ion, true, ctxt, dst);
     }
 
-    protected IonGenerator _createGenerator(IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
+    protected IonGenerator _createGenerator(IonWriter ion, boolean ionWriterIsManaged,
+            IOContext ctxt, Closeable dst)
     {
         return new IonGenerator(_generatorFeatures, _ionGeneratorFeatures, _objectCodec,
                 ion, ionWriterIsManaged, ctxt, dst);

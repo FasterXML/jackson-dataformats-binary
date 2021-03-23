@@ -335,19 +335,19 @@ public class AvroFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public AvroParser createParser(File f) throws IOException {
-        final IOContext ctxt = _createContext(f, true);
+        final IOContext ctxt = _createContext(_createContentReference(f), true);
         return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
     @Override
     public AvroParser createParser(URL url) throws IOException {
-        final IOContext ctxt = _createContext(url, true);
+        final IOContext ctxt = _createContext(_createContentReference(url), true);
         return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
     }
 
     @Override
     public AvroParser createParser(InputStream in) throws IOException {
-        final IOContext ctxt = _createContext(in, false);
+        final IOContext ctxt = _createContext(_createContentReference(in), false);
         return _createParser(_decorate(in, ctxt), ctxt);
     }
 
@@ -361,7 +361,7 @@ public class AvroFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public AvroParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
+        IOContext ctxt = _createContext(_createContentReference(data, offset, len), true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
             if (in != null) {
@@ -394,7 +394,7 @@ public class AvroFactory extends JsonFactory
     public AvroGenerator createGenerator(OutputStream out) throws IOException
     {
         // false -> we won't manage the stream unless explicitly directed to
-        IOContext ctxt = _createContext(out, false);
+        IOContext ctxt = _createContext(_createContentReference(out), false);
         return _createGenerator(_decorate(out, ctxt), ctxt);
     }
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class ProtobufFactory extends JsonFactory
@@ -150,31 +151,32 @@ public class ProtobufFactory extends JsonFactory
     @SuppressWarnings("resource")
     @Override
     public ProtobufParser createParser(File f) throws IOException {
-        final IOContext ctxt = _createContext(f, true);
+        final IOContext ctxt = _createContext(_createContentReference(f), true);
         return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
     @Override
     public ProtobufParser createParser(URL url) throws IOException {
-        final IOContext ctxt = _createContext(url, true);
+        final IOContext ctxt = _createContext(_createContentReference(url), true);
         return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);
     }
 
     @Override
     public ProtobufParser createParser(InputStream in) throws IOException {
-        final IOContext ctxt = _createContext(in, false);
+        final IOContext ctxt = _createContext(_createContentReference(in), false);
         return _createParser(_decorate(in, ctxt), ctxt);
     }
 
     @Override
     public ProtobufParser createParser(byte[] data) throws IOException {
-        return _createParser(data, 0, data.length, _createContext(data, true));
+        return _createParser(data, 0, data.length,
+                _createContext(_createContentReference(data), true));
     }
 
     @SuppressWarnings("resource")
     @Override
     public ProtobufParser createParser(byte[] data, int offset, int len) throws IOException {
-        IOContext ctxt = _createContext(data, true);
+        IOContext ctxt = _createContext(_createContentReference(data, offset, len), true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);
             if (in != null) {
@@ -192,7 +194,7 @@ public class ProtobufFactory extends JsonFactory
 
     @Override
     public ProtobufGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
-        IOContext ctxt = _createContext(out, false);
+        IOContext ctxt = _createContext(_createContentReference(out), false);
         ctxt.setEncoding(enc);
         return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, _decorate(out, ctxt));
     }
@@ -206,7 +208,7 @@ public class ProtobufFactory extends JsonFactory
      */
     @Override
     public ProtobufGenerator createGenerator(OutputStream out) throws IOException {
-        IOContext ctxt = _createContext(out, false);
+        IOContext ctxt = _createContext(_createContentReference(out), false);
         return _createProtobufGenerator(ctxt, _generatorFeatures, _objectCodec, _decorate(out, ctxt));
     }
 
@@ -217,8 +219,8 @@ public class ProtobufFactory extends JsonFactory
      */
 
     @Override
-    protected IOContext _createContext(Object srcRef, boolean resourceManaged) {
-        return super._createContext(srcRef, resourceManaged);
+    protected IOContext _createContext(InputSourceReference contentRef, boolean resourceManaged) {
+        return super._createContext(contentRef, resourceManaged);
     }
 
     @Override
