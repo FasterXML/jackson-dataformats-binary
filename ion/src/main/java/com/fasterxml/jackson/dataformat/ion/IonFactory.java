@@ -250,7 +250,7 @@ public class IonFactory
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, File f) {
         final InputStream in = _fileInputStream(f);
-        IOContext ioCtxt = _createContext(f, true);
+        IOContext ioCtxt = _createContext(_createContentReference(f), true);
         return _createParser(readCtxt, ioCtxt,
                 _decorate(ioCtxt, in));
     }
@@ -260,7 +260,7 @@ public class IonFactory
             Path p) throws JacksonException
     {
         final InputStream in = _pathInputStream(p);
-        IOContext ioCtxt = _createContext(p, true);
+        IOContext ioCtxt = _createContext(_createContentReference(p), true);
         return _createParser(readCtxt, ioCtxt,
                 _decorate(ioCtxt, in));
     }
@@ -269,14 +269,14 @@ public class IonFactory
     public JsonParser createParser(ObjectReadContext readCtxt, URL url) {
         // true, since we create InputStream from URL
         InputStream in = _optimizedStreamFromURL(url);
-        IOContext ioCtxt = _createContext(url, true);
+        IOContext ioCtxt = _createContext(_createContentReference(url), true);
         return _createParser(readCtxt, ioCtxt,
                 _decorate(ioCtxt, in));
     }
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, InputStream in) {
-        IOContext ioCtxt = _createContext(in, false);
+        IOContext ioCtxt = _createContext(_createContentReference(in), false);
         return _createParser(readCtxt, ioCtxt,
                 _decorate(ioCtxt, in));
     }
@@ -284,13 +284,13 @@ public class IonFactory
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, Reader r) {
         // false -> we do NOT own Reader (did not create it)
-        IOContext ioCtxt = _createContext(r, false);
+        IOContext ioCtxt = _createContext(_createContentReference(r), false);
         return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, r));
     }
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, byte[] data) {
-        IOContext ioCtxt = _createContext(data, true);
+        IOContext ioCtxt = _createContext(_createContentReference(data), true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ioCtxt, data, 0, data.length);
             if (in != null) {
@@ -303,7 +303,8 @@ public class IonFactory
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, byte[] data, int offset, int len) 
     {
-        IOContext ioCtxt = _createContext(data, true);
+        IOContext ioCtxt = _createContext(_createContentReference(data, offset, len),
+                true);
         if (_inputDecorator != null) {
             InputStream in = _inputDecorator.decorate(ioCtxt, data, offset, len);
             if (in != null) {
@@ -324,7 +325,8 @@ public class IonFactory
         if (_inputDecorator != null) { // easier to just wrap in a Reader than extend InputDecorator
             return createParser(readCtxt, new CharArrayReader(content, offset, len));
         }
-        return _createParser(readCtxt, _createContext(content, true),
+        return _createParser(readCtxt, _createContext(_createContentReference(content),
+                true),
                 content, offset, len,
                 // important: buffer is NOT recyclable, as it's from caller
                 false);
@@ -355,7 +357,7 @@ public class IonFactory
         if (_cfgBinaryWriters) {
             throw new UnsupportedOperationException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(writeCtxt, _createContext(w, false),
+        return _createGenerator(writeCtxt, _createContext(_createContentReference(w), false),
                 _createTextualIonWriter(writeCtxt, w),
                 true, w);
     }
@@ -385,18 +387,18 @@ public class IonFactory
      */
 
     @Override
-    protected InputSourceReference _createSourceOrTargetReference(Object contentRef) {
+    protected InputSourceReference _createContentReference(Object contentRef) {
         return new InputSourceReference(!_cfgBinaryWriters, contentRef);
     }
 
     @Override
-    protected InputSourceReference _createSourceOrTargetReference(Object contentRef,
+    protected InputSourceReference _createContentReference(Object contentRef,
             int offset, int length)
     {
         return new InputSourceReference(!_cfgBinaryWriters,
                 contentRef, offset, length);
     }
-    
+
     /*
     /**********************************************************************
     /* Extended API: additional factory methods, accessors
@@ -408,20 +410,20 @@ public class IonFactory
     }
 
     public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
-        return new IonParser(readCtxt, _createContext(in, false),
+        return new IonParser(readCtxt, _createContext(_createContentReference(in), false),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 in, _system);
     }
 
     public IonParser createParser(ObjectReadContext readCtxt, IonValue value) {
         IonReader in = value.getSystem().newReader(value);
-        return new IonParser(readCtxt, _createContext(in, true),
+        return new IonParser(readCtxt, _createContext(_createContentReference(in), true),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 in, _system);
     }
 
     public IonGenerator createGenerator(ObjectWriteContext writeCtxt, IonWriter out) {
-        return _createGenerator(writeCtxt, _createContext(out, false),
+        return _createGenerator(writeCtxt, _createContext(_createContentReference(out), false),
                 out, false, out);
     }
 
@@ -472,7 +474,7 @@ public class IonFactory
             OutputStream out, JsonEncoding enc, boolean isManaged)
      {
         IonWriter ion;
-        IOContext ioCtxt = _createContext(out, isManaged);
+        IOContext ioCtxt = _createContext(_createContentReference(out), isManaged);
         Closeable dst; // not necessarily same as 'out'...
 
         // Binary writers are simpler: no alternate encodings

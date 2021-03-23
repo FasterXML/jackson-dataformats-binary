@@ -5,7 +5,7 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
-
+import com.fasterxml.jackson.core.io.InputSourceReference;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class ProtobufFactory
@@ -15,9 +15,9 @@ public class ProtobufFactory
     private static final long serialVersionUID = 1;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Factory construction, configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     public ProtobufFactory() { super(0, 0); }
@@ -60,11 +60,11 @@ public class ProtobufFactory
     public TokenStreamFactory snapshot() {
         return this;
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Serializable overrides
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -76,9 +76,9 @@ public class ProtobufFactory
     }
 
     /*                                                                                       
-    /**********************************************************                              
+    /**********************************************************************
     /* Basic introspection                                                                  
-    /**********************************************************                              
+    /**********************************************************************
      */
 
     @Override
@@ -99,9 +99,9 @@ public class ProtobufFactory
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Format detection functionality
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -134,14 +134,14 @@ public class ProtobufFactory
     public int getFormatWriteFeatures() { return 0; }
     
     /*
-    /******************************************************
+    /**********************************************************************
     /* Factory methods: parsers
-    /******************************************************
+    /**********************************************************************
      */
 
     @Override
-    protected IOContext _createContext(Object srcRef, boolean resourceManaged) {
-        return super._createContext(srcRef, resourceManaged);
+    protected IOContext _createContext(InputSourceReference contentRef, boolean resourceManaged) {
+        return super._createContext(contentRef, resourceManaged);
     }
 
     @Override
@@ -173,11 +173,11 @@ public class ProtobufFactory
         //    to support
         return _unsupported();
     }
-   
+
     /*
-    /******************************************************
+    /**********************************************************************
     /* Factory methods: generators
-    /******************************************************
+    /**********************************************************************
      */
 
     @Override
