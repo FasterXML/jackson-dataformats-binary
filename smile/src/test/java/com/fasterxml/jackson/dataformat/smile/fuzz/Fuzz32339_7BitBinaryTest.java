@@ -4,26 +4,24 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-// For [dataformats-binary#260]
-public class Fuzz32180BinaryTest extends BaseTestForSmile
+//For [dataformats-binary#263]
+public class Fuzz32339_7BitBinaryTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
-    public void testInvalidRawBinary() throws Exception
+    // Payload:
+    public void testInvalid7BitBinary() throws Exception
     {
         final byte[] input0 = new byte[] {
                 0x3A, 0x29, 0x0A, 0x00, // smile signature
-                (byte) 0xFD, // raw binary
-                0x0F, 0x7E, 0x20,
-                0x20, (byte) 0xFF, // 5 byte VInt for 0x7fe4083f (close to Integer.MAX_VALUE)
-                // and one byte of binary payload
-                0x00
+                (byte) 0xE8, // binary, 7-bit encoded
+                0x35, 0x20, 0x20,
+                0x20, (byte) 0xFF // 5 byte VInt for 0x7fe4083f (close to Integer.MAX_VALUE)
         };
+
         // Let's expand slightly to avoid too early detection, ensure that we are
         // not only checking completely missing payload or such
         final byte[] input = Arrays.copyOf(input0, 65 * 1024);
@@ -32,11 +30,8 @@ public class Fuzz32180BinaryTest extends BaseTestForSmile
             try {
             /*JsonNode root =*/ MAPPER.readTree(bytes);
             } catch (StreamReadException e) {
-                verifyException(e, "Unexpected end-of-input for Binary value: expected 2145650751 bytes, only found 66550");
-            } catch (OutOfMemoryError e) {
-                // Just to make it easier to see on fail (not ideal but better than nothing)
-                e.printStackTrace();
-                throw e;
+                verifyException(e, "Overflow in VInt (current token VALUE_EMBEDDED_OBJECT");
+                verifyException(e, "1st byte (0x35)");
             }
         }
     }
