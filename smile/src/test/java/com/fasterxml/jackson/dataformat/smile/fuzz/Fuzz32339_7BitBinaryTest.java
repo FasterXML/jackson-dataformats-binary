@@ -12,7 +12,7 @@ public class Fuzz32339_7BitBinaryTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
-    // Payload:
+    // Test with negative length indicator (due to overflow) -- CF-32339
     public void testInvalid7BitBinary() throws Exception
     {
         final byte[] input0 = new byte[] {
