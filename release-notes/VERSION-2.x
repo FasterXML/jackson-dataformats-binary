@@ -16,6 +16,8 @@ Modules:
 #248: (ion) Deprecate `CloseSafeUTF8Writer`, remove use
 #252: (smile) Make `SmileFactory` support `JsonFactory.Feature.CANONICALIZE_FIELD_NAMES`
 #253: (cbor) Make `CBORFactory` support `JsonFactory.Feature.CANONICALIZE_FIELD_NAMES`
+#264: (cbor) Handle case of BigDecimal with Integer.MIN_VALUE for scale gracefully
+ (actual fix in `jackson-databind`)
 - `Ion-java` dep 1.4.0 -> 1.8.0
 
 2.12.3 (not yet released)
