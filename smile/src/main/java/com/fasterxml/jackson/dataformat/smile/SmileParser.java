@@ -2256,7 +2256,7 @@ Integer.toHexString(_typeAsInt));
                 _binaryValue = _read7BitBinaryWithLength();
                 return;
             case 7: // binary, raw
-                _binaryValue = _finishRawBinary();
+                _binaryValue = _finishBinaryRaw();
                 return;
             }
         }
@@ -2799,14 +2799,16 @@ currentToken(), firstCh);
     /**********************************************************************
      */
 
-    private final byte[] _finishRawBinary() throws JacksonException
+    // Helper method for reading complete binary data value from "raw"
+    // value (regular byte-per-byte)
+    private final byte[] _finishBinaryRaw() throws JacksonException
     {
         int byteLen = _readUnsignedVInt();
 
         // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
         //   for very large content
         if (byteLen > LONGEST_NON_CHUNKED_BINARY) {
-            return _finishRawBinaryLong(byteLen);
+            return _finishBinaryRawLong(byteLen);
         }
 
         // But use simpler, no intermediate buffering, for more compact cases
@@ -2835,7 +2837,7 @@ currentToken(), firstCh);
         }
     }
 
-    protected byte[] _finishRawBinaryLong(final int expLen) throws JacksonException
+    protected byte[] _finishBinaryRawLong(final int expLen) throws JacksonException
     {
         int left = expLen;
 
@@ -2866,9 +2868,16 @@ currentToken(), firstCh);
     private final byte[] _read7BitBinaryWithLength() throws JacksonException
     {
         int byteLen = _readUnsignedVInt();
-        byte[] result = new byte[byteLen];
+
+        // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
+        //   for very large content
+        if (byteLen > LONGEST_NON_CHUNKED_BINARY) {
+//            return _finishBinary7BitLong(byteLen);
+        }
+
+        final byte[] result = new byte[byteLen];
+        final int lastOkPtr = byteLen - 7;
         int ptr = 0;
-        int lastOkPtr = byteLen - 7;
 
         // first, read all 7-by-8 byte chunks
         while (ptr <= lastOkPtr) {
@@ -2910,6 +2919,12 @@ currentToken(), firstCh);
             result[ptr] = (byte) (value + _inputBuffer[_inputPtr++]);
         }
         return result;
+    }
+
+    // @since 2.12.3
+    protected byte[] _finishBinary7BitLong(final int expLen) throws IOException
+    {
+        return null;
     }
 
     /*
