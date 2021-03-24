@@ -2287,55 +2287,6 @@ currentToken(), lastCh);
 currentToken(), firstCh);
     }
 
-    private final byte[] _read7BitBinaryWithLength() throws IOException
-    {
-        int byteLen = _readUnsignedVInt();
-        byte[] result = new byte[byteLen];
-        int ptr = 0;
-        int lastOkPtr = byteLen - 7;
-        
-        // first, read all 7-by-8 byte chunks
-        while (ptr <= lastOkPtr) {
-            if ((_inputEnd - _inputPtr) < 8) {
-                _loadToHaveAtLeast(8);
-            }
-            int i1 = (_inputBuffer[_inputPtr++] << 25)
-                + (_inputBuffer[_inputPtr++] << 18)
-                + (_inputBuffer[_inputPtr++] << 11)
-                + (_inputBuffer[_inputPtr++] << 4);
-            int x = _inputBuffer[_inputPtr++];
-            i1 += x >> 3;
-            int i2 = ((x & 0x7) << 21)
-                + (_inputBuffer[_inputPtr++] << 14)
-                + (_inputBuffer[_inputPtr++] << 7)
-                + _inputBuffer[_inputPtr++];
-            // Ok: got our 7 bytes, just need to split, copy
-            result[ptr++] = (byte)(i1 >> 24);
-            result[ptr++] = (byte)(i1 >> 16);
-            result[ptr++] = (byte)(i1 >> 8);
-            result[ptr++] = (byte)i1;
-            result[ptr++] = (byte)(i2 >> 16);
-            result[ptr++] = (byte)(i2 >> 8);
-            result[ptr++] = (byte)i2;
-        }
-        // and then leftovers: n+1 bytes to decode n bytes
-        int toDecode = (result.length - ptr);
-        if (toDecode > 0) {
-            if ((_inputEnd - _inputPtr) < (toDecode+1)) {
-                _loadToHaveAtLeast(toDecode+1);
-            }
-            int value = _inputBuffer[_inputPtr++];
-            for (int i = 1; i < toDecode; ++i) {
-                value = (value << 7) + _inputBuffer[_inputPtr++];
-                result[ptr++] = (byte) (value >> (7 - i));
-            }
-            // last byte is different, has remaining 1 - 6 bits, right-aligned
-            value <<= toDecode;
-            result[ptr] = (byte) (value + _inputBuffer[_inputPtr++]);
-        }
-        return result;
-    }
-    
     /*
     /**********************************************************
     /* Internal methods, secondary String parsing
@@ -2515,6 +2466,12 @@ currentToken(), firstCh);
         _textBuffer.setCurrentLength(outPtr);
     }
 
+    /*
+    /**********************************************************************
+    /* Internal methods, secondary Binary data parsing
+    /**********************************************************************
+     */
+
     private final byte[] _finishRawBinary() throws IOException
     {
         int byteLen = _readUnsignedVInt();
@@ -2522,9 +2479,10 @@ currentToken(), firstCh);
         // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
         //   for very large content
         if (byteLen > LONGEST_NON_CHUNKED_BINARY) {
-            return _finishLongContiguousBytes(byteLen);
+            return _finishRawBinaryLong(byteLen);
         }
 
+        // But use simpler, no intermediate buffering, for more compact cases
         final int expLen = byteLen;
         final byte[] b = new byte[byteLen];
 
@@ -2551,7 +2509,7 @@ currentToken(), firstCh);
     }
 
     // @since 2.12.3
-    protected byte[] _finishLongContiguousBytes(final int expLen) throws IOException
+    protected byte[] _finishRawBinaryLong(final int expLen) throws IOException
     {
         int left = expLen;
 
@@ -2574,6 +2532,58 @@ currentToken(), firstCh);
             }
             return bb.toByteArray();
         }
+    }
+
+    // Helper method for reading full contents of a 7-bit (7/8) encoded
+    // binary data chunk: starting with leading leading VInt length indicator
+    // followed by encoded data
+    private final byte[] _read7BitBinaryWithLength() throws IOException
+    {
+        int byteLen = _readUnsignedVInt();
+        byte[] result = new byte[byteLen];
+        int ptr = 0;
+        int lastOkPtr = byteLen - 7;
+
+        // first, read all 7-by-8 byte chunks
+        while (ptr <= lastOkPtr) {
+            if ((_inputEnd - _inputPtr) < 8) {
+                _loadToHaveAtLeast(8);
+            }
+            int i1 = (_inputBuffer[_inputPtr++] << 25)
+                + (_inputBuffer[_inputPtr++] << 18)
+                + (_inputBuffer[_inputPtr++] << 11)
+                + (_inputBuffer[_inputPtr++] << 4);
+            int x = _inputBuffer[_inputPtr++];
+            i1 += x >> 3;
+            int i2 = ((x & 0x7) << 21)
+                + (_inputBuffer[_inputPtr++] << 14)
+                + (_inputBuffer[_inputPtr++] << 7)
+                + _inputBuffer[_inputPtr++];
+            // Ok: got our 7 bytes, just need to split, copy
+            result[ptr++] = (byte)(i1 >> 24);
+            result[ptr++] = (byte)(i1 >> 16);
+            result[ptr++] = (byte)(i1 >> 8);
+            result[ptr++] = (byte)i1;
+            result[ptr++] = (byte)(i2 >> 16);
+            result[ptr++] = (byte)(i2 >> 8);
+            result[ptr++] = (byte)i2;
+        }
+        // and then leftovers: n+1 bytes to decode n bytes
+        int toDecode = (result.length - ptr);
+        if (toDecode > 0) {
+            if ((_inputEnd - _inputPtr) < (toDecode+1)) {
+                _loadToHaveAtLeast(toDecode+1);
+            }
+            int value = _inputBuffer[_inputPtr++];
+            for (int i = 1; i < toDecode; ++i) {
+                value = (value << 7) + _inputBuffer[_inputPtr++];
+                result[ptr++] = (byte) (value >> (7 - i));
+            }
+            // last byte is different, has remaining 1 - 6 bits, right-aligned
+            value <<= toDecode;
+            result[ptr] = (byte) (value + _inputBuffer[_inputPtr++]);
+        }
+        return result;
     }
 
     /*
