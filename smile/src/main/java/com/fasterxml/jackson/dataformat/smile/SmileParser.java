@@ -2994,6 +2994,7 @@ currentToken(), firstCh);
                     bb.write(buffer, 0, bufPtr);
                     bufPtr = 0;
                 }
+                left -= 7;
             }
 
             // And then the last one; we know there is room in buffer so:
@@ -3009,7 +3010,7 @@ currentToken(), firstCh);
                 }
                 // last byte is different, has remaining 1 - 6 bits, right-aligned
                 value <<= left;
-                buffer[bufPtr] = (byte) (value + _inputBuffer[_inputPtr++]);
+                buffer[bufPtr++] = (byte) (value + _inputBuffer[_inputPtr++]);
             }
             if (bufPtr > 0) {
                 bb.write(buffer, 0, bufPtr);
