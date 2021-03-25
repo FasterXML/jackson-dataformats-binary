@@ -271,13 +271,41 @@ public class SmileParser extends SmileParserBase
     
     /**
      * Helper method that will try to load at least specified number bytes in
-     * input buffer, possible moving existing data around if necessary
+     * input buffer, possible moving existing data around if necessary.
+     * Exception throws if not enough content can be read.
+     *
+     * @param minAvailable Minimum number of bytes we absolutely need
+     *
+     * @throws IOException if read failed, either due to I/O issue or because not
+     *    enough content could be read before end-of-input.
      */
     protected final void _loadToHaveAtLeast(int minAvailable) throws IOException
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
-            throw _constructError("Needed to read "+minAvailable+" bytes, reached end-of-input");
+            throw _constructError(String.format(
+"Needed to read %d bytes, reached end-of-input", minAvailable));
+        }
+        int missing = _tryToLoadToHaveAtLeast(minAvailable);
+        if (missing > 0) {
+            throw _constructError(String.format(
+"Needed to read %d bytes, only got %d before end-of-input", minAvailable, minAvailable - missing));
+        }
+    }
+
+    /**
+     * Helper method that will try to load at least specified number bytes in
+     * input buffer, possible moving existing data around if necessary.
+     *
+     * @return Number of bytes that were missing, if any; {@code 0} for successful
+     *    read
+     *
+     * @since 2.12.3
+     */
+    protected final int _tryToLoadToHaveAtLeast(int minAvailable) throws IOException
+    {
+        if (_inputStream == null) {
+            return minAvailable;
         }
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
@@ -291,7 +319,8 @@ public class SmileParser extends SmileParserBase
         }
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
-            int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
+            final int toRead = _inputBuffer.length - _inputEnd;
+            int count = _inputStream.read(_inputBuffer, _inputEnd, toRead);
             if (count < 1) {
                 // End of input
                 _closeInput();
@@ -299,10 +328,11 @@ public class SmileParser extends SmileParserBase
                 if (count == 0) {
                     throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                return minAvailable - _inputEnd;
             }
             _inputEnd += count;
         }
+        return 0;
     }
 
     @SuppressWarnings("deprecation")
@@ -2490,7 +2520,7 @@ currentToken(), firstCh);
 
         if (_inputPtr >= _inputEnd) {
             if (!_loadMore()) {
-                _reportIncompleteBinaryRead(expLen, 0);
+                _reportIncompleteBinaryReadRaw(expLen, 0);
             }
             _loadMoreGuaranteed();
         }
@@ -2505,7 +2535,7 @@ currentToken(), firstCh);
                 return b;
             }
             if (!_loadMore()) {
-                _reportIncompleteBinaryRead(expLen, ptr);
+                _reportIncompleteBinaryReadRaw(expLen, ptr);
             }
         }
     }
@@ -2523,7 +2553,7 @@ currentToken(), firstCh);
                 int avail = _inputEnd - _inputPtr;
                 if (avail <= 0) {
                     if (!_loadMore()) {
-                        _reportIncompleteBinaryRead(expLen, expLen-left);
+                        _reportIncompleteBinaryReadRaw(expLen, expLen-left);
                     }
                     avail = _inputEnd - _inputPtr;
                 }
@@ -2541,12 +2571,12 @@ currentToken(), firstCh);
     // followed by encoded data
     private final byte[] _read7BitBinaryWithLength() throws IOException
     {
-        int byteLen = _readUnsignedVInt();
+        final int byteLen = _readUnsignedVInt();
 
         // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
         //   for very large content
         if (byteLen > LONGEST_NON_CHUNKED_BINARY) {
-//            return _finishBinary7BitLong(byteLen);
+            return _finishBinary7BitLong(byteLen);
         }
 
         final byte[] result = new byte[byteLen];
@@ -2556,7 +2586,10 @@ currentToken(), firstCh);
         // first, read all 7-by-8 byte chunks
         while (ptr <= lastOkPtr) {
             if ((_inputEnd - _inputPtr) < 8) {
-                _loadToHaveAtLeast(8);
+                int missing = _tryToLoadToHaveAtLeast(8);
+                if (missing > 0) {
+                    _reportIncompleteBinaryRead7Bit(byteLen, ptr);
+                }
             }
             int i1 = (_inputBuffer[_inputPtr++] << 25)
                 + (_inputBuffer[_inputPtr++] << 18)
@@ -2581,7 +2614,11 @@ currentToken(), firstCh);
         int toDecode = (result.length - ptr);
         if (toDecode > 0) {
             if ((_inputEnd - _inputPtr) < (toDecode+1)) {
-                _loadToHaveAtLeast(toDecode+1);
+                int missing = _tryToLoadToHaveAtLeast(toDecode+1);
+                if (missing > 0) {
+                    _reportIncompleteBinaryRead7Bit(byteLen, ptr);
+                }
+
             }
             int value = _inputBuffer[_inputPtr++];
             for (int i = 1; i < toDecode; ++i) {
@@ -2598,7 +2635,66 @@ currentToken(), firstCh);
     // @since 2.12.3
     protected byte[] _finishBinary7BitLong(final int expLen) throws IOException
     {
-        return null;
+        // No need to try to use recycled instance since we have much longer content
+        // and there is likely less benefit of trying to recycle segments
+        try (final ByteArrayBuilder bb = new ByteArrayBuilder(LONGEST_NON_CHUNKED_BINARY >> 1)) {
+            // Decode 1k input chunk at a time
+            final byte[] buffer = new byte[7 * 128];
+            int left = expLen;
+            int bufPtr = 0;
+
+            // Main loop for full 7/8 units:
+            while (left >= 7) {
+                if ((_inputEnd - _inputPtr) < 8) {
+                    int missing = _tryToLoadToHaveAtLeast(8);
+                    if (missing > 0) {
+                        _reportIncompleteBinaryRead7Bit(expLen, bb.size() + bufPtr);
+                    }
+                }
+                int i1 = (_inputBuffer[_inputPtr++] << 25)
+                        + (_inputBuffer[_inputPtr++] << 18)
+                        + (_inputBuffer[_inputPtr++] << 11)
+                        + (_inputBuffer[_inputPtr++] << 4);
+                int x = _inputBuffer[_inputPtr++];
+                i1 += x >> 3;
+                int i2 = ((x & 0x7) << 21)
+                    + (_inputBuffer[_inputPtr++] << 14)
+                    + (_inputBuffer[_inputPtr++] << 7)
+                    + _inputBuffer[_inputPtr++];
+                // Ok: got our 7 bytes, just need to split, copy
+                buffer[bufPtr++] = (byte)(i1 >> 24);
+                buffer[bufPtr++] = (byte)(i1 >> 16);
+                buffer[bufPtr++] = (byte)(i1 >> 8);
+                buffer[bufPtr++] = (byte)i1;
+                buffer[bufPtr++] = (byte)(i2 >> 16);
+                buffer[bufPtr++] = (byte)(i2 >> 8);
+                buffer[bufPtr++] = (byte)i2;
+                if (bufPtr >= buffer.length) {
+                    bb.write(buffer, 0, bufPtr);
+                    bufPtr = 0;
+                }
+            }
+
+            // And then the last one; we know there is room in buffer so:
+            // and then leftovers: n+1 bytes to decode n bytes
+            if (left > 0) {
+                if ((_inputEnd - _inputPtr) < (left+1)) {
+                    _loadToHaveAtLeast(left+1);
+                }
+                int value = _inputBuffer[_inputPtr++];
+                for (int i = 1; i < left; ++i) {
+                    value = (value << 7) + _inputBuffer[_inputPtr++];
+                    buffer[bufPtr++] = (byte) (value >> (7 - i));
+                }
+                // last byte is different, has remaining 1 - 6 bits, right-aligned
+                value <<= left;
+                buffer[bufPtr] = (byte) (value + _inputBuffer[_inputPtr++]);
+            }
+            if (bufPtr > 0) {
+                bb.write(buffer, 0, bufPtr);
+            }
+            return bb.toByteArray();
+        }
     }
 
     /*
@@ -2871,12 +2967,24 @@ currentToken(), firstCh);
     }
 
     // @since 2.12.3
-    protected void _reportIncompleteBinaryRead(int expLen, int actLen) throws IOException
+    protected void _reportIncompleteBinaryReadRaw(int expLen, int actLen) throws IOException
     {
-        _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
+        _reportInvalidEOF(String.format(
+" for Binary value (raw): expected %d bytes, only found %d",
                 expLen, actLen), currentToken());
     }
 
+    // @since 2.12.3
+    protected void _reportIncompleteBinaryRead7Bit(int expLen, int actLen)
+        throws IOException
+    {
+        // Calculate number of bytes needed (1 encoded byte expresses 7 payload bits):
+        final long encodedLen = (7L + 8L * expLen) / 7L;
+        _reportInvalidEOF(String.format(
+" for Binary value (7-bit): expected %d payload bytes (from %d encoded), only decoded %d",
+                expLen, encodedLen, actLen), currentToken());
+    }
+    
     /*
     /**********************************************************
     /* Internal methods, other

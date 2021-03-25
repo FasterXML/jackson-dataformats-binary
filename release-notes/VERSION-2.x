@@ -34,6 +34,8 @@ Modules:
  (reported by Fabian M)
 #263 (smile) Handle invalid chunked-binary-format length gracefully
  (reported by Fabian M)
+#265 (smile) Allocate byte[] lazily for longer Smile binary data payloads
+ (7-bit encoded) 
 
 2.12.2 (03-Mar-2021)
 
