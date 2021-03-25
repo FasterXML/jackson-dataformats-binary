@@ -15,16 +15,6 @@ public class Fuzz32381BigDecimalScaleTest extends CBORTestBase
 
     public void testInvalidBigDecimal() throws Exception
     {
-        {
-            BigDecimal ZERO = BigDecimal.ZERO;
-
-            int sn = ZERO.signum();
-            
-            System.err.println("Zero: "+ZERO);
-            System.err.println("Zero/signum: "+sn);
-            System.err.println("zero-Scale: "+ZERO.scale());
-            System.err.println("zero as big-int: "+ZERO.toPlainString());
-        }
         final byte[] input = new byte[] {
                 (byte) 0xC4, // tag
                 (byte) 0x82, 0x3A, 0x7F,
