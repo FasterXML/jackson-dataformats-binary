@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BinaryNode;
@@ -116,7 +116,36 @@ public class BinaryReadTest extends BaseTestForSmile
         Assert.assertArrayEquals(input.bytes3, result.bytes3);
     }
 
-    public void _testBinary(ObjectMapper mapper, int size) throws Exception
+    // Let's also verify handling of truncated (invalid) binary values
+    public void testTruncatedBinaryValues() throws Exception {
+        _testTruncatedBinaryValues(MAPPER_7BITS);
+        _testTruncatedBinaryValues(MAPPER_RAW);
+    }
+
+    private void _testTruncatedBinaryValues(ObjectMapper mapper) throws Exception {
+        // Just need two, really; non-huge (below ~250k) and huge (250kB+)
+        _testTruncatedBinaryValues(mapper, 99000);
+        _testTruncatedBinaryValues(mapper, 299003);
+    }
+
+    private void _testTruncatedBinaryValues(ObjectMapper mapper, int size) throws Exception
+    {
+        byte[] payload = _bytes(size, 0);
+        byte[] doc = mapper.writeValueAsBytes(payload);
+
+        // and then lop off like last 4k
+        byte[] truncDoc = Arrays.copyOfRange(doc, 0, doc.length - 4000);
+
+        try {
+            mapper.readValue(truncDoc, Object.class);
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Unexpected end-of-input for Binary value");
+            verifyException(e, "expected "+size+" ");
+        }
+    }
+
+    private void _testBinary(ObjectMapper mapper, int size) throws Exception
     {
         byte[] input = _bytes(size, 0);
         
