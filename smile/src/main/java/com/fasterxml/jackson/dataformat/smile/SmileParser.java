@@ -2841,26 +2841,20 @@ currentToken(), firstCh);
         final int expLen = byteLen;
         final byte[] b = new byte[byteLen];
 
-        if (_inputPtr >= _inputEnd) {
-            if (!_loadMore()) {
-                _reportIncompleteBinaryReadRaw(expLen, 0);
-            }
-            _loadMoreGuaranteed();
-        }
         int ptr = 0;
-        while (true) {
+        while (byteLen > 0) {
+            if (_inputPtr >= _inputEnd) {
+                if (!_loadMore()) {
+                    _reportIncompleteBinaryReadRaw(expLen, ptr);
+                }
+            }
             int toAdd = Math.min(byteLen, _inputEnd - _inputPtr);
             System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
             _inputPtr += toAdd;
             ptr += toAdd;
             byteLen -= toAdd;
-            if (byteLen <= 0) {
-                return b;
-            }
-            if (!_loadMore()) {
-                _reportIncompleteBinaryReadRaw(expLen, ptr);
-            }
         }
+        return b;
     }
 
     protected byte[] _finishBinaryRawLong(final int expLen) throws JacksonException
