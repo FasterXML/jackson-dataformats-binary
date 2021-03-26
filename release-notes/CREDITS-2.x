@@ -178,6 +178,8 @@ Fabian Meumertzheim (fmeum@github)
  (2.12.3)
 * Reported #263 (smile) Handle invalid chunked-binary-format length gracefully
  (2.12.3)
+* Reported #266: (smile)  ArrayIndexOutOfBoundsException in SmileParser._decodeShortUnicodeValue()
+ (2.12.3)
 
 (jhhladky@github)
 
