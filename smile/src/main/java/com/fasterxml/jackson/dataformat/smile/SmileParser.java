@@ -335,7 +335,6 @@ public class SmileParser extends SmileParserBase
         return 0;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected void _closeInput() throws IOException
     {
@@ -391,7 +390,7 @@ public class SmileParser extends SmileParserBase
     /* JsonParser impl
     /**********************************************************
      */
-    
+
     @Override
     public JsonToken nextToken() throws IOException
     {
@@ -2342,44 +2341,53 @@ currentToken(), firstCh);
         return _textBuffer.setCurrentAndReturn(len);
     }
 
-    protected final String _decodeShortUnicodeValue(int len) throws IOException
+    protected final String _decodeShortUnicodeValue(final int byteLen) throws IOException
     {
-        if ((_inputEnd - _inputPtr) < len) {
-            _loadToHaveAtLeast(len);
+        if ((_inputEnd - _inputPtr) < byteLen) {
+            _loadToHaveAtLeast(byteLen);
         }
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int inPtr = _inputPtr;
-        _inputPtr += len;
+        _inputPtr += byteLen;
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         final byte[] inputBuf = _inputBuffer;
-        for (int end = inPtr + len; inPtr < end; ) {
-            int i = inputBuf[inPtr++] & 0xFF;
-            int code = codes[i];
-            if (code != 0) {
-                // trickiest one, need surrogate handling
-                switch (code) {
-                case 1:
-                    i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
-                    break;
-                case 2:
-                    i = ((i & 0x0F) << 12)
-	                  | ((inputBuf[inPtr++] & 0x3F) << 6)
-	                  | (inputBuf[inPtr++] & 0x3F);
-                    break;
-                case 3:
-                    i = ((i & 0x07) << 18)
-	                | ((inputBuf[inPtr++] & 0x3F) << 12)
-	                | ((inputBuf[inPtr++] & 0x3F) << 6)
-	                | (inputBuf[inPtr++] & 0x3F);
-                    // note: this is the codepoint value; need to split, too
-                    i -= 0x10000;
-                    outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
-                    i = 0xDC00 | (i & 0x3FF);
-                    break;
-                default: // invalid
-                    _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
-                }
+        for (int end = inPtr + byteLen; inPtr < end; ) {
+            int i = inputBuf[inPtr++];
+            if (i >= 0) {
+                outBuf[outPtr++] = (char) i;
+                continue;
+            }
+            i &= 0xFF;
+            final int unitLen = codes[i];
+            if ((inPtr + unitLen) > end) {
+                // Last -1 to compensate for byte that was read:
+                final int firstCharOffset = byteLen - (end - inPtr) - 1;
+                return _reportTruncatedUTF8InString(byteLen, firstCharOffset, i, unitLen);
+            }
+            int i2 = inputBuf[inPtr++] & 0x3F;
+
+            switch (unitLen) {
+            case 1:
+                i = ((i & 0x1F) << 6) | i2;
+                break;
+            case 2:
+                i = ((i & 0x0F) << 12)
+                    | (i2 << 6)
+                    | (inputBuf[inPtr++] & 0x3F);
+                break;
+            case 3:// trickiest one, need surrogate handling
+                i = ((i & 0x07) << 18)
+                    | (i2 << 12)
+                    | ((inputBuf[inPtr++] & 0x3F) << 6)
+                    | (inputBuf[inPtr++] & 0x3F);
+                // note: this is the codepoint value; need to split, too
+                i -= 0x10000;
+                outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                i = 0xDC00 | (i & 0x3FF);
+                break;
+            default: // invalid
+                _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
             }
             outBuf[outPtr++] = (char) i;
         }        
@@ -2979,7 +2987,18 @@ currentToken(), firstCh);
 " for Binary value (7-bit): expected %d payload bytes (from %d encoded), only decoded %d",
                 expLen, encodedLen, actLen), currentToken());
     }
-    
+
+    // @since 2.12.3
+    protected String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws IOException
+    {
+        throw _constructError(String.format(
+"Truncated UTF-8 character in Short Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
+    }
+
     /*
     /**********************************************************
     /* Internal methods, other

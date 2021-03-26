@@ -262,9 +262,11 @@ public abstract class BaseTestForSmile
        final byte[] buf = new byte[4000];
 
        try (InputStream in = getClass().getResourceAsStream(ref)) {
-           int len;
-           while ((len = in.read(buf)) > 0) {
-               bytes.write(buf, 0, len);
+           if (in != null) {
+               int len;
+               while ((len = in.read(buf)) > 0) {
+                   bytes.write(buf, 0, len);
+               }
            }
        } catch (IOException e) {
            throw new RuntimeException("Failed to read resource '"+ref+"': "+e);
