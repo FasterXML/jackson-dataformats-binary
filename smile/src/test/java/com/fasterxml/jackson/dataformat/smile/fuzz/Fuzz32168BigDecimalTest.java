@@ -12,7 +12,6 @@ public class Fuzz32168BigDecimalTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
-    // Payload:
     public void testInvalidBigDecimal() throws Exception
     {
         final byte[] input = new byte[] {

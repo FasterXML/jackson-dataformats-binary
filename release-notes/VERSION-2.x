@@ -32,10 +32,12 @@ Modules:
  (reported by Fabian M)
 #261 (cbor) CBORParser need to validate zero-length byte[] for BigInteger 
  (reported by Fabian M)
-#263 (smile) Handle invalid chunked-binary-format length gracefully
+#263: (smile) Handle invalid chunked-binary-format length gracefully
  (reported by Fabian M)
-#265 (smile) Allocate byte[] lazily for longer Smile binary data payloads
+#265: (smile) Allocate byte[] lazily for longer Smile binary data payloads
  (7-bit encoded) 
+#266: (smile)  ArrayIndexOutOfBoundsException in SmileParser._decodeShortUnicodeValue()
+ (reported by Fabian M)
 
 2.12.2 (03-Mar-2021)
 

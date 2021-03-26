@@ -142,8 +142,8 @@ public class SmileParser extends SmileParserBase
         if (b != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
                 throw _constructReadException(
-"Malformed content: signature not valid, starts with 0x3a but followed by 0x%s, not 0x29",
-Integer.toHexString(b & 0xFF));
+"Malformed content: signature not valid, starts with 0x3a but followed by 0x%02X, not 0x29",
+b & 0xFF);
             }
             return false;
         }
@@ -151,8 +151,8 @@ Integer.toHexString(b & 0xFF));
         if (b != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
                 throw _constructReadException(
-"Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x%s, not 0xA",
-Integer.toHexString(b & 0xFF));
+"Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x%02X, not 0xA",
+b & 0xFF);
             }
             return false;
         }
@@ -162,8 +162,8 @@ Integer.toHexString(b & 0xFF));
         // but failure with version number is fatal, can not ignore
         if (versionBits != SmileConstants.HEADER_VERSION_0) {
             throw _constructReadException(
-"Header version number bits (0x%s) indicate unrecognized version; only 0x0 handled by parser",
-Integer.toHexString(versionBits));
+"Header version number bits (0x%02X) indicate unrecognized version; only 0x0 handled by parser",
+versionBits);
         }
 
         // can avoid tracking names, if explicitly disabled
@@ -385,7 +385,7 @@ Integer.toHexString(versionBits));
     /* JsonParser impl: generic traversal
     /**********************************************************************
      */
-    
+
     @Override
     public JsonToken nextToken() throws JacksonException
     {
@@ -525,8 +525,8 @@ Integer.toHexString(versionBits));
     // should we change description based on reserved vs illegal? (special cases
     // of null bytes etc)
     private JsonToken _reportUnknownValueTypeToken(int ch) throws JacksonException {
-        throw _constructReadException("Invalid type marker byte 0x%s for expected value token",
-                Integer.toHexString(ch & 0xFF));
+        throw _constructReadException("Invalid type marker byte 0x%02X for expected value token",
+                ch & 0xFF);
     }
 
     private final JsonToken _handleSharedString(int index) throws JacksonException
@@ -709,8 +709,8 @@ Integer.toHexString(versionBits));
         }
         // Other byte values are illegal
         throw _constructReadException(
-"Invalid type marker byte 0x%s for expected property name (or END_OBJECT marker)",
-Integer.toHexString(_typeAsInt));
+"Invalid type marker byte 0x%02X for expected property name (or END_OBJECT marker)",
+_typeAsInt);
     }
 
     @Override
@@ -959,8 +959,8 @@ Integer.toHexString(_typeAsInt));
         }
         // Other byte values are illegal
         throw _constructReadException(
-"Invalid type marker byte 0x%s for expected property name (or END_OBJECT marker)",
-Integer.toHexString(_typeAsInt));
+"Invalid type marker byte 0x%02X for expected property name (or END_OBJECT marker)",
+_typeAsInt);
     }
 
     private final int _nextNameOptimized(PropertyNameMatcher matcher, int len) throws JacksonException
@@ -1719,8 +1719,9 @@ Integer.toHexString(_typeAsInt));
             break;
         }
         // Other byte values are illegal
-        throw _constructReadException("Invalid type marker byte 0x%s for expected property name (or END_OBJECT marker)",
-                Integer.toHexString(_typeAsInt));
+        throw _constructReadException(
+"Invalid type marker byte 0x%02X for expected property name (or END_OBJECT marker)",
+_typeAsInt);
     }
 
     private String _findOrDecodeShortAsciiName(final int len) throws JacksonException
@@ -1882,8 +1883,8 @@ Integer.toHexString(_typeAsInt));
                 default: // invalid
                     // Update pointer here to point to (more) correct location
                     _inputPtr = inPtr;
-                    throw _constructReadException("Invalid byte 0x%s in short Unicode text block",
-                            Integer.toHexString(i));
+                    throw _constructReadException(
+"Invalid byte 0x%02X in short Unicode text block", i);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -2664,45 +2665,54 @@ currentToken(), firstCh);
         return _textBuffer.setCurrentAndReturn(len);
     }
 
-    protected final String _decodeShortUnicodeValue(int len) throws JacksonException
+    protected final String _decodeShortUnicodeValue(int byteLen) throws JacksonException
     {
-        if ((_inputEnd - _inputPtr) < len) {
-            _loadToHaveAtLeast(len);
+        if ((_inputEnd - _inputPtr) < byteLen) {
+            _loadToHaveAtLeast(byteLen);
         }
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int inPtr = _inputPtr;
-        _inputPtr += len;
+        _inputPtr += byteLen;
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         final byte[] inputBuf = _inputBuffer;
-        for (int end = inPtr + len; inPtr < end; ) {
-            int i = inputBuf[inPtr++] & 0xFF;
-            int code = codes[i];
-            if (code != 0) {
-                // trickiest one, need surrogate handling
-                switch (code) {
-                case 1:
-                    i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
-                    break;
-                case 2:
-                    i = ((i & 0x0F) << 12)
-	                  | ((inputBuf[inPtr++] & 0x3F) << 6)
-	                  | (inputBuf[inPtr++] & 0x3F);
-                    break;
-                case 3:
-                    i = ((i & 0x07) << 18)
-	                | ((inputBuf[inPtr++] & 0x3F) << 12)
-	                | ((inputBuf[inPtr++] & 0x3F) << 6)
-	                | (inputBuf[inPtr++] & 0x3F);
-                    // note: this is the codepoint value; need to split, too
-                    i -= 0x10000;
-                    outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
-                    i = 0xDC00 | (i & 0x3FF);
-                    break;
-                default: // invalid
-                    throw _constructReadException("Invalid byte %s in short Unicode text block",
-                            Integer.toHexString(i));
-                }
+
+        for (int end = inPtr + byteLen; inPtr < end; ) {
+            int i = inputBuf[inPtr++];
+            if (i >= 0) {
+                outBuf[outPtr++] = (char) i;
+                continue;
+            }
+            i &= 0xFF;
+            final int unitLen = codes[i];
+            if ((inPtr + unitLen) > end) {
+                // Last -1 to compensate for byte that was read:
+                final int firstCharOffset = byteLen - (end - inPtr) - 1;
+                return _reportTruncatedUTF8InString(byteLen, firstCharOffset, i, unitLen);
+            }
+            int i2 = inputBuf[inPtr++] & 0x3F;
+
+            switch (unitLen) {
+            case 1:
+                i = ((i & 0x1F) << 6) | i2;
+                break;
+            case 2:
+                i = ((i & 0x0F) << 12)
+                    | (i2 << 6)
+                    | (inputBuf[inPtr++] & 0x3F);
+                break;
+            case 3:// trickiest one, need surrogate handling
+                i = ((i & 0x07) << 18)
+                    | (i2 << 12)
+                    | ((inputBuf[inPtr++] & 0x3F) << 6)
+                    | (inputBuf[inPtr++] & 0x3F);
+                // note: this is the codepoint value; need to split, too
+                i -= 0x10000;
+                outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                i = 0xDC00 | (i & 0x3FF);
+                break;
+            default: // invalid
+                throw _constructReadException("Invalid byte 0x%02X in short Unicode text block", i);
             }
             outBuf[outPtr++] = (char) i;
         }        
@@ -3271,7 +3281,7 @@ currentToken(), firstCh);
     }
 	
     protected void _reportInvalidInitial(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 start byte 0x%s", Integer.toHexString(mask));
+        throw _constructReadException("Invalid UTF-8 start byte 0x02X", mask);
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
@@ -3280,7 +3290,7 @@ currentToken(), firstCh);
     }
 
     protected void _reportInvalidOther(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 middle byte 0x%s", Integer.toHexString(mask));
+        throw _constructReadException("Invalid UTF-8 middle byte 0x%02X", mask);
     }
 
     protected void _reportIncompleteBinaryReadRaw(int expLen, int actLen) throws StreamReadException
@@ -3298,7 +3308,18 @@ currentToken(), firstCh);
 " for Binary value (7-bit): expected %d payload bytes (from %d encoded), only decoded %d",
                 expLen, encodedLen, actLen), currentToken());
     }
-    
+
+    // @since 2.12.3
+    protected String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws StreamReadException
+    {
+        throw _constructReadException(String.format(
+"Truncated UTF-8 character in Short Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
+    }
+
     /*
     /**********************************************************************
     /* Internal methods, other
