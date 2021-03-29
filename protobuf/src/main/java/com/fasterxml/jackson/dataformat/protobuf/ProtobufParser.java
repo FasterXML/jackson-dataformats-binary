@@ -380,7 +380,7 @@ public class ProtobufParser extends ParserMinimalBase
     public JsonLocation getTokenLocation()
     {
         // token location is correctly managed...
-        return new JsonLocation(_ioContext.sourceReference(),
+        return new JsonLocation(_ioContext.contentReference(),
                 _tokenInputTotal, // bytes
                 -1, -1, (int) _tokenInputTotal); // char offset, line, column
     }   
@@ -393,7 +393,7 @@ public class ProtobufParser extends ParserMinimalBase
     public JsonLocation getCurrentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.sourceReference(),
+        return new JsonLocation(_ioContext.contentReference(),
                 offset, // bytes
                 -1, -1, (int) offset); // char offset, line, column
     }
@@ -2145,7 +2145,7 @@ public class ProtobufParser extends ParserMinimalBase
                     ": expected close marker for %s (start marker at %s)",
                     marker,
                     _parsingContext.startLocation(
-                            _ioContext.sourceReference(),  _currInputProcessed)),
+                            _ioContext.contentReference(),  _currInputProcessed)),
                     null);
         }
     }

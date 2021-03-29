@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.InputSourceReference;
+import com.fasterxml.jackson.core.io.ContentReference;
 
 /**
  * Factory used for constructing {@link CBORParser} and {@link CBORGenerator}
@@ -386,7 +386,7 @@ public class CBORFactory extends JsonFactory
      */
 
     @Override
-    protected IOContext _createContext(InputSourceReference contentRef, boolean resourceManaged) {
+    protected IOContext _createContext(ContentReference contentRef, boolean resourceManaged) {
         return super._createContext(contentRef, resourceManaged);
     }
 
