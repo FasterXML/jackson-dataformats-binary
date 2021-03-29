@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.InputSourceReference;
+import com.fasterxml.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
@@ -324,7 +324,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;
         // 2.4: used to be: _tokenInputTotal
-        return new JsonLocation(_ioContext.sourceReference(),
+        return new JsonLocation(_ioContext.contentReference(),
                 total, // bytes
                 -1, -1, (int) total); // char offset, line, column
     }
@@ -337,7 +337,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final JsonLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.sourceReference(),
+        return new JsonLocation(_ioContext.contentReference(),
                 offset, // bytes
                 -1, -1, (int) offset); // char offset, line, column
     }
@@ -740,10 +740,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Helper method used to encapsulate logic of including (or not) of
      * "source reference" when constructing {@link JsonLocation} instances.
      */
-    protected InputSourceReference _sourceReference() {
+    protected ContentReference _sourceReference() {
         if (isEnabled(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)) {
-            return _ioContext.sourceReference();
+            return _ioContext.contentReference();
         }
-        return InputSourceReference.unknown();
+        return ContentReference.unknown();
     }
 }

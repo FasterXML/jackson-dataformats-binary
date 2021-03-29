@@ -7,7 +7,7 @@ import java.util.Locale;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.BinaryTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.InputSourceReference;
+import com.fasterxml.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.core.sym.BinaryNameMatcher;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
@@ -207,7 +207,7 @@ public class CBORFactory
      */
 
     @Override
-    protected IOContext _createContext(InputSourceReference contentRef, boolean resourceManaged) {
+    protected IOContext _createContext(ContentReference contentRef, boolean resourceManaged) {
         return super._createContext(contentRef, resourceManaged);
     }
 

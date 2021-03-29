@@ -4,7 +4,7 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.InputSourceReference;
+import com.fasterxml.jackson.core.io.ContentReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -135,7 +135,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     {
         SmileFactory f = new SmileFactory();
         IOContext ctxt = new IOContext(f._getBufferRecycler(),
-                InputSourceReference.rawSource("doc"), false);
+                ContentReference.rawReference("doc"), false);
         OutputStream bytes = new ByteArrayOutputStream();
         byte[] buf = new byte[1000];
         SmileGenerator g = new SmileGenerator(ObjectWriteContext.empty(), ctxt,

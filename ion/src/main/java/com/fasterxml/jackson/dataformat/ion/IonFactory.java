@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.DecorableTSFactory;
 import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.InputSourceReference;
+import com.fasterxml.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.core.io.UTF8Writer;
 
 import com.amazon.ion.IonReader;
@@ -387,15 +387,15 @@ public class IonFactory
      */
 
     @Override
-    protected InputSourceReference _createContentReference(Object contentRef) {
-        return new InputSourceReference(!_cfgBinaryWriters, contentRef);
+    protected ContentReference _createContentReference(Object contentRef) {
+        return new ContentReference(!_cfgBinaryWriters, contentRef);
     }
 
     @Override
-    protected InputSourceReference _createContentReference(Object contentRef,
+    protected ContentReference _createContentReference(Object contentRef,
             int offset, int length)
     {
-        return new InputSourceReference(!_cfgBinaryWriters,
+        return new ContentReference(!_cfgBinaryWriters,
                 contentRef, offset, length);
     }
 

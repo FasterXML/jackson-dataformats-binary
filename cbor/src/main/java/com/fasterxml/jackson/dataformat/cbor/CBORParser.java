@@ -277,7 +277,7 @@ public class CBORParser extends ParserBase
     public JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
-        return new JsonLocation(_ioContext.sourceReference(),
+        return new JsonLocation(_ioContext.contentReference(),
                 _tokenInputTotal, // bytes
                 -1, -1, (int) _tokenInputTotal); // char offset, line, column
     }   
@@ -290,7 +290,7 @@ public class CBORParser extends ParserBase
     public JsonLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.sourceReference(),
+        return new JsonLocation(_ioContext.contentReference(),
                 offset, // bytes
                 -1, -1, (int) offset); // char offset, line, column
     }
@@ -3500,7 +3500,7 @@ public class CBORParser extends ParserBase
             return;
         }
         // Ok; end-marker or fixed-length Array/Object?
-        final JsonLocation loc = _streamReadContext.startLocation(_ioContext.sourceReference());
+        final JsonLocation loc = _streamReadContext.startLocation(_ioContext.contentReference());
         final String startLocDesc = (loc == null) ? "[N/A]" : loc.sourceDescription();
         if (_streamReadContext.hasExpectedLength()) { // specific length
             final int expMore = _streamReadContext.getRemainingExpectedLength();

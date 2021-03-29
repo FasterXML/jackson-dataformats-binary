@@ -186,7 +186,7 @@ public class IonParser
         if (!_closed) {
             // should only close if manage the resource
             if (_ioContext.isResourceManaged()) {
-                Object src = _ioContext.sourceReference().getSource();
+                Object src = _ioContext.contentReference().getSource();
                 if (src instanceof Closeable) {
                     try {
                         ((Closeable) src).close();
@@ -589,7 +589,7 @@ public class IonParser
     {
         if (!_streamReadContext.inRoot()) {
             _reportError(": expected close marker for "+_streamReadContext.typeDesc()+" (from "
-                    +_streamReadContext.startLocation(_ioContext.sourceReference())+")");
+                    +_streamReadContext.startLocation(_ioContext.contentReference())+")");
         }
     }
 }
