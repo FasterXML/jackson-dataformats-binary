@@ -1812,26 +1812,24 @@ _typeAsInt);
         final byte[] inBuf = _inputBuffer;
         int inPtr = _inputPtr;
 
-        /* 25-Jan-2014, tsaloranta: Micro-benchmarks suggest that unrolling
-         *   does NOT speed up things on JDK 7, let's not do it.
-         */
-        // loop unrolling seems to help here:
+        // 29-Mar-2021, tatu: Still true with Java 8 / Jackson 2.13: unrolling
+        //   does NOT appear to help here (no change, for jvm-benchmarks test,
+        //   probably since most of the time symbol table lookup is used
         /*
         for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-            outBuf[outPtr++] = (char) inBuf[inPtr++];            
-        }
-        int left = (len & 3);
-        if (left > 0) {
             outBuf[outPtr++] = (char) inBuf[inPtr++];
-            if (left > 1) {
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                if (left > 2) {
-                    outBuf[outPtr++] = (char) inBuf[inPtr++];
-                }
-            }
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        }
+        switch (len & 3) {
+        case 3:
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        case 2:
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        case 1:
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        case 0:
         }
         */
         for (int inEnd = inPtr + len; inPtr < inEnd; ++inPtr) {
@@ -2656,8 +2654,26 @@ currentToken(), firstCh);
         int outPtr = 0;
         final byte[] inBuf = _inputBuffer;
         int inPtr = _inputPtr;
-        
-        // as with _decodeShortAsciiName, no unrolling
+
+        // 29-Mar-2021, tatu: Still true with Java 8 / Jackson 2.13: unrolling
+        //   does NOT appear to help here -- slows things down by 5% (for one test)
+        /*
+        for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        }
+        switch (len & 3) {
+        case 3:
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        case 2:
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        case 1:
+            outBuf[outPtr++] = (char) inBuf[inPtr++];
+        case 0:
+        }*/
+
         for (final int end = inPtr + len; inPtr < end; ++inPtr) {
             outBuf[outPtr++] = (char) inBuf[inPtr];            
         }
