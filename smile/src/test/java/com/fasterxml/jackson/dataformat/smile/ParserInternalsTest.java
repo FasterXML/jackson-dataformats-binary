@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.InputStream;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
@@ -72,7 +73,7 @@ public class ParserInternalsTest extends BaseTestForSmile
     }
     
     private SmileParser _minimalParser(byte[] doc) {
-        IOContext ctxt = new IOContext(null, doc, false);
+        IOContext ctxt = new IOContext(null, ContentReference.rawReference(doc), false);
         return new SmileParser(ctxt, // IOContext
                 0, 0, // flags
                 null, // (codec)
@@ -82,7 +83,7 @@ public class ParserInternalsTest extends BaseTestForSmile
     }
 
     private SmileParser _minimalParser(InputStream in) {
-        IOContext ctxt = new IOContext(null, in, false);
+        IOContext ctxt = new IOContext(null, ContentReference.rawReference(in), false);
         return new SmileParser(ctxt, // IOContext
                 0, 0, // flags
                 null, // (codec)
