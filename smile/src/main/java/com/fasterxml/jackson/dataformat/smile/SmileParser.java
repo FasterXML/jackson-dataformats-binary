@@ -2690,20 +2690,19 @@ currentToken(), firstCh);
                 final int firstCharOffset = byteLen - (end - inPtr) - 1;
                 return _reportTruncatedUTF8InString(byteLen, firstCharOffset, i, unitLen);
             }
-            int i2 = inputBuf[inPtr++] & 0x3F;
 
             switch (unitLen) {
             case 1:
-                i = ((i & 0x1F) << 6) | i2;
+                i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
                 break;
             case 2:
                 i = ((i & 0x0F) << 12)
-                    | (i2 << 6)
+                    | ((inputBuf[inPtr++] & 0x3F) << 6)
                     | (inputBuf[inPtr++] & 0x3F);
                 break;
             case 3:// trickiest one, need surrogate handling
                 i = ((i & 0x07) << 18)
-                    | (i2 << 12)
+                    | ((inputBuf[inPtr++] & 0x3F) << 12)
                     | ((inputBuf[inPtr++] & 0x3F) << 6)
                     | (inputBuf[inPtr++] & 0x3F);
                 // note: this is the codepoint value; need to split, too
