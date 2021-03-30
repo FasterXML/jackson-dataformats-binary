@@ -142,7 +142,7 @@ public class SmileParser extends SmileParserBase
         if (b != SmileConstants.HEADER_BYTE_2) {
             if (throwException) {
                 throw _constructReadException(
-"Malformed content: signature not valid, starts with 0x3a but followed by 0x%02X, not 0x29",
+"Malformed content: signature not valid, starts with 0x3A but followed by 0x%02X, not 0x29",
 b & 0xFF);
             }
             return false;
@@ -151,7 +151,7 @@ b & 0xFF);
         if (b != SmileConstants.HEADER_BYTE_3) {
             if (throwException) {
                 throw _constructReadException(
-"Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x%02X, not 0xA",
+"Malformed content: signature not valid, starts with 0x3A, 0x29, but followed by 0x%02X, not 0xA",
 b & 0xFF);
             }
             return false;
@@ -162,7 +162,7 @@ b & 0xFF);
         // but failure with version number is fatal, can not ignore
         if (versionBits != SmileConstants.HEADER_VERSION_0) {
             throw _constructReadException(
-"Header version number bits (0x%02X) indicate unrecognized version; only 0x0 handled by parser",
+"Header version number bits (0x%X) indicate unrecognized version; only 0x0 handled by parser",
 versionBits);
         }
 
@@ -451,8 +451,10 @@ versionBits);
                         // 'null token'; but if both are seen, they are collapsed.
                         // We can check this by looking at current token; if it's null,
                         // need to get non-null token
+                        // 30-Mar-2021, tatu: [dataformats-binary#268] Let's verify we
+                        //    handle repeated back-to-back headers separately
                         if (_currToken == null) {
-                            return nextToken();
+                            return _nextAfterHeader();
                         }
                         return (_currToken = null);
                     }
@@ -527,6 +529,26 @@ versionBits);
     private JsonToken _reportUnknownValueTypeToken(int ch) throws JacksonException {
         throw _constructReadException("Invalid type marker byte 0x%02X for expected value token",
                 ch & 0xFF);
+    }
+
+    // Helper method called in situations where Smile Header was encountered
+    // and "current token" is `null`. This can occur both right after document-end
+    // marker (normal situation) and immediately at the beginning of document
+    // (repeated header markers). Normally we'll want to find the real next token
+    // but will not want to do infinite recursion for abnormal case of a very long
+    // sequence of repeated header markers. To guard against that, only call
+    // recursively if we know next token cannot be header; checking that is simple
+    // enough
+    private JsonToken _nextAfterHeader() throws JacksonException
+    {
+        if ((_inputPtr < _inputEnd) || _loadMore()) {
+            if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
+                // danger zone; just set and return null token
+                return (_currToken = null);
+            }
+        }
+        // Otherwise safe enough to do recursion
+        return nextToken();
     }
 
     private final JsonToken _handleSharedString(int index) throws JacksonException

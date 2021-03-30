@@ -180,6 +180,8 @@ Fabian Meumertzheim (fmeum@github)
  (2.12.3)
 * Reported #266: (smile)  ArrayIndexOutOfBoundsException in SmileParser._decodeShortUnicodeValue()
  (2.12.3)
+* Reported #268: (smile) Handle sequence of Smile header markers without recursion
+ (2.12.3)
 
 (jhhladky@github)
 
