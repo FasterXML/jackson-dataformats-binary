@@ -28,6 +28,8 @@ Modules:
  (7-bit encoded) 
 #266: (smile)  ArrayIndexOutOfBoundsException in SmileParser._decodeShortUnicodeValue()
  (reported by Fabian M)
+#268: (smile) Handle sequence of Smile header markers without recursion
+ (reported by Fabian M)
 
 2.12.2 (03-Mar-2021)
 

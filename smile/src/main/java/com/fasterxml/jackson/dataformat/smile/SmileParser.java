@@ -452,13 +452,14 @@ public class SmileParser extends SmileParserBase
                 }
                 if (typeBits == 0x1A) { // == 0x3A == ':' -> possibly header signature for next chunk?
                     if (handleSignature(false, false)) {
-                        /* Ok, now; end-marker and header both imply doc boundary and a
-                         * 'null token'; but if both are seen, they are collapsed.
-                         * We can check this by looking at current token; if it's null,
-                         * need to get non-null token
-                         */
+                        // Ok, now; end-marker and header both imply doc boundary and a
+                        // 'null token'; but if both are seen, they are collapsed.
+                        // We can check this by looking at current token; if it's null,
+                        // need to get non-null token
+                        // 30-Mar-2021, tatu: [dataformats-binary#268] Let's verify we
+                        //    handle repeated back-to-back headers separately
                         if (_currToken == null) {
-                            return nextToken();
+                            return _nextAfterHeader();
                         }
                         return (_currToken = null);
                     }
@@ -527,6 +528,28 @@ public class SmileParser extends SmileParserBase
         // If we get this far, type byte is corrupt
         _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected value token");
         return null;
+    }
+
+    // Helper method called in situations where Smile Header was encountered
+    // and "current token" is `null`. This can occur both right after document-end
+    // marker (normal situation) and immediately at the beginning of document
+    // (repeated header markers). Normally we'll want to find the real next token
+    // but will not want to do infinite recursion for abnormal case of a very long
+    // sequence of repeated header markers. To guard against that, only call
+    // recursively if we know next token cannot be header; checking that is simple
+    // enough
+    //
+    // @since 2.12.3
+    private JsonToken _nextAfterHeader() throws IOException
+    {
+        if ((_inputPtr < _inputEnd) || _loadMore()) {
+            if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
+                // danger zone; just set and return null token
+                return (_currToken = null);
+            }
+        }
+        // Otherwise safe enough to do recursion
+        return nextToken();
     }
 
     private final JsonToken _handleSharedString(int index) throws IOException
