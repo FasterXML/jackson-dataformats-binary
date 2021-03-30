@@ -1559,7 +1559,7 @@ public class SmileParser extends SmileParserBase
                 default: // invalid
                     // Update pointer here to point to (more) correct location
                     _inputPtr = inPtr;
-                    _reportError("Invalid byte 0x"+Integer.toHexString(i)+" in short Unicode text block");
+                    _reportError(String.format("Invalid byte 0x%02X in short Unicode text block", i));
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -2365,20 +2365,19 @@ currentToken(), firstCh);
                 final int firstCharOffset = byteLen - (end - inPtr) - 1;
                 return _reportTruncatedUTF8InString(byteLen, firstCharOffset, i, unitLen);
             }
-            int i2 = inputBuf[inPtr++] & 0x3F;
 
             switch (unitLen) {
             case 1:
-                i = ((i & 0x1F) << 6) | i2;
+                i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
                 break;
             case 2:
                 i = ((i & 0x0F) << 12)
-                    | (i2 << 6)
+                    | ((inputBuf[inPtr++] & 0x3F) << 6)
                     | (inputBuf[inPtr++] & 0x3F);
                 break;
             case 3:// trickiest one, need surrogate handling
                 i = ((i & 0x07) << 18)
-                    | (i2 << 12)
+                    | ((inputBuf[inPtr++] & 0x3F) << 12)
                     | ((inputBuf[inPtr++] & 0x3F) << 6)
                     | (inputBuf[inPtr++] & 0x3F);
                 // note: this is the codepoint value; need to split, too
@@ -2387,7 +2386,7 @@ currentToken(), firstCh);
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportError("Invalid byte "+Integer.toHexString(i)+" in short Unicode text block");
+                _reportError(String.format("Invalid byte 0x%02X in short Unicode text block", i));
             }
             outBuf[outPtr++] = (char) i;
         }        
