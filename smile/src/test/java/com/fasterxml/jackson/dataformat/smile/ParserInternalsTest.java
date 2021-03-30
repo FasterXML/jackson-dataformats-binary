@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.InputStream;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.ContentReference;
+import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
