@@ -34,6 +34,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- 20-Mar-2021, tatu: limit heap for tests to catch some
+	 of "too big allocation" cases
+         SEE: https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html
+	 for explanation on "argLine" property 
+    -->
+    <argLine>-Xmx1024m</argLine>
   </properties>
 
   <dependencies>
@@ -84,10 +91,6 @@
             <excludes>
               <exclude>com/fasterxml/jackson/**/failing/*.java</exclude>
             </excludes>
-	    <!-- 20-Mar-2021, tatu: limit heap for tests to catch some
-		 of "too big allocation" cases
-	    -->
-            <argLine>-Xmx1024m</argLine>
           </configuration>
 	</plugin>
       </plugins>
