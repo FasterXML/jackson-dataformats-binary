@@ -815,6 +815,19 @@ public class CBORParser extends ParserMinimalBase
                 break;
             case 26:
                 i = _decode32Bits();
+                // [dataformats-binary#269] (and earlier [dataformats-binary#30]),
+                // got some edge case to consider
+                if (i < 0) {
+                    long l;
+                    if (neg) {
+                        long unsignedBase = (long) i & 0xFFFFFFFFL;
+                        l = -unsignedBase - 1L;
+                    } else {
+                        l = (long) i;
+                        l = l & 0xFFFFFFFFL;
+                    }
+                    return String.valueOf(l);
+                }
                 break;
             case 27:
                 {

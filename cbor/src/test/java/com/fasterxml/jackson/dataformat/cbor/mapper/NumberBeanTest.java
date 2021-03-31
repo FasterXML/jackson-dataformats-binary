@@ -5,8 +5,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
@@ -73,15 +75,28 @@ public class NumberBeanTest extends CBORTestBase
                 100L, -200L,
                 5000L, -3600L,
                 Integer.MIN_VALUE, Integer.MAX_VALUE,
-                1L + Integer.MAX_VALUE, -1L + Integer.MIN_VALUE,
-                2330462449L, // from [dataformats-binary#30]
-                Long.MIN_VALUE, Long.MAX_VALUE
-                }) {
-            LongBean input = new LongBean(v);
-            byte[] b = MAPPER.writeValueAsBytes(input);
-            LongBean result = MAPPER.readValue(b, LongBean.class);
-            assertEquals(input.value, result.value);
+                1L + Integer.MAX_VALUE, -1L + Integer.MIN_VALUE
+        }) {
+            _testLongRoundTrip(v);
         }
+
+        _testLongRoundTrip(2330462449L); // from [dataformats-binary#30]
+        _testLongRoundTrip(0xFFFFFFFFL); // max positive uint32
+        _testLongRoundTrip(-0xFFFFFFFFL);
+        _testLongRoundTrip(0x100000000L);
+        _testLongRoundTrip(-0x100000000L);
+        _testLongRoundTrip(0x100000001L);
+        _testLongRoundTrip(-0x100000001L);
+        _testLongRoundTrip(Long.MIN_VALUE);
+        _testLongRoundTrip(Long.MAX_VALUE);
+    }
+
+    private void _testLongRoundTrip(long v) throws Exception
+    {
+        LongBean input = new LongBean(v);
+        byte[] b = MAPPER.writeValueAsBytes(input);
+        LongBean result = MAPPER.readValue(b, LongBean.class);
+        assertEquals(input.value, result.value);
     }
 
     // for [dataformats-binary#32] coercion of Float into Double
@@ -218,7 +233,7 @@ public class NumberBeanTest extends CBORTestBase
             assertToken(JsonToken.END_ARRAY, p.nextToken());
         }
     }
-    
+
     // [databind#2784]
     public void testBigDecimalWithBuffering() throws Exception
     {
