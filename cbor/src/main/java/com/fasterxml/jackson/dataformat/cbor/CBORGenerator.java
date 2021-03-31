@@ -746,10 +746,13 @@ public class CBORGenerator extends GeneratorBase
 
     // Helper method that works like `writeNumber(long)` but DOES NOT
     // check internal output state. It does, however, check need for minimization
-    private final void _writeLongNoCheck(long l) throws IOException {
+    private final void _writeLongNoCheck(long l) throws IOException
+    {
         if (_cfgMinimalInts) {
             if (l >= 0) {
-                if (l <= 0x100000000L) {
+                // 31-Mar-2021, tatu: [dataformats-cbor#269] Incorrect boundary check,
+                //     was off by one, resulting in truncation to 0
+                if (l < 0x100000000L) {
                     _writeIntMinimal(PREFIX_TYPE_INT_POS, (int) l);
                     return;
                 }
@@ -1018,7 +1021,9 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write number");
         if (_cfgMinimalInts) { // maybe 32 bits is enough?
             if (l >= 0) {
-                if (l <= 0x100000000L) {
+                // 31-Mar-2021, tatu: [dataformats-cbor#269] Incorrect boundary check,
+                //     was off by one, resulting in truncation to 0
+                if (l < 0x100000000L) {
                     _writeIntMinimal(PREFIX_TYPE_INT_POS, (int) l);
                     return;
                 }
