@@ -40,6 +40,8 @@ Modules:
  (reported by Fabian M)
 #268: (smile) Handle sequence of Smile header markers without recursion
  (reported by Fabian M)
+#269: CBOR loses `Map` entries with specific `long` Map key values (32-bit boundary)
+ (reported by Quantum64@github)
 
 2.12.2 (03-Mar-2021)
 
