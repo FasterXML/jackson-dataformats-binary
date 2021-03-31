@@ -140,4 +140,7 @@ Jonas Konrad (yawkat@github)
 * Reported, contributed fix for #201: `CBORGenerator.Feature.WRITE_MINIMAL_INTS` does not write
   most compact form for all integers
  (2.11.0)
- 
+
+Dylan (Quantum64@github)
+* Reported #269: CBOR loses `Map` entries with specific `long` Map key values (32-bit boundary)
+ (2.11.5 / 2.12.0)

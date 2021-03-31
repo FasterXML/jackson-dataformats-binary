@@ -9,6 +9,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+Not yet releasaed:
+
+#269: CBOR loses `Map` entries with specific `long` Map key values (32-bit boundary)
+ (reported by Quantum64@github)
+
 2.11.4 (12-Dec-2020)
 
 #186: (cbor) Eager allocation of byte buffer can cause `java.lang.OutOfMemoryError`
