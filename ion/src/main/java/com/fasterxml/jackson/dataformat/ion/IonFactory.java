@@ -388,14 +388,14 @@ public class IonFactory
 
     @Override
     protected ContentReference _createContentReference(Object contentRef) {
-        return new ContentReference(!_cfgBinaryWriters, contentRef);
+        return ContentReference.construct(!_cfgBinaryWriters, contentRef);
     }
 
     @Override
     protected ContentReference _createContentReference(Object contentRef,
             int offset, int length)
     {
-        return new ContentReference(!_cfgBinaryWriters,
+        return ContentReference.construct(!_cfgBinaryWriters,
                 contentRef, offset, length);
     }
 
