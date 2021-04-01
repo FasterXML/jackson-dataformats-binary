@@ -291,7 +291,7 @@ public class IonFactory extends JsonFactory {
      * @since 2.7
      */
     public IonParser createParser(IonReader in) {
-        return new IonParser(in, _system, _createContext(in, false), getCodec());
+        return new IonParser(in, _system, _createContext(in, false), getCodec(), _ionParserFeatures);
     }
 
     /**
@@ -299,7 +299,7 @@ public class IonFactory extends JsonFactory {
      */
     public IonParser createParser(IonValue value) {
         IonReader in = value.getSystem().newReader(value);
-        return new IonParser(in, _system, _createContext(in, true), getCodec());
+        return new IonParser(in, _system, _createContext(in, true), getCodec(), _ionParserFeatures);
     }
 
     // NOTE! Suboptimal return type -- but can't change safely before 3.0 as return
@@ -324,7 +324,7 @@ public class IonFactory extends JsonFactory {
      */
     @Deprecated
     public IonParser createJsonParser(IonReader in) {
-        return new IonParser(in, _system, _createContext(in, false), getCodec());
+        return new IonParser(in, _system, _createContext(in, false), getCodec(), _ionParserFeatures);
     }
 
     /**
@@ -333,7 +333,7 @@ public class IonFactory extends JsonFactory {
     @Deprecated
     public IonParser createJsonParser(IonValue value) {
         IonReader in = value.getSystem().newReader(value);
-        return new IonParser(in, _system, _createContext(in, true), getCodec());
+        return new IonParser(in, _system, _createContext(in, true), getCodec(), _ionParserFeatures);
     }
 
     /**
@@ -355,14 +355,14 @@ public class IonFactory extends JsonFactory {
         throws IOException
     {
         IonReader ion = _system.newReader(in);
-        return new IonParser(ion, _system, ctxt, getCodec());
+        return new IonParser(ion, _system, ctxt, getCodec(), _ionParserFeatures);
     }
 
     @Override
     protected JsonParser _createParser(Reader r, IOContext ctxt)
         throws IOException
     {
-        return new IonParser(_system.newReader(r), _system, ctxt, getCodec());
+        return new IonParser(_system.newReader(r), _system, ctxt, getCodec(), _ionParserFeatures);
     }
 
     @Override
@@ -376,7 +376,7 @@ public class IonFactory extends JsonFactory {
     protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
         throws IOException
     {
-        return new IonParser(_system.newReader(data, offset, len), _system, ctxt, getCodec());
+        return new IonParser(_system.newReader(data, offset, len), _system, ctxt, getCodec(), _ionParserFeatures);
     }
 
     @Override
