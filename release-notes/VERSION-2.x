@@ -18,6 +18,8 @@ Modules:
 #253: (cbor) Make `CBORFactory` support `JsonFactory.Feature.CANONICALIZE_FIELD_NAMES`
 #264: (cbor) Handle case of BigDecimal with Integer.MIN_VALUE for scale gracefully
  (actual fix in `jackson-databind`)
+#272: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
+ (reported by Fabian M)
 - `Ion-java` dep 1.4.0 -> 1.8.0
 
 2.12.3 (not yet released)
