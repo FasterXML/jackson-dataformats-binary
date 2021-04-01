@@ -2193,7 +2193,6 @@ public class CBORParser extends ParserMinimalBase
 
         // String value, decode
         final int len = _decodeExplicitLength(ch);
-
         if (len <= 0) {
             if (len == 0) {
                 _textBuffer.resetWithEmpty();
@@ -2372,7 +2371,11 @@ public class CBORParser extends ParserMinimalBase
                 // end of chunk? get a new one, if there is one; if not, we are done
                 if (_chunkLeft == 0) {
                     int len = _decodeChunkLength(CBORConstants.MAJOR_TYPE_TEXT);
-                    if (len < 0) { // fine at this point (but not later)
+                    if (len <= 0) { // fine at this point (but not later)
+                        // 01-Apr-2021 (sic!), tatu: 0-byte length legal if nonsensical
+                        if (len == 0) {
+                            continue;
+                        }
                         break;
                     }
                     _chunkLeft = len;
@@ -3128,7 +3131,8 @@ public class CBORParser extends ParserMinimalBase
             }
             return (int) l;
         }
-        throw _constructError("Invalid length for "+currentToken()+": 0x"+Integer.toHexString(lowBits));
+        throw _constructError(String.format("Invalid length for %s: 0x%02X,",
+                currentToken(), lowBits));
     }
 
     private int _decodeChunkLength(int expType) throws IOException
@@ -3142,16 +3146,18 @@ public class CBORParser extends ParserMinimalBase
         }
         int type = (ch >> 5);
         if (type != expType) {
-            throw _constructError("Mismatched chunk in chunked content: expected "
-                    +expType+" but encountered "+type+" (byte 0x"+Integer.toHexString(ch)+")");
+            throw _constructError(String.format(
+"Mismatched chunk in chunked content: expected major type %d but encountered %d (byte 0x%02X)",
+expType, type, ch));
         }
         int len = _decodeExplicitLength(ch & 0x1F);
         if (len < 0) {
-            throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+expType+")");
+            throw _constructError(String.format(
+"Illegal chunked-length indicator within chunked-length value (major type %d)", expType));
         }
         return len;
     }
-    
+
     private float _decodeHalfSizeFloat() throws IOException
     {
         int i16 = _decode16Bits() & 0xFFFF;

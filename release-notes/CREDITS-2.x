@@ -186,6 +186,8 @@ Fabian Meumertzheim (fmeum@github)
  (2.12.3)
 * Reported #268: (smile) Handle sequence of Smile header markers without recursion
  (2.12.3)
+* Reported #272: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)	
+ (2.13.0)
 
 (jhhladky@github)
 
