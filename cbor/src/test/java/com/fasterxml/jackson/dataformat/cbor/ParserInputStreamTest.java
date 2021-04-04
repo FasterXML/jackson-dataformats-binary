@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParser;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,9 +49,13 @@ public class ParserInputStreamTest extends CBORTestBase
         parser.nextToken();
         parser.finishToken();
 
-        final long start = parser.getCurrentLocation().getByteOffset();
+        JsonLocation loc = parser.getCurrentLocation();
+        final long start = loc.getByteOffset();
         assertEquals(7999, start);
 
+        assertEquals("byte offset: #7999", loc.offsetDescription());
+        assertEquals("(ByteArrayInputStream)", loc.sourceDescription());
+        
         parser.nextToken();
         parser.finishToken();
 

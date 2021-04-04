@@ -26,6 +26,10 @@ public class ParserLocationTest
         // but first 4 bytes are for header
         assertEquals(4, loc.getByteOffset());
 
+        // Let's verify Location info (quite minimal for Binary content)
+        assertEquals("byte offset: #4", loc.offsetDescription());
+        assertEquals("(byte[])[12 bytes]", loc.sourceDescription());
+
         // array marker is a single byte, so:
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertEquals(5, p.getCurrentLocation().getByteOffset());
