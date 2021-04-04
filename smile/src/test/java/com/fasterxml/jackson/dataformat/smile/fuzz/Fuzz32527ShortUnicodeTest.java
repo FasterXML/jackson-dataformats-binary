@@ -39,6 +39,9 @@ public class Fuzz32527ShortUnicodeTest extends BaseTestForSmile
                 verifyException(e, "Truncated UTF-8 character in Short Unicode String");
                 verifyException(e, "(12 bytes)");
                 verifyException(e, "byte 0xE5 at offset #10 indicated 2 more bytes needed");
+                verifyException(e, "(byte[])"); // source description for raw source
+                verifyException(e, "[29 bytes]"); // - "" -
+                verifyException(e, "byte offset: #29"); // with 2.13 we get this too
             }
         }
     }
