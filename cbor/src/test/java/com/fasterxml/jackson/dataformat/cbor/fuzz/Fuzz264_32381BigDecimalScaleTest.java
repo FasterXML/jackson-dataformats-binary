@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 // [dataformats-binary#264]
-public class Fuzz32381BigDecimalScaleTest extends CBORTestBase
+public class Fuzz264_32381BigDecimalScaleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 

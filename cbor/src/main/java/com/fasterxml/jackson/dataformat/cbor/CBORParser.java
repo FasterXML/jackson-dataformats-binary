@@ -2385,6 +2385,7 @@ public class CBORParser extends ParserBase
                 outBuf[outPtr++] = (char) c;
                 continue;
             }
+
             switch (code) {
             case 0:
                 break;
@@ -3614,6 +3615,17 @@ expType, type, ch));
     {
         _reportInvalidEOF(String.format(" for Binary value: expected %d bytes, only found %d",
                 expLen, actLen), _currToken);
+    }
+
+    // @since 2.13
+    private String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws IOException
+    {
+        throw _constructError(String.format(
+"Truncated UTF-8 character in Chunked Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /*

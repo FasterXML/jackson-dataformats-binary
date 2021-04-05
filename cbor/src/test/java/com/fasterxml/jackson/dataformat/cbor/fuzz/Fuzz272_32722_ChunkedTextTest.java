@@ -7,11 +7,11 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-// [dataformats-binary#272]
-public class Fuzz32722ChunkedTextTest extends CBORTestBase
+public class Fuzz272_32722_ChunkedTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    // [dataformats-binary#272]
     public void testChunkedWithUTF8_4Bytes() throws Exception
     {
         final byte[] input = new byte[] {
