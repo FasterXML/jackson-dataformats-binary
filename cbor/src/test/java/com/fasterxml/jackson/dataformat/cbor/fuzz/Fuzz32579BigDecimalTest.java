@@ -1,6 +1,6 @@
-package com.fasterxml.jackson.dataformat.cbor.failing;
+package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +42,10 @@ public class Fuzz32579BigDecimalTest extends CBORTestBase
         
         JsonNode root = MAPPER.readTree(input);
         assertTrue(root.isNumber());
-        assertTrue(root.isBigInteger());
-        assertEquals(BigInteger.ZERO, root.bigIntegerValue());
+        assertTrue(root.isBigDecimal());
+
+        // No point checking the actual value... could have a look at scale?
+        BigDecimal dec = root.decimalValue();
+        assertEquals(Integer.MIN_VALUE + 1, dec.scale());
     }
 }
