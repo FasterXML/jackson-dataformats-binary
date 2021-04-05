@@ -3622,7 +3622,7 @@ expType, type, ch));
             int firstUTFByteValue, int bytesExpected)
         throws IOException
     {
-        throw _constructError(String.format(
+        throw _constructReadException(String.format(
 "Truncated UTF-8 character in Chunked Unicode String value (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
