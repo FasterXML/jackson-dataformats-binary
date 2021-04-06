@@ -40,6 +40,18 @@ public class IonParser
      */
     public enum Feature implements FormatFeature // in 2.12
     {
+        /**
+         * Whether to expect Ion native Type Id construct for indicating type (true);
+         * or "generic" type property (false) when deserializing.
+         *<p>
+         * Enabled by default for backwards compatibility as that has been the behavior
+         * of `jackson-dataformat-ion` since 2.9 (first official public version)
+         *
+         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
+         *
+         * @since 2.12.3
+         */
+        USE_NATIVE_TYPE_ID(true),
         ;
 
         final boolean _defaultState;
@@ -113,6 +125,13 @@ public class IonParser
      */
     protected JsonToken _valueToken;
 
+    /**
+     * Bit flag composed of bits that indicate which
+     * {@link IonParser.Feature}s
+     * are enabled.
+     */
+    protected int _formatFeatures;
+
     /*
     /*****************************************************************
     /* Construction
@@ -133,15 +152,16 @@ public class IonParser
      */
     @Deprecated
     public IonParser(IonReader r, IOContext ctxt, ObjectCodec codec) {
-        this(r, IonSystemBuilder.standard().build(), ctxt, codec);
+        this(r, IonSystemBuilder.standard().build(), ctxt, codec, IonFactory.DEFAULT_ION_PARSER_FEATURE_FLAGS);
     }
 
-    IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec) {
+    IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec, int ionParserFeatures) {
         this._reader = r;
         this._ioContext = ctxt;
         this._objectCodec = codec;
         this._parsingContext = JsonReadContext.createRootContext(-1, -1, null);
         this._system = system;
+        this._formatFeatures = ionParserFeatures;
     }
 
     @Override
@@ -179,7 +199,9 @@ public class IonParser
 
     @Override
     public boolean canReadTypeId() {
-        return true; // yes, Ion got 'em
+        // yes, Ion got 'em
+        // 31-Mar-2021, manaigrn: but we might want to ignore them as per [dataformats-binary#270]
+        return Feature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
     }
 
     @Override
