@@ -42,13 +42,13 @@ public class IonFactory
     extends DecorableTSFactory
     implements java.io.Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     /*
     /**********************************************************************
     /* Constants
     /**********************************************************************
      */
-
-    private static final long serialVersionUID = 1L;
 
     public final static String FORMAT_NAME_ION = "AmazonIon";
 
@@ -242,9 +242,9 @@ public class IonFactory
     }
 
     /*
-    /***************************************************************
-    /* Extended API
-    /***************************************************************
+    /**********************************************************************
+    /* Factory methods: parsers
+    /**********************************************************************
      */
 
     @Override
@@ -412,6 +412,7 @@ public class IonFactory
     public IonParser createParser(ObjectReadContext readCtxt, IonReader in) {
         return new IonParser(readCtxt, _createContext(_createContentReference(in), false),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 in, _system);
     }
 
@@ -419,6 +420,7 @@ public class IonFactory
         IonReader in = value.getSystem().newReader(value);
         return new IonParser(readCtxt, _createContext(_createContentReference(in), true),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 in, _system);
     }
 
@@ -438,6 +440,7 @@ public class IonFactory
         IonReader ion = _system.newReader(in);
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 ion, _system);
     }
 
@@ -445,6 +448,7 @@ public class IonFactory
     {
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _system.newReader(r), _system);
     }
 
@@ -461,6 +465,7 @@ public class IonFactory
     {
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 _system.newReader(data, offset, len), _system);
     }
 

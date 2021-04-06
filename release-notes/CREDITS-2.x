@@ -193,3 +193,9 @@ Fabian Meumertzheim (fmeum@github)
 
 * Contributed #241: (ion) Respect `WRITE_ENUMS_USING_TO_STRING` in `EnumAsIonSymbolSerializer`
  (2.12.2)
+
+Nick (manaigrn-amzn@github)
+
+* Contributed #270: (ion) Ion Polymorphic deserialization in 2.12 breaks wrt use of
+  Native Type Ids when upgrading from 2.8
+ (2.12.3)

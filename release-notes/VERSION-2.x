@@ -42,9 +42,12 @@ Modules:
  (reported by Fabian M)
 #268: (smile) Handle sequence of Smile header markers without recursion
  (reported by Fabian M)
-#269: CBOR loses `Map` entries with specific `long` Map key values (32-bit boundary)
+#269: (cbor) CBOR loses `Map` entries with specific `long` Map key values (32-bit boundary)
  (reported by Quantum64@github)
-
+#270: (ion) Ion Polymorphic deserialization in 2.12 breaks wrt use of Native Type Ids
+  when upgrading from 2.8
+ (contributed by Nick)
+ 
 2.12.2 (03-Mar-2021)
 
 #236: (cbor) `ArrayIndexOutOfBoundsException` in `CBORParser` for invalid UTF-8 String

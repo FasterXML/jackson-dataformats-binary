@@ -41,6 +41,18 @@ public class IonParser
      */
     public enum Feature implements FormatFeature // in 2.12
     {
+        /**
+         * Whether to expect Ion native Type Id construct for indicating type (true);
+         * or "generic" type property (false) when deserializing.
+         *<p>
+         * Enabled by default for backwards compatibility as that has been the behavior
+         * of `jackson-dataformat-ion` since 2.9 (first official public version)
+         *
+         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
+         *
+         * @since 2.12.3
+         */
+        USE_NATIVE_TYPE_ID(true),
         ;
 
         final boolean _defaultState;
@@ -90,6 +102,12 @@ public class IonParser
 
     private final IonSystem _system;
 
+    /**
+     * Bit flag composed of bits that indicate which
+     * {@link IonParser.Feature}s are enabled.
+     */
+    protected int _formatFeatures;
+
     /*
     /**********************************************************************
     /* State
@@ -119,10 +137,12 @@ public class IonParser
      */  
 
     public IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            int streamReadFeatures, IonReader r, IonSystem system)
+            int streamReadFeatures, int formatFeatures,
+            IonReader r, IonSystem system)
     {
         super(readCtxt, streamReadFeatures);
         _reader = r;
+        _formatFeatures = formatFeatures;
         _ioContext = ioCtxt;
         // No DupDetector in use (yet?)
         _streamReadContext = SimpleStreamReadContext.createRootContext(-1, -1, null);
@@ -154,7 +174,9 @@ public class IonParser
 
     @Override
     public boolean canReadTypeId() {
-        return true; // yes, Ion got 'em
+        // yes, Ion got 'em
+        // 31-Mar-2021, manaigrn: but we might want to ignore them as per [dataformats-binary#270]
+        return Feature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
     }
 
     @Override
