@@ -155,6 +155,14 @@ public class IonParser
         this(r, IonSystemBuilder.standard().build(), ctxt, codec, IonFactory.DEFAULT_ION_PARSER_FEATURE_FLAGS);
     }
 
+    @Deprecated // in 2.12.3, remove from 2.13
+    IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec) {
+        this(r, system, ctxt, codec, IonFactory.DEFAULT_ION_PARSER_FEATURE_FLAGS);
+    }
+
+    /**
+     * @since 2.13
+     */
     IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec, int ionParserFeatures) {
         this._reader = r;
         this._ioContext = ctxt;
