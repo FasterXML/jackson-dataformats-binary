@@ -22,7 +22,7 @@ Modules:
  (reported by Fabian M)
 - `Ion-java` dep 1.4.0 -> 1.8.0
 
-2.12.3 (not yet released)
+2.12.3 (12-Apr-2021)
 
 #257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type
  (reported by Fabian M)
