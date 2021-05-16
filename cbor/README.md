@@ -32,7 +32,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-cbor</artifactId>
-  <version>2.12.2</version>
+  <version>2.12.3</version>
 </dependency>
 ```
 
