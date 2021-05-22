@@ -18,9 +18,9 @@ public class TestSimpleGeneration extends AvroTestBase
     {
         @JsonAlias({"nm", "Name"})
         public String name;
-        
+
         public int value;
-        
+
         List<String> other;
     }
 
@@ -51,7 +51,7 @@ public class TestSimpleGeneration extends AvroTestBase
             }
         }
     }
-    
+
     /*
     /**********************************************************
     /* Tests
@@ -94,21 +94,21 @@ public class TestSimpleGeneration extends AvroTestBase
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
-        String json = schema.getAvroSchema().toString(true);        
+        String json = schema.getAvroSchema().toString(true);
         assertNotNull(json);
         AvroSchema s2 = MAPPER.schemaFrom(json);
         assertNotNull(s2);
-        
+
         Employee empl = new Employee();
         empl.name = "Bobbee";
         empl.age = 39;
         empl.emails = new String[] { "bob@aol.com", "bobby@gmail.com" };
         empl.boss = null;
-        
+
         // So far so good: try producing actual Avro data...
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(empl);
         assertNotNull(bytes);
-        
+
         // and bring it back, too
         Employee e2 = getMapper().readerFor(Employee.class)
             .with(schema)
@@ -131,7 +131,7 @@ public class TestSimpleGeneration extends AvroTestBase
         assertNotNull(s2);
 
         // should probably verify, maybe... ?
-        
+
 //        System.out.println("Map schema:\n"+json);
     }
 
@@ -165,10 +165,8 @@ public class TestSimpleGeneration extends AvroTestBase
         try {
             MAPPER.schemaFor(Map.class);
             fail("Not expected to work yet");
-        } catch (InvalidDefinitionException e) {
-            verifyException(e, "\"Any\" type");
-            verifyException(e, "not supported");
-            verifyException(e, "`java.lang.Object`");
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Maps with non-stringable keys are not supported yet");
         }
     }
 }
