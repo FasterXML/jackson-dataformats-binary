@@ -8,6 +8,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
@@ -16,7 +17,12 @@ import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectData;
 
 import com.fasterxml.jackson.core.exc.WrappedIOException;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonGenerator;
+
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
@@ -48,18 +54,19 @@ public class ApacheAvroInteropUtil {
      * Functor of {@link #jacksonDeserialize(Schema, Type, byte[])} which uses {@link Object} as the target type,
      * requiring the use of native type IDs
      */
-    public static final  BiFunction<Schema, byte[], Object> jacksonDeserializer = new BiFunction<Schema, byte[], Object>() {
+    public static final BiFunction<Schema, byte[], Object> jacksonDeserializer = new BiFunction<Schema, byte[], Object>() {
         @Override
-        public Object apply(Schema schema, byte[] originalObject) {
+        public Object apply(Schema schema, byte[] originalObject) throws JacksonException {
             return jacksonDeserialize(schema, Object.class, originalObject);
         }
     };
+
     /**
      * Functor of {@link #getApacheSchema(Type)}
      */
-    public static final  Function<Type, Schema> getApacheSchema = new Function<Type, Schema>() {
+    public static final Function<Type, Schema> getApacheSchema = new Function<Type, Schema>() {
         @Override
-        public Schema apply(Type input) {
+        public Schema apply(Type input) throws JacksonException {
             return getApacheSchema(input);
         }
     };
@@ -68,7 +75,7 @@ public class ApacheAvroInteropUtil {
      */
     public static final BiFunction<Schema, byte[], Object> apacheDeserializer = new BiFunction<Schema, byte[], Object>() {
         @Override
-        public Object apply(Schema first, byte[] second) {
+        public Object apply(Schema first, byte[] second) throws JacksonException {
             return apacheDeserialize(first, second);
         }
     };
@@ -208,8 +215,21 @@ public class ApacheAvroInteropUtil {
      *
      * @return Schema for {@code type}
      */
-    public static Schema getApacheSchema(Type type) {
-        return PATCHED_AVRO_REFLECT_DATA.getSchema(type);
+    public static Schema getApacheSchema(Type type) throws JacksonException {
+        // 27-May-2021, tatu: Must wrap similar to what AvroMapper does for Jackson-based
+        //    schema introspection
+        try {
+            return PATCHED_AVRO_REFLECT_DATA.getSchema(type);
+        } catch (AvroRuntimeException e) {
+            String msg = String.format(
+                    "Failed to generate `AvroSchema` for %s, problem: (%s) %s",
+                    type.toString(),
+                    e.getClass().getName(), e.getMessage()
+                    );
+            throw InvalidDefinitionException.from((JsonGenerator) null, msg,
+                    (JavaType) null)
+                    .withCause(e);
+        }
     }
 
     /**
