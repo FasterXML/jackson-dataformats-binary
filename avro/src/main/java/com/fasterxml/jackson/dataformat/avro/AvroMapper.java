@@ -6,6 +6,7 @@ import java.io.InputStream;
 
 import org.apache.avro.Schema;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.JavaType;
@@ -13,6 +14,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 /**
@@ -183,8 +186,12 @@ public class AvroMapper extends ObjectMapper
     public AvroSchema schemaFor(Class<?> type) throws JsonMappingException
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        acceptJsonFormatVisitor(type, gen);
-        return gen.getGeneratedSchema();
+        try {
+            acceptJsonFormatVisitor(type, gen);
+            return gen.getGeneratedSchema();
+        } catch (RuntimeException e0) {
+            throw _invalidSchemaDefinition(constructType(type), e0);
+        }
     }
 
     /**
@@ -198,8 +205,25 @@ public class AvroMapper extends ObjectMapper
     public AvroSchema schemaFor(JavaType type) throws JsonMappingException
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
-        acceptJsonFormatVisitor(type, gen);
-        return gen.getGeneratedSchema();
+        try {
+            acceptJsonFormatVisitor(type, gen);
+            return gen.getGeneratedSchema();
+        } catch (RuntimeException e0) {
+            throw _invalidSchemaDefinition(type, e0);
+        }
+    }
+
+    // @since 2.13
+    protected JsonMappingException _invalidSchemaDefinition(JavaType type,
+            Exception e0)
+    {
+        String msg = String.format(
+"Failed to generate `AvroSchema` for %s, problem: (%s) %s",
+                ClassUtil.getTypeDescription(type),
+                e0.getClass().getName(), e0.getMessage()
+                );
+        return InvalidDefinitionException.from((JsonGenerator) null, msg, type)
+            .withCause(e0);
     }
 
     /**

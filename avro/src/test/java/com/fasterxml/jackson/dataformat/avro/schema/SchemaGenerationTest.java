@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.avro.*;
 
 import org.apache.avro.Schema;
 
-public class TestSimpleGeneration extends AvroTestBase
+public class SchemaGenerationTest extends AvroTestBase
 {
     public static class RootType
     {
@@ -165,8 +165,8 @@ public class TestSimpleGeneration extends AvroTestBase
         try {
             MAPPER.schemaFor(Map.class);
             fail("Not expected to work yet");
-        } catch (UnsupportedOperationException e) {
-            verifyException(e, "Maps with non-stringable keys are not supported yet");
+        } catch (InvalidDefinitionException e) {
+            verifyException(e, "Maps with non-stringable keys are not supported (yet?)");
         }
     }
 }

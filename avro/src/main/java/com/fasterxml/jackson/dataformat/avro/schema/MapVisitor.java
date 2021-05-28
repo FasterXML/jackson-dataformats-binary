@@ -36,9 +36,8 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
         AnnotatedClass ac = _provider.getConfig().introspectClassAnnotations(_keyType).getClassInfo();
         if (AvroSchemaHelper.isStringable(ac)) {
             return AvroSchemaHelper.stringableKeyMapSchema(_type, _keyType, _valueSchema);
-        } else {
-            throw new UnsupportedOperationException("Maps with non-stringable keys are not supported yet");
         }
+        throw new UnsupportedOperationException("Maps with non-stringable keys are not supported (yet?)");
     }
 
     /*
@@ -46,7 +45,7 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
     /* JsonMapFormatVisitor implementation
     /**********************************************************
      */
-    
+
     @Override
     public void keyFormat(JsonFormatVisitable handler, JavaType keyType)
         throws JsonMappingException
