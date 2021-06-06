@@ -11,11 +11,14 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 
+import java.time.temporal.Temporal;
+import java.util.Date;
+
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
 {
     protected SerializerProvider _provider;
-    
+
     protected final DefinedSchemas _schemas;
 
     /**
@@ -28,7 +31,7 @@ public class VisitorFormatWrapperImpl
      * Schema for simple types that do not need a visitor.
      */
     protected Schema _valueSchema;
-    
+
     /*
     /**********************************************************************
     /* Construction
@@ -39,7 +42,7 @@ public class VisitorFormatWrapperImpl
         _schemas = schemas;
         _provider = p;
     }
-    
+
     @Override
     public SerializerProvider getProvider() {
         return _provider;
@@ -67,7 +70,7 @@ public class VisitorFormatWrapperImpl
         }
         return _builder.builtAvroSchema();
     }
-    
+
     /*
     /**********************************************************************
     /* Callbacks
@@ -97,7 +100,7 @@ public class VisitorFormatWrapperImpl
         _builder = v;
         return v;
     }
-    
+
     @Override
     public JsonArrayFormatVisitor expectArrayFormat(final JavaType convertedType) {
         // 22-Mar-2016, tatu: Actually we can detect byte[] quite easily here can't we?
@@ -148,6 +151,13 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
+
+        if (isDateTimeType(type)) {
+            DateTimeVisitor v = new DateTimeVisitor(type);
+            _builder = v;
+            return v;
+        }
+
         IntegerVisitor v = new IntegerVisitor(type);
         _builder = v;
         return v;
@@ -185,5 +195,15 @@ public class VisitorFormatWrapperImpl
     }
     protected <T> T _throwUnsupported(String msg) {
         throw new UnsupportedOperationException(msg);
+    }
+
+    private boolean isDateTimeType(JavaType type) {
+        if (Temporal.class.isAssignableFrom(type.getRawClass())) {
+            return true;
+        }
+        if (Date.class.isAssignableFrom(type.getRawClass())) {
+            return true;
+        }
+        return false;
     }
 }
