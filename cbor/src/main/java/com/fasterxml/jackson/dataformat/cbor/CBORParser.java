@@ -1716,8 +1716,10 @@ public class CBORParser extends ParserBase
         if (_tokenIncomplete) {
             _finishToken();
         }
+        if (_currToken == JsonToken.VALUE_STRING) {
+            return b64variant.decode(_textBuffer.contentsAsString());
+        }
         if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
-            // TODO, maybe: support base64 for text?
             _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         return _binaryValue;
