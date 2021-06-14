@@ -1,13 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310.deser;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
-
-import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 /**
  * Deserializer for {@link LocalDate} from and integer value.
@@ -16,7 +10,7 @@ import java.time.LocalDate;
  *
  * Deserialization from string is not supported.
  */
-public class AvroLocalDateDeserializer extends StdScalarDeserializer<LocalDate> {
+public class AvroLocalDateDeserializer extends AvroJavaTimeDeserializerBase<LocalDate> {
 
     private static final long serialVersionUID = 1L;
 
@@ -26,24 +20,8 @@ public class AvroLocalDateDeserializer extends StdScalarDeserializer<LocalDate> 
         super(LocalDate.class);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public LocalDate deserialize(JsonParser p, DeserializationContext context) throws IOException, JsonProcessingException {
-        switch (p.getCurrentToken()) {
-            case VALUE_NUMBER_INT:
-                return fromLong(p.getLongValue());
-            default:
-                try {
-                    return (LocalDate) context.handleUnexpectedToken(_valueClass, p);
-                } catch (JsonMappingException e) {
-                    throw e;
-                } catch (IOException e) {
-                    throw JsonMappingException.fromUnexpectedIOE(e);
-                }
-        }
-    }
-
-    private LocalDate fromLong(long longValue) {
+    protected LocalDate fromLong(long longValue, ZoneId defaultZoneId) {
         /**
          * Number of days from the unix epoch, 1 January 1970..
          */

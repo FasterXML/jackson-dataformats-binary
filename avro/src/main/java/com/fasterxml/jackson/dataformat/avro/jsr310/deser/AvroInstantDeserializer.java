@@ -1,12 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310.deser;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
-
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -25,7 +18,7 @@ import java.util.function.BiFunction;
  *
  * @param <T> The type of a instant class that can be deserialized.
  */
-public class AvroInstantDeserializer<T extends Temporal> extends StdScalarDeserializer<T> {
+public class AvroInstantDeserializer<T extends Temporal> extends AvroJavaTimeDeserializerBase <T> {
 
     private static final long serialVersionUID = 1L;
 
@@ -40,30 +33,13 @@ public class AvroInstantDeserializer<T extends Temporal> extends StdScalarDeseri
 
     protected final BiFunction<Instant, ZoneId, T> fromInstant;
 
-    protected AvroInstantDeserializer(Class<T> t, BiFunction<Instant, ZoneId, T> fromInstant) {
-        super(t);
+    protected AvroInstantDeserializer(Class<T> supportedType, BiFunction<Instant, ZoneId, T> fromInstant) {
+        super(supportedType);
         this.fromInstant = fromInstant;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public T deserialize(JsonParser p, DeserializationContext context) throws IOException, JsonProcessingException {
-        final ZoneId defaultZoneId = context.getTimeZone().toZoneId().normalized();
-        switch (p.getCurrentToken()) {
-            case VALUE_NUMBER_INT:
-                return fromLong(p.getLongValue(), defaultZoneId);
-            default:
-                try {
-                    return (T) context.handleUnexpectedToken(_valueClass, p);
-                } catch (JsonMappingException e) {
-                    throw e;
-                } catch (IOException e) {
-                    throw JsonMappingException.fromUnexpectedIOE(e);
-                }
-        }
-    }
-
-    private T fromLong(long longValue, ZoneId defaultZoneId) {
+    protected T fromLong(long longValue, ZoneId defaultZoneId) {
         /**
          * Number of milliseconds, independent of a particular time zone or calendar,
          * from 1 January 1970 00:00:00.000 UTC.
