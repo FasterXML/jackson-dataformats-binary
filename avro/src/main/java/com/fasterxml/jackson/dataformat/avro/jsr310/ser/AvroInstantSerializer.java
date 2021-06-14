@@ -25,7 +25,7 @@ import java.util.function.Function;
  * reconstruct the instant, but not the original representation.
  *
  * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type long with logicalType timestamp-millis:
+ * Avro schema with type long and logicalType timestamp-millis:
  * {
  *   "type" : "long",
  *   "logicalType" : "timestamp-millis"

@@ -21,7 +21,7 @@ import java.time.ZoneOffset;
  * is considered local, with a precision of one millisecond from 1 January 1970 00:00:00.000.
  *
  * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type long with logicalType local-timestamp-millis:
+ * Avro schema with type long and logicalType local-timestamp-millis:
  * {
  *   "type" : "long",
  *   "logicalType" : "local-timestamp-millis"

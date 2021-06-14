@@ -19,7 +19,7 @@ import java.time.LocalDate;
  * to a particular time zone or time of day.
  *
  * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type int with logicalType date:
+ * Avro schema with type int and logicalType date:
  * {
  *   "type" : "int",
  *   "logicalType" : "date"

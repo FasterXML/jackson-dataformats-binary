@@ -19,7 +19,7 @@ import java.time.LocalTime;
  * time zone or date, where the int stores the number of milliseconds after midnight, 00:00:00.000.
  *
  * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type int with logicalType time-millis:
+ * Avro schema with type int and logicalType time-millis:
  *  {
  *   "type" : "int",
  *   "logicalType" : "time-millis"
