@@ -19,11 +19,13 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 /**
  * Module that causes all enums to be serialized as Ion symbols.
  */
-public class EnumAsIonSymbolModule extends SimpleModule {
+public class EnumAsIonSymbolModule extends SimpleModule
+{
     private static final long serialVersionUID = 1L;
 
     public EnumAsIonSymbolModule() {
-        super("EnumAsIonSymbolModule", PackageVersion.VERSION);
+        // use fully-qualified-name as of 2.13 (convention)
+        super(EnumAsIonSymbolModule.class.getName(), PackageVersion.VERSION);
         addSerializer(new EnumAsIonSymbolSerializer());
     }
 }
