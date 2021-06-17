@@ -13,7 +13,7 @@ It also supports:
 ## Status
 
 This module is considered stable and production quality (since 2.4). Similar to JSON- and other JSON-like
-backends, it implementsfull support for all levels (streaming, data-binding, tree model).
+backends, it implements full support for all levels (streaming, data-binding, tree model).
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/)
 [![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor)
