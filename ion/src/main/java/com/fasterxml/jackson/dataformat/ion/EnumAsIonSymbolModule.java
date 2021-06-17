@@ -14,18 +14,39 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.core.Version;
+
+import com.fasterxml.jackson.databind.JacksonModule;
+import com.fasterxml.jackson.databind.module.SimpleSerializers;
 
 /**
  * Module that causes all enums to be serialized as Ion symbols.
+ *<p>
+ * As of Jackson 3.0 does not extend {@code SimpleModule} to keep it {@link java.io.Serializable}
+ * (value serializers, deserializers are not serializable in 3.0).
  */
-public class EnumAsIonSymbolModule extends SimpleModule
+public class EnumAsIonSymbolModule extends JacksonModule
+    implements java.io.Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    public EnumAsIonSymbolModule() {
-        // use fully-qualified-name as of 2.13 (convention)
-        super(EnumAsIonSymbolModule.class.getName(), PackageVersion.VERSION);
-        addSerializer(new EnumAsIonSymbolSerializer());
+    public EnumAsIonSymbolModule() { }
+
+    @Override
+    public void setupModule(SetupContext context)
+    {
+        context.addSerializers(new SimpleSerializers()
+                .addSerializer(new EnumAsIonSymbolSerializer())
+        );
+    }
+
+    @Override
+    public String getModuleName() {
+        return getClass().getName();
+    }
+
+    @Override
+    public Version version() {
+        return PackageVersion.VERSION;
     }
 }
