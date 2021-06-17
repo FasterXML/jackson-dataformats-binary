@@ -28,7 +28,8 @@ public class IonValueModule extends SimpleModule
     private static final long serialVersionUID = 1L;
 
     public IonValueModule() {
-        super("IonValueModule", PackageVersion.VERSION);
+        // use fully-qualified-name as of 2.13 (convention)
+        super(IonValueModule.class.getName(), PackageVersion.VERSION);
         addSerializer(new TimestampSerializer());
         addSerializer(new IonValueSerializer());
 
