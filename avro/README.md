@@ -116,7 +116,7 @@ Serialization and deserialization support for limited set of `java.time` classes
 
 ```java
 AvroMapper mapper = AvroMapper.builder()
-    .addModules(new AvroJavaTimeModule())
+    .addModule(new AvroJavaTimeModule())
     .build();
 ```
  

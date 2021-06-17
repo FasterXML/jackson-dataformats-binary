@@ -39,7 +39,7 @@ public class AvroJavaTimeModule_serialization_and_deserializationTest {
 
     private static AvroMapper newAvroMapper() {
         return AvroMapper.builder()
-                .addModules(new AvroJavaTimeModule())
+                .addModule(new AvroJavaTimeModule())
                 .build();
     }
 

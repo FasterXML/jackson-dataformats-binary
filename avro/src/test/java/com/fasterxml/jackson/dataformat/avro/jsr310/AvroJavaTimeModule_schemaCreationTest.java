@@ -52,7 +52,7 @@ public class AvroJavaTimeModule_schemaCreationTest {
     public void testSchemaCreation() throws JsonMappingException {
         // GIVEN
         AvroMapper mapper = AvroMapper.builder()
-                .addModules(new AvroJavaTimeModule())
+                .addModule(new AvroJavaTimeModule())
                 .build();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
 
