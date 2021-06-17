@@ -1,8 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.avro.PackageVersion;
 import com.fasterxml.jackson.dataformat.avro.jsr310.deser.AvroInstantDeserializer;
 import com.fasterxml.jackson.dataformat.avro.jsr310.deser.AvroLocalDateDeserializer;
 import com.fasterxml.jackson.dataformat.avro.jsr310.deser.AvroLocalDateTimeDeserializer;
@@ -27,7 +26,7 @@ public class AvroJavaTimeModule extends SimpleModule {
     private static final long serialVersionUID = 1L;
 
     public AvroJavaTimeModule() {
-        super(PackageVersion.VERSION);
+        super(AvroJavaTimeModule.class.getName(), PackageVersion.VERSION);
 
         addSerializer(Instant.class, AvroInstantSerializer.INSTANT);
         addSerializer(OffsetDateTime.class, AvroInstantSerializer.OFFSET_DATE_TIME);
@@ -44,18 +43,4 @@ public class AvroJavaTimeModule extends SimpleModule {
         addDeserializer(LocalTime.class, AvroLocalTimeDeserializer.INSTANCE);
     }
 
-    @Override
-    public String getModuleName() {
-        return getClass().getName();
-    }
-
-    @Override
-    public Version version() {
-        return PackageVersion.VERSION;
-    }
-
-    @Override
-    public void setupModule(SetupContext context) {
-        super.setupModule(context);
-    }
 }
