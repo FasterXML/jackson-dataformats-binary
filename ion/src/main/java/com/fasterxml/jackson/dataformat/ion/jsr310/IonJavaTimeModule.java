@@ -4,8 +4,9 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
-import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import com.fasterxml.jackson.dataformat.ion.PackageVersion;
 
 /**
  * A module that installs a collection of serializers and deserializers for java.time classes.
