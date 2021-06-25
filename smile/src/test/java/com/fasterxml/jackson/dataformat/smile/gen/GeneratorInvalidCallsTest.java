@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.smile.*;
 
 public class GeneratorInvalidCallsTest extends BaseTestForSmile
 {
-    final SmileFactory SMILE_F = new SmileFactory();
+    private final SmileFactory SMILE_F = new SmileFactory();
 
     public void testInvalidFieldNameInRoot() throws Exception
     {
