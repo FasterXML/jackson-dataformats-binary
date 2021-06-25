@@ -2,9 +2,11 @@ package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
 
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+
 import com.fasterxml.jackson.dataformat.cbor.*;
 
-public class LenientUnicodeGenerationTest extends CBORTestBase
+public class LenientUnicodeCBORGenerationTest extends CBORTestBase
 {
     /**
      * Test that encoding a String containing invalid surrogates fail with an exception
@@ -17,9 +19,10 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
         assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Invalid first surrogate character
-        try { 
+        try {
             gen.writeString("x\ud83d");
-        } catch (IllegalArgumentException e) {
+            fail("Should not pass");
+        } catch (StreamWriteException e) {
             verifyException(e, "Unmatched surrogate pair");
             verifyException(e, "0xD83D");
             verifyException(e, "without low surrogate");
@@ -27,9 +30,10 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
         assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Missing second surrogate character
-        try { 
+        try {
             gen.writeString("x\ude01");
-        } catch (IllegalArgumentException e) {
+            fail("Should not pass");
+        } catch (StreamWriteException e) {
             verifyException(e, "Invalid surrogate pair");
             verifyException(e, "0xDE01");
             verifyException(e, "invalid high surrogate");
@@ -37,9 +41,10 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
         assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Invalid second surrogate character (1)
-        try { 
+        try {
             gen.writeString("x\ud801\ud802");
-        } catch (IllegalArgumentException e) {
+            fail("Should not pass");
+        } catch (StreamWriteException e) {
             verifyException(e, "Invalid surrogate pair");
             verifyException(e, "0xD801");
             verifyException(e, "0xD802");
@@ -49,9 +54,10 @@ public class LenientUnicodeGenerationTest extends CBORTestBase
         assertEquals(0, gen.streamWriteOutputBuffered());
 
         // Invalid second surrogate character (2)
-        try { 
+        try {
             gen.writeString("x\ud83dx");
-        } catch (IllegalArgumentException e) {
+            fail("Should not pass");
+        } catch (StreamWriteException e) {
             verifyException(e, "Invalid surrogate pair");
             verifyException(e, "0xD83D");
             verifyException(e, "0x0078");

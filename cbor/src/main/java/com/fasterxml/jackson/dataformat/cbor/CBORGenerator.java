@@ -1271,7 +1271,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     protected final void _writeString(char[] text, int offset, int len)
-            throws JacksonException
+        throws JacksonException
     {
         if (len <= MAX_SHORT_STRING_CHARS) { // possibly short string (not necessarily)
             _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
@@ -1370,7 +1370,9 @@ public class CBORGenerator extends GeneratorBase
      * Helper method called when the whole character sequence is known to fit in
      * the output buffer regardless of UTF-8 expansion.
      */
-    private final int _encode(int outputPtr, char[] str, int i, int end) {
+    private final int _encode(int outputPtr, char[] str, int i, int end)
+        throws JacksonException
+    {
         // First: let's see if it's all ASCII: that's rather fast
         final byte[] outBuf = _outputBuffer;
         final int outputStart = outputPtr;
@@ -1390,7 +1392,9 @@ public class CBORGenerator extends GeneratorBase
      * characters.
      */
     private final int _shortUTF8Encode2(char[] str, int i, int end,
-            int outputPtr, int outputStart) {
+            int outputPtr, int outputStart)
+        throws JacksonException
+    {
         final byte[] outBuf = _outputBuffer;
         while (i < end) {
             int c = str[i++];
@@ -1428,7 +1432,9 @@ public class CBORGenerator extends GeneratorBase
         return (outputPtr - outputStart);
     }
 
-    private final int _encode(int outputPtr, String str, int len) {
+    private final int _encode(int outputPtr, String str, int len)
+        throws JacksonException
+    {
         final byte[] outBuf = _outputBuffer;
         final int outputStart = outputPtr;
 
@@ -1443,7 +1449,9 @@ public class CBORGenerator extends GeneratorBase
     }
 
     private final int _encode2(int i, int outputPtr, String str, int len,
-            int outputStart) {
+            int outputStart)
+        throws JacksonException
+    {
         final byte[] outBuf = _outputBuffer;
         // no; non-ASCII stuff, slower loop
         while (i < len) {
@@ -1482,7 +1490,9 @@ public class CBORGenerator extends GeneratorBase
         return (outputPtr - outputStart);
     }
 
-    private int _invalidSurrogateStart(int code, byte[] outBuf, int outputPtr) {
+    private int _invalidSurrogateStart(int code, byte[] outBuf, int outputPtr)
+        throws JacksonException
+    {
         if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
             return _appendReplacementChar(outBuf, outputPtr);
         }
@@ -1491,25 +1501,28 @@ public class CBORGenerator extends GeneratorBase
         // but there is no second part to encode
         if (code <= SURR1_LAST) {
             // Unmatched first part (closing without second part?)
-            throw new IllegalArgumentException(String.format(
+            _reportError(String.format(
 "Unmatched surrogate pair, starts with valid high surrogate (0x%04X) but ends without low surrogate",
 code));
         }
-        throw new IllegalArgumentException(String.format(
+        _reportError(String.format(
 "Invalid surrogate pair, starts with invalid high surrogate (0x%04X), not in valid range [0xD800, 0xDBFF]",
 code));
+        return 0; // never gets here
     }
 
     private int _invalidSurrogateEnd(int surr1, int surr2,
             byte[] outBuf, int outputPtr)
+        throws JacksonException
     {
         if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
             return _appendReplacementChar(outBuf, outputPtr);
         }
-        throw new IllegalArgumentException(String.format(
+        _reportError(String.format(
 "Invalid surrogate pair, starts with valid high surrogate (0x%04X)"
 +" but ends with invalid low surrogate (0x%04X), not in valid range [0xDC00, 0xDFFF]",
 surr1, surr2));
+        return 0; // never gets here
     }
 
     private int _appendReplacementChar(byte[] outBuf, int outputPtr) {
