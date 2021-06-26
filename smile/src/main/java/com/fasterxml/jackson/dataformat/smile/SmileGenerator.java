@@ -83,7 +83,20 @@ public class SmileGenerator
          * this option is disabled by default, and should only be enabled if it is likely that
          * same values repeat relatively often.
          */
-        CHECK_SHARED_STRING_VALUES(false)
+        CHECK_SHARED_STRING_VALUES(false),
+
+        /**
+         * Feature that determines if an invalid surrogate encoding found in the
+         * incoming String should fail with an exception or silently be output
+         * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD) or not; if not,
+         * an exception will be thrown to indicate invalid content.
+         *<p>
+         * Default value is {@code false} (for backwards compatibility) meaning that
+         * an invalid surrogate will result in exception ({@code StreamWriteException}).
+         *
+         * @since 2.13
+         */
+        LENIENT_UTF_ENCODING(false),
         ;
 
         protected final boolean _defaultState;
@@ -156,6 +169,14 @@ public class SmileGenerator
 
     protected final static long MIN_INT_AS_LONG = (long) Integer.MIN_VALUE;
     protected final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
+
+    /**
+     * The replacement character to use to fix invalid Unicode sequences
+     * (mismatched surrogate pair).
+     *
+     * @since 2.13
+     */
+    protected final static int REPLACEMENT_CHAR = 0xfffd;
 
     /*
     /**********************************************************************
@@ -1912,22 +1933,19 @@ public class SmileGenerator
                 outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
                 continue;
             }
-            // Yup, a surrogate pair
-            if (c > SURR1_LAST) { // must be from first range; second won't do
-                _throwIllegalSurrogate(c);
+            // Yup, looks like a surrogate pair... but is it?
+            if ((c <= SURR1_LAST) && (i < end)) { // must be from first range and have another char
+                final int d = str[i];
+                if ((d <= SURR2_LAST) && (d >= SURR2_FIRST)) {
+                    ++i;
+                    outputPtr = _decodeAndWriteSurrogate(c, d, outBuf, outputPtr);
+                    continue;
+                }
+                outputPtr = _invalidSurrogateEnd(c, d, outBuf, outputPtr);
+                continue;
             }
-            // ... meaning it must have a pair
-            if (i >= end) {
-                _throwIllegalSurrogate(c);
-            }
-            c = _convertSurrogate(c, str[i++]);
-            if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-                _throwIllegalSurrogate(c);
-            }
-            outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            // Nah, something wrong
+            outputPtr = _invalidSurrogateStart(c, outBuf, outputPtr);
         }
         int codedLen = outputPtr - _outputTail;
         _outputTail = outputPtr;
@@ -1976,22 +1994,19 @@ public class SmileGenerator
                 outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
                 continue;
             }
-            // Yup, a surrogate pair
-            if (c > SURR1_LAST) { // must be from first range; second won't do
-                _throwIllegalSurrogate(c);
+            // Yup, looks like a surrogate pair... but is it?
+            if ((c <= SURR1_LAST) && (i < end)) { // must be from first range and have another char
+                final int d = str.charAt(i);
+                if ((d <= SURR2_LAST) && (d >= SURR2_FIRST)) {
+                    ++i;
+                    outputPtr = _decodeAndWriteSurrogate(c, d, outBuf, outputPtr);
+                    continue;
+                }
+                outputPtr = _invalidSurrogateEnd(c, d, outBuf, outputPtr);
+                continue;
             }
-            // ... meaning it must have a pair
-            if (i >= end) {
-                _throwIllegalSurrogate(c);
-            }
-            c = _convertSurrogate(c, str.charAt(i++));
-            if (c > 0x10FFFF) { // illegal in JSON as well as in XML
-                _throwIllegalSurrogate(c);
-            }
-            outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-            outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+            // Nah, something wrong
+            outputPtr = _invalidSurrogateStart(c, outBuf, outputPtr);
         }
         int codedLen = outputPtr - _outputTail;
         _outputTail = outputPtr;
@@ -2004,9 +2019,8 @@ public class SmileGenerator
         
         output_loop:
         while (inputPtr < inputEnd) {
-            /* First, let's ensure we can output at least 4 bytes
-             * (longest UTF-8 encoded codepoint):
-             */
+            // First, let's ensure we can output at least 4 bytes
+            // (longest UTF-8 encoded codepoint):
             if (_outputTail >= bufferEnd) {
                 _flushBuffer();
             }
@@ -2047,22 +2061,19 @@ public class SmileGenerator
                     _outputBuffer[_outputTail++] = (byte) (0x80 | (c & 0x3f));
                     continue;
                 }
-                // Yup, a surrogate:
-                if (c > SURR1_LAST) { // must be from first range
-                    _throwIllegalSurrogate(c);
+                // Yup, looks like a surrogate pair... but is it?
+                if ((c <= SURR1_LAST) && (inputPtr < inputEnd)) { // must be from first range and have another char
+                    final int d = str[inputPtr];
+                    if ((d <= SURR2_LAST) && (d >= SURR2_FIRST)) {
+                        ++inputPtr;
+                        _outputTail = _decodeAndWriteSurrogate(c, d, _outputBuffer, _outputTail);
+                        continue;
+                    }
+                    _outputTail = _invalidSurrogateEnd(c, d, _outputBuffer, _outputTail);
+                    continue;
                 }
-                // and if so, followed by another from next range
-                if (inputPtr >= inputEnd) {
-                    _throwIllegalSurrogate(c);
-                }
-                c = _convertSurrogate(c, str[inputPtr++]);
-                if (c > 0x10FFFF) { // illegal, as per RFC 4627
-                    _throwIllegalSurrogate(c);
-                }
-                _outputBuffer[_outputTail++] = (byte) (0xf0 | (c >> 18));
-                _outputBuffer[_outputTail++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-                _outputBuffer[_outputTail++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-                _outputBuffer[_outputTail++] = (byte) (0x80 | (c & 0x3f));
+                // Nah, something wrong
+                _outputTail = _invalidSurrogateStart(c, _outputBuffer, _outputTail);
             }
         }
     }
@@ -2073,9 +2084,8 @@ public class SmileGenerator
         
         output_loop:
         while (inputPtr < inputEnd) {
-            /* First, let's ensure we can output at least 4 bytes
-             * (longest UTF-8 encoded codepoint):
-             */
+            // First, let's ensure we can output at least 4 bytes
+            // (longest UTF-8 encoded codepoint):
             if (_outputTail >= bufferEnd) {
                 _flushBuffer();
             }
@@ -2116,56 +2126,81 @@ public class SmileGenerator
                     _outputBuffer[_outputTail++] = (byte) (0x80 | (c & 0x3f));
                     continue;
                 }
-                // Yup, a surrogate:
-                if (c > SURR1_LAST) { // must be from first range
-                    _throwIllegalSurrogate(c);
+                // Yup, looks like a surrogate pair... but is it?
+                if ((c <= SURR1_LAST) && (inputPtr < inputEnd)) { // must be from first range and have another char
+                    final int d = str.charAt(inputPtr);
+                    if ((d <= SURR2_LAST) && (d >= SURR2_FIRST)) {
+                        ++inputPtr;
+                        _outputTail = _decodeAndWriteSurrogate(c, d, _outputBuffer, _outputTail);
+                        continue;
+                    }
+                    _outputTail = _invalidSurrogateEnd(c, d, _outputBuffer, _outputTail);
+                    continue;
                 }
-                // and if so, followed by another from next range
-                if (inputPtr >= inputEnd) {
-                    _throwIllegalSurrogate(c);
-                }
-                c = _convertSurrogate(c, str.charAt(inputPtr++));
-                if (c > 0x10FFFF) { // illegal, as per RFC 4627
-                    _throwIllegalSurrogate(c);
-                }
-                _outputBuffer[_outputTail++] = (byte) (0xf0 | (c >> 18));
-                _outputBuffer[_outputTail++] = (byte) (0x80 | ((c >> 12) & 0x3f));
-                _outputBuffer[_outputTail++] = (byte) (0x80 | ((c >> 6) & 0x3f));
-                _outputBuffer[_outputTail++] = (byte) (0x80 | (c & 0x3f));
+                // Nah, something wrong
+                _outputTail = _invalidSurrogateStart(c, _outputBuffer, _outputTail);
             }
         }
-    }
-    
-    /**
-     * Method called to calculate UTF codepoint, from a surrogate pair.
-     */
-    private int _convertSurrogate(int firstPart, int secondPart) throws JacksonException
-    {
-        // Ok, then, is the second part valid?
-        if (secondPart < SURR2_FIRST || secondPart > SURR2_LAST) {
-            String msg = String.format("Broken surrogate pair: first char 0x%04X, second 0x%04X; illegal combination",
-                    firstPart, secondPart);
-            _reportError(msg);
-        }
-        return 0x10000 + ((firstPart - SURR1_FIRST) << 10) + (secondPart - SURR2_FIRST);
     }
 
-    private void _throwIllegalSurrogate(int code) throws JacksonException
+    /*
+    /**********************************************************************
+    /* Internal methods, surrogate pair handling
+    /**********************************************************************
+     */
+
+    private int _invalidSurrogateStart(int code, byte[] outBuf, int outputPtr)
+        throws JacksonException
     {
-        if (code > 0x10FFFF) { // over max?
-            _reportError(String.format(
-                    "Illegal character point (0x%X) to output; max is 0x10FFFF as per RFC 4627", code));
+        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+            return _appendReplacementChar(outBuf, outputPtr);
         }
-        if (code >= SURR1_FIRST) {
-            if (code <= SURR1_LAST) { // Unmatched first part (closing without second part?)
-                _reportError(String.format(
-                    "Unmatched first part of surrogate pair (0x%04X)", code));
-            }
+        // Will be called in two distinct cases: either first character is
+        // invalid (code range of second part), or first character is valid
+        // but there is no second part to encode
+        if (code <= SURR1_LAST) {
+            // Unmatched first part (closing without second part?)
             _reportError(String.format(
-                    "Unmatched second part of surrogate pair (0x%04X)", code));
+"Unmatched surrogate pair, starts with valid high surrogate (0x%04X) but ends without low surrogate",
+code));
         }
-        // should we ever get this?
-        _reportError(String.format("Illegal character point (0x%X) to output", code));
+        _reportError(String.format(
+"Invalid surrogate pair, starts with invalid high surrogate (0x%04X), not in valid range [0xD800, 0xDBFF]",
+code));
+        return 0; // never gets here
+    }
+
+    private int _invalidSurrogateEnd(int surr1, int surr2,
+            byte[] outBuf, int outputPtr)
+        throws JacksonException
+    {
+        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+            return _appendReplacementChar(outBuf, outputPtr);
+        }
+        _reportError(String.format(
+"Invalid surrogate pair, starts with valid high surrogate (0x%04X)"
++" but ends with invalid low surrogate (0x%04X), not in valid range [0xDC00, 0xDFFF]",
+surr1, surr2));
+        return 0; // never gets here
+    }
+
+    private int _appendReplacementChar(byte[] outBuf, int outputPtr) {
+        outBuf[outputPtr++] = (byte) (0xe0 | (REPLACEMENT_CHAR >> 12));
+        outBuf[outputPtr++] = (byte) (0x80 | ((REPLACEMENT_CHAR >> 6) & 0x3f));
+        outBuf[outputPtr++] = (byte) (0x80 | (REPLACEMENT_CHAR & 0x3f));
+        return outputPtr;
+    }
+
+    private int _decodeAndWriteSurrogate(int surr1, int surr2,
+            byte[] outBuf, int outputPtr)
+    {
+        final int c = 0x10000 + ((surr1 - SURR1_FIRST) << 10)
+                + (surr2 - SURR2_FIRST);
+        outBuf[outputPtr++] = (byte) (0xf0 | (c >> 18));
+        outBuf[outputPtr++] = (byte) (0x80 | ((c >> 12) & 0x3f));
+        outBuf[outputPtr++] = (byte) (0x80 | ((c >> 6) & 0x3f));
+        outBuf[outputPtr++] = (byte) (0x80 | (c & 0x3f));
+        return outputPtr;
     }
 
     /*

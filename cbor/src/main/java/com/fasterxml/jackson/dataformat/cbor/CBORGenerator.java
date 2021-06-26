@@ -26,13 +26,13 @@ public class CBORGenerator extends GeneratorBase
      * Let's ensure that we have big enough output buffer because of safety
      * margins we need for UTF-8 encoding.
      */
-    final static int BYTE_BUFFER_FOR_OUTPUT = 16000;
+    protected final static int BYTE_BUFFER_FOR_OUTPUT = 16000;
 
     /**
      * The replacement character to use to fix invalid Unicode sequences
      * (mismatched surrogate pair).
      */
-    final static int REPLACEMENT_CHAR = 0xfffd;
+    protected final static int REPLACEMENT_CHAR = 0xfffd;
 
     /**
      * Longest char chunk we will output is chosen so that it is guaranteed to
@@ -76,7 +76,7 @@ public class CBORGenerator extends GeneratorBase
          * an exception will be thrown to indicate invalid content.
          *<p>
          * Default value is {@code false} (for backwards compatibility) meaning that
-         * an invalide surrogate will result in exception ({@link IllegalArgumentException}
+         * an invalid surrogate will result in exception ({@code StreamWriteException}).
          */
         LENIENT_UTF_ENCODING(false),
         ;
