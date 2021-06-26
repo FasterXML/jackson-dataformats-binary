@@ -139,7 +139,7 @@ Supported java.time types with Avro schema.
 
 #### Precision
 
-Avro supports milliseconds and microseconds previsions for date and time related logicalType(s). Only the milliseconds precision is supported.
+Avro supports milliseconds and microseconds precision for date and time related LogicalTypes, but this module only supports millisecond precision.
 
 ## Generating Avro Schema from POJO definition
 
