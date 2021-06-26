@@ -20,6 +20,9 @@ Modules:
  (actual fix in `jackson-databind`)
 #272: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
  (reported by Fabian M)
+#276: (smile) Add `SmileGenerator.Feature.LENIENT_UTF_ENCODING` for lenient handling
+  of broken Unicode surrogate pairs on writing
+ (requested by kireet@github)
 - `Ion-java` dep 1.4.0 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 
