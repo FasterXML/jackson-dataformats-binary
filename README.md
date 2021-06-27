@@ -17,7 +17,8 @@ For Jackson 2.x this is done by sub-classing Jackson core abstractions of:
 
 # Status
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
+[![Build (github)](https://github.com/FasterXML/jackson-dataformats-binary/actions/workflows/main.yml/badge.svg)](https://github.com/FasterXML/jackson-dataformats-binary/actions/workflows/main.yml)
+[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/jackson-dataformats-binary.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:jackson-dataformats-binary)
 
 # Binary formats supported
 
@@ -67,7 +68,6 @@ are active maintenance branches in which much of development happens:
 
 * `2.13` is for developing the next 2.x version
 * `2.12` and `2.11` are for backported fixes for 2.12/2.11 versions (respectively)
-
 
 Older branches are usually not changed but are available for historic reasons.
 All released versions have matching git tags (`jackson-dataformats-binary-2.10.3`).
