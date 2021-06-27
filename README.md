@@ -17,7 +17,7 @@ For Jackson 2.x this is done by sub-classing Jackson core abstractions of:
 
 # Status
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-dataformats-binary.svg)](https://travis-ci.org/FasterXML/jackson-dataformats-binary)
+[![Build (github)](https://github.com/FasterXML/jackson-dataformats-binary/actions/workflows/main.yml/badge.svg)](https://github.com/FasterXML/jackson-dataformats-binary/actions/workflows/main.yml)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/jackson-dataformats-binary.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:jackson-dataformats-binary)
 
 # Binary formats supported
