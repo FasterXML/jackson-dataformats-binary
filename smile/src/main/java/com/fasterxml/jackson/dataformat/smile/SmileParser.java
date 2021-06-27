@@ -1510,8 +1510,9 @@ _typeAsInt);
         } else  if (_currToken == JsonToken.VALUE_STRING) {
             return _getBinaryFromString(b64variant);
         } else {
-            throw _constructReadException("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary",
-                    _currToken);
+            throw _constructReadException(
+"Current token (%s) not VALUE_EMBEDDED_OBJECT or VALUE_STRING, can not access as binary",
+                    currentToken());
         }
         return _binaryValue;
     }
@@ -1545,7 +1546,8 @@ _typeAsInt);
                 return len;
             }
             throw _constructReadException(
-"Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
+"Current token (%s) not VALUE_EMBEDDED_OBJECT or VALUE_STRING, can not access as binary",
+                    currentToken());
         }
         // Ok, first, unlikely (but legal?) case where someone already requested binary data:
         if (!_tokenIncomplete) {
