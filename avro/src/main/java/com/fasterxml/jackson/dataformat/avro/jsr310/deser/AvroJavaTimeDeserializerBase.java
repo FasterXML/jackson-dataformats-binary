@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.type.LogicalType;
 import java.io.IOException;
 import java.time.ZoneId;
 
+import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
+
 public abstract class AvroJavaTimeDeserializerBase<T> extends StdScalarDeserializer<T> {
 
     protected AvroJavaTimeDeserializerBase(Class<T> supportedType) {
@@ -22,12 +24,12 @@ public abstract class AvroJavaTimeDeserializerBase<T> extends StdScalarDeseriali
     @SuppressWarnings("unchecked")
     @Override
     public T deserialize(JsonParser p, DeserializationContext context) throws IOException {
-        final ZoneId defaultZoneId = context.getTimeZone().toZoneId().normalized();
-        switch (p.getCurrentToken()) {
-            case VALUE_NUMBER_INT:
-                return fromLong(p.getLongValue(), defaultZoneId);
+        if (p.getCurrentToken() == VALUE_NUMBER_INT) {
+            final ZoneId defaultZoneId = context.getTimeZone().toZoneId().normalized();
+            return fromLong(p.getLongValue(), defaultZoneId);
+        } else {
+            return (T) context.handleUnexpectedToken(_valueClass, p);
         }
-        return (T) context.handleUnexpectedToken(_valueClass, p);
     }
 
     protected abstract T fromLong(long longValue, ZoneId defaultZoneId);
