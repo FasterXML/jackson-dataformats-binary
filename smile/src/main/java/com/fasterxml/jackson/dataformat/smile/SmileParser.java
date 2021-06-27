@@ -536,8 +536,8 @@ versionBits));
     // should we change description based on reserved vs illegal? (special cases
     // of null bytes etc)
     private JsonToken _reportUnknownValueTypeToken(int ch) throws IOException {
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected value token");
-        return null;
+        throw _constructReadException("Invalid type marker byte 0x%s for expected value token",
+                Integer.toHexString(ch & 0xFF));
     }
 
     // Helper method called in situations where Smile Header was encountered
@@ -877,8 +877,8 @@ versionBits));
     // Should we try to give more information on kind of problem (reserved vs
     // illegal by definition; suggesting likely problem)
     private String _reportUnknownNameToken(int ch) throws IOException {
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(ch & 0xFF)+" for expected field name (or END_OBJECT marker)");
-        return null;
+        throw _constructReadException("Invalid type marker byte 0x%s for expected field name (or END_OBJECT marker)",
+                Integer.toHexString(ch & 0xFF));
     }
 
     @Override
@@ -1211,7 +1211,9 @@ versionBits));
         } else  if (_currToken == JsonToken.VALUE_STRING) {
             return _getBinaryFromString(b64variant);
         } else {
-            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            throw _constructReadException(
+"Current token (%s) not VALUE_EMBEDDED_OBJECT or VALUE_STRING, can not access as binary",
+                    currentToken());
         }
         return _binaryValue;
     }
@@ -1240,7 +1242,9 @@ versionBits));
                 out.write(b, 0, len);
                 return len;
             }
-            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            throw _constructReadException(
+"Current token (%s) not VALUE_EMBEDDED_OBJECT or VALUE_STRING, can not access as binary",
+                    currentToken());
         }
         // Ok, first, unlikely (but legal?) case where someone already requested binary data:
         if (!_tokenIncomplete) {
@@ -1448,8 +1452,8 @@ versionBits));
             break;
         }
         // Other byte values are illegal
-        _reportError("Invalid type marker byte 0x"+Integer.toHexString(_typeAsInt)+" for expected field name (or END_OBJECT marker)");
-        return null;
+        throw _constructReadException("Invalid type marker byte 0x%s for expected field name (or END_OBJECT marker)",
+                Integer.toHexString(_typeAsInt));
     }
 
     private String _findOrDecodeShortAsciiName(final int len) throws IOException
@@ -1609,7 +1613,8 @@ versionBits));
                 default: // invalid
                     // Update pointer here to point to (more) correct location
                     _inputPtr = inPtr;
-                    _reportError(String.format("Invalid byte 0x%02X in short Unicode text block", i));
+                    throw _constructReadException(
+"Invalid byte 0x%02X in short Unicode text block", i);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -2454,7 +2459,7 @@ currentToken(), firstCh);
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportError(String.format("Invalid byte 0x%02X in short Unicode text block", i));
+                throw _constructReadException("Invalid byte 0x%02X in short Unicode text block", i);
             }
             outBuf[outPtr++] = (char) i;
         }        
@@ -3060,7 +3065,7 @@ currentToken(), firstCh);
             int firstUTFByteValue, int bytesExpected)
         throws IOException
     {
-        throw _constructError(String.format(
+        throw _constructReadException(String.format(
 "Truncated UTF-8 character in Short Unicode String value (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));

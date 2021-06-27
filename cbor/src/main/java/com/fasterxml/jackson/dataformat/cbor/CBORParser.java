@@ -1706,7 +1706,9 @@ public class CBORParser extends ParserMinimalBase
         } else  if (_currToken == JsonToken.VALUE_STRING) {
             return _getBinaryFromString(b64variant);
         } else {
-            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            throw _constructReadException(
+"Current token (%s) not VALUE_EMBEDDED_OBJECT or VALUE_STRING, can not access as binary",
+                    currentToken());
         }
         return _binaryValue;
     }
@@ -1735,7 +1737,9 @@ public class CBORParser extends ParserMinimalBase
                 out.write(b, 0, len);
                 return len;
             }
-            _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
+            throw _constructReadException(
+"Current token (%s) not VALUE_EMBEDDED_OBJECT or VALUE_STRING, can not access as binary",
+                    currentToken());
         }
         if (!_tokenIncomplete) { // someone already decoded or read
             if (_binaryValue == null) { // if this method called twice in a row
@@ -2774,7 +2778,8 @@ public class CBORParser extends ParserMinimalBase
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _reportError("Invalid UTF-8 byte 0x"+Integer.toHexString(i)+" in Object property name");
+                    throw _constructReadException("Invalid UTF-8 byte 0x%s in Object property name",
+                            Integer.toHexString(i));
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -3067,7 +3072,9 @@ public class CBORParser extends ParserMinimalBase
                 _skipBytesL(_decode64Bits());
                 break;
             case 31:
-                throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+expectedType+")");
+                throw _constructReadException(
+"Illegal chunked-length indicator within chunked-length value (type %d)",
+expectedType);
             default:
                 _invalidToken(_typeByte);
             }
@@ -3119,11 +3126,12 @@ public class CBORParser extends ParserMinimalBase
             //   only allow for cases where encoder is being wasteful...
             long l = _decode64Bits();
             if (l < MIN_INT_L || l > MAX_INT_L) {
-                _reportError("Illegal Tag value: "+l);
+                throw _constructReadException("Illegal Tag value: %d", l);
             }
             return (int) l;
         }
-        throw _constructError("Invalid low bits for Tag token: 0x"+Integer.toHexString(lowBits));
+        throw _constructReadException("Invalid low bits for Tag token: 0x%s",
+                Integer.toHexString(lowBits));
     }
     
     /**
