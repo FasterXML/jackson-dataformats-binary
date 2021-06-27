@@ -1713,11 +1713,13 @@ public class CBORParser extends ParserBase
     @Override
     public byte[] getBinaryValue(Base64Variant b64variant) throws JacksonException
     {
-        if (_tokenIncomplete) {
-            _finishToken();
-        }
-        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
-            // TODO, maybe: support base64 for text?
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
+            if (_tokenIncomplete) {
+                _finishToken();
+            }
+        } else  if (_currToken == JsonToken.VALUE_STRING) {
+            return _getBinaryFromString(b64variant);
+        } else {
             _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         return _binaryValue;
@@ -1738,8 +1740,19 @@ public class CBORParser extends ParserBase
     @Override
     public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws JacksonException
     {
-        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
-            // Todo, maybe: support base64 for text?
+        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT) {
+            if (_currToken == JsonToken.VALUE_STRING) {
+                // 26-Jun-2021, tatu: Not optimized; could make streaming if we
+                //    really want in future
+                final byte[] b = _getBinaryFromString(b64variant);
+                final int len = b.length;
+                try {
+                    out.write(b, 0, len);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
+                return len;
+            }
             _reportError("Current token ("+currentToken()+") not VALUE_EMBEDDED_OBJECT, can not access as binary");
         }
         if (!_tokenIncomplete) { // someone already decoded or read
@@ -1793,6 +1806,21 @@ public class CBORParser extends ParserBase
         }
         _tokenIncomplete = false;
         return total;
+    }
+
+    // @since 2.13
+    private final byte[] _getBinaryFromString(Base64Variant variant) throws JacksonException
+    {
+        if (_tokenIncomplete) {
+            _finishToken();
+        }
+        if (_binaryValue == null) {
+            // 26-Jun-2021, tatu: Copied from ParserBase
+            ByteArrayBuilder builder = _getByteArrayBuilder();
+            _decodeBase64(getText(), builder, variant);
+            _binaryValue = builder.toByteArray();
+        }
+        return _binaryValue;
     }
 
     /*

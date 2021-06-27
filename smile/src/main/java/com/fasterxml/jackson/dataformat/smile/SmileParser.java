@@ -1503,11 +1503,13 @@ _typeAsInt);
     @Override
     public byte[] getBinaryValue(Base64Variant b64variant) throws JacksonException
     {
-        if (_tokenIncomplete) {
-            _finishToken();
-        }
-        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT) {
-            // Todo, maybe: support base64 for text?
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
+            if (_tokenIncomplete) {
+                _finishToken();
+            }
+        } else  if (_currToken == JsonToken.VALUE_STRING) {
+            return _getBinaryFromString(b64variant);
+        } else {
             throw _constructReadException("Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary",
                     _currToken);
         }
@@ -1520,7 +1522,7 @@ _typeAsInt);
         if (_tokenIncomplete) {
             _finishToken();
         }
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             return _binaryValue;
         }
         return null;
@@ -1529,8 +1531,19 @@ _typeAsInt);
     @Override
     public int readBinaryValue(Base64Variant b64variant, OutputStream out) throws JacksonException
     {
-        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT ) {
-            // Todo, maybe: support base64 for text?
+        if (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT) {
+            if (_currToken == JsonToken.VALUE_STRING) {
+                // 26-Jun-2021, tatu: Not optimized; could make streaming if we
+                //    really want in future
+                final byte[] b = _getBinaryFromString(b64variant);
+                final int len = b.length;
+                try {
+                    out.write(b, 0, len);
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
+                return len;
+            }
             throw _constructReadException(
 "Current token (%s) not VALUE_EMBEDDED_OBJECT, can not access as binary", _currToken);
         }
@@ -1646,7 +1659,22 @@ _typeAsInt);
             }
         }
     }
-    
+
+    // @since 2.13
+    private final byte[] _getBinaryFromString(Base64Variant variant) throws JacksonException
+    {
+        if (_tokenIncomplete) {
+            _finishToken();
+        }
+        if (_binaryValue == null) {
+            // 26-Jun-2021, tatu: Copied from ParserBase (except no recycling of BAB here)
+            ByteArrayBuilder builder = new ByteArrayBuilder();
+            _decodeBase64(getText(), builder, variant);
+            _binaryValue = builder.toByteArray();
+        }
+        return _binaryValue;
+    }
+
     /*
     /**********************************************************************
     /* Internal methods, property name parsing
