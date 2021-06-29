@@ -23,6 +23,9 @@ Modules:
 #276: (smile) Add `SmileGenerator.Feature.LENIENT_UTF_ENCODING` for lenient handling
   of broken Unicode surrogate pairs on writing
  (requested by kireet@github)
+#283: Add `logicalType` support for some `java.time` types; add `AvroJavaTimeModule`
+  for native ser/deser
+ (contributed by Michal F)
 #284: Support base64 strings in `getBinaryValue()` for CBOR and Smile
  (requested by Hunter H)
 - `Ion-java` dep 1.4.0 -> 1.8.0
