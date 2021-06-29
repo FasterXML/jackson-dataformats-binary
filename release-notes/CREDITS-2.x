@@ -200,6 +200,12 @@ Nick (manaigrn-amzn@github)
   Native Type Ids when upgrading from 2.8
  (2.12.3)
 
+Michal Foksa (MichalFoksa@github)
+
+* Contributed #283: Add `logicalType` support for some `java.time` types; add `AvroJavaTimeModule`
+  for native ser/deser
+ (2.13.0)
+
 Hunter Herman (hherman1@github)
 
 * Requested #284: Support base64 strings in `getBinaryValue()` for CBOR and Smile
