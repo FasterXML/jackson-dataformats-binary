@@ -111,6 +111,40 @@ byte[] avroData = mapper.writer(schema)
 
 and that's about it, for now.
 
+## Java Time Support
+Serialization and deserialization support for limited set of `java.time` classes to Avro with [logical type](http://avro.apache.org/docs/current/spec.html#Logical+Types) is provided by `AvroJavaTimeModule`.
+
+This module is to be used either:
+- Instead of Java 8 date/time module (`com.fasterxml.jackson.datatype.jsr310.JavaTimeModule`) or
+- to override Java 8 date/time module and for that, module must be registered AFTER Java 8 date/time module (last registration wins).
+
+```java
+AvroMapper mapper = AvroMapper.builder()
+    .addModule(new AvroJavaTimeModule())
+    .build();
+```
+ 
+#### Note
+Please note that time zone information is lost at serialization. Serialized values represent point in time, 
+independent of a particular time zone or calendar. Upon reading a value back time instant is reconstructed but not the original time zone.
+
+#### Supported java.time types:
+
+Supported java.time types with Avro schema.  
+
+| Type                           | Avro schema
+| ------------------------------ | -------------
+| `java.time.OffsetDateTime`     | `{"type": "long", "logicalType": "timestamp-millis"}`
+| `java.time.ZonedDateTime`      | `{"type": "long", "logicalType": "timestamp-millis"}`
+| `java.time.Instant`            | `{"type": "long", "logicalType": "timestamp-millis"}`
+| `java.time.LocalDate`          | `{"type": "int",  "logicalType": "date"}`
+| `java.time.LocalTime`          | `{"type": "int",  "logicalType": "time-millis"}`
+| `java.time.LocalDateTime`      | `{"type": "long", "logicalType": "local-timestamp-millis"}`
+
+#### Precision
+
+Avro supports milliseconds and microseconds precision for date and time related LogicalTypes, but this module only supports millisecond precision.
+
 ## Generating Avro Schema from POJO definition
 
 Ok but wait -- you do not have to START with an Avro Schema. This module can

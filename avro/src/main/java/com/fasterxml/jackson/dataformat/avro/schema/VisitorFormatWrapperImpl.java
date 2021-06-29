@@ -1,21 +1,30 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import org.apache.avro.Schema;
-
 import com.fasterxml.jackson.core.JsonGenerator;
-
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonAnyFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonBooleanFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonMapFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNullFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import org.apache.avro.Schema;
+
+import java.time.temporal.Temporal;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
 {
     protected SerializerProvider _provider;
-    
+
     protected final DefinedSchemas _schemas;
 
     /**
@@ -28,7 +37,7 @@ public class VisitorFormatWrapperImpl
      * Schema for simple types that do not need a visitor.
      */
     protected Schema _valueSchema;
-    
+
     /*
     /**********************************************************************
     /* Construction
@@ -39,7 +48,7 @@ public class VisitorFormatWrapperImpl
         _schemas = schemas;
         _provider = p;
     }
-    
+
     @Override
     public SerializerProvider getProvider() {
         return _provider;
@@ -67,7 +76,7 @@ public class VisitorFormatWrapperImpl
         }
         return _builder.builtAvroSchema();
     }
-    
+
     /*
     /**********************************************************************
     /* Callbacks
@@ -97,7 +106,7 @@ public class VisitorFormatWrapperImpl
         _builder = v;
         return v;
     }
-    
+
     @Override
     public JsonArrayFormatVisitor expectArrayFormat(final JavaType convertedType) {
         // 22-Mar-2016, tatu: Actually we can detect byte[] quite easily here can't we?
@@ -148,6 +157,13 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
+
+        if (_isDateTimeType(type)) {
+            DateTimeVisitor v = new DateTimeVisitor(type);
+            _builder = v;
+            return v;
+        }
+
         IntegerVisitor v = new IntegerVisitor(type);
         _builder = v;
         return v;
@@ -183,7 +199,15 @@ public class VisitorFormatWrapperImpl
     protected <T> T _throwUnsupported() {
         return _throwUnsupported("Format variation not supported");
     }
+
     protected <T> T _throwUnsupported(String msg) {
         throw new UnsupportedOperationException(msg);
+    }
+
+    private boolean _isDateTimeType(JavaType type) {
+        if (Temporal.class.isAssignableFrom(type.getRawClass())) {
+            return true;
+        }
+        return false;
     }
 }
