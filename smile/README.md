@@ -1,11 +1,11 @@
 ## Overview
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.dataformat/jackson-dataformat-smile.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-smile)
+
 This Jackson extension handles reading and writing of data encoded in [Smile](https://github.com/FasterXML/smile-format-specification)
 data format ("binary JSON").
 It extends standard Jackson streaming API (`JsonFactory`, `JsonParser`, `JsonGenerator`), and as such works seamlessly with all the higher level data abstractions (data binding, tree model, and pluggable extensions).
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.dataformat/jackson-dataformat-smile)
 
 ## Status
 
@@ -22,7 +22,7 @@ To use this module on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-smile</artifactId>
-  <version>2.8.9</version>
+  <version>2.11.1</version>
 </dependency>
 ```
 
@@ -30,12 +30,13 @@ To use this module on Maven-based projects, use following dependency:
 
 ## Usage
 
-Basic usage is by using `SmileFactory` in places where you would usually use `JsonFactory`:
+Basic usage is by using either `SmileMapper` instead of `ObjectMapper`, or
+for low-level handling using `SmileFactory` in places where you would usually use `JsonFactory`:
 
 ```java
-ObjectMapper mapper = new ObjectMapper(new SmileFactory());
+SmileMapper mapper = new SmileMapper();
 // (or can construct factory, configure instance with 'SmileParser.Feature'
-// and 'SmileGenerator.Feature' first
+// and 'SmileGenerator.Feature' first)
 SomeType value = ...;
 byte[] smileData = mapper.writeValueAsBytes(value);
 SomeType otherValue = mapper.readValue(smileData, SomeType.class);

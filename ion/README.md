@@ -1,6 +1,6 @@
 # Overview
 
-[Jackson](/FasterXML/jackson) data format module for reading and writing
+[Jackson](../../../../jackson) data format module for reading and writing
 [Ion](https://amznlabs.github.io/ion-docs/) encoded data.
 
 Project is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
@@ -16,7 +16,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
-  <version>2.9.1</version>
+  <version>2.11.1</version>
 </dependency>
 ```
 ## Usage
@@ -33,7 +33,10 @@ SomeType otherValue = mapper.readValue(data, SomeType.class);
 ```
 
 ### java.time JSR 310
-There is support for (de)serializing some `java.time` classes directly from/to Ion timestamp values.
+
+With version 2.12 (to be released in September 2020), there will be optional support for
+(de)serializing some `java.time` classes directly from/to Ion timestamp values.
+To enable it, you need to registed module `IonJavaTimeModule` like so:
 
 ```java
 IonObjectMapper mapper = IonObjectMapper.builder()
