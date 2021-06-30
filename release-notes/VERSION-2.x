@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.12.4 (not yet released)
+
+#287: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
+
 2.12.3 (12-Apr-2021)
 
 #257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type

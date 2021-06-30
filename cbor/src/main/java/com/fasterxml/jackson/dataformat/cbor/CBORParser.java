@@ -2415,6 +2415,7 @@ public class CBORParser extends ParserMinimalBase
         return _inputBuffer[_inputPtr++];
     }
 
+    // NOTE! ALWAYS called for non-first byte of multi-byte UTF-8 code point
     private final int _nextChunkedByte() throws IOException {
         int inPtr = _inputPtr;
         
@@ -2427,6 +2428,7 @@ public class CBORParser extends ParserMinimalBase
         return ch;
     }
 
+    // NOTE! ALWAYS called for non-first byte of multi-byte UTF-8 code point
     private final int _nextChunkedByte2() throws IOException
     {
         // two possibilities: either end of buffer (in which case, just load more),
@@ -2449,10 +2451,18 @@ public class CBORParser extends ParserMinimalBase
         }
         int len = _decodeChunkLength(CBORConstants.MAJOR_TYPE_TEXT);
         // not actually acceptable if we got a split character
-        if (len < 0) {
+        // 29-Jun-2021, tatu: As per CBOR spec:
+        // "Note that this implies that the bytes of a single UTF-8 character cannot be
+        //  spread between chunks: a new chunk can only be started at a character boundary."
+        // -> 0-length chunk not allowed either
+        if (len <= 0) {
             _reportInvalidEOF(": chunked Text ends with partial UTF-8 character",
                     JsonToken.VALUE_STRING);
         }
+        if (_inputPtr >= _inputEnd) { // Must have at least one byte to return
+            loadMoreGuaranteed();
+        }
+
         int end = _inputPtr + len;
         if (end <= _inputEnd) { // all within buffer
             _chunkLeft = 0;
