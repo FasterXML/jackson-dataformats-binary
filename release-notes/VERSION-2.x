@@ -31,6 +31,10 @@ Modules:
 - `Ion-java` dep 1.4.0 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 
+2.12.4 (not yet released)
+
+#287: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
+
 2.12.3 (12-Apr-2021)
 
 #257: (smile) Uncaught validation problem wrt Smile "BigDecimal" type
