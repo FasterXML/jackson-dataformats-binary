@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.io.JsonEOFException;
+import com.fasterxml.jackson.core.exc.UnexpectedEndOfInputException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,7 +25,7 @@ public class Fuzz32912ChunkedTextTest extends CBORTestBase
             try {
                 String str = p.getText();
                 fail("Should not get String value but exception, got: ["+str+"]");
-            } catch (JsonEOFException e) {
+            } catch (UnexpectedEndOfInputException e) {
                 verifyException(e, "Unexpected end-of-input in VALUE_STRING");
             }
         }
