@@ -20,6 +20,8 @@ Modules:
  (actual fix in `jackson-databind`)
 #272: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
  (reported by Fabian M)
+#273: (cbor) Another uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
+ (reported by Fabian M)
 #276: (smile) Add `SmileGenerator.Feature.LENIENT_UTF_ENCODING` for lenient handling
   of broken Unicode surrogate pairs on writing
  (requested by kireet@github)
