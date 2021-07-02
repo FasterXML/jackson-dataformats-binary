@@ -36,6 +36,7 @@ Modules:
 2.12.4 (not yet released)
 
 #287: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
+#288: (cbor) Uncaught exception in CBORParser._findDecodedFromSymbols() (by ossfuzzer)
 
 2.12.3 (12-Apr-2021)
 
