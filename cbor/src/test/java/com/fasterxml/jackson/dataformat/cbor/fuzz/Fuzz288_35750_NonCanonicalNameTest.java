@@ -22,7 +22,7 @@ public class Fuzz288_35750_NonCanonicalNameTest extends CBORTestBase
         try (JsonParser p = MAPPER.createParser(input)) {
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.START_OBJECT, p.nextToken());
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         }
     }
 }
