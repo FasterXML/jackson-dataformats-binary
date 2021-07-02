@@ -2781,6 +2781,11 @@ public class CBORParser extends ParserBase
 
     private final String _decodeLongerName(int len) throws JacksonException
     {
+        // [dataformats-binary#288]: non-canonical length of 0 needs to be
+        // dealt with
+        if (len == 0)  {
+            return "";
+        }
         // Do we have enough buffered content to read?
         if ((_inputEnd - _inputPtr) < len) {
             // or if not, could we read?
