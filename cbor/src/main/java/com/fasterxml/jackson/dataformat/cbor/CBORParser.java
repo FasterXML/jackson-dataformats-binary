@@ -2697,6 +2697,11 @@ public class CBORParser extends ParserMinimalBase
 
     private final String _decodeLongerName(int len) throws IOException
     {
+        // [dataformats-binary#288]: non-canonical length of 0 needs to be
+        // dealt with
+        if (len == 0)  {
+            return "";
+        }
         // Do we have enough buffered content to read?
         if ((_inputEnd - _inputPtr) < len) {
             // or if not, could we read?
