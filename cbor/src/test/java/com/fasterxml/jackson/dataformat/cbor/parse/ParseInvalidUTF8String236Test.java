@@ -120,7 +120,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
                 String str = p.getText();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
-                verifyException(e, "Invalid UTF-8 middle byte 0x2f");
+                verifyException(e, "Truncated UTF-8 character in Map key (2 bytes)");
             }
         }
     }

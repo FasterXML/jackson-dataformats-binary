@@ -30,6 +30,7 @@ Modules:
  (contributed by Michal F)
 #284: Support base64 strings in `getBinaryValue()` for CBOR and Smile
  (requested by Hunter H)
+#289: `ArrayIndexOutOfBounds` for truncated UTF-8 name
 - `Ion-java` dep 1.4.0 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 

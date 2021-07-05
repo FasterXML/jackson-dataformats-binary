@@ -2720,7 +2720,7 @@ public class CBORParser extends ParserMinimalBase
         return JsonToken.FIELD_NAME;
     }
     
-    private final String _decodeContiguousName(int len) throws IOException
+    private final String _decodeContiguousName(final int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
@@ -2752,7 +2752,13 @@ public class CBORParser extends ParserMinimalBase
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
             if (code != 0) {
-                // trickiest one, need surrogate handling
+                // 05-Jul-2021, tatu: As per [dataformats-binary#289] need to
+                //     be careful wrt end-of-buffer truncated codepoints
+                if ((inPtr + code) > end) {
+                    final int firstCharOffset = len - (end - inPtr) - 1;
+                    _reportTruncatedUTF8InName(len, firstCharOffset, i, code);
+                }
+
                 switch (code) {
                 case 1:
                     {
@@ -3484,7 +3490,7 @@ expType, type, ch));
     protected void loadMoreGuaranteed() throws IOException {
         if (!loadMore()) { _reportInvalidEOF(); }
     }
-    
+
     /**
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary
@@ -3671,12 +3677,25 @@ expType, type, ch));
     }
 
     // @since 2.13
+    /*
     private String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
         throws IOException
     {
         throw _constructError(String.format(
 "Truncated UTF-8 character in Chunked Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
+    }
+    */
+
+    // @since 2.13
+    private String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws IOException
+    {
+        throw _constructError(String.format(
+"Truncated UTF-8 character in Map key (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
