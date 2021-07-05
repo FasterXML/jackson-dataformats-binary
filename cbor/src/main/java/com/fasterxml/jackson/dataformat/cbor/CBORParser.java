@@ -624,7 +624,8 @@ public class CBORParser extends ParserBase
                     return String.valueOf(l);
                 }
             default:
-                throw _constructReadException("Invalid length indicator for ints ("+lowBits+"), token 0x"+Integer.toHexString(ch));
+                throw _constructReadException("Invalid length indicator for ints (%d), token 0x%s",
+                        lowBits, Integer.toHexString(ch));
             }
         }
         if (neg) {
@@ -2593,12 +2594,14 @@ public class CBORParser extends ParserBase
             // verify that type matches
             int type = (ch >> 5);
             if (type != CBORConstants.MAJOR_TYPE_BYTES) {
-                throw _constructReadException("Mismatched chunk in chunked content: expected "+CBORConstants.MAJOR_TYPE_BYTES
-                        +" but encountered "+type);
+                throw _constructReadException(
+"Mismatched chunk in chunked content: expected %d but encountered %d",
+CBORConstants.MAJOR_TYPE_BYTES, type);
             }
             int len = _decodeExplicitLength(ch & 0x1F);
             if (len < 0) {
-                throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type "+CBORConstants.MAJOR_TYPE_BYTES+")");
+                throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type %d)",
+                        CBORConstants.MAJOR_TYPE_BYTES);
             }
             final int chunkLen = len;
             while (len > 0) {
@@ -2844,7 +2847,8 @@ public class CBORParser extends ParserBase
             if ((ch & 0xFF) == CBORConstants.INT_BREAK) {
                 _reportUnexpectedBreak();
             }
-            throw _constructReadException("Unsupported major type ("+type+") for CBOR Objects, not (yet?) supported, only Strings");
+            throw _constructReadException("Unsupported major type (%d) for CBOR Objects, not (yet?) supported, only Strings",
+                    type);
         }
         _streamReadContext.setCurrentName(name);
         return name;
@@ -3189,8 +3193,8 @@ expType, type, ch));
         }
         int len = _decodeExplicitLength(ch & 0x1F);
         if (len < 0) {
-            throw _constructReadException(String.format(
-"Illegal chunked-length indicator within chunked-length value (major type %d)", expType));
+            throw _constructReadException(
+"Illegal chunked-length indicator within chunked-length value (major type %d)", expType);
         }
         return len;
     }
@@ -3678,7 +3682,7 @@ expType, type, ch));
     /*
     private String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
-        throws IOException
+        throws JacksonException
     {
         throw _constructReadException(String.format(
 "Truncated UTF-8 character in Chunked Unicode String value (%d bytes): "
@@ -3690,9 +3694,9 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     // @since 2.13
     private String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
-        throws IOException
+        throws JacksonException
     {
-        throw _constructError(String.format(
+        throw _constructReadException(String.format(
 "Truncated UTF-8 character in Map key (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));

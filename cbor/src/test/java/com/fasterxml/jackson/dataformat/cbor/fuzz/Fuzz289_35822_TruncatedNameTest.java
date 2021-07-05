@@ -24,7 +24,7 @@ public class Fuzz289_35822_TruncatedNameTest extends CBORTestBase
         try (JsonParser p = MAPPER.createParser(input)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             try {
-                assertToken(JsonToken.FIELD_NAME, p.nextToken());
+                assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
                 fail("Should not pass");
             } catch (StreamReadException e) {
                 verifyException(e, "Truncated UTF-8");
