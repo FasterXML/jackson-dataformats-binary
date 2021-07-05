@@ -854,7 +854,8 @@ public class CBORParser extends ParserMinimalBase
                     return String.valueOf(l);
                 }
             default:
-                throw _constructError("Invalid length indicator for ints ("+lowBits+"), token 0x"+Integer.toHexString(ch));
+                throw _constructReadException("Invalid length indicator for ints (%d), token 0x%s",
+                        lowBits, Integer.toHexString(ch));
             }
         }
         if (neg) {
@@ -2336,7 +2337,7 @@ public class CBORParser extends ParserMinimalBase
                 continue;
             }
             if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructError("Malformed UTF-8 character at the end of a (non-chunked) text segment");
+                throw _constructReadException("Malformed UTF-8 character at the end of a (non-chunked) text segment");
             }
 
             switch (code) {
@@ -2611,12 +2612,14 @@ public class CBORParser extends ParserMinimalBase
             // verify that type matches
             int type = (ch >> 5);
             if (type != CBORConstants.MAJOR_TYPE_BYTES) {
-                throw _constructError("Mismatched chunk in chunked content: expected "+CBORConstants.MAJOR_TYPE_BYTES
-                        +" but encountered "+type);
+                throw _constructReadException(
+"Mismatched chunk in chunked content: expected %d but encountered %d",
+CBORConstants.MAJOR_TYPE_BYTES, type);
             }
             int len = _decodeExplicitLength(ch & 0x1F);
             if (len < 0) {
-                throw _constructError("Illegal chunked-length indicator within chunked-length value (type "+CBORConstants.MAJOR_TYPE_BYTES+")");
+                throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type %d)",
+                            CBORConstants.MAJOR_TYPE_BYTES);
             }
             final int chunkLen = len;
             while (len > 0) {
@@ -2862,7 +2865,8 @@ public class CBORParser extends ParserMinimalBase
             if ((ch & 0xFF) == CBORConstants.INT_BREAK) {
                 _reportUnexpectedBreak();
             }
-            throw _constructError("Unsupported major type ("+type+") for CBOR Objects, not (yet?) supported, only Strings");
+            throw _constructReadException("Unsupported major type (%d) for CBOR Objects, not (yet?) supported, only Strings",
+                    type);
         }
         _streamReadContext.setCurrentName(name);
     }
@@ -3206,8 +3210,8 @@ expType, type, ch));
         }
         int len = _decodeExplicitLength(ch & 0x1F);
         if (len < 0) {
-            throw _constructError(String.format(
-"Illegal chunked-length indicator within chunked-length value (major type %d)", expType));
+            throw _constructReadException(
+"Illegal chunked-length indicator within chunked-length value (major type %d)", expType);
         }
         return len;
     }
@@ -3694,7 +3698,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
             int firstUTFByteValue, int bytesExpected)
         throws IOException
     {
-        throw _constructError(String.format(
+        throw _constructReadException(String.format(
 "Truncated UTF-8 character in Map key (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
