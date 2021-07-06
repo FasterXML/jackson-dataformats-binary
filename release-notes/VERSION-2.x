@@ -34,7 +34,7 @@ Modules:
 - `Ion-java` dep 1.4.0 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 
-2.12.4 (not yet released)
+2.12.4 (06-Jul-2021)
 
 #287: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
 #288: (cbor) Uncaught exception in CBORParser._findDecodedFromSymbols() (by ossfuzzer)
