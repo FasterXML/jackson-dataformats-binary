@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.12.4 (not yet released)
+2.12.4 (06-Jul-2021)
 
 #287: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
 #288: (cbor) Uncaught exception in CBORParser._findDecodedFromSymbols() (by ossfuzzer)
