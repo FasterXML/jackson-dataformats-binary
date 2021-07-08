@@ -188,6 +188,8 @@ Fabian Meumertzheim (fmeum@github)
  (2.12.3)
 * Reported #272: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)	
  (2.13.0)
+* Reported #289: (cbor) `ArrayIndexOutOfBounds` for truncated UTF-8 name
+* Reported #291: (smile) `ArrayIndexOutOfBounds` for truncated UTF-8 name
 
 (jhhladky@github)
 

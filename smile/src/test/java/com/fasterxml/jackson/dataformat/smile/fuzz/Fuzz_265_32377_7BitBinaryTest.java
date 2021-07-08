@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 // For [dataformats-binary#265]
-public class FuzzXXXXX_7BitBinaryTest extends BaseTestForSmile
+public class Fuzz_265_32377_7BitBinaryTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
