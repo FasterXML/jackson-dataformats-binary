@@ -1906,10 +1906,16 @@ _typeAsInt);
         int inPtr = _inputPtr;
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         final byte[] inBuf = _inputBuffer;
-        for (int end = inPtr + len; inPtr < end; ) {
+        for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
             if (code != 0) {
+                // 08-Jul-2021, tatu: As per [dataformats-binary#] need to
+                //     be careful wrt end-of-buffer truncated codepoints
+                if ((inPtr + code) > end) {
+                    final int firstCharOffset = len - (end - inPtr) - 1;
+                    _reportTruncatedUTF8InName(len, firstCharOffset, i, code);
+                }
                 // trickiest one, need surrogate handling
                 switch (code) {
                 case 1:
@@ -3383,6 +3389,16 @@ currentToken(), firstCh);
     {
         throw _constructReadException(String.format(
 "Truncated UTF-8 character in Short Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
+    }
+
+    protected String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws IOException
+    {
+        throw _constructReadException(String.format(
+"Truncated UTF-8 character in Short Unicode Name (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }

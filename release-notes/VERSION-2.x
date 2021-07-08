@@ -25,16 +25,17 @@ Modules:
 #276: (smile) Add `SmileGenerator.Feature.LENIENT_UTF_ENCODING` for lenient handling
   of broken Unicode surrogate pairs on writing
  (requested by kireet@github)
-#283: Add `logicalType` support for some `java.time` types; add `AvroJavaTimeModule`
+#283: (avro) Add `logicalType` support for some `java.time` types; add `AvroJavaTimeModule`
   for native ser/deser
  (contributed by Michal F)
 #284: Support base64 strings in `getBinaryValue()` for CBOR and Smile
  (requested by Hunter H)
-#289: `ArrayIndexOutOfBounds` for truncated UTF-8 name
+#289: (cbor) `ArrayIndexOutOfBounds` for truncated UTF-8 name
+#291: (smile) `ArrayIndexOutOfBounds` for truncated UTF-8 name
 - `Ion-java` dep 1.4.0 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 
-2.12.4 (not yet released)
+2.12.4 (06-Jul-2021)
 
 #287: (cbor) Uncaught exception in CBORParser._nextChunkedByte2 (by ossfuzzer)
 #288: (cbor) Uncaught exception in CBORParser._findDecodedFromSymbols() (by ossfuzzer)
