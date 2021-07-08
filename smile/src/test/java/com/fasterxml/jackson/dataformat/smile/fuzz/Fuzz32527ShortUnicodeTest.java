@@ -29,19 +29,12 @@ public class Fuzz32527ShortUnicodeTest extends BaseTestForSmile
         };
         try (JsonParser p = MAPPER.createParser(input)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
-            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-            assertEquals(6, p.currentName().length());
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            // 08-Jul-2021, tatu: Used to fail later but after unrelated fix, fails here:
             try {
-                String text = p.getText();
-                fail("Should have failed, instead decoded String of "+text.length()+" chars");
+                p.nextToken();
+                fail("Should have failed");
             } catch (StreamReadException e) {
-                verifyException(e, "Truncated UTF-8 character in Short Unicode String");
-                verifyException(e, "(12 bytes)");
-                verifyException(e, "byte 0xE5 at offset #10 indicated 2 more bytes needed");
-                verifyException(e, "(byte[])"); // source description for raw source
-                verifyException(e, "[29 bytes]"); // - "" -
-                verifyException(e, "byte offset: #29"); // with 2.13 we get this too
+                verifyException(e, "Truncated UTF-8 character in Short Unicode Name (10 bytes)");
             }
         }
     }

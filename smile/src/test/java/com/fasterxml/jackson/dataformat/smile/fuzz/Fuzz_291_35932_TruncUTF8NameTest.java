@@ -22,7 +22,7 @@ public class Fuzz_291_35932_TruncUTF8NameTest extends BaseTestForSmile
             p.nextToken();
             fail("Should not pass");
         } catch (StreamReadException e) {
-            verifyException(e, "Truncated UTF-8 character in Short Unicde Name (36 bytes)");
+            verifyException(e, "Truncated UTF-8 character in Short Unicode Name (36 bytes)");
         }
     }
 }
