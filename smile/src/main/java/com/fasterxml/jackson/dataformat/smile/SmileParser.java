@@ -3395,7 +3395,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
 
     protected String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
-        throws IOException
+        throws StreamReadException
     {
         throw _constructReadException(String.format(
 "Truncated UTF-8 character in Short Unicode Name (%d bytes): "
