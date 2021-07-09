@@ -128,7 +128,9 @@ public class TypeResolver
         
         ProtobufMessage message = new ProtobufMessage(rawType.name(), resolvedFields);
         // Important: add type itself as (being) resolved, to allow for self- and cyclic refs
-        _parent.addResolvedMessageType(rawType.name(), message);
+        if (_parent != null) { // 09-Jul-2021, tatu: LGTM suggestion -- can it ever be null?!
+            _parent.addResolvedMessageType(rawType.name(), message);
+        }
         
         // and then resolve fields
         int ix = 0;
