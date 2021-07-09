@@ -234,7 +234,7 @@ public class SmileParserBootstrapper
             if (ch >= 0x40) { // tiny/short ASCII
                 return true;
             }
-            if (ch >- 0x20) { // various constants
+            if (ch >= 0x20) { // various constants
                 return (ch < 0x2C); // many reserved bytes that can't be seen
             }
         }
