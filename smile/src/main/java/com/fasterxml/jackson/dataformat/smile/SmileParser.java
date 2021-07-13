@@ -774,11 +774,11 @@ _typeAsInt);
                             if (index >= _seenNameCount) {
                                 _reportInvalidSharedName(index);
                             }
-                            String name = _seenNames[index];
+                            final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                             _streamReadContext.setCurrentName(name);
                             _inputPtr = ptr;
                             _currToken = JsonToken.PROPERTY_NAME;
-                            return (name.equals(str.getValue()));
+                            return name.equals(str.getValue());
                         }
                     //case 0x34: // long ASCII/Unicode name; let's not even try...
                     }
@@ -789,12 +789,11 @@ _typeAsInt);
                         if (index >= _seenNameCount) {
                             _reportInvalidSharedName(index);
                         }
-                        _streamReadContext.setCurrentName(_seenNames[index]);
-                        String name = _seenNames[index];
+                        final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                         _streamReadContext.setCurrentName(name);
                         _inputPtr = ptr;
                         _currToken = JsonToken.PROPERTY_NAME;
-                        return (name.equals(str.getValue()));
+                        return name.equals(str.getValue());
                     }
                 case 2: // short ASCII
                     {
@@ -908,7 +907,7 @@ _typeAsInt);
                     if (index >= _seenNameCount) {
                         _reportInvalidSharedName(index);
                     }
-                    String name = _seenNames[index];
+                    final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                     _streamReadContext.setCurrentName(name);
                     _currToken = JsonToken.PROPERTY_NAME;
                     return matcher.matchName(name);
@@ -1713,7 +1712,7 @@ _typeAsInt);
                     if (index >= _seenNameCount) {
                         _reportInvalidSharedName(index);
                     }
-                    _streamReadContext.setCurrentName(_seenNames[index]);
+                    _streamReadContext.setCurrentName(_seenNames[index]); // lgtm [java/dereferenced-value-may-be-null]
                 }
                 return JsonToken.PROPERTY_NAME;
             case 0x34: // long ASCII/Unicode name
@@ -1727,7 +1726,7 @@ _typeAsInt);
                 if (index >= _seenNameCount) {
                     _reportInvalidSharedName(index);
                 }
-                _streamReadContext.setCurrentName(_seenNames[index]);
+                _streamReadContext.setCurrentName(_seenNames[index]); // lgtm [java/dereferenced-value-may-be-null]
             }
             return JsonToken.PROPERTY_NAME;
         case 2: // short ASCII
@@ -3060,13 +3059,14 @@ currentToken(), firstCh);
                     + (_inputBuffer[_inputPtr++] << 7)
                     + _inputBuffer[_inputPtr++];
                 // Ok: got our 7 bytes, just need to split, copy
+                // NOTE: lgtm cannot deduce the checks but a single bounds check IS enough here
                 buffer[bufPtr++] = (byte)(i1 >> 24);
-                buffer[bufPtr++] = (byte)(i1 >> 16);
-                buffer[bufPtr++] = (byte)(i1 >> 8);
-                buffer[bufPtr++] = (byte)i1;
-                buffer[bufPtr++] = (byte)(i2 >> 16);
-                buffer[bufPtr++] = (byte)(i2 >> 8);
-                buffer[bufPtr++] = (byte)i2;
+                buffer[bufPtr++] = (byte)(i1 >> 16); // lgtm [java/index-out-of-bounds]
+                buffer[bufPtr++] = (byte)(i1 >> 8); // lgtm [java/index-out-of-bounds]
+                buffer[bufPtr++] = (byte)i1; // lgtm [java/index-out-of-bounds]
+                buffer[bufPtr++] = (byte)(i2 >> 16); // lgtm [java/index-out-of-bounds]
+                buffer[bufPtr++] = (byte)(i2 >> 8); // lgtm [java/index-out-of-bounds]
+                buffer[bufPtr++] = (byte)i2; // lgtm [java/index-out-of-bounds]
                 if (bufPtr >= buffer.length) {
                     bb.write(buffer, 0, bufPtr);
                     bufPtr = 0;

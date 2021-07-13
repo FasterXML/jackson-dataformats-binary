@@ -443,7 +443,7 @@ public abstract class AvroSchemaHelper
         public int hashCode() { return _hashCode; }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(Object o) { // lgtm [java/unchecked-cast-in-equals]
             if (o == this) return true;
             if (o == null) return false;
             // Only used internally don't bother with type checks
