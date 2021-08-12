@@ -19,16 +19,16 @@ public class ArrayVisitor
     implements SchemaBuilder
 {
     protected final JavaType _type;
-    
-    protected final DefinedSchemas _schemas;
+
+    protected final VisitorFormatWrapperImpl _visitorWrapper;
 
     protected Schema _elementSchema;
-    
-    public ArrayVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
+
+    public ArrayVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;
-        _schemas = schemas;
+        _visitorWrapper = visitorWrapper;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ArrayVisitor
     public void itemsFormat(JsonFormatVisitable visitable, JavaType type)
             throws JsonMappingException
     {
-        VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
+        VisitorFormatWrapperImpl wrapper = _visitorWrapper.createVisitorWrapper();
         visitable.acceptJsonFormatVisitor(wrapper, type);
         _elementSchema = wrapper.getAvroSchema();
     }
