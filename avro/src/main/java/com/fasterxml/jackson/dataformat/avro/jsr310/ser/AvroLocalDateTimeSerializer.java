@@ -20,8 +20,8 @@ import java.time.ZoneOffset;
  * Serialized value represents timestamp in a local timezone, regardless of what specific time zone
  * is considered local, with a precision of one millisecond from 1 January 1970 00:00:00.000.
  *
- * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type long and logicalType local-timestamp-millis:
+ * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator#enableLogicalTypes()}
+ * it aims to produce Avro schema with type long and logicalType local-timestamp-millis:
  * {
  *   "type" : "long",
  *   "logicalType" : "local-timestamp-millis"

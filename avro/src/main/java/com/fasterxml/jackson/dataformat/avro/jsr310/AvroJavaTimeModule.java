@@ -21,8 +21,8 @@ import java.time.ZonedDateTime;
 /**
  * A module that installs a collection of serializers and deserializers for java.time classes.
  *
- * This module is to be used either:
- *   - Instead of Java 8 date/time module (com.fasterxml.jackson.datatype.jsr310.JavaTimeModule) or
+ * AvroJavaTimeModule module is to be used either as:
+ *   - replacement of Java 8 date/time module (com.fasterxml.jackson.datatype.jsr310.JavaTimeModule) or
  *   - to override Java 8 date/time module and for that, module must be registered AFTER Java 8 date/time module.
  */
 public class AvroJavaTimeModule extends SimpleModule {
