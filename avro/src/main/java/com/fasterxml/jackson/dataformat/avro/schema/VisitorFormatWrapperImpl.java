@@ -49,7 +49,7 @@ public class VisitorFormatWrapperImpl
         _provider = p;
     }
 
-    protected VisitorFormatWrapperImpl createVisitorWrapper() {
+    protected VisitorFormatWrapperImpl createChildWrapper() {
         return new VisitorFormatWrapperImpl(_schemas, _provider);
     }
 

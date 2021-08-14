@@ -52,7 +52,7 @@ public class RecordVisitor
             try {
                 for (NamedType subType : subTypes) {
                     JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
-                    VisitorFormatWrapperImpl visitor = _visitorWrapper.createVisitorWrapper();
+                    VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
                     ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
                     unionSchemas.add(visitor.getAvroSchema());
                 }
@@ -103,7 +103,7 @@ public class RecordVisitor
         if (_overridden) {
             return;
         }
-        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createVisitorWrapper();
+        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
         handler.acceptJsonFormatVisitor(visitorWrapper, type);
         Schema schema = visitorWrapper.getAvroSchema();
         _fields.add(new Schema.Field(name, schema, null, (Object) null));
@@ -124,7 +124,7 @@ public class RecordVisitor
         if (_overridden) {
             return;
         }
-        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createVisitorWrapper();
+        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
         handler.acceptJsonFormatVisitor(visitorWrapper, type);
         Schema schema = visitorWrapper.getAvroSchema();
         if (!type.isPrimitive()) {
@@ -170,7 +170,7 @@ public class RecordVisitor
                     }
                     ser = prov.findValueSerializer(prop.getType(), prop);
                 }
-                VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createVisitorWrapper();
+                VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
                 ser.acceptJsonFormatVisitor(visitorWrapper, prop.getType());
                 writerSchema = visitorWrapper.getAvroSchema();
             }

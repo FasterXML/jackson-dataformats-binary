@@ -57,7 +57,7 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
     public void valueFormat(JsonFormatVisitable handler, JavaType valueType)
         throws JsonMappingException
     {
-        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createVisitorWrapper();
+        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
         handler.acceptJsonFormatVisitor(visitorWrapper, valueType);
         _valueSchema = visitorWrapper.getAvroSchema();
     }
