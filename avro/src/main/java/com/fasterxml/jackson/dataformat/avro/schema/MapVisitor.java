@@ -13,17 +13,17 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
 {
     protected final JavaType _type;
 
-    protected final DefinedSchemas _schemas;
-    
+    protected final VisitorFormatWrapperImpl _visitorWrapper;
+
     protected Schema _valueSchema;
 
     protected JavaType _keyType;
 
-    public MapVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
+    public MapVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;
-        _schemas = schemas;
+        _visitorWrapper = visitorWrapper;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
     @Override
     public void valueFormat(JsonFormatVisitable handler, JavaType valueType)
     {
-        VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
-        handler.acceptJsonFormatVisitor(wrapper, valueType);
-        _valueSchema = wrapper.getAvroSchema();
+        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
+        handler.acceptJsonFormatVisitor(visitorWrapper, valueType);
+        _valueSchema = visitorWrapper.getAvroSchema();
     }
 }

@@ -42,6 +42,10 @@ public class VisitorFormatWrapperImpl
         _provider = p;
     }
 
+    protected VisitorFormatWrapperImpl createChildWrapper() {
+        return new VisitorFormatWrapperImpl(_schemas, _provider);
+    }
+
     @Override
     public SerializerProvider getProvider() {
         return _provider;
@@ -51,6 +55,10 @@ public class VisitorFormatWrapperImpl
     public void setProvider(SerializerProvider provider) {
         _schemas.setProvider(provider);
         _provider = provider;
+    }
+
+    protected DefinedSchemas getSchemas() {
+        return _schemas;
     }
 
     /*
@@ -88,14 +96,14 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        RecordVisitor v = new RecordVisitor(_provider, type, _schemas);
+        RecordVisitor v = new RecordVisitor(_provider, type, this);
         _builder = v;
         return v;
     }
 
     @Override
     public JsonMapFormatVisitor expectMapFormat(JavaType mapType) {
-        MapVisitor v = new MapVisitor(_provider, mapType, _schemas);
+        MapVisitor v = new MapVisitor(_provider, mapType, this);
         _builder = v;
         return v;
     }
@@ -115,7 +123,7 @@ public class VisitorFormatWrapperImpl
                 return null;
             }
         }
-        ArrayVisitor v = new ArrayVisitor(_provider, convertedType, _schemas);
+        ArrayVisitor v = new ArrayVisitor(_provider, convertedType, this);
         _builder = v;
         return v;
     }
