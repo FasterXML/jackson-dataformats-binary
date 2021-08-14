@@ -23,7 +23,7 @@ public class RecordVisitor
 {
     protected final JavaType _type;
 
-    protected final DefinedSchemas _schemas;
+    protected final VisitorFormatWrapperImpl _visitorWrapper;
 
     /**
      * Tracks if the schema for this record has been overridden (by an annotation or other means), and calls to the {@code property} and
@@ -35,11 +35,11 @@ public class RecordVisitor
 
     protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
 
-    public RecordVisitor(SerializerProvider p, JavaType type, DefinedSchemas schemas)
+    public RecordVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;
-        _schemas = schemas;
+        _visitorWrapper = visitorWrapper;
         // Check if the schema for this record is overridden
         BeanDescription bean = getProvider().getConfig().introspectDirectClassAnnotations(_type);
         List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
@@ -52,7 +52,7 @@ public class RecordVisitor
             try {
                 for (NamedType subType : subTypes) {
                     JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
-                    VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, getProvider());
+                    VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
                     ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
                     unionSchemas.add(visitor.getAvroSchema());
                 }
@@ -69,7 +69,7 @@ public class RecordVisitor
                 _avroSchema.addProp(meta.key(), meta.value());
             }
         }
-        schemas.addSchema(type, _avroSchema);
+        _visitorWrapper.getSchemas().addSchema(type, _avroSchema);
     }
 
     @Override
@@ -103,9 +103,9 @@ public class RecordVisitor
         if (_overridden) {
             return;
         }
-        VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
-        handler.acceptJsonFormatVisitor(wrapper, type);
-        Schema schema = wrapper.getAvroSchema();
+        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
+        handler.acceptJsonFormatVisitor(visitorWrapper, type);
+        Schema schema = visitorWrapper.getAvroSchema();
         _fields.add(new Schema.Field(name, schema, null, (Object) null));
     }
 
@@ -124,9 +124,9 @@ public class RecordVisitor
         if (_overridden) {
             return;
         }
-        VisitorFormatWrapperImpl wrapper = new VisitorFormatWrapperImpl(_schemas, getProvider());
-        handler.acceptJsonFormatVisitor(wrapper, type);
-        Schema schema = wrapper.getAvroSchema();
+        VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
+        handler.acceptJsonFormatVisitor(visitorWrapper, type);
+        Schema schema = visitorWrapper.getAvroSchema();
         if (!type.isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
@@ -170,9 +170,9 @@ public class RecordVisitor
                     }
                     ser = prov.findValueSerializer(prop.getType(), prop);
                 }
-                VisitorFormatWrapperImpl visitor = new VisitorFormatWrapperImpl(_schemas, prov);
-                ser.acceptJsonFormatVisitor(visitor, prop.getType());
-                writerSchema = visitor.getAvroSchema();
+                VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
+                ser.acceptJsonFormatVisitor(visitorWrapper, prop.getType());
+                writerSchema = visitorWrapper.getAvroSchema();
             }
 
             /* 23-Nov-2012, tatu: Actually let's also assume that primitive type values
