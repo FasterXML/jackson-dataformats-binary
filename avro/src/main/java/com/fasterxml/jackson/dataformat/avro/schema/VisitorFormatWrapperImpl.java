@@ -27,6 +27,9 @@ public class VisitorFormatWrapperImpl
 
     protected final DefinedSchemas _schemas;
 
+    /**
+     * @since 2.13
+     */
     protected boolean _logicalTypesEnabled = false;
 
     /**
@@ -103,15 +106,17 @@ public class VisitorFormatWrapperImpl
     /**
      * Enables Avro schema with Logical Types generation.
      */
-    public void enableLogicalTypes() {
+    public VisitorFormatWrapperImpl enableLogicalTypes() {
         _logicalTypesEnabled = true;
+        return this;
     }
 
     /**
      * Disables Avro schema with Logical Types generation.
      */
-    public void disableLogicalTypes() {
+    public VisitorFormatWrapperImpl disableLogicalTypes() {
         _logicalTypesEnabled = false;
+        return this;
     }
 
     public boolean isLogicalTypesEnabled() {
