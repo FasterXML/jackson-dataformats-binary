@@ -24,8 +24,8 @@ import java.util.function.Function;
  * Please note that time zone information gets lost in this process. Upon reading a value back, we can only
  * reconstruct the instant, but not the original representation.
  *
- * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type long and logicalType timestamp-millis:
+ * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator#enableLogicalTypes()}
+ * it aims to produce Avro schema with type long and logicalType timestamp-millis:
  * {
  *   "type" : "long",
  *   "logicalType" : "timestamp-millis"

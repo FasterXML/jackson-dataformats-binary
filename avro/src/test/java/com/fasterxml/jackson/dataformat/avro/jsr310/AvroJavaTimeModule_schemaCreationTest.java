@@ -55,6 +55,7 @@ public class AvroJavaTimeModule_schemaCreationTest {
                 .addModule(new AvroJavaTimeModule())
                 .build();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
+        gen.enableLogicalTypes();
 
         // WHEN
         mapper.acceptJsonFormatVisitor(testClass, gen);

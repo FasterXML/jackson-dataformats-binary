@@ -39,7 +39,8 @@ public class DateTimeVisitor extends JsonIntegerFormatVisitor.Base
 
         Schema schema = AvroSchemaHelper.numericAvroSchema(_type);
         if (_hint != null) {
-            String logicalType = logicalType(_hint);
+            String logicalType = getLogicalType(schema.getType(), _hint);
+
             if (logicalType != null) {
                 schema.addProp(LogicalType.LOGICAL_TYPE_PROP, logicalType);
             } else {
@@ -49,26 +50,26 @@ public class DateTimeVisitor extends JsonIntegerFormatVisitor.Base
         return schema;
     }
 
-    private String logicalType(JavaType hint) {
+    private String getLogicalType(Schema.Type avroType, JavaType hint) {
         Class<?> clazz = hint.getRawClass();
 
-        if (OffsetDateTime.class.isAssignableFrom(clazz)) {
+        if (OffsetDateTime.class.isAssignableFrom(clazz) && Schema.Type.LONG == avroType) {
             return TIMESTAMP_MILLIS;
         }
-        if (ZonedDateTime.class.isAssignableFrom(clazz)) {
+        if (ZonedDateTime.class.isAssignableFrom(clazz) && Schema.Type.LONG == avroType) {
             return TIMESTAMP_MILLIS;
         }
-        if (Instant.class.isAssignableFrom(clazz)) {
+        if (Instant.class.isAssignableFrom(clazz) && Schema.Type.LONG == avroType) {
             return TIMESTAMP_MILLIS;
         }
 
-        if (LocalDate.class.isAssignableFrom(clazz)) {
+        if (LocalDate.class.isAssignableFrom(clazz) && Schema.Type.INT == avroType) {
             return DATE;
         }
-        if (LocalTime.class.isAssignableFrom(clazz)) {
+        if (LocalTime.class.isAssignableFrom(clazz) && Schema.Type.INT == avroType) {
             return TIME_MILLIS;
         }
-        if (LocalDateTime.class.isAssignableFrom(clazz)) {
+        if (LocalDateTime.class.isAssignableFrom(clazz) && Schema.Type.LONG == avroType) {
             return LOCAL_TIMESTAMP_MILLIS;
         }
 
