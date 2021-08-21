@@ -19,4 +19,16 @@ public class AvroSchemaGenerator extends VisitorFormatWrapperImpl
     public AvroSchema getGeneratedSchema() {
         return new AvroSchema(getAvroSchema());
     }
+
+    @Override
+    public AvroSchemaGenerator enableLogicalTypes() {
+        super.enableLogicalTypes();
+        return this;
+    }
+
+    @Override
+    public AvroSchemaGenerator disableLogicalTypes() {
+        super.disableLogicalTypes();
+        return this;
+    }
 }

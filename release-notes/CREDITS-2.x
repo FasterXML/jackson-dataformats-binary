@@ -207,6 +207,8 @@ Michal Foksa (MichalFoksa@github)
 * Contributed #283: Add `logicalType` support for some `java.time` types; add `AvroJavaTimeModule`
   for native ser/deser
  (2.13.0)
+* Contributed #290: (avro) Generate logicalType switch
+ (2.13.0)
 
 Hunter Herman (hherman1@github)
 

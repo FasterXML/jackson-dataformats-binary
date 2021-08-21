@@ -18,8 +18,8 @@ import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
  * Serialized value represents number of days from the unix epoch, 1 January 1970 with no reference
  * to a particular time zone or time of day.
  *
- * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.DateTimeVisitor} it aims to produce
- * Avro schema with type int and logicalType date:
+ * Note: In combination with {@link com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator#enableLogicalTypes()}
+ * it aims to produce Avro schema with type int and logicalType date:
  * {
  *   "type" : "int",
  *   "logicalType" : "date"

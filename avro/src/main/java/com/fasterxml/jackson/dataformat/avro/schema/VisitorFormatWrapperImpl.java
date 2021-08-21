@@ -21,6 +21,11 @@ public class VisitorFormatWrapperImpl
     protected final DefinedSchemas _schemas;
 
     /**
+     * @since 2.13
+     */
+    protected boolean _logicalTypesEnabled = false;
+
+    /**
      * Visitor used for resolving actual Schema, if structured type
      * (or one with complex configuration)
      */
@@ -42,8 +47,21 @@ public class VisitorFormatWrapperImpl
         _provider = p;
     }
 
+
+    protected VisitorFormatWrapperImpl(VisitorFormatWrapperImpl src) {
+        this._schemas = src._schemas;
+        this._provider = src._provider;
+        this._logicalTypesEnabled = src._logicalTypesEnabled;
+    }
+
+    /**
+     * Creates new {@link VisitorFormatWrapperImpl} instance with shared schemas,
+     * serialization provider and same configuration.
+     *
+     * @return new instance with shared properties and configuration.
+     */
     protected VisitorFormatWrapperImpl createChildWrapper() {
-        return new VisitorFormatWrapperImpl(_schemas, _provider);
+        return new VisitorFormatWrapperImpl(this);
     }
 
     @Override
@@ -76,6 +94,26 @@ public class VisitorFormatWrapperImpl
                     +": no schema generated");
         }
         return _builder.builtAvroSchema();
+    }
+
+    /**
+     * Enables Avro schema with Logical Types generation.
+     */
+    public VisitorFormatWrapperImpl enableLogicalTypes() {
+        _logicalTypesEnabled = true;
+        return this;
+    }
+
+    /**
+     * Disables Avro schema with Logical Types generation.
+     */
+    public VisitorFormatWrapperImpl disableLogicalTypes() {
+        _logicalTypesEnabled = false;
+        return this;
+    }
+
+    public boolean isLogicalTypesEnabled() {
+        return _logicalTypesEnabled;
     }
 
     /*
@@ -159,7 +197,7 @@ public class VisitorFormatWrapperImpl
             return null;
         }
 
-        if (_isDateTimeType(type)) {
+        if (isLogicalTypesEnabled() && _isDateTimeType(type)) {
             DateTimeVisitor v = new DateTimeVisitor(type);
             _builder = v;
             return v;
