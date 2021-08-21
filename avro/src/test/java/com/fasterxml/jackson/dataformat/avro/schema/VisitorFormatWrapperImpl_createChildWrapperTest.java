@@ -1,16 +1,20 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
 
-public class VisitorFormatWrapperImpl_createChildWrapperTest {
+public class VisitorFormatWrapperImpl_createChildWrapperTest
+extends AvroTestBase
+{
+    private final AvroMapper MAPPER = newMapper();
 
-    @Test
-    public void test () {
+    public void testChildWrapper()
+    {
         // GIVEN
-        SerializerProvider serializerProvider = new DefaultSerializerProvider.Impl();
+        SerializerProvider serializerProvider = MAPPER._serializerProvider();
         DefinedSchemas schemas = new DefinedSchemas();
 
         VisitorFormatWrapperImpl src = new VisitorFormatWrapperImpl(schemas, serializerProvider);
