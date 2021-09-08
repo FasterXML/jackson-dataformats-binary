@@ -53,4 +53,21 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
         throw JsonMappingException.from(jp, "Cannot deserialize embedded object type "
                 + embeddedObject.getClass().getCanonicalName() + " into IonValue");
     }
+
+    @Override
+    public IonValue getNullValue(DeserializationContext ctxt) throws JsonMappingException {
+        try {
+            Object embeddedObj = ctxt.getParser().getEmbeddedObject();
+            if (embeddedObj instanceof IonValue) {
+                IonValue iv = (IonValue) embeddedObj;
+                if (iv.isNullValue()) {
+                    return iv;
+                }
+            }
+
+            return super.getNullValue(ctxt);
+        } catch (Exception e) {
+            throw JsonMappingException.from(ctxt, e.toString());
+        }
+    }
 }
