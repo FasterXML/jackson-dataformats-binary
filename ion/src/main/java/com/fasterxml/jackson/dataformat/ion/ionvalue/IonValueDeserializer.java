@@ -66,7 +66,7 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
             }
 
             return super.getNullValue(ctxt);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw JsonMappingException.from(ctxt, e.toString());
         }
     }
