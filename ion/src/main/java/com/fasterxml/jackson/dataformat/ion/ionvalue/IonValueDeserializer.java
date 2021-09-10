@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
@@ -69,5 +70,10 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
         } catch (IOException e) {
             throw JsonMappingException.from(ctxt, e.toString());
         }
+    }
+
+    @Override
+    public AccessPattern getNullAccessPattern() {
+        return AccessPattern.DYNAMIC;
     }
 }

@@ -5,6 +5,7 @@ import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.databind.util.AccessPattern;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -163,6 +164,12 @@ public class IonValueDeserializerTest {
         StringData result = ION_VALUE_MAPPER.parse(data, StringData.class);
 
         assertEquals(source, result);
+    }
+
+    @Test
+    public void shouldOverrideNullAccessPatternToBeDynamic() {
+        IonValueDeserializer deserializer = new IonValueDeserializer();
+        assertEquals(AccessPattern.DYNAMIC, deserializer.getNullAccessPattern());
     }
 
     private static IonValue ion(String value) {
