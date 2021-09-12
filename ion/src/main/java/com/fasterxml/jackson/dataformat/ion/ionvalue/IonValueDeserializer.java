@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ValueDeserializer;
+import com.fasterxml.jackson.databind.util.AccessPattern;
+
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 
 import com.amazon.ion.IonSystem;
@@ -54,5 +56,22 @@ class IonValueDeserializer extends ValueDeserializer<IonValue>
         }
         throw DatabindException.from(jp, "Cannot deserialize embedded object type "
                 + embeddedObject.getClass().getCanonicalName() + " into IonValue");
+    }
+
+    @Override
+    public Object getNullValue(DeserializationContext ctxt) throws JacksonException {
+        Object embeddedObj = ctxt.getParser().getEmbeddedObject();
+        if (embeddedObj instanceof IonValue) {
+            IonValue iv = (IonValue) embeddedObj;
+            if (iv.isNullValue()) {
+                return iv;
+            }
+        }
+        return super.getNullValue(ctxt);
+    }
+
+    @Override
+    public AccessPattern getNullAccessPattern() {
+        return AccessPattern.DYNAMIC;
     }
 }
