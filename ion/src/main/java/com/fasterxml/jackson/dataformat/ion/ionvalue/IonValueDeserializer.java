@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
@@ -52,5 +53,27 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
         }
         throw JsonMappingException.from(jp, "Cannot deserialize embedded object type "
                 + embeddedObject.getClass().getCanonicalName() + " into IonValue");
+    }
+
+    @Override
+    public IonValue getNullValue(DeserializationContext ctxt) throws JsonMappingException {
+        try {
+            Object embeddedObj = ctxt.getParser().getEmbeddedObject();
+            if (embeddedObj instanceof IonValue) {
+                IonValue iv = (IonValue) embeddedObj;
+                if (iv.isNullValue()) {
+                    return iv;
+                }
+            }
+
+            return super.getNullValue(ctxt);
+        } catch (IOException e) {
+            throw JsonMappingException.from(ctxt, e.toString());
+        }
+    }
+
+    @Override
+    public AccessPattern getNullAccessPattern() {
+        return AccessPattern.DYNAMIC;
     }
 }
