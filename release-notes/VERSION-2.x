@@ -34,6 +34,8 @@ Modules:
 #290: (avro) Generate logicalType switch
  (contributed by Michal F)
 #291: (smile) `ArrayIndexOutOfBounds` for truncated UTF-8 name
+#295: (ion) `jackson-dataformat-ion` does not handle null.struct deserialization correctly
+ (contributed by Martin G)
 - `Ion-java` dep 1.4.0 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 

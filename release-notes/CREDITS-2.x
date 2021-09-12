@@ -214,3 +214,9 @@ Hunter Herman (hherman1@github)
 
 * Requested #284: Support base64 strings in `getBinaryValue()` for CBOR and Smile
  (2.13.0)
+
+Martin Giannechini (MartinGian@github)
+
+* Contributed fix for #295: (ion) `jackson-dataformat-ion` does not handle null.struct
+  deserialization correctly
+ (2.13.0)
