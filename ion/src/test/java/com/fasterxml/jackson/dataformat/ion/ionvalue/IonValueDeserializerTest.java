@@ -10,14 +10,16 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
-
         private final Map<String, T> map = new HashMap<>();
+
+        protected Data() { }
 
         @JsonAnySetter
         public void put(String key, T value) {
@@ -50,8 +52,8 @@ public class IonValueDeserializerTest {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            Data other = (Data) obj;
-            return map.equals(other.map);
+            Data<?> other = (Data<?>) obj;
+            return Objects.equals(map, other.map);
         }
 
     }
@@ -71,7 +73,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserialize() throws Exception {
         IonValue ion = ion("{a:1, b:2, c:3}");
 
-        IonValueData data = ION_VALUE_MAPPER.parse(ion, IonValueData.class);
+        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
 
         assertEquals(3, data.getAllData().size());
         assertEquals(ion("1"), data.getAllData().get("a"));
@@ -83,7 +85,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserializeIncludingNullList() throws Exception {
         IonValue ion = ion("{a:1, b:2, c:null.list}");
 
-        IonValueData data = ION_VALUE_MAPPER.parse(ion, IonValueData.class);
+        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
 
         assertEquals(3, data.getAllData().size());
         assertEquals(ion("1"), data.getAllData().get("a"));
@@ -95,7 +97,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserializeNullList() throws Exception {
         IonValue ion = ion("{c:null.list}");
 
-        IonValueData data = ION_VALUE_MAPPER.parse(ion, IonValueData.class);
+        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
 
         assertEquals(1, data.getAllData().size());
         assertEquals(SYSTEM.newNullList(), data.getAllData().get("c"));
@@ -105,7 +107,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserializeNullStruct() throws Exception {
         IonValue ion = ion("{c:null.struct}");
 
-        IonValueData data = ION_VALUE_MAPPER.parse(ion, IonValueData.class);
+        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
 
         assertEquals(1, data.getAllData().size());
         assertEquals(SYSTEM.newNullStruct(), data.getAllData().get("c"));
@@ -115,7 +117,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserializeNullValue() throws Exception {
         IonValue ion = SYSTEM.newNull();
 
-        IonValue data = ION_VALUE_MAPPER.parse(ion, IonValue.class);
+        IonValue data = ION_VALUE_MAPPER.readValue(ion, IonValue.class);
 
         assertEquals(ion, data);
     }
@@ -124,7 +126,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserializeAnnotatedNullStruct() throws Exception {
         IonValue ion = ion("foo::null.struct");
 
-        IonValue data = ION_VALUE_MAPPER.parse(ion, IonValue.class);
+        IonValue data = ION_VALUE_MAPPER.readValue(ion, IonValue.class);
 
         assertEquals(ion, data);
         assertEquals(1, data.getTypeAnnotations().length);
@@ -135,7 +137,7 @@ public class IonValueDeserializerTest {
     public void shouldBeAbleToDeserializeAnnotatedNullList() throws Exception {
         IonValue ion = ion("foo::null.list");
 
-        IonValue data = ION_VALUE_MAPPER.parse(ion, IonValue.class);
+        IonValue data = ION_VALUE_MAPPER.readValue(ion, IonValue.class);
 
         assertEquals(ion, data);
         assertEquals(1, data.getTypeAnnotations().length);
@@ -148,8 +150,8 @@ public class IonValueDeserializerTest {
         source.put("a", ion("1"));
         source.put("c", ion("null.list"));
 
-        IonValue data = ION_VALUE_MAPPER.serialize(source);
-        IonValueData result = ION_VALUE_MAPPER.parse(data, IonValueData.class);
+        IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
+        IonValueData result = ION_VALUE_MAPPER.readValue(data, IonValueData.class);
 
         assertEquals(source, result);
     }
@@ -160,7 +162,7 @@ public class IonValueDeserializerTest {
         source.put("a", "1");
         source.put("b", null);
 
-        IonValue data = ION_VALUE_MAPPER.serialize(source);
+        IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
         StringData result = ION_VALUE_MAPPER.parse(data, StringData.class);
 
         assertEquals(source, result);
