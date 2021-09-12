@@ -14,12 +14,12 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
-
         private final Map<String, T> map = new HashMap<>();
 
         protected Data() { }
@@ -56,7 +56,7 @@ public class IonValueDeserializerTest {
                 return false;
             }
             Data<?> other = (Data<?>) obj;
-            return map.equals(other.map);
+            return Objects.equals(map, other.map);
         }
     }
 
