@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.13.0 (not yet released)
+2.13.0 (30-Sep-2021)
 
 #239: (cbor) Should validate UTF-8 multi-byte validity for short decode path too
 #248: (ion) Deprecate `CloseSafeUTF8Writer`, remove use

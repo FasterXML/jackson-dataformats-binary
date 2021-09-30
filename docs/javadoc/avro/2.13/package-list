@@ -1,0 +1,8 @@
+com.fasterxml.jackson.dataformat.avro
+com.fasterxml.jackson.dataformat.avro.apacheimpl
+com.fasterxml.jackson.dataformat.avro.deser
+com.fasterxml.jackson.dataformat.avro.jsr310
+com.fasterxml.jackson.dataformat.avro.jsr310.deser
+com.fasterxml.jackson.dataformat.avro.jsr310.ser
+com.fasterxml.jackson.dataformat.avro.schema
+com.fasterxml.jackson.dataformat.avro.ser
