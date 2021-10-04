@@ -25,6 +25,8 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
  * A {@link TypeResolverBuilder} which produces {@link TypeSerializer}s and {@link TypeDeserializer}s that use
@@ -43,7 +45,18 @@ public class IonAnnotationTypeResolverBuilder
     /**
      * Whether type id should be exposed to deserializers or not
      */
-    private boolean typeIdVisible = false;
+    private boolean typeIdVisible;
+
+    public IonAnnotationTypeResolverBuilder() {
+    }
+
+    // @since 2.13.1
+    protected IonAnnotationTypeResolverBuilder(IonAnnotationTypeResolverBuilder base,
+            Class<?> defaultImpl) {
+        typeIdResolver = base.typeIdResolver;
+        typeIdVisible = base.typeIdVisible;
+        this.defaultImpl = defaultImpl;
+    }
 
     @Override
     public Class<?> getDefaultImpl() {
@@ -107,5 +120,13 @@ public class IonAnnotationTypeResolverBuilder
     public IonAnnotationTypeResolverBuilder typeIdVisibility(boolean isVisible) {
         typeIdVisible = isVisible;
         return this;
+    }
+
+    @Override // @since 2.13.1
+    public IonAnnotationTypeResolverBuilder withDefaultImpl(Class<?> newDefaultImpl) {
+        if (newDefaultImpl == defaultImpl) {
+            return this;
+        }
+        return new IonAnnotationTypeResolverBuilder(this, defaultImpl);
     }
 }
