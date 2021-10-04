@@ -61,11 +61,9 @@ public class IonValueDeserializerTest {
     }
 
     static class StringData extends Data<String> {
-
     }
 
     static class IonValueData extends Data<IonValue> {
-
     }
 
     private static final IonSystem SYSTEM = IonSystemBuilder.standard().build();
