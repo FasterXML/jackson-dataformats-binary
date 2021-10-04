@@ -17,6 +17,7 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -25,8 +26,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
-import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
  * A {@link TypeResolverBuilder} which produces {@link TypeSerializer}s and {@link TypeDeserializer}s that use
