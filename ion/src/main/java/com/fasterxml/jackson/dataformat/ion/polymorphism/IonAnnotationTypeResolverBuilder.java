@@ -46,7 +46,7 @@ public class IonAnnotationTypeResolverBuilder
      */
     private boolean typeIdVisible;
 
-    // So that it can be instantiated from annotation
+    // Needed for instantiation from annotation
     protected IonAnnotationTypeResolverBuilder() {
     }
 
@@ -55,6 +55,13 @@ public class IonAnnotationTypeResolverBuilder
         this.defaultImpl = defaultImpl;
         typeIdVisible = false;
         typeIdResolver = idResolver;
+    }
+
+    protected IonAnnotationTypeResolverBuilder(IonAnnotationTypeResolverBuilder base,
+            Class<?> defaultImpl) {
+        typeIdResolver = base.typeIdResolver;
+        typeIdVisible = base.typeIdVisible;
+        this.defaultImpl = defaultImpl;
     }
 
     public static IonAnnotationTypeResolverBuilder construct(JavaType baseType,
@@ -107,8 +114,10 @@ public class IonAnnotationTypeResolverBuilder
     }
 
     @Override
-    public IonAnnotationTypeResolverBuilder defaultImpl(Class<?> di) {
-        defaultImpl = di;
-        return this;
+    public IonAnnotationTypeResolverBuilder withDefaultImpl(Class<?> newDefaultImpl) {
+        if (newDefaultImpl == defaultImpl) {
+            return this;
+        }
+        return new IonAnnotationTypeResolverBuilder(this, defaultImpl);
     }
 }

@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.13.1 (not yet released)
+
+- (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
+
 2.13.0 (30-Sep-2021)
 
 #239: (cbor) Should validate UTF-8 multi-byte validity for short decode path too
