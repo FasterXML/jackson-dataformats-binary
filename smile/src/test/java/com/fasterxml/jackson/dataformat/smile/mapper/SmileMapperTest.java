@@ -11,6 +11,7 @@ import org.junit.Assert;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,9 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public class SmileMapperTest extends BaseTestForSmile
 {
@@ -167,5 +171,43 @@ public class SmileMapperTest extends BaseTestForSmile
         g.writeEndArray();
         g.close();
         return b.toByteArray();
+    }
+
+    /*
+    /**********************************************************
+    /* Tests for [dataformats-binary#301]
+    /**********************************************************
+     */
+
+    public void testStreamingFeaturesViaMapper() throws Exception
+    {
+        SmileMapper mapperWithHeaders = SmileMapper.builder()
+                .enable(SmileGenerator.Feature.WRITE_HEADER)
+                .enable(SmileParser.Feature.REQUIRE_HEADER)
+                .build();
+        byte[] encodedWithHeader = mapperWithHeaders.writeValueAsBytes("foo");
+        assertEquals(8, encodedWithHeader.length);
+
+        SmileMapper mapperNoHeaders = SmileMapper.builder()
+                .disable(SmileGenerator.Feature.WRITE_HEADER)
+                .disable(SmileParser.Feature.REQUIRE_HEADER)
+                .build();
+        byte[] encodedNoHeader  = mapperNoHeaders.writeValueAsBytes("foo");
+        assertEquals(4, encodedNoHeader.length);
+
+        // And then see that we can parse; with header always
+        assertEquals("foo", mapperWithHeaders.readValue(encodedWithHeader, Object.class));
+        assertEquals("foo", mapperNoHeaders.readValue(encodedWithHeader, Object.class));
+
+        // without if not required
+        assertEquals("foo", mapperNoHeaders.readValue(encodedNoHeader, Object.class));
+
+        // But the reverse will fail
+        try {
+            mapperWithHeaders.readValue(encodedNoHeader, Object.class);
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Input does not start with Smile format header");
+        }
     }
 }
