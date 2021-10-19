@@ -1,9 +1,12 @@
 package com.fasterxml.jackson.dataformat.cbor.databind;
 
 import com.fasterxml.jackson.core.Version;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.PackageVersion;
 
 /**
@@ -23,8 +26,50 @@ public class CBORMapper extends ObjectMapper
      */
     public static class Builder extends MapperBuilder<CBORMapper, Builder>
     {
+        protected final CBORFactory _streamFactory; // since 2.14
+
         public Builder(CBORMapper m) {
             super(m);
+            _streamFactory = m.getFactory();
+        }
+
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        /**
+         * @since 2.14
+         */
+        public Builder enable(CBORGenerator.Feature... features) {
+            for (CBORGenerator.Feature f : features) {
+                _streamFactory.enable(f);
+            }
+            return this;
+        }
+
+        /**
+         * @since 2.14
+         */
+        public Builder disable(CBORGenerator.Feature... features) {
+            for (CBORGenerator.Feature f : features) {
+                _streamFactory.disable(f);
+            }
+            return this;
+        }
+
+        /**
+         * @since 2.14
+         */
+        public Builder configure(CBORGenerator.Feature f, boolean state)
+        {
+            if (state) {
+                _streamFactory.enable(f);
+            } else {
+                _streamFactory.disable(f);
+            }
+            return this;
         }
     }
 
@@ -46,7 +91,6 @@ public class CBORMapper extends ObjectMapper
         super(src);
     }
 
-    @SuppressWarnings("unchecked")
     public static CBORMapper.Builder builder() {
         return new Builder(new CBORMapper());
     }

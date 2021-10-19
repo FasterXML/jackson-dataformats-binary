@@ -10,6 +10,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.14.0 (not yet released)
+
+#301: (cbor, smile) Missing configuration methods for format-specific
+  parser/generator features
+
 2.13.1 (not yet released)
 
 - (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
