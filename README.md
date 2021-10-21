@@ -42,7 +42,7 @@ To use these format backends Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-[FORMAT]</artifactId>
-  <version>2.12.3</version>
+  <version>2.13.0</version>
 </dependency>
 ```
 
@@ -66,8 +66,8 @@ responses.
 `master` branch is for developing the next major Jackson version -- 3.0 -- but there
 are active maintenance branches in which much of development happens:
 
-* `2.13` is for developing the next 2.x version
-* `2.12` and `2.11` are for backported fixes for 2.12/2.11 versions (respectively)
+* `2.14` is for developing the next 2.x version
+* `2.13` and `2.12` are for backported fixes for 2.13/2.12 versions (respectively)
 
 Older branches are usually not changed but are available for historic reasons.
 All released versions have matching git tags (`jackson-dataformats-binary-2.10.3`).
