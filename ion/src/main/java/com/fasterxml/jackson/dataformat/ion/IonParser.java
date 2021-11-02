@@ -421,7 +421,13 @@ public class IonParser
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
             case TIMESTAMP:
-                return _reader.timestampValue();
+                try {
+                    return _reader.timestampValue();
+                } catch (IllegalArgumentException e) {
+                    throw _constructError(String.format(
+                            "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
+                            e);
+                }
             case BLOB:
             case CLOB:
                 return _reader.newBytes();

@@ -202,6 +202,11 @@ Nick (manaigrn-amzn@github)
   Native Type Ids when upgrading from 2.8
  (2.12.3)
 
+ZanderHuang@github:
+
+* Reported #302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
+ (2.12.6)
+
 Michal Foksa (MichalFoksa@github)
 
 * Contributed #283: Add `logicalType` support for some `java.time` types; add `AvroJavaTimeModule`
