@@ -33,7 +33,7 @@ tree model)
     <dependency>
       <groupId>com.amazon.ion</groupId>
       <artifactId>ion-java</artifactId>
-      <version>1.8.0</version>
+      <version>1.8.3</version>
     </dependency>
 
     <!-- Extends Jackson core, databind -->
