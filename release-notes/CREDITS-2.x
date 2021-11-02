@@ -197,3 +197,9 @@ Nick (manaigrn-amzn@github)
 * Contributed #270: (ion) Ion Polymorphic deserialization in 2.12 breaks wrt use of
   Native Type Ids when upgrading from 2.8
  (2.12.3)
+
+ZanderHuang@github:
+
+* Reported #302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
+ (2.12.6)
+
