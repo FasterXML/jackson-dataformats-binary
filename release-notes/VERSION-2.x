@@ -17,6 +17,8 @@ Modules:
 
 2.13.1 (not yet released)
 
+#302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
+ (reported by ZanderHuang@github)
 - (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
 
 2.13.0 (30-Sep-2021)
