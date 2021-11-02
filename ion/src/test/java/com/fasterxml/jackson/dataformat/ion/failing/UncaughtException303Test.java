@@ -4,7 +4,7 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.Assert.*;
@@ -21,7 +21,7 @@ public class UncaughtException303Test
         try {
             MAPPER.readTree(poc);
             fail("Should not pass with invalid content");
-        } catch (JsonProcessingException e) {
+        } catch (StreamReadException e) {
             // !!! TODO: change to match what we actually expect
             verifyException(e, "MATCH MESSAGE");
         }

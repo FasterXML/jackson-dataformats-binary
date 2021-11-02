@@ -4,7 +4,7 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.Assert.*;
@@ -25,7 +25,7 @@ public class UncaughtExceptionsTest
         try {
             MAPPER.readTree(poc);
             fail("Should not pass with invalid content");
-        } catch (JsonProcessingException e) {
+        } catch (StreamReadException e) {
             verifyException(e, "Invalid embedded TIMESTAMP");
         }
     }

@@ -424,7 +424,7 @@ public class IonParser
                 try {
                     return _reader.timestampValue();
                 } catch (IllegalArgumentException e) {
-                    throw _constructError(String.format(
+                    throw _constructReadException(String.format(
                             "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
                             e);
                 }
