@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.ion.misc;
+package com.fasterxml.jackson.dataformat.ion.failing;
 
 import java.net.URL;
 
@@ -9,24 +9,21 @@ import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.Assert.*;
 
-/**
- * A set of unit tests for reported issues where implementation does
- * not catch exceptions like {@link NullPointerException} where it should.
- */
-public class UncaughtExceptionsTest
+public class UncaughtException303Test
 {
     private final IonObjectMapper MAPPER = IonObjectMapper.builder().build();
 
-    // [dataformats-binary#302]
+    // [dataformats-binary#303]
     @Test
-    public void testUncaughtException302() throws Exception
+    public void testUncaughtException303() throws Exception
     {
-        URL poc = getClass().getResource("/data/issue-302.ion");
+        URL poc = getClass().getResource("/data/issue-303.ion");
         try {
             MAPPER.readTree(poc);
             fail("Should not pass with invalid content");
         } catch (JsonProcessingException e) {
-            verifyException(e, "Invalid embedded TIMESTAMP");
+            // !!! TODO: change to match what we actually expect
+            verifyException(e, "MATCH MESSAGE");
         }
     }
 
