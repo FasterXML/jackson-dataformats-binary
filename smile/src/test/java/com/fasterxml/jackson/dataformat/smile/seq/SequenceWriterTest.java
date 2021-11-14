@@ -9,10 +9,13 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 public class SequenceWriterTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
+    @JsonPropertyOrder({ "id", "value"})
     static class IdValue {
         public int id, value;
 
