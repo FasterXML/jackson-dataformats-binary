@@ -17,11 +17,6 @@ Modules:
 
 2.13.1 (not yet released)
 
-#302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
- (reported by ZanderHuang@github)
-- (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
-- `Ion-java` dep 1.8.0 -> 1.8.3
-
 2.13.0 (30-Sep-2021)
 
 #239: (cbor) Should validate UTF-8 multi-byte validity for short decode path too
@@ -50,6 +45,13 @@ Modules:
  (contributed by Martin G)
 - `Ion-java` dep 1.5.1 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
+
+2.12.6 (15-Dec-2021)
+
+#302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
+ (reported by ZanderHuang@github)
+- (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
+- `Ion-java` dep 1.8.0 -> 1.8.3
 
 2.12.5 (27-Aug-2021)
 
