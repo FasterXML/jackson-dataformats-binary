@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-(not yet released)
+2.12.6 (15-Dec-2021)
 
 #302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
  (reported by ZanderHuang@github)
