@@ -15,12 +15,9 @@ Modules:
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
 
-2.13.1 (not yet released)
+2.13.1 (19-Dec-2021)
 
-#302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
- (reported by ZanderHuang@github)
-- (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
-- `Ion-java` dep 1.8.0 -> 1.8.3
+No changes since 2.13.0
 
 2.13.0 (30-Sep-2021)
 
@@ -50,6 +47,13 @@ Modules:
  (contributed by Martin G)
 - `Ion-java` dep 1.5.1 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
+
+2.12.6 (15-Dec-2021)
+
+#302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
+ (reported by ZanderHuang@github)
+- (ion) Add missing `withDefaultImpl()` override for `IonAnnotationTypeResolverBuilder`
+- `Ion-java` dep 1.8.0 -> 1.8.3
 
 2.12.5 (27-Aug-2021)
 
