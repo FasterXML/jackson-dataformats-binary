@@ -39,7 +39,7 @@ public class IonParser
     /**
      * Enumeration that defines all togglable features for Ion parsers.
      */
-    public enum Feature implements FormatFeature // in 2.12
+    public enum Feature implements FormatFeature
     {
         /**
          * Whether to expect Ion native Type Id construct for indicating type (true);
@@ -49,8 +49,6 @@ public class IonParser
          * of `jackson-dataformat-ion` since 2.9 (first official public version)
          *
          * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
-         *
-         * @since 2.12.3
          */
         USE_NATIVE_TYPE_ID(true),
         ;
@@ -85,6 +83,10 @@ public class IonParser
         @Override
         public int getMask() { return _mask; }
     }
+
+    // @since 2.14
+    protected final static JacksonFeatureSet<StreamReadCapability> ION_READ_CAPABILITIES
+        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
     /*
     /**********************************************************************
@@ -188,8 +190,7 @@ public class IonParser
 
     @Override
     public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return ION_READ_CAPABILITIES;
     }
 
     /*

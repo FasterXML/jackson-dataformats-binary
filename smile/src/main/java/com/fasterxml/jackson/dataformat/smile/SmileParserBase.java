@@ -21,9 +21,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
 {
     protected final static String[] NO_STRINGS = new String[0];
 
-    // 2.12.3: [dataformats-binary#260] Avoid OOME/DoS for bigger binary;
-    //  read only up to 250k
+    // Avoid OOME/DoS for bigger binary; read eagerly only up to 250k
     protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
+
+    protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
+        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
     /*
     /**********************************************************************
@@ -282,8 +284,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     @Override
     public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return SMILE_READ_CAPABILITIES;
     }
 
     public final boolean mayContainRawBinary() {

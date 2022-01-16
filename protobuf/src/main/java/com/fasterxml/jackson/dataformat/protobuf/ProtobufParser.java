@@ -57,7 +57,11 @@ public class ProtobufParser extends ParserMinimalBase
     private final static int STATE_CLOSED = 12;
 
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
-    
+
+    // @since 2.14
+    protected final static JacksonFeatureSet<StreamReadCapability> PROTOBUF_READ_CAPABILITIES
+        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
+
     /*
     /**********************************************************************
     /* Configuration
@@ -338,10 +342,9 @@ public class ProtobufParser extends ParserMinimalBase
 
     @Override
     public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return PROTOBUF_READ_CAPABILITIES;
     }
-    
+
     /*
     /**********************************************************************
     /* Abstract impls

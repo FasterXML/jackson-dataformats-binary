@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.FormatSchema;
+import com.fasterxml.jackson.core.StreamReadCapability;
 import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.databind.*;
 
@@ -19,9 +20,9 @@ public class MapperConfigTest extends AvroTestBase
     };
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Defaults: streaming API
-    /**********************************************************
+    /**********************************************************************
      */
 
     public void testFactoryDefaults() throws Exception
@@ -45,6 +46,11 @@ public class MapperConfigTest extends AvroTestBase
                 .build();
         p = (AvroParser) mapper.createParser(new byte[0]);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+
+        // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
+        //    default set
+        assertTrue(p.streamReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+
         p.close();
     }
 
@@ -70,9 +76,9 @@ public class MapperConfigTest extends AvroTestBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Defaults: Mapper, related
-    /**********************************************************
+    /**********************************************************************
      */
 
     public void testDefaultSettingsWithAvroMapper()

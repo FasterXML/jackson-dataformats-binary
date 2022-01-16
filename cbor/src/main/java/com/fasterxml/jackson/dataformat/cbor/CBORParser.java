@@ -70,6 +70,10 @@ public class CBORParser extends ParserBase
     //  read only up to 250k
     protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
 
+    // @since 2.14 - require some overrides
+    protected final static JacksonFeatureSet<StreamReadCapability> CBOR_READ_CAPABILITIES =
+            DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
+
     /*
     /**********************************************************************
     /* Parsing state
@@ -217,8 +221,7 @@ public class CBORParser extends ParserBase
 
     @Override
     public JacksonFeatureSet<StreamReadCapability> streamReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return CBOR_READ_CAPABILITIES;
     }
 
     /*

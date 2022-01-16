@@ -2,10 +2,8 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TokenStreamFactory;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -23,7 +21,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         POINT_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
     }
 
-    public void testCBORFactorySerializable() throws Exception
+    public void testProtoFactorySerializable() throws Exception
     {
         byte[] doc = _writeDoc(MAPPER);
         TokenStreamFactory f = MAPPER.tokenStreamFactory();
@@ -97,10 +95,20 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         }
     }
 
+    public void testStreamReadCapabilities() throws Exception
+    {
+        byte[] doc = _writeDoc(MAPPER);
+        try (JsonParser p = MAPPER.createParser(doc)) {
+            // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
+            //    default set
+            assertTrue(p.streamReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+        }
+    }
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     private byte[] _writeDoc(ObjectMapper m) throws IOException {
