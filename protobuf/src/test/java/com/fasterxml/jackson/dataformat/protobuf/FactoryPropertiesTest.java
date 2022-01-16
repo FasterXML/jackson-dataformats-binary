@@ -4,6 +4,7 @@ import java.io.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.StreamReadCapability;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -21,7 +22,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         POINT_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
     }
 
-    public void testCBORFactorySerializable() throws Exception
+    public void testProtoFactorySerializable() throws Exception
     {
         ProtobufFactory f = new ProtobufFactory();
         byte[] doc = _writeDoc(f);
@@ -33,7 +34,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         assertNotNull(f2);
     }
 
-    public void testCBORFactoryCopy() throws Exception
+    public void testProtoFactoryCopy() throws Exception
     {
         ProtobufFactory f2 = PROTO_F.copy();
         assertNotNull(f2);
@@ -98,9 +99,19 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         } catch (UnsupportedOperationException e) {
             verifyException(e, "non-byte-based target");
         }
-        
     }
-    
+
+    // @since 2.14
+    public void testStreamReadCapabilities() throws Exception
+    {
+        byte[] doc = _writeDoc(PROTO_F);
+        try (JsonParser p = MAPPER.createParser(doc)) {
+            // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
+            //    default set
+            assertTrue(p.getReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+        }
+    }
+
     /*
     /**********************************************************
     /* Helper methods

@@ -85,6 +85,10 @@ public class IonParser
         public int getMask() { return _mask; }
     }
 
+    // @since 2.14
+    protected final static JacksonFeatureSet<StreamReadCapability> ION_READ_CAPABILITIES
+        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
+
     /*
     /*****************************************************************
     /* Basic configuration
@@ -219,8 +223,7 @@ public class IonParser
 
     @Override // since 2.12
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return ION_READ_CAPABILITIES;
     }
 
     /*

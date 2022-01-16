@@ -16,6 +16,7 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.StreamReadCapability;
 
 import org.junit.Assert;
 
@@ -109,4 +110,19 @@ public class IonParserTest
 
         Assert.assertEquals(className, parser.getTypeId());
     }
+
+    @Test
+    public void testParserCapabilities() throws Exception {
+        IonSystem ion = IonSystemBuilder.standard().build();
+
+        Integer intValue = Integer.MAX_VALUE;
+        IonValue ionInt = ion.newInt(intValue);
+
+        try (IonParser p = new IonFactory().createParser(ionInt)) {
+            // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
+            //    default set
+            Assert.assertTrue(p.getReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+        }
+    }
+
 }
