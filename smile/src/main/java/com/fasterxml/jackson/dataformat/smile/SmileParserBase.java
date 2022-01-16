@@ -28,6 +28,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
     //  read only up to 250k
     protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
 
+    // @since 2.14
+    protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
+        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
+
     /*
     /**********************************************************
     /* Config
@@ -318,9 +322,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
         return this;
     }
-
-    protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
-        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
     @Override // since 2.12
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {

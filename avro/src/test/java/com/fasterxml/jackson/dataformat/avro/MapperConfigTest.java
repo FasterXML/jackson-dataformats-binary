@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.FormatSchema;
+import com.fasterxml.jackson.core.StreamReadCapability;
 import com.fasterxml.jackson.databind.*;
 
 public class MapperConfigTest extends AvroTestBase
@@ -40,6 +41,11 @@ public class MapperConfigTest extends AvroTestBase
                 .build();
         p = f.createParser(new byte[0]);
         assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+
+        // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
+        //    default set
+        assertTrue(p.getReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+
         try {
             p.setSchema(BOGUS_SCHEMA);
             fail("Should not pass!");
@@ -76,7 +82,7 @@ public class MapperConfigTest extends AvroTestBase
     /* Defaults: Mapper, related
     /**********************************************************
      */
-    
+
     // Test to verify that data format affects default state of order-props-alphabetically
     public void testDefaultSettingsWithObjectMapper()
     {
