@@ -319,10 +319,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return this;
     }
 
+    protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
+        = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
+
     @Override // since 2.12
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return SMILE_READ_CAPABILITIES;
     }
 
     /*

@@ -420,8 +420,7 @@ public class CBORParser extends ParserMinimalBase
 
     @Override // since 2.12
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
     }
 
     /*
