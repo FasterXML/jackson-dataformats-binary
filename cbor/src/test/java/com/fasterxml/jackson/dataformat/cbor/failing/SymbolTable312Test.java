@@ -25,17 +25,17 @@ public class SymbolTable312Test extends CBORTestBase
         try (JsonParser p = MAPPER.createParser(DOC)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             _assertNullStrings(FIELD1, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             assertEquals("a", p.getText());
 
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             _assertNullStrings(FIELD2, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             assertEquals("b", p.getText());
 
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             _assertNullStrings(FIELD3, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             assertEquals("c", p.getText());
