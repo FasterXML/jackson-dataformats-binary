@@ -2902,9 +2902,9 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
 
         // First quadbyte is easy
         int q1 = (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         
         if (len < 9) {
             int q2 = (inBuf[inPtr++] & 0xFF);
@@ -3006,7 +3006,15 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     
     private static int[] _growArrayTo(int[] arr, int minSize) {
         return Arrays.copyOf(arr, minSize+4);
-    }    
+    }
+
+    // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
+    // 26-Feb-2022, tatu: not yet used
+    /*
+    private final static int _padLastQuad(int q, int bytes) {
+        return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
+    }
+    */
 
     /*
     /**********************************************************

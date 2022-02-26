@@ -17,7 +17,7 @@ public class SymbolTable312Test extends CBORTestBase
         final String FIELD3 = FIELD2 + FIELD1;
 
         final String QUOTED_NULL = "\\u0000";
-        
+
         final String SRC = a2q(String.format("{'%s':'a','%s':'b','%s':'c'}",
                 QUOTED_NULL, QUOTED_NULL+QUOTED_NULL, QUOTED_NULL+QUOTED_NULL+QUOTED_NULL));
         byte[] DOC = cborDoc(SRC);
