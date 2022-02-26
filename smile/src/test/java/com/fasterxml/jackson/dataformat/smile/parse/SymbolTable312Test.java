@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.smile.failing;
+package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.nio.charset.StandardCharsets;
 
