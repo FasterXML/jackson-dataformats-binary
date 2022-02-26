@@ -1866,9 +1866,9 @@ versionBits));
         }
 
         int q2 = (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
 
         if (len < 13) {
             int q3 = (inBuf[inPtr++] & 0xFF);
@@ -1939,6 +1939,14 @@ versionBits));
         }
         return Arrays.copyOf(arr, size);
     }
+
+    // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
+    // 26-Feb-2022, tatu: not yet used
+    /*
+    private final static int _padLastQuad(int q, int bytes) {
+        return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
+    }
+    */
 
     /*
     /**********************************************************
