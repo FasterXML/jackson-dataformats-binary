@@ -209,6 +209,11 @@ public abstract class BaseTestForSmile
         assertToken(expToken, p.currentToken());
     }
 
+    protected void assertNameToken(JsonToken actToken)
+    {
+        assertToken(JsonToken.PROPERTY_NAME, actToken);
+    }
+
     protected void assertType(Object ob, Class<?> expType)
     {
         if (ob == null) {
