@@ -14,6 +14,8 @@ Modules:
 
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
+#312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
+ (reported by David T)
 
 2.13.1 (19-Dec-2021)
 
