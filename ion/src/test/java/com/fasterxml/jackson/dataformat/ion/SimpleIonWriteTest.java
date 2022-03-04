@@ -29,7 +29,7 @@ import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonType;
 import com.amazon.ion.system.IonSystemBuilder;
 
-public class SimpleWriteTest
+public class SimpleIonWriteTest
 {
     // // // Actual tests; low level
     

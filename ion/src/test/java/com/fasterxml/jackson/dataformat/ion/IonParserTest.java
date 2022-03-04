@@ -157,7 +157,7 @@ public class IonParserTest
         try (IonParser parser = (IonParser) f.createParser("{  a: 1, $99: 2 }")) {
             Assert.assertEquals(JsonToken.START_OBJECT, parser.nextToken());
             Assert.assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-            Assert.assertEquals("a", parser.getCurrentName());
+            Assert.assertEquals("a", parser.currentName());
             Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
             Assert.assertEquals(1, parser.getIntValue());
             parser.nextValue(); // Should encounter unknown symbol and fail
@@ -170,7 +170,7 @@ public class IonParserTest
         try (IonParser parser = (IonParser) f.createParser("{  a: $99::1 }")) {
             Assert.assertEquals(JsonToken.START_OBJECT, parser.nextToken());
             Assert.assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-            Assert.assertEquals("a", parser.getCurrentName());
+            Assert.assertEquals("a", parser.currentName());
             Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
             Assert.assertEquals(1, parser.getIntValue());
             parser.getTypeAnnotations(); // Should encounter unknown symbol and fail
