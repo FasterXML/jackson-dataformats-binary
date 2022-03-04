@@ -22,11 +22,8 @@ import static org.junit.Assert.*;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
-public class SimpleReadTest
-{
+public class SimpleIonReadTest {
     private final IonObjectMapper MAPPER = new IonObjectMapper();
-
-    // // // Actual tests; low level
 
     @Test
     public void testSimpleStructRead() throws IOException
