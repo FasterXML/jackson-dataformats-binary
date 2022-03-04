@@ -265,7 +265,13 @@ public class IonParser
             case FIELD_NAME:
                 return getCurrentName();
             case VALUE_STRING:
-                return _reader.stringValue();
+                try {
+                    // stringValue() will throw an UnknownSymbolException if we're
+                    // trying to get the text for a symbol id that cannot be resolved.
+                    return _reader.stringValue();
+                } catch (UnknownSymbolException e) {
+                    throw _constructError(e.getMessage(), e);
+                }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
                 Number n = getNumberValue();
@@ -512,7 +518,12 @@ public class IonParser
         }
 
         // any more tokens in this scope?
-        IonType type = _reader.next();
+        IonType type = null;
+        try {
+            type = _reader.next();
+        } catch (IonException e) {
+            _wrapError(e.getMessage(), e);
+        }
         if (type == null) {
             if (_parsingContext.inRoot()) { // EOF?
                 close();
@@ -528,7 +539,13 @@ public class IonParser
         boolean inStruct = !_parsingContext.inRoot() && _reader.isInStruct();
         // (isInStruct can return true for the first value read if the reader
         // was created from an IonValue that has a parent container)
-        _parsingContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
+        try {
+            // getFieldName() can throw an UnknownSymbolException if the text of the
+            // field name symbol cannot be resolved.
+            _parsingContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
+        } catch (UnknownSymbolException e) {
+            _wrapError(e.getMessage(), e);
+        }
         JsonToken t = _tokenFromType(type);
         // and return either field name first
         if (inStruct) {
@@ -542,9 +559,15 @@ public class IonParser
     /**
      * @see com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeDeserializer
      */
-    public String[] getTypeAnnotations() {
-        // Per its spec, will not return null
-        return _reader.getTypeAnnotations();
+    public String[] getTypeAnnotations() throws JsonParseException {
+        try {
+            // Per its spec, will not return null
+            return _reader.getTypeAnnotations();
+        } catch (UnknownSymbolException e) {
+            // IonReader.getTypeAnnotations() can throw an UnknownSymbolException if the text of any
+            // the annotation symbols cannot be resolved.
+            throw _constructError(e.getMessage(), e);
+        }
     }
 
     @Override
