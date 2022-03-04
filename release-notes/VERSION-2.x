@@ -14,6 +14,8 @@ Modules:
 
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
+#311: (ion) `IonObjectMapper` does not throw JacksonException for some invalid Ion
+ (contributed by Matthew P)
 #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
  (reported by David T)
 
