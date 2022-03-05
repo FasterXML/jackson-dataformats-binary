@@ -508,7 +508,7 @@ public class IonParser
         try {
             type = _reader.next();
         } catch (IonException e) {
-            _constructReadException(e.getMessage(), e);
+            throw _constructReadException(e.getMessage(), e);
         }
         if (type == null) {
             if (_streamReadContext.inRoot()) { // EOF?
@@ -530,7 +530,7 @@ public class IonParser
             // field name symbol cannot be resolved.
             _streamReadContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
         } catch (UnknownSymbolException e) {
-            _constructReadException(e.getMessage(), e);
+            throw _constructReadException(e.getMessage(), e);
         }
         JsonToken t = _tokenFromType(type);
         // and return either field name first
