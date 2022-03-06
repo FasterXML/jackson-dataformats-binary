@@ -15,6 +15,10 @@ Modules:
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
 
+2.13.2 (06-Mar-2022)
+
+No changes since 2.13.1
+
 2.13.1 (19-Dec-2021)
 
 #302: (ion) `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
