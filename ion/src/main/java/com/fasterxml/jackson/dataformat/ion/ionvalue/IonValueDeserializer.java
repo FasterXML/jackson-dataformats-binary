@@ -14,6 +14,8 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
+import com.amazon.ion.IonNull;
+import com.fasterxml.jackson.core.JsonToken;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -58,11 +60,14 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
     @Override
     public IonValue getNullValue(DeserializationContext ctxt) throws JsonMappingException {
         try {
-            Object embeddedObj = ctxt.getParser().getEmbeddedObject();
-            if (embeddedObj instanceof IonValue) {
-                IonValue iv = (IonValue) embeddedObj;
-                if (iv.isNullValue()) {
-                    return iv;
+            final JsonParser parser = ctxt.getParser();
+            if (parser != null && parser.getCurrentToken() != JsonToken.END_OBJECT) {
+                final Object embeddedObj = parser.getEmbeddedObject();
+                if ((embeddedObj instanceof IonValue) && !(embeddedObj instanceof IonNull)) {
+                    final IonValue iv = (IonValue) embeddedObj;
+                    if (iv.isNullValue()) {
+                        return iv;
+                    }
                 }
             }
 
