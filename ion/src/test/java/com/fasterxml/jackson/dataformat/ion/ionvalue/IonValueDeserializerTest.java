@@ -135,6 +135,24 @@ public class IonValueDeserializerTest {
     }
 
     @Test
+    public void shouldBeAbleToDeserializeIonNullToJavaNull() throws Exception {
+        IonValueData source = new IonValueData();
+        source.put("a", null);
+        source.put("b", ion("null"));
+        source.put("c", ion("null.null"));
+
+        IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
+        IonValueData result = ION_VALUE_MAPPER.readValue(data, IonValueData.class);
+
+        IonValueData expected = new IonValueData();
+        expected.put("a", null);
+        expected.put("b", null);
+        expected.put("c", null);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void shouldBeAbleToDeserializeAnnotatedNullStruct() throws Exception {
         IonValue ion = ion("foo::null.struct");
 
