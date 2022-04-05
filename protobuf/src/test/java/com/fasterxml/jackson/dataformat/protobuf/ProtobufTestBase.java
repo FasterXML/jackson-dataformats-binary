@@ -10,6 +10,8 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
 import junit.framework.TestCase;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 public abstract class ProtobufTestBase extends TestCase
 {
     /*
@@ -149,6 +151,7 @@ public abstract class ProtobufTestBase extends TestCase
     /**********************************************************
      */
 
+    @JsonPropertyOrder({ "x", "y"})
     static class Point {
         public int x;
         public int y;
@@ -174,6 +177,7 @@ public abstract class ProtobufTestBase extends TestCase
         }
     }
 
+    @JsonPropertyOrder({ "x", "y", "z" })
     static class Point3 {
         public int x, y, z;
 
@@ -277,6 +281,7 @@ public abstract class ProtobufTestBase extends TestCase
         }
     }
     
+    @JsonPropertyOrder({ "topLeft", "bottomRight"})
     static class Box {
         public Point topLeft, bottomRight;
 
@@ -296,6 +301,7 @@ public abstract class ProtobufTestBase extends TestCase
         }
     }
 
+    @JsonPropertyOrder({ "first", "last"})
     static class Name {
         public String first, last;
 

@@ -12,13 +12,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GeneratorDeepNestingTest extends CBORTestBase
 {
+    private final ObjectMapper MAPPER = cborMapper();
+
     /*
     /**********************************************************
     /* Test methods
     /**********************************************************
      */
-
-    final ObjectMapper MAPPER = cborMapper();
 
     // for [dataformats-binary#62]
     @SuppressWarnings("unchecked")

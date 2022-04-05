@@ -1793,6 +1793,7 @@ versionBits));
             if (quads >= _quadBuffer.length) {
                 _quadBuffer = _growArrayTo(_quadBuffer, _quadBuffer.length + 256);
             }
+            q = _padLastQuad(q, bytes);
             _quadBuffer[quads++] = q;
             byteLen += bytes;
         }
@@ -1825,7 +1826,7 @@ versionBits));
         if (len < 5) {
             int inPtr = _inputPtr;
             final byte[] inBuf = _inputBuffer;
-            int q = inBuf[inPtr] & 0xFF;
+            int q = _padQuadForNulls(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {
@@ -1849,7 +1850,7 @@ versionBits));
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         
         if (len < 9) {
-            int q2 = (inBuf[inPtr++] & 0xFF);
+            int q2 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 5;
             if (left > 0) {
                 q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
@@ -1871,7 +1872,7 @@ versionBits));
         q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
 
         if (len < 13) {
-            int q3 = (inBuf[inPtr++] & 0xFF);
+            int q3 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 9;
             if (left > 0) {
                 q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
@@ -1920,7 +1921,7 @@ versionBits));
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            int q = inBuf[inPtr] & 0xFF;
+            int q = _padQuadForNulls(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {
@@ -1940,13 +1941,15 @@ versionBits));
         return Arrays.copyOf(arr, size);
     }
 
-    // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
-    // 26-Feb-2022, tatu: not yet used
-    /*
+    // Helper methods needed to fix [dataformats-binary#312], masking of 0x00 character
+
     private final static int _padLastQuad(int q, int bytes) {
         return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
     }
-    */
+
+    private final static int _padQuadForNulls(int firstByte) {
+        return (firstByte & 0xFF) | 0xFFFFFF00;
+    }
 
     /*
     /**********************************************************

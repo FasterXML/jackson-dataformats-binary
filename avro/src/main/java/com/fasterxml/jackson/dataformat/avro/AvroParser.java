@@ -68,6 +68,10 @@ public abstract class AvroParser extends ParserBase
         public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
     }
 
+    // @since 2.14 - require some overrides
+    protected final static JacksonFeatureSet<StreamReadCapability> AVRO_READ_CAPABILITIES =
+            DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
+
     /*
     /**********************************************************************
     /* Configuration
@@ -125,8 +129,7 @@ public abstract class AvroParser extends ParserBase
 
     @Override // since 2.12
     public JacksonFeatureSet<StreamReadCapability> getReadCapabilities() {
-        // Defaults are fine
-        return DEFAULT_READ_CAPABILITIES;
+        return AVRO_READ_CAPABILITIES;
     }
 
     /*                                                                                       

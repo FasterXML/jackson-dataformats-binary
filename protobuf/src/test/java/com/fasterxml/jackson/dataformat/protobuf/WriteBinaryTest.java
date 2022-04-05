@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 public class WriteBinaryTest extends ProtobufTestBase
 {
     final protected static String PROTOC_BINARY =
@@ -15,6 +17,7 @@ public class WriteBinaryTest extends ProtobufTestBase
             +"}\n"
     ;
 
+    @JsonPropertyOrder({ "id", "trailer", "data"})
     static class Binary {
         public int id, trailer;
         public byte[] data;

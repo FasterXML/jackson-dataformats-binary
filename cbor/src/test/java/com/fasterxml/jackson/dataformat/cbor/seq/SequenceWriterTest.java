@@ -9,10 +9,13 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 public class SequenceWriterTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    @JsonPropertyOrder({ "id", "value"}) 
     static class IdValue {
         public int id, value;
 

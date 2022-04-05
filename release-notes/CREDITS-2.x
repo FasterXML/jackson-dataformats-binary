@@ -225,3 +225,15 @@ Martin Giannechini (MartinGian@github)
 * Contributed fix for #295: (ion) `jackson-dataformat-ion` does not handle null.struct
   deserialization correctly
  (2.13.0)
+
+David Turner (DaveCTurner@github)
+
+* Reported #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
+ (2.14.0)
+
+Matthew Pope (popematt@github)
+
+* Contributed #311: (ion) `IonObjectMapper` does not throw JacksonException for some
+  invalid Ion
+ (2.14.0)
+

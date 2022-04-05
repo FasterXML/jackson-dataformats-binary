@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
-public class SimpleReadTest {
+public class SimpleIonReadTest {
     // // // Actual tests; low level
 
     @Test
@@ -32,14 +32,14 @@ public class SimpleReadTest {
         JsonParser jp = f.createParser("{a:\"value\",b:42, c:null}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("a", jp.getCurrentName());
+        assertEquals("a", jp.currentName());
         assertEquals(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("value", jp.getText());
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
-        assertEquals("b", jp.getCurrentName());
+        assertEquals("b", jp.currentName());
         assertEquals(42, jp.getIntValue());
         assertEquals(JsonToken.VALUE_NULL, jp.nextValue());
-        assertEquals("c", jp.getCurrentName());
+        assertEquals("c", jp.currentName());
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();
     }
@@ -67,7 +67,7 @@ public class SimpleReadTest {
         JsonParser jp = f.createParser("{a:[\"b\",\"c\"], b:null}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("a", jp.getCurrentName());
+        assertEquals("a", jp.currentName());
         assertEquals(JsonToken.START_ARRAY, jp.nextToken());
         assertEquals(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("b", jp.getText());
@@ -75,9 +75,9 @@ public class SimpleReadTest {
         assertEquals("c", jp.getText());
         assertEquals(JsonToken.END_ARRAY, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("b", jp.getCurrentName());
+        assertEquals("b", jp.currentName());
         assertEquals(JsonToken.VALUE_NULL, jp.nextToken());
-        assertEquals("b", jp.getCurrentName());
+        assertEquals("b", jp.currentName());
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();
     }
@@ -89,23 +89,23 @@ public class SimpleReadTest {
         JsonParser jp = f.createParser("{a:[ 1, { b:  13}, \"xyz\" ], c:null, d:true}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.START_ARRAY, jp.nextValue());
-        //assertEquals("a", jp.getCurrentName());        
+        //assertEquals("a", jp.currentName());        
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
-        assertNull(jp.getCurrentName());
+        assertNull(jp.currentName());
         assertEquals(1, jp.getIntValue());
         assertEquals(JsonToken.START_OBJECT, jp.nextValue());
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
-        assertEquals("b", jp.getCurrentName());
+        assertEquals("b", jp.currentName());
         assertEquals(13, jp.getIntValue());
         assertEquals(JsonToken.END_OBJECT, jp.nextValue());
         assertEquals(JsonToken.VALUE_STRING, jp.nextValue());
         assertEquals("xyz", jp.getText());
-        assertNull(jp.getCurrentName());
+        assertNull(jp.currentName());
         assertEquals(JsonToken.END_ARRAY, jp.nextValue());
         assertEquals(JsonToken.VALUE_NULL, jp.nextValue());
-        assertEquals("c", jp.getCurrentName());
+        assertEquals("c", jp.currentName());
         assertEquals(JsonToken.VALUE_TRUE, jp.nextValue());
-        assertEquals("d", jp.getCurrentName());
+        assertEquals("d", jp.currentName());
         
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();
@@ -117,14 +117,14 @@ public class SimpleReadTest {
         JsonParser jp = f.createParser("{a:\"value\",b:42, c:null.int}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("a", jp.getCurrentName());
+        assertEquals("a", jp.currentName());
         assertEquals(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("value", jp.getText());
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
-        assertEquals("b", jp.getCurrentName());
+        assertEquals("b", jp.currentName());
         assertEquals(42, jp.getIntValue());
         assertEquals(JsonToken.VALUE_NULL, jp.nextValue());
-        assertEquals("c", jp.getCurrentName());
+        assertEquals("c", jp.currentName());
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();        
     }
