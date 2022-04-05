@@ -63,7 +63,8 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
             final JsonParser parser = ctxt.getParser();
             if (parser != null && parser.getCurrentToken() != JsonToken.END_OBJECT) {
                 final Object embeddedObj = parser.getEmbeddedObject();
-                if ((embeddedObj instanceof IonValue) && !(embeddedObj instanceof IonNull)) {
+                if ((embeddedObj instanceof IonValue)
+                    && ( (parser.getTypeId() != null) || !(embeddedObj instanceof IonNull))) {
                     final IonValue iv = (IonValue) embeddedObj;
                     if (iv.isNullValue()) {
                         return iv;

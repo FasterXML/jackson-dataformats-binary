@@ -116,17 +116,30 @@ public class IonValueDeserializerTest {
         IonValueData source = new IonValueData();
         source.put("a", null); // Serialized to IonNull, deserialized back to java null
         source.put("b", ion("null.bool"));
+        source.put("ba", ion("foo::null.bool"));
         source.put("c", ion("null.int"));
+        source.put("ca", ion("foo::null.int"));
         source.put("d", ion("null.float"));
+        source.put("da", ion("foo::null.float"));
         source.put("e", ion("null.decimal"));
+        source.put("ea", ion("foo::null.decimal"));
         source.put("f", ion("null.timestamp"));
+        source.put("fa", ion("foo::null.timestamp"));
         source.put("g", ion("null.string"));
+        source.put("ga", ion("foo::null.string"));
         source.put("h", ion("null.symbol"));
+        source.put("ha", ion("foo::null.symbol"));
         source.put("i", ion("null.blob"));
+        source.put("ia", ion("foo::null.blob"));
         source.put("j", ion("null.clob"));
+        source.put("ja", ion("foo::null.clob"));
         source.put("k", ion("null.struct"));
+        source.put("ka", ion("foo::null.struct"));
         source.put("l", ion("null.list"));
+        source.put("la", ion("foo::null.list"));
         source.put("m", ion("null.sexp"));
+        source.put("ma", ion("foo::null.sexp"));
+        source.put("maa", ion("'com.foo.Bar'::null.sexp"));
 
         IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
         IonValueData result = ION_VALUE_MAPPER.readValue(data, IonValueData.class);
@@ -135,7 +148,21 @@ public class IonValueDeserializerTest {
     }
 
     @Test
-    public void shouldBeAbleToDeserializeIonNullToJavaNull() throws Exception {
+    public void shouldBeAbleToDeserializeAnnotatedIonNull() throws Exception {
+        IonValueData source = new IonValueData();
+        source.put("a", ion("foo::null"));
+        source.put("aa", ion("'com.foo.Bar'::null"));
+        source.put("b", ion("foo::null.null"));
+        source.put("ba", ion("'com.foo.Bar'::null.null"));
+
+        IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
+        IonValueData result = ION_VALUE_MAPPER.readValue(data, IonValueData.class);
+
+        assertEquals(source, result);
+    }
+
+    @Test
+    public void shouldBeAbleToDeserializeUnannotatedIonNullToJavaNull() throws Exception {
         IonValueData source = new IonValueData();
         source.put("a", null);
         source.put("b", ion("null"));
