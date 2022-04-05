@@ -1,11 +1,15 @@
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
+import com.amazon.ion.IonStruct;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.util.AccessPattern;
+import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import java.io.IOException;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -170,6 +174,38 @@ public class IonValueDeserializerTest {
     public void shouldOverrideNullAccessPatternToBeDynamic() {
         IonValueDeserializer deserializer = new IonValueDeserializer();
         assertEquals(AccessPattern.DYNAMIC, deserializer.getNullAccessPattern());
+    }
+
+    static class MyBean {
+        public IonStruct required;
+        public IonStruct optional;
+
+        MyBean(
+            @JsonProperty("required") IonStruct required,
+            @JsonProperty("optional") IonStruct optional
+        ) {
+            this.required = required;
+            this.optional = optional;
+        }
+    }
+
+    @Test
+    public void testWithMissingProperty() throws IOException
+    {
+        IonSystem ionSystem = IonSystemBuilder.standard().build();
+        IonObjectMapper ionObjectMapper = IonObjectMapper.builder(ionSystem)
+            .addModule(new IonValueModule())
+            .build();
+
+        String input1 = "{required:{}, optional:{}}";
+        MyBean deserializedBean1 = ionObjectMapper.readValue(input1, MyBean.class);
+        assertEquals(ionSystem.newEmptyStruct(), deserializedBean1.required);
+        assertEquals(ionSystem.newEmptyStruct(), deserializedBean1.optional);
+
+        // This deserialization should not fail with missing property
+        String input2 = "{required:{}}";
+        MyBean deserializedBean2 = ionObjectMapper.readValue(input2, MyBean.class);
+        assertEquals(ionSystem.newEmptyStruct(), deserializedBean2.required);
     }
 
     private static IonValue ion(String value) {
