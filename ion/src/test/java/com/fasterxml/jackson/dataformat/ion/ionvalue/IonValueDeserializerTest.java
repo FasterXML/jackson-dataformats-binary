@@ -205,6 +205,7 @@ public class IonValueDeserializerTest {
         // This deserialization should not fail with missing property
         String input2 = "{required:{}}";
         MyBean deserializedBean2 = ionObjectMapper.readValue(input2, MyBean.class);
+        assertEquals(null, deserializedBean2.optional);
         assertEquals(ionSystem.newEmptyStruct(), deserializedBean2.required);
     }
 
