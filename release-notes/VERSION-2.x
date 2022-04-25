@@ -19,6 +19,11 @@ Modules:
 #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
  (reported by David T)
 
+2.13.3 (not yet released)
+
+#317: (ion) IonValueDeserializer does not handle getNullValue correctly for a missing property
+ (contributed by atokuzAmzn@github)
+
 2.13.2 (06-Mar-2022)
 
 No changes since 2.13.1
