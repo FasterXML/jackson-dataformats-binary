@@ -12,6 +12,7 @@ public class Fuzz_35979_StringValueTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    // [dataformats-binary#316]
     // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=35979
     public void testInvalidTextValueWithBrokenUTF8() throws Exception
     {

@@ -16,6 +16,7 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ValueDeserializer;
@@ -60,11 +61,14 @@ class IonValueDeserializer extends ValueDeserializer<IonValue>
 
     @Override
     public Object getNullValue(DeserializationContext ctxt) throws JacksonException {
-        Object embeddedObj = ctxt.getParser().getEmbeddedObject();
-        if (embeddedObj instanceof IonValue) {
-            IonValue iv = (IonValue) embeddedObj;
-            if (iv.isNullValue()) {
-                return iv;
+        final JsonParser parser = ctxt.getParser();
+        if (parser != null && parser.currentToken() != JsonToken.END_OBJECT) {
+            final Object embeddedObj = parser.getEmbeddedObject();
+            if (embeddedObj instanceof IonValue) {
+                IonValue iv = (IonValue) embeddedObj;
+                if (iv.isNullValue()) {
+                    return iv;
+                }
             }
         }
         return super.getNullValue(ctxt);
