@@ -12,6 +12,7 @@ import com.amazon.ion.system.IonSystemBuilder;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -180,6 +181,7 @@ public class IonValueDeserializerTest {
         public IonStruct required;
         public IonStruct optional;
 
+        @JsonCreator
         MyBean(
             @JsonProperty("required") IonStruct required,
             @JsonProperty("optional") IonStruct optional
