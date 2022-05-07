@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.databind.util.LRUMap;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,6 +22,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.databind.util.LRUMap;
+import com.fasterxml.jackson.dataformat.avro.annotations.AvroNamespace;
 
 public abstract class AvroSchemaHelper
 {
@@ -97,8 +98,9 @@ public abstract class AvroSchemaHelper
         return false;
     }
 
-    protected static String getNamespace(JavaType type) {
-        return getNamespace(type.getRawClass());
+    protected static String getNamespace(BeanDescription bean) {
+        AvroNamespace ann = bean.getClassInfo().getAnnotation(AvroNamespace.class);
+        return ann != null ? ann.value() : getNamespace(bean.getType().getRawClass());
     }
 
     protected static String getNamespace(Class<?> cls) {
@@ -244,7 +246,7 @@ public abstract class AvroSchemaHelper
         return addAlias(Schema.createRecord(
             getName(bean.getType()),
             bean.findClassDescription(),
-            getNamespace(bean.getType()),
+            getNamespace(bean),
             bean.getType().isTypeOrSubTypeOf(Throwable.class)
         ), bean);
     }
@@ -268,7 +270,7 @@ public abstract class AvroSchemaHelper
         return addAlias(Schema.createEnum(
             getName(bean.getType()),
             bean.findClassDescription(),
-            getNamespace(bean.getType()), values
+            getNamespace(bean), values
         ), bean);
     }
 
