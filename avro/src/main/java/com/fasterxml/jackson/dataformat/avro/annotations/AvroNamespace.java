@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * Annotation allows to override default Avro type namespace value.
  * Default value is Java package name.
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AvroNamespace {
     String value();
