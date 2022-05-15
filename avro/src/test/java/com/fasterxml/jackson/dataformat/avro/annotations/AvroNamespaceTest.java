@@ -1,10 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.annotations;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
 import org.apache.avro.Schema;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +25,7 @@ public class AvroNamespaceTest {
     enum EnumWithAvroNamespaceAnnotation {FOO, BAR;}
 
     @Test
-    public void class_without_AvroNamespace_test() throws JsonMappingException {
+    public void class_without_AvroNamespace_test() throws Exception {
         // GIVEN
         AvroMapper mapper = new AvroMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -39,7 +40,7 @@ public class AvroNamespaceTest {
     }
 
     @Test
-    public void class_with_AvroNamespace_test() throws JsonMappingException {
+    public void class_with_AvroNamespace_test() throws Exception {
         // GIVEN
         AvroMapper mapper = new AvroMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -54,7 +55,7 @@ public class AvroNamespaceTest {
     }
 
     @Test
-    public void enum_without_AvroNamespace_test() throws JsonMappingException {
+    public void enum_without_AvroNamespace_test() throws Exception {
         // GIVEN
         AvroMapper mapper = new AvroMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -69,7 +70,7 @@ public class AvroNamespaceTest {
     }
 
     @Test
-    public void enum_with_AvroNamespace_test() throws JsonMappingException {
+    public void enum_with_AvroNamespace_test() throws Exception {
         // GIVEN
         AvroMapper mapper = new AvroMapper();
         AvroSchemaGenerator gen = new AvroSchemaGenerator();

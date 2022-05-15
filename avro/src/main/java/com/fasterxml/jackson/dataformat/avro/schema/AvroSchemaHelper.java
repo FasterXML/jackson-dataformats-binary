@@ -98,9 +98,9 @@ public abstract class AvroSchemaHelper
         return false;
     }
 
-    protected static String getNamespace(BeanDescription bean) {
-        AvroNamespace ann = bean.getClassInfo().getAnnotation(AvroNamespace.class);
-        return ann != null ? ann.value() : getNamespace(bean.getType().getRawClass());
+    protected static String getNamespace(JavaType type, AnnotatedClass annotations) {
+        AvroNamespace ann = annotations.getAnnotation(AvroNamespace.class);
+        return ann != null ? ann.value() : getNamespace(type.getRawClass());
     }
 
     protected static String getNamespace(Class<?> cls) {
@@ -243,11 +243,12 @@ public abstract class AvroSchemaHelper
      * needs to have fields added to it.
      */
     public static Schema initializeRecordSchema(BeanDescription bean) {
+        final JavaType beanType = bean.getType();
         return addAlias(Schema.createRecord(
-            getName(bean.getType()),
+            getName(beanType),
             bean.findClassDescription(),
-            getNamespace(bean),
-            bean.getType().isTypeOrSubTypeOf(Throwable.class)
+            getNamespace(beanType, bean.getClassInfo()),
+            beanType.isTypeOrSubTypeOf(Throwable.class)
         ), bean);
     }
 
@@ -267,10 +268,11 @@ public abstract class AvroSchemaHelper
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
     public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
+        final JavaType enumType = bean.getType();
         return addAlias(Schema.createEnum(
-            getName(bean.getType()),
+            getName(enumType),
             bean.findClassDescription(),
-            getNamespace(bean), values
+            getNamespace(enumType, bean.getClassInfo()), values
         ), bean);
     }
 
