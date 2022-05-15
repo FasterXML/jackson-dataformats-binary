@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.annotations;
+package com.fasterxml.jackson.dataformat.avro.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

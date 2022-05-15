@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.LRUMap;
-import com.fasterxml.jackson.dataformat.avro.annotations.AvroNamespace;
+import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 
 public abstract class AvroSchemaHelper
 {
