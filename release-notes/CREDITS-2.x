@@ -214,6 +214,9 @@ Michal Foksa (MichalFoksa@github)
  (2.13.0)
 * Contributed #290: (avro) Generate logicalType switch
  (2.13.0)
+* Contributed #310: (avro) Avro schema generation: allow override namespace with new
+  `@AvroNamespace` annotation
+ (2.14.0)
 
 Hunter Herman (hherman1@github)
 

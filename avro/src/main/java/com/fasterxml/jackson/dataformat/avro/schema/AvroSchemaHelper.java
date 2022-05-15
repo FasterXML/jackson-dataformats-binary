@@ -26,6 +26,8 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.SimpleLookupCache;
 
+import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
+
 public abstract class AvroSchemaHelper
 {
     /**
@@ -90,8 +92,9 @@ public abstract class AvroSchemaHelper
         return false;
     }
 
-    protected static String getNamespace(JavaType type) {
-        return getNamespace(type.getRawClass());
+    protected static String getNamespace(JavaType type, AnnotatedClass annotations) {
+        AvroNamespace ann = annotations.getAnnotation(AvroNamespace.class);
+        return ann != null ? ann.value() : getNamespace(type.getRawClass());
     }
 
     protected static String getNamespace(Class<?> cls) {
@@ -232,7 +235,7 @@ public abstract class AvroSchemaHelper
         return addAlias(Schema.createRecord(
                 getTypeName(type),
                 config.getAnnotationIntrospector().findClassDescription(config, annotations),
-            getNamespace(type),
+            getNamespace(type, annotations),
             type.isTypeOrSubTypeOf(Throwable.class)
         ), annotations);
     }
@@ -256,7 +259,7 @@ public abstract class AvroSchemaHelper
         return addAlias(Schema.createEnum(
                 getTypeName(enumType),
                 config.getAnnotationIntrospector().findClassDescription(config, annotations),
-                getNamespace(enumType), values
+                getNamespace(enumType, annotations), values
         ), annotations);
     }
 

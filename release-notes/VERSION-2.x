@@ -14,6 +14,10 @@ Modules:
 
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
+#310: (avro) Avro schema generation: allow override namespace with new
+  `@AvroNamespace` annotation
+ (requested by fleetwoods@github)
+ (contributed by Michal F)
 #311: (ion) `IonObjectMapper` does not throw JacksonException for some invalid Ion
  (contributed by Matthew P)
 #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates

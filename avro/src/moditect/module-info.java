@@ -10,6 +10,7 @@ module com.fasterxml.jackson.dataformat.avro {
     requires static jackson.mapper.asl;
 
     exports com.fasterxml.jackson.dataformat.avro;
+    exports com.fasterxml.jackson.dataformat.avro.annotation;
     exports com.fasterxml.jackson.dataformat.avro.apacheimpl;
     exports com.fasterxml.jackson.dataformat.avro.deser;
     exports com.fasterxml.jackson.dataformat.avro.schema;
