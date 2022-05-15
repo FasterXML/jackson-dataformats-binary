@@ -3,7 +3,9 @@ package com.fasterxml.jackson.dataformat.avro.annotations;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
 import org.apache.avro.Schema;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
