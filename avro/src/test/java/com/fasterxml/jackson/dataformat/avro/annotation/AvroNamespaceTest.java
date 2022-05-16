@@ -1,7 +1,6 @@
-package com.fasterxml.jackson.dataformat.avro.annotations;
+package com.fasterxml.jackson.dataformat.avro.annotation;
 
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 import org.apache.avro.Schema;
@@ -36,7 +35,7 @@ public class AvroNamespaceTest {
 
         // THEN
         assertThat(actualSchema.getNamespace())
-                .isEqualTo("com.fasterxml.jackson.dataformat.avro.annotations.AvroNamespaceTest$");
+                .isEqualTo("com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespaceTest$");
     }
 
     @Test
@@ -66,7 +65,7 @@ public class AvroNamespaceTest {
 
         // THEN
         assertThat(actualSchema.getNamespace())
-                .isEqualTo("com.fasterxml.jackson.dataformat.avro.annotations.AvroNamespaceTest$");
+                .isEqualTo("com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespaceTest$");
     }
 
     @Test
