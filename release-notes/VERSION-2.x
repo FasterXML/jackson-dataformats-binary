@@ -66,6 +66,10 @@ No changes since 2.13.1
 - `Ion-java` dep 1.5.1 -> 1.8.0
 - Minor change to Ion module registration names (fully-qualified)
 
+2.12.7 (26-May-2022)
+
+No changes since 2.12.6
+
 2.12.6 (15-Dec-2021)
 
 #302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
