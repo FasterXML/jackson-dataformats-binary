@@ -5,6 +5,9 @@ Modules:
   jackson-dataformat-ion (since 2.9)
   jackson-dataformat-protobuf
   jackson-dataformat-smile
+Active maintainers:
+  * Tyler Gregg (@tgregg): maintainer of jackson-dataformat-ion
+  * Tatu Saloranta (@cowtowncoder): author or co-author of all other modules
 
 ------------------------------------------------------------------------
 === Releases ===
