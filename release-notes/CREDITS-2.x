@@ -229,14 +229,20 @@ Martin Giannechini (MartinGian@github)
   deserialization correctly
  (2.13.0)
 
+Tyler Gregg (tgregg@github)
+
+#325: (ion) Ensure `IonReader` instances created within `IonFactory` are
+  always resource-managed
+ (2.14.0)
+
 David Turner (DaveCTurner@github)
 
-* Reported #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
+#312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
  (2.14.0)
 
 Matthew Pope (popematt@github)
 
-* Contributed #311: (ion) `IonObjectMapper` does not throw JacksonException for some
+#311: (ion) `IonObjectMapper` does not throw JacksonException for some
   invalid Ion
  (2.14.0)
 

@@ -25,6 +25,9 @@ Active maintainers:
  (contributed by Matthew P)
 #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
  (reported by David T)
+#325: (ion) Ensure `IonReader` instances created within `IonFactory` are
+  always resource-managed
+ (contributed by Tyler G)
 
 2.13.3 (14-May-2022)
 
