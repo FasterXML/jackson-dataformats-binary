@@ -360,14 +360,17 @@ public class IonFactory extends JsonFactory
         throws IOException
     {
         IonReader ion = _system.newReader(in);
-        return new IonParser(ion, _system, ctxt, getCodec(), _ionParserFeatures);
+        return new IonParser(ion, _system,
+                _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
     }
 
     @Override
     protected JsonParser _createParser(Reader r, IOContext ctxt)
         throws IOException
     {
-        return new IonParser(_system.newReader(r), _system, ctxt, getCodec(), _ionParserFeatures);
+        IonReader ion = _system.newReader(r);
+        return new IonParser(ion, _system,
+                _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
     }
 
     @Override
@@ -381,7 +384,9 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
         throws IOException
     {
-        return new IonParser(_system.newReader(data, offset, len), _system, ctxt, getCodec(), _ionParserFeatures);
+        IonReader ion = _system.newReader(data, offset, len);
+        return new IonParser(ion, _system,
+                _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
     }
 
     @Override
