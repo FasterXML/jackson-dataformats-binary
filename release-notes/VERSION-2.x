@@ -5,6 +5,9 @@ Modules:
   jackson-dataformat-ion (since 2.9)
   jackson-dataformat-protobuf
   jackson-dataformat-smile
+Active maintainers:
+  * Tyler Gregg (@tgregg): maintainer of jackson-dataformat-ion
+  * Tatu Saloranta (@cowtowncoder): author or co-author of all other modules
 
 ------------------------------------------------------------------------
 === Releases ===
@@ -22,6 +25,9 @@ Modules:
  (contributed by Matthew P)
 #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
  (reported by David T)
+#325: (ion) Ensure `IonReader` instances created within `IonFactory` are
+  always resource-managed
+ (contributed by Tyler G)
 
 2.13.3 (14-May-2022)
 

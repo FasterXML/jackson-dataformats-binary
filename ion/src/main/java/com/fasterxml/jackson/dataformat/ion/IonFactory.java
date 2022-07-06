@@ -435,21 +435,28 @@ public class IonFactory
     /**********************************************************************
      */
 
-    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, InputStream in)
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in)
     {
         IonReader ion = _system.newReader(in);
+        // [dataformats-binary#325]: Re-create context for auto-close
+        ioCtxt = _createContext(_createContentReference(ion), true);
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 ion, _system);
     }
 
-    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt, Reader r)
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            Reader r)
     {
+        IonReader ion = _system.newReader(r);
+        // [dataformats-binary#325]: Re-create context for auto-close
+        ioCtxt = _createContext(_createContentReference(ion), true);
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                _system.newReader(r), _system);
+                ion, _system);
     }
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -463,6 +470,9 @@ public class IonFactory
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             byte[] data, int offset, int len)
     {
+        IonReader ion = _system.newReader(data, offset, len);
+        // [dataformats-binary#325]: Re-create context for auto-close
+        ioCtxt = _createContext(_createContentReference(ion), true);
         return new IonParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
