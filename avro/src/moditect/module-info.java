@@ -1,23 +1,22 @@
-// Generated 15-Mar-2019 using Moditect maven plugin
-module com.fasterxml.jackson.dataformat.avro {
+module tools.jackson.dataformat.avro {
     requires transitive com.fasterxml.jackson.annotation;
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
     // silly avro Apache impl, its deps:
     requires static avro;
     requires static jackson.core.asl;
     requires static jackson.mapper.asl;
 
-    exports com.fasterxml.jackson.dataformat.avro;
-    exports com.fasterxml.jackson.dataformat.avro.annotation;
-    exports com.fasterxml.jackson.dataformat.avro.apacheimpl;
-    exports com.fasterxml.jackson.dataformat.avro.deser;
-    exports com.fasterxml.jackson.dataformat.avro.schema;
-    exports com.fasterxml.jackson.dataformat.avro.ser;
+    exports tools.jackson.dataformat.avro;
+    exports tools.jackson.dataformat.avro.annotation;
+    exports tools.jackson.dataformat.avro.apacheimpl;
+    exports tools.jackson.dataformat.avro.deser;
+    exports tools.jackson.dataformat.avro.schema;
+    exports tools.jackson.dataformat.avro.ser;
 
-    provides com.fasterxml.jackson.core.TokenStreamFactory with
-        com.fasterxml.jackson.dataformat.avro.AvroFactory;
-    provides com.fasterxml.jackson.databind.ObjectMapper with
-        com.fasterxml.jackson.dataformat.avro.AvroMapper;
+    provides tools.jackson.core.TokenStreamFactory with
+        tools.jackson.dataformat.avro.AvroFactory;
+    provides tools.jackson.databind.ObjectMapper with
+        tools.jackson.dataformat.avro.AvroMapper;
 }

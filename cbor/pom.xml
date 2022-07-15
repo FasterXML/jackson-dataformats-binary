@@ -7,7 +7,7 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion> 
   <parent>
-    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <groupId>tools.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
@@ -22,7 +22,7 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
 
   <properties>
     <!-- Generate PackageVersion.java into this directory. -->
-    <packageVersion.dir>com/fasterxml/jackson/dataformat/cbor</packageVersion.dir>
+    <packageVersion.dir>tools/jackson/dataformat/cbor</packageVersion.dir>
     <packageVersion.package>${project.groupId}.cbor</packageVersion.package>
     <!--
      | Default onfiguration properties for the OSGi maven-bundle-plugin work ok
@@ -31,7 +31,7 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
 

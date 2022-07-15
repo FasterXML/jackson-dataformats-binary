@@ -7,11 +7,10 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion> 
   <parent>
-    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <groupId>tools.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
   <name>Jackson dataformat: Ion</name>
   <packaging>bundle</packaging>
@@ -19,10 +18,10 @@
 encoded data using Jackson abstractions (streaming API, data binding,
 tree model)
   </description>
-  <url>http://github.com/FasterXML/jackson-dataformat-ion</url>    
+  <url>http://github.com/FasterXML/jackson-dataformats-binary</url>    
 
   <properties>
-    <packageVersion.dir>com/fasterxml/jackson/dataformat/ion</packageVersion.dir>
+    <packageVersion.dir>tools/jackson/dataformat/ion</packageVersion.dir>
     <packageVersion.package>${project.groupId}.ion</packageVersion.package>
   </properties>
 
@@ -40,11 +39,11 @@ tree model)
       <artifactId>jackson-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
