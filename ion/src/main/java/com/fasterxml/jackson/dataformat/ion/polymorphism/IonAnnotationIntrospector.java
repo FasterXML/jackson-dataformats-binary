@@ -23,21 +23,21 @@ import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 import tools.jackson.databind.jsontype.TypeIdResolver;
 
 /**
- * A Jackson {@link com.fasterxml.jackson.databind.AnnotationIntrospector} (essentially an interceptor for
+ * A Jackson {@link tools.jackson.databind.AnnotationIntrospector} (essentially an interceptor for
  * serializer/deserializer construction) that provides type serializer/deserializers that write/read Ion type
  * annotations.
  * <p>
- * The logic in this class is very similar to {@link com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector}!
+ * The logic in this class is very similar to {@link tools.jackson.databind.introspect.JacksonAnnotationIntrospector}!
  * We both look at the @JsonTypeResolver, etc annotations and try to make type resolvers.
  * <p>
  * This class adds a {@code resolveAllTypes} override, which allows for universal polymorphism without needing
  * any annotations or mixins, and also permits top-level polymorphism -- deserialize to any object without providing its
  * actual type, as long as type information was serialized. (i.e., ObjectMapper#readValue(serializedData, Object.class))
  * <p>
- * Note: the provided {@link com.fasterxml.jackson.databind.jsontype.TypeSerializer} will only write type annotations if the configured
+ * Note: the provided {@link tools.jackson.databind.jsontype.TypeSerializer} will only write type annotations if the configured
  * {@link TypeIdResolver} returns non-null.
  * <p>
- * Note: {@link com.fasterxml.jackson.databind.jsontype.TypeDeserializer} are actually full-on value deserializers -- all
+ * Note: {@link tools.jackson.databind.jsontype.TypeDeserializer} are actually full-on value deserializers -- all
  * deserialization logic goes through them (unlike TypeSerializers, which just write the type metadata).
  */
 public class IonAnnotationIntrospector extends NopAnnotationIntrospector {

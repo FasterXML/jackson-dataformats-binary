@@ -6,15 +6,15 @@ import com.amazon.ion.IonSystem;
 import com.amazon.ion.system.IonSystemBuilder;
 
 /**
- * {@link com.fasterxml.jackson.core.TokenStreamFactory.TSFBuilder}
+ * {@link tools.jackson.core.TokenStreamFactory.TSFBuilder}
  * implementation for constructing {@link IonFactory} instances.
  */
 public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactoryBuilder>
 {
     /*
-    /**********************************************************
+    /***********************************************************************
     /* Configuration
-    /**********************************************************
+    /***********************************************************************
      */
 
     /**

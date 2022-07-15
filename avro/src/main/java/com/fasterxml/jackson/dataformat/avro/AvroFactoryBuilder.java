@@ -5,7 +5,7 @@ import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
 
 /**
- * {@link com.fasterxml.jackson.core.TokenStreamFactory.TSFBuilder}
+ * {@link tools.jackson.core.TokenStreamFactory.TSFBuilder}
  * implementation for constructing {@link AvroFactory}
  * instances.
  *<p>

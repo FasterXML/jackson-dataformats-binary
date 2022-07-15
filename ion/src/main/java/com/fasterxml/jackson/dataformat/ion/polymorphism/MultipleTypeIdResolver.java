@@ -70,7 +70,7 @@ public interface MultipleTypeIdResolver extends TypeIdResolver {
      * first one) because it might not even be present in the classloader, or it might be a supertype of the others,
      * or have some other reason for not being the best fit for a value. The heuristic is implementation-specific, but
      * I suggest choosing the id with the most narrow type present in the classloader. The returned id can be passed into
-     * {@link TypeIdResolver#typeFromId} to get a {@link com.fasterxml.jackson.databind.JavaType}. It is a invariant
+     * {@link TypeIdResolver#typeFromId} to get a {@link tools.jackson.databind.JavaType}. It is a invariant
      * on this method that its output, if non-null, be valid input for {@link TypeIdResolver#typeFromId} of the
      * same TypeIdResolver instance.
      * <p>

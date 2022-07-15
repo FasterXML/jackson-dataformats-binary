@@ -3,11 +3,12 @@ package com.fasterxml.jackson.dataformat.protobuf;
 import tools.jackson.core.*;
 import tools.jackson.core.io.CharTypes;
 import tools.jackson.core.io.ContentReference;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
 /**
- * Extension of {@link com.fasterxml.jackson.core.TokenStreamContext}
+ * Extension of {@link tools.jackson.core.TokenStreamContext}
  * to support features needed to decode nested Protobuf messages.
  */
 public final class ProtobufReadContext

@@ -5,7 +5,7 @@ package com.fasterxml.jackson.dataformat.cbor;
  * when encountered during parsing.
  * Note that as of Jackson 2.12, this class is <b>not yet</b> used for
  * exposing simple values: instead they are report as
- * {@link com.fasterxml.jackson.core.JsonToken#VALUE_NUMBER_INT}s.
+ * {@link tools.jackson.core.JsonToken#VALUE_NUMBER_INT}s.
  *<p>
  * Simple values left undefined in
  * <a href="https://tools.ietf.org/html/rfc7049">CBOR 1.0</a>

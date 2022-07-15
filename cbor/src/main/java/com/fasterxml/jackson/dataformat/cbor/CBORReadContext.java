@@ -7,7 +7,7 @@ import tools.jackson.core.io.ContentReference;
 import tools.jackson.core.json.DupDetector;
 
 /**
- * Extension of {@link com.fasterxml.jackson.core.TokenStreamContext}
+ * Extension of {@link tools.jackson.core.TokenStreamContext}
  * to support features needed by CBOR format (mainly limits of expected
  * entries to output).
  */

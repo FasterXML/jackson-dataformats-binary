@@ -31,7 +31,7 @@ import tools.jackson.databind.jsontype.impl.TypeDeserializerBase;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 
 /**
- * This is a {@link com.fasterxml.jackson.databind.jsontype.TypeDeserializer} that reads typing metadata from Ion type
+ * This is a {@link tools.jackson.databind.jsontype.TypeDeserializer} that reads typing metadata from Ion type
  * annotations. Annotations found are processed by the configured {@link TypeIdResolver} to provide a concrete Java
  * class, which is in turn used to find the appropriate {@link ValueDeserializer}, and execute it.
  * <p>

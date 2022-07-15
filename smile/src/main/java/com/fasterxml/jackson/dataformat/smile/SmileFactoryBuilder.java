@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 
 /**
- * {@link com.fasterxml.jackson.core.TokenStreamFactory.TSFBuilder}
+ * {@link tools.jackson.core.TokenStreamFactory.TSFBuilder}
  * implementation for constructing {@link SmileFactory}
  * instances.
  */
