@@ -7,7 +7,7 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion> 
   <parent>
-    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <groupId>tools.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
@@ -20,7 +20,7 @@ abstractions.
   <url>http://github.com/FasterXML/jackson-dataformats-binary</url>    
 
   <properties>
-    <packageVersion.dir>com/fasterxml/jackson/dataformat/protobuf</packageVersion.dir>
+    <packageVersion.dir>tools/jackson/dataformat/protobuf</packageVersion.dir>
     <packageVersion.package>${project.groupId}.protobuf</packageVersion.package>
     <!-- Default OSGi import is fine, export _should_ be, but due to shading play it safe -->
     <osgi.export>${project.groupId}.protobuf.*; version=${project.version}</osgi.export>

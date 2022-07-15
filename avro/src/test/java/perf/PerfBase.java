@@ -14,9 +14,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.SerializationFeature;
-
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import tools.jackson.dataformat.avro.AvroMapper;
+import tools.jackson.dataformat.avro.AvroSchema;
 
 abstract class PerfBase
 {

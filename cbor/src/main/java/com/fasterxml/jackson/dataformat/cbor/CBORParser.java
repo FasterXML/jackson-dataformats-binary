@@ -2075,7 +2075,7 @@ public class CBORParser extends ParserBase
         _numTypesValid |= NR_BIGINT;
     }
 
-    // Base class does not have this one...
+    @Override
     protected void convertNumberToFloat() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
