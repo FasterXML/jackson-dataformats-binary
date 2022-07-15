@@ -14,11 +14,11 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectReadContext;
-import com.fasterxml.jackson.core.StreamReadCapability;
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.StreamReadCapability;
+import tools.jackson.core.exc.StreamReadException;
 
 import org.junit.Assert;
 

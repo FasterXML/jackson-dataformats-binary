@@ -17,11 +17,11 @@ package com.fasterxml.jackson.dataformat.ion;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonGenerator;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.ser.std.StdScalarSerializer;
 
 /**
  * A date serializer that uses native Ion timestamps instead of JSON strings.

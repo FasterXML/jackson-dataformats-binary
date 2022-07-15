@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.StreamReadFeature;
+import tools.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase

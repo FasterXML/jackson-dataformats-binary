@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
+import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.system.IonSystemBuilder;

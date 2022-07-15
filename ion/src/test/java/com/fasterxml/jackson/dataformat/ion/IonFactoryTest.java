@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.ion;
 
 import com.amazon.ion.IonReader;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectReadContext;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
 
 import org.junit.Test;
 

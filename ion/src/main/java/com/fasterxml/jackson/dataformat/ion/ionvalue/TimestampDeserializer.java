@@ -14,9 +14,9 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ValueDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 import com.amazon.ion.Timestamp;
 
 /**

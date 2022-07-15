@@ -14,8 +14,8 @@ import java.util.TimeZone;
 import org.junit.Test;
 
 import com.amazon.ion.Timestamp;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 public class IonTimestampZonedDateTimeDeserializerTest {

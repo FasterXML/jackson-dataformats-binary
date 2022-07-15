@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.FormatSchema;
+import tools.jackson.core.FormatSchema;
 
 /**
  * A {@link FormatSchema} implementation for protobuf, bound to specific root-level

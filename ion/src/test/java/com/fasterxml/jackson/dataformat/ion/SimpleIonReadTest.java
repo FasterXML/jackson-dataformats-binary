@@ -19,8 +19,8 @@ import java.io.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 
 public class SimpleIonReadTest {
     private final IonObjectMapper MAPPER = new IonObjectMapper();

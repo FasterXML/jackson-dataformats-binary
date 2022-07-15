@@ -3,9 +3,9 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import tools.jackson.databind.*;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
+import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 
 import com.squareup.protoparser.DataType;
 import com.squareup.protoparser.DataType.NamedType;

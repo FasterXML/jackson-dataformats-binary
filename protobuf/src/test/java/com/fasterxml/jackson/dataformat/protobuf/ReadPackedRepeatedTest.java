@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 import java.io.StringReader;

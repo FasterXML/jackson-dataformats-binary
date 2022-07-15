@@ -1,14 +1,14 @@
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import com.amazon.ion.IonValue;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.core.Version;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.jsontype.impl.ClassNameIdResolver;
+import tools.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;

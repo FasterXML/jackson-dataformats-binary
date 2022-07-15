@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
-import com.fasterxml.jackson.databind.BeanProperty;
+import tools.jackson.databind.BeanProperty;
 
 public class DefaultTagGenerator implements TagGenerator {
 

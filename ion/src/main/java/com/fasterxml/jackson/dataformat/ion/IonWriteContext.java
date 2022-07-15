@@ -14,10 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.TokenStreamContext;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.core.json.DupDetector;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.TokenStreamContext;
+import tools.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.json.DupDetector;
 
 /**
  * Extension of TokenStreamContext that recognizes sexps

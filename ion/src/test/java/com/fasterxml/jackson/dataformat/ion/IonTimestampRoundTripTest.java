@@ -19,8 +19,8 @@ import java.util.Date;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import com.amazon.ion.IonDatagram;
 import com.amazon.ion.IonLoader;

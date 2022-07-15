@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.io.InputStream;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 

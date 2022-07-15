@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
+import tools.jackson.core.Version;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.cfg.MapperBuilderState;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;

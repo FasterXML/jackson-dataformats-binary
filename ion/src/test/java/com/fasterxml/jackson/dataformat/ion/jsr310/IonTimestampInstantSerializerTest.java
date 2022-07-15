@@ -13,7 +13,7 @@ import com.amazon.ion.IonDecimal;
 import com.amazon.ion.IonInt;
 import com.amazon.ion.IonTimestamp;
 import com.amazon.ion.Timestamp;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 public class IonTimestampInstantSerializerTest {

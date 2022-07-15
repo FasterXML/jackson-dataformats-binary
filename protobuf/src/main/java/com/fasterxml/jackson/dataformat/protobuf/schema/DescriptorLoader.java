@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 
 /**

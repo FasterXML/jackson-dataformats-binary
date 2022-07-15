@@ -27,9 +27,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.*;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;

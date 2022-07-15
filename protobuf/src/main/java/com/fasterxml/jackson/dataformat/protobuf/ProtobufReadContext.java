@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.CharTypes;
-import com.fasterxml.jackson.core.io.ContentReference;
+import tools.jackson.core.*;
+import tools.jackson.core.io.CharTypes;
+import tools.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 

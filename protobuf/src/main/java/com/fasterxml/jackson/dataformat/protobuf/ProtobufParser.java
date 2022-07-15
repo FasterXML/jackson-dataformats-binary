@@ -4,16 +4,16 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserMinimalBase;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.NumberInput;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.TextBuffer;
-import com.fasterxml.jackson.core.util.VersionUtil;
+import tools.jackson.core.*;
+import tools.jackson.core.base.ParserMinimalBase;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.io.NumberInput;
+import tools.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.util.ByteArrayBuilder;
+import tools.jackson.core.util.JacksonFeatureSet;
+import tools.jackson.core.util.TextBuffer;
+import tools.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufParser extends ParserMinimalBase

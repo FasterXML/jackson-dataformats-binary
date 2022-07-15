@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.*;
 
-import com.fasterxml.jackson.core.SerializableString;
+import tools.jackson.core.SerializableString;
 
 /**
  * Helper class used for doing efficient lookups of protoc enums

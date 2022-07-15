@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.*;
 
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.util.InternCache;
+import tools.jackson.core.SerializableString;
+import tools.jackson.core.util.InternCache;
 import com.squareup.protoparser.FieldElement;
 import com.squareup.protoparser.OptionElement;
 

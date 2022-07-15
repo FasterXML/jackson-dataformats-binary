@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
 import java.nio.ByteBuffer;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
 public class ProtobufSchemaHelper
 {

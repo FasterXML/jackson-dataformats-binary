@@ -14,12 +14,12 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.jdk.JavaUtilDateDeserializer;
-import com.fasterxml.jackson.databind.ext.sql.JavaSqlDateDeserializer;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.jdk.JavaUtilDateDeserializer;
+import tools.jackson.databind.ext.sql.JavaSqlDateDeserializer;
 
 import com.amazon.ion.Timestamp;
 

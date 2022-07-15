@@ -14,10 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.Version;
 
-import com.fasterxml.jackson.databind.JacksonModule;
-import com.fasterxml.jackson.databind.module.SimpleSerializers;
+import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.module.SimpleSerializers;
 
 /**
  * Module that causes all enums to be serialized as Ion symbols.

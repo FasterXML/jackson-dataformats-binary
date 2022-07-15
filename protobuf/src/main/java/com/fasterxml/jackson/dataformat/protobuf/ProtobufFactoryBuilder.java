@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
+import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 
 /**
  * {@link com.fasterxml.jackson.core.TokenStreamFactory.TSFBuilder}

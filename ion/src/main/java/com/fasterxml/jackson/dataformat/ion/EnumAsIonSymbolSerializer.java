@@ -14,14 +14,14 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.exc.StreamWriteException;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import tools.jackson.databind.ser.std.StdScalarSerializer;
 
 /**
  * Serializes enumeration members as IonSymbols.

@@ -3,10 +3,10 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsonFormatVisitors.*;
 
 import com.squareup.protoparser.DataType;
 import com.squareup.protoparser.TypeElement;

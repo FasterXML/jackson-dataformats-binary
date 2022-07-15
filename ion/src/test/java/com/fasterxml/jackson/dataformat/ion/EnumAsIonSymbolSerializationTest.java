@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.SerializationFeature;
 
 public class EnumAsIonSymbolSerializationTest
 {

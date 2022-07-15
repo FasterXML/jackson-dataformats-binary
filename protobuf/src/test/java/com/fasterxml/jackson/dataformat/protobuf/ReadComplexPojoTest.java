@@ -6,7 +6,7 @@ import java.io.InputStream;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 import com.fasterxml.jackson.dataformat.protobuf.testutil.LimitingInputStream;

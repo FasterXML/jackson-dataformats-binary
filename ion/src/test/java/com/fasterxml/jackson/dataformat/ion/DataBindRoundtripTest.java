@@ -32,7 +32,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import com.amazon.ion.IonStruct;
 import com.amazon.ion.IonSystem;

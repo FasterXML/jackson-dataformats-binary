@@ -4,7 +4,7 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import tools.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.Assert.*;

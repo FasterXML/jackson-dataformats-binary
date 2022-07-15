@@ -16,14 +16,14 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.type.WritableTypeId;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
+import tools.jackson.core.*;
+import tools.jackson.core.type.WritableTypeId;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DatabindContext;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.jsontype.impl.TypeSerializerBase;
 
 /**
  * This is a {@link TypeSerializer} that places typing metadata in Ion type annotations. It requires that the underlying

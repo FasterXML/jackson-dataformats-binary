@@ -17,16 +17,16 @@ package com.fasterxml.jackson.dataformat.ion;
 import java.io.IOException;
 import java.util.Date;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.Version;
+import tools.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
-import com.fasterxml.jackson.databind.deser.DeserializationContextExt;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.SerializationContextExt;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.cfg.MapperBuilderState;
+import tools.jackson.databind.deser.DeserializationContextExt;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.SerializationContextExt;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueModule;
 
 import com.amazon.ion.IonDatagram;

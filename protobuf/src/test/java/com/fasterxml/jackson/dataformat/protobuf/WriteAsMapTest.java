@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 public class WriteAsMapTest extends ProtobufTestBase

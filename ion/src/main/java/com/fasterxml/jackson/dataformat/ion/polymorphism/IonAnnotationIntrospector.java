@@ -14,13 +14,13 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.annotation.JsonTypeResolver;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.Annotated;
+import tools.jackson.databind.introspect.NopAnnotationIntrospector;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.TypeIdResolver;
 
 /**
  * A Jackson {@link com.fasterxml.jackson.databind.AnnotationIntrospector} (essentially an interceptor for

@@ -18,11 +18,11 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.DecorableTSFactory;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.ContentReference;
-import com.fasterxml.jackson.core.io.UTF8Writer;
+import tools.jackson.core.*;
+import tools.jackson.core.base.DecorableTSFactory;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.io.ContentReference;
+import tools.jackson.core.io.UTF8Writer;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;

@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.core.StreamReadFeature;
+import tools.jackson.core.StreamReadFeature;
 
-import com.fasterxml.jackson.databind.MapperFeature;
+import tools.jackson.databind.MapperFeature;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;

@@ -14,8 +14,8 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
-import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.DatabindContext;
+import tools.jackson.databind.jsontype.TypeIdResolver;
 
 /**
  * This is an extension of {@link TypeIdResolver} for serializing and deserializing polymorphic types. The vanilla

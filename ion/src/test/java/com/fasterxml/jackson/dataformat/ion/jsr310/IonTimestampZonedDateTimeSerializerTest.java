@@ -10,7 +10,7 @@ import java.time.temporal.Temporal;
 
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 public class IonTimestampZonedDateTimeSerializerTest {
