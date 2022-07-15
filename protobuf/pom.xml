@@ -35,11 +35,8 @@ abstractions.
       <version>4.0.3</version>
     </dependency>
 
-    <!-- Hmmh. Need databind for schema generation, convenience ProtobufMapper.
-         And starting with 2.10(.4), there is only explicit mapper:
-      -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
@@ -88,7 +85,7 @@ abstractions.
               <relocations>
                 <relocation>
                   <pattern>com.squareup</pattern>
-                  <shadedPattern>com.fasterxml.jackson.dataformat.protobuf.protoparser</shadedPattern>
+                  <shadedPattern>tools.jackson.dataformat.protobuf.protoparser</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

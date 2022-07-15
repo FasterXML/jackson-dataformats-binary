@@ -8,8 +8,8 @@ import java.util.*;
 
 import org.junit.Assert;
 
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.exc.StreamWriteException;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;

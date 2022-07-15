@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;

@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.*;
 import java.util.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.SerializedString;
+import tools.jackson.core.*;
+import tools.jackson.core.io.SerializedString;
 
 public class GeneratorLongStringTest extends CBORTestBase
 {

@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.core.json.DupDetector;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.json.DupDetector;
 
 /**
  * Replacement for {@code JsonWriteContext}, needed to support alternative

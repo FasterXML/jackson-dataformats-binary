@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
-import com.fasterxml.jackson.core.exc.UnexpectedEndOfInputException;
+import tools.jackson.core.exc.UnexpectedEndOfInputException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 

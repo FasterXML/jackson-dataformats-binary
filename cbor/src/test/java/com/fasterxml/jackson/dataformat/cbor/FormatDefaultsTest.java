@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.StreamReadCapability;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.StreamReadCapability;
+import tools.jackson.databind.ObjectMapper;
 
 public class FormatDefaultsTest extends CBORTestBase
 {

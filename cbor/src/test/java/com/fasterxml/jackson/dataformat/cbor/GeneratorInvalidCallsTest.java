@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.exc.StreamWriteException;
 
 public class GeneratorInvalidCallsTest extends CBORTestBase
 {

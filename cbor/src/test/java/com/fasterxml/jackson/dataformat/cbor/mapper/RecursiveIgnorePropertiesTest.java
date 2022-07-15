@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class RecursiveIgnorePropertiesTest extends CBORTestBase

@@ -7,16 +7,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserBase;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.NumberInput;
-import com.fasterxml.jackson.core.json.DupDetector;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+import tools.jackson.core.*;
+import tools.jackson.core.base.ParserBase;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.io.NumberInput;
+import tools.jackson.core.json.DupDetector;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.util.ByteArrayBuilder;
+import tools.jackson.core.util.JacksonFeatureSet;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 

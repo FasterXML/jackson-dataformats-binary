@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor.filter;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 import com.fasterxml.jackson.dataformat.cbor.testutil.PrefixInputDecorator;

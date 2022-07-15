@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamWriteException;
 
 public class GeneratorDupHandlingTest extends CBORTestBase
 {

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;

@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class NumberCoercing32Test extends CBORTestBase
 {

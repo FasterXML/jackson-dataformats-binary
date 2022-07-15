@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.exc.StreamWriteException;
 
 import com.fasterxml.jackson.dataformat.cbor.*;
 

@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.*;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertArrayEquals;
 

@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import com.fasterxml.jackson.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 public class PropertyAliasTest extends CBORTestBase

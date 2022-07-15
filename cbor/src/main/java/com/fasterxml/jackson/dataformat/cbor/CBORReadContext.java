@@ -1,10 +1,10 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.CharTypes;
-import com.fasterxml.jackson.core.io.ContentReference;
-import com.fasterxml.jackson.core.json.DupDetector;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.CharTypes;
+import tools.jackson.core.io.ContentReference;
+import tools.jackson.core.json.DupDetector;
 
 /**
  * Extension of {@link com.fasterxml.jackson.core.TokenStreamContext}

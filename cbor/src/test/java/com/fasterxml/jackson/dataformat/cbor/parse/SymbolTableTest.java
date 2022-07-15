@@ -3,11 +3,11 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 import java.lang.reflect.Field;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.TokenStreamFactory;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.TokenStreamFactory;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;

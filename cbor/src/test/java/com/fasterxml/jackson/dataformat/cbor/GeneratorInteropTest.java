@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.ObjectWriteContext;
+import tools.jackson.core.ObjectWriteContext;
 
 /**
  * Unit tests geared at testing issues that were raised due to

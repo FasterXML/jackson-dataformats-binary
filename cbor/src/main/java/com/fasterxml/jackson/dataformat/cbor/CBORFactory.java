@@ -4,14 +4,14 @@ import java.io.*;
 import java.util.List;
 import java.util.Locale;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.BinaryTSFactory;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.ContentReference;
-import com.fasterxml.jackson.core.sym.BinaryNameMatcher;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
-import com.fasterxml.jackson.core.util.Named;
+import tools.jackson.core.*;
+import tools.jackson.core.base.BinaryTSFactory;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.io.ContentReference;
+import tools.jackson.core.sym.BinaryNameMatcher;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.util.Named;
 
 /**
  * Factory used for constructing {@link CBORParser} and {@link CBORGenerator}

@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 // [dataformats-binary#269]

@@ -7,9 +7,9 @@ import java.security.SecureRandom;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 public class GeneratorBinaryTest //extends CBORTestBase
