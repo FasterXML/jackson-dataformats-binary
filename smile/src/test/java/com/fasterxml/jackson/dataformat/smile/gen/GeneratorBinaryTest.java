@@ -4,7 +4,7 @@ import java.io.*;
 
 import org.junit.Assert;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator.Feature;

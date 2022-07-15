@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class ObjectIdTest extends BaseTestForSmile

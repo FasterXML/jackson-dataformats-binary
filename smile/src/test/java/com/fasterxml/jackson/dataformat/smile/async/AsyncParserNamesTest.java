@@ -3,9 +3,9 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.*;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.core.*;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.databind.ObjectReader;
 
 public class AsyncParserNamesTest extends AsyncTestBase
 {

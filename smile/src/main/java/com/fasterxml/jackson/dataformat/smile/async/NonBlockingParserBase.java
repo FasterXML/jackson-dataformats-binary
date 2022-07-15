@@ -3,12 +3,12 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.*;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.util.ByteArrayBuilder;
+import tools.jackson.core.util.SimpleStreamReadContext;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 public abstract class NonBlockingParserBase

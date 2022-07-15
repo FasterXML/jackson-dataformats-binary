@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.mapper;
 import java.io.*;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**

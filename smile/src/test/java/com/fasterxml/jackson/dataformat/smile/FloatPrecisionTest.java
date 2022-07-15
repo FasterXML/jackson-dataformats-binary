@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JsonParser;
 
 import static org.junit.Assert.assertArrayEquals;
 

@@ -4,10 +4,10 @@ import java.io.*;
 
 import static org.junit.Assert.*;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonToken;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.databind.ObjectWriter;
 
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 

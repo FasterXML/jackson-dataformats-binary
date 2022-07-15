@@ -8,14 +8,14 @@ import org.junit.Assert;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;

@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.async.ByteArrayFeeder;
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.async.ByteArrayFeeder;
+import tools.jackson.core.exc.StreamReadException;
 
 /**
  * Helper class used with async parser

@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.io.*;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class TestParserNames extends BaseTestForSmile

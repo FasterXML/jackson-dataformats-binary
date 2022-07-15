@@ -2,11 +2,11 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.ContentReference;
+import tools.jackson.core.*;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.io.ContentReference;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.assertArrayEquals;
 

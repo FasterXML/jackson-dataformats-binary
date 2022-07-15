@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.*;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;

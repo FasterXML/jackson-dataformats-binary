@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.core.*;
+import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.databind.ObjectReader;
 
 public class SimpleScalarArrayTest extends AsyncTestBase
 {

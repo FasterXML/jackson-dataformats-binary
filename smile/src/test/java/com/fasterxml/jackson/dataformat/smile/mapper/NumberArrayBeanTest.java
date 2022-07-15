@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class NumberArrayBeanTest extends BaseTestForSmile

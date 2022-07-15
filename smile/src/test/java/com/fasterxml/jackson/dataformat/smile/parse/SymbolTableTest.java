@@ -4,11 +4,11 @@ import java.lang.reflect.Field;
 import java.util.Random;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.core.json.JsonFactory;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;

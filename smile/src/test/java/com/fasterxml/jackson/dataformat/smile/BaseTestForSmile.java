@@ -8,11 +8,11 @@ import java.util.Arrays;
 
 import org.junit.Assert;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectWriter;
 
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 

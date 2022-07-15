@@ -2,11 +2,11 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.exc.WrappedIOException;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
 /**
  * Simple bootstrapper version used with Smile format parser.

@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.databind.ObjectMapper;
 
 // Tests that have to reside in this package, due to access restrictions
 public class SymbolHandlingTest extends BaseTestForSmile

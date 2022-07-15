@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.ObjectReader;
 
 public class SimpleFailsTest extends AsyncTestBase
 {

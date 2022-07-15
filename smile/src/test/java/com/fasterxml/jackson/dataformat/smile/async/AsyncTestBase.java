@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonToken;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 
 import com.fasterxml.jackson.dataformat.smile.*;
 

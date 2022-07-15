@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;

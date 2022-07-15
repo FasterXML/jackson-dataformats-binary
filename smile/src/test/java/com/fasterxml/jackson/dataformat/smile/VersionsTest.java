@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.Versioned;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.Versioned;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public class VersionsTest extends BaseTestForSmile

@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class ConfigTest extends AsyncTestBase

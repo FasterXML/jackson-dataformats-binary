@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 

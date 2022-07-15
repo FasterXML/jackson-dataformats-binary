@@ -2,7 +2,7 @@ package perf;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 public class ReadPerfUntyped extends ReaderTestBase

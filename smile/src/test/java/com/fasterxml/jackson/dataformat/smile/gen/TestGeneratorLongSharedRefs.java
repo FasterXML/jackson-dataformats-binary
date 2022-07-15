@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;

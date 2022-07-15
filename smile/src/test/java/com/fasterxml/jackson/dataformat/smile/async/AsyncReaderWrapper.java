@@ -5,9 +5,9 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.JsonToken;
 
 public abstract class AsyncReaderWrapper
 {

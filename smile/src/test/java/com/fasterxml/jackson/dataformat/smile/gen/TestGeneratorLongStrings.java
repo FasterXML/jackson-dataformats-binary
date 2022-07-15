@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 import java.util.*;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class TestGeneratorLongStrings extends BaseTestForSmile

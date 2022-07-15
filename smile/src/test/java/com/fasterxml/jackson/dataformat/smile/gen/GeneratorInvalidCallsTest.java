@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.exc.StreamWriteException;
 
 import com.fasterxml.jackson.dataformat.smile.*;
 

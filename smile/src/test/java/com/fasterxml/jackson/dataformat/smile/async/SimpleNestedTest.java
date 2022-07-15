@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.ObjectReader;
 
 public class SimpleNestedTest extends AsyncTestBase
 {

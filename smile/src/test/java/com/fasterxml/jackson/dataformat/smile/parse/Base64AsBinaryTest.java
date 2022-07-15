@@ -5,10 +5,10 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 

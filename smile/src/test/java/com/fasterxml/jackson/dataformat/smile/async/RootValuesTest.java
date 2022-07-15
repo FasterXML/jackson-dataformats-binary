@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 public class RootValuesTest extends AsyncTestBase

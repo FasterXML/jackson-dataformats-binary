@@ -3,11 +3,11 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.*;
 import java.util.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.core.*;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.smile.*;
 
 /**

@@ -2,10 +2,10 @@ package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import java.util.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**

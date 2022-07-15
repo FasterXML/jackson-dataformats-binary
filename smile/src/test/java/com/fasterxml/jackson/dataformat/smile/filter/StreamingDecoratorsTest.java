@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.smile.filter;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import com.fasterxml.jackson.dataformat.smile.testutil.PrefixInputDecorator;

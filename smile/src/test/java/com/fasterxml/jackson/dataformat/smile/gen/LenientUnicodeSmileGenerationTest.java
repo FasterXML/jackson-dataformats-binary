@@ -2,11 +2,11 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.exc.StreamWriteException;
+import tools.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 

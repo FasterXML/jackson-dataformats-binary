@@ -5,17 +5,17 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserMinimalBase;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.ContentReference;
-import com.fasterxml.jackson.core.io.NumberInput;
-import com.fasterxml.jackson.core.json.DupDetector;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
-import com.fasterxml.jackson.core.util.TextBuffer;
+import tools.jackson.core.*;
+import tools.jackson.core.base.ParserMinimalBase;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.io.ContentReference;
+import tools.jackson.core.io.NumberInput;
+import tools.jackson.core.json.DupDetector;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.util.JacksonFeatureSet;
+import tools.jackson.core.util.SimpleStreamReadContext;
+import tools.jackson.core.util.TextBuffer;
 
 public abstract class SmileParserBase extends ParserMinimalBase
 {

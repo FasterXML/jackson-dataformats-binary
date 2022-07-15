@@ -6,14 +6,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectReadContext;
-import com.fasterxml.jackson.core.async.ByteArrayFeeder;
-import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.util.VersionUtil;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.async.ByteArrayFeeder;
+import tools.jackson.core.async.NonBlockingInputFeeder;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.util.VersionUtil;
 
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;

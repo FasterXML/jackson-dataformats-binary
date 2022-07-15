@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 

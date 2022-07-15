@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.mapper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import tools.jackson.databind.*;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class CaseInsensitiveDeserTest extends BaseTestForSmile

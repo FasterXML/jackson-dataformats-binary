@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.io.*;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.SerializedString;
+import tools.jackson.core.*;
+import tools.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 

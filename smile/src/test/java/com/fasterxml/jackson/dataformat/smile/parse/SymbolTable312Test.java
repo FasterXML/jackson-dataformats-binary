@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 public class SymbolTable312Test extends BaseTestForSmile

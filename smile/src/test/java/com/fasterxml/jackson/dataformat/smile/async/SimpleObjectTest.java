@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.exc.StreamReadException;
 
 public class SimpleObjectTest extends AsyncTestBase
 {

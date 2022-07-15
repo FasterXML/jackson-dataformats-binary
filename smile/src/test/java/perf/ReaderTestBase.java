@@ -2,10 +2,10 @@ package perf;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
 abstract class ReaderTestBase
 {
