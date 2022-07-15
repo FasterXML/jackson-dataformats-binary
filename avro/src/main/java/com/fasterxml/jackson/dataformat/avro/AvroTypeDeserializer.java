@@ -2,13 +2,13 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase;
+import tools.jackson.databind.*;
+import tools.jackson.databind.jsontype.TypeDeserializer;
+import tools.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.jsontype.impl.TypeDeserializerBase;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 public class AvroTypeDeserializer extends TypeDeserializerBase

@@ -4,8 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.SequenceWriter;
 
 public class MapWithUnionTest extends AvroTestBase
 {

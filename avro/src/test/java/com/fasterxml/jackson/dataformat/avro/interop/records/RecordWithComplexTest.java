@@ -7,9 +7,9 @@ import java.util.Map;
 import org.apache.avro.AvroTypeException;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JacksonException;
+import tools.jackson.core.JacksonException;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import tools.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 

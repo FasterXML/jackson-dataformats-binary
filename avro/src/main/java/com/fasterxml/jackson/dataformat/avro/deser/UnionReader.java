@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.sym.PropertyNameMatcher;
 
 /**
  * Reader used in cases where union contains at least one non-scalar type.

@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.TokenStreamContext;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.TokenStreamContext;
+import tools.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.JsonToken;
 
 /**
  * We need to use a custom context to be able to carry along

@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonToken;
 
 /**
  * Base class for handlers for Avro structured types (or in some cases,

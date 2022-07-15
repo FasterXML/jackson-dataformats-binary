@@ -4,8 +4,8 @@ import java.util.*;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
 
 /**
  * Simple container for Schemas that have already been generated during

@@ -2,13 +2,13 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 
 import org.apache.avro.reflect.CustomEncoding;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonGenerator;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ValueSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.CustomEncodingWrapper;
 import com.fasterxml.jackson.dataformat.avro.schema.VisitorFormatWrapperImpl;

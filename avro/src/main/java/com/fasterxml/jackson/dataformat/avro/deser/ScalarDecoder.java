@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
 /**

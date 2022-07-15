@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 
 public class IntegerVisitor extends JsonIntegerFormatVisitor.Base
     implements SchemaBuilder

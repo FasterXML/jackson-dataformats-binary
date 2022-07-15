@@ -2,10 +2,10 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.FormatSchema;
-import com.fasterxml.jackson.core.StreamReadCapability;
-import com.fasterxml.jackson.core.StreamWriteFeature;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.core.FormatSchema;
+import tools.jackson.core.StreamReadCapability;
+import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.databind.*;
 
 public class MapperConfigTest extends AvroTestBase
 {

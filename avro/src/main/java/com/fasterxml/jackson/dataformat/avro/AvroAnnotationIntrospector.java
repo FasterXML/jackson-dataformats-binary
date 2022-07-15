@@ -7,17 +7,17 @@ import java.util.List;
 import org.apache.avro.reflect.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.Version;
 
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.AnnotationIntrospector;
+import tools.jackson.databind.PropertyName;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.Annotated;
+import tools.jackson.databind.introspect.AnnotatedConstructor;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.jsontype.NamedType;
+import tools.jackson.databind.ser.std.ToStringSerializer;
+import tools.jackson.databind.util.ClassUtil;
 
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.CustomEncodingDeserializer;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;

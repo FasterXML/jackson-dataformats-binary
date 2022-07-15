@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import org.apache.avro.Schema;

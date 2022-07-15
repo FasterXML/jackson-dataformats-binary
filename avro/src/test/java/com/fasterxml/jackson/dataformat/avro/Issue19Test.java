@@ -7,8 +7,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 
-import com.fasterxml.jackson.core.StreamWriteFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.databind.DeserializationFeature;
 
 public class Issue19Test extends AvroTestBase
 {

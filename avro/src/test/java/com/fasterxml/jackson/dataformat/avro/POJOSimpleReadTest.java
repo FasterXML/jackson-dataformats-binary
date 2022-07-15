@@ -5,11 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.SerializedString;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.SerializedString;
 
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 

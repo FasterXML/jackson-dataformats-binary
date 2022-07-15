@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
 public class ScalarTest extends AvroTestBase

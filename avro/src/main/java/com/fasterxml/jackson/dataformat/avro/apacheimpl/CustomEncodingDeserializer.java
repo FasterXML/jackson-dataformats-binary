@@ -4,11 +4,11 @@ import java.io.IOException;
 
 import org.apache.avro.reflect.CustomEncoding;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.exc.WrappedIOException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ValueDeserializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.dataformat.avro.CustomEncodingWrapper;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 

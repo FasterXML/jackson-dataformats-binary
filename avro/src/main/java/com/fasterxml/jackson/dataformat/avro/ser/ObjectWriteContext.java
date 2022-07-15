@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.ser;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
-import com.fasterxml.jackson.core.StreamWriteFeature;
+import tools.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 
 public final class ObjectWriteContext

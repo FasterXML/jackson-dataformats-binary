@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import tools.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import org.apache.avro.UnresolvedUnionException;

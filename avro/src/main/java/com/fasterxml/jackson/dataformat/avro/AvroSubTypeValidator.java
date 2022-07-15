@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import tools.jackson.databind.DatabindContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 /**
  * Simple {@link PolymorphicTypeValidator} implementation used by with Avro's

@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
 import static org.junit.Assert.assertArrayEquals;

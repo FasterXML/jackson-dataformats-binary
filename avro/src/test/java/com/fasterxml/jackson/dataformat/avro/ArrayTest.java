@@ -5,9 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
 
 public class ArrayTest extends AvroTestBase

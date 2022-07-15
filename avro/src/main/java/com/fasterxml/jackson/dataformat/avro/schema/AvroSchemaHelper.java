@@ -14,17 +14,17 @@ import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
-import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.fasterxml.jackson.databind.util.SimpleLookupCache;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.AnnotatedConstructor;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
+import tools.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.util.SimpleLookupCache;
 
 import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 

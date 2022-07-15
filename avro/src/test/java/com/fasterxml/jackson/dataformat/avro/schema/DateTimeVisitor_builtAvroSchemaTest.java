@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.type.TypeFactory;
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificData;

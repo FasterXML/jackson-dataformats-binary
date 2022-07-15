@@ -3,10 +3,10 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.SequenceWriter;
 
 public class MapTest extends AvroTestBase
 {

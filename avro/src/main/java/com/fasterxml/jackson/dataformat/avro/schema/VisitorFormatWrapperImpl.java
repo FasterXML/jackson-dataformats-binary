@@ -1,11 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonGenerator;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.jsonFormatVisitors.*;
 
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 

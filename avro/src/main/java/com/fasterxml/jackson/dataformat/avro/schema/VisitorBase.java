@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWithSerializerProvider;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWithSerializerProvider;
 
 public abstract class VisitorBase
     implements JsonFormatVisitorWithSerializerProvider,

@@ -5,9 +5,9 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.SequenceWriter;
 
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;

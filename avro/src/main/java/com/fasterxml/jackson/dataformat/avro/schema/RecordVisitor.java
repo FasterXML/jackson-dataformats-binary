@@ -9,12 +9,12 @@ import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
 import org.apache.avro.reflect.AvroSchema;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.*;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
+import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import tools.jackson.databind.jsontype.NamedType;
+import tools.jackson.databind.ser.BeanPropertyWriter;
 
 import com.fasterxml.jackson.dataformat.avro.AvroFactory;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;

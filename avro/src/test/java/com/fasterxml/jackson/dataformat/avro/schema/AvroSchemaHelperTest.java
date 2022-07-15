@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 import static com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper.jsonNodeToObject;
 import static com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper.objectToJsonNode;
 import junit.framework.TestCase;

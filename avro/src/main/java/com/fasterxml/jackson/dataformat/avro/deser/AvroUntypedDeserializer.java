@@ -4,17 +4,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.KeyDeserializer;
-import com.fasterxml.jackson.databind.deser.jdk.UntypedObjectDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.KeyDeserializer;
+import tools.jackson.databind.deser.jdk.UntypedObjectDeserializer;
+import tools.jackson.databind.jsontype.TypeDeserializer;
+import tools.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.type.TypeFactory;
 
 /**
  * Deserializer for handling when we have no target type, just schema type. Normally, the {@link UntypedObjectDeserializer} doesn't look

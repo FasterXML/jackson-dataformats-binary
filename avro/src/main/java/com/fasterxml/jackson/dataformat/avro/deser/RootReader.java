@@ -2,8 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.sym.PropertyNameMatcher;
 
 /**
  * Context used at root level; basically just a container

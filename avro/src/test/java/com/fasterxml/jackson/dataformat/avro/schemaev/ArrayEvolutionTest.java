@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import tools.jackson.databind.DatabindException;
 
 import com.fasterxml.jackson.dataformat.avro.*;
 

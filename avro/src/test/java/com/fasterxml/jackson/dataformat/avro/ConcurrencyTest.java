@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SequenceWriter;
 
 /**
  * Simple tests for some testable aspects of concurrent usage.

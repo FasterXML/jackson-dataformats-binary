@@ -6,15 +6,15 @@ import java.io.InputStream;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.Version;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.databind.cfg.MapperBuilderState;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.cfg.MapperBuilderState;
+import tools.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.util.ClassUtil;
 
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 

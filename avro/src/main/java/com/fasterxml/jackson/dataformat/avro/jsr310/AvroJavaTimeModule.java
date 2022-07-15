@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.avro.PackageVersion;
 import com.fasterxml.jackson.dataformat.avro.jsr310.deser.AvroInstantDeserializer;
 import com.fasterxml.jackson.dataformat.avro.jsr310.deser.AvroLocalDateDeserializer;

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.core.StreamWriteFeature;
-import com.fasterxml.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
+import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
 
 /**

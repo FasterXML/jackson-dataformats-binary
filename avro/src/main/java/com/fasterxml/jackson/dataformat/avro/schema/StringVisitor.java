@@ -5,14 +5,14 @@ import java.util.Set;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.JsonParser.NumberType;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
+import tools.jackson.databind.jsonFormatVisitors.JsonValueFormat;
+import tools.jackson.databind.type.TypeFactory;
 
 public class StringVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder

@@ -15,10 +15,10 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.reflect.ReflectData;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.TokenStreamContext;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.TokenStreamContext;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import tools.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.util.Utf8;
 
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 
 /**

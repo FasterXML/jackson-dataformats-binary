@@ -4,16 +4,16 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
+import tools.jackson.databind.DatabindContext;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsontype.NamedType;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.TypeDeserializer;
+import tools.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 
 /**
  * @since 2.9

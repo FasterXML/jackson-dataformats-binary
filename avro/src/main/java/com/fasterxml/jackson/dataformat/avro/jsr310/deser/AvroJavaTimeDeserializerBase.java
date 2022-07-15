@@ -2,14 +2,13 @@ package com.fasterxml.jackson.dataformat.avro.jsr310.deser;
 
 import java.time.ZoneId;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
-import com.fasterxml.jackson.databind.type.LogicalType;
-
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdScalarDeserializer;
+import tools.jackson.databind.type.LogicalType;
 
 public abstract class AvroJavaTimeDeserializerBase<T> extends StdScalarDeserializer<T> {
 
@@ -26,7 +25,7 @@ public abstract class AvroJavaTimeDeserializerBase<T> extends StdScalarDeseriali
     @Override
     public T deserialize(JsonParser p, DeserializationContext context) throws JacksonException
     {
-        if (p.currentToken() == VALUE_NUMBER_INT) {
+        if (p.currentToken() == JsonToken.VALUE_NUMBER_INT) {
             final ZoneId defaultZoneId = context.getTimeZone().toZoneId().normalized();
             return fromLong(p.getLongValue(), defaultZoneId);
         } else {

@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 

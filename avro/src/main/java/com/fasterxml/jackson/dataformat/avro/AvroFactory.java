@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.BinaryTSFactory;
-import com.fasterxml.jackson.core.io.IOContext;
+import tools.jackson.core.*;
+import tools.jackson.core.base.BinaryTSFactory;
+import tools.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroParserImpl;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 

@@ -6,7 +6,7 @@ import java.lang.ref.SoftReference;
 
 import org.apache.avro.io.*;
 
-import com.fasterxml.jackson.core.JacksonException;
+import tools.jackson.core.JacksonException;
 
 /**
  * Simple helper class that contains extracted functionality for

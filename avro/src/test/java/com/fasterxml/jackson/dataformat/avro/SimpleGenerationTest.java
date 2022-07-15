@@ -7,10 +7,10 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.fasterxml.jackson.core.StreamWriteFeature;
+import tools.jackson.core.StreamWriteFeature;
 
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ObjectMapper;
 
 public class SimpleGenerationTest extends AvroTestBase
 {

@@ -3,13 +3,13 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.IOException;
 import java.io.Writer;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.ParserBase;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.SimpleStreamReadContext;
-import com.fasterxml.jackson.core.util.VersionUtil;
+import tools.jackson.core.*;
+import tools.jackson.core.base.ParserBase;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.util.ByteArrayBuilder;
+import tools.jackson.core.util.JacksonFeatureSet;
+import tools.jackson.core.util.SimpleStreamReadContext;
+import tools.jackson.core.util.VersionUtil;
 
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 import com.fasterxml.jackson.dataformat.avro.deser.MissingReader;

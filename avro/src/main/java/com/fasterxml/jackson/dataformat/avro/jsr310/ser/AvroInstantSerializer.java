@@ -6,15 +6,15 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
+import tools.jackson.databind.ser.std.StdScalarSerializer;
 
 /**
  * Serializer for variants of java.time classes (Instant, OffsetDateTime, ZonedDateTime) into long value.

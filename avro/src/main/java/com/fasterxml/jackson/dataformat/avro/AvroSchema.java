@@ -8,9 +8,9 @@ import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
 
-import com.fasterxml.jackson.core.FormatSchema;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DatabindException;
+import tools.jackson.core.FormatSchema;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReaderFactory;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroStructureReader;
 

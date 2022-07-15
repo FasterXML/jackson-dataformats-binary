@@ -4,9 +4,9 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.*;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.sym.PropertyNameMatcher;
 
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;

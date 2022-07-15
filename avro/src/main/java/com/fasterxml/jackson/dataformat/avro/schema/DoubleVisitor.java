@@ -2,9 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
 
 public class DoubleVisitor
     extends JsonNumberFormatVisitor.Base

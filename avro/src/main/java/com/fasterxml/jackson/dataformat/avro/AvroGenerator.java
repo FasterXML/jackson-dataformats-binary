@@ -9,10 +9,10 @@ import java.util.Objects;
 
 import org.apache.avro.io.BinaryEncoder;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.base.GeneratorBase;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+import tools.jackson.core.*;
+import tools.jackson.core.base.GeneratorBase;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.util.JacksonFeatureSet;
 
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
