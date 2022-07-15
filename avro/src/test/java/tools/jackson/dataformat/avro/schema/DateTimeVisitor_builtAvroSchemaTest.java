@@ -2,7 +2,6 @@ package tools.jackson.dataformat.avro.schema;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.type.TypeFactory;
-import tools.jackson.dataformat.avro.schema.DateTimeVisitor;
 
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;

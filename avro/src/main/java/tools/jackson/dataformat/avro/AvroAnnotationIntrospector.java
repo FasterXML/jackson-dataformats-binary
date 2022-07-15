@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.avro.reflect.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.dataformat.avro.PackageVersion;
 
 import tools.jackson.core.Version;
 

@@ -1,7 +1,7 @@
 package perf;
 
 import tools.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import tools.jackson.dataformat.smile.SmileFactory;
 
 public class ReadPerfMediaItem extends ReaderTestBase
 {

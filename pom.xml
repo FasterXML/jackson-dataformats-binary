@@ -58,7 +58,7 @@
     <repository>
       <id>sonatype-nexus-snapshots</id>
       <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
       <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
@@ -84,7 +84,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <excludes>
-              <exclude>com/fasterxml/jackson/**/failing/*.java</exclude>
+              <exclude>tools/jackson/**/failing/*.java</exclude>
             </excludes>
           </configuration>
 	</plugin>

@@ -9,8 +9,6 @@ import java.util.Objects;
 
 import org.apache.avro.io.BinaryEncoder;
 
-import com.fasterxml.jackson.dataformat.avro.PackageVersion;
-
 import tools.jackson.core.*;
 import tools.jackson.core.base.GeneratorBase;
 import tools.jackson.core.io.IOContext;

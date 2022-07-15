@@ -4,8 +4,6 @@ import java.io.File;
 
 import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.dataformat.avro.PackageVersion;
-
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.Version;

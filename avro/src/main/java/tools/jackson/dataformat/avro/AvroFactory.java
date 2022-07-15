@@ -2,8 +2,6 @@ package tools.jackson.dataformat.avro;
 
 import java.io.*;
 
-import com.fasterxml.jackson.dataformat.avro.PackageVersion;
-
 import tools.jackson.core.*;
 import tools.jackson.core.base.BinaryTSFactory;
 import tools.jackson.core.io.IOContext;

@@ -3,8 +3,6 @@ package tools.jackson.dataformat.avro;
 import java.io.IOException;
 import java.io.Writer;
 
-import com.fasterxml.jackson.dataformat.avro.PackageVersion;
-
 import tools.jackson.core.*;
 import tools.jackson.core.base.ParserBase;
 import tools.jackson.core.io.IOContext;

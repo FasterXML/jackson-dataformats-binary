@@ -10,7 +10,7 @@ import tools.jackson.dataformat.avro.jsr310.ser.AvroLocalDateSerializer;
 import tools.jackson.dataformat.avro.jsr310.ser.AvroLocalDateTimeSerializer;
 import tools.jackson.dataformat.avro.jsr310.ser.AvroLocalTimeSerializer;
 
-import com.fasterxml.jackson.dataformat.avro.PackageVersion;
+import tools.jackson.dataformat.avro.PackageVersion;
 
 import java.time.Instant;
 import java.time.LocalDate;
