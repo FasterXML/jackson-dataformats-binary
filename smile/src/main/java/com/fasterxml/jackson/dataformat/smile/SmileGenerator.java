@@ -1820,7 +1820,7 @@ public class SmileGenerator
     protected void _writeDecimalNumber(String enc) throws IOException
     {
         try {
-            writeNumber(new BigDecimal(enc));
+            writeNumber(NumberInput.parseBigDecimal(enc));
         } catch (NumberFormatException e) {
             throw new JsonGenerationException("Invalid String representation for Number ('"+enc
                     +"'); can not write using Smile format", this);
