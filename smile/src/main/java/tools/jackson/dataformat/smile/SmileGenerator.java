@@ -1795,7 +1795,7 @@ public class SmileGenerator
     protected void _writeDecimalNumber(String enc) throws JacksonException
     {
         try {
-            writeNumber(new BigDecimal(enc));
+            writeNumber(NumberInput.parseBigDecimal(enc));
         } catch (NumberFormatException e) {
             throw _constructWriteException("Invalid String representation for Number ('"+enc
                     +"'); can not write using Smile format");
