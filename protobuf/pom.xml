@@ -17,7 +17,15 @@
   <description>Support for reading and writing protobuf-encoded data via Jackson
 abstractions.
   </description>
-  <url>http://github.com/FasterXML/jackson-dataformats-binary</url>    
+  <url>https://github.com/FasterXML/jackson-dataformats-binary</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <properties>
     <packageVersion.dir>com/fasterxml/jackson/dataformat/protobuf</packageVersion.dir>

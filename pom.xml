@@ -13,6 +13,14 @@
   <description>Parent pom for Jackson binary dataformats.
   </description>
 
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <modules>
     <module>cbor</module>
     <module>smile</module>
@@ -25,8 +33,8 @@
   <scm>
     <connection>scm:git:git@github.com:FasterXML/jackson-dataformats-binary.git</connection>
     <developerConnection>scm:git:git@github.com:FasterXML/jackson-dataformats-binary.git</developerConnection>
-    <url>http://github.com/FasterXML/jackson-dataformats-binary</url>    
-    <tag>jackson-dataformats-binary-2.12.0</tag>
+    <url>https://github.com/FasterXML/jackson-dataformats-binary</url>
+    <tag>jackson-dataformats-binary-2.14.0</tag>
   </scm>
   <issueManagement>
     <url>https://github.com/FasterXML/jackson-dataformats-binary/issues</url>
