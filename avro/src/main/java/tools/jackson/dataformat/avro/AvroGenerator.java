@@ -267,17 +267,18 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeName(String name) throws JacksonException
+    public JsonGenerator writeName(String name) throws JacksonException
     {
         try {
             _streamWriteContext.writeName(name);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public final void writeName(SerializableString name)
+    public JsonGenerator writeName(SerializableString name)
         throws JacksonException
     {
         try {
@@ -285,10 +286,11 @@ public class AvroGenerator extends GeneratorBase
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writePropertyId(long id) throws JacksonException {
+    public JsonGenerator writePropertyId(long id) throws JacksonException {
         try {
             // TODO: Should not force construction of a String here...
             String idStr = Long.valueOf(id).toString(); // since instances for small values cached
@@ -296,6 +298,7 @@ public class AvroGenerator extends GeneratorBase
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /*
@@ -370,25 +373,28 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeStartArray() throws JacksonException {
+    public JsonGenerator writeStartArray() throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         _complete = false;
+        return this;
     }
 
     @Override
-    public final void writeStartArray(Object currValue) throws JacksonException {
+    public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         _complete = false;
+        return this;
     }
 
     @Override
-    public final void writeStartArray(Object currValue, int len) throws JacksonException {
+    public JsonGenerator writeStartArray(Object currValue, int len) throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         _complete = false;
+        return this;
     }
     
     @Override
-    public final void writeEndArray() throws JacksonException
+    public JsonGenerator writeEndArray() throws JacksonException
     {
         if (!_streamWriteContext.inArray()) {
             _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
@@ -397,22 +403,25 @@ public class AvroGenerator extends GeneratorBase
         if (_streamWriteContext.inRoot() && !_complete) {
             _complete();
         }
+        return this;
     }
 
     @Override
-    public final void writeStartObject() throws JacksonException {
+    public JsonGenerator writeStartObject() throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         _complete = false;
+        return this;
     }
 
     @Override
-    public void writeStartObject(Object forValue) throws JacksonException {
+    public JsonGenerator writeStartObject(Object forValue) throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _complete = false;
+        return this;
     }
 
     @Override
-    public final void writeEndObject() throws JacksonException
+    public JsonGenerator writeEndObject() throws JacksonException
     {
         if (!_streamWriteContext.inObject()) {
             _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
@@ -425,6 +434,7 @@ public class AvroGenerator extends GeneratorBase
         if (_streamWriteContext.inRoot() && !_complete) {
             _complete();
         }
+        return this;
     }
 
     /*
@@ -434,37 +444,37 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeString(String text) throws JacksonException
+    public JsonGenerator writeString(String text) throws JacksonException
     {
         if (text == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         try {
             _streamWriteContext.writeString(text);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeString(char[] text, int offset, int len) throws JacksonException {
-        writeString(new String(text, offset, len));
+    public JsonGenerator writeString(char[] text, int offset, int len) throws JacksonException {
+        return writeString(new String(text, offset, len));
     }
 
     @Override
-    public final void writeString(SerializableString sstr) throws JacksonException {
-        writeString(sstr.toString());
+    public JsonGenerator writeString(SerializableString sstr) throws JacksonException {
+        return writeString(sstr.toString());
     }
 
     @Override
-    public void writeRawUTF8String(byte[] text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawUTF8String(byte[] text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public final void writeUTF8String(byte[] text, int offset, int len) throws JacksonException {
-        writeString(new String(text, offset, len,  StandardCharsets.UTF_8));
+    public JsonGenerator writeUTF8String(byte[] text, int offset, int len) throws JacksonException {
+        return writeString(new String(text, offset, len,  StandardCharsets.UTF_8));
     }
 
     /*
@@ -474,51 +484,51 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeEmbeddedObject(Object object) throws JacksonException {
+    public JsonGenerator writeEmbeddedObject(Object object) throws JacksonException {
         if (object instanceof EncodedDatum) {
             try {
                 _streamWriteContext.writeValue(object);
             } catch (IOException e) {
                 throw _wrapIOFailure(e);
             }
-            return;
+            return this;
         }
-        super.writeEmbeddedObject(object);
+        return super.writeEmbeddedObject(object);
     }
 
     @Override
-    public void writeRaw(String text) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(String text) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(String text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(String text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(char[] text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(char[] text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(char c) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(char c) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(String text) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawValue(String text) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(String text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawValue(String text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(char[] text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawValue(char[] text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     /*
@@ -528,17 +538,17 @@ public class AvroGenerator extends GeneratorBase
      */
     
     @Override
-    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
+    public JsonGenerator writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
     {
         if (data == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         try {
             _streamWriteContext.writeBinary(data, offset, len);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /*
@@ -548,105 +558,111 @@ public class AvroGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeBoolean(boolean state) throws JacksonException {
+    public JsonGenerator writeBoolean(boolean state) throws JacksonException {
         try {
             _streamWriteContext.writeValue(state ? Boolean.TRUE : Boolean.FALSE);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNull() throws JacksonException {
+    public JsonGenerator writeNull() throws JacksonException {
         try {
             _streamWriteContext.writeNull();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(short v) throws JacksonException {
+    public JsonGenerator writeNumber(short v) throws JacksonException {
         try {
             _streamWriteContext.writeValue(Short.valueOf(v));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(int v) throws JacksonException {
+    public JsonGenerator writeNumber(int v) throws JacksonException {
         try {
             _streamWriteContext.writeValue(Integer.valueOf(v));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(long v) throws JacksonException {
+    public JsonGenerator writeNumber(long v) throws JacksonException {
         try {
             _streamWriteContext.writeValue(Long.valueOf(v));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(BigInteger v) throws JacksonException
+    public JsonGenerator writeNumber(BigInteger v) throws JacksonException
     {
         if (v == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         try {
             _streamWriteContext.writeValue(v);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
     
     @Override
-    public void writeNumber(double d) throws JacksonException {
+    public JsonGenerator writeNumber(double d) throws JacksonException {
         try {
             _streamWriteContext.writeValue(Double.valueOf(d));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }    
 
     @Override
-    public void writeNumber(float f) throws JacksonException {
+    public JsonGenerator writeNumber(float f) throws JacksonException {
         try {
             _streamWriteContext.writeValue(Float.valueOf(f));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(BigDecimal dec) throws JacksonException
+    public JsonGenerator writeNumber(BigDecimal dec) throws JacksonException
     {
         try {
             if (dec == null) {
-                writeNull();
-                return;
+                return writeNull();
             }
             _streamWriteContext.writeValue(dec);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(String encodedValue) throws JacksonException {
+    public JsonGenerator writeNumber(String encodedValue) throws JacksonException {
         /* 08-Mar-2016, tatu: Looks like this may need to be supported, eventually,
          *   for things like floating-point (Decimal) types. But, for now,
          *   let's at least handle null.
          */
         if (encodedValue == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         throw new UnsupportedOperationException("Can not write 'untyped' numbers");
     }

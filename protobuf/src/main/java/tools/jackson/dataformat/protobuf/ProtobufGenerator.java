@@ -212,7 +212,7 @@ public class ProtobufGenerator extends GeneratorBase
     // And then methods overridden to make final, streamline some aspects...
 
     @Override
-    public final void writeName(String name) throws JacksonException
+    public JsonGenerator writeName(String name) throws JacksonException
     {
         if (!_inObject) {
             _reportError("Cannot write a property name: current context not Object but "+_streamWriteContext.typeDesc());
@@ -241,10 +241,11 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _streamWriteContext.setField(f);
         _currField = f;
+        return this;
     }
 
     @Override
-    public final void writeName(SerializableString sstr) throws JacksonException {
+    public JsonGenerator writeName(SerializableString sstr) throws JacksonException {
         if (!_inObject) {
             _reportError("Cannot write a property name: current context not Object but "+_streamWriteContext.typeDesc());
         }
@@ -275,13 +276,14 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _streamWriteContext.setField(f);
         _currField = f;
+        return this;
     }
 
     @Override
-    public void writePropertyId(long id) throws JacksonException {
+    public JsonGenerator writePropertyId(long id) throws JacksonException {
         // 24-Jul-2019, tatu: Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        writeName(idStr);
+        return writeName(idStr);
     }
 
     /*
@@ -356,15 +358,14 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeStartArray() throws JacksonException
+    public JsonGenerator writeStartArray() throws JacksonException
     {
         // First: arrays only legal as Message (~= Object) fields:
         if (!_inObject) {
             _reportError("Current context not an OBJECT, can not write arrays");
         }
         if (_currField == null) { // just a sanity check
-            _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
-            return; // never gets here but code analyzers can't see that
+            return _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
         }
         if (!_currField.isArray()) {
             _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");
@@ -382,16 +383,18 @@ public class ProtobufGenerator extends GeneratorBase
             // note: tag SHOULD be written for array itself, but not contents
             _startBuffering(_currField.typedTag);
         }
+        return this;
     }
 
     @Override
-    public final void writeStartArray(Object currValue) throws JacksonException {
+    public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         writeStartArray();
         _streamWriteContext.assignCurrentValue(currValue);
+        return this;
     }
 
     @Override
-    public final void writeEndArray() throws JacksonException
+    public JsonGenerator writeEndArray() throws JacksonException
     {
         if (!_streamWriteContext.inArray()) {
             _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
@@ -412,16 +415,18 @@ public class ProtobufGenerator extends GeneratorBase
         if (_currField.packed) {
             _finishBuffering();
         }
+        return this;
     }
 
     @Override
-    public final void writeStartObject(Object currValue) throws JacksonException {
+    public JsonGenerator writeStartObject(Object currValue) throws JacksonException {
         writeStartObject();
         _streamWriteContext.assignCurrentValue(currValue);
+        return this;
     }
 
     @Override
-    public final void writeStartObject() throws JacksonException
+    public JsonGenerator writeStartObject() throws JacksonException
     {
         if (_currField == null) {
             // root?
@@ -454,11 +459,12 @@ public class ProtobufGenerator extends GeneratorBase
             _inObject = true;
         }
         // even if within array, object fields use tags
-        _writeTag = true; 
+        _writeTag = true;
+        return this;
     }
 
     @Override
-    public final void writeEndObject() throws JacksonException
+    public JsonGenerator writeEndObject() throws JacksonException
     {
         if (!_inObject) {
             _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
@@ -479,10 +485,11 @@ public class ProtobufGenerator extends GeneratorBase
         if (_buffered != null) { // null for root
             _finishBuffering();
         }
+        return this;
     }
 
     @Override
-    public void writeArray(int[] array, int offset, int length) throws JacksonException
+    public JsonGenerator writeArray(int[] array, int offset, int length) throws JacksonException
     {
         _verifyArrayWrite(array);
         _verifyOffsets(array.length, offset, length);
@@ -499,10 +506,11 @@ public class ProtobufGenerator extends GeneratorBase
             // and then pieces of END_ARRAY
             _writeTag = true; 
         }
+        return this;
     }
 
     @Override
-    public void writeArray(long[] array, int offset, int length) throws JacksonException
+    public JsonGenerator writeArray(long[] array, int offset, int length) throws JacksonException
     {
         _verifyArrayWrite(array);
         _verifyOffsets(array.length, offset, length);
@@ -519,10 +527,11 @@ public class ProtobufGenerator extends GeneratorBase
             // and then pieces of END_ARRAY
             _writeTag = true; 
         }
+        return this;
     }
 
     @Override
-    public void writeArray(double[] array, int offset, int length) throws JacksonException
+    public JsonGenerator writeArray(double[] array, int offset, int length) throws JacksonException
     {
         _verifyArrayWrite(array);
         _verifyOffsets(array.length, offset, length);
@@ -539,6 +548,7 @@ public class ProtobufGenerator extends GeneratorBase
             // and then pieces of END_ARRAY
             _writeTag = true; 
         }
+        return this;
     }
 
     private void _verifyArrayWrite(Object array) throws JacksonException
@@ -712,15 +722,14 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeString(String text) throws JacksonException
+    public JsonGenerator writeString(String text) throws JacksonException
     {
         if (text == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _writeEnum(text);
-            return;
+            return this;
         }
 
         // Couple of choices; short (guaranteed to have length <= 127); medium (guaranteed
@@ -731,11 +740,11 @@ public class ProtobufGenerator extends GeneratorBase
         // ... or, speculate that we commonly get Ascii anyway, and just occasionally need to move
         if (clen > 99) {
             _encodeLongerString(text);
-            return;
+            return this;
         }
         if (clen == 0) {
             _writeEmptyString();
-            return;
+            return this;
         }
         _verifyValueWrite();
         _ensureRoom(clen+clen+clen+7); // up to 3 bytes per char; and possibly 2 bytes for length, 5 for tag
@@ -753,7 +762,7 @@ public class ProtobufGenerator extends GeneratorBase
             if (++i >= clen) { // done! Also, we know length is 7-bit
                 buf[start-1] = (byte) (ptr - start);
                 _currPtr = ptr;
-                return;
+                return this;
             }
         }
 
@@ -808,14 +817,14 @@ public class ProtobufGenerator extends GeneratorBase
             ++ptr;
         }
         _currPtr = ptr;
+        return this;
     }
 
     @Override
-    public void writeString(char[] text, int offset, int clen) throws JacksonException
+    public JsonGenerator writeString(char[] text, int offset, int clen) throws JacksonException
     {
         if (text == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _writeEnum(new String(text, offset, clen));
@@ -824,11 +833,11 @@ public class ProtobufGenerator extends GeneratorBase
         // Could guarantee with 42 chars or less; but let's do bit more speculative
         if (clen > 99) {
             _encodeLongerString(text, offset, clen);
-            return;
+            return this;
         }
         if (clen == 0) {
             _writeEmptyString();
-            return;
+            return this;
         }
         _verifyValueWrite();
         _ensureRoom(clen+clen+clen+7); // up to 3 bytes per char; and possibly 2 bytes for length, 5 for tag
@@ -846,7 +855,7 @@ public class ProtobufGenerator extends GeneratorBase
             if (++offset >= end) { // done!
                 buf[start-1] = (byte) (ptr - start);
                 _currPtr = ptr;
-                return;
+                return this;
             }
         }
         while (offset < end) {
@@ -895,10 +904,11 @@ public class ProtobufGenerator extends GeneratorBase
             ++ptr;
         }
         _currPtr = ptr;
+        return this;
     }
 
     @Override
-    public final void writeString(SerializableString sstr) throws JacksonException
+    public JsonGenerator writeString(SerializableString sstr) throws JacksonException
     {
         _verifyValueWrite();
         if (_currField.wireType == WireType.LENGTH_PREFIXED) {
@@ -913,28 +923,31 @@ public class ProtobufGenerator extends GeneratorBase
         } else {
             _reportWrongWireType("string");
         }
+        return this;
     }
 
     @Override
-    public void writeRawUTF8String(byte[] text, int offset, int len) throws JacksonException
+    public JsonGenerator writeRawUTF8String(byte[] text, int offset, int len) throws JacksonException
     {
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _reportWrongWireType("string");
-            return;
+            return this;
         }
         _verifyValueWrite();
         _writeLengthPrefixed(text, offset, len);
+        return this;
     }
 
     @Override
-    public final void writeUTF8String(byte[] text, int offset, int len) throws JacksonException
+    public JsonGenerator writeUTF8String(byte[] text, int offset, int len) throws JacksonException
     {
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _reportWrongWireType("string");
-            return;
+            return this;
         }
         _verifyValueWrite();
         _writeLengthPrefixed(text, offset, len);
+        return this;
     }
 
     protected void _writeEmptyString() throws JacksonException
@@ -996,38 +1009,38 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeRaw(String text) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(String text) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(String text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(String text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(char[] text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(char[] text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRaw(char c) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRaw(char c) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(String text) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawValue(String text) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(String text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawValue(String text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     @Override
-    public void writeRawValue(char[] text, int offset, int len) throws JacksonException {
-        _reportUnsupportedOperation();
+    public JsonGenerator writeRawValue(char[] text, int offset, int len) throws JacksonException {
+        return _reportUnsupportedOperation();
     }
 
     /*
@@ -1037,11 +1050,10 @@ public class ProtobufGenerator extends GeneratorBase
      */
     
     @Override
-    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
+    public JsonGenerator writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
     {
         if (data == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         _verifyValueWrite();
 
@@ -1050,10 +1062,11 @@ public class ProtobufGenerator extends GeneratorBase
         // raw bytes of String
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _reportWrongWireType("binary");
-            return;
+            return this;
         }
         _ensureRoom(10);
         _writeLengthPrefixed(data, offset, len);
+        return this;
     }
 
     /*
@@ -1063,7 +1076,7 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeBoolean(boolean state) throws JacksonException
+    public JsonGenerator writeBoolean(boolean state) throws JacksonException
     {
         _verifyValueWrite();
 
@@ -1078,25 +1091,26 @@ public class ProtobufGenerator extends GeneratorBase
                 b = state ? 1 : 0;
             }
             _writeVInt(b);
-            return;
+            return this;
         }
         if (type == WireType.FIXED_32BIT) {
             _writeInt32(state ? 1 : 0);
-            return;
+            return this;
         }
         if (type == WireType.FIXED_64BIT) {
             _writeInt64(state ? 1L : 0L);
-            return;
+            return this;
         }
         _reportWrongWireType("boolean");
+        return this;
     }
 
     @Override
-    public void writeNull() throws JacksonException
+    public JsonGenerator writeNull() throws JacksonException
     {
         _verifyValueWrite();
         if (_currField == UNKNOWN_FIELD) {
-            return;
+            return this;
         }
 
         // protobuf has no way of writing null does it?
@@ -1109,15 +1123,16 @@ public class ProtobufGenerator extends GeneratorBase
         if (_currField.required) {
             _reportError("Can not omit writing of `null` value for required field '"+_currField.name+"' (type "+_currField.type+")");
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(short v) throws JacksonException {
-        writeNumber((int) v);
+    public JsonGenerator writeNumber(short v) throws JacksonException {
+        return writeNumber((int) v);
     }
 
     @Override
-    public void writeNumber(int v) throws JacksonException
+    public JsonGenerator writeNumber(int v) throws JacksonException
     {
         _verifyValueWrite();
 
@@ -1128,21 +1143,22 @@ public class ProtobufGenerator extends GeneratorBase
                 v = ProtobufUtil.zigzagEncode(v);
             }
             _writeVInt(v);
-            return;
+            return this;
         }
         if (type == WireType.FIXED_32BIT) {
             _writeInt32(v);
-            return;
+            return this;
         }
         if (type == WireType.FIXED_64BIT) {
             _writeInt64(v);
-            return;
+            return this;
         }
         _reportWrongWireType("int");
+        return this;
     }
 
     @Override
-    public void writeNumber(long v) throws JacksonException
+    public JsonGenerator writeNumber(long v) throws JacksonException
     {
         _verifyValueWrite();
         final int type = _currField.wireType;
@@ -1153,35 +1169,36 @@ public class ProtobufGenerator extends GeneratorBase
             }
             // is this ok?
             _writeVLong(v);
-            return;
+            return this;
         }
         if (type == WireType.FIXED_32BIT) {
             _writeInt32((int) v);
-            return;
+            return this;
         }
         if (type == WireType.FIXED_64BIT) {
             _writeInt64(v);
-            return;
+            return this;
         }
         _reportWrongWireType("long");
+        return this;
     }
 
     @Override
-    public void writeNumber(BigInteger v) throws JacksonException
+    public JsonGenerator writeNumber(BigInteger v) throws JacksonException
     {
         if (v == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         if (_currField == UNKNOWN_FIELD) {
-            return;
+            return this;
         }
         // !!! TODO: better scheme to detect overflow or something
         writeNumber(v.longValue());
+        return this;
     }
 
     @Override
-    public void writeNumber(double d) throws JacksonException
+    public JsonGenerator writeNumber(double d) throws JacksonException
     {
         _verifyValueWrite();
         final int type = _currField.wireType;
@@ -1190,56 +1207,58 @@ public class ProtobufGenerator extends GeneratorBase
             // should we coerce like this?
             float f = (float) d;
             _writeInt32(Float.floatToRawIntBits(f));
-            return;
+            return this;
         }
         if (type == WireType.FIXED_64BIT) {
             _writeInt64(Double.doubleToLongBits(d));
-            return;
+            return this;
         }
         if (_currField.type == FieldType.STRING) {
             _encodeLongerString(String.valueOf(d));
-            return;
+            return this;
         }
         _reportWrongWireType("double");
+        return this;
     }    
 
     @Override
-    public void writeNumber(float f) throws JacksonException
+    public JsonGenerator writeNumber(float f) throws JacksonException
     {
         _verifyValueWrite();
         final int type = _currField.wireType;
 
         if (type == WireType.FIXED_32BIT) {
             _writeInt32(Float.floatToRawIntBits(f));
-            return;
+            return this;
         }
         if (type == WireType.FIXED_64BIT) {
             _writeInt64(Double.doubleToLongBits((double) f));
-            return;
+            return this;
         }
         if (_currField.type == FieldType.STRING) {
             _encodeLongerString(String.valueOf(f));
-            return;
+            return this;
         }
         _reportWrongWireType("float");
+        return this;
     }
 
     @Override
-    public void writeNumber(BigDecimal v) throws JacksonException
+    public JsonGenerator writeNumber(BigDecimal v) throws JacksonException
     {
         if (v == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         if (_currField == UNKNOWN_FIELD) {
-            return;
+            return this;
         }
         // !!! TODO: better handling here... exception or write as string or... ?
         writeNumber(v.doubleValue());
+        return this;
     }
 
     @Override
-    public void writeNumber(String encodedValue) throws JacksonException {
+    public JsonGenerator writeNumber(String encodedValue) throws JacksonException {
         throw new UnsupportedOperationException("Can not write 'untyped' numbers");
     }
 

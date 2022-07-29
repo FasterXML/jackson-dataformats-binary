@@ -395,15 +395,16 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeName(String name) throws JacksonException {
+    public JsonGenerator writeName(String name) throws JacksonException {
         if (!_streamWriteContext.writeName(name)) {
             _reportError("Can not write a property name, expecting a value");
         }
         _writeString(name);
+        return this;
     }
 
     @Override
-    public final void writeName(SerializableString name)
+    public JsonGenerator writeName(SerializableString name)
             throws JacksonException {
         // Object is a value, need to verify it's allowed
         if (!_streamWriteContext.writeName(name.getValue())) {
@@ -413,18 +414,20 @@ public class CBORGenerator extends GeneratorBase
         final int len = raw.length;
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
-            return;
+            return this;
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
+        return this;
     }
 
     @Override
-    public final void writePropertyId(long id) throws JacksonException {
+    public JsonGenerator writePropertyId(long id) throws JacksonException {
         if (!_streamWriteContext.writePropertyId(id)) {
             _reportError("Can not write a property id, expecting a value");
         }
         _writeLongNoCheck(id);
+        return this;
     }
 
     /*
@@ -470,7 +473,7 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public final void writeStartArray() throws JacksonException {
+    public JsonGenerator writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         if (_elementCountsPtr > 0) {
@@ -478,10 +481,11 @@ public class CBORGenerator extends GeneratorBase
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_ARRAY_INDEFINITE);
+        return this;
     }
 
     @Override
-    public void writeStartArray(Object currValue) throws JacksonException {
+    public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         if (_elementCountsPtr > 0) {
@@ -489,28 +493,31 @@ public class CBORGenerator extends GeneratorBase
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_ARRAY_INDEFINITE);
+        return this;
     }
 
     @Override
-    public void writeStartArray(Object forValue, int elementsToWrite) throws JacksonException {
+    public JsonGenerator writeStartArray(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
+        return this;
     }
 
     @Override
-    public final void writeEndArray() throws JacksonException {
+    public JsonGenerator writeEndArray() throws JacksonException {
         if (!_streamWriteContext.inArray()) {
             _reportError("Current context not Array but "+_streamWriteContext.typeDesc());
         }
         closeComplexElement();
         _streamWriteContext = _streamWriteContext.getParent();
+        return this;
     }
 
     @Override
-    public final void writeStartObject() throws JacksonException {
+    public JsonGenerator writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         if (_elementCountsPtr > 0) {
@@ -518,10 +525,11 @@ public class CBORGenerator extends GeneratorBase
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_OBJECT_INDEFINITE);
+        return this;
     }
 
     @Override
-    public final void writeStartObject(Object forValue) throws JacksonException {
+    public JsonGenerator writeStartObject(Object forValue) throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         if (_elementCountsPtr > 0) {
@@ -529,28 +537,31 @@ public class CBORGenerator extends GeneratorBase
         }
         _currentRemainingElements = INDEFINITE_LENGTH;
         _writeByte(BYTE_OBJECT_INDEFINITE);
+        return this;
     }
 
     @Override
-    public final void writeStartObject(Object forValue, int elementsToWrite) throws JacksonException {
+    public JsonGenerator writeStartObject(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
+        return this;
     }
 
     @Override
-    public final void writeEndObject() throws JacksonException {
+    public JsonGenerator writeEndObject() throws JacksonException {
         if (!_streamWriteContext.inObject()) {
             _reportError("Current context not Object but "+ _streamWriteContext.typeDesc());
         }
         closeComplexElement();
         _streamWriteContext = _streamWriteContext.getParent();
+        return this;
     }
 
     @Override
-    public void writeArray(int[] array, int offset, int length) throws JacksonException
+    public JsonGenerator writeArray(int[] array, int offset, int length) throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -576,10 +587,11 @@ public class CBORGenerator extends GeneratorBase
                 }
             }
         }
+        return this;
     }
 
     @Override
-    public void writeArray(long[] array, int offset, int length) throws JacksonException
+    public JsonGenerator writeArray(long[] array, int offset, int length) throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -588,10 +600,11 @@ public class CBORGenerator extends GeneratorBase
         for (int i = offset, end = offset+length; i < end; ++i) {
             _writeLongNoCheck(array[i]);
         }
+        return this;
     }
 
     @Override
-    public void writeArray(double[] array, int offset, int length) throws JacksonException
+    public JsonGenerator writeArray(double[] array, int offset, int length) throws JacksonException
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
@@ -600,6 +613,7 @@ public class CBORGenerator extends GeneratorBase
         for (int i = offset, end = offset+length; i < end; ++i) {
             _writeDoubleNoCheck(array[i]);
         }
+        return this;
     }
 
     private final void _pushRemainingElements() {
@@ -719,57 +733,60 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeString(String text) throws JacksonException {
+    public JsonGenerator writeString(String text) throws JacksonException {
         if (text == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         _verifyValueWrite("write String value");
         _writeString(text);
+        return this;
     }
 
     @Override
-    public final void writeString(SerializableString sstr) throws JacksonException {
+    public JsonGenerator writeString(SerializableString sstr) throws JacksonException {
         _verifyValueWrite("write String value");
         byte[] raw = sstr.asUnquotedUTF8();
         final int len = raw.length;
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
-            return;
+            return this;
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
+        return this;
     }
 
     @Override
-    public void writeString(char[] text, int offset, int len)
+    public JsonGenerator writeString(char[] text, int offset, int len)
             throws JacksonException {
         _verifyValueWrite("write String value");
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
-            return;
+            return this;
         }
         _writeString(text, offset, len);
+        return this;
     }
 
     @Override
-    public void writeRawUTF8String(byte[] raw, int offset, int len)
+    public JsonGenerator writeRawUTF8String(byte[] raw, int offset, int len)
             throws JacksonException
     {
         _verifyValueWrite("write String value");
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
-            return;
+            return this;
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
+        return this;
     }
 
     @Override
-    public final void writeUTF8String(byte[] text, int offset, int len)
+    public JsonGenerator writeUTF8String(byte[] text, int offset, int len)
             throws JacksonException {
         // Since no escaping is needed, same as 'writeRawUTF8String'
-        writeRawUTF8String(text, offset, len);
+        return writeRawUTF8String(text, offset, len);
     }
 
     /*
@@ -779,38 +796,38 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeRaw(String text) throws JacksonException {
+    public JsonGenerator writeRaw(String text) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(String text, int offset, int len) throws JacksonException {
+    public JsonGenerator writeRaw(String text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(char[] text, int offset, int len) throws JacksonException {
+    public JsonGenerator writeRaw(char[] text, int offset, int len) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRaw(char c) throws JacksonException {
+    public JsonGenerator writeRaw(char c) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(String text) throws JacksonException {
+    public JsonGenerator writeRawValue(String text) throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(String text, int offset, int len)
+    public JsonGenerator writeRawValue(String text, int offset, int len)
             throws JacksonException {
         throw _notSupported();
     }
 
     @Override
-    public void writeRawValue(char[] text, int offset, int len)
+    public JsonGenerator writeRawValue(char[] text, int offset, int len)
             throws JacksonException {
         throw _notSupported();
     }
@@ -822,15 +839,15 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeBinary(Base64Variant b64variant, byte[] data, int offset,
+    public JsonGenerator writeBinary(Base64Variant b64variant, byte[] data, int offset,
             int len) throws JacksonException {
         if (data == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         _verifyValueWrite("write Binary value");
         _writeLengthMarker(PREFIX_TYPE_BYTES, len);
         _writeBytes(data, offset, len);
+        return this;
     }
 
     @Override
@@ -870,29 +887,27 @@ public class CBORGenerator extends GeneratorBase
      */
 
     @Override
-    public void writeBoolean(boolean state) throws JacksonException {
+    public JsonGenerator writeBoolean(boolean state) throws JacksonException {
         _verifyValueWrite("write boolean value");
-        if (state) {
-            _writeByte(BYTE_TRUE);
-        } else {
-            _writeByte(BYTE_FALSE);
-        }
+        _writeByte(state ? BYTE_TRUE : BYTE_FALSE);
+        return this;
     }
 
     @Override
-    public void writeNull() throws JacksonException {
+    public JsonGenerator writeNull() throws JacksonException {
         _verifyValueWrite("write null value");
         _writeByte(BYTE_NULL);
+        return this;
     }
 
     @Override
-    public void writeNumber(short v) throws JacksonException {
+    public JsonGenerator writeNumber(short v) throws JacksonException {
         // !!! TODO 25-May-2020, tatu: Should we try to check for more optimal form?
-        writeNumber((int) v);
+        return writeNumber((int) v);
     }
 
     @Override
-    public void writeNumber(int i) throws JacksonException {
+    public JsonGenerator writeNumber(int i) throws JacksonException {
         _verifyValueWrite("write number");
         int marker;
         if (i < 0) {
@@ -906,12 +921,12 @@ public class CBORGenerator extends GeneratorBase
         if (_cfgMinimalInts) {
             if (i < 24) {
                 _outputBuffer[_outputTail++] = (byte) (marker + i);
-                return;
+                return this;
             }
             if (i <= 0xFF) {
                 _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT8_ELEMENTS);
                 _outputBuffer[_outputTail++] = (byte) i;
-                return;
+                return this;
             }
             b0 = (byte) i;
             i >>= 8;
@@ -919,7 +934,7 @@ public class CBORGenerator extends GeneratorBase
                 _outputBuffer[_outputTail++] = (byte) (marker + SUFFIX_UINT16_ELEMENTS);
                 _outputBuffer[_outputTail++] = (byte) i;
                 _outputBuffer[_outputTail++] = b0;
-                return;
+                return this;
             }
         } else {
             b0 = (byte) i;
@@ -930,10 +945,11 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
         _outputBuffer[_outputTail++] = b0;
+        return this;
     }
 
     @Override
-    public void writeNumber(long l) throws JacksonException {
+    public JsonGenerator writeNumber(long l) throws JacksonException {
         _verifyValueWrite("write number");
         if (_cfgMinimalInts) { // maybe 32 bits is enough?
             if (l >= 0) {
@@ -941,11 +957,11 @@ public class CBORGenerator extends GeneratorBase
                 //     was off by one, resulting in truncation to 0
                 if (l < 0x100000000L) {
                     _writeIntMinimal(PREFIX_TYPE_INT_POS, (int) l);
-                    return;
+                    return this;
                 }
             } else if (l >= -0x100000000L) {
                 _writeIntMinimal(PREFIX_TYPE_INT_NEG, (int) (-l - 1));
-                return;
+                return this;
             }
         }
         _ensureRoomForOutput(9);
@@ -966,16 +982,17 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
+        return this;
     }
 
     @Override
-    public void writeNumber(BigInteger v) throws JacksonException {
+    public JsonGenerator writeNumber(BigInteger v) throws JacksonException {
         if (v == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         _verifyValueWrite("write number");
         _write(v);
+        return this;
     }
 
     // Main write method isolated so that it can be called directly
@@ -999,7 +1016,7 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void writeNumber(double d) throws JacksonException {
+    public JsonGenerator writeNumber(double d) throws JacksonException {
         _verifyValueWrite("write number");
         _ensureRoomForOutput(11);
         /*
@@ -1021,10 +1038,11 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
+        return this;
     }
 
     @Override
-    public void writeNumber(float f) throws JacksonException {
+    public JsonGenerator writeNumber(float f) throws JacksonException {
         // Ok, now, we needed token type byte plus 5 data bytes (7 bits each)
         _ensureRoomForOutput(6);
         _verifyValueWrite("write number");
@@ -1041,13 +1059,13 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
+        return this;
     }
 
     @Override
-    public void writeNumber(BigDecimal dec) throws JacksonException {
+    public JsonGenerator writeNumber(BigDecimal dec) throws JacksonException {
         if (dec == null) {
-            writeNull();
-            return;
+            return writeNull();
         }
         _verifyValueWrite("write number");
         /* Supported by using type tags, as per spec: major type for tag '6'; 5
@@ -1073,15 +1091,16 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _write(unscaled);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(String encodedValue) throws JacksonException
+    public JsonGenerator writeNumber(String encodedValue) throws JacksonException
     {
         // just write as a String -- CBOR does not require schema, so
         // databinding
         // on receiving end should be able to coerce it appropriately
-        writeString(encodedValue);
+        return writeString(encodedValue);
     }
 
     /*
@@ -1182,12 +1201,13 @@ public class CBORGenerator extends GeneratorBase
      * 
      * @param tagId Positive integer (0 or higher)
      */
-    public void writeTag(int tagId) throws JacksonException {
+    public JsonGenerator writeTag(int tagId) throws JacksonException {
         if (tagId < 0) {
             throw new IllegalArgumentException(
                     "Can not write negative tag ids (" + tagId + ")");
         }
         _writeLengthMarker(PREFIX_TYPE_TAG, tagId);
+        return this;
     }
 
     /*
@@ -1202,8 +1222,9 @@ public class CBORGenerator extends GeneratorBase
      * <p>
      * NOTE: only use this method if you really know what you are doing.
      */
-    public void writeRaw(byte b) throws JacksonException {
+    public JsonGenerator writeRaw(byte b) throws JacksonException {
         _writeByte(b);
+        return this;
     }
 
     /**
@@ -1212,8 +1233,9 @@ public class CBORGenerator extends GeneratorBase
      * <p>
      * NOTE: only use this method if you really know what you are doing.
      */
-    public void writeBytes(byte[] data, int offset, int len) throws JacksonException {
+    public JsonGenerator writeBytes(byte[] data, int offset, int len) throws JacksonException {
         _writeBytes(data, offset, len);
+        return this;
     }
 
     /*

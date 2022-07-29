@@ -269,82 +269,86 @@ public class IonGenerator
      */
 
     @Override
-    public void writeNumber(short v) throws JacksonException {
-        writeNumber((int) v);
+    public JsonGenerator writeNumber(short v) throws JacksonException {
+        return writeNumber((int) v);
     }
 
     @Override
-    public void writeNumber(int value) throws JacksonException {
+    public JsonGenerator writeNumber(int value) throws JacksonException {
         _verifyValueWrite("write numeric value");
         try {
             _writer.writeInt((long)value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(long value) throws JacksonException {
+    public JsonGenerator writeNumber(long value) throws JacksonException {
         _verifyValueWrite("write numeric value");
         try {
             _writer.writeInt(value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(BigInteger value) throws JacksonException {
+    public JsonGenerator writeNumber(BigInteger value) throws JacksonException {
         if (value == null) {
-            writeNull();
-        } else {
-            _verifyValueWrite("write numeric value");
-            try {
-                _writer.writeInt(value);
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
-            }
+            return writeNull();
         }
+        _verifyValueWrite("write numeric value");
+        try {
+            _writer.writeInt(value);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
+        return this;
     }
 
     @Override
-    public void writeNumber(double value) throws JacksonException {
+    public JsonGenerator writeNumber(double value) throws JacksonException {
         _verifyValueWrite("write numeric value");
         try {
             _writer.writeFloat(value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(float value) throws JacksonException {
+    public JsonGenerator writeNumber(float value) throws JacksonException {
         _verifyValueWrite("write numeric value");
         try {
             _writer.writeFloat((double) value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNumber(BigDecimal value) throws JacksonException {
+    public JsonGenerator writeNumber(BigDecimal value) throws JacksonException {
         if (value == null) {
-            writeNull();
-        } else {
-            _verifyValueWrite("write numeric value");
-            try {
-                _writer.writeDecimal(value);
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
-            }
+            return writeNull();
         }
+        _verifyValueWrite("write numeric value");
+        try {
+            _writer.writeDecimal(value);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        }
+        return this;
     }
 
     @Override
-    public void writeNumber(String value) throws JacksonException {
+    public JsonGenerator writeNumber(String value) throws JacksonException {
         // will lose its identity... fine
-        writeString(value);
+        return writeString(value);
     }
 
     /*
@@ -353,13 +357,14 @@ public class IonGenerator
     /**********************************************************************
      */
 
-    public void writeSymbol(String value) throws JacksonException {
+    public JsonGenerator writeSymbol(String value) throws JacksonException {
         _verifyValueWrite("write symbol value");
         try {
             _writer.writeSymbol(value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /**
@@ -370,21 +375,23 @@ public class IonGenerator
      * 
      * @see tools.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer
      */
-    public void annotateNextValue(String annotation) {
+    public JsonGenerator annotateNextValue(String annotation) {
         // We're not calling _verifyValueWrite because this doesn't actually write anything -- writing happens upon
         // the next _writer.write*() or stepIn().
         _writer.addTypeAnnotation(annotation);
+        return this;
     }
 
     // // // Ion Extensions
 
-    public void writeDate(Calendar value) throws JacksonException {
+    public JsonGenerator writeDate(Calendar value) throws JacksonException {
         _verifyValueWrite("write date value");
         try {
             _writer.writeTimestamp(Timestamp.forCalendar(value));
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /*
@@ -394,25 +401,26 @@ public class IonGenerator
      */
 
     @Override
-    public void writeString(String value) throws JacksonException {
+    public JsonGenerator writeString(String value) throws JacksonException {
         _verifyValueWrite("write text value");
         try {
             _writer.writeString(value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeString(char[] buffer, int offset, int length) throws JacksonException {
+    public JsonGenerator writeString(char[] buffer, int offset, int length) throws JacksonException {
         // Ion doesn't have matching optimized method, so:
-        writeString(new String(buffer, offset, length));
+        return writeString(new String(buffer, offset, length));
     }
 
     @Override
-    public void writeUTF8String(byte[] buffer, int offset, int length) throws JacksonException {
+    public JsonGenerator writeUTF8String(byte[] buffer, int offset, int length) throws JacksonException {
         // Ion doesn't have matching optimized method, so:
-        writeString(new String(buffer, offset, length, StandardCharsets.UTF_8));
+        return writeString(new String(buffer, offset, length, StandardCharsets.UTF_8));
     }
 
     /*
@@ -422,43 +430,43 @@ public class IonGenerator
      */
 
     @Override
-    public void writeRaw(String value) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRaw(String value) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRaw(char value) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRaw(char value) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRaw(String value, int arg1, int arg2) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRaw(String value, int arg1, int arg2) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRaw(char[] value, int arg1, int arg2) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRaw(char[] value, int arg1, int arg2) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRawValue(String value) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRawValue(String value) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRawValue(String value, int arg1, int arg2) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRawValue(String value, int arg1, int arg2) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRawValue(char[] value, int arg1, int arg2) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRawValue(char[] value, int arg1, int arg2) throws JacksonException {
+        return _reportNoRaw();
     }
 
     @Override
-    public void writeRawUTF8String(byte[] text, int offset, int length) throws JacksonException {
-        _reportNoRaw();
+    public JsonGenerator writeRawUTF8String(byte[] text, int offset, int length) throws JacksonException {
+        return _reportNoRaw();
     }
 
     /*
@@ -468,7 +476,7 @@ public class IonGenerator
       */
 
     @Override
-    public void writeBinary(Base64Variant b64v, byte[] data, int offset, int length) throws JacksonException {
+    public JsonGenerator writeBinary(Base64Variant b64v, byte[] data, int offset, int length) throws JacksonException {
         _verifyValueWrite("write binary data");
         // no distinct variants for Ion; should produce plain binary
         try {
@@ -476,41 +484,45 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeBoolean(boolean value) throws JacksonException {
+    public JsonGenerator writeBoolean(boolean value) throws JacksonException {
         _verifyValueWrite("write boolean");
         try {
             _writer.writeBool(value);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeNull() throws JacksonException {
+    public JsonGenerator writeNull() throws JacksonException {
         _verifyValueWrite("write null");
         try {
             _writer.writeNull();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
-    public void writeNull(IonType ionType) throws JacksonException {
+    public JsonGenerator writeNull(IonType ionType) throws JacksonException {
         _verifyValueWrite("write null");
         try {
             _writer.writeNull(ionType);
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     // 06-Oct-2017, tatu: Base impl from `GeneratorBase` should be sufficient
     /*
     @Override
-    public void writeObject(Object pojo) throws JacksonException
+    public JsonGenerator writeObject(Object pojo) throws JacksonException
     {
         if (pojo == null) {
             // important: call method that does check value write:
@@ -522,10 +534,11 @@ public class IonGenerator
             }
             _objectCodec.writeValue(this, pojo);
         }
+        return this;
     }
     */
 
-    public void writeValue(IonValue value) throws JacksonException {
+    public JsonGenerator writeValue(IonValue value) throws JacksonException {
         _verifyValueWrite("write ion value");
         if (value == null) {
             try {
@@ -536,9 +549,10 @@ public class IonGenerator
         } else {
             value.writeTo(_writer);
         }
+        return this;
     }
 
-    public void writeValue(Timestamp value) throws JacksonException {
+    public JsonGenerator writeValue(Timestamp value) throws JacksonException {
         _verifyValueWrite("write timestamp");
         try {
             if (value == null) {
@@ -549,6 +563,7 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /*
@@ -608,52 +623,55 @@ public class IonGenerator
     }
 
     @Override
-    public void writeEndArray() throws JacksonException {
+    public JsonGenerator writeEndArray() throws JacksonException {
         _streamWriteContext = _streamWriteContext.getParent();
         try {
             _writer.stepOut();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeEndObject() throws JacksonException {
+    public JsonGenerator writeEndObject() throws JacksonException {
         _streamWriteContext = _streamWriteContext.getParent();
         try {
             _writer.stepOut();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /**
      * @since 2.12.2
      */
-    public void writeEndSexp() throws JacksonException {
+    public JsonGenerator writeEndSexp() throws JacksonException {
         _streamWriteContext = _streamWriteContext.getParent();
         try {
             _writer.stepOut();
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeName(String value) throws JacksonException {
+    public JsonGenerator writeName(String value) throws JacksonException {
         //This call to _outputContext is copied from Jackson's UTF8JsonGenerator.writeName(String)
         if (!_streamWriteContext.writeName(value)) {
             throw _constructWriteException("Can not write a property name, expecting a value");
         }
-
         _writeName(value);
+        return this;
     }
 
     @Override
-    public void writePropertyId(long id) throws JacksonException {
+    public JsonGenerator writePropertyId(long id) throws JacksonException {
         // Should not force construction of a String here...
         String idStr = Long.valueOf(id).toString(); // since instances for small values cached
-        writeName(idStr);
+        return writeName(idStr);
     }
 
     protected void _writeName(String value) throws JacksonException {
@@ -663,7 +681,7 @@ public class IonGenerator
     }
 
     @Override
-    public void writeStartArray() throws JacksonException {
+    public JsonGenerator writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
         try {
@@ -671,10 +689,11 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeStartArray(Object currValue) throws JacksonException {
+    public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
         try {
@@ -682,10 +701,11 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeStartObject() throws JacksonException {
+    public JsonGenerator writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
         try {
@@ -693,10 +713,11 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     @Override
-    public void writeStartObject(Object currValue) throws JacksonException {
+    public JsonGenerator writeStartObject(Object currValue) throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(currValue);
         try {
@@ -704,12 +725,13 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
+        return this;
     }
 
     /**
      * @since 2.12.2
      */
-    public void writeStartSexp() throws JacksonException {
+    public JsonGenerator writeStartSexp() throws JacksonException {
         _verifyValueWrite("start a sexp");
         _streamWriteContext = _streamWriteContext.createChildSexpContext(null);
         try {
@@ -717,7 +739,8 @@ public class IonGenerator
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
-    }
+        return this;
+   }
 
     /*
     /**********************************************************************
@@ -726,7 +749,7 @@ public class IonGenerator
      */
 
     @Override
-    public void writeTypeId(Object rawId) throws JacksonException {
+    public JsonGenerator writeTypeId(Object rawId) throws JacksonException {
         if (rawId instanceof String[]) {
             String[] ids = (String[]) rawId;
             for (String id : ids) {
@@ -735,6 +758,7 @@ public class IonGenerator
         } else {
             annotateNextValue(String.valueOf(rawId));
         }
+        return this;
     }
 
     // Default impl should work fine here:
@@ -760,7 +784,7 @@ public class IonGenerator
     /**********************************************************************
      */
 
-    protected void _reportNoRaw() throws JacksonException {
+    protected <T> T _reportNoRaw() throws JacksonException {
         throw _constructWriteException("writeRaw() functionality not available with Ion backend");
     }
 }
