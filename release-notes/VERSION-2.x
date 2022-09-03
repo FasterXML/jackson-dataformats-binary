@@ -29,6 +29,10 @@ Active maintainers:
   always resource-managed
  (contributed by Tyler G)
 
+2.13.4 (03-Sep-2022)
+
+No changes since 2.13.3
+
 2.13.3 (14-May-2022)
 
 #317: (ion) IonValueDeserializer does not handle getNullValue correctly for a missing property
