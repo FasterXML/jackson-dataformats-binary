@@ -15,6 +15,10 @@ Modules:
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
 
+2.13.4 (03-Sep-2022)
+
+No changes since 2.13.3
+
 2.13.3 (14-May-2022)
 
 #317: (ion) IonValueDeserializer does not handle getNullValue correctly for a missing property
