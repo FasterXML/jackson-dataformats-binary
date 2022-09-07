@@ -622,8 +622,13 @@ public class CBORGenerator extends GeneratorBase
     }
 
     public final void writeStartObject(int elementsToWrite) throws IOException {
+        writeStartObject(null, elementsToWrite);
+    }
+
+    @Override
+    public void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
-        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);
