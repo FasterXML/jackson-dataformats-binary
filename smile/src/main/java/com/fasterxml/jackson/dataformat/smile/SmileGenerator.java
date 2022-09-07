@@ -682,7 +682,15 @@ public class SmileGenerator
         _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
-    
+
+    @Override // since 2.14
+    public void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
+        _verifyValueWrite("start an object");
+        SmileWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        _streamWriteContext = ctxt;
+        _writeByte(TOKEN_LITERAL_START_OBJECT);
+    }
+
     @Override
     public final void writeEndObject() throws IOException
     {
