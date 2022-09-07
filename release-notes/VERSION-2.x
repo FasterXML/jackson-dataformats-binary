@@ -28,6 +28,8 @@ Active maintainers:
 #325: (ion) Ensure `IonReader` instances created within `IonFactory` are
   always resource-managed
  (contributed by Tyler G)
+#338: Use passed "current value" in `writeStartObject()` overload
+ (contributed by Szymon S)
 
 2.13.4 (03-Sep-2022)
 

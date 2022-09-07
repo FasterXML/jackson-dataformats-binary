@@ -246,3 +246,6 @@ Matthew Pope (popematt@github)
   invalid Ion
  (2.14.0)
 
+Szymon Sasin (szysas@github)
+#338: (cbor) Use passed "current value" in `writeStartObject()` overload
+ (2.14.0)
