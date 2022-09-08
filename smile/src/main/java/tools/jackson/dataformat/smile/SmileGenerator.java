@@ -649,14 +649,6 @@ public class SmileGenerator
         return this;
     }
 
-    @Override // since 2.14
-    public void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
-        _verifyValueWrite("start an object");
-        SmileWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
-        _streamWriteContext = ctxt;
-        _writeByte(TOKEN_LITERAL_START_OBJECT);
-    }
-
     @Override
     public JsonGenerator writeStartObject(Object forValue, int size) throws JacksonException
     {

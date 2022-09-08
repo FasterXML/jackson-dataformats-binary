@@ -284,22 +284,25 @@ public class AnySetterTest extends BaseTestForSmile
         assertEquals("xyz", ((Impl) ob).value);
     }
     
-	public void testJsonAnySetterOnMap() throws Exception {
-		JsonAnySetterOnMap result = MAPPER.readValue(_smileDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
-		        JsonAnySetterOnMap.class);
-		assertEquals(2, result.id);
-		assertEquals("Joe", result.other.get("name"));
-		assertEquals("New Jersey", result.other.get("city"));
-	}
-
-	public void testJsonAnySetterOnNullMap() throws Exception {
-		JsonAnySetterOnNullMap result = MAPPER.readValue(_smileDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
-		        JsonAnySetterOnNullMap.class);
-		assertEquals(2, result.id);
-		assertNull(result.other);
+    public void testJsonAnySetterOnMap() throws Exception {
+        JsonAnySetterOnMap result = MAPPER.readValue(_smileDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
+                JsonAnySetterOnMap.class);
+        assertEquals(2, result.id);
+        assertEquals("Joe", result.other.get("name"));
+        assertEquals("New Jersey", result.other.get("city"));
     }
 
-    // [databind#1035]
+    public void testJsonAnySetterOnNullMap() throws Exception {
+        JsonAnySetterOnNullMap result = MAPPER.readValue(_smileDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
+                JsonAnySetterOnNullMap.class);
+        assertEquals(2, result.id);
+        // 01-Aug-2022, tatu: As per [databind#3559] should "just work"...
+        assertNotNull(result.other);
+        assertEquals("Joe", result.other.get("name"));
+        assertEquals("New Jersey", result.other.get("city"));
+    }
+
+	// [databind#1035]
     public void testGenericAnySetter() throws Exception
     {
         ObjectMapper mapper = smileMapper();
