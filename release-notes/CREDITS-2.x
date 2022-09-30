@@ -247,5 +247,11 @@ Matthew Pope (popematt@github)
  (2.14.0)
 
 Szymon Sasin (szysas@github)
+
 #338: (cbor) Use passed "current value" in `writeStartObject()` overload
+ (2.14.0)
+
+Dominik Broj (thetric@github)
+
+#341: (ion) Update to Amazon Ion 1.9.5
  (2.14.0)

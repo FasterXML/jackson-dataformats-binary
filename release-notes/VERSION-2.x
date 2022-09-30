@@ -13,6 +13,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.14.0 (unreleased)
+
+#341: (ion) Update to Amazon Ion 1.9.5
+ (suggested by Dominic B)
+
 2.14.0-rc1 (25-Sep-2022)
 
 #301: (cbor, smile) Missing configuration methods for format-specific
