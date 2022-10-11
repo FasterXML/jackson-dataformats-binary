@@ -13,7 +13,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.14.0 (unreleased)
+2.14.0-rc2 (10-Oct-2022)
 
 #341: (ion) Update to Amazon Ion 1.9.5
  (suggested by Dominic B)
