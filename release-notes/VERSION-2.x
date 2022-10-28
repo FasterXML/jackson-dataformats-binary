@@ -13,12 +13,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.14.0-rc2 (10-Oct-2022)
-
-#341: (ion) Update to Amazon Ion 1.9.5
- (suggested by Dominic B)
-
-2.14.0-rc1 (25-Sep-2022)
+2.14.0-rc3 (28-Oct-2022)
 
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
@@ -35,6 +30,8 @@ Active maintainers:
  (contributed by Tyler G)
 #338: Use passed "current value" in `writeStartObject()` overload
  (contributed by Szymon S)
+#341: (ion) Update to Amazon Ion 1.9.5
+ (suggested by Dominic B)
 
 2.13.4 (03-Sep-2022)
 
