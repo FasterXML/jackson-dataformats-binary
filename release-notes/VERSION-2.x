@@ -13,7 +13,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.14.0-rc3 (28-Oct-2022)
+2.14.0 (05-Nov-2022)
 
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
