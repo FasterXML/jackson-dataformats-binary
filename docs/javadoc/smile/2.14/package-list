@@ -1,0 +1,3 @@
+com.fasterxml.jackson.dataformat.smile
+com.fasterxml.jackson.dataformat.smile.async
+com.fasterxml.jackson.dataformat.smile.databind
