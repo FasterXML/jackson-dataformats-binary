@@ -61,6 +61,8 @@ public class SmileParser extends SmileParserBase
      * Flag to indicate if the JDK version is 11 or later. This can be used in some methods
      * to choose more optimal behavior. In particular, jdk9+ have different internals for
      * the String class.
+     *
+     * @since 2.14.1
      */
     private static final boolean JDK11_OR_LATER;
     static {
@@ -1571,26 +1573,6 @@ versionBits));
             final byte[] inBuf = _inputBuffer;
             int inPtr = _inputPtr;
 
-            // 29-Mar-2021, tatu: Still true with Java 8 / Jackson 2.13: unrolling
-            //   does NOT appear to help here (no change, for jvm-benchmarks test,
-            //   probably since most of the time symbol table lookup is used
-            /*
-            for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            }
-            switch (len & 3) {
-            case 3:
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            case 2:
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            case 1:
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            case 0:
-            }
-            */
             for (int inEnd = inPtr + len; inPtr < inEnd; ++inPtr) {
                 outBuf[outPtr++] = (char) inBuf[inPtr];
             }
@@ -2442,25 +2424,6 @@ currentToken(), firstCh);
             int outPtr = 0;
             final byte[] inBuf = _inputBuffer;
             int inPtr = _inputPtr;
-
-            // 29-Mar-2021, tatu: Still true with Java 8 / Jackson 2.13: unrolling
-            //   does NOT appear to help here -- slows things down by 5% (for one test)
-            /*
-            for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            }
-            switch (len & 3) {
-            case 3:
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            case 2:
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            case 1:
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-            case 0:
-            }*/
 
             for (final int end = inPtr + len; inPtr < end; ++inPtr) {
                 outBuf[outPtr++] = (char) inBuf[inPtr];

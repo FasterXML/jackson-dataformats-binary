@@ -255,3 +255,8 @@ Dominik Broj (thetric@github)
 
 #341: (ion) Update to Amazon Ion 1.9.5
  (2.14.0)
+
+Brian Harrington (brharrington@github)
+
+* Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
+ (2.14.1)

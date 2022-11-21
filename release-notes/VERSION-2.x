@@ -13,6 +13,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.14.1 (not yet released)
+
+#342: (smile) Possible performance improvement on jdk9+ for Smile decoding
+ (contributed by Brian H)
+
 2.14.0 (05-Nov-2022)
 
 #301: (cbor, smile) Missing configuration methods for format-specific
