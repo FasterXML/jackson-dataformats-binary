@@ -14,7 +14,7 @@
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
   <name>Jackson dataformat: Ion</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Support for reading and writing Ion ("binary JSON")
 encoded data using Jackson abstractions (streaming API, data binding,
 tree model)

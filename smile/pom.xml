@@ -13,7 +13,7 @@
   </parent>
   <artifactId>jackson-dataformat-smile</artifactId>
   <name>Jackson dataformat: Smile</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Support for reading and writing Smile ("binary JSON")
 encoded data using Jackson abstractions (streaming API, data binding,
 tree model)

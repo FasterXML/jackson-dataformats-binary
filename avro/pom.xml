@@ -13,7 +13,7 @@
   </parent>
   <artifactId>jackson-dataformat-avro</artifactId>
   <name>Jackson dataformat: Avro</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Support for reading and writing AVRO-encoded data via Jackson
 abstractions.
   </description>
