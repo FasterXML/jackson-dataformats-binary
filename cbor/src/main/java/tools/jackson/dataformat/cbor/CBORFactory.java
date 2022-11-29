@@ -84,7 +84,8 @@ public class CBORFactory
      * factory instance.
      */
     public CBORFactory() {
-        super(DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
+        super(StreamReadConstraints.defaults(),
+                DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
                 DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 

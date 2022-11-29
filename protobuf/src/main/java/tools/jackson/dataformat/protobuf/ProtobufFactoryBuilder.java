@@ -1,9 +1,10 @@
 package tools.jackson.dataformat.protobuf;
 
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 
 /**
- * {@link tools.jackson.core.TokenStreamFactory.TSFBuilder}
+ * {@link tools.jackson.core.TSFBuilder}
  * implementation for constructing {@link ProtobufFactory}
  * instances.
  *
@@ -12,7 +13,7 @@ import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 public class ProtobufFactoryBuilder extends DecorableTSFBuilder<ProtobufFactory, ProtobufFactoryBuilder>
 {
     public ProtobufFactoryBuilder() {
-        super(0, 0);
+        super(StreamReadConstraints.defaults(), 0, 0);
     }
 
     public ProtobufFactoryBuilder(ProtobufFactory base) {

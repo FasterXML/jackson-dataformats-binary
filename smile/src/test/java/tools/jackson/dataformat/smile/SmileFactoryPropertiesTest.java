@@ -134,8 +134,9 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     public void testGeneratorConstruction() throws Exception
     {
         SmileFactory f = new SmileFactory();
-        IOContext ctxt = new IOContext(f._getBufferRecycler(),
-                ContentReference.rawReference("doc"), false);
+        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
+                f._getBufferRecycler(),
+                ContentReference.rawReference("doc"), false, null);
         OutputStream bytes = new ByteArrayOutputStream();
         byte[] buf = new byte[1000];
         SmileGenerator g = new SmileGenerator(ObjectWriteContext.empty(), ctxt,

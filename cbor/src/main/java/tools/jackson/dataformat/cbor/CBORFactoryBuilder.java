@@ -1,9 +1,10 @@
 package tools.jackson.dataformat.cbor;
 
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 
 /**
- * {@link tools.jackson.core.TokenStreamFactory.TSFBuilder}
+ * {@link tools.jackson.core.TSFBuilder}
  * implementation for constructing {@link CBORFactory}
  * instances.
  *
@@ -18,7 +19,8 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
      */
 
     protected CBORFactoryBuilder() {
-        super(CBORFactory.DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
+        super(StreamReadConstraints.defaults(),
+                CBORFactory.DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
                 CBORFactory.DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 

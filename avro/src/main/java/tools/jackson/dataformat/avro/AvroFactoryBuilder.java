@@ -1,11 +1,12 @@
 package tools.jackson.dataformat.avro;
 
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteFeature;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
 import tools.jackson.dataformat.avro.AvroFactoryBuilder;
 
 /**
- * {@link tools.jackson.core.TokenStreamFactory.TSFBuilder}
+ * {@link tools.jackson.core.TSFBuilder}
  * implementation for constructing {@link AvroFactory}
  * instances.
  *<p>
@@ -41,7 +42,8 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
     }
 
     protected AvroFactoryBuilder(boolean useApacheDecoder) {
-        super(AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS,
+        super(StreamReadConstraints.defaults(),
+                AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS,
                 AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS);
         _useApacheLibDecoder = useApacheDecoder;
 

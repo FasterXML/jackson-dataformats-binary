@@ -5,6 +5,7 @@ import java.util.*;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.ObjectWriteContext;
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.io.ContentReference;
 import tools.jackson.core.util.BufferRecycler;
@@ -35,8 +36,9 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     @SuppressWarnings("unchecked")
     public void testDeeplyNestedWithAltConstructor() throws Exception
     {
-        IOContext ctxt = new IOContext(new BufferRecycler(),
-                ContentReference.rawReference("doc"), true);
+        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
+                new BufferRecycler(),
+                ContentReference.rawReference("doc"), true, null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = new CBORGenerator(ObjectWriteContext.empty(),
                 ctxt, 0, 0,
