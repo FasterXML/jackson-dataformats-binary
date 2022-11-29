@@ -13,7 +13,7 @@
   </parent>
   <artifactId>jackson-dataformat-protobuf</artifactId>
   <name>Jackson dataformat: Protobuf</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Support for reading and writing protobuf-encoded data via Jackson
 abstractions.
   </description>

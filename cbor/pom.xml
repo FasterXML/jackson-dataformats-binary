@@ -13,7 +13,7 @@
   </parent>
   <artifactId>jackson-dataformat-cbor</artifactId>
   <name>Jackson dataformat: CBOR</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Support for reading and writing Concise Binary Object Representation
 ([CBOR](https://www.rfc-editor.org/info/rfc7049)
 encoded data using Jackson abstractions (streaming API, data binding, tree model)
