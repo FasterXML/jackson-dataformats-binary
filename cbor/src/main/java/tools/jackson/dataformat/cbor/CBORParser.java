@@ -2125,7 +2125,8 @@ public class CBORParser extends ParserBase
         if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
-            _numberBigDecimal = NumberInput.parseBigDecimal(getText());
+            _numberBigDecimal = NumberInput.parseBigDecimal(
+                    getText(), isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberBigDecimal = new BigDecimal(_numberBigInt);
         } else if ((_numTypesValid & NR_LONG) != 0) {
