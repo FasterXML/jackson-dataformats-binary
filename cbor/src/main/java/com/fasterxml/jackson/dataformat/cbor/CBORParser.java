@@ -2140,7 +2140,8 @@ public class CBORParser extends ParserMinimalBase
         if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
-            _numberBigDecimal = NumberInput.parseBigDecimal(getText());
+            _numberBigDecimal = NumberInput.parseBigDecimal(
+                    getText(), isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberBigDecimal = new BigDecimal(_numberBigInt);
         } else if ((_numTypesValid & NR_LONG) != 0) {
@@ -3582,7 +3583,7 @@ expType, type, ch));
 
     protected void _closeInput() throws IOException {
         if (_inputStream != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE)) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
                 _inputStream.close();
             }
             _inputStream = null;
