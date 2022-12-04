@@ -293,7 +293,7 @@ public class ProtobufParser extends ParserMinimalBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(readCtxt, parserFeatures);
+        super(readCtxt, ioCtxt, parserFeatures);
         _ioContext = ioCtxt;
 
         _inputStream = in;

@@ -240,7 +240,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             int parserFeatures, int formatFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(readCtxt, parserFeatures);
+        super(readCtxt, ioCtxt, parserFeatures);
         _formatFeatures = formatFeatures;
         _ioContext = ioCtxt;
         _symbols = sym;

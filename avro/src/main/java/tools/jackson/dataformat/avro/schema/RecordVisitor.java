@@ -46,7 +46,7 @@ public class RecordVisitor
         _type = type;
         _visitorWrapper = visitorWrapper;
 
-        AvroFactory avroFactory = (AvroFactory) p.getGeneratorFactory();
+        AvroFactory avroFactory = (AvroFactory) p.tokenStreamFactory();
         _cfgAddNullDefaults = avroFactory.isEnabled(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA);
 
         // Check if the schema for this record is overridden

@@ -142,7 +142,7 @@ public class IonParser
             int streamReadFeatures, int formatFeatures,
             IonReader r, IonSystem system)
     {
-        super(readCtxt, streamReadFeatures);
+        super(readCtxt, ioCtxt, streamReadFeatures);
         _reader = r;
         _formatFeatures = formatFeatures;
         _ioContext = ioCtxt;
