@@ -361,4 +361,26 @@ public class ParserNumbersTest extends CBORTestBase
             assertNull(parser.nextToken());
         }
     }
+
+    public void testVeryBigDecimalType() throws IOException {
+        final int len = 1200;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(1);
+        }
+        final BigDecimal NR = new BigDecimal(sb.toString());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator generator = cborGenerator(out);
+        generator.writeNumber(NR);
+        generator.close();
+
+        final byte[] b = out.toByteArray();
+        try (CBORParser parser = cborParser(b)) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, parser.getNumberType());
+            assertEquals(NR, parser.getDecimalValue());
+            assertEquals(NR.doubleValue(), parser.getDoubleValue());
+            assertNull(parser.nextToken());
+        }
+    }
 }

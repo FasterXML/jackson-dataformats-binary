@@ -378,6 +378,30 @@ public class NumberParsingTest
         p.close();
     }
 
+    public void testVeryBigDecimal() throws IOException
+    {
+        final int len = 1200;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(1);
+        }
+        final BigDecimal value = new BigDecimal(sb.toString());
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeNumber(value);
+        g.close();
+        byte[] data = bo.toByteArray();
+        assertEquals(575, data.length);
+
+        try (SmileParser p = _smileParser(data)) {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
+            assertEquals(value, p.getDecimalValue());
+            assertFalse(p.isNaN());
+            assertEquals(value, p.getNumberValue());
+        }
+    }
+
     public void testMixedAccessForInts() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
