@@ -312,6 +312,11 @@ public class ProtobufParser extends ParserMinimalBase
         _tokenInputCol = -1;
     }
 
+    @Override
+    public StreamReadConstraints streamReadConstraints() {
+        return _ioContext.streamReadConstraints();
+    }
+
     public void setSchema(ProtobufSchema schema)
     {
         if (_schema == schema) {

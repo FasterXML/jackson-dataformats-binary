@@ -273,6 +273,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _smileBufferRecycler = _smileBufferRecycler();
     }
 
+    @Override
+    public StreamReadConstraints streamReadConstraints() {
+        return _ioContext.streamReadConstraints();
+    }
+
     protected final static SmileBufferRecycler<String> _smileBufferRecycler()
     {
         SoftReference<SmileBufferRecycler<String>> ref = _smileRecyclerRef.get();

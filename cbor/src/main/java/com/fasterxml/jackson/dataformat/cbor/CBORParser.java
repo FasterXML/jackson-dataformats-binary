@@ -388,6 +388,11 @@ public class CBORParser extends ParserMinimalBase
     }
 
     @Override
+    public StreamReadConstraints streamReadConstraints() {
+        return _ioContext.streamReadConstraints();
+    }
+
+    @Override
     public ObjectCodec getCodec() {
         return _objectCodec;
     }
