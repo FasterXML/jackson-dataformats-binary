@@ -3,7 +3,9 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 /**
  * Bigger test to try to do smoke-testing of overall functionality,
@@ -115,6 +117,35 @@ public class BiggerDataTest extends CBORTestBase
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 		ObjectMapper mapper = cborMapper();
+		byte[] cbor = mapper.writeValueAsBytes(citm0);
+
+		Citm citm = mapper.readValue(cbor, Citm.class);
+
+		byte[] smile1 = mapper.writeValueAsBytes(citm);
+		Citm citm2 = mapper.readValue(smile1, Citm.class);
+		byte[] smile2 = mapper.writeValueAsBytes(citm2);
+
+		assertEquals(smile1.length, smile2.length);
+
+		assertNotNull(citm.areaNames);
+		assertEquals(17, citm.areaNames.size());
+		assertNotNull(citm.events);
+		assertEquals(184, citm.events.size());
+
+		assertEquals(citm.seatCategoryNames.size(), citm2.seatCategoryNames.size());
+		assertEquals(citm.subTopicNames.size(), citm2.subTopicNames.size());
+		assertEquals(citm.subjectNames.size(), citm2.subjectNames.size());
+		assertEquals(citm.topicNames.size(), citm2.topicNames.size());
+		assertEquals(citm.topicSubTopics.size(), citm2.topicSubTopics.size());
+		assertEquals(citm.venueNames.size(), citm2.venueNames.size());
+	}
+
+	public void testRoundTripStringref() throws Exception
+	{
+		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+				Citm.class);
+		ObjectMapper mapper = new CBORMapper(
+		    cborFactoryBuilder().enable(CBORGenerator.Feature.STRINGREF).build());
 		byte[] cbor = mapper.writeValueAsBytes(citm0);
 
 		Citm citm = mapper.readValue(cbor, Citm.class);

@@ -47,6 +47,17 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
         verifyJsonSpecSampleDoc(cborParser(data), false, true);
     }
 
+    public void testJsonSampleDocStringref() throws IOException
+    {
+        byte[] data = cborDoc(
+            cborFactoryBuilder().enable(CBORGenerator.Feature.STRINGREF).build(),
+            SAMPLE_DOC_JSON_SPEC);
+        verifyJsonSpecSampleDoc(cborParser(data), true, true);
+        verifyJsonSpecSampleDoc(cborParser(data), true, false);
+        verifyJsonSpecSampleDoc(cborParser(data), false, false);
+        verifyJsonSpecSampleDoc(cborParser(data), false, true);
+    }
+
     protected void verifyJsonSpecSampleDoc(JsonParser p, boolean verifyContents,
             boolean requireNumbers) throws IOException
     {
