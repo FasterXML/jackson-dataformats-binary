@@ -539,42 +539,6 @@ public class CBORGenerator extends GeneratorBase
 
     /*
     /**********************************************************
-    /* Overridden methods, copying with tag-awareness
-    /**********************************************************
-     */
-
-    /**
-     * Specialize {@link JsonGenerator#copyCurrentEvent} to handle tags.
-     */
-    @Override
-    public void copyCurrentEvent(JsonParser p) throws IOException {
-        maybeCopyTag(p);
-        super.copyCurrentEvent(p);
-    }
-
-    /**
-     * Specialize {@link JsonGenerator#copyCurrentStructure} to handle tags.
-     */
-    @Override
-    public void copyCurrentStructure(JsonParser p) throws IOException {
-        maybeCopyTag(p);
-        super.copyCurrentStructure(p);
-    }
-
-    protected void maybeCopyTag(JsonParser p) throws IOException {
-        if (p instanceof CBORParser) {
-            if (p.hasCurrentToken()) {
-                final int currentTag = ((CBORParser) p).getCurrentTag();
-
-                if (currentTag != -1) {
-                    writeTag(currentTag);
-                }
-            }
-        }
-    }
-
-    /*
-    /**********************************************************
     /* Output method implementations, structural
     /**********************************************************
      */

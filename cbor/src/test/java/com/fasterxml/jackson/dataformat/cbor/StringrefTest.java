@@ -610,14 +610,8 @@ public class StringrefTest extends CBORTestBase
         gen.close();
 
         byte[] encoded = bytes.toByteArray();
-        byte[] nestedTagBytes = new byte[]{
-                (byte) 0xD9, (byte) 0xD9, (byte) 0xF7, (byte) 0xD9, 0x01, 0x00, (byte) 0x9F,
-                (byte) 0xC2, 0x45, 0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xC2, 0x46, 0x00,
-                (byte) 0x98, 0x76, 0x54, 0x32, 0x10, (byte) 0xC2, (byte) 0xD8, 0x19, 0x00,
-                (byte) 0xFF
-        };
 
-        assertArrayEquals(nestedTagBytes, encoded);
+        assertArrayEquals(_nestedTagBytes, encoded);
 
         CBORParser parser = cborParser(encoded);
         assertToken(JsonToken.START_ARRAY, parser.nextToken());
@@ -631,6 +625,35 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(new BigInteger("1234567890", 16), parser.getBigIntegerValue());
         assertToken(JsonToken.END_ARRAY, parser.nextToken());
+    }
+
+    public void testNestedTagsRounddTrip() throws Exception {
+        CBORParser parser = cborParser(_nestedTagBytes);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        CBORGenerator gen = cborGenerator(bytes);
+        parser.nextToken();
+        gen.copyCurrentStructure(parser);
+        gen.close();
+
+        byte[] expectedExpandedBytes = new byte[]{
+                (byte) 0x9F, (byte) 0xC2, 0x45, 0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xC2,
+                0x46, 0x00, (byte) 0x98, 0x76, 0x54, 0x32, 0x10, (byte) 0xC2, 0x45, 0x12, 0x34,
+                0x56, 0x78, (byte) 0x90, (byte) 0xFF
+        };
+        byte[] encoded = bytes.toByteArray();
+        assertArrayEquals(expectedExpandedBytes, encoded);
+
+        bytes.reset();
+        parser = cborParser(encoded);
+        gen = new CBORFactory()
+                .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
+                .enable(CBORGenerator.Feature.STRINGREF)
+                .createGenerator(bytes);
+        parser.nextToken();
+        gen.copyCurrentStructure(parser);
+        gen.close();
+
+        assertArrayEquals(_nestedTagBytes, bytes.toByteArray());
     }
 
     private void verifyStringArray(byte[] encoded) throws IOException {
@@ -782,5 +805,12 @@ public class StringrefTest extends CBORTestBase
             0x43, 0x70, 0x70, 0x70, 0x43, 0x71, 0x71, 0x71, 0x43, 0x72, 0x72, 0x72, (byte) 0xD8,
             0x19, 0x01, 0x44, 0x73, 0x73, 0x73, 0x73, (byte) 0xD8, 0x19, 0x17, 0x43, 0x72, 0x72,
             0x72, (byte) 0xD8, 0x19, 0x18, 0x18, (byte) 0xFF
+    };
+
+    private static final byte[] _nestedTagBytes = new byte[]{
+            (byte) 0xD9, (byte) 0xD9, (byte) 0xF7, (byte) 0xD9, 0x01, 0x00, (byte) 0x9F,
+            (byte) 0xC2, 0x45, 0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xC2, 0x46, 0x00,
+            (byte) 0x98, 0x76, 0x54, 0x32, 0x10, (byte) 0xC2, (byte) 0xD8, 0x19, 0x00,
+            (byte) 0xFF
     };
 }
