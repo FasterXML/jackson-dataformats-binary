@@ -888,6 +888,7 @@ public class CBORParser extends ParserMinimalBase
         if (_binaryValue.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
+            _ioContext.streamReadConstraints().validateIntegerLength(_binaryValue.length);
             BigInteger nr = new BigInteger(_binaryValue);
             if (neg) {
                 nr = nr.negate();
