@@ -2565,11 +2565,12 @@ _typeAsInt);
     
     private final void _finishBigInteger() throws JacksonException
     {
-        byte[] raw = _read7BitBinaryWithLength();
+        final byte[] raw = _read7BitBinaryWithLength();
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
+            streamReadConstraints().validateIntegerLength(raw.length);
             _numberBigInt = new BigInteger(raw);
         }
         _numTypesValid = NR_BIGINT;
@@ -2611,12 +2612,13 @@ _typeAsInt);
 	
     private final void _finishBigDecimal() throws JacksonException
     {
-        int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
-        byte[] raw = _read7BitBinaryWithLength();
+        final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
+        final byte[] raw = _read7BitBinaryWithLength();
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
             _numberBigDecimal = BigDecimal.ZERO;
         } else {
+            streamReadConstraints().validateFPLength(raw.length);
             BigInteger unscaledValue = new BigInteger(raw);
             _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }

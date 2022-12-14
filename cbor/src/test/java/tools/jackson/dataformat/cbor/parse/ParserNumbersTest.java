@@ -346,4 +346,51 @@ public class ParserNumbersTest extends CBORTestBase
             assertNull(parser.nextToken());
         }
     }
+
+    public void testVeryBigDecimalType() throws IOException {
+        final int len = 10000;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(1);
+        }
+        final BigDecimal NR = new BigDecimal(sb.toString());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator generator = cborGenerator(out);
+        generator.writeNumber(NR);
+        generator.close();
+
+        final byte[] b = out.toByteArray();
+        try (CBORParser parser = cborParser(b)) {
+            try {
+                parser.nextToken();
+                fail("expected NumberFormatException");
+            } catch (NumberFormatException nfe) {
+                assertEquals("Number length (4153) exceeds the maximum length (1000)", nfe.getMessage());
+            }
+        }
+    }
+
+    public void testVeryBigDecimalWithUnlimitedNumLength() throws IOException {
+        final int len = 10000;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(1);
+        }
+        final BigDecimal NR = new BigDecimal(sb.toString());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator generator = cborGenerator(out);
+        generator.writeNumber(NR);
+        generator.close();
+
+        final byte[] b = out.toByteArray();
+        CBORFactoryBuilder f = cborFactoryBuilder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxNumberLength(Integer.MAX_VALUE).build());
+        try (CBORParser parser = cborParser(f.build(), b)) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, parser.getNumberType());
+            assertEquals(NR, parser.getDecimalValue());
+            assertEquals(NR.doubleValue(), parser.getDoubleValue());
+            assertNull(parser.nextToken());
+        }
+    }
 }

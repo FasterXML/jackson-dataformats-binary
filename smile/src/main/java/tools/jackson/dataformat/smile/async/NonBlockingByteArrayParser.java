@@ -1296,7 +1296,9 @@ public class NonBlockingByteArrayParser
     private final JsonToken _finishBigIntBody() throws JacksonException
     {
         if (_decode7BitEncoded()) { // got it all!
-            _numberBigInt = new BigInteger(_byteArrayBuilder.toByteArray());
+            final byte[] array = _byteArrayBuilder.toByteArray();
+            streamReadConstraints().validateIntegerLength(array.length);
+            _numberBigInt = new BigInteger(array);
             _numberType = NumberType.BIG_INTEGER;
             _numTypesValid = NR_BIGINT;
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
@@ -1442,8 +1444,10 @@ public class NonBlockingByteArrayParser
     {
         if (_decode7BitEncoded()) { // got it all!
             // note: scale value is signed, needs zigzag, so:
-            int scale = SmileUtil.zigzagDecode((int) _pending64);
-            BigInteger bigInt = new BigInteger(_byteArrayBuilder.toByteArray());
+            final int scale = SmileUtil.zigzagDecode((int) _pending64);
+            final byte[] array = _byteArrayBuilder.toByteArray();
+            streamReadConstraints().validateFPLength(array.length);
+            BigInteger bigInt = new BigInteger(array);
             _numberBigDecimal = new BigDecimal(bigInt, scale);
             _numberType = NumberType.BIG_DECIMAL;
             _numTypesValid = NR_BIGDECIMAL;
