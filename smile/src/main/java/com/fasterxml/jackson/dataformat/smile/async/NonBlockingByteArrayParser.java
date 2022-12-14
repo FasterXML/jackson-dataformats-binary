@@ -1291,7 +1291,7 @@ public class NonBlockingByteArrayParser
     {
         if (_decode7BitEncoded()) { // got it all!
             final byte[] array = _byteArrayBuilder.toByteArray();
-            _ioContext.streamReadConstraints().validateIntegerLength(array.length);
+            streamReadConstraints().validateIntegerLength(array.length);
             _numberBigInt = new BigInteger(array);
             _numberType = NumberType.BIG_INTEGER;
             _numTypesValid = NR_BIGINT;
@@ -1440,7 +1440,7 @@ public class NonBlockingByteArrayParser
             // note: scale value is signed, needs zigzag, so:
             final int scale = SmileUtil.zigzagDecode((int) _pending64);
             final byte[] array = _byteArrayBuilder.toByteArray();
-            _ioContext.streamReadConstraints().validateFPLength(array.length);
+            streamReadConstraints().validateFPLength(array.length);
             BigInteger bigInt = new BigInteger(array);
             _numberBigDecimal = new BigDecimal(bigInt, scale);
             _numberType = NumberType.BIG_DECIMAL;

@@ -2250,7 +2250,7 @@ versionBits));
         if (raw.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            _ioContext.streamReadConstraints().validateIntegerLength(raw.length);
+            streamReadConstraints().validateIntegerLength(raw.length);
             _numberBigInt = new BigInteger(raw);
         }
         _numTypesValid = NR_BIGINT;
@@ -2298,7 +2298,7 @@ versionBits));
         if (raw.length == 0) {
             _numberBigDecimal = BigDecimal.ZERO;
         } else {
-            _ioContext.streamReadConstraints().validateFPLength(raw.length);
+            streamReadConstraints().validateFPLength(raw.length);
             BigInteger unscaledValue = new BigInteger(raw);
             _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }
