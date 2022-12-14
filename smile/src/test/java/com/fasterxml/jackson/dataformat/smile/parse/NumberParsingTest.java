@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
@@ -376,6 +377,60 @@ public class NumberParsingTest
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
+    }
+
+    public void testVeryBigDecimal() throws IOException
+    {
+        final int len = 10000;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(1);
+        }
+        final BigDecimal value = new BigDecimal(sb.toString());
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeNumber(value);
+        g.close();
+        byte[] data = bo.toByteArray();
+
+        try (SmileParser p = _smileParser(data)) {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            try {
+                p.getNumberType();
+                fail("expected NumberFormatException");
+            } catch (NumberFormatException nfe) {
+                assertEquals("Number length (4153) exceeds the maximum length (1000)", nfe.getMessage());
+            }
+        }
+    }
+
+    public void testVeryBigDecimalWithUnlimitedNumLength() throws IOException
+    {
+        final int len = 10000;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(1);
+        }
+        final BigDecimal value = new BigDecimal(sb.toString());
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        SmileGenerator g = smileGenerator(bo, false);
+        g.writeNumber(value);
+        g.close();
+        byte[] data = bo.toByteArray();
+
+        SmileFactory f = SmileFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxNumberLength(Integer.MAX_VALUE).build())
+                .configure(SmileParser.Feature.REQUIRE_HEADER, false)
+                .configure(SmileGenerator.Feature.WRITE_HEADER, false)
+                .configure(SmileGenerator.Feature.WRITE_END_MARKER, false)
+                .build();
+        try (SmileParser p = _smileParser(f, data)) {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
+            assertEquals(value, p.getDecimalValue());
+            assertFalse(p.isNaN());
+            assertEquals(value, p.getNumberValue());
+        }
     }
 
     public void testMixedAccessForInts() throws IOException

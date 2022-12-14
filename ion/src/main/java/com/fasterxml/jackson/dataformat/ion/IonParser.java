@@ -172,6 +172,11 @@ public class IonParser
     }
 
     @Override
+    public StreamReadConstraints streamReadConstraints() {
+        return _ioContext.streamReadConstraints();
+    }
+
+    @Override
     public void setCodec(ObjectCodec c) {
         _objectCodec = c;
     }
