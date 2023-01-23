@@ -15,6 +15,7 @@ Modules:
 #301: (cbor, smile) Missing configuration methods for format-specific
   parser/generator features
 
+2.13.5 (23-Jan-2023)
 2.13.4 (03-Sep-2022)
 
 No changes since 2.13.3
