@@ -29,9 +29,9 @@ import tools.jackson.databind.deser.std.StdScalarDeserializer;
  *
  * @param <T>  The type of a instant class that can be deserialized.
  */
-public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScalarDeserializer<T> 
+public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScalarDeserializer<T>
 {
-    public static final IonTimestampInstantDeserializer<Instant> INSTANT = 
+    public static final IonTimestampInstantDeserializer<Instant> INSTANT =
             new IonTimestampInstantDeserializer<>(Instant.class, (instant, zoneID) -> instant);
 
     public static final IonTimestampInstantDeserializer<OffsetDateTime> OFFSET_DATE_TIME =
@@ -53,7 +53,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
         this.adjustToContextTZOverride = null;
     }
 
-    protected IonTimestampInstantDeserializer(IonTimestampInstantDeserializer<T> base, 
+    protected IonTimestampInstantDeserializer(IonTimestampInstantDeserializer<T> base,
             Boolean adjustToContextTZOverride) {
 
         super(base.handledType());
@@ -86,7 +86,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
 
         final JsonFormat.Value format = findFormatOverrides(ctxt, property, handledType());
         if (format != null) {
-            return new IonTimestampInstantDeserializer<T>(this, 
+            return new IonTimestampInstantDeserializer<T>(this,
                     format.getFeature(Feature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE));
         }
         return this;
@@ -111,7 +111,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
     }
 
     private ZoneId getZoneId(Timestamp timestamp, ZoneId defaultZoneId) {
-        if (Boolean.TRUE.equals(adjustToContextTZOverride) 
+        if (Boolean.TRUE.equals(adjustToContextTZOverride)
                 || null == timestamp.getLocalOffset()
                 || Instant.class.equals(_valueClass)) {
 

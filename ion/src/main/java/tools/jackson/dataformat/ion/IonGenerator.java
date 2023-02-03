@@ -96,7 +96,7 @@ public class IonGenerator
     /**********************************************************************
     /* Basic configuration
     /**********************************************************************
-     */  
+     */
 
     /* This is the textual or binary writer */
     protected final IonWriter _writer;
@@ -129,7 +129,7 @@ public class IonGenerator
     /**********************************************************************
     /* State
     /**********************************************************************
-     */  
+     */
 
     /**
      * Object that keeps track of the current contextual state of the generator.
@@ -199,7 +199,7 @@ public class IonGenerator
         //    For now, return underlying Writer/OutputStream
         return _writer;
     }
-    
+
     @Override
     public void close()
     {
@@ -372,7 +372,7 @@ public class IonGenerator
      * {@link IonWriter}s {@code write*()} methods.
      *
      * @param annotation a type annotation
-     * 
+     *
      * @see tools.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer
      */
     public JsonGenerator annotateNextValue(String annotation) {

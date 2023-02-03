@@ -63,7 +63,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
         _createBinaryWriters = true;
         return this;
     }
-    
+
     public IonFactoryBuilder withTextualWriters() {
         _createBinaryWriters = false;
         return this;

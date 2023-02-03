@@ -27,7 +27,7 @@ import tools.jackson.dataformat.ion.IonObjectMapper;
  *
  * Direct serialization to and from IonValue fields is supported. The POJO can declare fields of type IonValue (or a
  * subclass) and the direct value will be provided.
- * 
+ *
  * Enums are serialized as symbols by default.
  *
  * @deprecated Since 3.0: use basic {@link IonObjectMapper} with properly configured {@link IonFactory} and module(s)

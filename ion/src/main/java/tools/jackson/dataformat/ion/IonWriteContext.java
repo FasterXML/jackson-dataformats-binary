@@ -37,7 +37,7 @@ public class IonWriteContext extends TokenStreamContext
 
     // Ion-specific statuses
     public final static int STATUS_OK_AFTER_SEXP_SEPARATOR = 60;
-    
+
     /**
      * Parent context for this context; null for root context.
      */

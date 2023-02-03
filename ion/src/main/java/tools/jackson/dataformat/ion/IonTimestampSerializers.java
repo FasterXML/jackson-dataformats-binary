@@ -47,7 +47,7 @@ public class IonTimestampSerializers {
             }
         }
     }
-    
+
     public static class IonTimestampSQLDateSerializer extends StdScalarSerializer<java.sql.Date>
     {
         public IonTimestampSQLDateSerializer() {

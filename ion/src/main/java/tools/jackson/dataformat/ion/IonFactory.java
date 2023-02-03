@@ -184,7 +184,7 @@ public class IonFactory
     /* Capability introspection
     /**********************************************************************
      */
-    
+
     @Override
     public Version version() {
         return PackageVersion.VERSION;
@@ -302,7 +302,7 @@ public class IonFactory
     }
 
     @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data, int offset, int len) 
+    public JsonParser createParser(ObjectReadContext readCtxt, byte[] data, int offset, int len)
     {
         IOContext ioCtxt = _createContext(_createContentReference(data, offset, len),
                 true);
@@ -336,7 +336,7 @@ public class IonFactory
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, DataInput in) {
         return _unsupported();
-    }        
+    }
 
     /*
     /**********************************************************************

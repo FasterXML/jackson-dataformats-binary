@@ -49,7 +49,7 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
         // We ignore the context information from BeanProperty.
         return this;
     }
-    
+
     @Override
     public As getTypeInclusion() {
         // !!! 10-Jul-2017, tatu: Should vary appropriately, but...

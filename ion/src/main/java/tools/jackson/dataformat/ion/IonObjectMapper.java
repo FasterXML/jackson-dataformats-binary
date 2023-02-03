@@ -41,7 +41,7 @@ import com.amazon.ion.system.IonSystemBuilder;
  * factory to be an instance of {@link IonFactory}.
  */
 public class IonObjectMapper extends ObjectMapper
-{    
+{
     private static final long serialVersionUID = 3L;
 
     /**
@@ -143,11 +143,11 @@ public class IonObjectMapper extends ObjectMapper
             implements java.io.Serializable // important!
         {
             private static final long serialVersionUID = 3L;
-    
+
             public StateImpl(Builder src) {
                 super(src);
             }
-    
+
             // We also need actual instance of state as base class can not implement logic
              // for reinstating mapper (via mapper builder) from state.
             @Override
@@ -253,7 +253,7 @@ public class IonObjectMapper extends ObjectMapper
      */
     public static IonObjectMapper shared() {
         return SharedWrapper.wrapped();
-    }    
+    }
     /*
     /**********************************************************************
     /* Basic accessor overrides
@@ -401,7 +401,7 @@ public class IonObjectMapper extends ObjectMapper
     {
         // 04-Jan-2017, tatu: Bit of incompatiblity wrt 2.x handling: should this result in
         //   Java `null`, or Ion null marker? For now, choose latter
-/*        
+/*
         if (value == null) {
             return null;
         }

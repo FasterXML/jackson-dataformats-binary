@@ -92,7 +92,7 @@ public class IonParser
     /**********************************************************************
     /* Basic configuration
     /**********************************************************************
-     */  
+     */
 
     protected final IonReader _reader;
 
@@ -114,7 +114,7 @@ public class IonParser
     /**********************************************************************
     /* State
     /**********************************************************************
-     */  
+     */
 
     /**
      * Information about context in structure hierarchy
@@ -136,7 +136,7 @@ public class IonParser
     /**********************************************************************
     /* Construction
     /**********************************************************************
-     */  
+     */
 
     public IonParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             int streamReadFeatures, int formatFeatures,

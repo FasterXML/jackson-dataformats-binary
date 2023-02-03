@@ -27,7 +27,7 @@ import com.amazon.ion.IonValue;
 class IonValueSerializer extends StdScalarSerializer<IonValue>
 {
     public IonValueSerializer() {
-        super(IonValue.class);        
+        super(IonValue.class);
     }
 
     @Override

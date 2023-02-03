@@ -69,7 +69,7 @@ public class IonAnnotationTypeResolverBuilder
     {
         return new IonAnnotationTypeResolverBuilder(baseType.getRawClass(), idResolver);
     }
-    
+
     @Override
     public Class<?> getDefaultImpl() {
         return defaultImpl;

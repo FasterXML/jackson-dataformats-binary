@@ -67,7 +67,7 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
 
     // 14-Mar-2018, tatu: Unfortunately not 100% sure how to translate 2.x code to 3.x
     /*
-    
+
     @Override
     public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
             Annotated ac, JavaType baseType, JsonTypeInfo.Value typeInfo)

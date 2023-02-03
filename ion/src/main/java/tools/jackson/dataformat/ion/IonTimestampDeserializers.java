@@ -41,7 +41,7 @@ public class IonTimestampDeserializers {
             return super.deserialize(p, ctxt);
         }
     }
-    
+
     public static class IonTimestampSQLDateDeserializer extends JavaSqlDateDeserializer {
         @Override
         public java.sql.Date deserialize(JsonParser p, DeserializationContext ctxt)
