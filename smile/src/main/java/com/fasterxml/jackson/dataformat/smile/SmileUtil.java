@@ -26,7 +26,7 @@ public class SmileUtil
         return (encoded >>> 1) ^ -1;
         */
     }
-    
+
     public static long zigzagEncode(long input) {
         // Canonical version
         return (input << 1) ^  (input >> 63);

@@ -171,7 +171,7 @@ public final class SmileWriteContext extends JsonStreamContext
                     ((src instanceof JsonGenerator) ? ((JsonGenerator) src) : null));
         }
     }
-    
+
     public boolean writeValue() {
         // Only limitation is with OBJECTs:
         if (_type == TYPE_OBJECT) {

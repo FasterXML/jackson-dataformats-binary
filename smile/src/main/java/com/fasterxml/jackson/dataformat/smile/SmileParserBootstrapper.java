@@ -24,7 +24,7 @@ public class SmileParserBootstrapper
     protected final IOContext _context;
 
     protected final InputStream _in;
-    
+
     /*
     /**********************************************************************
     /* Input buffering
@@ -104,7 +104,7 @@ public class SmileParserBootstrapper
         }
 
         SmileParser p = new SmileParser(_context, generalParserFeatures, smileFeatures,
-                codec, can, 
+                codec, can,
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         boolean hadSig = false;
 
@@ -155,7 +155,7 @@ public class SmileParserBootstrapper
             return MatchStrength.INCONCLUSIVE;
         }
         byte b2 = acc.nextByte();
-        
+
         // First: do we see 3 "magic bytes"? If so, we are golden
         if (b1 == SmileConstants.HEADER_BYTE_1) { // yeah, looks like marker
             if (b2 != SmileConstants.HEADER_BYTE_2) {

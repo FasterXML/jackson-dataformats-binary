@@ -118,7 +118,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * NOTE: before 2.13 was "_parsingContext"
      */
     protected JsonReadContext _streamReadContext;
-    
+
     /*
     /**********************************************************
     /* Decoded values, text, binary
@@ -190,7 +190,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Symbol table that contains field names encountered so far
      */
     protected final ByteQuadsCanonicalizer _symbols;
-    
+
     /**
      * Temporary buffer used for name parsing.
      */
@@ -236,7 +236,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /* Thread-local recycling
     /**********************************************************
      */
-    
+
     /**
      * <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
      * to a buffer recycler used to provide a low-cost
@@ -290,10 +290,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return br;
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
@@ -310,11 +310,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final boolean mayContainRawBinary() {
         return _mayContainRawBinary;
     }
-    
-    /*                                                                                       
-    /**********************************************************                              
-    /* FormatFeature support                                                                             
-    /**********************************************************                              
+
+    /*
+    /**********************************************************
+    /* FormatFeature support
+    /**********************************************************
      */
 
     @Override
@@ -345,7 +345,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
 //  public abstract int releaseBuffered(OutputStream out) throws IOException;
 //  public abstract Object getInputSource();
-    
+
     /*
     /**********************************************************
     /* Abstract impls
@@ -455,7 +455,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     protected abstract void _releaseBuffers2();
-    
+
     @Override public final boolean isClosed() { return _closed; }
     @Override public final JsonReadContext getParsingContext() { return _streamReadContext; }
 
@@ -534,7 +534,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         return _numberInt;
     }
-    
+
     @Override
     public final long getLongValue() throws IOException
     {
@@ -548,7 +548,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         return _numberLong;
     }
-    
+
     @Override
     public final BigInteger getBigIntegerValue() throws IOException
     {
@@ -615,7 +615,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************
     /* Numeric conversions
     /**********************************************************
-     */    
+     */
 
     protected final void convertNumberToInt() throws IOException
     {
@@ -628,7 +628,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
                 reportOverflowInt();
             }
@@ -645,7 +645,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
                 reportOverflowInt();
             }
@@ -655,14 +655,14 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         _numTypesValid |= NR_INT;
     }
-    
+
     protected final void convertNumberToLong() throws IOException
     {
         int v = _numTypesValid;
         if ((v & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((v & NR_BIGINT) != 0) {
-            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
                 reportOverflowLong();
             }
@@ -678,7 +678,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             }
             _numberLong = (long) _numberFloat;
         } else if ((v & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
                 reportOverflowLong();
             }
@@ -688,7 +688,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         _numTypesValid |= NR_LONG;
     }
-    
+
     protected final void convertNumberToBigInteger() throws IOException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -727,7 +727,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         _numTypesValid |= NR_FLOAT;
     }
-    
+
     protected final void convertNumberToDouble() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -747,7 +747,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         _numTypesValid |= NR_DOUBLE;
     }
-    
+
     protected final void convertNumberToBigDecimal() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -776,7 +776,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /* Internal/package methods: other
     /**********************************************************
      */
-    
+
     /**
      * Method called when an EOF is encountered between tokens.
      * If so, it may be a legitimate EOF, but only iff there

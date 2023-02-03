@@ -41,7 +41,7 @@ public abstract class NonBlockingParserBase
      * is forthcoming AND we have exhausted all the input
      */
     protected final static int MAJOR_CLOSED = 5;
-    
+
     // // // "Sub-states"
 
     protected final static int MINOR_HEADER_INITIAL = 1;
@@ -108,7 +108,7 @@ public abstract class NonBlockingParserBase
     /* Other buffering
     /**********************************************************************
      */
-    
+
     /**
      * Temporary buffer for holding content if input not contiguous (but can
      * fit in buffer)
@@ -310,7 +310,7 @@ public abstract class NonBlockingParserBase
         }
     }
 
-    @Override    
+    @Override
     public int getTextLength() throws IOException
     {
         switch (currentTokenId()) {
@@ -493,7 +493,7 @@ public abstract class NonBlockingParserBase
         }
         return _findDecodedLonger(inBuf, inPtr, len);
     }
-    
+
     // Method for locating names longer than 8 bytes (in UTF-8)
     private final String _findDecodedLonger(byte[] inBuf, int inPtr, int len) throws IOException
     {
@@ -540,7 +540,7 @@ public abstract class NonBlockingParserBase
         int qlen = (len + 3) >> 2;
         return _symbols.addName(name, _quadBuffer, qlen);
     }
-    
+
     /**
      * Method called to try to expand shared name area to fit one more potentially
      * shared String. If area is already at its biggest size, will just clear
@@ -553,7 +553,7 @@ public abstract class NonBlockingParserBase
         if (len == 0) {
             newShared = _smileBufferRecycler.allocSeenNamesBuffer();
             if (newShared == null) {
-                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];                
+                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
             }
         } else if (len == SmileConstants.MAX_SHARED_NAMES) { // too many? Just flush...
       	   newShared = oldShared;
@@ -571,7 +571,7 @@ public abstract class NonBlockingParserBase
     /* Internal methods, state changes
     /**********************************************************************
      */
-    
+
     /**
      * Helper method called at point when all input has been exhausted and
      * input feeder has indicated no more input will be forthcoming.
@@ -706,7 +706,7 @@ public abstract class NonBlockingParserBase
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
-	
+
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));

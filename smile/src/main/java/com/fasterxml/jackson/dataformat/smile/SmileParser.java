@@ -54,7 +54,7 @@ public class SmileParser extends SmileParserBase
 
         @Override public boolean enabledByDefault() { return _defaultState; }
         @Override public int getMask() { return _mask; }
-        @Override public boolean enabledIn(int flags) { return (flags & getMask()) != 0; }    
+        @Override public boolean enabledIn(int flags) { return (flags & getMask()) != 0; }
     }
 
     /**
@@ -82,7 +82,7 @@ public class SmileParser extends SmileParserBase
     /* Configuration
     /**********************************************************
      */
-    
+
     /**
      * Codec used for data binding when (if) requested.
      */
@@ -147,7 +147,7 @@ public class SmileParser extends SmileParserBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);        
+        super(ctxt, parserFeatures, smileFeatures, sym);
         _objectCodec = codec;
 
         _inputStream = in;
@@ -171,7 +171,7 @@ public class SmileParser extends SmileParserBase
      * Helper method called when it looks like input might contain the signature;
      * and it is necessary to detect and handle signature to get configuration
      * information it might have.
-     * 
+     *
      * @return True if valid signature was found and handled; false if not
      */
     protected boolean handleSignature(boolean consumeFirstByte, boolean throwException) throws IOException
@@ -239,7 +239,7 @@ versionBits));
         out.write(_inputBuffer, origPtr, count);
         return count;
     }
-    
+
     @Override
     public Object getInputSource() {
         return _inputStream;
@@ -273,7 +273,7 @@ versionBits));
     protected final boolean _loadMore() throws IOException
     {
         //_currInputRowStart -= _inputEnd;
-        
+
         if (_inputStream != null) {
             int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
             _currInputProcessed += _inputEnd;
@@ -293,7 +293,7 @@ versionBits));
         }
         return false;
     }
-    
+
     /**
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary.
@@ -494,7 +494,7 @@ versionBits));
             // and everything else is reserved, for now
             break;
         case 2: // tiny ASCII
-            // fall through            
+            // fall through
         case 3: // short ASCII
             // fall through
         case 4: // tiny Unicode
@@ -674,7 +674,7 @@ versionBits));
             if ((_inputPtr + byteLen + 1) < _inputEnd) { // maybe...
                 int ptr = _inputPtr;
                 int ch = _inputBuffer[ptr++] & 0xFF;
-                
+
                 _typeAsInt = ch;
                 main_switch:
                 switch (ch >> 6) {
@@ -889,7 +889,7 @@ versionBits));
             // Other byte values are illegal
             return _reportUnknownNameToken(_typeAsInt);
         }
-        
+
         // otherwise just fall back to default handling; should occur rarely
         return (nextToken() == JsonToken.FIELD_NAME) ? currentName() : null;
     }
@@ -955,7 +955,7 @@ versionBits));
                 }
                 break;
             case 2: // tiny ASCII
-                // fall through            
+                // fall through
             case 3: // short ASCII
                 _currToken = JsonToken.VALUE_STRING;
                 _inputPtr = ptr;
@@ -1060,7 +1060,7 @@ versionBits));
      * after encountering end-of-input), returns null.
      * Method can be called for any event.
      */
-    @Override    
+    @Override
     public String getText() throws IOException
     {
         if (_tokenIncomplete) {
@@ -1125,7 +1125,7 @@ versionBits));
         return null;
     }
 
-    @Override    
+    @Override
     public int getTextLength() throws IOException
     {
         if (_currToken != null) { // null only before/after document
@@ -1133,7 +1133,7 @@ versionBits));
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
-                return _textBuffer.size();                
+                return _textBuffer.size();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
                 return _streamReadContext.getCurrentName().length();
@@ -1389,7 +1389,7 @@ versionBits));
      * that has to be either FIELD_NAME or END_OBJECT.
      */
     protected final JsonToken _handleFieldName() throws IOException
-    {    	
+    {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
@@ -1419,7 +1419,7 @@ versionBits));
                 return JsonToken.FIELD_NAME;
             case 0x34: // long ASCII/Unicode name
                 _handleLongFieldName();
-                return JsonToken.FIELD_NAME;            	
+                return JsonToken.FIELD_NAME;
             }
             break;
         case 1: // short shared, can fully process
@@ -1443,7 +1443,7 @@ versionBits));
                 }
                 _streamReadContext.setCurrentName(name);
             }
-            return JsonToken.FIELD_NAME;                
+            return JsonToken.FIELD_NAME;
         case 3: // short Unicode
             // all valid, except for 0xFF
             ch &= 0x3F;
@@ -1466,7 +1466,7 @@ versionBits));
                         _seenNames[_seenNameCount++] = name;
                     }
                     _streamReadContext.setCurrentName(name);
-                    return JsonToken.FIELD_NAME;                
+                    return JsonToken.FIELD_NAME;
                 }
             }
             break;
@@ -1528,7 +1528,7 @@ versionBits));
         if (len == 0) {
             newShared = _smileBufferRecycler.allocSeenNamesBuffer();
             if (newShared == null) {
-                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];                
+                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
             }
         } else if (len == SmileConstants.MAX_SHARED_NAMES) { // too many? Just flush...
       	   newShared = oldShared;
@@ -1580,11 +1580,11 @@ versionBits));
             return _textBuffer.setCurrentAndReturn(len);
         }
     }
-    
+
     /**
      * Helper method used to decode short Unicode string, length for which actual
      * length (in bytes) is known
-     * 
+     *
      * @param len Length between 1 and 64
      */
     private final String _decodeShortUnicodeName(int len)
@@ -1664,13 +1664,13 @@ versionBits));
 
         char[] cbuf = _textBuffer.emptyAndGetCurrentSegment();
         int cix = 0;
-    
+
         for (int ix = 0; ix < byteLen; ) {
             int ch = quads[ix >> 2]; // current quad, need to shift+mask
             int byteIx = (ix & 3);
             ch = (ch >> ((3 - byteIx) << 3)) & 0xFF;
             ++ix;
-    
+
             if (ch > 127) { // multi-byte
                 int needed;
                 if ((ch & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
@@ -1689,13 +1689,13 @@ versionBits));
                 if ((ix + needed) > byteLen) {
                     _reportInvalidEOF(" in long field name", JsonToken.FIELD_NAME);
                 }
-                
+
                 // Ok, always need at least one more:
                 int ch2 = quads[ix >> 2]; // current quad, need to shift+mask
                 byteIx = (ix & 3);
                 ch2 = (ch2 >> ((3 - byteIx) << 3));
                 ++ix;
-                
+
                 if ((ch2 & 0xC0) != 0x080) {
                     _reportInvalidOther(ch2);
                 }
@@ -1809,7 +1809,7 @@ versionBits));
             byteLen += bytes;
         }
         // Know this name already?
-        String name = _symbolsCanonical ? 
+        String name = _symbolsCanonical ?
             _symbols.findName(_quadBuffer, quads) : null;
         if (name == null) {
             name = _decodeLongUnicodeName(_quadBuffer, byteLen, quads,
@@ -1859,7 +1859,7 @@ versionBits));
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        
+
         if (len < 9) {
             int q2 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 5;
@@ -1916,12 +1916,12 @@ versionBits));
         }
         _quadBuffer[0] = q1;
         _quadBuffer[1] = q2;
-        
+
         // then decode, full quads first
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
-        
+
         final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF);
@@ -2072,7 +2072,7 @@ versionBits));
         }
         _throwInternal();
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, secondary Number parsing
@@ -2115,7 +2115,7 @@ versionBits));
         _inputPtr = ptr;
         _numberInt = SmileUtil.zigzagDecode(value);
     }
-    
+
     private final void _finishIntSlow() throws IOException
     {
         if (_inputPtr >= _inputEnd) {
@@ -2242,7 +2242,7 @@ versionBits));
         }
         return (i << 7) + _inputBuffer[_inputPtr++];
     }
-    
+
     private final void _finishBigInteger() throws IOException
     {
         final byte[] raw = _read7BitBinaryWithLength();
@@ -2289,7 +2289,7 @@ versionBits));
         _numberType = NumberType.DOUBLE;
         _numTypesValid = NR_DOUBLE;
     }
-	
+
     private final void _finishBigDecimal() throws IOException
     {
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
@@ -2483,7 +2483,7 @@ currentToken(), firstCh);
                 throw _constructReadException("Invalid byte 0x%02X in short Unicode text block", i);
             }
             outBuf[outPtr++] = (char) i;
-        }        
+        }
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
@@ -2509,7 +2509,7 @@ currentToken(), firstCh);
                     _inputPtr = inPtr;
                     break main_loop;
                 }
-                outBuf[outPtr++] = (char) b;	    		
+                outBuf[outPtr++] = (char) b;
             } while (--left > 0);
             _inputPtr = inPtr;
         }
@@ -2828,7 +2828,7 @@ currentToken(), firstCh);
                                         return;
                                 }
                         }
-                        _loadMoreGuaranteed();                           
+                        _loadMoreGuaranteed();
                     }
                 case 2: // big-int
                     // just has binary data
@@ -2925,7 +2925,7 @@ currentToken(), firstCh);
         }
         _skipBytes(encBytes);
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, UTF8 decoding
@@ -3018,7 +3018,7 @@ currentToken(), firstCh);
          */
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, error reporting
@@ -3040,7 +3040,7 @@ currentToken(), firstCh);
         }
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
     }
-    
+
     protected void _reportInvalidChar(int c) throws JsonParseException
     {
         // Either invalid WS or illegal UTF-8 start char
@@ -3049,15 +3049,15 @@ currentToken(), firstCh);
         }
         _reportInvalidInitial(c);
     }
-	
+
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
-	
+
     protected void _reportInvalidOther(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
     }
-	
+
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);

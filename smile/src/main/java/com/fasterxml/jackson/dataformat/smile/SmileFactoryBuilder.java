@@ -81,7 +81,7 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
     public SmileFactoryBuilder configure(SmileParser.Feature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
-    
+
     // // // Generator features
 
     public SmileFactoryBuilder enable(SmileGenerator.Feature f) {
@@ -101,7 +101,7 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
         _formatGeneratorFeatures &= ~f.getMask();
         return _this();
     }
-    
+
     public SmileFactoryBuilder disable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
         _formatGeneratorFeatures &= ~first.getMask();
         for (SmileGenerator.Feature f : other) {

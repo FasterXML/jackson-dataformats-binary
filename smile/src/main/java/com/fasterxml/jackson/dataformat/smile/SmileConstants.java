@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.smile;
 
 /**
  * Constants used by {@link SmileGenerator} and {@link SmileParser}
- * 
+ *
  * @author tatu
  */
 public final class SmileConstants
@@ -36,7 +36,7 @@ public final class SmileConstants
      * short name is then 64 bytes.
      */
     public final static int MAX_SHORT_NAME_ANY_BYTES = 64;
-    
+
     /**
      * Longest back reference we use for field names is 10 bits; no point
      * in keeping much more around
@@ -56,7 +56,7 @@ public final class SmileConstants
      * that can be encoded as such.
      */
     public final static int MAX_SHARED_STRING_LENGTH_BYTES = 65;
-    
+
     /**
      * And to make encoding logic tight and simple, we can always
      * require that output buffer has this amount of space
@@ -72,7 +72,7 @@ public final class SmileConstants
     /* Byte markers
     /**********************************************************
      */
-    
+
     /**
      * We need a byte marker to denote end of variable-length Strings. Although
      * null byte is commonly used, let's try to avoid using it since it can't
@@ -84,7 +84,7 @@ public final class SmileConstants
     public final static int INT_MARKER_END_OF_STRING = 0xFC;
 
     public final static byte BYTE_MARKER_END_OF_STRING = (byte) INT_MARKER_END_OF_STRING;
-    
+
     /**
      * In addition we can use a marker to allow simple framing; splitting
      * of physical data (like file) into distinct logical sections like
@@ -124,9 +124,9 @@ public final class SmileConstants
      * have flags
      */
     public final static byte HEADER_BYTE_4 = (HEADER_VERSION_0 << 4);
-    
+
     /**
-     * Indicator bit that indicates whether encoded content may 
+     * Indicator bit that indicates whether encoded content may
      * have Shared names (back references to recently encoded field
      * names). If no header available, must be
      * processed as if this was set to true.
@@ -161,7 +161,7 @@ public final class SmileConstants
      * written.
      */
     public final static int HEADER_BIT_HAS_RAW_BINARY = 0x04;
-    
+
     /*
     /**********************************************************
     /* Type prefixes: 3 MSB of token byte
@@ -171,7 +171,7 @@ public final class SmileConstants
     public final static int TOKEN_PREFIX_INTEGER = 0x24;
 
     public final static int TOKEN_PREFIX_FP = 0x28;
-    
+
     // Shared strings are back references for last 63 short (< 64 byte) string values
     // NOTE: 0x00 is reserved, not used with current version (may be used in future)
     public final static int TOKEN_PREFIX_SHARED_STRING_SHORT = 0x00;
@@ -179,7 +179,7 @@ public final class SmileConstants
     //public final static int TOKEN_PREFIX_MISC_NUMBERS = 0x20;
 
     public final static int TOKEN_PREFIX_SHARED_STRING_LONG = 0xEC;
-    
+
     public final static int TOKEN_PREFIX_TINY_ASCII = 0x40;
     public final static int TOKEN_PREFIX_SMALL_ASCII = 0x60;
     public final static int TOKEN_PREFIX_TINY_UNICODE = 0x80;
@@ -196,7 +196,7 @@ public final class SmileConstants
     /* Token literals, normal mode
     /**********************************************************
      */
-    
+
     // First, non-structured literals
 
     public final static byte TOKEN_LITERAL_EMPTY_STRING = 0x20;
@@ -205,7 +205,7 @@ public final class SmileConstants
     public final static byte TOKEN_LITERAL_TRUE = 0x23;
 
     // And then structured literals
-    
+
     public final static byte TOKEN_LITERAL_START_ARRAY = (byte) 0xF8;
     public final static byte TOKEN_LITERAL_END_ARRAY = (byte) 0xF9;
     public final static byte TOKEN_LITERAL_START_OBJECT = (byte) 0xFA;
@@ -220,7 +220,7 @@ public final class SmileConstants
     public final static int INT_MISC_BINARY_7BIT = 0xE8;
 
     public final static int INT_MISC_BINARY_RAW = 0xFD;
-    
+
     /**
      * Type (for misc, other) used for
      * variable length UTF-8 encoded text, when it is known to only contain ASCII chars.
@@ -235,7 +235,7 @@ public final class SmileConstants
      * Note: 2 LSB are reserved for future use; must be zeroes for now
      */
     public final static byte TOKEN_MISC_LONG_TEXT_UNICODE = (byte) 0xE4;
-    
+
     /**
      * Type (for misc, other) used
      * for "safe" (encoded by only using 7 LSB, giving 8/7 expansion ratio).
@@ -277,7 +277,7 @@ public final class SmileConstants
     public final static int TOKEN_MISC_INTEGER_BIG = 0x02;
 
     // Note: type 3 (0xF3) reserved for future use
-    
+
     /**
      * Numeric subtype (2 LSB) for
      * indicating 32-bit IEEE single precision floating point number.
@@ -297,7 +297,7 @@ public final class SmileConstants
     public final static int TOKEN_MISC_FLOAT_BIG = 0x02;
 
     // Note: type 3 (0xF7) reserved for future use
-    
+
     /*
     /**********************************************************
     /* Token types for keys
@@ -310,11 +310,11 @@ public final class SmileConstants
     public final static byte TOKEN_KEY_EMPTY_STRING = 0x20;
 
     public final static int TOKEN_PREFIX_KEY_SHARED_LONG = 0x30;
-    
+
     public final static byte TOKEN_KEY_LONG_STRING = 0x34;
 
     public final static int TOKEN_PREFIX_KEY_SHARED_SHORT = 0x40;
-    
+
     public final static int TOKEN_PREFIX_KEY_ASCII = 0x80;
 
     public final static int TOKEN_PREFIX_KEY_UNICODE = 0xC0;
@@ -324,7 +324,7 @@ public final class SmileConstants
     /* Basic UTF-8 decode/encode table
     /**********************************************************
      */
-    
+
     /**
      * Additionally we can combine UTF-8 decoding info into similar
      * data table.

@@ -11,7 +11,7 @@ public class SmileBufferRecycler<T>
     public final static int DEFAULT_NAME_BUFFER_LENGTH = 64;
 
     public final static int DEFAULT_STRING_VALUE_BUFFER_LENGTH = 64;
-    
+
     protected T[] _seenNamesBuffer;
 
     protected T[] _seenStringValuesBuffer;
@@ -40,7 +40,7 @@ public class SmileBufferRecycler<T>
         }
         return result;
     }
-    
+
     public void releaseSeenNamesBuffer(T[] buffer) {
         _seenNamesBuffer = buffer;
     }

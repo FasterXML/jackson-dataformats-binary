@@ -23,7 +23,7 @@ import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
  * used for Smile-format documents, and thus will either downgrade to
  * textual JSON (when parsing), or throw exception (when trying to create
  * generator).
- * 
+ *
  * @author Tatu Saloranta
  */
 public class SmileFactory extends JsonFactory
@@ -35,13 +35,13 @@ public class SmileFactory extends JsonFactory
     /* Constants
     /**********************************************************
      */
-    
+
     /**
      * Name used to identify Smile format.
      * (and returned by {@link #getFormatName()}
      */
     public final static String FORMAT_NAME_SMILE = "Smile";
-    
+
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
@@ -99,7 +99,7 @@ public class SmileFactory extends JsonFactory
     /**
      * Note: REQUIRES 2.2.1 -- unfortunate intra-patch dep but seems
      * preferable to just leaving bug be as is
-     * 
+     *
      * @since 2.2.1
      */
     public SmileFactory(SmileFactory src, ObjectCodec oc)
@@ -139,7 +139,7 @@ public class SmileFactory extends JsonFactory
         // note: as with base class, must NOT copy mapper reference
         return new SmileFactory(this, null);
     }
-    
+
     public void delegateToTextual(boolean state) {
         _cfgDelegateToTextual = state;
     }
@@ -160,10 +160,10 @@ public class SmileFactory extends JsonFactory
         return new SmileFactory(this, _objectCodec);
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
@@ -176,7 +176,7 @@ public class SmileFactory extends JsonFactory
     /* Format detection functionality
     /**********************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return FORMAT_NAME_SMILE;
@@ -207,7 +207,7 @@ public class SmileFactory extends JsonFactory
 
     @Override // since 2.9
     public boolean canParseAsync() { return true; }
-    
+
     @Override // since 2.6
     public Class<SmileParser.Feature> getFormatReadFeatureType() {
         return SmileParser.Feature.class;
@@ -468,14 +468,14 @@ public class SmileFactory extends JsonFactory
         if (_cfgDelegateToTextual) {
             return super._createGenerator(out, ctxt);
         }
-        return _nonByteTarget(); 
+        return _nonByteTarget();
     }
 
     @Override
     protected JsonGenerator _createUTF8Generator(OutputStream out, IOContext ctxt) throws IOException {
         return _createGenerator(out, ctxt);
     }
-    
+
     //public BufferRecycler _getBufferRecycler()
 
     @Override
@@ -484,7 +484,7 @@ public class SmileFactory extends JsonFactory
         if (_cfgDelegateToTextual) {
             return super._createWriter(out, enc, ctxt);
         }
-        return _nonByteTarget(); 
+        return _nonByteTarget();
     }
 
     /*
@@ -500,7 +500,7 @@ public class SmileFactory extends JsonFactory
     protected <T> T _nonByteTarget() throws IOException {
         throw new UnsupportedOperationException("Can not create generator for character-based (not byte-based) target");
     }
-    
+
     protected SmileGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException
     {
         int feats = _smileGeneratorFeatures;
