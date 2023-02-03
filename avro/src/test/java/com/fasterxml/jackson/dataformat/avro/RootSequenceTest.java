@@ -22,7 +22,7 @@ public class RootSequenceTest extends AvroTestBase
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
 
         // First: write a sequence of 3 root-level ints
-        
+
         SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
         sw.write(Integer.valueOf(1));
         sw.write(Integer.valueOf(123456));
@@ -49,7 +49,7 @@ public class RootSequenceTest extends AvroTestBase
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
 
         // First: write a sequence of 3 root-level Strings
-        
+
         SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
         sw.write("foo");
         sw.write("bar");

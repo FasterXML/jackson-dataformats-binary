@@ -69,10 +69,10 @@ public abstract class AvroReadContext extends JsonStreamContext
     public String getCurrentName() { return null; }
 
     public abstract JsonToken getCurrentToken();
-    
+
     @Override
     public final AvroReadContext getParent() { return _parent; }
-    
+
     protected abstract void appendDesc(StringBuilder sb);
 
     public String getTypeId() {

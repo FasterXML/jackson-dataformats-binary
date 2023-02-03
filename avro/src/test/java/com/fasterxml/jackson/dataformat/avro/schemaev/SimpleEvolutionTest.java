@@ -52,7 +52,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             "    { 'name':'x', 'type':'int' }\n"+
             " ]\n"+
             "}\n");
-    
+
     // and one with X + T and an Array
     static String SCHEMA_XAY_JSON = aposToQuotes("{\n"+
             " 'type':'record',\n"+
@@ -77,7 +77,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             "    { 'name':'y', 'type':'int' }\n"+
             " ]\n"+
             "}\n");
-    
+
     static class PointXY {
         public int x, y;
 

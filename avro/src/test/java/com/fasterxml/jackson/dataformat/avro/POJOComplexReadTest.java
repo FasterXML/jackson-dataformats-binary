@@ -36,7 +36,7 @@ public class POJOComplexReadTest extends AvroTestBase
         _testRoundtrip(avro, false);
         _testRoundtrip(avro, true);
     }
-        
+
     @SuppressWarnings("resource")
     private void _testRoundtrip(byte[] avro, boolean smallReads) throws Exception
     {
@@ -72,7 +72,7 @@ public class POJOComplexReadTest extends AvroTestBase
         assertEquals(243, avro.length);
         return avro;
     }
-    
+
     // from good old jvm-serializers
     protected final MediaItem getStdItem()
     {

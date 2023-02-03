@@ -18,7 +18,7 @@ public abstract class ArrayReader extends AvroStructureReader
     protected long _count;
 
     protected String _currentName;
-    
+
     protected ArrayReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String elementTypeId)
     {
         super(parent, TYPE_ARRAY, typeId);
@@ -39,7 +39,7 @@ public abstract class ArrayReader extends AvroStructureReader
         nextToken();
         return null;
     }
-    
+
     @Override
     public String getCurrentName() {
         if (_currentName == null) {
@@ -74,17 +74,17 @@ public abstract class ArrayReader extends AvroStructureReader
     private final static class Scalar extends ArrayReader
     {
         private final ScalarDecoder _elementReader;
-        
+
         public Scalar(ScalarDecoder reader, String typeId, String elementTypeId) {
             this(null, reader, null, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId());
         }
 
-        private Scalar(AvroReadContext parent, ScalarDecoder reader, 
+        private Scalar(AvroReadContext parent, ScalarDecoder reader,
                 AvroParserImpl parser, String typeId, String elementTypeId) {
             super(parent, parser, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId());
             _elementReader = reader;
         }
-        
+
         @Override
         public Scalar newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new Scalar(parent, _elementReader, parser, _typeId, _elementTypeId);
@@ -141,18 +141,18 @@ public abstract class ArrayReader extends AvroStructureReader
     private final static class NonScalar extends ArrayReader
     {
         private final AvroStructureReader _elementReader;
-        
+
         public NonScalar(AvroStructureReader reader, String typeId, String elementTypeId) {
             this(null, reader, null, typeId, elementTypeId);
         }
 
         private NonScalar(AvroReadContext parent,
-                AvroStructureReader reader, 
+                AvroStructureReader reader,
                 AvroParserImpl parser, String typeId, String elementTypeId) {
             super(parent, parser, typeId, elementTypeId);
             _elementReader = reader;
         }
-        
+
         @Override
         public NonScalar newReader(AvroReadContext parent,
                 AvroParserImpl parser) {

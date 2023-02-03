@@ -69,7 +69,7 @@ public final class ApacheCodecRecycler
     /* Internal per-instance methods
     /**********************************************************
      */
-    
+
     private static ApacheCodecRecycler _recycler() {
         SoftReference<ApacheCodecRecycler> ref = _recycler.get();
         ApacheCodecRecycler r = (ref == null) ? null : ref.get();

@@ -34,7 +34,7 @@ public class ApacheAvroFactory extends AvroFactory
     /* Factory method overrides
     /**********************************************************
      */
-    
+
     @Override
     public AvroFactory copy()
     {

@@ -30,9 +30,9 @@ public abstract class AvroWriteContext
     private final static Class<?> CLS_GENERIC_ARRAY = GenericData.Array.class;
 
     protected final AvroWriteContext _parent;
-    
+
     protected final AvroGenerator _generator;
-    
+
     protected final Schema _schema;
 
     /**
@@ -58,7 +58,7 @@ public abstract class AvroWriteContext
     }
 
     // // // Factory methods
-    
+
     public static AvroWriteContext createRootContext(AvroGenerator generator, Schema schema,
             BinaryEncoder encoder) {
         return new RootContext(generator, schema, encoder);
@@ -95,7 +95,7 @@ public abstract class AvroWriteContext
     public void setCurrentValue(Object v) {
         _currentValue = v;
     }
-    
+
     @Override
     public final AvroWriteContext getParent() { return _parent; }
 
@@ -107,7 +107,7 @@ public abstract class AvroWriteContext
     /* Write methods
     /**********************************************************
      */
-    
+
     /**
      * Method that writer is to call before it writes a field name.
      *
@@ -329,7 +329,7 @@ public abstract class AvroWriteContext
                 }
             }
         }
-//System.err.println("Missing index for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);  
+//System.err.println("Missing index for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);
         return ReflectData.get().resolveUnion(unionSchema, datum);
     }
 
@@ -378,7 +378,7 @@ public abstract class AvroWriteContext
                 }
             }
         }
-//System.err.println("Missing schema for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);  
+//System.err.println("Missing schema for: "+datum.getClass().getName()+" ("+types.size()+") ->\n"+types);
         int ix = ReflectData.get().resolveUnion(unionSchema, datum);
         return types.get(ix);
     }
@@ -533,14 +533,14 @@ public abstract class AvroWriteContext
         extends AvroWriteContext
     {
         public final static NullContext instance = new NullContext();
-        
+
         private NullContext() {
             super(TYPE_ROOT, null, null, null, null);
         }
 
         @Override
         public Object rawValue() { return null; }
-        
+
         @Override
         public final AvroWriteContext createChildArrayContext(Object currValue) {
             _reportError();

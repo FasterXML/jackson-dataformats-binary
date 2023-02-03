@@ -26,7 +26,7 @@ public class NumberTest extends AvroTestBase
 
         public float f;
         public double d;
-        
+
         public Numbers() { }
         public Numbers(int i0, long l0,
                 float f0, double d0) {
@@ -95,7 +95,7 @@ public class NumberTest extends AvroTestBase
         // NOTE: order of execution important here; access as Double would
         // result in type seemingly changing
         assertEquals(Float.valueOf(input.f), p.getNumberValue());
-        
+
         assertEquals((double) input.f, p.getDoubleValue());
         assertEquals((int) input.f, p.getIntValue());
         assertEquals((long) input.f, p.getLongValue());

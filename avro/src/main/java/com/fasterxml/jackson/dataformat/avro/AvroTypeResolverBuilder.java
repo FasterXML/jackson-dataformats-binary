@@ -38,7 +38,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder {
             Collection<NamedType> subtypes)
     {
         Class<?> rawDefault = getDefaultImpl();
-        JavaType defaultImpl = (rawDefault == null) ? null : 
+        JavaType defaultImpl = (rawDefault == null) ? null :
             config.constructType(rawDefault);
         TypeIdResolver idRes = idResolver(config, baseType, subTypeValidator(config),
                 subtypes, true, false);

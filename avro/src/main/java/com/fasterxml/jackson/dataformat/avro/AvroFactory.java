@@ -21,7 +21,7 @@ public class AvroFactory extends JsonFactory
     private static final long serialVersionUID = 1L;
 
     public final static String FORMAT_NAME_AVRO = "avro";
-    
+
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
@@ -189,23 +189,23 @@ public class AvroFactory extends JsonFactory
         return new AvroFactory(this, _objectCodec);
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
     public Version version() {
         return PackageVersion.VERSION;
     }
-    
+
     /*
     /**********************************************************
     /* Format detection functionality
     /**********************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return FORMAT_NAME_AVRO;
@@ -215,7 +215,7 @@ public class AvroFactory extends JsonFactory
     public boolean canUseSchema(FormatSchema schema) {
         return (schema instanceof AvroSchema);
     }
-    
+
     /**
      * Sub-classes need to override this method
      */
@@ -225,7 +225,7 @@ public class AvroFactory extends JsonFactory
         // TODO, if possible... probably isn't?
         return MatchStrength.INCONCLUSIVE;
     }
-    
+
     /*
     /**********************************************************
     /* Configuration, parser settings
@@ -352,12 +352,12 @@ public class AvroFactory extends JsonFactory
     }
 
     //public JsonParser createParser(Reader r)
-    
+
     @Override
     public AvroParser createParser(byte[] data) throws IOException {
         return createParser(data, 0, data.length);
     }
-    
+
     @SuppressWarnings("resource")
     @Override
     public AvroParser createParser(byte[] data, int offset, int len) throws IOException {
@@ -376,7 +376,7 @@ public class AvroFactory extends JsonFactory
     /* Overridden generator factory methods
     /**********************************************************
      */
-    
+
     /**
      *<p>
      * note: co-variant return type
@@ -452,13 +452,13 @@ public class AvroFactory extends JsonFactory
     protected Writer _createWriter(OutputStream out, JsonEncoding enc, IOContext ctxt) throws IOException {
         return _nonByteTarget();
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods
     /**********************************************************
      */
-    
+
     protected AvroGenerator _createGenerator(OutputStream out, IOContext ctxt) throws IOException
     {
         int feats = _avroGeneratorFeatures;

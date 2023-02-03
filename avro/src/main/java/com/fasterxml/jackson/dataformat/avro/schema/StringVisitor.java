@@ -27,7 +27,7 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
         _type = t;
         _provider = provider;
     }
-    
+
     @Override
     public void format(JsonValueFormat format) {
         // Ideally, we'd recognize UUIDs, Dates etc if need be, here...
@@ -45,7 +45,7 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
             return AvroSchemaHelper.numericAvroSchema(NumberType.INT, TypeFactory.defaultInstance().constructType(Character.class));
         }
         // [dataformats-binary#179]: need special help with UUIDs, to coerce into Binary
-        //   (could actually be 
+        //   (could actually be
         if (_type.hasRawClass(java.util.UUID.class)) {
             return AvroSchemaHelper.createUUIDSchema();
         }

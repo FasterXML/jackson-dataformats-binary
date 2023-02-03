@@ -59,8 +59,8 @@ public class AvroSchema implements FormatSchema
      *    schema (which would be "Writer Schema" in Avro terms).
      *
      * @throws JsonProcessingException If given reader schema is incompatible with (writer-)
-     *     schema this instance was constructed with, 
-     * 
+     *     schema this instance was constructed with,
+     *
      * @since 2.9
      */
     public AvroSchema withReaderSchema(AvroSchema readerSchema)
@@ -86,7 +86,7 @@ public class AvroSchema implements FormatSchema
 r.getType().getName(), w.getFullName(), r.getFullName()));
             }
         }
-        
+
         SchemaPairCompatibility comp;
         try {
             comp = SchemaCompatibility.checkReaderWriterCompatibility(r, w);

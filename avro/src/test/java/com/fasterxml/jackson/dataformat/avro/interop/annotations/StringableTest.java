@@ -48,7 +48,7 @@ public class StringableTest extends InteropTestBase {
         public int hashCode() {
             return Objects.hashCode(test);
         }
-        
+
         @Override
         public String toString() {
             return test;

@@ -30,7 +30,7 @@ public class RecordWithPrimitiveTest extends InteropTestBase
             return byteField + shortField + characterField + integerField
                     + (int) longField;
         }
-        
+
         @Override
         public String toString() {
             return "TestRecord";

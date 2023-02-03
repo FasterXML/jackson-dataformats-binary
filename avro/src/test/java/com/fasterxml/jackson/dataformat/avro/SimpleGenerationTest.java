@@ -43,7 +43,7 @@ public class SimpleGenerationTest extends AvroTestBase
             value = new byte[1];
         }
     }
-    
+
     // another, bigger test for skipping
     @JsonPropertyOrder({ "name", "stuff", "value" })
     protected static class BinaryAndArray extends Binary {
@@ -58,18 +58,18 @@ public class SimpleGenerationTest extends AvroTestBase
     }
 
     private final AvroSchema SCHEMA_WITH_BINARY_JSON;
-    
+
     public SimpleGenerationTest() throws IOException
     {
         SCHEMA_WITH_BINARY_JSON = getMapper().schemaFrom(SCHEMA_WITH_BINARY_JSON_SRC);
     }
-    
+
     /*
     /**********************************************************
     /* Test methods
     /**********************************************************
      */
-    
+
     public void testSimplest() throws Exception
     {
         Employee empl = new Employee();
@@ -77,7 +77,7 @@ public class SimpleGenerationTest extends AvroTestBase
         empl.age = 39;
         empl.emails = new String[] { "bob@aol.com", "bobby@gmail.com" };
         empl.boss = null;
-        
+
         ObjectMapper mapper = new ObjectMapper(new AvroFactory());
 
         AvroSchema schema = getEmployeeSchema();
@@ -86,7 +86,7 @@ public class SimpleGenerationTest extends AvroTestBase
 
         // Currently we get this result... need to verify in future
         assertEquals(39, bytes.length);
-        
+
         // read back actually
         Employee output = mapper.reader(schema).forType(Employee.class).readValue(bytes);
         assertNotNull(output);

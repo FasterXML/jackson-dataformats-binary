@@ -43,7 +43,7 @@ public class AvroModule extends Module
      * @since 2.9
      */
     protected AnnotationIntrospector _intr = INTR;
-    
+
     public AvroModule() { }
 
     @Override
@@ -59,9 +59,9 @@ public class AvroModule extends Module
     /* Configurability
     /**********************************************************
      */
-    
+
     /**
-     * Fluent method that configures this module instance 
+     * Fluent method that configures this module instance
      *
      * @since 2.9
      */

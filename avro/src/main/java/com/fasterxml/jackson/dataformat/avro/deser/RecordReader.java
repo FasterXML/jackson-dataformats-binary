@@ -99,7 +99,7 @@ abstract class RecordReader extends AvroStructureReader
         public Std(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId) {
             super(parent, fieldReaders, parser, typeId);
         }
-        
+
         @Override
         public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new Std(parent, _fieldReaders, parser, _typeId);

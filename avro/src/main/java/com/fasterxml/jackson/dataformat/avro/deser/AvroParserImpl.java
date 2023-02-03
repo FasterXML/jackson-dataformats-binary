@@ -193,7 +193,7 @@ public abstract class AvroParserImpl
             // Shouldn't get this far but if we do
             return _numberBigDecimal;
         }
-    
+
         // And then floating point types. But here optimal type
         // needs to be big decimal, to avoid losing any data?
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -228,7 +228,7 @@ public abstract class AvroParserImpl
             }
             return NumberType.BIG_INTEGER;
         }
-    
+
         // And then floating point types. Here optimal type should be big decimal,
         // to avoid losing any data? However... using BD is slow, so let's allow returning
         // double as type if no explicit call has been made to access data as BD?
@@ -288,7 +288,7 @@ public abstract class AvroParserImpl
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
                 reportOverflowInt();
             }
@@ -305,7 +305,7 @@ public abstract class AvroParserImpl
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
                 reportOverflowInt();
             }
@@ -322,7 +322,7 @@ public abstract class AvroParserImpl
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
                 reportOverflowLong();
             }
@@ -338,7 +338,7 @@ public abstract class AvroParserImpl
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
                 reportOverflowLong();
             }
@@ -438,7 +438,7 @@ public abstract class AvroParserImpl
     /* Methods for AvroReadContext implementations: state
     /**********************************************************
      */
-    
+
     public abstract boolean checkInputEnd() throws IOException;
 
     /**
@@ -514,7 +514,7 @@ public abstract class AvroParserImpl
     /* Methods for AvroReadContext implementations: decoding Bytes
     /**********************************************************
      */
-    
+
     public abstract JsonToken decodeBytes() throws IOException;
 
     public abstract void skipBytes() throws IOException;

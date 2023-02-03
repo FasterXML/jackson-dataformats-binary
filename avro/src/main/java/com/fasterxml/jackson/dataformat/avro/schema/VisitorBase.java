@@ -10,7 +10,7 @@ public abstract class VisitorBase
         SchemaBuilder
 {
     protected SerializerProvider _provider;
-    
+
     @Override
     public abstract Schema builtAvroSchema();
 

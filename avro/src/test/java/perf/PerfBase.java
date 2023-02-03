@@ -58,7 +58,7 @@ abstract class PerfBase
     }
 
     public enum Size { SMALL, LARGE };
-    
+
     public static class Image
     {
         public Image() { }
@@ -73,9 +73,9 @@ abstract class PerfBase
         public String uri;
         public String title;
         public int width, height;
-        public Size size;    
-    } 
-    
+        public Size size;
+    }
+
     public enum Player { JAVA, FLASH; }
 
     public static class Media {
@@ -91,10 +91,10 @@ abstract class PerfBase
 //        public boolean hasBitrate;
 
         public List<String> persons;
-        
+
         public Player player;
 
-        public String copyright;    // Can be unset.    
+        public String copyright;    // Can be unset.
 
         public Media addPerson(String p) {
             if (persons == null) {
@@ -112,7 +112,7 @@ abstract class PerfBase
     protected final ObjectMapper avroMapper;
     protected final ObjectReader itemReader;
     protected final ObjectWriter itemWriter;
-    
+
     protected PerfBase()
     {
         avroMapper =  new ObjectMapper(new AvroFactory());
@@ -129,7 +129,7 @@ abstract class PerfBase
     protected byte[] itemToBytes(MediaItem item) throws IOException {
         return itemWriter.writeValueAsBytes(item);
     }
-    
+
     protected GenericRecord itemToRecord(MediaItem item) throws IOException
     {
         final byte[] avro = itemWriter.writeValueAsBytes(item);
@@ -137,9 +137,9 @@ abstract class PerfBase
         return r.read(null,
                 DECODER_FACTORY.binaryDecoder(new ByteArrayInputStream(avro), null));
     }
-    
+
     protected static AvroSchema itemSchema() {
-        return new AvroSchema(new Schema.Parser().setValidate(true).parse(JVM_SERIALIZERS_SCHEMA_STR));        
+        return new AvroSchema(new Schema.Parser().setValidate(true).parse(JVM_SERIALIZERS_SCHEMA_STR));
     }
 
     protected static MediaItem buildItem()
@@ -166,5 +166,5 @@ abstract class PerfBase
 
         return item;
     }
-    
+
 }

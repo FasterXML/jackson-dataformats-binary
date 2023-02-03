@@ -73,7 +73,7 @@ public class MapWithUnionTest extends AvroTestBase
 
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
         SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
-        
+
         Map<String,Object> input1 = _map("a", "123",
                 "mappy", _map("xy", "z35"),
                 "foo", "bar");
@@ -93,10 +93,10 @@ public class MapWithUnionTest extends AvroTestBase
         assertTrue(it.hasNextValue());
         assertEquals(input2, it.nextValue());
         assertFalse(it.hasNextValue());
-        
+
         it.close();
     }
-    
+
     public void testMapContainerWithNested() throws IOException
     {
         Map<String,Object> map = new LinkedHashMap<String,Object>();
@@ -114,7 +114,7 @@ public class MapWithUnionTest extends AvroTestBase
         MapContainer deserialized = MAPPER.readerFor(MapContainer.class)
                 .with(avroSchema)
                 .readValue(serialized);
-        assertEquals(3, deserialized.props.size());        
+        assertEquals(3, deserialized.props.size());
         assertEquals("world", deserialized.props.get("hello"));
         assertEquals("charlie", deserialized.props.get("goodbye"));
         Object ob = deserialized.props.get("otherMap");

@@ -63,7 +63,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     /* Life-cycle
     /**********************************************************
      */
-    
+
     public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec, InputStream in)
     {
@@ -128,7 +128,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     /* Abstract method impls, text
     /**********************************************************
      */
-    
+
     // For now we do not store char[] representation...
     @Override
     public boolean hasTextCharacters() {
@@ -198,7 +198,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     /* Methods for AvroReadContext implementations: decoding
     /**********************************************************
      */
-    
+
     @Override
     public JsonToken decodeBoolean() throws IOException {
         return _decoder.readBoolean() ? JsonToken.VALUE_TRUE : JsonToken.VALUE_FALSE;
@@ -220,7 +220,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         _numTypesValid = NR_INT;
         return JsonToken.VALUE_NUMBER_INT;
     }
-    
+
     @Override
     public void skipInt() throws IOException {
         // ints use variable-length zigzagging; alas, no native skipping
@@ -281,7 +281,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         decodeString();
         return JsonToken.VALUE_STRING;
     }
-    
+
     @Override
     public void skipString() throws IOException {
         _decoder.skipString();
@@ -339,7 +339,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     }
 
     // // // Map decoding
-    
+
     @Override
     public String decodeMapKey() throws IOException {
         return _decoder.readString();
@@ -359,9 +359,9 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     public long skipMap() throws IOException {
         return _decoder.skipMap();
     }
-    
+
     // // // Misc other decoding
-    
+
     @Override
     public int decodeIndex() throws IOException {
         return (_branchIndex = _decoder.readIndex());

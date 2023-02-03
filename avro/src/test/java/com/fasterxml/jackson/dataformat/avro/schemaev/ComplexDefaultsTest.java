@@ -69,7 +69,7 @@ public class ComplexDefaultsTest extends AvroTestBase
             "    { 'name':'y', 'type':'int' }\n"+
             " ]\n"+
             "}\n");
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     static class ValueWithRecord {
         public int x, y;
@@ -105,11 +105,11 @@ public class ComplexDefaultsTest extends AvroTestBase
             y = y0;
         }
     }
-    
+
     static class Metadata {
         public String key, value;
     }
-    
+
     private final AvroMapper MAPPER = getMapper();
 
     /*
@@ -134,7 +134,7 @@ public class ComplexDefaultsTest extends AvroTestBase
         assertEquals(2, result.y);
         // expect default:
         assertNull(result.data);
-        
+
         result = MAPPER.readerFor(ValueWithRecord.class)
                 .with(xlate)
                 .readValue(avro);

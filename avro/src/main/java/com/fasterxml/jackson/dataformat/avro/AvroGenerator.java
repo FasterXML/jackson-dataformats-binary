@@ -51,7 +51,7 @@ public class AvroGenerator extends GeneratorBase
 
         protected final boolean _defaultState;
         protected final int _mask;
-        
+
         /**
          * Method that calculates bit set (flags) of all features that
          * are enabled by default.
@@ -66,7 +66,7 @@ public class AvroGenerator extends GeneratorBase
             }
             return flags;
         }
-        
+
         private Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
@@ -81,7 +81,7 @@ public class AvroGenerator extends GeneratorBase
         @Override
         public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
     }
-    
+
     /*
     /**********************************************************
     /* Configuration
@@ -157,10 +157,10 @@ public class AvroGenerator extends GeneratorBase
                 schema.getAvroSchema(), _encoder);
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
@@ -291,7 +291,7 @@ public class AvroGenerator extends GeneratorBase
     /* Overridden methods; writing field names
     /**********************************************************************
      */
-    
+
     // And then methods overridden to make final, streamline some aspects...
 
     @Override
@@ -508,7 +508,7 @@ public class AvroGenerator extends GeneratorBase
     /* Output method implementations, base64-encoded binary
     /**********************************************************
      */
-    
+
     @Override
     public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws IOException
     {
@@ -554,11 +554,11 @@ public class AvroGenerator extends GeneratorBase
         }
         _avroContext.writeValue(v);
     }
-    
+
     @Override
     public void writeNumber(double d) throws IOException {
         _avroContext.writeValue(Double.valueOf(d));
-    }    
+    }
 
     @Override
     public void writeNumber(float f) throws IOException {
@@ -593,7 +593,7 @@ public class AvroGenerator extends GeneratorBase
     /* Implementations for methods from base class
     /**********************************************************
      */
-    
+
     @Override
     protected final void _verifyValueWrite(String typeMsg) throws IOException {
         _throwInternal();

@@ -22,7 +22,7 @@ public class IntegerVisitor extends JsonIntegerFormatVisitor.Base
     public void numberType(JsonParser.NumberType type) {
         _type = type;
     }
-    
+
     @Override
     public Schema builtAvroSchema() {
         if (_type == null) {

@@ -94,6 +94,6 @@ public class Issue19Test extends AvroTestBase
 
         byte[] encoded2 = mapper.writer(partialSchema).writeValueAsBytes(input);
         assertNotNull(encoded2);
-        
+
     }
 }
