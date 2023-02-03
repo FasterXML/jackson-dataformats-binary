@@ -14,7 +14,7 @@ import tools.jackson.dataformat.avro.testsupport.LimitingInputStream;
 public class ArrayTest extends AvroTestBase
 {
     private final AvroMapper MAPPER = getMapper();
-    
+
     // Simple test for a single array
     public void testRootStringArray() throws Exception
     {
@@ -98,7 +98,7 @@ public class ArrayTest extends AvroTestBase
     // And the ultimate case of sequence of arrays of records
     public void testEmployeeArraySequence() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(EMPLOYEE_ARRAY_SCHEMA_JSON);                
+        AvroSchema schema = MAPPER.schemaFrom(EMPLOYEE_ARRAY_SCHEMA_JSON);
 
         Employee boss = new Employee("Bossman", 55, new String[] { "boss@company.com" }, null);
         Employee peon1 = new Employee("Worker#1", 24, new String[] { "worker1@company.com" }, boss);
@@ -141,7 +141,7 @@ public class ArrayTest extends AvroTestBase
         assertNull(p.nextToken());
         p.close();
     }
-    
+
     private void _compare(List<String> input, List<?> result) {
         assertEquals(input, result);
     }

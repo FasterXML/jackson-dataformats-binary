@@ -20,7 +20,7 @@ public abstract class MapReader extends AvroStructureReader
     protected String _currentName;
 
     protected int _state;
-    
+
     protected MapReader(String typeId, String keyTypeId, String valueTypeId) {
         this(null, null, typeId, keyTypeId, valueTypeId);
     }
@@ -48,7 +48,7 @@ public abstract class MapReader extends AvroStructureReader
 
     @Override
     public abstract JsonToken nextToken() throws IOException;
-    
+
     @Override
     public abstract void skipValue(AvroParserImpl parser) throws IOException;
 
@@ -128,7 +128,7 @@ public abstract class MapReader extends AvroStructureReader
         public long getRemainingElements() {
             return _count - _index;
         }
-        
+
         @Override
         public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new Scalar(parent, parser, _scalarDecoder, _typeId, _keyTypeId, _valueTypeId);
@@ -205,7 +205,7 @@ public abstract class MapReader extends AvroStructureReader
         public long getRemainingElements() {
             return _count - _index;
         }
-        
+
         @Override
         public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new NonScalar(parent, parser, _structureReader, _typeId, _keyTypeId);

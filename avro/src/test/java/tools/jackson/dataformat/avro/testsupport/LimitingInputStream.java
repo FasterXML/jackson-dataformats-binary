@@ -13,7 +13,7 @@ public class LimitingInputStream
     protected final InputStream _in;
 
     protected final Random _rnd;
-    
+
     public LimitingInputStream(InputStream in, int seed) {
         super(in);
         _in = in;
@@ -40,11 +40,11 @@ public class LimitingInputStream
     public int read(byte[] buffer) throws IOException {
         return read(buffer, 0, buffer.length);
     }
-    
+
     @Override
     public int read(byte[] buffer, int offset, int len0) throws IOException {
         int len = Math.min(len0, 1 + _rnd.nextInt(6));
         return _in.read(buffer, offset, len);
     }
-    
+
 }

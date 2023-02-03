@@ -22,13 +22,13 @@ public class DefinedSchemas
     /* Construction
     /**********************************************************************
      */
-    
+
     public DefinedSchemas() { }
 
     public void setProvider(SerializerProvider provider) {
         _provider = provider;
     }
-    
+
     public SerializerProvider getProvider() {
         return _provider;
     }
@@ -38,7 +38,7 @@ public class DefinedSchemas
     /* API
     /**********************************************************************
      */
-    
+
     public Schema findSchema(JavaType type) {
         return _schemas.get(type);
     }

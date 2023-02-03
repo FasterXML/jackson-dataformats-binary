@@ -73,7 +73,7 @@ public abstract class AvroTestBase extends TestCase
             +" {\"name\": \"x\", \"type\": \"double\"},\n"
             +" {\"name\": \"y\", \"type\": \"double\"}\n"
             +"]}";
-    
+
     /*
     /**********************************************************
     /* Test classes
@@ -103,7 +103,7 @@ public abstract class AvroTestBase extends TestCase
             y = y0;
         }
     }
-    
+
     public static class Employee
     {
         public Employee() { }
@@ -143,7 +143,7 @@ public abstract class AvroTestBase extends TestCase
             }
             _images.add(p);
         }
-        
+
         public List<Image> getImages() { return _images; }
         public void setImages(List<Image> p) { _images = p; }
 
@@ -296,7 +296,7 @@ public abstract class AvroTestBase extends TestCase
             return null;
         }
     }
-    
+
     protected AvroMapper getMapper() {
         if (_sharedMapper == null) {
             _sharedMapper = newMapper();
@@ -311,7 +311,7 @@ public abstract class AvroTestBase extends TestCase
     protected static AvroMapper newApacheMapper() {
         return new AvroMapper(AvroFactory.builderWithApacheDecoder().build());
     }
-    
+
     protected byte[] toAvro(Employee empl) throws IOException {
         return toAvro(empl, getMapper());
     }
@@ -347,7 +347,7 @@ public abstract class AvroTestBase extends TestCase
     protected static String quote(String str) {
         return "\""+str+"\"";
     }
-    
+
     protected static String aposToQuotes(String json) {
         return json.replace("'", "\"");
     }
@@ -361,7 +361,7 @@ public abstract class AvroTestBase extends TestCase
     protected static String generateUnicodeString(int length) {
         return generateUnicodeString(length, new Random(length));
     }
-    
+
     protected static String generateUnicodeString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
@@ -390,7 +390,7 @@ public abstract class AvroTestBase extends TestCase
     protected static String generateAsciiString(int length) {
         return generateAsciiString(length, new Random(length));
     }
-    
+
     protected static String generateAsciiString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);

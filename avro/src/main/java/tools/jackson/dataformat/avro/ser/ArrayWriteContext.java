@@ -8,7 +8,7 @@ public class ArrayWriteContext
     extends AvroWriteContext
 {
     protected final GenericArray<Object> _array;
-    
+
     public ArrayWriteContext(AvroWriteContext parent, AvroGenerator generator,
             GenericArray<Object> array, Object currValue)
     {

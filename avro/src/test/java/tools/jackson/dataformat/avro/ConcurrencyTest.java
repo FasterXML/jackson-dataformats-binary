@@ -20,9 +20,9 @@ public class ConcurrencyTest extends AvroTestBase
     private final AvroSchema EMPL_SCHEMA;
 
     public ConcurrencyTest() throws IOException {
-        EMPL_SCHEMA = getEmployeeSchema();        
+        EMPL_SCHEMA = getEmployeeSchema();
     }
-    
+
     // Simple test that creates 2 encoders and uses them in interleaved manner.
     // This should tease out simplest problems with possible encoder reuse.
     public void testMultipleEncoders() throws Exception

@@ -15,7 +15,7 @@ import org.apache.avro.io.Encoder;
 /**
  * Need to sub-class to prevent encoder from crapping on writing an optional
  * Enum value (see [dataformat-avro#12])
- * 
+ *
  * @since 2.5
  */
 public class NonBSGenericDatumWriter<D>
@@ -26,7 +26,7 @@ public class NonBSGenericDatumWriter<D>
     private final static Class<?> CLS_STRING = String.class;
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
     private final static Class<?> CLS_BIG_INTEGER = BigInteger.class;
-    
+
     public NonBSGenericDatumWriter(Schema root) {
 	super(root);
     }

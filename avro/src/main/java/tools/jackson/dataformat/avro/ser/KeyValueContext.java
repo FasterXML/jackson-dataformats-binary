@@ -10,7 +10,7 @@ import tools.jackson.dataformat.avro.AvroGenerator;
 abstract class KeyValueContext extends AvroWriteContext
 {
     protected String _currentName;
-    
+
     protected boolean _expectValue = false;
 
     protected KeyValueContext(AvroWriteContext parent, AvroGenerator generator,
@@ -26,7 +26,7 @@ abstract class KeyValueContext extends AvroWriteContext
     public boolean canClose() {
         return !_expectValue;
     }
-    
+
     @Override
     public final void appendDesc(StringBuilder sb)
     {

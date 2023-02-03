@@ -84,7 +84,7 @@ public class MapTest extends AvroTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
-        
+
         p.close();
 
         // and then databind

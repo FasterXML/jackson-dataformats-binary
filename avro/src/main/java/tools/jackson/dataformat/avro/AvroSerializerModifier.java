@@ -27,7 +27,7 @@ public class AvroSerializerModifier
         // Couple of ways to determine if it's generated class: main alternative
         // would be to look for annotation `AvroGenerated` but check for base
         // class seems simpler and as robust:
-        
+
         if (SpecificRecordBase.class.isAssignableFrom(ac.getRawType())) {
             Iterator<BeanPropertyWriter> it = beanProperties.iterator();
             while (it.hasNext()) {

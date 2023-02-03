@@ -57,7 +57,7 @@ public class ScalarDefaults
             return parser.setString(_defaults);
         }
     }
-    
+
     protected final static class BytesDefaults extends DefaultsBase
     {
         protected final byte[] _defaults;
@@ -117,7 +117,7 @@ public class ScalarDefaults
             return parser.setNumber(_defaults);
         }
     }
-    
+
     protected final static class LongDefaults extends DefaultsBase
     {
         protected final long _defaults;
