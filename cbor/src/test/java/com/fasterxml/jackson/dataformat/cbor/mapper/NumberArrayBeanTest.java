@@ -18,7 +18,7 @@ public class NumberArrayBeanTest extends CBORTestBase
         protected LongsWrapper() { }
         public LongsWrapper(long[][] v) { values = v; }
     }
-    
+
     static class DoublesWrapper {
         public double[][] values;
 
@@ -59,7 +59,7 @@ public class NumberArrayBeanTest extends CBORTestBase
         assertEquals(inputArray[0][0], result.values[0][0]);
         assertEquals(inputArray[0][1], result.values[0][1]);
     }
-    
+
     // for [dataformats-binary#31]
     public void testDoubleArrayRoundTrip() throws Exception
     {

@@ -55,7 +55,7 @@ public class ParserInputStreamTest extends CBORTestBase
 
         assertEquals("byte offset: #7999", loc.offsetDescription());
         assertEquals("(ByteArrayInputStream)", loc.sourceDescription());
-        
+
         parser.nextToken();
         parser.finishToken();
 

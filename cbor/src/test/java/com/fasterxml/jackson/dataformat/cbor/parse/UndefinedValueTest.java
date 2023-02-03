@@ -51,7 +51,7 @@ public class UndefinedValueTest extends CBORTestBase
         byte[] doc = out.toByteArray();
         // assume we use end marker for Object, so
         doc[doc.length-2] = BYTE_UNDEFINED;
-        
+
         JsonParser p = cborParser(CBOR_F, doc);
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());

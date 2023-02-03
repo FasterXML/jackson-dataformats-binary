@@ -115,5 +115,5 @@ public class CBORMapper extends ObjectMapper
     public CBORFactory getFactory() {
         return (CBORFactory) _jsonFactory;
     }
-    
+
 }

@@ -63,7 +63,7 @@ public class ParserNextXxxTest extends CBORTestBase
     {
         final CBORFactory f = new CBORFactory();
         byte[] DOC = cborDoc(f, "{\"field\" :\"value\"}");
-        
+
         SerializableString fieldName = new SerializedString("field");
         JsonParser parser = f.createParser(DOC);
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
@@ -98,7 +98,7 @@ public class ParserNextXxxTest extends CBORTestBase
         g.writeEndObject();
         g.close();
         final byte[] DOC = bytes.toByteArray();
-    
+
         JsonParser parser = f.createParser(DOC);
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         rnd = new Random(1);
@@ -139,7 +139,7 @@ public class ParserNextXxxTest extends CBORTestBase
         assertNull(parser.nextBooleanValue());
         assertNull(parser.nextTextValue());
         assertNull(parser.nextFieldName());
-        
+
         parser.close();
     }
 
@@ -176,7 +176,7 @@ public class ParserNextXxxTest extends CBORTestBase
         JsonParser p = cborParser(in);
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
- 
+
         assertEquals(textValue, p.nextTextValue());
         assertNull(p.nextTextValue());
         assertToken(JsonToken.VALUE_TRUE, p.currentToken());
@@ -199,7 +199,7 @@ public class ParserNextXxxTest extends CBORTestBase
         assertNull(p.nextTextValue());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.currentToken());
         assertEquals(0.5, p.getDoubleValue());
-        
+
         assertNull(p.nextTextValue());
         assertToken(JsonToken.END_ARRAY, p.currentToken());
         p.close();

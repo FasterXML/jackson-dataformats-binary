@@ -34,7 +34,7 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
         CBORFactory cborFactory = new CBORFactory(mapper);
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        
+
         CBORGenerator cborGen = cborFactory.createGenerator(bytes);
         cborGen.writeObject(1);
         cborGen.close();
@@ -56,5 +56,5 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
             builder.append(ALPHA_NUMERIC_STRING.charAt(character));
         }
         return builder.toString();
-    }    
+    }
 }

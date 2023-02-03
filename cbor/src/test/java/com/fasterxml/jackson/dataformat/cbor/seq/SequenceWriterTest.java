@@ -15,7 +15,7 @@ public class SequenceWriterTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
-    @JsonPropertyOrder({ "id", "value"}) 
+    @JsonPropertyOrder({ "id", "value"})
     static class IdValue {
         public int id, value;
 
