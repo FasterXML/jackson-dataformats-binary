@@ -11,8 +11,8 @@ public class EnumTest extends AvroTestBase
             +"}\n"
             +"]}";
 
-    protected enum Gender { M, F; } 
-    
+    protected enum Gender { M, F; }
+
     protected static class Employee {
         public Gender gender;
     }
@@ -22,7 +22,7 @@ public class EnumTest extends AvroTestBase
     }
 
     private final AvroMapper MAPPER = newMapper();
-    
+
     public void testSimple() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);

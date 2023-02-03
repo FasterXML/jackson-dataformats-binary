@@ -108,7 +108,7 @@ public class MapperConfigTest extends AvroTestBase
         _testAvroMapperDefaults(mapper);
         _testAvroMapperDefaults(mapper.copy());
     }
-    
+
     protected void _testAvroMapperDefaults(ObjectMapper mapper)
     {
         // should be defaulting to sort-alphabetically, due to Avro format requiring ordering

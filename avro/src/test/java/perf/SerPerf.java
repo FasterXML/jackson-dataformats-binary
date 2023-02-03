@@ -20,14 +20,14 @@ public final class SerPerf extends PerfBase
     private final int REPS;
 
     private final GenericDatumWriter<GenericRecord> WRITER;
-    
+
     private SerPerf() throws Exception
     {
         // Let's try to guesstimate suitable size...
         REPS = 9000;
         WRITER = new GenericDatumWriter<GenericRecord>(itemSchema.getAvroSchema());
     }
-    
+
     public void test()
         throws Exception
     {
@@ -41,7 +41,7 @@ public final class SerPerf extends PerfBase
         final GenericRecord itemRecord = itemToRecord(item);
         final ObjectWriter jsonWriter = new ObjectMapper()
             .writerFor(MediaItem.class);
-        
+
         while (true) {
 //            Thread.sleep(150L);
             ++i;
@@ -97,7 +97,7 @@ public final class SerPerf extends PerfBase
         }
         return result.size();
     }
-    
+
     private int testAvroSer(GenericRecord value, int reps,
             ByteArrayOutputStream result)
         throws Exception
@@ -113,7 +113,7 @@ public final class SerPerf extends PerfBase
         }
         return result.size(); // just to get some non-optimizable number
     }
-    
+
     public static void main(String[] args) throws Exception
     {
         new SerPerf().test();

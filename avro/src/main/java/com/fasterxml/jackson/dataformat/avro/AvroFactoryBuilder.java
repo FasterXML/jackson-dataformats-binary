@@ -93,8 +93,8 @@ public class AvroFactoryBuilder extends TSFBuilder<AvroFactory, AvroFactoryBuild
     /* Mutators
     /**********************************************************
      */
-    
-    
+
+
     // // // Parser features
 
     public AvroFactoryBuilder enable(AvroParser.Feature f) {
@@ -146,7 +146,7 @@ public class AvroFactoryBuilder extends TSFBuilder<AvroFactory, AvroFactoryBuild
         _formatGeneratorFeatures &= ~f.getMask();
         return _this();
     }
-    
+
     public AvroFactoryBuilder disable(AvroGenerator.Feature first, AvroGenerator.Feature... other) {
         _formatGeneratorFeatures &= ~first.getMask();
         for (AvroGenerator.Feature f : other) {

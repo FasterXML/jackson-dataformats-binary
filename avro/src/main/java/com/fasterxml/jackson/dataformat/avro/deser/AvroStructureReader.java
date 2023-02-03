@@ -38,7 +38,7 @@ public abstract class AvroStructureReader
     public boolean consumesNoContent() {
         return false;
     }
-    
+
     /*
     /**********************************************************************
     /* Reader API
@@ -65,7 +65,7 @@ public abstract class AvroStructureReader
     public final JsonToken getCurrentToken() {
         return _currToken;
     }
-    
+
     protected void throwIllegalState(int state) {
         throw new IllegalStateException("Illegal state for reader of type "
                 +getClass().getName()+": "+state);

@@ -20,7 +20,7 @@ public class BinaryDataTest extends AvroTestBase
             data = text.getBytes("UTF-8");
             size = data.length;
         }
-        
+
         public String filename = "TestFile.txt";
         public byte[] data;
         public long size;
@@ -28,7 +28,7 @@ public class BinaryDataTest extends AvroTestBase
 
     private final AvroMapper AVRO_JACKSON_MAPPER =  AvroMapper.builder(new AvroFactory()).build();
     private final AvroMapper AVRO_APACHE_MAPPER =  AvroMapper.builder(new ApacheAvroFactory()).build();
-    
+
     public void testAvroSchemaGenerationWithJackson() throws Exception
     {
         _testAvroSchemaGenerationWithJackson(AVRO_JACKSON_MAPPER);
@@ -43,7 +43,7 @@ public class BinaryDataTest extends AvroTestBase
         byte[] ser = mapper.writer(schema).writeValueAsBytes(new FilePojo(
                 "ABCDEFGERRJEOOJKDPKPEWVEW PKWEVPKEVEW"));
         assertNotNull(ser);
-        
+
         // plus should probably also read back, right?
         FilePojo result = mapper.readerFor(FilePojo.class)
                 .with(schema)

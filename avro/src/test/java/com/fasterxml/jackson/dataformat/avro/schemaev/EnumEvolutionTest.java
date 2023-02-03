@@ -21,15 +21,15 @@ public class EnumEvolutionTest extends AvroTestBase
             +" \"name\": \"Gender\", \"symbols\": [\"O\",\"F\",\"M\"] }"
             +"}\n"
             +"]}";
-    
-    protected enum Gender { M, F, O; } 
-    
+
+    protected enum Gender { M, F, O; }
+
     protected static class Employee {
         public Gender gender;
     }
 
     private final AvroMapper MAPPER = new AvroMapper();
-    
+
     public void testSimple() throws Exception
     {
         AvroSchema src = MAPPER.schemaFrom(ENUM_SCHEMA1_JSON);

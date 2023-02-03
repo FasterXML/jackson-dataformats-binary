@@ -20,7 +20,7 @@ public class ScalarTest extends AvroTestBase
         _testRootString(3, r, avro, INPUT);
         _testRootString(1, r, avro, INPUT);
     }
-    
+
     public void _testRootString(int chunkSize, ObjectReader r, byte[] encoded,
             String inputValue) throws Exception
     {
@@ -42,7 +42,7 @@ public class ScalarTest extends AvroTestBase
         _testRootInt(3, r, avro, inputValue);
         _testRootInt(1, r, avro, inputValue);
     }
-        
+
     public void _testRootInt(int chunkSize, ObjectReader r, byte[] encoded,
             Integer inputValue) throws Exception
     {
@@ -149,7 +149,7 @@ public class ScalarTest extends AvroTestBase
                     inputValue.doubleValue(), actual.doubleValue()));
         }
     }
-    
+
     public void testRootBoolean() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(quote("boolean"));

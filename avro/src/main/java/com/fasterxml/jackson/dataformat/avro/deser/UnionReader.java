@@ -24,7 +24,7 @@ final class UnionReader extends AvroStructureReader
         _memberReaders = memberReaders;
         _parser = parser;
     }
-    
+
     @Override
     public UnionReader newReader(AvroReadContext parent, AvroParserImpl parser) {
         return new UnionReader(parent, _memberReaders, parser);

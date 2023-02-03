@@ -17,7 +17,7 @@ public final class ObjectWriteContext
      * null if property is to be skipped.
      */
     protected Schema.Field _nextField;
-    
+
     public ObjectWriteContext(AvroWriteContext parent, AvroGenerator generator,
             GenericRecord record, Object currValue)
     {
@@ -69,7 +69,7 @@ public final class ObjectWriteContext
         _nextField = field;
         return true;
     }
-    
+
     @Override
     public void writeValue(Object value) throws JsonMappingException {
         _verifyValueWrite();

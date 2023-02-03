@@ -22,7 +22,7 @@ public class RoundtripTest extends MapTest
         " ]\n"+
         "}\n");
 
-    
+
     static AvroSchema CHARSEQ_SCHEMA;
     static {
         try {
@@ -51,7 +51,7 @@ public class RoundtripTest extends MapTest
     {
         AvroSchema jsch = getEmployeeSchema();
         ObjectMapper mapper = new ObjectMapper(new AvroFactory());
-        
+
         ObjectWriter writ = mapper.writer(jsch);
         ObjectMapper unzip = new ObjectMapper();
         byte[] avroData = writ.writeValueAsBytes(unzip.readTree

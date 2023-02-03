@@ -33,7 +33,7 @@ public class RecursiveDummyRecord extends DummyRecord {
     }
 
     // hashCode, toString from parent
-    
+
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;

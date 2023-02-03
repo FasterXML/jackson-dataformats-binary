@@ -43,7 +43,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         sUtf8UnitLengths = table;
     }
-    
+
     /*
     /**********************************************************
     /* Input source config
@@ -73,7 +73,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     /* Life-cycle
     /**********************************************************
      */
-    
+
     public JacksonAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec, InputStream in)
     {
@@ -500,7 +500,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             }
         }
     }
-    
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding float/double
@@ -608,7 +608,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         if (outBuf.length < len) { // one minor complication
             outBuf = _textBuffer.expandCurrentSegment(len);
         }
-        
+
         int outPtr = 0;
         int inPtr = _inputPtr;
         _inputPtr += len;
@@ -674,7 +674,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             if ((len -= code) < 0) { // may need to improve error here but...
                 throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
             }
-            
+
             switch (code) {
             case 0:
                 break;
@@ -773,7 +773,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr = ptr;
         _reportInvalidOther(mask);
     }
-    
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Bytes
@@ -895,7 +895,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _reportError("Only able to skip "+(len-left)+" bytes before end-of-input (needed "+len+")");
         }
     }
-    
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Arrays
@@ -936,7 +936,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         return result;
     }
-    
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decoding Maps
@@ -1076,7 +1076,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         return false;
     }
-    
+
     /**
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary

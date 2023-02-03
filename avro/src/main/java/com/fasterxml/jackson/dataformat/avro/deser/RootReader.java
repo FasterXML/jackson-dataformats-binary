@@ -56,7 +56,7 @@ public class RootReader extends AvroReadContext
         return null;
 //        return _valueReader.newReader(this, _parser).nextFieldName();
     }
-    
+
     @Override
     public String getTypeId() {
         return _valueReader.getTypeId();

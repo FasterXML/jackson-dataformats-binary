@@ -17,8 +17,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 /**
  * Deserializer for handling when we have no target type, just schema type. Normally, the {@link UntypedObjectDeserializer} doesn't look
  * for native type information when handling scalar values, but Avro sometimes includes type information in the schema for scalar values;
- * This subclass checks for the presence of valid type information and calls out to the type deserializer even for scalar values. The
- * same goes for map keys.
+ * This subclass checks for the presence of valid type information and calls out to the type deserializer even for scalar values. The same goes for map keys.
  *
  * @since 2.9
  */

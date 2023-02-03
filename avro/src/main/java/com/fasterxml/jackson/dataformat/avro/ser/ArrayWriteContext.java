@@ -9,7 +9,7 @@ public class ArrayWriteContext
     extends AvroWriteContext
 {
     protected final GenericArray<Object> _array;
-    
+
     public ArrayWriteContext(AvroWriteContext parent, AvroGenerator generator,
             GenericArray<Object> array, Object currValue)
     {
@@ -19,14 +19,14 @@ public class ArrayWriteContext
 
     @Override
     public Object rawValue() { return _array; }
-    
+
     @Override
     public final AvroWriteContext createChildArrayContext(Object currValue) throws JsonMappingException {
         GenericArray<Object> arr = _createArray(_schema.getElementType());
         _array.add(arr);
         return new ArrayWriteContext(this, _generator, arr, currValue);
     }
-    
+
     @Override
     public AvroWriteContext createChildObjectContext(Object currValue) throws JsonMappingException {
         AvroWriteContext child = _createObjectContext(_schema.getElementType(), currValue);

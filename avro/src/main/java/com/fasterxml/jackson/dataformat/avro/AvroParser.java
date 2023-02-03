@@ -54,7 +54,7 @@ public abstract class AvroParser extends ParserBase
             }
             return flags;
         }
-        
+
         private Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
@@ -104,7 +104,7 @@ public abstract class AvroParser extends ParserBase
     protected AvroParser(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec)
     {
-        super(ctxt, parserFeatures);    
+        super(ctxt, parserFeatures);
         _objectCodec = codec;
         _formatFeatures = avroFeatures;
         _avroContext = MissingReader.instance;
@@ -132,10 +132,10 @@ public abstract class AvroParser extends ParserBase
         return AVRO_READ_CAPABILITIES;
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
@@ -144,9 +144,9 @@ public abstract class AvroParser extends ParserBase
     }
 
     /*
-    /**********************************************************                              
+    /**********************************************************
     /* ParserBase method impls
-    /**********************************************************                              
+    /**********************************************************
      */
 
     @Override
@@ -268,7 +268,7 @@ public abstract class AvroParser extends ParserBase
     /* Parsing
     /**********************************************************
      */
-    
+
     @Override
     public abstract JsonToken nextToken() throws IOException;
 
@@ -286,7 +286,7 @@ public abstract class AvroParser extends ParserBase
 
     @Override
     public abstract int getText(Writer writer) throws IOException;
-    
+
     @Override
     public String getCurrentName() throws IOException {
         return _avroContext.getCurrentName();
@@ -309,7 +309,7 @@ public abstract class AvroParser extends ParserBase
             throw new IllegalStateException(e);
         }
     }
-    
+
     @Override
     public char[] getTextCharacters() throws IOException {
         String text = getText();
@@ -337,7 +337,7 @@ public abstract class AvroParser extends ParserBase
     public Object getEmbeddedObject() throws IOException {
         return _binaryValue;
     }
-    
+
     @Override
     public byte[] getBinaryValue(Base64Variant variant) throws IOException
     {

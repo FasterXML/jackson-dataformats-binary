@@ -22,7 +22,7 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
  * Convenience {@link AvroMapper}, which is mostly similar to simply
  * constructing a mapper with {@link AvroFactory}, but also adds little
  * bit of convenience around {@link AvroSchema} generation.
- * 
+ *
  * @since 2.5
  */
 public class AvroMapper extends ObjectMapper
@@ -174,7 +174,7 @@ public class AvroMapper extends ObjectMapper
     public AvroFactory getFactory() {
         return (AvroFactory) _jsonFactory;
     }
-    
+
     /**
      * Factory method for constructing {@link AvroSchema} by introspecting given
      * POJO type and building schema that contains specified properties.
