@@ -22,8 +22,8 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.UTF8Writer;
 
 /**
- * This is simply a wrapper around the {@link UTF8Writer} to prevent it from throwing 
- * an NPE after closing. It would be easier to subclass it, but {@link UTF8Writer} is 
+ * This is simply a wrapper around the {@link UTF8Writer} to prevent it from throwing
+ * an NPE after closing. It would be easier to subclass it, but {@link UTF8Writer} is
  * final, so we have to use delegation.
  *
  * @deprecated Since 2.13 should not be needed any more
@@ -72,7 +72,7 @@ public class CloseSafeUTF8Writer extends Writer
     public void write(char[] cbuf, int off, int len) throws IOException {
         wrapped.write(cbuf, off, len);
     }
-    
+
     @Override
     public void write(int c) throws IOException {
         wrapped.write(c);
@@ -87,7 +87,7 @@ public class CloseSafeUTF8Writer extends Writer
     public void write(String str, int off, int len)  throws IOException {
         wrapped.write(str, off, len);
     }
-    
-    
-    
+
+
+
 }

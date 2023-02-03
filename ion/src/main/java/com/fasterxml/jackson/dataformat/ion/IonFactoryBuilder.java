@@ -77,7 +77,7 @@ public class IonFactoryBuilder extends TSFBuilder<IonFactory, IonFactoryBuilder>
         _createBinaryWriters = true;
         return this;
     }
-    
+
     public IonFactoryBuilder withTextualWriters() {
         _createBinaryWriters = false;
         return this;

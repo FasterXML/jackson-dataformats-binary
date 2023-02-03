@@ -43,7 +43,7 @@ public class IonTimestampDeserializers {
             return super.deserialize(p, ctxt);
         }
     }
-    
+
     public static class IonTimestampSQLDateDeserializer extends SqlDateDeserializer {
         private static final long serialVersionUID = 1L;
 

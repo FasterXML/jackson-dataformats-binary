@@ -29,7 +29,7 @@ import com.amazon.ion.IonValue;
  *
  * Direct serialization to and from IonValue fields is supported. The POJO can declare fields of type IonValue (or a
  * subclass) and the direct value will be provided.
- * 
+ *
  * Enums are serialized as symbols by default.
  */
 public class IonValueMapper extends IonObjectMapper

@@ -50,7 +50,7 @@ public class IonTimestampSerializers {
             }
         }
     }
-    
+
     public static class IonTimestampSQLDateSerializer extends StdScalarSerializer<java.sql.Date>
     {
         private static final long serialVersionUID = 1L;

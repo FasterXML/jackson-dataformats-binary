@@ -11,13 +11,13 @@ final class TimestampUtils {
     private static final BigDecimal ONE_THOUSAND = new BigDecimal("1000");
     private static final BigDecimal ONE_MILLION = new BigDecimal("1000000");
     private static final BigDecimal ONE_BILLION = new BigDecimal("1000000000");
-    
+
     private TimestampUtils() {}
-    
+
     static Timestamp toTimestamp(Instant instant, ZoneOffset offset) {
-        final Integer offsetMinutes = offset == null ? null 
+        final Integer offsetMinutes = offset == null ? null
                 : secondsToMinutes(offset.getTotalSeconds());
-        
+
         return Timestamp.forMillis(getFractionalMillis(instant), offsetMinutes);
     }
 
@@ -45,7 +45,7 @@ final class TimestampUtils {
         return epochSeconds.multiply(ONE_THOUSAND)
                 .add(nanos.divide(ONE_MILLION));
     }
-    
+
     //From https://github.com/FasterXML/jackson-modules-java8
     static Instant fromFractionalSeconds(BigDecimal seconds) {
         // Complexity is here to workaround unbounded latency in some BigDecimal operations.
@@ -78,7 +78,7 @@ final class TimestampUtils {
 
         return Instant.ofEpochSecond(secondsOnly, nanosOnly)    ;
     }
-    
+
     private static int secondsToMinutes(int seconds) {
         return Math.floorDiv(seconds, 60);
     }

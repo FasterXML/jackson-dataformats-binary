@@ -29,13 +29,13 @@ import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 
 /**
  * Serializes members as IonSymbols.
- * 
+ *
  * Use annotation
- * 
+ *
  * <pre>
  * &#64;JsonSerialize(using=IonSymbolSerializer.class)
  * </pre>
- * 
+ *
  * on String members that should serialize at symbols (which amounts to
  * serializing without being surrounded by double-quotes)
  */

@@ -31,7 +31,7 @@ class IonValueSerializer extends StdScalarSerializer<IonValue>
     private static final long serialVersionUID = 1L;
 
     public IonValueSerializer() {
-        super(IonValue.class);        
+        super(IonValue.class);
     }
 
     @Override

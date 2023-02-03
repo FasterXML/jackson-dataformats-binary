@@ -43,7 +43,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
  */
 public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
     private static final long serialVersionUID = 1L;
-    
+
     private final boolean resolveAllTypes;
 
     public IonAnnotationIntrospector(boolean resolveAllTypes) {
