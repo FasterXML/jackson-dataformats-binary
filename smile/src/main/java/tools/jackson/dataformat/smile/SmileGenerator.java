@@ -49,7 +49,7 @@ public class SmileGenerator
          * Default setting is false meaning that such marker is not written.
          */
         WRITE_END_MARKER(false),
-        
+
         /**
          * Whether to use simple 7-bit per byte encoding for binary content when output.
          * This is necessary ensure that byte 0xFF will never be included in content output.
@@ -101,7 +101,7 @@ public class SmileGenerator
 
         protected final boolean _defaultState;
         protected final int _mask;
-        
+
         /**
          * Method that calculates bit set (flags) of all features that
          * are enabled by default.
@@ -116,7 +116,7 @@ public class SmileGenerator
             }
             return flags;
         }
-        
+
         private Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
@@ -124,7 +124,7 @@ public class SmileGenerator
 
         @Override public boolean enabledByDefault() { return _defaultState; }
         @Override public int getMask() { return _mask; }
-        @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }    
+        @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
     }
 
     /**
@@ -136,7 +136,7 @@ public class SmileGenerator
         public final String value;
         public final int index;
         public SharedStringNode next;
-        
+
         public SharedStringNode(String value, int index, SharedStringNode next)
         {
             this.value = value;
@@ -144,7 +144,7 @@ public class SmileGenerator
             this.next = next;
         }
     }
-    
+
     /**
      * To simplify certain operations, we require output buffer length
      * to allow outputting of contiguous 256 character UTF-8 encoded String
@@ -200,7 +200,7 @@ public class SmileGenerator
      * specific buffers.
      */
     final protected SmileBufferRecycler<SharedStringNode> _smileBufferRecycler;
-    
+
     /*
     /**********************************************************************
     /* Output state
@@ -242,7 +242,7 @@ public class SmileGenerator
      * stream writer.
      */
     protected int _bytesWritten;
-    
+
     /*
     /**********************************************************************
     /* Shared String detection
@@ -284,7 +284,7 @@ public class SmileGenerator
     /* Thread-local recycling
     /**********************************************************************
      */
-    
+
     /**
      * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
      * to a buffer recycler used to provide a low-cost
@@ -298,7 +298,7 @@ public class SmileGenerator
     /* Life-cycle
     /**********************************************************************
      */
-    
+
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int streamWriteFeatures, int smileFeatures,
             OutputStream out)
@@ -317,7 +317,7 @@ public class SmileGenerator
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
             throw new IllegalStateException(String.format(
-                    "Internal encoding buffer length (%d) too short, must be at least %d", 
+                    "Internal encoding buffer length (%d) too short, must be at least %d",
                     _outputEnd, MIN_BUFFER_LENGTH));
         }
         if (!Feature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
@@ -363,7 +363,7 @@ public class SmileGenerator
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
             throw new IllegalStateException(String.format(
-                    "Internal encoding buffer length (%d) too short, must be at least %d", 
+                    "Internal encoding buffer length (%d) too short, must be at least %d",
                     _outputEnd, MIN_BUFFER_LENGTH));
         }
         if (!Feature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
@@ -391,7 +391,7 @@ public class SmileGenerator
 
     /**
      * Method that can be called to explicitly write Smile document header.
-     * Note that usually you do not need to call this for first document to output, 
+     * Note that usually you do not need to call this for first document to output,
      * but rather only if you intend to write multiple root-level documents
      * with same generator (and even in that case this is optional thing to do).
      * As a result usually only {@link SmileFactory} calls this method.
@@ -424,9 +424,9 @@ public class SmileGenerator
         return br;
     }
 
-    /*                                                                                       
+    /*
     /**********************************************************************
-    /* Versioned                                                                             
+    /* Versioned
     /**********************************************************************
      */
 
@@ -741,7 +741,7 @@ public class SmileGenerator
         _writeByte(TOKEN_LITERAL_END_ARRAY);
         return this;
     }
-    
+
     private final void _writeName(String name) throws JacksonException
     {
         int len = name.length();
@@ -771,7 +771,7 @@ public class SmileGenerator
         ++_outputTail; // to reserve space for type token
         int byteLen = _shortUTF8Encode(name, 0, len);
         byte typeToken;
-        
+
         // ASCII?
         if (byteLen == len) {
             if (byteLen <= MAX_SHORT_NAME_ASCII_BYTES) { // yes, is short indeed
@@ -819,9 +819,9 @@ public class SmileGenerator
         if (_outputTail >= _outputEnd) {
             _flushBuffer();
         }
-        _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;                
+        _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;
     }
-    
+
     protected final void _writeName(SerializableString name) throws JacksonException
     {
         final int charLen = name.charLength();
@@ -962,9 +962,9 @@ public class SmileGenerator
             _writeByte((byte) (TOKEN_PREFIX_KEY_SHARED_SHORT + ix));
         } else {
             _writeBytes(((byte) (TOKEN_PREFIX_KEY_SHARED_LONG + (ix >> 8))), (byte) ix);
-        } 
-    }    
-    
+        }
+    }
+
     /*
     /**********************************************************************
     /* Output method implementations, textual
@@ -996,7 +996,7 @@ public class SmileGenerator
                 return this;
             }
         }
-            
+
         // possibly short string (but not necessarily)
         // first: ensure we have enough space
         if ((_outputTail + MIN_BUFFER_FOR_POSSIBLE_SHORT_STRING) >= _outputEnd) {
@@ -1017,7 +1017,7 @@ public class SmileGenerator
                 // note: since length 1 can not be used here, value range is offset by 2, not 1
                 _outputBuffer[origOffset] = (byte) ((TOKEN_PREFIX_TINY_UNICODE - 2) +  byteLen);
             }
-        } else { // nope, longer String 
+        } else { // nope, longer String
             _outputBuffer[origOffset] = (byteLen == len) ? TOKEN_BYTE_LONG_STRING_ASCII
                     : SmileConstants.TOKEN_MISC_LONG_TEXT_UNICODE;
             // and we will need String end marker byte
@@ -1038,8 +1038,8 @@ public class SmileGenerator
         } else {
             _writeBytes(((byte) (TOKEN_PREFIX_SHARED_STRING_LONG + (ix >> 8))), (byte) ix);
         }
-    }    
-    
+    }
+
     /**
      * Helper method called to handle cases where String value to write is known
      * to be long enough not to be shareable.
@@ -1056,7 +1056,7 @@ public class SmileGenerator
             _writeByte(BYTE_MARKER_END_OF_STRING);
             return;
         }
-        
+
         if ((_outputTail + maxLen) >= _outputEnd) {
             _flushBuffer();
         }
@@ -1068,9 +1068,9 @@ public class SmileGenerator
         if (byteLen > len) {
             _outputBuffer[origOffset] = SmileConstants.TOKEN_MISC_LONG_TEXT_UNICODE;
         }
-        _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;                
+        _outputBuffer[_outputTail++] = BYTE_MARKER_END_OF_STRING;
     }
-    
+
     @Override
     public JsonGenerator writeString(char[] text, int offset, int len) throws JacksonException
     {
@@ -1152,7 +1152,7 @@ public class SmileGenerator
         // If not, use pre-encoded version
         byte[] raw = sstr.asUnquotedUTF8();
         final int byteLen = raw.length;
-        
+
         if (byteLen <= MAX_SHORT_VALUE_STRING_BYTES) { // short string
             // first: ensure we have enough space
             if ((_outputTail + byteLen + 1) >= _outputEnd) {
@@ -1194,7 +1194,7 @@ public class SmileGenerator
         // Sanity check: shared-strings incompatible with raw String writing
         if (_seenStringValueCount >= 0) {
             throw new UnsupportedOperationException("Can not use direct UTF-8 write methods when 'Feature.CHECK_SHARED_STRING_VALUES' enabled");
-        } 
+        }
         /* Other practical limitation is that we do not really know if it might be
          * ASCII or not; and figuring it out is rather slow. So, best we can do is
          * to declare we do not know it is ASCII (i.e. "is Unicode").
@@ -1242,7 +1242,7 @@ public class SmileGenerator
         // Since no escaping is needed, same as 'writeRawUTF8String'
         return writeRawUTF8String(text, offset, len);
     }
-    
+
     /*
     /**********************************************************************
     /* Output method implementations, unprocessed ("raw")
@@ -1338,14 +1338,14 @@ public class SmileGenerator
         }
         return dataLength;
     }
-    
+
     @Override
     public int writeBinary(Base64Variant b64variant, InputStream data, int dataLength)
         throws JacksonException
     {
         return writeBinary(data, dataLength);
     }
-    
+
     /*
     /**********************************************************************
     /* Output method implementations, primitive
@@ -1359,7 +1359,7 @@ public class SmileGenerator
         if (state) {
             _writeByte(TOKEN_LITERAL_TRUE);
         } else {
-            _writeByte(TOKEN_LITERAL_FALSE);             
+            _writeByte(TOKEN_LITERAL_FALSE);
         }
         return this;
     }
@@ -1385,7 +1385,7 @@ public class SmileGenerator
         i = SmileUtil.zigzagEncode(i);
         // tiny (single byte) or small (type + 6-bit value) number?
         if (i <= 0x3F && i >= 0) {
-            if (i <= 0x1F) { // tiny 
+            if (i <= 0x1F) { // tiny
                 _writeByte((byte) (TOKEN_PREFIX_SMALL_INT + i));
                 return this;
             }
@@ -1426,7 +1426,7 @@ public class SmileGenerator
         i = SmileUtil.zigzagEncode(i);
         // tiny (single byte) or small (type + 6-bit value) number?
         if (i <= 0x3F && i >= 0) {
-            if (i <= 0x1F) { // tiny 
+            if (i <= 0x1F) { // tiny
                 output[ptr++] = (byte) (TOKEN_PREFIX_SMALL_INT + i);
                 return ptr;
             }
@@ -1470,7 +1470,7 @@ public class SmileGenerator
         output[ptr++] = b0;
         return ptr;
     }
-    
+
     @Override
     public JsonGenerator writeNumber(long l) throws JacksonException
     {
@@ -1481,7 +1481,7 @@ public class SmileGenerator
         }
         _verifyValueWrite("write number");
         // Then let's zigzag encode it
-        
+
         l = SmileUtil.zigzagEncode(l);
         // Ok, well, we do know that 5 lowest-significant bytes are needed
         int i = (int) l;
@@ -1557,7 +1557,7 @@ public class SmileGenerator
 
         final byte[] output = _outputBuffer;
         output[ptr++] = TOKEN_BYTE_INT_64;
-        
+
         // which may be enough?
         i = (int) (l >> 7);
         if (i == 0) {
@@ -1632,7 +1632,7 @@ public class SmileGenerator
         output[ptr++] = b0;
         return ptr;
     }
-    
+
     @Override
     public JsonGenerator writeNumber(BigInteger v) throws JacksonException
     {
@@ -1646,7 +1646,7 @@ public class SmileGenerator
         _write7BitBinaryWithLength(data, 0, data.length);
         return this;
     }
-    
+
     @Override
     public JsonGenerator writeNumber(double d) throws JacksonException
     {
@@ -1723,14 +1723,14 @@ public class SmileGenerator
         output[ptr] = (byte) (lo4 & 0x7F);
         return ptr + 4;
     }
-        
+
     @Override
     public JsonGenerator writeNumber(float f) throws JacksonException
     {
         // Ok, now, we needed token type byte plus 5 data bytes (7 bits each)
         _ensureRoomForOutput(6);
         _verifyValueWrite("write number");
-        
+
         /* 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more accurate to use
          * exact representation; and possibly faster. However, if there are cases
          * where collapsing of NaN was needed (for non-Java clients), this can
@@ -1775,7 +1775,7 @@ public class SmileGenerator
         if (encodedValue == null) {
             return writeNull();
         }
-        
+
         // 28-May-2014, tatu: Let's actually try to support this method; should be doable
         final int len = encodedValue.length();
         boolean neg = encodedValue.startsWith("-");
@@ -1841,7 +1841,7 @@ public class SmileGenerator
             throw _constructWriteException("Cannot "+typeMsg+", expecting a property name");
         }
     }
-    
+
     /*
     /**********************************************************************
     /* Low-level output handling
@@ -1900,7 +1900,7 @@ public class SmileGenerator
         // Internal buffer(s) generator has can now be released as well
         _releaseBuffers();
     }
-    
+
     /*
     /**********************************************************************
     /* Internal methods, UTF-8 encoding
@@ -2041,7 +2041,7 @@ public class SmileGenerator
     private void _mediumUTF8Encode(char[] str, int inputPtr, int inputEnd) throws JacksonException
     {
         final int bufferEnd = _outputEnd - 4;
-        
+
         output_loop:
         while (inputPtr < inputEnd) {
             // First, let's ensure we can output at least 4 bytes
@@ -2106,7 +2106,7 @@ public class SmileGenerator
     private void _mediumUTF8Encode(String str, int inputPtr, int inputEnd) throws JacksonException
     {
         final int bufferEnd = _outputEnd - 4;
-        
+
         output_loop:
         while (inputPtr < inputEnd) {
             // First, let's ensure we can output at least 4 bytes
@@ -2238,9 +2238,9 @@ surr1, surr2));
     {
         if ((_outputTail + needed) >= _outputEnd) {
             _flushBuffer();
-        }        
+        }
     }
-    
+
     private final void _writeByte(byte b) throws JacksonException
     {
         if (_outputTail >= _outputEnd) {
@@ -2343,7 +2343,7 @@ surr1, surr2));
         }
         return bytesLeft;
     }
-    
+
     private final void _writeBytesLong(byte[] data, int offset, int len) throws JacksonException
     {
         if (_outputTail >= _outputEnd) {
@@ -2383,7 +2383,7 @@ surr1, surr2));
         if (i <= 0x7F) {
             _outputBuffer[_outputTail++] = (byte) i;
             _outputBuffer[_outputTail++] = b1;
-            _outputBuffer[_outputTail++] = b0;            
+            _outputBuffer[_outputTail++] = b0;
         } else {
             byte b2 = (byte) (i & 0x7F);
             i >>= 7;
@@ -2391,14 +2391,14 @@ surr1, surr2));
                 _outputBuffer[_outputTail++] = (byte) i;
                 _outputBuffer[_outputTail++] = b2;
                 _outputBuffer[_outputTail++] = b1;
-                _outputBuffer[_outputTail++] = b0;            
+                _outputBuffer[_outputTail++] = b0;
             } else {
                 byte b3 = (byte) (i & 0x7F);
                 _outputBuffer[_outputTail++] = (byte) (i >> 7);
                 _outputBuffer[_outputTail++] = b3;
                 _outputBuffer[_outputTail++] = b2;
                 _outputBuffer[_outputTail++] = b1;
-                _outputBuffer[_outputTail++] = b0;            
+                _outputBuffer[_outputTail++] = b0;
             }
         }
     }
@@ -2464,16 +2464,16 @@ surr1, surr2));
                                 _outputBuffer[_outputTail++] = (byte) ((i >> 6) & 0x7F);
                                 _outputBuffer[_outputTail++] = (byte) (i & 0x3F); // last 6 bits
                             } else {
-                                _outputBuffer[_outputTail++] = (byte) (i & 0x1F); // last 5 bits                                
+                                _outputBuffer[_outputTail++] = (byte) (i & 0x1F); // last 5 bits
                             }
                         } else {
                             _outputBuffer[_outputTail++] = (byte) (i & 0x0F); // last 4 bits
                         }
                     } else {
-                        _outputBuffer[_outputTail++] = (byte) (i & 0x07); // last 3 bits                        
+                        _outputBuffer[_outputTail++] = (byte) (i & 0x07); // last 3 bits
                     }
                 } else {
-                    _outputBuffer[_outputTail++] = (byte) (i & 0x03); // last 2 bits                    
+                    _outputBuffer[_outputTail++] = (byte) (i & 0x03); // last 2 bits
                 }
             } else {
                 _outputBuffer[_outputTail++] = (byte) (i & 0x01); // last bit
@@ -2481,7 +2481,7 @@ surr1, surr2));
         }
     }
 
-    protected int _write7BitBinaryWithLength(InputStream in, int bytesLeft, byte[] buffer) 
+    protected int _write7BitBinaryWithLength(InputStream in, int bytesLeft, byte[] buffer)
         throws JacksonException
     {
         _writePositiveVInt(bytesLeft);
@@ -2550,16 +2550,16 @@ surr1, surr2));
                                     _outputBuffer[_outputTail++] = (byte) ((i >> 6) & 0x7F);
                                     _outputBuffer[_outputTail++] = (byte) (i & 0x3F); // last 6 bits
                                 } else {
-                                    _outputBuffer[_outputTail++] = (byte) (i & 0x1F); // last 5 bits                                
+                                    _outputBuffer[_outputTail++] = (byte) (i & 0x1F); // last 5 bits
                                 }
                             } else {
                                 _outputBuffer[_outputTail++] = (byte) (i & 0x0F); // last 4 bits
                             }
                         } else {
-                            _outputBuffer[_outputTail++] = (byte) (i & 0x07); // last 3 bits                        
+                            _outputBuffer[_outputTail++] = (byte) (i & 0x07); // last 3 bits
                         }
                     } else {
-                        _outputBuffer[_outputTail++] = (byte) (i & 0x03); // last 2 bits                    
+                        _outputBuffer[_outputTail++] = (byte) (i & 0x03); // last 2 bits
                     }
                 } else {
                     _outputBuffer[_outputTail++] = (byte) (i & 0x01); // last bit
@@ -2580,9 +2580,9 @@ surr1, surr2));
         }
         inputPtr = 0;
         inputEnd = i;
-        
+
         maxRead = Math.min(maxRead, readBuffer.length);
-        
+
         do {
             // 26-Feb-2013, tatu: Similar to jackson-core issue #55, need to ensure
             //   we have something to read.
@@ -2592,7 +2592,7 @@ surr1, surr2));
             }
             int count;
             try {
-                count = in.read(readBuffer, inputEnd, length);            
+                count = in.read(readBuffer, inputEnd, length);
             } catch (IOException e) {
                 throw _wrapIOFailure(e);
             }
@@ -2609,7 +2609,7 @@ surr1, surr2));
     /* Internal methods, buffer handling
     /**********************************************************************
      */
-    
+
     @Override
     protected void _releaseBuffers()
     {
@@ -2697,7 +2697,7 @@ surr1, surr2));
         } while (node != null);
         return -1;
     }
-    
+
     private final void _addSeenName(String name)
     {
         // first: do we need to expand?
@@ -2801,7 +2801,7 @@ surr1, surr2));
     private final static boolean _validBackRef(int index) {
         return (index & 0xFF) < 0xFE;
     }
-    
+
     /*
     /**********************************************************************
     /* Internal methods, error reporting
@@ -2815,8 +2815,8 @@ surr1, surr2));
     protected long outputOffset() {
         return _bytesWritten + _outputTail;
     }
-    
+
     protected UnsupportedOperationException _notSupported() {
         return new UnsupportedOperationException();
-    }    
+    }
 }

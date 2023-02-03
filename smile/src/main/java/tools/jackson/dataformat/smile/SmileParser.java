@@ -56,7 +56,7 @@ public class SmileParser extends SmileParserBase
 
         @Override public boolean enabledByDefault() { return _defaultState; }
         @Override public int getMask() { return _mask; }
-        @Override public boolean enabledIn(int flags) { return (flags & getMask()) != 0; }    
+        @Override public boolean enabledIn(int flags) { return (flags & getMask()) != 0; }
     }
 
     /**
@@ -138,7 +138,7 @@ public class SmileParser extends SmileParserBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(readCtxt, ctxt, parserFeatures, smileFeatures, sym);        
+        super(readCtxt, ctxt, parserFeatures, smileFeatures, sym);
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
@@ -150,7 +150,7 @@ public class SmileParser extends SmileParserBase
      * Helper method called when it looks like input might contain the signature;
      * and it is necessary to detect and handle signature to get configuration
      * information it might have.
-     * 
+     *
      * @return True if valid signature was found and handled; false if not
      */
     protected boolean handleSignature(boolean consumeFirstByte, boolean throwException)
@@ -223,7 +223,7 @@ versionBits);
         }
         return count;
     }
-    
+
     @Override
     public Object streamReadInputSource() {
         return _inputStream;
@@ -252,11 +252,11 @@ versionBits);
             _reportInvalidEOF();
         }
     }
-    
+
     protected final boolean _loadMore() throws JacksonException
     {
         //_currInputRowStart -= _inputEnd;
-        
+
         if (_inputStream != null) {
             int count;
             try {
@@ -281,7 +281,7 @@ versionBits);
         }
         return false;
     }
-    
+
     /**
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary.
@@ -485,7 +485,7 @@ versionBits);
             // and everything else is reserved, for now
             break;
         case 2: // tiny ASCII
-            // fall through            
+            // fall through
         case 3: // short ASCII
             // fall through
         case 4: // tiny Unicode
@@ -775,7 +775,7 @@ _typeAsInt);
             if ((_inputPtr + byteLen + 1) < _inputEnd) { // maybe...
                 int ptr = _inputPtr;
                 int ch = _inputBuffer[ptr++] & 0xFF;
-                
+
                 _typeAsInt = ch;
                 main_switch:
                 switch (ch >> 6) {
@@ -1082,7 +1082,7 @@ _typeAsInt);
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
-    private final int _nextNameFromSymbolsLong(PropertyNameMatcher matcher, 
+    private final int _nextNameFromSymbolsLong(PropertyNameMatcher matcher,
             int len, int q1, int q2)
         throws JacksonException
     {
@@ -1095,12 +1095,12 @@ _typeAsInt);
         }
         _quadBuffer[0] = q1;
         _quadBuffer[1] = q2;
-        
+
         // then decode, full quads first
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
-        
+
         final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF);
@@ -1261,7 +1261,7 @@ _typeAsInt);
                 }
                 break;
             case 2: // tiny ASCII
-                // fall through            
+                // fall through
             case 3: // short ASCII
                 _currToken = JsonToken.VALUE_STRING;
                 _inputPtr = ptr;
@@ -1366,7 +1366,7 @@ _typeAsInt);
      * after encountering end-of-input), returns null.
      * Method can be called for any event.
      */
-    @Override    
+    @Override
     public String getText() throws JacksonException
     {
         if (_tokenIncomplete) {
@@ -1420,7 +1420,7 @@ _typeAsInt);
         return null;
     }
 
-    @Override    
+    @Override
     public int getTextLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
@@ -1428,7 +1428,7 @@ _typeAsInt);
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
-                return _textBuffer.size();                
+                return _textBuffer.size();
             }
             if (_currToken == JsonToken.PROPERTY_NAME) {
                 return _streamReadContext.currentName().length();
@@ -1708,7 +1708,7 @@ _typeAsInt);
      * that has to be either PROPERTY_NAME or END_OBJECT.
      */
     protected final JsonToken _handlePropertyName() throws JacksonException
-    {    	
+    {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
@@ -1738,7 +1738,7 @@ _typeAsInt);
                 return JsonToken.PROPERTY_NAME;
             case 0x34: // long ASCII/Unicode name
                 _handleLongFieldName();
-                return JsonToken.PROPERTY_NAME;            	
+                return JsonToken.PROPERTY_NAME;
             }
             break;
         case 1: // short shared, can fully process
@@ -1762,7 +1762,7 @@ _typeAsInt);
                 }
                 _streamReadContext.setCurrentName(name);
             }
-            return JsonToken.PROPERTY_NAME;                
+            return JsonToken.PROPERTY_NAME;
         case 3: // short Unicode
             // all valid, except for 0xFF
             ch &= 0x3F;
@@ -1785,7 +1785,7 @@ _typeAsInt);
                         _seenNames[_seenNameCount++] = name;
                     }
                     _streamReadContext.setCurrentName(name);
-                    return JsonToken.PROPERTY_NAME;                
+                    return JsonToken.PROPERTY_NAME;
                 }
             }
             break;
@@ -1848,7 +1848,7 @@ _typeAsInt);
         if (len == 0) {
             newShared = _smileBufferRecycler.allocSeenNamesBuffer();
             if (newShared == null) {
-                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];                
+                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
             }
         } else if (len == SmileConstants.MAX_SHARED_NAMES) { // too many? Just flush...
       	   newShared = oldShared;
@@ -1900,11 +1900,11 @@ _typeAsInt);
             return _textBuffer.setCurrentAndReturn(len);
         }
     }
-    
+
     /**
      * Helper method used to decode short Unicode string, length for which actual
      * length (in bytes) is known
-     * 
+     *
      * @param len Length between 1 and 64
      */
     private final String _decodeShortUnicodeName(int len)
@@ -1984,13 +1984,13 @@ _typeAsInt);
 
         char[] cbuf = _textBuffer.emptyAndGetCurrentSegment();
         int cix = 0;
-    
+
         for (int ix = 0; ix < byteLen; ) {
             int ch = quads[ix >> 2]; // current quad, need to shift+mask
             int byteIx = (ix & 3);
             ch = (ch >> ((3 - byteIx) << 3)) & 0xFF;
             ++ix;
-    
+
             if (ch > 127) { // multi-byte
                 int needed;
                 if ((ch & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
@@ -2015,7 +2015,7 @@ _typeAsInt);
                 byteIx = (ix & 3);
                 ch2 = (ch2 >> ((3 - byteIx) << 3));
                 ++ix;
-                
+
                 if ((ch2 & 0xC0) != 0x080) {
                     _reportInvalidOther(ch2);
                 }
@@ -2129,7 +2129,7 @@ _typeAsInt);
             byteLen += bytes;
         }
         // Know this name already?
-        String name = _symbolsCanonical ? 
+        String name = _symbolsCanonical ?
             _symbols.findName(_quadBuffer, quads) : null;
         if (name == null) {
             name = _decodeLongUnicodeName(_quadBuffer, byteLen, quads,
@@ -2179,7 +2179,7 @@ _typeAsInt);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        
+
         if (len < 9) {
             int q2 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 5;
@@ -2236,12 +2236,12 @@ _typeAsInt);
         }
         _quadBuffer[0] = q1;
         _quadBuffer[1] = q2;
-        
+
         // then decode, full quads first
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
-        
+
         final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF);
@@ -2392,7 +2392,7 @@ _typeAsInt);
         }
         _throwInternal();
     }
-    
+
     /*
     /**********************************************************************
     /* Internal methods, secondary Number parsing
@@ -2435,7 +2435,7 @@ _typeAsInt);
         _inputPtr = ptr;
         _numberInt = SmileUtil.zigzagDecode(value);
     }
-    
+
     private final void _finishIntSlow() throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
@@ -2562,7 +2562,7 @@ _typeAsInt);
         }
         return (i << 7) + _inputBuffer[_inputPtr++];
     }
-    
+
     private final void _finishBigInteger() throws JacksonException
     {
         final byte[] raw = _read7BitBinaryWithLength();
@@ -2609,7 +2609,7 @@ _typeAsInt);
         _numberType = NumberType.DOUBLE;
         _numTypesValid = NR_DOUBLE;
     }
-	
+
     private final void _finishBigDecimal() throws JacksonException
     {
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
@@ -2803,7 +2803,7 @@ currentToken(), firstCh);
                 throw _constructReadException("Invalid byte 0x%02X in short Unicode text block", i);
             }
             outBuf[outPtr++] = (char) i;
-        }        
+        }
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
@@ -2829,7 +2829,7 @@ currentToken(), firstCh);
                     _inputPtr = inPtr;
                     break main_loop;
                 }
-                outBuf[outPtr++] = (char) b;	    		
+                outBuf[outPtr++] = (char) b;
             } while (--left > 0);
             _inputPtr = inPtr;
         }
@@ -3146,7 +3146,7 @@ currentToken(), firstCh);
                                         return;
                                 }
                         }
-                        _loadMoreGuaranteed();                           
+                        _loadMoreGuaranteed();
                     }
                 case 2: // big-int
                     // just has binary data
@@ -3359,7 +3359,7 @@ currentToken(), firstCh);
         throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                 index, _seenStringValueCount);
     }
-    
+
     protected void _reportInvalidChar(int c) throws StreamReadException
     {
         // Either invalid WS or illegal UTF-8 start char
@@ -3368,7 +3368,7 @@ currentToken(), firstCh);
         }
         _reportInvalidInitial(c);
     }
-	
+
     protected void _reportInvalidInitial(int mask) throws StreamReadException {
         throw _constructReadException("Invalid UTF-8 start byte 0x02X", mask);
     }

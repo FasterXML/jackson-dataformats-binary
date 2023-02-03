@@ -107,7 +107,7 @@ public class SmileParserBootstrapper
         }
 
         SmileParser p = new SmileParser(readCtxt, _ioContext, generalParserFeatures, smileFeatures,
-                can, 
+                can,
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         boolean hadSig = false;
 

@@ -27,7 +27,7 @@ import tools.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
  * used for Smile-format documents, and thus will either downgrade to
  * textual JSON (when parsing), or throw exception (when trying to create
  * generator).
- * 
+ *
  * @author Tatu Saloranta
  */
 public class SmileFactory
@@ -41,13 +41,13 @@ public class SmileFactory
     /* Constants
     /**********************************************************************
      */
-    
+
     /**
      * Name used to identify Smile format.
      * (and returned by {@link #getFormatName()}
      */
     public final static String FORMAT_NAME_SMILE = "Smile";
-    
+
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
@@ -152,7 +152,7 @@ public class SmileFactory
     /* Capability introspection
     /**********************************************************************
      */
-    
+
     @Override
     public Version version() {
         return PackageVersion.VERSION;
@@ -180,7 +180,7 @@ public class SmileFactory
     /* Format support
     /**********************************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return FORMAT_NAME_SMILE;

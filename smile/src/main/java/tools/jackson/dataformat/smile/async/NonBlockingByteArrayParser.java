@@ -184,7 +184,7 @@ public class NonBlockingByteArrayParser
             _majorState = MAJOR_ROOT;
             return _startValue(ch);
 
-        case MAJOR_ROOT: // 
+        case MAJOR_ROOT: //
             if (SmileConstants.HEADER_BYTE_1 == ch) { // looks like a header
                 _minorState = MINOR_HEADER_INLINE;
                 return _finishHeader(0);
@@ -194,7 +194,7 @@ public class NonBlockingByteArrayParser
         case MAJOR_OBJECT_FIELD: // field or end-object
             // expect name
             return _startFieldName(ch);
-            
+
         case MAJOR_OBJECT_VALUE:
         case MAJOR_ARRAY_ELEMENT: // element or end-array
             return _startValue(ch);
@@ -280,7 +280,7 @@ public class NonBlockingByteArrayParser
             return _finishBigDecimalLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC_BODY:
             return _finishBigDecimalBody();
-            
+
         case MINOR_VALUE_STRING_SHORT_ASCII:
         case MINOR_VALUE_STRING_SHORT_UNICODE:
             {
@@ -304,7 +304,7 @@ public class NonBlockingByteArrayParser
                 _inputCopyLen += avail;
             }
             return JsonToken.NOT_AVAILABLE;
-        
+
         case MINOR_VALUE_STRING_LONG_ASCII:
             return _finishLongASCII();
 
@@ -342,7 +342,7 @@ public class NonBlockingByteArrayParser
     {
         int ch = 0;
         String errorDesc = null;
-        
+
         switch (state) {
         case 0:
             if (_inputPtr >= _inputEnd) {
@@ -459,7 +459,7 @@ public class NonBlockingByteArrayParser
             // and everything else is reserved, for now
             break;
         case 2: // tiny ASCII
-            // fall through            
+            // fall through
         case 3: // short ASCII
             // fall through
             return _startShortASCII(1 + (ch & 0x3F));
@@ -696,7 +696,7 @@ public class NonBlockingByteArrayParser
             }
             quads[quadCount++] = q;
         }
-        
+
         String name = _symbols.findName(quads, quadCount);
         if (name == null) {
             name = _decodeLongUnicodeName(copyBuffer, 0, outPtr);
@@ -790,7 +790,7 @@ public class NonBlockingByteArrayParser
                     _textBuffer.setCurrentLength(outPtr);
                     return _valueComplete(JsonToken.VALUE_STRING);
                 }
-                outBuf[outPtr++] = (char) b;                    
+                outBuf[outPtr++] = (char) b;
             } while (--left > 0);
             _inputPtr = inPtr;
         }
@@ -820,7 +820,7 @@ public class NonBlockingByteArrayParser
                     _textBuffer.setCurrentLength(outPtr);
                     return _valueComplete(JsonToken.VALUE_STRING);
                 }
-                outBuf[outPtr++] = (char) b;                    
+                outBuf[outPtr++] = (char) b;
             } while (--left > 0);
             _inputPtr = inPtr;
         }
@@ -1164,7 +1164,7 @@ public class NonBlockingByteArrayParser
         }
         return ((c << 6) | (f & 0x3F)) - 0x10000;
     }
-    
+
     /*
     /**********************************************************************
     /* Internal methods: second-level parsing: numbers, integral
@@ -1346,7 +1346,7 @@ public class NonBlockingByteArrayParser
         _inputCopyLen = bytesRead;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-    
+
     protected final JsonToken _startDouble() throws JacksonException
     {
         int ptr = _inputPtr;
@@ -1462,7 +1462,7 @@ public class NonBlockingByteArrayParser
     /* Internal methods: second-level parsing: Binary
     /**********************************************************************
      */
-    
+
     protected final JsonToken _startRawBinary() throws JacksonException
     {
         if ((_inputPtr + 5) > _inputEnd) {
@@ -1502,7 +1502,7 @@ public class NonBlockingByteArrayParser
     {
         int totalLen = _pending32;
         int offset = _inputCopyLen;
-        
+
         int needed = totalLen - offset;
         int avail = _inputEnd - _inputPtr;
         if (avail >= needed) {
@@ -1519,7 +1519,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_RAW_BODY;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-    
+
     private final JsonToken _start7BitBinary() throws JacksonException
     {
         _initByteArrayBuilder();
@@ -1561,7 +1561,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_7BIT_BODY;
         return (_currToken = JsonToken.NOT_AVAILABLE);
     }
-    
+
     /*
     /**********************************************************************
     /* Shared text decoding methods
@@ -1598,7 +1598,7 @@ public class NonBlockingByteArrayParser
     /**
      * Helper method used to decode short Unicode string, length for which actual
      * length (in bytes) is known
-     * 
+     *
      * @param len Length between 1 and 64
      */
     private final String _decodeShortUnicodeText(byte[] inBuf, int inPtr, int len) throws JacksonException
@@ -1690,7 +1690,7 @@ public class NonBlockingByteArrayParser
         _textBuffer.setCurrentLength(outPtr);
         return _textBuffer.contentsAsString();
     }
-    
+
     /*
     /**********************************************************************
     /* Low-level decoding of building blocks (vints, 7-bit encoded blocks)
@@ -1739,7 +1739,7 @@ public class NonBlockingByteArrayParser
     {
         int bytesToDecode = _pending32;
         int buffered = _inputCopyLen;
-        
+
         int ptr = _inputPtr;
         int avail = _inputEnd - ptr;
 
