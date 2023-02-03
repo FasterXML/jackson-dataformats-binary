@@ -5,7 +5,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Stack;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
@@ -55,6 +57,90 @@ public class CBORParser extends ParserMinimalBase
         @Override public boolean enabledByDefault() { return _defaultState; }
         @Override public int getMask() { return _mask; }
         @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
+    }
+
+    /**
+     * Class for keeping track of tags in an optimized manner.
+     *
+     * @since 2.15
+     */
+    public static final class TagList
+    {
+        public TagList() {
+            _tags = new int[8];
+            _tagCount = 0;
+        }
+
+        /**
+         * Gets the number of tags available.
+         *
+         * @return The number of tags.
+         */
+        public int size() {
+            return _tagCount;
+        }
+
+        /**
+         * Checks whether the tag list is empty.
+         *
+         * @return {@code true} if there are no tags, {@code false} if there are tags..
+         */
+        public boolean isEmpty() {
+            return _tagCount == 0;
+        }
+
+        /**
+         * Clears the tags from the list.
+         */
+        public void clear() {
+            _tagCount = 0;
+        }
+
+        /**
+         * Adds a tag to the list.
+         *
+         * @param tag The tag to add.
+         */
+        public void add(int tag) {
+            if (_tagCount == _tags.length) {
+                // Linear growth since we expect a small number of tags.
+                int[] newTags = new int[_tagCount + 8];
+                System.arraycopy(_tags, 0, newTags, 0, _tagCount);
+                _tags = newTags;
+            }
+
+            _tags[_tagCount++] = tag;
+        }
+
+        /**
+         * Checks if a tag is present.
+         *
+         * @param tag The tag to check.
+         * @return {@code true} if the tag is present, {@code false} if it is not.
+         */
+        public boolean contains(int tag) {
+            for (int i = 0; i < _tagCount; ++i) {
+                if (_tags[i] == tag) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Gets the first tag in the list. This is primarily to support the legacy API.
+         *
+         * @return The first tag or -1 if there are no tags.
+         */
+        public int getFirstTag() {
+            if (_tagCount == 0) {
+                return -1;
+            }
+            return _tags[0];
+        }
+
+        private int[] _tags;
+        private int _tagCount;
     }
 
     private final static Charset UTF8 = StandardCharsets.UTF_8;
@@ -183,7 +269,7 @@ public class CBORParser extends ParserMinimalBase
     /**
      * Information about parser context, context in which
      * the next token is to be parsed (root, array, object).
-     *<p>
+     * <p>
      * NOTE: before 2.13 was "_parsingContext"
      */
     protected CBORReadContext _streamReadContext;
@@ -229,9 +315,10 @@ public class CBORParser extends ParserMinimalBase
     private int _chunkLeft, _chunkEnd;
 
     /**
-     * We will keep track of tag value for possible future use.
+     * We will keep track of tag values for possible future use.
+     * @since 2.15
      */
-    protected int _tagValue = -1;
+    protected TagList _tagValues = new TagList();
 
     /**
      * Flag that indicates that the current token has not yet
@@ -244,6 +331,66 @@ public class CBORParser extends ParserMinimalBase
      * Type byte of the current token
      */
     protected int _typeByte;
+
+    /**
+     * Type to keep track of a list of string references. A depth is stored to know when to pop the
+     * references off the stack for nested namespaces.
+     *
+     * @since 2.15
+     */
+    protected static final class StringRefList
+    {
+        public StringRefList(int depth) {
+            this.depth = depth;
+        }
+
+        public ArrayList<Object> stringRefs = new ArrayList<>();
+        public int depth;
+    }
+
+    /**
+     * Type to keep a stack of string refs based on namespaces within the document.
+     *
+     * @since 2.15
+     */
+    protected static final class StringRefListStack {
+        public void push(boolean hasNamespace) {
+            if (hasNamespace) {
+                _stringRefs.push(new StringRefList(_nestedDepth));
+            }
+            ++_nestedDepth;
+        }
+
+        public void pop() {
+            --_nestedDepth;
+            if (!_stringRefs.empty() && _stringRefs.peek().depth == _nestedDepth) {
+                _stringRefs.pop();
+            }
+        }
+
+        public StringRefList peek() {
+            return _stringRefs.peek();
+        }
+
+        public boolean empty() {
+            return _stringRefs.empty();
+        }
+
+        private Stack<StringRefList> _stringRefs = _stringRefs = new Stack<>();
+        private int _nestedDepth = 0;
+    }
+
+    /**
+     * Stack of text and binary string references.
+     * @since 2.15
+     */
+    protected StringRefListStack _stringRefs = new StringRefListStack();
+
+    /**
+     * Shared string that should be used in place of _textBuffer when a string reference is used.
+     * @since 2.15
+     */
+    protected String _sharedString;
 
     /*
     /**********************************************************
@@ -268,7 +415,7 @@ public class CBORParser extends ParserMinimalBase
     /**
      * Flag that indicates whether the input buffer is recycable (and
      * needs to be returned to recycler once we are done) or not.
-     *<p>
+     * <p>
      * If it is not, it also means that parser can NOT modify underlying
      * buffer.
      */
@@ -447,7 +594,18 @@ public class CBORParser extends ParserMinimalBase
      * @since 2.5
      */
     public int getCurrentTag() {
-        return _tagValue;
+        return _tagValues.getFirstTag();
+    }
+
+    /**
+     * Method that can be used to access all tag ids associated with
+     * the most recently decoded value (whether completely, for
+     * scalar values, or partially, for Objects/Arrays), if any.
+     *
+     * @since 2.15
+     */
+    public TagList getCurrentTags() {
+        return _tagValues;
     }
 
     /*
@@ -564,7 +722,7 @@ public class CBORParser extends ParserMinimalBase
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             // yes; is or can be made available efficiently as char[]
-            return _textBuffer.hasTextAsCharacters();
+            return _sharedString != null || _textBuffer.hasTextAsCharacters();
         }
         if (_currToken == JsonToken.FIELD_NAME) {
             // not necessarily; possible but:
@@ -582,19 +740,19 @@ public class CBORParser extends ParserMinimalBase
      */
     protected void _releaseBuffers() throws IOException
     {
-         if (_bufferRecyclable) {
-             byte[] buf = _inputBuffer;
-             if (buf != null) {
-                 _inputBuffer = null;
-                 _ioContext.releaseReadIOBuffer(buf);
-             }
-         }
-         _textBuffer.releaseBuffers();
-         char[] buf = _nameCopyBuffer;
-         if (buf != null) {
-             _nameCopyBuffer = null;
-             _ioContext.releaseNameCopyBuffer(buf);
-         }
+        if (_bufferRecyclable) {
+            byte[] buf = _inputBuffer;
+            if (buf != null) {
+                _inputBuffer = null;
+                _ioContext.releaseReadIOBuffer(buf);
+            }
+        }
+        _textBuffer.releaseBuffers();
+        char[] buf = _nameCopyBuffer;
+        if (buf != null) {
+            _nameCopyBuffer = null;
+            _ioContext.releaseNameCopyBuffer(buf);
+        }
     }
 
     /*
@@ -620,9 +778,10 @@ public class CBORParser extends ParserMinimalBase
         // as well as handle names for Object entries.
         if (_streamReadContext.inObject()) {
             if (_currToken != JsonToken.FIELD_NAME) {
-                _tagValue = -1;
+                _tagValues.clear();
                 // completed the whole Object?
                 if (!_streamReadContext.expectMoreValues()) {
+                    _stringRefs.pop();
                     _streamReadContext = _streamReadContext.getParent();
                     return (_currToken = JsonToken.END_OBJECT);
                 }
@@ -630,7 +789,8 @@ public class CBORParser extends ParserMinimalBase
             }
         } else {
             if (!_streamReadContext.expectMoreValues()) {
-                _tagValue = -1;
+                _stringRefs.pop();
+                _tagValues.clear();
                 _streamReadContext = _streamReadContext.getParent();
                 return (_currToken = JsonToken.END_ARRAY);
             }
@@ -645,8 +805,9 @@ public class CBORParser extends ParserMinimalBase
         int lowBits = ch & 0x1F;
 
         // One special case: need to consider tag as prefix first:
-        if (type == 6) {
-            _tagValue = Integer.valueOf(_decodeTag(lowBits));
+        _tagValues.clear();
+        while (type == 6) {
+            _tagValues.add(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     return _eofAsNextToken();
@@ -655,9 +816,10 @@ public class CBORParser extends ParserMinimalBase
             ch = _inputBuffer[_inputPtr++] & 0xFF;
             type = (ch >> 5);
             lowBits = ch & 0x1F;
-        } else {
-            _tagValue = -1;
         }
+
+        boolean stringrefNamespace = _tagValues.contains(TAG_ID_STRINGREF_NAMESPACE);
+
         switch (type) {
         case 0: // positive int
             _numTypesValid = NR_INT;
@@ -700,6 +862,9 @@ public class CBORParser extends ParserMinimalBase
                 default:
                     _invalidToken(ch);
                 }
+            }
+            if (!_tagValues.isEmpty()) {
+                return _handleTaggedInt(_tagValues);
             }
             return (_currToken = JsonToken.VALUE_NUMBER_INT);
         case 1: // negative int
@@ -749,8 +914,8 @@ public class CBORParser extends ParserMinimalBase
         case 2: // byte[]
             _typeByte = ch;
             _tokenIncomplete = true;
-            if (_tagValue >= 0) {
-                return _handleTaggedBinary(_tagValue);
+            if (!_tagValues.isEmpty()) {
+                return _handleTaggedBinary(_tagValues);
             }
             return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
 
@@ -760,25 +925,24 @@ public class CBORParser extends ParserMinimalBase
             return (_currToken = JsonToken.VALUE_STRING);
 
         case 4: // Array
+            _stringRefs.push(stringrefNamespace);
             {
                 int len = _decodeExplicitLength(lowBits);
-                if (_tagValue >= 0) {
-                    return _handleTaggedArray(_tagValue, len);
+                if (!_tagValues.isEmpty()) {
+                    return _handleTaggedArray(_tagValues, len);
                 }
                 _streamReadContext = _streamReadContext.createChildArrayContext(len);
             }
             return (_currToken = JsonToken.START_ARRAY);
 
         case 5: // Object
+            _stringRefs.push(stringrefNamespace);
             _currToken = JsonToken.START_OBJECT;
             {
                 int len = _decodeExplicitLength(lowBits);
                 _streamReadContext = _streamReadContext.createChildObjectContext(len);
             }
             return _currToken;
-
-        case 6: // another tag; not allowed
-            _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
 
         case 7:
         default: // misc: tokens, floats
@@ -812,6 +976,7 @@ public class CBORParser extends ParserMinimalBase
             case 31: // Break
                 if (_streamReadContext.inArray()) {
                     if (!_streamReadContext.hasExpectedLength()) {
+                        _stringRefs.pop();
                         _streamReadContext = _streamReadContext.getParent();
                         return (_currToken = JsonToken.END_ARRAY);
                     }
@@ -823,8 +988,9 @@ public class CBORParser extends ParserMinimalBase
         }
     }
 
-    protected String _numberToName(int ch, boolean neg) throws IOException
+    protected String _numberToName(int ch, boolean neg, TagList tags) throws IOException
     {
+        boolean isStringref = tags.contains(TAG_ID_STRINGREF);
         final int lowBits = ch & 0x1F;
         int i;
         if (lowBits <= 23) {
@@ -842,6 +1008,9 @@ public class CBORParser extends ParserMinimalBase
                 // [dataformats-binary#269] (and earlier [dataformats-binary#30]),
                 // got some edge case to consider
                 if (i < 0) {
+                    if (isStringref) {
+                        _reportError("String reference index too large");
+                    }
                     long l;
                     if (neg) {
                         long unsignedBase = (long) i & 0xFFFFFFFFL;
@@ -855,6 +1024,9 @@ public class CBORParser extends ParserMinimalBase
                 break;
             case 27:
                 {
+                    if (isStringref) {
+                        _reportError("String reference index too large");
+                    }
                     long l = _decode64Bits();
                     if (neg) {
                         l = -l - 1L;
@@ -869,16 +1041,60 @@ public class CBORParser extends ParserMinimalBase
         if (neg) {
             i = -i - 1;
         }
+
+        if (isStringref) {
+            if (_stringRefs.empty()) {
+                _reportError("String reference outside of a namespace");
+            }
+
+            StringRefList stringRefs = _stringRefs.peek();
+            if (i < 0 || i >= stringRefs.stringRefs.size()) {
+                _reportError("String reference (" + i + ") out of range");
+            }
+
+            Object str = stringRefs.stringRefs.get(i);
+            if (str instanceof String) {
+                return (String) str;
+            }
+            return new String((byte[]) str, UTF8);
+        }
         return String.valueOf(i);
     }
 
-    protected JsonToken _handleTaggedBinary(int tag) throws IOException
+    protected JsonToken _handleTaggedInt(TagList tags) throws IOException {
+        // For now all we should get is stringref
+        if (!tags.contains(TAG_ID_STRINGREF)) {
+            return (_currToken = JsonToken.VALUE_NUMBER_INT);
+        }
+
+        if (_stringRefs.empty()) {
+            _reportError("String reference outside of a namespace");
+        } else if (_numTypesValid != NR_INT) {
+            _reportError("String reference index too large");
+        }
+
+        StringRefList stringRefs = _stringRefs.peek();
+
+        if (_numberInt < 0 || _numberInt >= stringRefs.stringRefs.size()) {
+            _reportError("String reference (" + _numberInt + ") out of range");
+        }
+
+        Object str = stringRefs.stringRefs.get(_numberInt);
+        if (str instanceof String) {
+            _sharedString = (String) str;
+            return (_currToken = JsonToken.VALUE_STRING);
+        }
+        _binaryValue = (byte[]) str;
+        return _handleTaggedBinary(tags);
+    }
+
+    protected JsonToken _handleTaggedBinary(TagList tags) throws IOException
     {
         // For now all we should get is BigInteger
         boolean neg;
-        if (tag == TAG_BIGNUM_POS) {
+        if (tags.contains(TAG_BIGNUM_POS)) {
             neg = false;
-        } else  if (tag == TAG_BIGNUM_NEG) {
+        } else if (tags.contains(TAG_BIGNUM_NEG)) {
             neg = true;
         } else {
             // 12-May-2016, tatu: Since that's all we know, let's otherwise
@@ -887,7 +1103,9 @@ public class CBORParser extends ParserMinimalBase
         }
 
         // First: get the data
-        _finishToken();
+        if (_tokenIncomplete) {
+            _finishToken();
+        }
 
         // [dataformats-binar#261]: handle this special case
         if (_binaryValue.length == 0) {
@@ -901,11 +1119,11 @@ public class CBORParser extends ParserMinimalBase
             _numberBigInt = nr;
         }
         _numTypesValid = NR_BIGINT;
-        _tagValue = -1;
+        _tagValues.clear();
         return (_currToken = JsonToken.VALUE_NUMBER_INT);
     }
 
-    protected JsonToken _handleTaggedArray(int tag, int len) throws IOException
+    protected JsonToken _handleTaggedArray(TagList tags, int len) throws IOException
     {
         // For simplicity, let's create matching array context -- in perfect
         // world that wouldn't be necessarily, but in this one there are
@@ -913,7 +1131,7 @@ public class CBORParser extends ParserMinimalBase
         _streamReadContext = _streamReadContext.createChildArrayContext(len);
 
         // BigDecimal is the only thing we know for sure
-        if (tag != CBORConstants.TAG_DECIMAL_FRACTION) {
+        if (!tags.contains(CBORConstants.TAG_DECIMAL_FRACTION)) {
             return (_currToken = JsonToken.START_ARRAY);
         }
         _currToken = JsonToken.START_ARRAY;
@@ -960,7 +1178,7 @@ public class CBORParser extends ParserMinimalBase
      * only (1) determine that we are getting {@code JsonToken.VALUE_NUMBER_INT} (if not,
      * return with no processing) and (2) if so, prepare state so that number accessor
      * method will work).
-     *<p>
+     * <p>
      * Note that in particular this method DOES NOT reset state that {@code nextToken()} would do,
      * but will change current token type to allow access.
      */
@@ -968,7 +1186,8 @@ public class CBORParser extends ParserMinimalBase
     {
         // We know we are in array, with length prefix so:
         if (!_streamReadContext.expectMoreValues()) {
-            _tagValue = -1;
+            _tagValues.clear();
+            _stringRefs.pop();
             _streamReadContext = _streamReadContext.getParent();
             _currToken = JsonToken.END_ARRAY;
             return false;
@@ -986,9 +1205,12 @@ public class CBORParser extends ParserMinimalBase
 
         // 01-Nov-2019, tatu: We may actually need tag so decode it, but do not assign
         //   (that'd override tag we already have)
-        int tagValue = -1;
-        if (type == 6) {
-            tagValue = _decodeTag(lowBits);
+        TagList tagValues = null;
+        while (type == 6) {
+            if (tagValues == null) {
+                tagValues = new TagList();
+            }
+            tagValues.add(_decodeTag(lowBits));
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
                 _eofAsNextToken();
                 return false;
@@ -1039,7 +1261,11 @@ public class CBORParser extends ParserMinimalBase
                     _invalidToken(ch);
                 }
             }
-            _currToken = JsonToken.VALUE_NUMBER_INT;
+            if (tagValues == null) {
+                _currToken = JsonToken.VALUE_NUMBER_INT;
+            } else {
+                _handleTaggedInt(tagValues);
+            }
             return true;
         case 1: // negative int
             _numTypesValid = NR_INT;
@@ -1088,16 +1314,13 @@ public class CBORParser extends ParserMinimalBase
 
         case 2: // byte[]
             // ... but we only really care about very specific case of `BigInteger`
-            if (tagValue < 0) {
+            if (tagValues == null) {
                 break;
             }
             _typeByte = ch;
             _tokenIncomplete = true;
-            _currToken = _handleTaggedBinary(tagValue);
+            _currToken = _handleTaggedBinary(tagValues);
             return (_currToken == JsonToken.VALUE_NUMBER_INT);
-
-        case 6: // another tag; not allowed
-            _reportError("Multiple tags not allowed per value (first tag: "+tagValue+")");
         }
 
         // Important! Need to push back the last byte read (but not consumed)
@@ -1111,7 +1334,8 @@ public class CBORParser extends ParserMinimalBase
     {
         // We know we are in array, with length prefix, and this is where we should be:
         if (!_streamReadContext.expectMoreValues()) {
-            _tagValue = -1;
+            _tagValues.clear();
+            _stringRefs.pop();
             _streamReadContext = _streamReadContext.getParent();
             _currToken = JsonToken.END_ARRAY;
             return true;
@@ -1124,19 +1348,13 @@ public class CBORParser extends ParserMinimalBase
         int type = (ch >> 5) & 0x7;
 
         // No use for tag but removing it is necessary
-        int tagValue = -1;
-        if (type == 6) {
-            tagValue = _decodeTag(ch & 0x1F);
+        while (type == 6) {
             if ((_inputPtr >= _inputEnd) && !loadMore()) {
                 _eofAsNextToken();
                 return false;
             }
             ch = _inputBuffer[_inputPtr++];
             type = (ch >> 5) & 0x7;
-            // including but not limited to nested tags (which we do not allow)
-            if (type == 6) {
-                _reportError("Multiple tags not allowed per value (first tag: "+tagValue+")");
-            }
         }
         // and that's what we need to do for safety; now can drop to generic handling:
 
@@ -1177,9 +1395,10 @@ public class CBORParser extends ParserMinimalBase
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
             _binaryValue = null;
-            _tagValue = -1;
+            _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
+                _stringRefs.pop();
                 _streamReadContext = _streamReadContext.getParent();
                 _currToken = JsonToken.END_OBJECT;
                 return false;
@@ -1189,33 +1408,38 @@ public class CBORParser extends ParserMinimalBase
             // fine; require room for up to 2-byte marker, data itself
             int ptr = _inputPtr;
             if ((ptr + byteLen + 1) < _inputEnd) {
-	            final int ch = _inputBuffer[ptr++];
-	            // only handle usual textual type
-	            if (((ch >> 5) & 0x7) == CBORConstants.MAJOR_TYPE_TEXT) {
-		            int lenMarker = ch & 0x1F;
-		            if (lenMarker <= 24) {
-			            if (lenMarker == 23) {
-			            	lenMarker = _inputBuffer[ptr++] & 0xFF;
-			            }
-			            if (lenMarker == byteLen) {
-			            	int i = 0;
-			            	while (true) {
-			            		if (i == lenMarker) {
-		                            _inputPtr = ptr+i;
-		                            _streamReadContext.setCurrentName(str.getValue());
-		                            _currToken = JsonToken.FIELD_NAME;
-		                            return true;
-			            		}
-			            		if (nameBytes[i] != _inputBuffer[ptr+i]) {
-			            			break;
-			            		}
-			            		++i;
-			            	}
-		            }
-	            }
+                final int ch = _inputBuffer[ptr++];
+                // only handle usual textual type
+                if (((ch >> 5) & 0x7) == MAJOR_TYPE_TEXT) {
+                    int lenMarker = ch & 0x1F;
+                    if (lenMarker <= 24) {
+                        if (lenMarker == 23) {
+                            lenMarker = _inputBuffer[ptr++] & 0xFF;
+                        }
+                        if (lenMarker == byteLen) {
+                            int i = 0;
+                            while (true) {
+                                if (i == lenMarker) {
+                                    _inputPtr = ptr + i;
+                                    String strValue = str.getValue();
+                                    if (!_stringRefs.empty() &&
+                                            shouldReferenceString(_stringRefs.peek().stringRefs.size(),
+                                                    byteLen)) {
+                                        _stringRefs.peek().stringRefs.add(strValue);
+                                    }
+                                    _streamReadContext.setCurrentName(strValue);
+                                    _currToken = JsonToken.FIELD_NAME;
+                                    return true;
+                                }
+                                if (nameBytes[i] != _inputBuffer[ptr + i]) {
+                                    break;
+                                }
+                                ++i;
+                            }
+                        }
+                    }
+                }
             }
-        }
-
         }
         // otherwise just fall back to default handling; should occur rarely
         return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
@@ -1231,9 +1455,10 @@ public class CBORParser extends ParserMinimalBase
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
             _binaryValue = null;
-            _tagValue = -1;
+            _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
+                _stringRefs.pop();
                 _streamReadContext = _streamReadContext.getParent();
                 _currToken = JsonToken.END_OBJECT;
                 return null;
@@ -1245,25 +1470,43 @@ public class CBORParser extends ParserMinimalBase
                     _eofAsNextToken();
                 }
             }
-            final int ch = _inputBuffer[_inputPtr++];
-            final int type = ((ch >> 5) & 0x7);
+            int ch = _inputBuffer[_inputPtr++] & 0xFF;
+            int type = (ch >> 5);
+            int lowBits = ch & 0x1F;
+
+            // One special case: need to consider tag as prefix first:
+            while (type == 6) {
+                _tagValues.add(_decodeTag(lowBits));
+                if (_inputPtr >= _inputEnd) {
+                    if (!loadMore()) {
+                        _eofAsNextToken();
+                        return null;
+                    }
+                }
+                ch = _inputBuffer[_inputPtr++] & 0xFF;
+                type = (ch >> 5);
+                lowBits = ch & 0x1F;
+            }
 
             // offline non-String cases, as they are expected to be rare
             if (type != CBORConstants.MAJOR_TYPE_TEXT) {
-                if (ch == -1) { // end-of-object, common
+                if (ch == 0xFF) { // end-of-object, common
                     if (!_streamReadContext.hasExpectedLength()) {
+                        _stringRefs.pop();
                         _streamReadContext = _streamReadContext.getParent();
                         _currToken = JsonToken.END_OBJECT;
                         return null;
                     }
                     _reportUnexpectedBreak();
                 }
-                _decodeNonStringName(ch);
+                _decodeNonStringName(ch, _tagValues);
                 _currToken = JsonToken.FIELD_NAME;
                 return getText();
             }
             final int lenMarker = ch & 0x1F;
+            _sharedString = null;
             String name;
+            boolean chunked = false;
             if (lenMarker <= 23) {
                 if (lenMarker == 0) {
                     name = "";
@@ -1286,10 +1529,16 @@ public class CBORParser extends ParserMinimalBase
             } else {
                 final int actualLen = _decodeExplicitLength(lenMarker);
                 if (actualLen < 0) {
+                    chunked = true;
                     name = _decodeChunkedName();
                 } else {
                     name = _decodeLongerName(actualLen);
                 }
+            }
+            if (!chunked && !_stringRefs.empty() &&
+                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+                _stringRefs.peek().stringRefs.add(name);
+                _sharedString = name;
             }
             _streamReadContext.setCurrentName(name);
             _currToken = JsonToken.FIELD_NAME;
@@ -1308,13 +1557,13 @@ public class CBORParser extends ParserMinimalBase
         }
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
-        _tagValue = -1;
+        _tagValues.clear();
 
         if (_streamReadContext.inObject()) {
             if (_currToken != JsonToken.FIELD_NAME) {
-                _tagValue = -1;
                 // completed the whole Object?
                 if (!_streamReadContext.expectMoreValues()) {
+                    _stringRefs.pop();
                     _streamReadContext = _streamReadContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
                     return null;
@@ -1324,7 +1573,7 @@ public class CBORParser extends ParserMinimalBase
             }
         } else {
             if (!_streamReadContext.expectMoreValues()) {
-                _tagValue = -1;
+                _stringRefs.pop();
                 _streamReadContext = _streamReadContext.getParent();
                 _currToken = JsonToken.END_ARRAY;
                 return null;
@@ -1341,8 +1590,8 @@ public class CBORParser extends ParserMinimalBase
         int lowBits = ch & 0x1F;
 
         // One special case: need to consider tag as prefix first:
-        if (type == 6) {
-            _tagValue = Integer.valueOf(_decodeTag(lowBits));
+        while (type == 6) {
+            _tagValues.add(_decodeTag(lowBits));
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     _eofAsNextToken();
@@ -1352,8 +1601,6 @@ public class CBORParser extends ParserMinimalBase
             ch = _inputBuffer[_inputPtr++] & 0xFF;
             type = (ch >> 5);
             lowBits = ch & 0x1F;
-        } else {
-            _tagValue = -1;
         }
 
         switch (type) {
@@ -1399,7 +1646,9 @@ public class CBORParser extends ParserMinimalBase
                     _invalidToken(ch);
                 }
             }
-            _currToken = JsonToken.VALUE_NUMBER_INT;
+            if (_handleTaggedInt(_tagValues) == JsonToken.VALUE_STRING) {
+                return getText();
+            }
             return null;
         case 1: // negative int
             _numTypesValid = NR_INT;
@@ -1474,9 +1723,6 @@ public class CBORParser extends ParserMinimalBase
             }
             return null;
 
-        case 6: // another tag; not allowed
-            _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
-
         case 7:
         default: // misc: tokens, floats
             switch (lowBits) {
@@ -1516,6 +1762,7 @@ public class CBORParser extends ParserMinimalBase
             case 31: // Break
                 if (_streamReadContext.inArray()) {
                     if (!_streamReadContext.hasExpectedLength()) {
+                        _stringRefs.pop();
                         _streamReadContext = _streamReadContext.getParent();
                         _currToken = JsonToken.END_ARRAY;
                         return null;
@@ -1582,7 +1829,7 @@ public class CBORParser extends ParserMinimalBase
             }
         }
         if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsAsString();
+            return _sharedString == null ? _textBuffer.contentsAsString() : _sharedString;
         }
         if (t == null) { // null only before/after document
             return null;
@@ -1604,7 +1851,7 @@ public class CBORParser extends ParserMinimalBase
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
-                return _textBuffer.getTextBuffer();
+                return _sharedString == null ? _textBuffer.getTextBuffer() : _sharedString.toCharArray();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
                 return _streamReadContext.getCurrentName().toCharArray();
@@ -1626,7 +1873,7 @@ public class CBORParser extends ParserMinimalBase
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
-                return _textBuffer.size();
+                return _sharedString == null ? _textBuffer.size() : _sharedString.length();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
                 return _streamReadContext.getCurrentName().length();
@@ -1655,7 +1902,7 @@ public class CBORParser extends ParserMinimalBase
             }
         }
         if (_currToken == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsAsString();
+            return _sharedString == null ? _textBuffer.contentsAsString() : _sharedString;
         }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
@@ -1682,7 +1929,12 @@ public class CBORParser extends ParserMinimalBase
         }
         JsonToken t = _currToken;
         if (t == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(writer);
+            if (_sharedString == null) {
+                return _textBuffer.contentsToWriter(writer);
+            } else {
+                writer.write(_sharedString);
+                return _sharedString.length();
+            }
         }
         if (t == JsonToken.FIELD_NAME) {
             String n = _streamReadContext.getCurrentName();
@@ -1691,7 +1943,12 @@ public class CBORParser extends ParserMinimalBase
         }
         if (t != null) {
             if (t.isNumeric()) {
-                return _textBuffer.contentsToWriter(writer);
+                if (_sharedString == null) {
+                    return _textBuffer.contentsToWriter(writer);
+                } else {
+                    writer.write(_sharedString);
+                    return _sharedString.length();
+                }
             }
             char[] ch = t.asCharArray();
             writer.write(ch);
@@ -1762,6 +2019,11 @@ public class CBORParser extends ParserMinimalBase
 
         _tokenIncomplete = false;
         int len = _decodeExplicitLength(_typeByte & 0x1F);
+        if (!_stringRefs.empty()) {
+            out.write(_finishBytes(len));
+            return len;
+        }
+
         if (len >= 0) { // non-chunked
             return _readAndWriteBytes(out, len);
         }
@@ -2175,6 +2437,7 @@ public class CBORParser extends ParserMinimalBase
     protected void _finishToken() throws IOException
     {
         _tokenIncomplete = false;
+        _sharedString = null;
         int ch = _typeByte;
         final int type = ((ch >> 5) & 0x7);
         ch &= 0x1F;
@@ -2223,6 +2486,7 @@ public class CBORParser extends ParserMinimalBase
     protected String _finishTextToken(int ch) throws IOException
     {
         _tokenIncomplete = false;
+        _sharedString = null;
         final int type = ((ch >> 5) & 0x7);
         ch &= 0x1F;
 
@@ -2261,8 +2525,7 @@ public class CBORParser extends ParserMinimalBase
             return _finishShortText(len);
         }
         // If not enough space, need handling similar to chunked
-        _finishLongText(len);
-        return _textBuffer.contentsAsString();
+        return _finishLongText(len);
     }
 
     private final String _finishShortText(int len) throws IOException
@@ -2270,6 +2533,12 @@ public class CBORParser extends ParserMinimalBase
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length < len) { // one minor complication
             outBuf = _textBuffer.expandCurrentSegment(len);
+        }
+
+        StringRefList stringRefs = null;
+        if (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
+            stringRefs = _stringRefs.peek();
         }
 
         int outPtr = 0;
@@ -2284,7 +2553,12 @@ public class CBORParser extends ParserMinimalBase
         while ((i = inputBuf[inPtr]) >= 0) {
             outBuf[outPtr++] = (char) i;
             if (++inPtr == end) {
-                return _textBuffer.setCurrentAndReturn(outPtr);
+                String str = _textBuffer.setCurrentAndReturn(outPtr);
+                if (stringRefs != null) {
+                    stringRefs.stringRefs.add(str);
+                    _sharedString = str;
+                }
+                return str;
             }
         }
         final int[] codes = UTF8_UNIT_CODES;
@@ -2331,10 +2605,15 @@ public class CBORParser extends ParserMinimalBase
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
-        return _textBuffer.setCurrentAndReturn(outPtr);
+        String str = _textBuffer.setCurrentAndReturn(outPtr);
+        if (stringRefs != null) {
+            stringRefs.stringRefs.add(str);
+            _sharedString = str;
+        }
+        return str;
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final String _finishLongText(int len) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -2392,7 +2671,13 @@ public class CBORParser extends ParserMinimalBase
             // Ok, let's add char to output:
             outBuf[outPtr++] = (char) c;
         }
-        _textBuffer.setCurrentLength(outPtr);
+        String str = _textBuffer.setCurrentAndReturn(outPtr);
+        if (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
+            _stringRefs.peek().stringRefs.add(str);
+            _sharedString = str;
+        }
+        return str;
     }
 
     private final void _finishChunkedText() throws IOException
@@ -2578,10 +2863,21 @@ public class CBORParser extends ParserMinimalBase
             }
             return _finishChunkedBytes();
         }
+
+        StringRefList stringRefs = null;
+        if (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
+            stringRefs = _stringRefs.peek();
+        }
+
         // Non-chunked, contiguous
         if (len > LONGEST_NON_CHUNKED_BINARY) {
             // [dataformats-binary#186]: avoid immediate allocation for longest
-            return _finishLongContiguousBytes(len);
+            byte[] b = _finishLongContiguousBytes(len);
+            if (stringRefs != null) {
+                stringRefs.stringRefs.add(b);
+            }
+            return b;
         }
 
         final byte[] b = new byte[len];
@@ -2600,6 +2896,9 @@ public class CBORParser extends ParserMinimalBase
             ptr += toAdd;
             len -= toAdd;
             if (len <= 0) {
+                if (stringRefs != null) {
+                    stringRefs.stringRefs.add(b);
+                }
                 return b;
             }
             if (!loadMore()) {
@@ -2686,23 +2985,40 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 _eofAsNextToken();
             }
         }
-        final int ch = _inputBuffer[_inputPtr++];
-        final int type = ((ch >> 5) & 0x7);
+        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        int type = (ch >> 5);
+        int lowBits = ch & 0x1F;
+
+        // One special case: need to consider tag as prefix first:
+        while (type == 6) {
+            _tagValues.add(_decodeTag(lowBits));
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    _eofAsNextToken();
+                    return null;
+                }
+            }
+            ch = _inputBuffer[_inputPtr++] & 0xFF;
+            type = (ch >> 5);
+            lowBits = ch & 0x1F;
+        }
 
         // Expecting a String, but may need to allow other types too
         if (type != CBORConstants.MAJOR_TYPE_TEXT) { // the usual case
-            if (ch == -1) {
+            if (ch == 0xFF) {
                 if (!_streamReadContext.hasExpectedLength()) {
+                    _stringRefs.pop();
                     _streamReadContext = _streamReadContext.getParent();
                     return JsonToken.END_OBJECT;
                 }
                 _reportUnexpectedBreak();
             }
             // offline non-String cases, as they are expected to be rare
-            _decodeNonStringName(ch);
+            _decodeNonStringName(ch, _tagValues);
             return JsonToken.FIELD_NAME;
         }
         final int lenMarker = ch & 0x1F;
+        boolean chunked = false;
         String name;
         if (lenMarker <= 23) {
             if (lenMarker == 0) {
@@ -2726,10 +3042,16 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         } else {
             final int actualLen = _decodeExplicitLength(lenMarker);
             if (actualLen < 0) {
+                chunked = true;
                 name = _decodeChunkedName();
             } else {
                 name = _decodeLongerName(actualLen);
             }
+        }
+        if (!chunked && !_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+            _stringRefs.peek().stringRefs.add(name);
+            _sharedString = name;
         }
         _streamReadContext.setCurrentName(name);
         return JsonToken.FIELD_NAME;
@@ -2830,8 +3152,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             // or if not, could we read?
             if (len >= _inputBuffer.length) {
                 // If not enough space, need handling similar to chunked
-                _finishLongText(len);
-                return _textBuffer.contentsAsString();
+                return _finishLongText(len);
             }
             _loadToHaveAtLeast(len);
         }
@@ -2857,14 +3178,14 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
      */
-    protected final void _decodeNonStringName(int ch) throws IOException
+    protected final void _decodeNonStringName(int ch, TagList tags) throws IOException
     {
         final int type = ((ch >> 5) & 0x7);
         String name;
         if (type == CBORConstants.MAJOR_TYPE_INT_POS) {
-            name = _numberToName(ch, false);
+            name = _numberToName(ch, false, tags);
         } else if (type == CBORConstants.MAJOR_TYPE_INT_NEG) {
-            name = _numberToName(ch, true);
+            name = _numberToName(ch, true, tags);
         } else if (type == CBORConstants.MAJOR_TYPE_BYTES) {
             // 08-Sep-2014, tatu: As per [Issue#5], there are codecs
             //   (f.ex. Perl module "CBOR::XS") that use Binary data...
@@ -2886,7 +3207,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     /**
      * Helper method for trying to find specified encoded UTF-8 byte sequence
      * from symbol table; if successful avoids actual decoding to String.
-     *<p>
+     * <p>
      * NOTE: caller MUST ensure input buffer has enough content.
      */
     private final String _findDecodedFromSymbols(final int len) throws IOException
@@ -3356,7 +3677,7 @@ expType, type, ch));
     /**
      * Helper method that deals with details of decoding unallocated "simple values"
      * and exposing them as expected token.
-     *<p>
+     * <p>
      * As of Jackson 2.12, simple values are exposed as
      * {@link JsonToken#VALUE_NUMBER_INT}s,
      * but in later versions this is planned to be changed to separate value type.
@@ -3638,7 +3959,7 @@ expType, type, ch));
     protected JsonToken _eofAsNextToken() throws IOException {
         // NOTE: here we can and should close input, release buffers, since
         // this is "hard" EOF, not a boundary imposed by header token.
-        _tagValue = -1;
+        _tagValues.clear();
         close();
         // 30-Jan-2021, tatu: But also MUST verify that end-of-content is actually
         //   allowed (see [dataformats-binary#240] for example)
