@@ -33,13 +33,13 @@ public class ProtobufWriteContext
      */
 
     protected ProtobufWriteContext _child = null;
-    
+
     /*
     /**********************************************************
     /* Life-cycle
     /**********************************************************
      */
-    
+
     protected ProtobufWriteContext(int type, ProtobufWriteContext parent,
             ProtobufMessage msg)
     {
@@ -55,7 +55,7 @@ public class ProtobufWriteContext
         _field = f;
         _currentValue = null;
     }
-    
+
     // // // Factory methods
 
     public static ProtobufWriteContext createRootContext(ProtobufMessage msg) {
@@ -69,7 +69,7 @@ public class ProtobufWriteContext
     public static ProtobufWriteContext createNullContext() {
         return null;
     }
-    
+
     public ProtobufWriteContext createChildArrayContext() {
         ProtobufWriteContext ctxt = _child;
         if (ctxt == null) {
@@ -96,10 +96,10 @@ public class ProtobufWriteContext
     /* Simple accessors, mutators
     /**********************************************************
      */
-    
+
     @Override
     public final ProtobufWriteContext getParent() { return _parent; }
-    
+
     @Override
     public String currentName() {
         return ((_type == TYPE_OBJECT) && (_field != null)) ? _field.name : null;
@@ -114,7 +114,7 @@ public class ProtobufWriteContext
     public void assignCurrentValue(Object v) {
         _currentValue = v;
     }
-    
+
     public void setField(ProtobufField f) {
         _field = f;
     }
@@ -128,7 +128,7 @@ public class ProtobufWriteContext
     }
 
     public boolean notArray() { return _type != TYPE_ARRAY; }
-    
+
     public StringBuilder appendDesc(StringBuilder sb) {
         if (_parent != null) {
             sb = _parent.appendDesc(sb);
@@ -147,9 +147,9 @@ public class ProtobufWriteContext
         }
         return sb;
     }
-    
+
     // // // Overridden standard methods
-    
+
     /**
      * Overridden to provide developer JsonPointer representation
      * of the context.

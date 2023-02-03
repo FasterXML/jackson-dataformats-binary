@@ -75,9 +75,9 @@ public class ProtobufFactory
         return new ProtobufFactory(this);
     }
 
-    /*                                                                                       
+    /*
     /**********************************************************************
-    /* Basic introspection                                                                  
+    /* Basic introspection
     /**********************************************************************
      */
 
@@ -116,7 +116,7 @@ public class ProtobufFactory
 
 
     // No format-specific configuration, yet:
-/*    
+/*
     @Override
     public Class<? extends FormatFeature> getFormatReadFeatureType() {
         return null;
@@ -132,7 +132,7 @@ public class ProtobufFactory
 
     @Override
     public int getFormatWriteFeatures() { return 0; }
-    
+
     /*
     /**********************************************************************
     /* Factory methods: parsers

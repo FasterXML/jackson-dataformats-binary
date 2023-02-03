@@ -75,7 +75,7 @@ public class ByteAccumulator
         int plen = _segmentBytes + len;
         ptr = ProtobufUtil.appendLengthLength(plen, prefixBuf, ptr);
 
-        // root? Just output it all 
+        // root? Just output it all
         final int writeStart = _parentStart; // same as `_prefixOffset` or less, if buffered content
         if (_parent == null) {
             // 04-Apr-2017, tatu: We know that parent will have flushed anything it might have,
@@ -115,7 +115,7 @@ public class ByteAccumulator
         ptr = ProtobufUtil.appendLengthLength(plen, prefixBuf, ptr);
 
         final int writeStart = _parentStart; // same as `_prefixOffset` or less, if buffered content
-        // root? Just output it all 
+        // root? Just output it all
         if (_parent == null) {
             // 04-Apr-2017, tatu: We know that parent will have flushed anything it might have,
             //    so `_parentStart` is irrelevant here (but not in the other branch)

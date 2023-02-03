@@ -25,7 +25,7 @@ public class DefaultTagGenerator implements TagGenerator {
 
 		return nextTag();
 	}
-	
+
 	public int nextTag() {
 		return _tagCounter++;
 	}

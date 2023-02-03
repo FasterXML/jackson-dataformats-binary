@@ -210,7 +210,7 @@ public abstract class EnumLookup
             }
             return null;
         }
-        
+
         @Override
         public int findEnumIndex(SerializableString key0) {
             String key = key0.getValue();
@@ -277,7 +277,7 @@ public abstract class EnumLookup
          * mapping back from tag ids to enum names.
          */
         protected final LinkedHashMap<Integer,String> _enumsById;
-        
+
         private Big(LinkedHashMap<Integer,String> byId,
                 int hashMask, int spillCount, String[] keys, int[] indices)
         {
@@ -291,7 +291,7 @@ public abstract class EnumLookup
         public static Big construct(List<Map.Entry<String,Integer>> entries)
         {
             LinkedHashMap<Integer,String> byId = new LinkedHashMap<Integer,String>();
-            
+
             // First: calculate size of primary hash area
             final int size = findSize(byId.size());
             final int mask = size-1;
@@ -380,7 +380,7 @@ public abstract class EnumLookup
             }
             return -1;
         }
-        
+
         @Override
         public Collection<String> getEnumValues() {
             List<String> result = new ArrayList<String>(_hashMask+1);

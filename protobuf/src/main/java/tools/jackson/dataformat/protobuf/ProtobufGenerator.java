@@ -57,7 +57,7 @@ public class ProtobufGenerator extends GeneratorBase
      * Reference to the root context since that is needed for serialization
      */
     protected ProtobufWriteContext _rootContext;
-    
+
     protected boolean _inObject;
 
     /**
@@ -116,7 +116,7 @@ public class ProtobufGenerator extends GeneratorBase
      * issue [dataformat-protobuf#14].
      */
     protected byte[] _origCurrBuffer;
-    
+
     protected int _currStart;
 
     protected int _currPtr;
@@ -157,7 +157,7 @@ public class ProtobufGenerator extends GeneratorBase
 
     /*
     /**********************************************************************
-    /* Versioned                                                                             
+    /* Versioned
     /**********************************************************************
      */
 
@@ -236,7 +236,7 @@ public class ProtobufGenerator extends GeneratorBase
             } else {
                 _reportError("Unrecognized field '"+name+"' (in Message of type "+_currMessage.getName()
                         +"); known fields are: "+_currMessage.fieldsAsString());
-                        
+
             }
         }
         _streamWriteContext.setField(f);
@@ -271,7 +271,7 @@ public class ProtobufGenerator extends GeneratorBase
             } else {
                 _reportError("Unrecognized field '"+name+"' (in Message of type "+_currMessage.getName()
                         +"); known fields are: "+_currMessage.fieldsAsString());
-                        
+
             }
         }
         _streamWriteContext.setField(f);
@@ -410,7 +410,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
 
         // no arrays inside arrays, so parent can't be array and so:
-        _writeTag = true; 
+        _writeTag = true;
         // but, did we just end up packed array?
         if (_currField.packed) {
             _finishBuffering();
@@ -449,7 +449,7 @@ public class ProtobufGenerator extends GeneratorBase
                 _startBuffering();
             }
         }
-        
+
         if (_inObject) {
             _streamWriteContext = _streamWriteContext.createChildObjectContext(_currMessage);
             _currField = null;
@@ -504,7 +504,7 @@ public class ProtobufGenerator extends GeneratorBase
                 _writeNonPackedArray(array, offset, end);
             }
             // and then pieces of END_ARRAY
-            _writeTag = true; 
+            _writeTag = true;
         }
         return this;
     }
@@ -525,7 +525,7 @@ public class ProtobufGenerator extends GeneratorBase
                 _writeNonPackedArray(array, offset, end);
             }
             // and then pieces of END_ARRAY
-            _writeTag = true; 
+            _writeTag = true;
         }
         return this;
     }
@@ -546,7 +546,7 @@ public class ProtobufGenerator extends GeneratorBase
                 _writeNonPackedArray(array, offset, end);
             }
             // and then pieces of END_ARRAY
-            _writeTag = true; 
+            _writeTag = true;
         }
         return this;
     }
@@ -593,7 +593,7 @@ public class ProtobufGenerator extends GeneratorBase
         } else {
             _reportWrongWireType("int");
         }
-        
+
         _finishBuffering();
     }
 
@@ -807,7 +807,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         // still fits in a single byte?
         int blen = ptr-start;
-        
+
         if (blen <= 0x7F) { // expected case
             buf[start-1] = (byte) blen;
         } else { // but sometimes we got it wrong, need to move (bah)
@@ -894,7 +894,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         // still fits in a single byte?
         int blen = ptr-start;
-        
+
         if (blen <= 0x7F) { // expected case
             buf[start-1] = (byte) blen;
         } else { // but sometimes we got it wrong, need to move (bah)
@@ -1048,7 +1048,7 @@ public class ProtobufGenerator extends GeneratorBase
     /* Output method implementations, base64-encoded binary
     /**********************************************************************
      */
-    
+
     @Override
     public JsonGenerator writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws JacksonException
     {
@@ -1219,7 +1219,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _reportWrongWireType("double");
         return this;
-    }    
+    }
 
     @Override
     public JsonGenerator writeNumber(float f) throws JacksonException
@@ -1300,7 +1300,7 @@ public class ProtobufGenerator extends GeneratorBase
      */
 
     private final static Charset UTF8 = Charset.forName("UTF-8");
-    
+
     protected void _encodeLongerString(char[] text, int offset, int clen) throws JacksonException
     {
         _verifyValueWrite();
@@ -1313,8 +1313,8 @@ public class ProtobufGenerator extends GeneratorBase
         byte[] b = text.getBytes(UTF8);
         _writeLengthPrefixed(b, 0, b.length);
     }
-    
-    
+
+
     protected void _writeLengthPrefixed(byte[] data, int offset, int len) throws JacksonException
     {
         // 15-Jun-2017, tatu: [dataformats-binary#94]: need to ensure there is actually
@@ -1447,7 +1447,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _currPtr = ptr;
     }
-    
+
     // off-lined version for 5-byte VInts
     private final int _writeVIntMax(int v, int ptr) throws JacksonException
     {
@@ -1578,7 +1578,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         _currPtr = ptr;
     }
-    
+
     // off-lined version for 10-byte VLongs
     private final int _writeVLongMax(long v, int ptr) throws JacksonException
     {
@@ -1648,7 +1648,7 @@ public class ProtobufGenerator extends GeneratorBase
         final byte[] buf = _currBuffer;
 
         int v = (int) v64;
-        
+
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
@@ -1658,7 +1658,7 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) v;
 
         v = (int) (v64 >> 32);
-        
+
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
@@ -1666,7 +1666,7 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
-        
+
         _currPtr =  ptr;
     }
 
@@ -1677,7 +1677,7 @@ public class ProtobufGenerator extends GeneratorBase
         final byte[] buf = _currBuffer;
 
         int v = (int) v64;
-        
+
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
@@ -1687,7 +1687,7 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) v;
 
         v = (int) (v64 >> 32);
-        
+
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
@@ -1695,7 +1695,7 @@ public class ProtobufGenerator extends GeneratorBase
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
-        
+
         _currPtr =  ptr;
     }
 
@@ -1771,7 +1771,7 @@ public class ProtobufGenerator extends GeneratorBase
         // 04-Apr-2017, tatu: Most likely this is because this can only happen when we are
         //   writing Objects as elements of packed array; and this can not be root-level
         //   value: and if so we must be buffering (to get length prefix)
-/*        
+/*
         if (_buffered == null) {
             int len = ptr - _currStart;
             if (len > 0) {
@@ -1794,7 +1794,7 @@ public class ProtobufGenerator extends GeneratorBase
     private final void _finishBuffering() throws JacksonException
     {
         final int start = _currStart;
-        final int newStart = _currPtr;        
+        final int newStart = _currPtr;
         final int currLen = newStart - start;
 
         ByteAccumulator acc = _buffered;
@@ -1824,10 +1824,10 @@ public class ProtobufGenerator extends GeneratorBase
 
     protected final void _ensureMore() throws JacksonException
     {
-        // if not, either simple (flush), or 
+        // if not, either simple (flush), or
         final int start = _currStart;
         final int currLen = _currPtr - start;
-        
+
         _currStart = 0;
         _currPtr = 0;
 

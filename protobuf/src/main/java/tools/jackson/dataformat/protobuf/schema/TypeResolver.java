@@ -20,7 +20,7 @@ public class TypeResolver
      * name for context, not path)
      */
     private final String _contextName;
-    
+
     /**
      * Mapping from types declared within this scope (root types for
      * root resolver; nested types for child resolvers)
@@ -75,7 +75,7 @@ public class TypeResolver
     {
         Map<String,MessageElement> declaredMsgs = null;
         Map<String,ProtobufEnum> declaredEnums = new LinkedHashMap<>();
-        
+
         for (TypeElement nt : nativeTypes) {
             if (nt instanceof MessageElement) {
                 if (declaredMsgs == null) {
@@ -125,13 +125,13 @@ public class TypeResolver
     {
         List<FieldElement> rawFields = rawType.fields();
         ProtobufField[] resolvedFields = new ProtobufField[rawFields.size()];
-        
+
         ProtobufMessage message = new ProtobufMessage(rawType.name(), resolvedFields);
         // Important: add type itself as (being) resolved, to allow for self- and cyclic refs
         if (_parent != null) { // 09-Jul-2021, tatu: LGTM suggestion -- can it ever be null?!
             _parent.addResolvedMessageType(rawType.name(), message);
         }
-        
+
         // and then resolve fields
         int ix = 0;
         for (FieldElement f : rawFields) {
@@ -139,12 +139,12 @@ public class TypeResolver
             // First: could it be we have a simple scalar type
             FieldType type = FieldTypes.findType(fieldType);
             ProtobufField pbf;
-            
+
             if (type != null) { // simple type
                 pbf = new ProtobufField(f, type);
             } else if (fieldType instanceof DataType.NamedType) {
                 final String typeStr = ((DataType.NamedType) fieldType).name();
-                
+
                 // If not, a resolved local definition?
                 ProtobufField resolvedF = _findLocalResolved(f, typeStr);
                 if (resolvedF != null) {
@@ -177,7 +177,7 @@ public class TypeResolver
             resolvedFields[ix++] = pbf;
         }
         ProtobufField first = (resolvedFields.length == 0) ? null : resolvedFields[0];
-        
+
         // sort field array by index
         Arrays.sort(resolvedFields);
 
@@ -187,7 +187,7 @@ public class TypeResolver
         }
         message.init(first);
         return message;
-    }    
+    }
 
     protected void addResolvedMessageType(String name, ProtobufMessage toResolve) {
         if (_resolvedMessageTypes.isEmpty()) {
@@ -224,7 +224,7 @@ public class TypeResolver
         }
         return null;
     }
-    
+
     private StringBuilder _knownEnums(StringBuilder sb) {
         if (_parent != null) {
             sb = _parent._knownEnums(sb);
@@ -250,7 +250,7 @@ public class TypeResolver
         }
         return sb;
     }
-    
+
     private ProtobufField _findLocalResolved(FieldElement nativeField, String typeStr)
     {
         ProtobufMessage msg = _resolvedMessageTypes.get(typeStr);

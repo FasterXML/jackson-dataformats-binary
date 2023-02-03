@@ -103,9 +103,9 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
               _simpleType = ScalarType.BYTES;
               return null;
          }
-         
+
          // !!! TODO: surely we should support array types, right?
-         
+
          return _throwUnsupported("'Map' type not supported as type by protobuf module");
 	}
 

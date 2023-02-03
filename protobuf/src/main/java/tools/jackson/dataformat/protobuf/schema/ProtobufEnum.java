@@ -14,7 +14,7 @@ public class ProtobufEnum
      * one bigger than preceding one.
      */
     protected final boolean _standardIndexing;
-    
+
     public ProtobufEnum(String name, Map<String,Integer> valuesByName, boolean standardIndexing)
     {
         _name = name;

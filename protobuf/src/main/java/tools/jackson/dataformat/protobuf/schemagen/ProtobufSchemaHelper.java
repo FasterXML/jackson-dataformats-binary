@@ -7,7 +7,7 @@ import tools.jackson.databind.*;
 public class ProtobufSchemaHelper
 {
     private ProtobufSchemaHelper(){}
-	
+
     public static String getNamespace(JavaType type) {
         Class<?> cls = type.getRawClass();
         Package pkg = cls.getPackage();

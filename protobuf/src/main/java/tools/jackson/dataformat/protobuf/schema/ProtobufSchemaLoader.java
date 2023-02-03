@@ -30,7 +30,7 @@ public class ProtobufSchemaLoader
      * schemas.
      */
     public final static ProtobufSchemaLoader std = new ProtobufSchemaLoader();
-    
+
     public ProtobufSchemaLoader() { }
 
     /*
@@ -38,7 +38,7 @@ public class ProtobufSchemaLoader
     /* Public API
     /**********************************************************
      */
-    
+
     public ProtobufSchema load(URL url) throws IOException {
         return loadNative(url).forFirstType();
     }
@@ -50,7 +50,7 @@ public class ProtobufSchemaLoader
     public ProtobufSchema load(URL url, String rootTypeName) throws IOException {
         return loadNative(url).forType(rootTypeName);
     }
-    
+
     public ProtobufSchema load(File f) throws IOException {
         return loadNative(f).forFirstType();
     }
@@ -62,7 +62,7 @@ public class ProtobufSchemaLoader
     public ProtobufSchema load(File f, String rootTypeName) throws IOException {
         return loadNative(f).forType(rootTypeName);
     }
-    
+
     /**
      * Method for loading and parsing a protoc definition from given
      * stream, assuming UTF-8 encoding.
@@ -79,7 +79,7 @@ public class ProtobufSchemaLoader
     public ProtobufSchema load(InputStream in, String rootTypeName) throws IOException {
         return loadNative(in, true).forType(rootTypeName);
     }
-    
+
     /**
      * Method for loading and parsing a protoc definition from given
      * stream, assuming UTF-8 encoding.
@@ -96,7 +96,7 @@ public class ProtobufSchemaLoader
     public ProtobufSchema load(Reader r, String rootTypeName) throws IOException {
         return loadNative(r, true).forType(rootTypeName);
     }
-    
+
     /**
      * Method for parsing given protoc schema definition, constructing
      * schema object Jackson can use.
@@ -130,7 +130,7 @@ public class ProtobufSchemaLoader
     public NativeProtobufSchema parseNative(String schema) throws IOException {
         return NativeProtobufSchema.construct(_loadNative(schema));
     }
-    
+
     public NativeProtobufSchema loadNative(InputStream in, boolean close) throws IOException {
         return NativeProtobufSchema.construct(_loadNative(in, close));
     }
@@ -138,7 +138,7 @@ public class ProtobufSchemaLoader
     protected NativeProtobufSchema loadNative(Reader r, boolean close) throws IOException {
         return NativeProtobufSchema.construct(_loadNative(r, close));
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
@@ -156,11 +156,11 @@ public class ProtobufSchemaLoader
     public ProtoFile _loadNative(String schemaAsString) throws IOException {
         return ProtoParser.parse(DEFAULT_SCHEMA_NAME, schemaAsString);
     }
-    
+
     public ProtoFile _loadNative(InputStream in, boolean close) throws IOException {
         return _loadNative(new InputStreamReader(in, UTF8), close);
     }
-    
+
     protected ProtoFile _loadNative(Reader r, boolean close) throws IOException
     {
         try {
@@ -171,19 +171,19 @@ public class ProtobufSchemaLoader
             }
         }
     }
-    
+
     protected String _readAll(Reader r) throws IOException
     {
         StringBuilder sb = new StringBuilder(1000);
         char[] buffer = new char[1000];
         int count;
-        
+
         while ((count = r.read(buffer)) > 0) {
             sb.append(buffer, 0, count);
         }
         return sb.toString();
     }
-    
+
     public void _throw(Exception e0) throws IOException
     {
         // First, peel it
@@ -194,7 +194,7 @@ public class ProtobufSchemaLoader
         if (e instanceof RuntimeException) {
             throw (RuntimeException) e;
         }
-        if (e instanceof IOException){ 
+        if (e instanceof IOException){
             throw (IOException) e;
         }
         throw new IOException(e.getMessage(), e);

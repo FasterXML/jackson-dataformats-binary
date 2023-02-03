@@ -55,11 +55,11 @@ public class ProtobufField
      * but functionally immutable.
      */
     public ProtobufField next;
-    
+
     public final boolean isObject;
 
     public final boolean isStdEnum;
-    
+
     public ProtobufField(FieldElement nativeField, FieldType type) {
         this(nativeField, type, null, null);
     }
@@ -75,7 +75,7 @@ public class ProtobufField
     public static ProtobufField unknownField() {
         return new ProtobufField(null, FieldType.MESSAGE, null, null);
     }
-    
+
     protected ProtobufField(FieldElement nativeField, FieldType type,
             ProtobufMessage msg, ProtobufEnum et)
     {
@@ -126,7 +126,7 @@ public class ProtobufField
             } else {
                 typedTag = (id << 3) + wireType;
             }
-        
+
         }
         isObject = (type == FieldType.MESSAGE);
     }
@@ -144,7 +144,7 @@ public class ProtobufField
         }
         return false;
     }
-    
+
     public void assignMessageType(ProtobufMessage msgType) {
         if (type != FieldType.MESSAGE) {
             throw new IllegalStateException("Can not assign message type for non-message field '"+name+"'");

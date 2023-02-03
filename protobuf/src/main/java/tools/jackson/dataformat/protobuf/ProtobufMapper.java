@@ -51,11 +51,11 @@ public class ProtobufMapper extends ObjectMapper
             implements java.io.Serializable // important!
         {
             private static final long serialVersionUID = 3L;
-    
+
             public StateImpl(Builder src) {
                 super(src);
             }
-    
+
             // We also need actual instance of state as base class can not implement logic
              // for reinstating mapper (via mapper builder) from state.
             @Override
@@ -126,7 +126,7 @@ public class ProtobufMapper extends ObjectMapper
     /* Basic accessor overrides
     /**********************************************************************
      */
-    
+
     @Override
     public Version version() {
         return PackageVersion.VERSION;

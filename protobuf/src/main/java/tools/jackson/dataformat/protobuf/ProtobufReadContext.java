@@ -40,7 +40,7 @@ public final class ProtobufReadContext
      * by this context (if message context) ends.
      */
     protected int _endOffset;
-    
+
     /*
     /**********************************************************
     /* Simple instance reuse slots
@@ -85,7 +85,7 @@ public final class ProtobufReadContext
     public void assignCurrentValue(Object v) {
         _currentValue = v;
     }
-    
+
     // // // Factory methods
 
     public static ProtobufReadContext createRootContext() {
@@ -118,7 +118,7 @@ public final class ProtobufReadContext
         ctxt._field = f;
         return ctxt;
     }
-    
+
     public ProtobufReadContext createChildObjectContext(ProtobufMessage messageType,
             ProtobufField f, int endOffset)
     {
@@ -177,15 +177,15 @@ public final class ProtobufReadContext
             _endOffset -= bytesConsumed;
         }
     }
-    
+
     public int getEndOffset() { return _endOffset; }
 
     public ProtobufMessage getMessageType() { return _messageType; }
 
     public ProtobufField getField() { return _field; }
-    
+
     public void setMessageType(ProtobufMessage mt) { _messageType = mt; }
-    
+
     /**
      * @return Location pointing to the point where the context
      *   start marker was found

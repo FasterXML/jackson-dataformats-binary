@@ -54,7 +54,7 @@ public class ProtobufSchemaGenerator extends ProtoBufSchemaVisitor
     /* Callbacks, structured types
     /**********************************************************************
      */
-	
+
     @Override
     public JsonObjectFormatVisitor expectObjectFormat(JavaType type) {
         _rootType = type;

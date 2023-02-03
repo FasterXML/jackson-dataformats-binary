@@ -20,7 +20,7 @@ public class FieldTypes
             }
         }
     }
-    
+
     public static FieldType findType(DataType rawType) {
         return instance._findType(rawType);
     }

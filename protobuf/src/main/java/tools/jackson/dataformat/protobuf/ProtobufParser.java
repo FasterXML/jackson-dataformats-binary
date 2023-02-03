@@ -32,7 +32,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     // Similar to root-key state, but for nested messages
     private final static int STATE_NESTED_KEY = 3;
-    
+
     private final static int STATE_NESTED_VALUE = 4;
 
     // State in which an unpacked array is starting
@@ -52,7 +52,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     // state in which the final END_OBJECT is to be returned
     private final static int STATE_MESSAGE_END = 11;
-    
+
     // State after either reaching end-of-input, or getting explicitly closed
     private final static int STATE_CLOSED = 12;
 
@@ -69,7 +69,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     protected ProtobufSchema _schema;
-    
+
     /*
     /**********************************************************************
     /* Generic I/O state
@@ -133,7 +133,7 @@ public class ProtobufParser extends ParserMinimalBase
      * For big (gigabyte-sized) sizes are possible, needs to be long,
      * unlike pointers and sizes related to in-memory buffers.
      */
-    protected long _tokenInputTotal = 0; 
+    protected long _tokenInputTotal = 0;
 
     /**
      * Input row on which current token starts, 1-based
@@ -145,7 +145,7 @@ public class ProtobufParser extends ParserMinimalBase
      * in the end it'll be converted to 1-based)
      */
     protected int _tokenInputCol = 0;
-    
+
     /*
     /**********************************************************************
     /* Parsing state
@@ -178,7 +178,7 @@ public class ProtobufParser extends ParserMinimalBase
      * representation  being available via read context)
      */
     protected boolean _nameCopied = false;
-    
+
     /**
      * ByteArrayBuilder is needed if 'getBinaryValue' is called. If so,
      * we better reuse it for remainder of content.
@@ -234,7 +234,7 @@ public class ProtobufParser extends ParserMinimalBase
     protected ProtobufMessage _currentMessage;
 
     protected ProtobufField _currentField;
-    
+
     /**
      * Flag that indicates that the current token has not yet
      * been fully processed, and needs to be finished for
@@ -256,7 +256,7 @@ public class ProtobufParser extends ParserMinimalBase
     protected int _decodedLength;
 
     protected int _currentEndOffset = Integer.MAX_VALUE;
-    
+
     /*
     /**********************************************************************
     /* Numeric conversions
@@ -323,9 +323,9 @@ public class ProtobufParser extends ParserMinimalBase
 //        _currentContext = _rootContext = ProtobufReadContext.createRootContext(this, schema);
     }
 
-    /*                                                                                       
+    /*
     /**********************************************************************
-    /* Versioned                                                                             
+    /* Versioned
     /**********************************************************************
      */
 
@@ -367,7 +367,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return count;
     }
-    
+
     @Override
     public Object streamReadInputSource() {
         return _inputStream;
@@ -384,7 +384,7 @@ public class ProtobufParser extends ParserMinimalBase
         return new JsonLocation(_ioContext.contentReference(),
                 _tokenInputTotal, // bytes
                 -1, -1, (int) _tokenInputTotal); // char offset, line, column
-    }   
+    }
 
     /**
      * Overridden since we do not really have character-based locations,
@@ -446,7 +446,7 @@ public class ProtobufParser extends ParserMinimalBase
     public Object currentValue() {
         return _streamReadContext.currentValue();
     }
-    
+
     /*
     /**********************************************************************
     /* Overridden methods
@@ -535,7 +535,7 @@ public class ProtobufParser extends ParserMinimalBase
             _currentMessage = _schema.getRootType();
             _currentField = _currentMessage.firstField();
             _state = STATE_ROOT_KEY;
-            _streamReadContext.setMessageType(_currentMessage);            
+            _streamReadContext.setMessageType(_currentMessage);
             return (_currToken = JsonToken.START_OBJECT);
 
         case STATE_ROOT_KEY:
@@ -560,7 +560,7 @@ public class ProtobufParser extends ParserMinimalBase
             return _handleNestedKey(_decodeVInt());
 
         case STATE_ARRAY_START:
-            _streamReadContext = _streamReadContext.createChildArrayContext(_currentField);            
+            _streamReadContext = _streamReadContext.createChildArrayContext(_currentField);
             _state = STATE_ARRAY_VALUE_FIRST;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -576,8 +576,8 @@ public class ProtobufParser extends ParserMinimalBase
                             _currentField.name, _currentMessage.getName(), newEnd, _currentEndOffset, len);
                 }
             }
-            _currentEndOffset = newEnd; 
-            _streamReadContext = _streamReadContext.createChildArrayContext(_currentField, newEnd);            
+            _currentEndOffset = newEnd;
+            _streamReadContext = _streamReadContext.createChildArrayContext(_currentField, newEnd);
             _state = STATE_ARRAY_VALUE_PACKED;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -634,11 +634,11 @@ public class ProtobufParser extends ParserMinimalBase
                 // remain in same state
                 return t;
             }
-            
+
         case STATE_ARRAY_END: // only used with unpacked and with "_nextTag"
 
             // We have returned END_ARRAY; now back to similar to STATE_ROOT_KEY / STATE_NESTED_KEY
-            
+
             // First, similar to STATE_ROOT_KEY:
             if (_streamReadContext.inRoot()) {
                 return _handleRootKey(_nextTag);
@@ -717,7 +717,7 @@ public class ProtobufParser extends ParserMinimalBase
                 _state = STATE_ARRAY_START_PACKED;
             } else {
                 _state = STATE_ARRAY_START;
-            }                    
+            }
         } else {
             _state = STATE_ROOT_VALUE;
         }
@@ -742,7 +742,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return _skipUnknownField(id, wireType);
             }
         }
-        
+
         if ((_currentField == null) || (f = _currentField.nextOrThisIf(id)) == null) {
             f = _currentMessage.field(id);
         }
@@ -761,7 +761,7 @@ public class ProtobufParser extends ParserMinimalBase
                 _state = STATE_ARRAY_START_PACKED;
             } else {
                 _state = STATE_ARRAY_START;
-            }                    
+            }
         } else {
             _state = STATE_NESTED_VALUE;
         }
@@ -823,9 +823,9 @@ public class ProtobufParser extends ParserMinimalBase
                 // let's be strict here. But keep in mind that it's zigzag encoded so
                 // we shall value values of '1' and '2'
                 if (i == 1) {
-                    type = JsonToken.VALUE_TRUE; 
+                    type = JsonToken.VALUE_TRUE;
                 } else if (i == 0) {
-                    type = JsonToken.VALUE_FALSE; 
+                    type = JsonToken.VALUE_FALSE;
                 } else {
                     _reportError(String.format("Invalid byte value for bool field %s: 0x%2x; should be either 0x0 or 0x1",
                             _currentField.name, i));
@@ -837,7 +837,7 @@ public class ProtobufParser extends ParserMinimalBase
         case STRING:
             {
                 int len = _decodeLength();
-                _decodedLength = len;            
+                _decodedLength = len;
                 if (len == 0) {
                     _textBuffer.resetWithEmpty();
                 } else {
@@ -850,7 +850,7 @@ public class ProtobufParser extends ParserMinimalBase
         case BYTES:
             {
                 int len = _decodeLength();
-                _decodedLength = len;            
+                _decodedLength = len;
                 if (len == 0) {
                     _binaryValue = ByteArrayBuilder.NO_BYTES;
                 } else {
@@ -895,9 +895,9 @@ public class ProtobufParser extends ParserMinimalBase
                     _reportErrorF("Message for field '%s' (of type %s) extends past end of enclosing message: %d > %d (length: %d)",
                             _currentField.name, msg.getName(), newEnd, _currentEndOffset, len);
                 }
-                _currentEndOffset = newEnd; 
+                _currentEndOffset = newEnd;
                 _state = STATE_NESTED_KEY;
-                _streamReadContext = _streamReadContext.createChildObjectContext(msg, _currentField, newEnd);            
+                _streamReadContext = _streamReadContext.createChildObjectContext(msg, _currentField, newEnd);
                 _currentField = msg.firstField();
             }
             return JsonToken.START_OBJECT;
@@ -934,7 +934,7 @@ public class ProtobufParser extends ParserMinimalBase
                 }
             }
             tag = _decodeVInt();
-            
+
             wireType = (tag & 0x7);
             // Note: may be null; if so, value needs to be skipped
             _currentField = _currentMessage.field(tag >> 3);
@@ -950,7 +950,7 @@ public class ProtobufParser extends ParserMinimalBase
             return (_currToken = JsonToken.PROPERTY_NAME);
         }
     }
-        
+
     private void _skipUnknownValue(int wireType) throws JacksonException
     {
         switch (wireType) {
@@ -1015,7 +1015,7 @@ public class ProtobufParser extends ParserMinimalBase
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
-                }                    
+                }
             } else {
                 _state = STATE_ROOT_VALUE;
             }
@@ -1052,7 +1052,7 @@ public class ProtobufParser extends ParserMinimalBase
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
-                }                    
+                }
             } else {
                 _state = STATE_NESTED_VALUE;
             }
@@ -1101,7 +1101,7 @@ public class ProtobufParser extends ParserMinimalBase
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
-                }                    
+                }
             } else {
                 _state = STATE_ROOT_VALUE;
             }
@@ -1137,7 +1137,7 @@ public class ProtobufParser extends ParserMinimalBase
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
-                }                    
+                }
             } else {
                 _state = STATE_NESTED_VALUE;
             }
@@ -1346,7 +1346,7 @@ public class ProtobufParser extends ParserMinimalBase
 
         // At this point we know we have text token so:
         final int len = _decodeLength();
-        _decodedLength = len;            
+        _decodedLength = len;
         _currToken = JsonToken.VALUE_STRING;
         if (len == 0) {
             _textBuffer.resetWithEmpty();
@@ -1381,7 +1381,7 @@ public class ProtobufParser extends ParserMinimalBase
      * after encountering end-of-input), returns null.
      * Method can be called for any event.
      */
-    @Override    
+    @Override
     public String getText() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
@@ -1417,7 +1417,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 _finishToken();
             }
-            switch (_currToken) {                
+            switch (_currToken) {
             case VALUE_STRING:
                 return _textBuffer.getTextBuffer();
             case PROPERTY_NAME:
@@ -1426,7 +1426,7 @@ public class ProtobufParser extends ParserMinimalBase
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
                 return getNumberValue().toString().toCharArray();
-                
+
             default:
                 return _currToken.asCharArray();
             }
@@ -1434,7 +1434,7 @@ public class ProtobufParser extends ParserMinimalBase
         return null;
     }
 
-    @Override    
+    @Override
     public int getTextLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
@@ -1443,14 +1443,14 @@ public class ProtobufParser extends ParserMinimalBase
             }
             switch (_currToken) {
             case VALUE_STRING:
-                return _textBuffer.size();                
+                return _textBuffer.size();
             case PROPERTY_NAME:
                 return _streamReadContext.currentName().length();
                 // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
                 return getNumberValue().toString().length();
-                
+
             default:
                 return _currToken.asCharArray().length;
             }
@@ -1651,7 +1651,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             return NumberType.BIG_INTEGER;
         }
-    
+
         /* And then floating point types. Here optimal type
          * needs to be big decimal, to avoid losing any data?
          * However... using BD is slow, so let's allow returning
@@ -1680,7 +1680,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return _numberInt;
     }
-    
+
     @Override
     public long getLongValue() throws JacksonException
     {
@@ -1694,7 +1694,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return _numberLong;
     }
-    
+
     @Override
     public BigInteger getBigIntegerValue() throws JacksonException
     {
@@ -1708,7 +1708,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return _numberBigInt;
     }
-    
+
     @Override
     public float getFloatValue() throws JacksonException
     {
@@ -1728,7 +1728,7 @@ public class ProtobufParser extends ParserMinimalBase
         */
         return _numberFloat;
     }
-    
+
     @Override
     public double getDoubleValue() throws JacksonException
     {
@@ -1742,7 +1742,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return _numberDouble;
     }
-    
+
     @Override
     public BigDecimal getDecimalValue() throws JacksonException
     {
@@ -1761,7 +1761,7 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************************
     /* Numeric conversions
     /**********************************************************************
-     */    
+     */
 
     protected void _checkNumericValue(int expType) throws JacksonException
     {
@@ -1783,7 +1783,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
                 _reportOverflowInt();
             }
@@ -1800,7 +1800,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
                 _reportOverflowInt();
             }
@@ -1810,13 +1810,13 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_INT;
     }
-    
+
     protected void convertNumberToLong() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
                 _reportOverflowLong();
             }
@@ -1832,7 +1832,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
                 _reportOverflowLong();
             }
@@ -1842,7 +1842,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_LONG;
     }
-    
+
     protected void convertNumberToBigInteger() throws JacksonException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -1901,7 +1901,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_DOUBLE;
     }
-    
+
     protected void convertNumberToBigDecimal() throws JacksonException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -2053,7 +2053,7 @@ public class ProtobufParser extends ParserMinimalBase
             if ((len -= code) < 0) { // may need to improve error here but...
                 throw _constructReadException("Malformed UTF-8 character at end of long (non-chunked) text segment");
             }
-            
+
             switch (code) {
             case 0:
                 break;
@@ -2112,7 +2112,7 @@ public class ProtobufParser extends ParserMinimalBase
         c = (c << 6) | (d & 0x3F);
         return c;
     }
-    
+
     /**
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
@@ -2135,7 +2135,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return ((c << 6) | (d & 0x3F)) - 0x10000;
     }
-    
+
     private final int _nextByte() throws JacksonException {
         int inPtr = _inputPtr;
         if (inPtr < _inputEnd) {
@@ -2183,7 +2183,7 @@ public class ProtobufParser extends ParserMinimalBase
     protected final void loadMoreGuaranteed() throws JacksonException {
         if (!loadMore()) { _reportInvalidEOF(); }
     }
-    
+
     /**
      * Helper method that will try to load at least specified number bytes in
      * input buffer, possible moving existing data around if necessary
@@ -2197,7 +2197,7 @@ public class ProtobufParser extends ParserMinimalBase
         // Need to move remaining data in front?
         int ptr = _inputPtr;
         int amount = _inputEnd - ptr;
-        
+
         if (ptr > 0) {
             _currInputProcessed += ptr;
             if (amount > 0) {
@@ -2233,7 +2233,7 @@ public class ProtobufParser extends ParserMinimalBase
     /* Low-level reading: other
     /**********************************************************************
      */
-    
+
     protected ByteArrayBuilder _getByteArrayBuilder() {
         if (_byteArrayBuilder == null) {
             _byteArrayBuilder = new ByteArrayBuilder();
@@ -2324,7 +2324,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _reportTooLongVInt(_inputBuffer[_inputPtr-1]);
     }
-    
+
     /*
     /**********************************************************************
     /* Helper methods, decoding
@@ -2357,7 +2357,7 @@ public class ProtobufParser extends ParserMinimalBase
 
                         // and now the last byte; at most 4 bits
                         int last = buf[ptr++] & 0xFF;
-                        
+
                         if (last > 0x1F) { // should have at most 5 one bits
                             _inputPtr = ptr;
                             _reportTooLongVInt(last);
@@ -2393,7 +2393,7 @@ public class ProtobufParser extends ParserMinimalBase
 
         final byte[] buf = _inputBuffer;
         int v = buf[ptr++];
-        
+
         if (v < 0) { // keep going
             v &= 0x7F;
             // Tag VInts guaranteed to stay in 32 bits, i.e. no more than 5 bytes
@@ -2409,7 +2409,7 @@ public class ProtobufParser extends ParserMinimalBase
 
                         // and now the last byte; at most 4 bits
                         int last = buf[ptr++] & 0xFF;
-                        
+
                         if (last > 0x0F) {
                             _inputPtr = ptr;
                             _reportTooLongVInt(last);
@@ -2431,12 +2431,12 @@ public class ProtobufParser extends ParserMinimalBase
         }
         return v;
     }
-    
+
     protected int _decodeVIntSlow() throws JacksonException
     {
         int v = 0;
         int shift = 0;
-        
+
         while (true) {
             if (_inputPtr >= _inputEnd) {
                 loadMoreGuaranteed();
@@ -2455,7 +2455,7 @@ public class ProtobufParser extends ParserMinimalBase
             shift += 7;
         }
     }
-    
+
     private long _decodeVLong() throws JacksonException
     {
         // 10 x 7 = 70 bits -> all we need is 64
@@ -2463,7 +2463,7 @@ public class ProtobufParser extends ParserMinimalBase
             return _decodeVLongSlow();
         }
         final byte[] buf = _inputBuffer;
-        
+
         // First things first: can start by accumulating as int, first 4 bytes
 
         int v = buf[_inputPtr++];
@@ -2486,10 +2486,10 @@ public class ProtobufParser extends ParserMinimalBase
             return v | (ch << 21);
         }
         v |= ((ch & 0x7F) << 21);
-        
+
         // 4 bytes gotten. How about 4 more?
         long l = (long) v;
-        
+
         v = buf[_inputPtr++];
         if (v >= 0) {
             return (((long) v) << 28) | l;
@@ -2558,7 +2558,7 @@ public class ProtobufParser extends ParserMinimalBase
             shift += 7;
         }
     }
-    
+
     protected final int _decode32Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 3) >= _inputEnd) {
