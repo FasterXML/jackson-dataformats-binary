@@ -132,7 +132,7 @@ public class NumberBeanTest extends BaseTestForSmile
     {
         ByteArrayOutputStream bytes;
         final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
-        
+
         bytes = new ByteArrayOutputStream();
         try (SmileGenerator g = _smileGenerator(bytes, true)) {
             g.writeStartArray();

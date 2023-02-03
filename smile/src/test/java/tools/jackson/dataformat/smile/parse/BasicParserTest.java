@@ -39,7 +39,7 @@ public class BasicParserTest extends BaseTestForSmile
         _testSimple(false, data);
         _testSimple(true, data);
     }
-    
+
     @SuppressWarnings("resource")
     private void _testSimple(boolean throttle, byte[] data) throws IOException
     {
@@ -48,7 +48,7 @@ public class BasicParserTest extends BaseTestForSmile
             in = new ThrottledInputStream(in, 1);
         }
         JsonParser p = _smileParser(in, true);
-        
+
         assertNull(p.currentToken());
         assertNull(p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -78,7 +78,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.currentName());
         p.close();
     }
-    
+
     public void testArrayWithString() throws IOException
     {
         byte[] data = _smileDoc("[ \"abc\" ]");
@@ -87,11 +87,11 @@ public class BasicParserTest extends BaseTestForSmile
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("abc", p.getText());
-        
+
         StringWriter w = new StringWriter();
         assertEquals(3, p.getText(w));
         assertEquals("abc", w.toString());
-        
+
         assertEquals(0, p.getTextOffset());
         assertEquals(3, p.getTextLength());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
@@ -187,7 +187,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.nextToken());
         p.close();
     }
-    
+
     // Simple test for encoding where "Unicode" string value is
     // actually ascii (which is fine, encoders need not ensure it is not,
     // it's just not guaranteeing content IS ascii)
@@ -214,7 +214,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertEquals("abc", p.currentName());
         assertEquals("abc", p.getText());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(13, p.getIntValue());    	
+        assertEquals(13, p.getIntValue());
     	    assertToken(JsonToken.END_OBJECT, p.nextToken());
     	    p.close();
     }
@@ -278,7 +278,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.nextToken());
         p.close();
     }
-    
+
     public void testJsonSampleDoc() throws IOException
     {
     	byte[] data = _smileDoc(SAMPLE_DOC_JSON_SPEC);
@@ -393,10 +393,10 @@ public class BasicParserTest extends BaseTestForSmile
             for (int i = 0; i < offset; ++i) {
                 bytes.write(0);
             }
-            
+
             // force back-refs off, easier to trigger problem
             JsonGenerator gen = f.createGenerator(ObjectWriteContext.empty(), bytes);
-            
+
             int count = 0;
             do {
                 gen.writeStartObject();
@@ -406,7 +406,7 @@ public class BasicParserTest extends BaseTestForSmile
                 ++count;
             } while (bytes.size() < (LEN - 100));
             gen.close();
-        
+
             // and then read back
             byte[] json = bytes.toByteArray();
             JsonParser p = _smileParser(new ByteArrayInputStream(json, offset, json.length-offset));
@@ -435,7 +435,7 @@ public class BasicParserTest extends BaseTestForSmile
                         SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
                 .build();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
-        
+
         JsonGenerator jgen = sf.createGenerator(ObjectWriteContext.empty(), bytes);
         jgen.writeStartArray();
         jgen.writeStartObject();
@@ -469,7 +469,7 @@ public class BasicParserTest extends BaseTestForSmile
         str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
         assertEquals("value", str);
         assertToken(JsonToken.END_OBJECT, p.nextToken());
-        
+
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -503,9 +503,9 @@ public class BasicParserTest extends BaseTestForSmile
         assertEquals((byte) 1, extraBytes[0]);
         assertEquals((byte) 2, extraBytes[1]);
         assertEquals((byte) 3, extraBytes[2]);
-        
+
         parser.close();
-    }    
+    }
     /*
     /**********************************************************
     /* Helper methods for use with json spec sample doc
@@ -630,7 +630,7 @@ public class BasicParserTest extends BaseTestForSmile
             fail("Expected INT or STRING value, got "+t);
         }
     }
-    
+
     protected void verifyPropertyName(JsonParser p, String expName)
         throws IOException
     {

@@ -17,37 +17,37 @@ import tools.jackson.databind.SerializationFeature;
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
 public class IonTimestampInstantSerializerTest {
-    
+
     private IonObjectMapper.Builder newMapperBuilder() {
         return IonObjectMapper.builder()
-                .addModule(new IonJavaTimeModule()); 
+                .addModule(new IonJavaTimeModule());
     }
-    
+
     @Test
     public void testSerializationAsTimestamp01Nanoseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
                 .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
-        
+
         Instant date = Instant.ofEpochSecond(0L);
         String value = mapper.writeValueAsString(date);
         assertNotNull("The value should not be null.", value);
         assertEquals("The value is not correct.", "0.", value);
     }
-    
+
     @Test
     public void testSerializationAsTimestamp01Milliseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
                 .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
-        
+
         Instant date = Instant.ofEpochSecond(0L);
         String value = mapper.writeValueAsString(date);
         assertEquals("The value is not correct.", "0", value);
     }
-    
+
     @Test
     public void testSerializationAsTimestamp02Nanoseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
@@ -71,7 +71,7 @@ public class IonTimestampInstantSerializerTest {
         String value = mapper.writeValueAsString(date);
         assertEquals("The value is not correct.", "123456789183", value);
     }
-    
+
     @Test
     public void testSerializationAsTimestamp03Nanoseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
@@ -129,7 +129,7 @@ public class IonTimestampInstantSerializerTest {
         Timestamp value = ((IonTimestamp)mapper.writeValueAsIonValue(date)).timestampValue();
         assertEquals("The value is not correct.", TimestampUtils.toTimestamp(date, ZoneOffset.UTC), value);
     }
-    
+
     @Test
     public void testSerializationWithTypeInfo01() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
@@ -137,7 +137,7 @@ public class IonTimestampInstantSerializerTest {
                 .enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Instant.class, MockObjectConfiguration.class)
                 .build();
-        
+
         Instant date = Instant.ofEpochSecond(123456789L, 183917322);
         IonDecimal value = (IonDecimal) mapper.writeValueAsIonValue(date);
         assertEquals("The value is not correct.", new BigDecimal("123456789.183917322"), value.bigDecimalValue());

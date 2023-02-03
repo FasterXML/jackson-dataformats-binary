@@ -21,7 +21,7 @@ public class WriteStringsTest extends ProtobufTestBase
     private final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
     private final ProtobufSchema NAME_SCHEMA;
-    { 
+    {
         try {
             NAME_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
         } catch (Exception e) {
@@ -43,7 +43,7 @@ public class WriteStringsTest extends ProtobufTestBase
         assertEquals((byte) 'B', bytes[2]);
         assertEquals((byte) 'o', bytes[3]);
         assertEquals((byte) 'b', bytes[4]);
-    
+
         assertEquals(0x3A, bytes[5]); // length-prefixed (2), field 7
         assertEquals(6, bytes[6]); // length for array
         assertEquals((byte) 'B', bytes[7]);
@@ -76,7 +76,7 @@ public class WriteStringsTest extends ProtobufTestBase
         _testSimpleLong(2007, "abc\u3333");
         _testSimpleLong(5000, "\u2009b\u3333a");
     }
-    
+
     private void _testSimpleLong(int clen, String part) throws Exception
     {
         StringBuilder sb = new StringBuilder();
@@ -109,7 +109,7 @@ public class WriteStringsTest extends ProtobufTestBase
         JsonParser p = MAPPER.reader()
                 .with(NAME_SCHEMA)
                 .createParser(new ByteArrayInputStream(bytes.toByteArray()));
-        
+
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
 
@@ -118,7 +118,7 @@ public class WriteStringsTest extends ProtobufTestBase
         StringWriter w = new StringWriter();
         assertEquals(4, p.getText(w));
         assertEquals("last", w.toString());
-        
+
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         ch = p.getTextCharacters();
         String str = new String(ch, p.getTextOffset(), p.getTextLength());
@@ -127,18 +127,18 @@ public class WriteStringsTest extends ProtobufTestBase
         w = new StringWriter();
         assertEquals(longName.length(), p.getText(w));
         assertEquals(longName, w.toString());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
-    
+
     private void _testSimpleLongMapper(String longName) throws Exception
     {
         final ObjectWriter w = MAPPER.writer(NAME_SCHEMA);
         final byte[] LONG_BYTES = longName.getBytes("UTF-8");
-        
+
         final int longLen = LONG_BYTES.length;
-        
+
         byte[] bytes = w.writeValueAsBytes(new Name("Bill", longName));
         // 4 or 5 bytes for fields (tag, length), 4 for first name, N for second
         int expLen = 8 + longLen;
@@ -156,7 +156,7 @@ public class WriteStringsTest extends ProtobufTestBase
         assertEquals((byte) 'l', bytes[4]);
         assertEquals((byte) 'l', bytes[5]);
         assertEquals(0x3A, bytes[6]); // length-prefixed (2), field 7
-    
+
         int offset = 7;
 
         if (longLen <= 0x7F) {

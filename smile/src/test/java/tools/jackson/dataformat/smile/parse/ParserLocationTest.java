@@ -12,7 +12,7 @@ public class ParserLocationTest
     public void testSimpleOffsets() throws IOException
     {
         byte[] data = _smileDoc("[ true, null, false, 511 ]", true); // true -> write header
-        
+
         JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         JsonLocation loc = p.currentLocation();
@@ -52,7 +52,7 @@ public class ParserLocationTest
         assertEquals(511, p.getIntValue());
         assertEquals(11, p.currentLocation().getByteOffset());
         assertEquals(8, p.currentTokenLocation().getByteOffset());
-        
+
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertEquals(12, p.currentLocation().getByteOffset());
         assertEquals(11, p.currentTokenLocation().getByteOffset());
@@ -68,7 +68,7 @@ public class ParserLocationTest
         // but as importantly, try to create buffer boundaries by using 6-char (7-byte) ASCII strings
         final int COUNT = 57000;
         final int SIZE = COUNT * 7;
-        
+
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(COUNT + 10);
         SmileGenerator gen = _smileGenerator(bytes, true);
         gen.disable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);

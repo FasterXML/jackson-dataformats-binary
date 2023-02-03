@@ -6,7 +6,7 @@ import tools.jackson.dataformat.smile.SmileFactory;
 public class ReadPerfMediaItem extends ReaderTestBase
 {
     private ReadPerfMediaItem() { }
-    
+
     @Override
     protected int targetSizeMegs() { return 10; }
 

@@ -52,7 +52,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertEquals("", r.currentName());
         assertToken(JsonToken.VALUE_NULL, r.nextToken());
         assertToken(JsonToken.END_OBJECT, r.nextToken());
-        
+
         assertToken(JsonToken.END_OBJECT, r.nextToken());
 
         // another twist: close in the middle, verify
@@ -102,7 +102,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
         assertEquals(23, r.getIntValue());
         assertToken(JsonToken.END_OBJECT, r.nextToken());
-        
+
         assertToken(JsonToken.END_ARRAY, r.nextToken());
     }
 }

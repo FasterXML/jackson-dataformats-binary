@@ -29,7 +29,7 @@ public class ConfigTest extends AsyncTestBase
         assertToken(JsonToken.START_ARRAY, r.nextToken());
         // two booleans, end array remain so:
         assertEquals(3, p.releaseBuffered(new ByteArrayOutputStream()));
-        
+
         p.close();
     }
 }

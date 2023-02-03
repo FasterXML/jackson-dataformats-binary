@@ -128,7 +128,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
-    
+
     public void testReadName() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
@@ -179,7 +179,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         byte[] bytes = w.writeValueAsBytes(input);
         assertNotNull(bytes);
         assertEquals(20, bytes.length);
-        
+
         Strings result = MAPPER.readerFor(Strings.class).with(schema).readValue(bytes);
         assertNotNull(result);
         assertNotNull(result.values);
@@ -195,7 +195,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertEquals("/", p.streamReadContext().toString());
-        
+
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("values", p.currentName());
 
@@ -214,7 +214,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         StringWriter strw = new StringWriter();
         assertEquals(input.values[2].length(), p.getText(strw));
         assertEquals(input.values[2], strw.toString());
-        
+
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
@@ -268,7 +268,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         byte[] bytes = w.writeValueAsBytes(input);
         assertNotNull(bytes);
         assertEquals(19, bytes.length);
-        
+
         NamedStrings result = MAPPER.readerFor(NamedStrings.class).with(schema).readValue(bytes);
         assertNotNull(result);
         assertEquals(input.name, result.name);
@@ -288,7 +288,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals("name", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(input.name, p.getText());
-        
+
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("values", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -355,7 +355,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
         ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);
 
-        
+
         final Point3 input = new Point3(1, 2, 3);
         byte[] stuff = mapper.writerFor(Point3.class)
                 .with(point3Schema)

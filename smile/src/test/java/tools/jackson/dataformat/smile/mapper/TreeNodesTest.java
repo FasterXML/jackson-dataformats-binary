@@ -26,7 +26,7 @@ public class TreeNodesTest extends BaseTestForSmile
          JsonNode top2 = MAPPER.readValue(doc, JsonNode.class);
          JsonNode foo2 = top2.get("foo");
          assertEquals("baz", foo2.get("bar").textValue());
-    
+
          JsonNode datNode = foo2.get("dat");
          if (!datNode.isBinary()) {
              fail("Expected binary node; got "+datNode.getClass().getName());

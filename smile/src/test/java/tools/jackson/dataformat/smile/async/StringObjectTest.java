@@ -39,7 +39,7 @@ public class StringObjectTest extends AsyncTestBase
             w = w.withoutFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
                     SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
         }
-        
+
         byte[] data = _smileDoc(w, json);
         _testBasicFieldsNames(data, 0, 100);
         _testBasicFieldsNames(data, 0, 3);
@@ -97,7 +97,7 @@ public class StringObjectTest extends AsyncTestBase
         if (verifyContents) {
             assertEquals(ASCII_SHORT_NAME, r.currentText());
         }
-        
+
         assertToken(JsonToken.END_OBJECT, r.nextToken());
         assertNull(r.nextToken());
 

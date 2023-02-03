@@ -19,7 +19,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
             byte[] doc = _smileDoc(json);
             assertFalse(f.isEnabled(StreamReadFeature.STRICT_DUPLICATE_DETECTION));
             _testSimpleDupsOk(doc, f);
-    
+
             f = f.rebuild().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
             _testSimpleDupsFail(doc, f, "a");
         }

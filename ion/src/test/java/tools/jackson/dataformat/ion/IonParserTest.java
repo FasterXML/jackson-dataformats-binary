@@ -36,7 +36,7 @@ import org.junit.Test;
 public class IonParserTest
 {
     private final IonFactory ionFactory = new IonFactory();
-    
+
     private final static ObjectReadContext EMPTY_READ_CTXT = ObjectReadContext.empty();
 
     @Test

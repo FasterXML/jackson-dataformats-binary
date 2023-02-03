@@ -33,7 +33,7 @@ import com.amazon.ion.system.IonSystemBuilder;
 public class SimpleIonWriteTest
 {
     // // // Actual tests; low level
-    
+
     @Test
     public void testSimpleStructWriteText() throws Exception
     {
@@ -73,9 +73,9 @@ public class SimpleIonWriteTest
         ionTextCompare(out.toString("UTF-8"));
         gen.close();
     }
-    
+
     // // // Helper methods
-        
+
     private void _writeSimple(JsonGenerator gen) throws IOException
     {
         gen.writeStartObject();
@@ -86,10 +86,10 @@ public class SimpleIonWriteTest
         gen.writeEndObject();
         gen.close();
     }
-    
+
     IonSystem ion = IonSystemBuilder.standard().build();
     IonDatagram expected;
-    
+
     @Before
     public void initializeExpectedDatagram() {
         IonStruct struct = ion.newEmptyStruct();
@@ -99,14 +99,14 @@ public class SimpleIonWriteTest
         expected = ion.newDatagram();
         expected.add(struct);
     }
-    
+
     private void ionTextCompare(String generatedTextIon) {
         IonLoader loader = ion.newLoader();
         IonDatagram loadedDatagram = loader.load(generatedTextIon);
         // the expected value is always the same {a:"value",b:42}
         assertEquals(expected, loadedDatagram);
     }
-    
+
     private void ionBinaryCompare(byte[] generatedBinaryIon) {
         IonLoader loader = ion.newLoader();
         IonDatagram loadedDatagram = loader.load(generatedBinaryIon);

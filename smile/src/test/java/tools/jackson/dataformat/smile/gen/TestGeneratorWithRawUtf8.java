@@ -35,7 +35,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         g.writeEndArray();
         g.close();
         byte[] json = out.toByteArray();
-        
+
         // Ok: let's verify that stuff was written out ok
         JsonParser jp = MAPPER.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
@@ -67,7 +67,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         g.writeEndArray();
         g.close();
         byte[] json = out.toByteArray();
-        
+
         // Ok: let's verify that stuff was written out ok
         JsonParser jp = MAPPER.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
@@ -84,7 +84,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 
     /**
      * Test to point out an issue with "raw" UTF-8 encoding
-     * 
+     *
      * @author David Yu
      */
     public void testIssue492() throws Exception
@@ -98,12 +98,12 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     private void doTestIssue492(boolean asUtf8String) throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator generator = (SmileGenerator) MAPPER.createGenerator(out);
-        
+
         generator.writeStartObject();
         generator.writeName("name");
         if (asUtf8String) {
@@ -125,38 +125,38 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         generator.writeEndArray();
         generator.writeEndObject();
         generator.writeEndObject();
-        
+
         generator.close();
-        
+
         byte[] data = out.toByteArray();
-        
+
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         SmileParser parser = (SmileParser)MAPPER.createParser(in);
-        
+
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
-        
+
         assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals(parser.currentName(), "name");
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
         assertEquals(parser.getText(), "PojoFoo");
-        
+
         assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals(parser.currentName(), "collection");
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
-        
+
         assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals("Should have property with name 'v'", parser.currentName(), "v");
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
-        
+
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
         assertEquals("Should get String value '1'", parser.getText(), "1");
-        
+
         assertToken(parser.nextToken(), JsonToken.END_ARRAY);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);
         parser.close();
     }
-        
+
     private List<byte[]> generateStrings(Random rnd, int totalLength, boolean includeCtrlChars)
         throws IOException
     {
@@ -175,7 +175,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         } while (totalLength > 0);
         return strings;
     }
-        
+
     private String generateString(Random rnd, int length, boolean includeCtrlChars)
     {
         StringBuilder sb = new StringBuilder(length);

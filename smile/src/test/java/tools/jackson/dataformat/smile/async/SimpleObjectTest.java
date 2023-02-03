@@ -51,7 +51,7 @@ public class SimpleObjectTest extends AsyncTestBase
         assertEquals("a", r.currentText());
         // by default no cheap access to char[] version:
         assertFalse(r.parser().hasTextCharacters());
-        // but... 
+        // but...
         char[] ch = r.parser().getTextCharacters();
         assertEquals(0, r.parser().getTextOffset());
         assertEquals(1, r.parser().getTextLength());
@@ -59,7 +59,7 @@ public class SimpleObjectTest extends AsyncTestBase
 
         // 04-Nov-2019, tatu: Changed in 3.0 (remove use of namecopybuffer)
         assertFalse(r.parser().hasTextCharacters());
-        
+
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 
         assertToken(JsonToken.PROPERTY_NAME, r.nextToken());

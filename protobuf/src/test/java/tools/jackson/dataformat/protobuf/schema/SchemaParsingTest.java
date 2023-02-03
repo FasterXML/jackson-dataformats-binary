@@ -90,12 +90,12 @@ public class SchemaParsingTest extends ProtobufTestBase
         _verifyMessageFieldLinking(msg);
 
         ProtobufField f;
-        
+
         f = msg.field("enum1");
         assertNotNull(f);
         assertTrue(f.isStdEnum);
         assertFalse(f.packed);
-        
+
         f = msg.field("enum2");
         assertNotNull(f);
         assertFalse(f.isStdEnum);

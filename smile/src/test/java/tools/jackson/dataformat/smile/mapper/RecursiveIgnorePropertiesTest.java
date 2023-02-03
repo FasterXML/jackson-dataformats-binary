@@ -18,7 +18,7 @@ public class RecursiveIgnorePropertiesTest extends BaseTestForSmile
     }
 
     private final ObjectMapper MAPPER = smileMapper();
-    
+
     public void testRecursiveForDeser() throws Exception
     {
         byte[] doc = _smileDoc(aposToQuotes("{ 'name': 'admin',\n"

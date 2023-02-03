@@ -23,7 +23,7 @@ public class ReadTreesTest extends BaseTestForSmile
         _testReadTreeSequence(true);
         _testReadTreeSequence(false);
     }
-    
+
     public void _testReadTreeSequence(boolean writeHeader) throws Exception
     {
         final byte[] INPUT = concat(

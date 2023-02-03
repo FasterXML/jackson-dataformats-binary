@@ -45,7 +45,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
 
         public int size() { return values.length; }
     }
-    
+
     static class StringArrayWrapper
     {
         public StringArray values;
@@ -55,7 +55,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
             values = new StringArray(v);
         }
     }
-    
+
     /*
     /**********************************************************
     /* Test methods
@@ -138,7 +138,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         }
         byte[] bytes = w.writeValueAsBytes(new StringArray(strings));
         int ptr = 0;
-        
+
         assertEquals(0xA, bytes[ptr++]);
 
         // big enough to actually require 3 bytes (above 0x3FFF bytes)
@@ -147,7 +147,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         ptr += 3;
 
         assertEquals(bytes.length - 4, len);
-        
+
         // in case of sparse, same as N copies of a String field
         for (int i = 0; i < COUNT; ++i) {
             final String str = "Value"+i;

@@ -91,7 +91,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 		byte[] smile = smiler.writeValueAsBytes(citm0);
 
 		Citm citm = smiler.readValue(new ByteArrayInputStream(smile), Citm.class);
-		
+
 		assertNotNull(citm);
 		assertNotNull(citm.areaNames);
 		assertEquals(17, citm.areaNames.size());
@@ -122,7 +122,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 		Citm citm = smiler.readValue(new ByteArrayInputStream(smile), Citm.class);
 
 		ObjectMapper mapper = smileMapper(false);
-		
+
 		byte[] smile1 = mapper.writeValueAsBytes(citm);
 		// IMPORTANT: use InputStream so boundary conditions are actually checked
 		Citm citm2 = mapper.readValue(new ByteArrayInputStream(smile1), Citm.class);
@@ -161,7 +161,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
            // first, read from byte array; no boundary
 	      double[] decoded = mapper.readValue(encoded, double[].class);
 	      assertEquals(data.length, decoded.length);
-	      
+
 	      // and then via InputStream
 	      decoded = mapper.readValue(new ByteArrayInputStream(encoded), double[].class); // This fails on 2.4.0
            assertEquals(data.length, decoded.length);

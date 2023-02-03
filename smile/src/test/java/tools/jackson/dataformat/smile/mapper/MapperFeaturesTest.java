@@ -10,7 +10,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
     static class Bean {
         public int value;
     }
-    
+
     /*
     /**********************************************************
     /* Test methods
@@ -25,7 +25,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
                 .build();
         Bean bean = new Bean();
         bean.value = 42;
-        
+
         byte[] smile = mapper.writeValueAsBytes(bean);
         Bean result = mapper.readValue(smile, 0, smile.length, Bean.class);
         assertEquals(42, result.value);

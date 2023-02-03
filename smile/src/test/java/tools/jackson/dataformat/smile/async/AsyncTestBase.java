@@ -21,7 +21,7 @@ abstract class AsyncTestBase extends BaseTestForSmile
     {
         return asyncForBytes(mapper.reader(), bytesPerRead, bytes, padding);
     }
-    
+
     protected AsyncReaderWrapper asyncForBytes(ObjectReader r,
             int bytesPerRead,
             byte[] bytes, int padding)
@@ -30,7 +30,7 @@ abstract class AsyncTestBase extends BaseTestForSmile
                 bytesPerRead, bytes, padding);
     }
 
-    protected static String spaces(int count) 
+    protected static String spaces(int count)
     {
         return SPACES.substring(0, Math.min(SPACES.length(), count));
     }

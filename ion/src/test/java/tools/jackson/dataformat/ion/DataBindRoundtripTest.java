@@ -82,7 +82,7 @@ public class DataBindRoundtripTest
 
     static class SubBean {
         protected String value;
-        
+
         @JsonCreator
         public SubBean(@JsonProperty("value") String v) {
             value = v;
@@ -90,7 +90,7 @@ public class DataBindRoundtripTest
 
         public String getValue() { return value; }
     }
-    
+
     enum RoundTrippers {
         BINARY {
             @Override
@@ -124,23 +124,23 @@ public class DataBindRoundtripTest
     /* Test methods
     /**********************************************************************
      */
-    
+
     @Test
     public void testSimple() throws IOException
     {
         Bean bean = new Bean(
-               "test", 
-               0.25, 
-               true, 
-               new byte[] { 1, 2, 3 }, 
-               Collections.singletonList("sexpEntry"), 
-               new SubBean("yellow"), 
+               "test",
+               0.25,
+               true,
+               new byte[] { 1, 2, 3 },
+               Collections.singletonList("sexpEntry"),
+               new SubBean("yellow"),
                "testSymbol",
                TestEnum.B,
                BigInteger.valueOf(Integer.MAX_VALUE + 42L));
         doTests(bean);
     }
-    
+
     @Test
     public void testBigInt() throws IOException
     {
@@ -155,7 +155,7 @@ public class DataBindRoundtripTest
         bean.bigInt = BigInteger.valueOf(42);
         doTests(bean);
     }
-    
+
     @Test
     public void testNullFields() throws IOException
     {
@@ -166,11 +166,11 @@ public class DataBindRoundtripTest
     @Test
     public void testIonRoot() throws IOException {
         String stringBean= "{a:'test',b:0.25,state:true,data:{{}}, sexp:(foo bar), nestedSexp:([foo2, foo3] (foo4 foo5)), sub:{value:'yellow'}, symbol:testSymbol, enumVal: B}";
-        
+
         IonSystem system = IonSystemBuilder.standard().build();
         IonValue root = system.newLoader().load(stringBean).iterator().next();
         IonObjectMapper m = new IonObjectMapper();
-       
+
         Bean bean = m.readValue(root, Bean.class);
         assertNotNull(bean);
         assertEquals(bean.a, "test");
@@ -192,7 +192,7 @@ public class DataBindRoundtripTest
         SubBean subbean = m.readValue(subRoot, SubBean.class);
         assertNotNull(subbean);
         assertEquals("yellow",subbean.getValue());
-        
+
     }
 
     private void doTests(Bean bean) throws IOException

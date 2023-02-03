@@ -114,7 +114,7 @@ public class IonValueMapperTest {
     /* Test methods
     /**********************************************************************
      */
-    
+
     @Test
     public void testNull() throws Exception {
         assertNull(ionValueMapper.readValue((IonValue) null, TestPojo1.class));

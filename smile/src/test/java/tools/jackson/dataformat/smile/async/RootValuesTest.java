@@ -55,7 +55,7 @@ public class RootValuesTest extends AsyncTestBase
         assertToken(JsonToken.END_OBJECT, r.nextToken());
         assertNull(r.nextToken());
         assertFalse(r.isClosed());
-        
+
         assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
         assertEquals(12356, r.getIntValue());
         assertNull(r.nextToken());

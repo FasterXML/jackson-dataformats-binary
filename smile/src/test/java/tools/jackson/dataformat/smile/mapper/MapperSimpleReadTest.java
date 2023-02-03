@@ -25,7 +25,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
 {
     static class BytesBean {
         public byte[] bytes;
-        
+
         public BytesBean() { }
         public BytesBean(byte[] b) { bytes = b; }
     }
@@ -62,7 +62,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
         byte[] input = new byte[] { 1, 2, 3, -1, 8, 0, 42 };
         byte[] smile = MAPPER.writeValueAsBytes(new BytesBean(input));
         BytesBean result = MAPPER.readValue(smile, BytesBean.class);
-        
+
         assertNotNull(result.bytes);
         Assert.assertArrayEquals(input, result.bytes);
     }

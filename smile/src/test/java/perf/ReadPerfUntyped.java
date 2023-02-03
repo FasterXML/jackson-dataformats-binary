@@ -11,7 +11,7 @@ public class ReadPerfUntyped extends ReaderTestBase
 
     @Override
     protected int targetSizeMegs() { return 10; }
-    
+
     public static void main(String[] args) throws Exception
     {
         if (args.length != 1) {

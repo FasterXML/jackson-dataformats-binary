@@ -126,7 +126,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         } catch (UnsupportedOperationException e) {
             verifyException(e, "for character-based");
         }
-        
+
     }
 
     // There is one constructor designed for direct generator instantiation,
@@ -152,7 +152,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     protected byte[] jdkSerialize(Object o) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);
@@ -184,7 +184,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         g.close();
         return bytes.toByteArray();
     }
-        
+
     protected void _copyDoc(SmileFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
         JsonParser p = f.createParser(ObjectReadContext.empty(), doc);

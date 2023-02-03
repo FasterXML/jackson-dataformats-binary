@@ -116,7 +116,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
                 .with(POINT_SCHEMA)
                 .writeValueAsBytes(new Point(1, 2));
     }
-    
+
     private byte[] jdkSerialize(Object o) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);

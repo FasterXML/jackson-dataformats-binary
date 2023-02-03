@@ -26,7 +26,7 @@ public class IonTimestampInstantDeserializerTest {
 
     private IonObjectMapper.Builder newMapperBuilder() {
         return IonObjectMapper.builder()
-                .addModule(new IonJavaTimeModule()); 
+                .addModule(new IonJavaTimeModule());
     }
 
     /*
@@ -55,7 +55,7 @@ public class IonTimestampInstantDeserializerTest {
         Instant actual = READER.readValue(TimestampUtils.getFractionalSeconds(expected).toString());
         assertEquals("The value is not correct.", expected, actual);
     }
-    
+
     /**
      * Test the upper-bound of Instant.
      */
@@ -295,7 +295,7 @@ public class IonTimestampInstantDeserializerTest {
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(expected, ZoneOffset.UTC);
-        Temporal actual = m.readValue("[\"" + Instant.class.getName() + "\"," + timestamp.toString() + "]", 
+        Temporal actual = m.readValue("[\"" + Instant.class.getName() + "\"," + timestamp.toString() + "]",
                 Temporal.class);
 
         assertTrue("The actual should be an Instant.", actual instanceof Instant);

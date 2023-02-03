@@ -13,14 +13,14 @@ public class SymbolHandlingTest extends BaseTestForSmile
     public void testSymbolTable() throws IOException
     {
         ObjectMapper mapper = newSmileMapper();
-        
+
         final String STR1 = "a";
 
         byte[] data = _smileDoc("{ "+quote(STR1)+":1, \"foobar\":2, \"longername\":3 }");
         SmileParser p = (SmileParser) mapper.createParser(data);
         final ByteQuadsCanonicalizer symbols1 = p._symbols;
         assertEquals(0, symbols1.size());
-     
+
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals(STR1, p.currentName());

@@ -12,7 +12,7 @@ abstract class ReaderTestBase
     protected final static int WARMUP_ROUNDS = 5;
 
     protected String _desc1, _desc2;
-    
+
     protected int hash;
     protected long startMeasure = System.currentTimeMillis() + 5000L;
     protected int roundsDone = 0;
@@ -20,7 +20,7 @@ abstract class ReaderTestBase
     private double[] timeMsecs;
 
     protected abstract int targetSizeMegs();
-    
+
     protected void testFromBytes(ObjectMapper mapper1, String desc1,
             Object inputValue1, Class<?> inputClass1,
             ObjectMapper mapper2, String desc2,
@@ -42,10 +42,10 @@ abstract class ReaderTestBase
 
         System.out.printf("Read %d/%d bytes to bind; will do %d repetitions to get about %d megs\n",
                 byteInput1.length, byteInput2.length, REPS, targetSizeMegs());
-        
+
         doTest(mapper1, byteInput1, inputClass1, mapper2, byteInput2, inputClass2);
     }
-    
+
     protected void doTest(ObjectMapper mapper1, byte[] byteInput1, Class<?> inputClass1,
             ObjectMapper mapper2, byte[] byteInput2, Class<?> inputClass2)
         throws Exception
@@ -56,19 +56,19 @@ abstract class ReaderTestBase
                 .forType(inputClass1);
         final ObjectReader arrayReader = mapper2.reader()
                 .forType(inputClass2);
-        
+
         int i = 0;
         final int TYPES = 2;
 
         timeMsecs = new double[TYPES];
-        
+
         while (true) {
             Thread.sleep(100L);
             final int type = (i++ % TYPES);
 
             String msg;
             double msesc;
-            
+
             switch (type) {
             case 0:
                 msg = _desc1;
@@ -129,7 +129,7 @@ abstract class ReaderTestBase
     protected double testDeser2(int reps, byte[] input, ObjectReader reader) throws Exception {
         return _testDeser(reps, input, reader);
     }
-    
+
     protected final double _testDeser(int reps, byte[] input, ObjectReader reader) throws Exception
     {
         long start = System.nanoTime();
@@ -149,7 +149,7 @@ abstract class ReaderTestBase
     protected double testDeser2(int reps, String input, ObjectReader reader) throws Exception {
         return _testDeser(reps, input, reader);
     }
-    
+
     protected final double _testDeser(int reps, String input, ObjectReader reader) throws Exception
     {
         long start = System.nanoTime();
@@ -164,7 +164,7 @@ abstract class ReaderTestBase
     protected final double _msecsFromNanos(long nanos) {
         return (nanos / 1000000.0);
     }
-    
+
     protected static byte[] readAll(String filename) throws IOException
     {
         File f = new File(filename);
@@ -172,7 +172,7 @@ abstract class ReaderTestBase
         byte[] buffer = new byte[4000];
         int count;
         FileInputStream in = new FileInputStream(f);
-        
+
         while ((count = in.read(buffer)) > 0) {
             bytes.write(buffer, 0, count);
         }
@@ -193,7 +193,7 @@ abstract class ReaderTestBase
         }
         p.close();
         g.close();
-        
+
         return bytes.toByteArray();
     }
 }

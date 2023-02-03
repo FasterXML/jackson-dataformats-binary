@@ -32,7 +32,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     private void _writeSimple(JsonGenerator jgen)
     {
         // Let's just write array of 2 objects
@@ -51,7 +51,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
         jgen.writeName(quotedName);
         jgen.writeString("d");
         jgen.writeEndObject();
-        
+
         jgen.writeEndArray();
     }
 
@@ -80,7 +80,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("d", p.getText());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
-        
+
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
     }

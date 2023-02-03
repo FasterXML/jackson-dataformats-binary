@@ -10,7 +10,7 @@ public class WriteLongString94Test extends ProtobufTestBase
     public static class TwoStrings {
         public String a;
         public String b;
-    }    
+    }
 
     /*
     /**********************************************************

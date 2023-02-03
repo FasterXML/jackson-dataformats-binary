@@ -62,27 +62,27 @@ public class AnySetterTest extends BaseTestForSmile
     static class Ignored
     {
         HashMap<String,Object> map = new HashMap<String,Object>();
- 
+
         @JsonIgnore
         public String bogus;
-        
+
         @JsonAnySetter
         void addEntry(String key, Object value)
         {
             map.put(key, value);
-        }        
+        }
     }
 
     static class Bean744
     {
         protected Map<String,Object> additionalProperties;
-        
+
         @JsonAnySetter
         public void addAdditionalProperty(String key, Object value) {
             if (additionalProperties == null) additionalProperties = new HashMap<String, Object>();
             additionalProperties.put(key,value);
         }
-        
+
         public void setAdditionalProperties(Map<String, Object> additionalProperties) {
             this.additionalProperties = additionalProperties;
         }
@@ -101,7 +101,7 @@ public class AnySetterTest extends BaseTestForSmile
 
     static class Impl extends Base {
         public String value;
-        
+
         public Impl() { }
         public Impl(String v) { value = v; }
     }
@@ -109,7 +109,7 @@ public class AnySetterTest extends BaseTestForSmile
     static class PolyAnyBean
     {
         protected Map<String,Base> props = new HashMap<String,Base>();
-        
+
         @JsonAnyGetter
         public Map<String,Base> props() {
             return props;
@@ -120,7 +120,7 @@ public class AnySetterTest extends BaseTestForSmile
             props.put(name, value);
         }
     }
-    
+
     static class JsonAnySetterOnMap {
         public int id;
 
@@ -149,11 +149,11 @@ public class AnySetterTest extends BaseTestForSmile
     {
         private String staticallyMappedProperty;
         private Map<T, Integer> dynamicallyMappedProperties = new HashMap<T, Integer>();
-    
+
         public String getStaticallyMappedProperty() {
             return staticallyMappedProperty;
         }
-    
+
         @JsonAnySetter
         public void addDynamicallyMappedProperty(T key, int value) {
             dynamicallyMappedProperties.put(key, value);
@@ -162,7 +162,7 @@ public class AnySetterTest extends BaseTestForSmile
         public void setStaticallyMappedProperty(String staticallyMappedProperty) {
             this.staticallyMappedProperty = staticallyMappedProperty;
         }
-    
+
         @JsonAnyGetter
         public Map<T, Integer> getDynamicallyMappedProperties() {
             return dynamicallyMappedProperties;
@@ -198,7 +198,7 @@ public class AnySetterTest extends BaseTestForSmile
      */
 
     private final ObjectMapper MAPPER = smileMapper();
-    
+
     public void testSimpleMapImitation() throws Exception
     {
         MapImitator mapHolder = MAPPER.readValue(
@@ -273,7 +273,7 @@ public class AnySetterTest extends BaseTestForSmile
         input.props.put("a", new Impl("xyz"));
 
         byte[] doc = MAPPER.writeValueAsBytes(input);
-        
+
 //        System.err.println("JSON: "+json);
 
         PolyAnyBean result = MAPPER.readValue(doc, PolyAnyBean.class);
@@ -283,7 +283,7 @@ public class AnySetterTest extends BaseTestForSmile
         assertTrue(ob instanceof Impl);
         assertEquals("xyz", ((Impl) ob).value);
     }
-    
+
     public void testJsonAnySetterOnMap() throws Exception {
         JsonAnySetterOnMap result = MAPPER.readValue(_smileDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
                 JsonAnySetterOnMap.class);

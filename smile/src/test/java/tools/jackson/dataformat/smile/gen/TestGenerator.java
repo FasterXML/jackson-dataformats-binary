@@ -52,7 +52,7 @@ public class TestGenerator extends BaseTestForSmile
         gen = _smileGenerator(out, true);
         gen.writeBoolean(true);
         gen.close();
-        
+
         // note: version, and 'check shared names', but not 'check shared strings' or 'raw binary'
         int b4 = HEADER_BYTE_4 | SmileConstants.HEADER_BIT_HAS_SHARED_NAMES;
 
@@ -165,7 +165,7 @@ public class TestGenerator extends BaseTestForSmile
         gen.writeName("3");
         gen.writeNull();
         gen.writeEndObject();
-        
+
         gen.writeEndObject();
         gen.close();
         assertEquals(21, out.toByteArray().length);
@@ -196,7 +196,7 @@ public class TestGenerator extends BaseTestForSmile
         _verifyWithEmpty(f, b, 2); // nextName, mismatch
         _verifyWithEmpty(f, b, 3); // nextName, match
     }
-        
+
     private void _verifyWithEmpty(SmileFactory f, byte[] b, int mode) throws Exception
     {
         // Important: test 3 variants we have for name access:
@@ -236,9 +236,9 @@ public class TestGenerator extends BaseTestForSmile
         assertToken(JsonToken.PROPERTY_NAME, p.currentToken());
         assertEquals(exp, p.currentName());
     }
-    
+
     /**
-     * Test to verify that 
+     * Test to verify that
      */
     public void testSharedStrings() throws Exception
     {
@@ -296,7 +296,7 @@ public class TestGenerator extends BaseTestForSmile
         gen.writeStartArray();
         gen.writeString(value);
         gen.writeString(value);
-        gen.writeEndArray();  
+        gen.writeEndArray();
         gen.close();
         return out.toByteArray();
     }

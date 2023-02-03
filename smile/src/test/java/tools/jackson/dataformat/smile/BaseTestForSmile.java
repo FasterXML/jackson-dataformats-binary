@@ -29,9 +29,9 @@ public abstract class BaseTestForSmile
     protected final static int SAMPLE_SPEC_VALUE_TN_ID1 = 116;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID2 = 943;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID3 = 234;
-    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;    
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;
 
-    protected final static String SAMPLE_DOC_JSON_SPEC = 
+    protected final static String SAMPLE_DOC_JSON_SPEC =
             "{\n"
             +"  \"Image\" : {\n"
             +"    \"Width\" : "+SAMPLE_SPEC_VALUE_WIDTH+",\n"
@@ -64,7 +64,7 @@ public abstract class BaseTestForSmile
     protected JsonParser _smileParser(InputStream in) throws IOException {
         return _smileParser(in, false);
     }
-    
+
     protected JsonParser _smileParser(byte[] input, boolean requireHeader) throws IOException
     {
         return _smileReader(requireHeader).createParser(input);
@@ -96,7 +96,7 @@ public abstract class BaseTestForSmile
     protected SmileMapper smileMapper() {
         return smileMapper(false);
     }
-    
+
     protected SmileMapper.Builder smileMapperBuilder() {
         return SmileMapper.builder(smileFactory(false, false, false));
     }
@@ -126,7 +126,7 @@ public abstract class BaseTestForSmile
                 .configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
                 .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
     }
-    
+
     protected byte[] _smileDoc(String json)
     {
         return _smileDoc(json, true);
@@ -153,7 +153,7 @@ public abstract class BaseTestForSmile
             return out.toByteArray();
         }
     }
-    
+
     protected byte[] _smileDoc(String json, boolean writeHeader)
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
@@ -180,7 +180,7 @@ public abstract class BaseTestForSmile
     protected ObjectWriter _smileWriter() {
         return _smileWriter(true);
     }
-    
+
     protected ObjectWriter _smileWriter(boolean addHeader) {
         ObjectWriter w = SMILE_MAPPER.writer();
         if (addHeader) {
@@ -237,7 +237,7 @@ public abstract class BaseTestForSmile
         }
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
     }
-    
+
     protected void _verifyBytes(byte[] actBytes, byte... expBytes)
     {
         Assert.assertArrayEquals(expBytes, actBytes);
@@ -263,7 +263,7 @@ public abstract class BaseTestForSmile
 
         return str;
     }
-    
+
     /*
     /**********************************************************
     /* Other helper methods
