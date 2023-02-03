@@ -42,7 +42,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
      {
          testEncodeAndDecodeBytes(LARGE_LENGTH);
      }
-	
+
 	private void generateInputFile(File input, int fileSize) throws NoSuchAlgorithmException, IOException
 	{
 	    OutputStream os = new BufferedOutputStream(new FileOutputStream(input));
@@ -102,7 +102,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
 	    Assert.assertEquals(file1.length(), file2.length());
 
 	    int ch;
-	    
+
 	    while ((ch = fis1.read()) >= 0) {
 	        Assert.assertEquals(ch, fis2.read());
 	    }

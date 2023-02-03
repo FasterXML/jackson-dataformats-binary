@@ -184,7 +184,7 @@ public class NumberBeanTest extends CBORTestBase
                 .disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
                 .build();
         final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
-        
+
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(f, bytes)) {
             g.writeStartArray();
@@ -209,7 +209,7 @@ public class NumberBeanTest extends CBORTestBase
             assertEquals(NumberType.DOUBLE, p.getNumberType());
             assertEquals(Double.valueOf(0.25), p.getNumberValue());
             assertEquals(Double.valueOf(0.25), p.getNumberValueExact());
-            
+
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.LONG, p.getNumberType());
             assertEquals(Long.valueOf(13117L), p.getNumberValue());
@@ -219,7 +219,7 @@ public class NumberBeanTest extends CBORTestBase
             assertEquals(NumberType.FLOAT, p.getNumberType());
             assertEquals(Float.valueOf(0.5f), p.getNumberValue());
             assertEquals(Float.valueOf(0.5f), p.getNumberValueExact());
-            
+
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
             assertEquals(BigInteger.valueOf(1972), p.getNumberValue());
@@ -229,7 +229,7 @@ public class NumberBeanTest extends CBORTestBase
             assertEquals(NumberType.BIG_DECIMAL, p.getNumberType());
             assertEquals(EXP_BIG_DEC, p.getNumberValue());
             assertEquals(EXP_BIG_DEC, p.getNumberValueExact());
-            
+
             assertToken(JsonToken.END_ARRAY, p.nextToken());
         }
     }
@@ -245,7 +245,7 @@ public class NumberBeanTest extends CBORTestBase
             g.writeNumberField("value", VALUE);
             g.writeEndObject();
         }
-        
+
         NestedBigDecimalHolder2784 result = MAPPER.readValue(bytes.toByteArray(),
                 NestedBigDecimalHolder2784.class);
         assertEquals(VALUE, result.holder.value);

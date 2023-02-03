@@ -15,7 +15,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     private final static String SIMPLE_DOC_AS_JSON = "{\"simple\":[1,true,{}]}";
 
     private final static CBORFactory CBOR_F = new CBORFactory();
-    
+
     public void testCBORFactorySerializable() throws Exception
     {
         CBORFactory f = new CBORFactory();
@@ -94,15 +94,15 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         } catch (UnsupportedOperationException e) {
             verifyException(e, "non-byte-based target");
         }
-        
+
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
     /**********************************************************
      */
-    
+
     protected byte[] jdkSerialize(Object o) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);
@@ -134,7 +134,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         g.close();
         return bytes.toByteArray();
     }
-        
+
     protected void _copyDoc(JsonFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
         JsonParser p = f.createParser(doc);

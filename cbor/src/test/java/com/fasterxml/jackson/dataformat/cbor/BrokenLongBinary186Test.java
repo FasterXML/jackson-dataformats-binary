@@ -55,7 +55,7 @@ public class BrokenLongBinary186Test extends CBORTestBase
     {
         // Can try bit shorter here, like 500 megs
         final int allegedLength = 500_000_000;
-        
+
         JsonParser p = MAPPER.createParser(_createBrokenDoc(allegedLength, 72000));
         assertEquals(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         try {

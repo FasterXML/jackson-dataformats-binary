@@ -20,9 +20,9 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
     protected final static int SAMPLE_SPEC_VALUE_TN_ID1 = 116;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID2 = 943;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID3 = 234;
-    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;    
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;
 
-    protected final static String SAMPLE_DOC_JSON_SPEC = 
+    protected final static String SAMPLE_DOC_JSON_SPEC =
             "{\n"
             +"  \"Image\" : {\n"
             +"    \"Width\" : "+SAMPLE_SPEC_VALUE_WIDTH+",\n"
@@ -37,7 +37,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
             +"  }"
             +"}"
             ;
-    
+
     public void testJsonSampleDoc() throws IOException
     {
         byte[] data = cborDoc(SAMPLE_DOC_JSON_SPEC);
@@ -162,7 +162,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
             fail("Expected INT or STRING value, got "+t);
         }
     }
-    
+
     protected void verifyFieldName(JsonParser jp, String expName)
         throws IOException
     {

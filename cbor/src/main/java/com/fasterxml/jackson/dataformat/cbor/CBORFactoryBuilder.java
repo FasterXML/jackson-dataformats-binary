@@ -95,7 +95,7 @@ public class CBORFactoryBuilder extends TSFBuilder<CBORFactory, CBORFactoryBuild
         _formatGeneratorFeatures &= ~f.getMask();
         return _this();
     }
-    
+
     public CBORFactoryBuilder disable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
         _formatGeneratorFeatures &= ~first.getMask();
         for (CBORGenerator.Feature f : other) {
@@ -107,7 +107,7 @@ public class CBORFactoryBuilder extends TSFBuilder<CBORFactory, CBORFactoryBuild
     public CBORFactoryBuilder configure(CBORGenerator.Feature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
-    
+
     // // // Accessors
 
     public int formatParserFeaturesMask() { return _formatParserFeatures; }

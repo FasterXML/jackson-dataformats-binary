@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 /**
  * Constants used by {@link CBORGenerator} and {@link CBORParser}
- * 
+ *
  * @author Tatu Saloranta
  */
 public final class CBORConstants
@@ -36,7 +36,7 @@ public final class CBORConstants
     /* Other marker values
     /**********************************************************
      */
-    
+
     public final static int SUFFIX_INDEFINITE = 0x1F;
     public final static int SUFFIX_UINT8_ELEMENTS = 0x18;
     public final static int SUFFIX_UINT16_ELEMENTS = 0x19;
@@ -56,7 +56,7 @@ public final class CBORConstants
      * for the very first root-level data item.
      */
     public final static int TAG_ID_SELF_DESCRIBE = 55799;
-    
+
     /*
     /**********************************************************
     /* Actual type and marker bytes
@@ -68,13 +68,13 @@ public final class CBORConstants
     public final static byte BYTE_ARRAY_2_ELEMENTS = (byte) (PREFIX_TYPE_ARRAY + 2);
 
     public final static byte BYTE_OBJECT_INDEFINITE = (byte) (PREFIX_TYPE_OBJECT + SUFFIX_INDEFINITE);
-    
+
     public final static byte BYTE_FALSE = (byte) (PREFIX_TYPE_MISC + 20);
     public final static byte BYTE_TRUE = (byte) (PREFIX_TYPE_MISC + 21);
     public final static byte BYTE_NULL = (byte) (PREFIX_TYPE_MISC + 22);
 
     public final static byte BYTE_EMPTY_STRING = (byte) (PREFIX_TYPE_TEXT);
-    
+
     /**
      * String that is chunked
      */
@@ -91,16 +91,16 @@ public final class CBORConstants
     public final static int TAG_BIGNUM_NEG = 3;
     public final static int TAG_DECIMAL_FRACTION = 4;
     public final static int TAG_BIGFLOAT = 5;
-    
+
     public final static byte BYTE_TAG_BIGNUM_POS = (byte) (PREFIX_TYPE_TAG + TAG_BIGNUM_POS);
     public final static byte BYTE_TAG_BIGNUM_NEG = (byte) (PREFIX_TYPE_TAG + TAG_BIGNUM_NEG);
     public final static byte BYTE_TAG_DECIMAL_FRACTION = (byte) (PREFIX_TYPE_TAG + TAG_DECIMAL_FRACTION);
     public final static byte BYTE_TAG_BIGFLOAT = (byte) (PREFIX_TYPE_TAG + TAG_BIGFLOAT);
-    
+
     public final static byte BYTE_BREAK = (byte) 0xFF;
 
     public final static int INT_BREAK = 0xFF;
-    
+
     /*
     /**********************************************************
     /* Basic UTF-8 decode/encode table

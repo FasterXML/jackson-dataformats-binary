@@ -20,7 +20,7 @@ public class GeneratorInteropTest extends CBORTestBase
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        // as per spec, Type Desc Tag has value 
+        // as per spec, Type Desc Tag has value
         gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         gen.writeBoolean(true);
         gen.close();
@@ -33,7 +33,7 @@ public class GeneratorInteropTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORFactory f = cborFactory();
         assertFalse(f.isEnabled(CBORGenerator.Feature.WRITE_TYPE_HEADER));
-        
+
         CBORGenerator gen = f.createGenerator(out);
         // First, without feature, we get just a single byte doc
         gen.writeBoolean(true);
@@ -51,8 +51,8 @@ public class GeneratorInteropTest extends CBORTestBase
         gen.writeBoolean(true);
         gen.close();
 
-        
-        
+
+
         _verifyBytes(out.toByteArray(), TYPE_DESC_AND_TRUE);
     }
 }

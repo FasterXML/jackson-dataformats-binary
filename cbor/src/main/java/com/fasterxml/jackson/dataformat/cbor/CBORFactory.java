@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.io.ContentReference;
  * Note on using non-byte-based sources/targets (char based, like
  * {@link java.io.Reader} and {@link java.io.Writer}): these can not be
  * used for CBOR documents; attempt will throw exception.
- * 
+ *
  * @author Tatu Saloranta
  */
 public class CBORFactory extends JsonFactory
@@ -39,7 +39,7 @@ public class CBORFactory extends JsonFactory
      * (and returned by {@link #getFormatName()}
      */
     public final static String FORMAT_NAME = "CBOR";
-    
+
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
@@ -88,7 +88,7 @@ public class CBORFactory extends JsonFactory
     /**
      * Note: REQUIRES at least 2.2.1 -- unfortunate intra-patch dep but seems
      * preferable to just leaving bug be as is
-     * 
+     *
      * @since 2.2.1
      */
     public CBORFactory(CBORFactory src, ObjectCodec oc)
@@ -146,10 +146,10 @@ public class CBORFactory extends JsonFactory
         return new CBORFactory(this, _objectCodec);
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
@@ -162,7 +162,7 @@ public class CBORFactory extends JsonFactory
     /* Format detection functionality
     /**********************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return FORMAT_NAME;
@@ -173,7 +173,7 @@ public class CBORFactory extends JsonFactory
 
     @Override
     public boolean canUseCharArrays() { return false; }
-    
+
     @Override
     public MatchStrength hasFormat(InputAccessor acc) throws IOException {
         return CBORParserBootstrapper.hasCBORFormat(acc);
@@ -199,7 +199,7 @@ public class CBORFactory extends JsonFactory
     public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
         return CBORGenerator.Feature.class;
     }
-    
+
     /*
     /**********************************************************
     /* Configuration, parser settings
@@ -455,7 +455,7 @@ public class CBORFactory extends JsonFactory
         }
         return gen;
     }
-    
+
     protected <T> T _nonByteSource() {
         throw new UnsupportedOperationException("Can not create parser for non-byte-based source");
     }

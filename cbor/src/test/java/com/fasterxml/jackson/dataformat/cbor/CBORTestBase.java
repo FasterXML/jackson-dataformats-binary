@@ -63,7 +63,7 @@ public abstract class CBORTestBase
         JsonParser p = jf.createParser(json);
         ByteArrayOutputStream out = new ByteArrayOutputStream(json.length());
         JsonGenerator dest = cborF.createGenerator(out);
-    	
+
         while (p.nextToken() != null) {
             dest.copyCurrentEvent(p);
         }
@@ -141,7 +141,7 @@ public abstract class CBORTestBase
         }
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
     }
-    
+
     protected void _verifyBytes(byte[] actBytes, byte... expBytes) {
         Assert.assertArrayEquals(expBytes, actBytes);
     }
@@ -169,7 +169,7 @@ public abstract class CBORTestBase
         expBytes[2] = exp3;
         Assert.assertArrayEquals(expBytes, actBytes);
     }
-    
+
     /**
      * Method that gets textual contents of the current token using
      * available methods, and ensures results are consistent, before
@@ -190,7 +190,7 @@ public abstract class CBORTestBase
 
         return str;
     }
-    
+
     /*
     /**********************************************************
     /* Text generation
@@ -200,7 +200,7 @@ public abstract class CBORTestBase
     protected static String generateUnicodeString(int length) {
         return generateUnicodeString(length, new Random(length));
     }
-    
+
     protected static String generateUnicodeString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
@@ -229,7 +229,7 @@ public abstract class CBORTestBase
     protected static String generateLongAsciiString(int length) {
         return generateLongAsciiString(length, new Random(length));
     }
-    
+
     protected static String generateLongAsciiString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
@@ -244,7 +244,7 @@ public abstract class CBORTestBase
         } while (sw.length() < length);
         return sw.toString();
     }
-    
+
     /*
     /**********************************************************
     /* Other helper methods

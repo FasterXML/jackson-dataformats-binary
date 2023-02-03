@@ -31,7 +31,7 @@ public class CBORParser extends ParserMinimalBase
 
         final boolean _defaultState;
         final int _mask;
-        
+
         /**
          * Method that calculates bit set (flags) of all features that
          * are enabled by default.
@@ -46,12 +46,12 @@ public class CBORParser extends ParserMinimalBase
             }
             return flags;
         }
-        
+
         private Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
         }
-        
+
         @Override public boolean enabledByDefault() { return _defaultState; }
         @Override public int getMask() { return _mask; }
         @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
@@ -161,7 +161,7 @@ public class CBORParser extends ParserMinimalBase
      * For big (gigabyte-sized) sizes are possible, needs to be long,
      * unlike pointers and sizes related to in-memory buffers.
      */
-    protected long _tokenInputTotal = 0; 
+    protected long _tokenInputTotal = 0;
 
     /**
      * Input row on which current token starts, 1-based
@@ -324,7 +324,7 @@ public class CBORParser extends ParserMinimalBase
     final static BigInteger BI_MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
     @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigInteger BI_MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
-    
+
     @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
     final static BigDecimal BD_MIN_LONG = new BigDecimal(BI_MIN_LONG);
     @SuppressWarnings("hiding") // only since 2.9, remove in 3.0
@@ -443,7 +443,7 @@ public class CBORParser extends ParserMinimalBase
      * the most recently decoded value (whether completely, for
      * scalar values, or partially, for Objects/Arrays), if any.
      * If no tag was associated with it, -1 is returned.
-     * 
+     *
      * @since 2.5
      */
     public int getCurrentTag() {
@@ -468,7 +468,7 @@ public class CBORParser extends ParserMinimalBase
         out.write(_inputBuffer, origPtr, count);
         return count;
     }
-    
+
     @Override
     public Object getInputSource() {
         return _inputStream;
@@ -485,7 +485,7 @@ public class CBORParser extends ParserMinimalBase
         return new JsonLocation(_ioContext.contentReference(),
                 _tokenInputTotal, // bytes
                 -1, -1, (int) _tokenInputTotal); // char offset, line, column
-    }   
+    }
 
     /**
      * Overridden since we do not really have character-based locations,
@@ -529,7 +529,7 @@ public class CBORParser extends ParserMinimalBase
             throw new IllegalStateException(e);
         }
     }
-    
+
     @Override
     public void close() throws IOException {
         if (!_closed) {
@@ -791,8 +791,8 @@ public class CBORParser extends ParserMinimalBase
                 return (_currToken = JsonToken.VALUE_NULL);
             case 23:
                 return (_currToken = _decodeUndefinedValue());
-                
-            case 25: // 16-bit float... 
+
+            case 25: // 16-bit float...
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
                 {
                     _numberFloat = (float) _decodeHalfSizeFloat();
@@ -1139,7 +1139,7 @@ public class CBORParser extends ParserMinimalBase
             }
         }
         // and that's what we need to do for safety; now can drop to generic handling:
-        
+
         // Important! Need to push back the last byte read (but not consumed)
         --_inputPtr;
         return nextToken() == JsonToken.END_ARRAY; // should never match
@@ -1191,7 +1191,7 @@ public class CBORParser extends ParserMinimalBase
             if ((ptr + byteLen + 1) < _inputEnd) {
 	            final int ch = _inputBuffer[ptr++];
 	            // only handle usual textual type
-	            if (((ch >> 5) & 0x7) == CBORConstants.MAJOR_TYPE_TEXT) { 
+	            if (((ch >> 5) & 0x7) == CBORConstants.MAJOR_TYPE_TEXT) {
 		            int lenMarker = ch & 0x1F;
 		            if (lenMarker <= 24) {
 			            if (lenMarker == 23) {
@@ -1476,7 +1476,7 @@ public class CBORParser extends ParserMinimalBase
 
         case 6: // another tag; not allowed
             _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
-            
+
         case 7:
         default: // misc: tokens, floats
             switch (lowBits) {
@@ -1493,7 +1493,7 @@ public class CBORParser extends ParserMinimalBase
                 _currToken = _decodeUndefinedValue();
                 return null;
 
-            case 25: // 16-bit float... 
+            case 25: // 16-bit float...
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
                 {
                     _numberFloat = _decodeHalfSizeFloat();
@@ -1572,7 +1572,7 @@ public class CBORParser extends ParserMinimalBase
      * after encountering end-of-input), returns null.
      * Method can be called for any event.
      */
-    @Override    
+    @Override
     public String getText() throws IOException
     {
         JsonToken t = _currToken;
@@ -1618,7 +1618,7 @@ public class CBORParser extends ParserMinimalBase
         return null;
     }
 
-    @Override    
+    @Override
     public int getTextLength() throws IOException
     {
         if (_currToken != null) { // null only before/after document
@@ -1626,7 +1626,7 @@ public class CBORParser extends ParserMinimalBase
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
-                return _textBuffer.size();                
+                return _textBuffer.size();
             }
             if (_currToken == JsonToken.FIELD_NAME) {
                 return _streamReadContext.getCurrentName().length();
@@ -1853,7 +1853,7 @@ public class CBORParser extends ParserMinimalBase
             // Shouldn't get this far but if we do
             return _numberBigDecimal;
         }
-    
+
         // And then floating point types. But here optimal type
         // needs to be big decimal, to avoid losing any data?
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -1888,7 +1888,7 @@ public class CBORParser extends ParserMinimalBase
             }
             return NumberType.BIG_INTEGER;
         }
-    
+
         /* And then floating point types. Here optimal type
          * needs to be big decimal, to avoid losing any data?
          * However... using BD is slow, so let's allow returning
@@ -1903,7 +1903,7 @@ public class CBORParser extends ParserMinimalBase
         }
         return NumberType.FLOAT;
     }
-    
+
     @Override
     public int getIntValue() throws IOException
     {
@@ -1917,7 +1917,7 @@ public class CBORParser extends ParserMinimalBase
         }
         return _numberInt;
     }
-    
+
     @Override
     public long getLongValue() throws IOException
     {
@@ -1931,7 +1931,7 @@ public class CBORParser extends ParserMinimalBase
         }
         return _numberLong;
     }
-    
+
     @Override
     public BigInteger getBigIntegerValue() throws IOException
     {
@@ -1979,7 +1979,7 @@ public class CBORParser extends ParserMinimalBase
         }
         return _numberDouble;
     }
-    
+
     @Override
     public BigDecimal getDecimalValue() throws IOException
     {
@@ -1998,7 +1998,7 @@ public class CBORParser extends ParserMinimalBase
     /**********************************************************
     /* Numeric conversions
     /**********************************************************
-     */    
+     */
 
     protected void _checkNumericValue(int expType) throws IOException
     {
@@ -2020,7 +2020,7 @@ public class CBORParser extends ParserMinimalBase
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
                 reportOverflowInt();
             }
@@ -2037,7 +2037,7 @@ public class CBORParser extends ParserMinimalBase
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
                 reportOverflowInt();
             }
@@ -2047,13 +2047,13 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_INT;
     }
-    
+
     protected void convertNumberToLong() throws IOException
     {
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
                 reportOverflowLong();
             }
@@ -2069,7 +2069,7 @@ public class CBORParser extends ParserMinimalBase
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
                 reportOverflowLong();
             }
@@ -2079,7 +2079,7 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_LONG;
     }
-    
+
     protected void convertNumberToBigInteger() throws IOException
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -2118,7 +2118,7 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_FLOAT;
     }
-    
+
     protected void convertNumberToDouble() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -2138,7 +2138,7 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid |= NR_DOUBLE;
     }
-    
+
     protected void convertNumberToBigDecimal() throws IOException
     {
         // Note: this MUST start with more accurate representations, since we don't know which
@@ -2405,7 +2405,7 @@ public class CBORParser extends ParserMinimalBase
 
         _chunkEnd = _inputPtr;
         _chunkLeft = 0;
-        
+
         while (true) {
             // at byte boundary fine to get break marker, hence different:
             if (_inputPtr >= _chunkEnd) {
@@ -2506,7 +2506,7 @@ public class CBORParser extends ParserMinimalBase
     // NOTE! ALWAYS called for non-first byte of multi-byte UTF-8 code point
     private final int _nextChunkedByte() throws IOException {
         int inPtr = _inputPtr;
-        
+
         // NOTE: _chunkEnd less than or equal to _inputEnd
         if (inPtr >= _chunkEnd) {
             return _nextChunkedByte2();
@@ -2678,7 +2678,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     }
 
     protected final JsonToken _decodePropertyName() throws IOException
-    {     
+    {
         if (_inputPtr >= _inputEnd) {
             // 30-Jan-2021, tatu: To get more specific exception, won't use
             //   "loadMoreGuaranteed()" but instead:
@@ -2734,7 +2734,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         _streamReadContext.setCurrentName(name);
         return JsonToken.FIELD_NAME;
     }
-    
+
     private final String _decodeContiguousName(final int len) throws IOException
     {
         // note: caller ensures we have enough bytes available
@@ -2852,7 +2852,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         _finishChunkedText();
         return _textBuffer.contentsAsString();
     }
-    
+
     /**
      * Method that handles initial token type recognition for token
      * that has to be either FIELD_NAME or END_OBJECT.
@@ -2917,7 +2917,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        
+
         if (len < 9) {
             int q2 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 5;
@@ -2974,12 +2974,12 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         }
         _quadBuffer[0] = q1;
         _quadBuffer[1] = q2;
-        
+
         // then decode, full quads first
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
-        
+
         final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF);
@@ -3015,7 +3015,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         int qlen = (len + 3) >> 2;
         return _symbols.addName(name, _quadBuffer, qlen);
     }
-    
+
     private static int[] _growArrayTo(int[] arr, int minSize) {
         return Arrays.copyOf(arr, minSize+4);
     }
@@ -3074,7 +3074,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             _invalidToken(_typeByte);
         }
     }
-    
+
     protected void _skipChunked(int expectedType) throws IOException
     {
         while (true) {
@@ -3122,7 +3122,7 @@ expectedType);
             }
         }
     }
-    
+
     protected void _skipBytesL(long llen) throws IOException
     {
         while (llen > MAX_INT_L) {
@@ -3175,7 +3175,7 @@ expectedType);
         throw _constructReadException("Invalid low bits for Tag token: 0x%s",
                 Integer.toHexString(lowBits));
     }
-    
+
     /**
      * Method used to decode explicit length of a variable-length value
      * (or, for indefinite/chunked, indicate that one is not known).
@@ -3259,7 +3259,7 @@ expType, type, ch));
         }
         return _inputBuffer[_inputPtr++] & 0xFF;
     }
-    
+
     private final int _decode16Bits() throws IOException {
         int ptr = _inputPtr;
         if ((ptr + 1) >= _inputEnd) {
@@ -3281,7 +3281,7 @@ expType, type, ch));
         }
         return (v << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
     }
-    
+
     private final int _decode32Bits() throws IOException {
         int ptr = _inputPtr;
         if ((ptr + 3) >= _inputEnd) {
@@ -3312,7 +3312,7 @@ expType, type, ch));
         }
         return (v << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
     }
-    
+
     private final long _decode64Bits() throws IOException {
         int ptr = _inputPtr;
         if ((ptr + 7) >= _inputEnd) {
@@ -3330,7 +3330,7 @@ expType, type, ch));
     private final long _slow64() throws IOException {
         return _long(_decode32Bits(), _decode32Bits());
     }
-    
+
     private final static long _long(int i1, int i2)
     {
         long l1 = i1;
@@ -3438,7 +3438,7 @@ expType, type, ch));
         c = (c << 6) | (d & 0x3F);
         return c;
     }
-    
+
     /**
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates

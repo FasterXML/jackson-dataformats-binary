@@ -15,7 +15,7 @@ public class BinaryReadTest extends CBORTestBase
 {
     final static class Bytes {
         public byte[] bytes;
-        
+
         public Bytes() { }
         public Bytes(byte[] b) { bytes = b; }
     }
@@ -68,20 +68,20 @@ public class BinaryReadTest extends CBORTestBase
         Assert.assertArrayEquals(input.bytes2, result.bytes2);
         Assert.assertArrayEquals(input.bytes3, result.bytes3);
     }
-    
+
     public void _testBinary(int size) throws Exception
     {
         byte[] input = new byte[size];
         for (int i = 0; i < input.length; ++i) {
             input[i] = (byte) i;
         }
-        
+
         // First, read/write as individual value
         byte[] raw = MAPPER.writeValueAsBytes(input);
         byte[] b2 = MAPPER.readValue(raw, byte[].class);
         assertNotNull(b2);
         Assert.assertArrayEquals(input, b2);
-        
+
         // then as POJO member
         raw = MAPPER.writeValueAsBytes(new Bytes(input));
         Bytes bytes = MAPPER.readValue(raw, Bytes.class);
