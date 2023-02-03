@@ -76,28 +76,28 @@ public class ProtobufFactory extends JsonFactory
         return new ProtobufFactory(this, _objectCodec);
     }
 
-    /*                                                                                       
-    /**********************************************************                              
-    /* Versioned                                                                             
-    /**********************************************************                              
+    /*
+    /**********************************************************
+    /* Versioned
+    /**********************************************************
      */
 
     @Override
     public Version version() {
         return PackageVersion.VERSION;
     }
-    
+
     /*
     /**********************************************************
     /* Format detection functionality
     /**********************************************************
      */
-    
+
     @Override
     public String getFormatName() {
         return ProtobufSchema.FORMAT_NAME_PROTOBUF;
     }
-    
+
     /**
      * Sub-classes need to override this method
      */
@@ -128,9 +128,9 @@ public class ProtobufFactory extends JsonFactory
 
     @Override
     public boolean canUseCharArrays() { return false; }
-    
+
     // No format-specific configuration, yet:
-/*    
+/*
     @Override
     public Class<? extends FormatFeature> getFormatReadFeatureType() {
         return null;
@@ -269,7 +269,7 @@ public class ProtobufFactory extends JsonFactory
     {
         return new ProtobufGenerator(ctxt, stdFeat, _objectCodec, out);
     }
-    
+
     protected <T> T _nonByteSource() {
         throw new UnsupportedOperationException("Can not create parser for non-byte-based source");
     }

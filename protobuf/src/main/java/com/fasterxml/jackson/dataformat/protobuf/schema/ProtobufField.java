@@ -19,7 +19,7 @@ public class ProtobufField
      * Combination of numeric tag and 3-bit wire type.
      */
     public final int typedTag;
-    
+
     /**
      * Name of field in protoc definition
      */
@@ -31,7 +31,7 @@ public class ProtobufField
      * 3-bit id used on determining details of how values are serialized.
      */
     public final int wireType;
-    
+
     public final boolean required, repeated, packed, deprecated;
     public final boolean usesZigZag;
 
@@ -52,11 +52,11 @@ public class ProtobufField
      * but functionally immutable.
      */
     public ProtobufField next;
-    
+
     public final boolean isObject;
 
     public final boolean isStdEnum;
-    
+
     public ProtobufField(FieldElement nativeField, FieldType type) {
         this(nativeField, type, null, null);
     }
@@ -72,7 +72,7 @@ public class ProtobufField
     public static ProtobufField unknownField() {
         return new ProtobufField(null, FieldType.MESSAGE, null, null);
     }
-    
+
     protected ProtobufField(FieldElement nativeField, FieldType type,
             ProtobufMessage msg, ProtobufEnum et)
     {
@@ -121,7 +121,7 @@ public class ProtobufField
             } else {
                 typedTag = (id << 3) + wireType;
             }
-        
+
         }
         isObject = (type == FieldType.MESSAGE);
     }
@@ -139,7 +139,7 @@ public class ProtobufField
         }
         return false;
     }
-    
+
     public void assignMessageType(ProtobufMessage msgType) {
         if (type != FieldType.MESSAGE) {
             throw new IllegalStateException("Can not assign message type for non-message field '"+name+"'");

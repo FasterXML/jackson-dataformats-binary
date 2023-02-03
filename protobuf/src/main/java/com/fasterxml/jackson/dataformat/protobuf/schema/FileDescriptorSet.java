@@ -47,7 +47,7 @@ public class FileDescriptorSet
     /**
      * Accessor for getting low-level definition with given name, contained
      * in this descriptor set.
-     * 
+     *
      * @return Descriptor matching the name, if any; `null` if none
      *
      * @throws IllegalArgumentException if no descriptor with given name found

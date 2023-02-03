@@ -24,7 +24,7 @@ public class ProtobufMessage
 
     // note: assigned on init()
     protected FieldLookup _fieldsByName;
-    
+
     /**
      * Arrays of fields indexed by id (offset by <code>_idOffset</code>), if
      * fields ids are in contiguous (enough) range.
@@ -34,7 +34,7 @@ public class ProtobufMessage
     protected ProtobufField _firstField;
 
     protected int _idOffset = -1;
-    
+
     public ProtobufMessage(String name, ProtobufField[] fields)
     {
         _name = name;
@@ -95,7 +95,7 @@ public class ProtobufMessage
         // regardless, find the field
         return _fieldsByName.findField(name);
     }
-    
+
     public int getFieldCount() { return _fields.length; }
 
     public String getName() { return _name; }

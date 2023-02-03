@@ -26,7 +26,7 @@ public class ProtobufUtil
         }
         sUtf8UnitLengths = table;
     }
-    
+
     /**
      * While we could get all fancy on allocating secondary buffer (after
      * initial one), let's start with very simple strategy of medium-length
@@ -35,7 +35,7 @@ public class ProtobufUtil
     public static byte[] allocSecondary(byte[] curr) {
         return new byte[SECONDARY_BUFFER_LENGTH];
     }
-    
+
     // NOTE: no negative values accepted
     public static int lengthLength(int len) {
         if (len <= 0x7F) { // 7 bytes
@@ -73,7 +73,7 @@ public class ProtobufUtil
         buffer[ptr++] = (byte) len;
         return ptr;
     }
-    
+
     // NOTE: no negative values accepted
     public static byte[] lengthAsBytes(int len) {
         int bytes = lengthLength(len);
@@ -87,7 +87,7 @@ public class ProtobufUtil
         result[last] = (byte) len;
         return result;
     }
-    
+
     public static int zigzagEncode(int input) {
         return (input << 1) ^  (input >> 31);
     }

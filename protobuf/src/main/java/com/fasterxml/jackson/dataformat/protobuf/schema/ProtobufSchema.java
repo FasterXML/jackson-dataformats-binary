@@ -28,7 +28,7 @@ public class ProtobufSchema implements FormatSchema
     /* Construction
     /************************************************************
      */
-    
+
     public ProtobufSchema(NativeProtobufSchema src, ProtobufMessage rootType) {
         _source = src;
         _rootType = rootType;
@@ -43,7 +43,7 @@ public class ProtobufSchema implements FormatSchema
      * of types defined is needed -- but exact cost depends on number of types
      * defined. Since schema instances are immutable, it makes sense to try to
      * reuse instances if possible.
-     * 
+     *
      * @throws IllegalArgumentException If no type with specified name is found
      *   from within this schema.
      */
@@ -55,7 +55,7 @@ public class ProtobufSchema implements FormatSchema
         }
         return _source.forType(typeName);
     }
-    
+
     /*
     /**********************************************************
     /* API
@@ -86,7 +86,7 @@ public class ProtobufSchema implements FormatSchema
     public List<String> getMessageTypes() {
         return _source.getMessageNames();
     }
-    
+
     /**
      * Accessor to get type id for this {@link FormatSchema}, used by code Jackson
      * databinding functionality. Not usually needed by application developers.

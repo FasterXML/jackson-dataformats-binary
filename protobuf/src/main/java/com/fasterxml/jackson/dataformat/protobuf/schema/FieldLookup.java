@@ -136,7 +136,7 @@ public abstract class FieldLookup
             return null;
         }
     }
-    
+
     /**
      * Raw mapping from keys to indices, optimized for fast access via
      * better memory efficiency. Hash area divide in three; main hash,

@@ -18,18 +18,18 @@ public class DefinedTypeElementBuilders
 
     public void addTypeElement(JavaType type, TypeElementBuilder builder, boolean isNested) {
         if (_definedTypeElementBuilders.containsKey(type)) { //Type element builder already defined
-            if (_definedTypeElementBuilders.get(type) != builder) { //Not expect this. 
+            if (_definedTypeElementBuilders.get(type) != builder) { //Not expect this.
                 throw new IllegalStateException("Trying to redefine TypeElementBuilder for type " + type);
             }
         } else { //new builder
             _definedTypeElementBuilders.put(type, builder);
         }
-		
+
         if (isNested) {
             _isNestedType.add(type);
         }
     }
-    
+
     public boolean containsBuilderFor(JavaType type) {
         return _definedTypeElementBuilders.containsKey(type);
     }
@@ -45,11 +45,11 @@ public class DefinedTypeElementBuilders
     public Set<TypeElementBuilder> getAllNestedBuilders() {
         return getAllBuildersFor(_isNestedType);
     }
-	
+
     public Set<TypeElementBuilder> getDependencyBuilders() {
-        return getNonNestedBuilders(true); 
+        return getNonNestedBuilders(true);
     }
-	
+
     public Set<TypeElementBuilder> getNonNestedBuilders() {
         return getNonNestedBuilders(false);
     }
@@ -57,7 +57,7 @@ public class DefinedTypeElementBuilders
     public Set<TypeElementBuilder> getNonNestedBuilders(boolean excludeRoot) {
         Set<JavaType> types = _definedTypeElementBuilders.keySet(); //all keys
         types.removeAll(_isNestedType); //exclude nested type
-		
+
         if(excludeRoot) { //exclude root
             if(_definedTypeElementBuilders.isEmpty()) {
                 throw new IllegalStateException("DefinedTypeElementBuilders._definedTypeElementBuilders is empty");

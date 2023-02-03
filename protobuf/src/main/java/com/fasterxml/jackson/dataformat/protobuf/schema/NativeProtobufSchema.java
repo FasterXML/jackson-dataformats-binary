@@ -21,21 +21,21 @@ public class NativeProtobufSchema
     {
         this(input.filePath(), input.typeElements());
     }
-    
+
     protected NativeProtobufSchema(String name, Collection<TypeElement> types)
     {
         _name = name;
         _nativeTypes = types;
     }
-    
+
     public static NativeProtobufSchema construct(ProtoFile input) {
         return new NativeProtobufSchema(input);
     }
-    
+
     public static NativeProtobufSchema construct(String name, Collection<TypeElement> types) {
         return new NativeProtobufSchema(name, types);
     }
-    
+
     /**
      * Method for checking whether specified message type is defined by
      * the native schema
@@ -51,7 +51,7 @@ public class NativeProtobufSchema
         }
         return false;
     }
-    
+
     /**
      * Factory method for constructing Jackson-digestible schema using specified Message type
      * from native protobuf schema.
@@ -87,12 +87,12 @@ public class NativeProtobufSchema
         }
         return Arrays.asList(_messageNames);
     }
-    
+
     @Override
     public String toString() {
         return toString(_name);
     }
-    
+
     public String toString(String name) {
         ProtoFile.Builder builder = ProtoFile.builder(name);
         builder.addTypes(_nativeTypes);
@@ -104,7 +104,7 @@ public class NativeProtobufSchema
     /* Helper methods
     /**********************************************************
      */
-    
+
     protected MessageElement _firstMessageType() {
         for (TypeElement type : _nativeTypes) {
             if (type instanceof MessageElement) {

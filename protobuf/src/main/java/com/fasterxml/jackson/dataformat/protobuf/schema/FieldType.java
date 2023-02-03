@@ -11,7 +11,7 @@ import com.squareup.protoparser.DataType.ScalarType;
  */
 public enum FieldType
 {
- /*   
+ /*
     enum ScalarType implements DataType {
         ANY,
         BOOL,
@@ -31,7 +31,7 @@ public enum FieldType
         UINT64;
     }
     */
-    
+
     DOUBLE(WireType.FIXED_64BIT, ScalarType.DOUBLE), // fixed-length 64-bit double
     FLOAT(WireType.FIXED_32BIT, ScalarType.FLOAT), // fixed-length, 32-bit single precision
     VINT32_Z(WireType.VINT, ScalarType.SINT32), // variable length w/ ZigZag, intended as 32-bit
@@ -49,7 +49,7 @@ public enum FieldType
     ;
 
     private final int _wireType;
-    
+
     private final  DataType.ScalarType[] _aliases;
 
     private FieldType(int wt, DataType.ScalarType... aliases) {
@@ -62,7 +62,7 @@ public enum FieldType
     public boolean usesZigZag() {
         return (this == VINT32_Z) || (this == VINT64_Z);
     }
-    
+
     public Iterable< DataType.ScalarType> aliases() {
         return Arrays.asList(_aliases);
     }

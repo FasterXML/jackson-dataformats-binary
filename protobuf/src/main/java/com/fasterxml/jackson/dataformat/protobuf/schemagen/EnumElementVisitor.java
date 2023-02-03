@@ -17,7 +17,7 @@ public class EnumElementVisitor extends Base implements TypeElementBuilder {
 
 	public EnumElementVisitor(SerializerProvider provider, JavaType type,
 			DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested) {
-		
+
 		if (!type.isEnumType()) {
 			throw new IllegalArgumentException("Expected an enum, however given type is " + type);
 		}
