@@ -46,17 +46,17 @@ public class ParserInputStreamTest extends CBORTestBase
         try (final JsonParser parser = MAPPER.createParser(in)) {
             parser.nextToken();
             parser.finishToken();
-    
+
             final JsonLocation loc = parser.currentLocation();
             final long start = loc.getByteOffset();
             assertEquals(7999, start);
-    
+
             assertEquals("byte offset: #7999", loc.offsetDescription());
             assertEquals("(ByteArrayInputStream)", loc.sourceDescription());
 
             parser.nextToken();
             parser.finishToken();
-    
+
             final long end = parser.currentLocation().getByteOffset();
             assertEquals(8001, end);
         }

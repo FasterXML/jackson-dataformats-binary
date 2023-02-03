@@ -9,7 +9,7 @@ import tools.jackson.core.io.SerializedString;
 public class GeneratorLongStringTest extends CBORTestBase
 {
     final static int DOC_LEN = 2000000; // 2 meg test doc
-    
+
     public void testLongWithMultiBytes() throws Exception
     {
         ArrayList<String> strings = new ArrayList<String>();
@@ -18,7 +18,7 @@ public class GeneratorLongStringTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream(DOC_LEN);
         JsonGenerator gen = cborGenerator(out);
         gen.writeStartArray();
-        
+
         // Let's create 1M doc, first using Strings
         int fuzz = 0;
         while (out.size() < (DOC_LEN - 10000)) {
@@ -36,11 +36,11 @@ public class GeneratorLongStringTest extends CBORTestBase
         // Written ok; let's try parsing then
         _verifyStrings(out.toByteArray(), strings);
 
-        // Then same with char[] 
+        // Then same with char[]
         out = new ByteArrayOutputStream(DOC_LEN);
         gen = cborGenerator(out);
         gen.writeStartArray();
-        
+
         for (int i = 0, len = strings.size(); i < len; ++i) {
             String str = strings.get(i);
             // let's mix in alternative representaton as well

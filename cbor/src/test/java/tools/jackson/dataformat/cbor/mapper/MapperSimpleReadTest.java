@@ -11,7 +11,7 @@ import tools.jackson.dataformat.cbor.CBORTestBase;
 public class MapperSimpleReadTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
-    
+
     public void testSimpleArray() throws Exception
     {
         byte[] b = MAPPER.writeValueAsBytes(new int[] { 1, 2, 3, 4});
@@ -57,11 +57,11 @@ public class MapperSimpleReadTest extends CBORTestBase
         assertEquals("", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("", p.getText());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         p.close();
-        
+
         Map<?,?> output = MAPPER.readValue(b, Map.class);
         assertEquals(4, output.size());
         assertEquals(Integer.valueOf(1), output.get("a"));

@@ -30,9 +30,9 @@ public abstract class CBORTestBase
     protected final static int SAMPLE_SPEC_VALUE_TN_ID1 = 116;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID2 = 943;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID3 = 234;
-    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;    
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;
 
-    protected final static String SAMPLE_DOC_JSON_SPEC = 
+    protected final static String SAMPLE_DOC_JSON_SPEC =
             "{\n"
             +"  \"Image\" : {\n"
             +"    \"Width\" : "+SAMPLE_SPEC_VALUE_WIDTH+",\n"
@@ -135,7 +135,7 @@ public abstract class CBORTestBase
             return out.toByteArray();
         }
     }
-    
+
     protected byte[] cborDoc(String json)
     {
         try (JsonParser p = JSON_MAPPER.createParser(json)) {
@@ -208,7 +208,7 @@ public abstract class CBORTestBase
         }
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
     }
-    
+
     protected void _verifyBytes(byte[] actBytes, byte... expBytes) {
         Assert.assertArrayEquals(expBytes, actBytes);
     }
@@ -236,7 +236,7 @@ public abstract class CBORTestBase
         expBytes[2] = exp3;
         Assert.assertArrayEquals(expBytes, actBytes);
     }
-    
+
     /**
      * Method that gets textual contents of the current token using
      * available methods, and ensures results are consistent, before
@@ -257,7 +257,7 @@ public abstract class CBORTestBase
 
         return str;
     }
-    
+
     /*
     /**********************************************************
     /* Text generation
@@ -267,7 +267,7 @@ public abstract class CBORTestBase
     protected static String generateUnicodeString(int length) {
         return generateUnicodeString(length, new Random(length));
     }
-    
+
     protected static String generateUnicodeString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
@@ -296,7 +296,7 @@ public abstract class CBORTestBase
     protected static String generateLongAsciiString(int length) {
         return generateLongAsciiString(length, new Random(length));
     }
-    
+
     protected static String generateLongAsciiString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
@@ -311,7 +311,7 @@ public abstract class CBORTestBase
         } while (sw.length() < length);
         return sw.toString();
     }
-    
+
     /*
     /**********************************************************
     /* Other helper methods

@@ -25,7 +25,7 @@ public class TestGeneratorClosing extends CBORTestBase
     /* Unit tests
     /**********************************************************
      */
-    
+
     /**
      * This unit test checks the default behaviour; with no auto-close, no
      * automatic closing should occur, nor explicit one unless specific
@@ -44,7 +44,7 @@ public class TestGeneratorClosing extends CBORTestBase
 
         try (final ByteOutputStreamForTesting output = new ByteOutputStreamForTesting()) {
             JsonGenerator g = f.createGenerator(ObjectWriteContext.empty(), output);
-    
+
             // shouldn't be closed to begin with...
             assertFalse(output.isClosed());
             g.writeNumber(39);

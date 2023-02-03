@@ -16,7 +16,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
     static class StringListWrapper {
         public List<String> data;
     }
-    
+
     static class BinarySetWrapper {
         public Set<byte[]> data = Collections.singleton(new byte[] { 1, 2, 3, 4});
     }
@@ -24,7 +24,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
     static class StringSetWrapper {
         public Set<String> data;
     }
-    
+
     static class BinaryArrayWrapper {
         public byte[][] data =  new byte[][] { new byte[] { 1, 2, 3, 4} };
     }

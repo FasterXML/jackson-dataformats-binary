@@ -184,7 +184,7 @@ public class NumberBeanTest extends CBORTestBase
         ObjectWriter w = MAPPER.writer()
                 .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS);
         final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
-        
+
         bytes = new ByteArrayOutputStream();
         try (JsonGenerator g = w.createGenerator(bytes)) {
             g.writeStartArray();
@@ -245,7 +245,7 @@ public class NumberBeanTest extends CBORTestBase
             g.writeNumberProperty("value", VALUE);
             g.writeEndObject();
         }
-        
+
         NestedBigDecimalHolder2784 result = MAPPER.readValue(bytes.toByteArray(),
                 NestedBigDecimalHolder2784.class);
         assertEquals(VALUE, result.holder.value);

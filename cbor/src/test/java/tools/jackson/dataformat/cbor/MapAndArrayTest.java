@@ -36,7 +36,7 @@ public class MapAndArrayTest extends CBORTestBase
 
         assertTrue(hexData.equalsIgnoreCase("bf6346756ef563416d7421ff"));
     }
-    
+
     public void testCborUnsizedMap() throws IOException {
     /* {_"Fun": true, 1504: -33, 1505: false, 13171233041: 22}
 

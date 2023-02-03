@@ -96,7 +96,7 @@ public class ArrayGenerationTest extends CBORTestBase
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();
     }
-    
+
     public void testMinimalIntValuesForLong() throws Exception
     {
         // Array with 2 values that can't be passed as `int`s but DO fit

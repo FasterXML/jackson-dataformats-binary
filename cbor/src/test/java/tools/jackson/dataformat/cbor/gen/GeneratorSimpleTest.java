@@ -18,7 +18,7 @@ import tools.jackson.dataformat.cbor.CBORTestBase;
 public class GeneratorSimpleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
-    
+
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
@@ -30,7 +30,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0, gen.streamWriteOutputBuffered());
         gen.writeBoolean(true);
         assertEquals(1, gen.streamWriteOutputBuffered());
-        
+
         gen.close();
         assertEquals(0, gen.streamWriteOutputBuffered());
         _verifyBytes(out.toByteArray(), CBORConstants.BYTE_TRUE);
@@ -111,7 +111,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) (CBORConstants.PREFIX_TYPE_INT_NEG + 26),
                 (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
     }
-    
+
     public void testIntValues() throws Exception
     {
         // first, single-byte
@@ -196,7 +196,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0, b[2]);
         assertEquals(0, b[3]);
     }
-    
+
     public void testFloatValues()
     {
         // first, 32-bit float
@@ -252,7 +252,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(spec.length, b.length);
         Assert.assertArrayEquals(spec, b);
     }
-    
+
     public void testEmptyArray()
     {
         // First: empty array (2 bytes)
@@ -276,12 +276,12 @@ public class GeneratorSimpleTest extends CBORTestBase
         _verifyBytes(out.toByteArray(), CBORConstants.BYTE_OBJECT_INDEFINITE,
                CBORConstants.BYTE_BREAK);
     }
-    
+
     public void testIntArray()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        
+
         // currently will produce indefinite-length array
         gen.writeStartArray();
         gen.writeNumber(1);
@@ -297,7 +297,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 3),
                 CBORConstants.BYTE_BREAK
         };
-        
+
         _verifyBytes(out.toByteArray(), EXP);
 
         // Data-binding should actually use fixed-length
@@ -316,7 +316,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        
+
         // currently will produce indefinite-length Object
         gen.writeStartObject();
         gen.writeNumberProperty("a", 1);

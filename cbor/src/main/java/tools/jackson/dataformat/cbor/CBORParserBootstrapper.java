@@ -20,7 +20,7 @@ public class CBORParserBootstrapper
 
     protected final IOContext _ioContext;
     protected final InputStream _in;
-    
+
     /*
     /**********************************************************************
     /* Input buffering
@@ -92,7 +92,7 @@ public class CBORParserBootstrapper
         ensureLoaded(1);
         CBORParser p = new CBORParser(readCtxt, _ioContext,
                 generalParserFeatures, formatFeatures,
-                can, 
+                can,
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         if (_inputPtr < _inputEnd) { // only false for empty doc
             ; // anything we should verify? In future, could verify

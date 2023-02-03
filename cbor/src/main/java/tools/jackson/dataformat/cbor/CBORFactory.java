@@ -22,7 +22,7 @@ import tools.jackson.core.util.Named;
  * Note on using non-byte-based sources/targets (char based, like
  * {@link java.io.Reader} and {@link java.io.Writer}): these can not be
  * used for CBOR documents; attempt will throw exception.
- * 
+ *
  * @author Tatu Saloranta
  */
 public class CBORFactory
@@ -42,7 +42,7 @@ public class CBORFactory
      * (and returned by {@link #getFormatName()}
      */
     public final static String FORMAT_NAME = "CBOR";
-    
+
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
@@ -144,9 +144,9 @@ public class CBORFactory
         return new CBORFactory(this);
     }
 
-    /*                                                                                       
+    /*
     /**********************************************************************
-    /* Capability introspection                                                                     
+    /* Capability introspection
     /**********************************************************************
      */
 
@@ -256,7 +256,7 @@ public class CBORFactory
     /* Generator factory methods
     /**********************************************************************
      */
-    
+
     @Override
     protected JsonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             IOContext ioCtxt, OutputStream out)

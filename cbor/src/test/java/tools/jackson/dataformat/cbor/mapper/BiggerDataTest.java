@@ -87,7 +87,7 @@ public class BiggerDataTest extends CBORTestBase
 		byte[] cbor = mapper.writeValueAsBytes(citm0);
 
 		Citm citm = mapper.readValue(cbor, Citm.class);
-		
+
 		assertNotNull(citm);
 		assertNotNull(citm.areaNames);
 		assertEquals(17, citm.areaNames.size());

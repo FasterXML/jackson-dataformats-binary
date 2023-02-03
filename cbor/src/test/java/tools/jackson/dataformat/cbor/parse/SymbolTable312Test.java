@@ -23,7 +23,7 @@ public class SymbolTable312Test extends CBORTestBase
         _testNullHandling(5);
         _testNullHandling(6);
     }
-    
+
     public void testNullHandling3Quads() throws Exception
     {
         _testNullHandling(9);

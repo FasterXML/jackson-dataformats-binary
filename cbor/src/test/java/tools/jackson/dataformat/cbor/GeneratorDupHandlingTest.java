@@ -28,11 +28,11 @@ public class GeneratorDupHandlingTest extends CBORTestBase
         JsonGenerator g1;
 
         if (lazySetting) {
-            g1 = _generator(f);            
+            g1 = _generator(f);
             g1.configure(StreamWriteFeature.STRICT_DUPLICATE_DETECTION, true);
         } else {
             f = f.rebuild().enable(StreamWriteFeature.STRICT_DUPLICATE_DETECTION).build();
-            g1 = _generator(f);            
+            g1 = _generator(f);
         }
         try {
             _writeSimple0(g1, "a");
@@ -43,10 +43,10 @@ public class GeneratorDupHandlingTest extends CBORTestBase
 
         JsonGenerator g2;
         if (lazySetting) {
-            g2 = _generator(f);            
+            g2 = _generator(f);
             g2.configure(StreamWriteFeature.STRICT_DUPLICATE_DETECTION, true);
         } else {
-            g2 = _generator(f);            
+            g2 = _generator(f);
         }
         try {
             _writeSimple1(g2, "x");

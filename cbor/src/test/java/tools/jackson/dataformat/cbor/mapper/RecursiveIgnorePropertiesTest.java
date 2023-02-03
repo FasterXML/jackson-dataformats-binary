@@ -18,7 +18,7 @@ public class RecursiveIgnorePropertiesTest extends CBORTestBase
     }
 
     private final ObjectMapper MAPPER = cborMapper();
-    
+
     public void testRecursiveForDeser() throws Exception
     {
         byte[] doc = cborDoc(aposToQuotes("{ 'name': 'admin',\n"

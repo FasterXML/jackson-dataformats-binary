@@ -33,7 +33,7 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
         ObjectMapper jsonMapper = new ObjectMapper();
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        
+
         CBORGenerator cborGen = (CBORGenerator) cborMapper.createGenerator(bytes);
         cborGen.writePOJO(1);
         cborGen.close();
@@ -55,5 +55,5 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
             builder.append(ALPHA_NUMERIC_STRING.charAt(character));
         }
         return builder.toString();
-    }    
+    }
 }

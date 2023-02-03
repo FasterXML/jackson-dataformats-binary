@@ -134,7 +134,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
             fail("Expected INT or STRING value, got "+t);
         }
     }
-    
+
     protected void verifyFieldName(JsonParser p, String expName)
         throws IOException
     {

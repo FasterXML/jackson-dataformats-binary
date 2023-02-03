@@ -10,7 +10,7 @@ public class TagParsing185Test extends CBORTestBase
     {
         _testRecursiveTags(20000);
     }
-        
+
     private void _testRecursiveTags(int levels)
     {
          byte[] data = new byte[levels * 2];

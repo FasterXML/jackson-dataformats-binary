@@ -38,8 +38,8 @@ public class Fuzz267_32579BigDecimalTest extends CBORTestBase
                 0x28,
 
         };
-        
-        
+
+
         JsonNode root = MAPPER.readTree(input);
         assertTrue(root.isNumber());
         assertTrue(root.isBigDecimal());

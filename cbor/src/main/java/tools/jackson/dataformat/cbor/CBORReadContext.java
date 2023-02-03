@@ -18,7 +18,7 @@ public final class CBORReadContext
      * Parent context for this context; null for root context.
      */
     protected final CBORReadContext _parent;
-    
+
     // // // Optional duplicate detection
 
     protected final DupDetector _dups;
@@ -27,13 +27,13 @@ public final class CBORReadContext
      * For fixed-size Arrays, Objects, this indicates expected number of entries.
      */
     protected int _expEntryCount;
-    
+
     // // // Location information (minus source reference)
 
     protected String _currentName;
 
     protected Object _currentValue;
-    
+
     /*
     /**********************************************************************
     /* Simple instance reuse slots
@@ -80,7 +80,7 @@ public final class CBORReadContext
     public void assignCurrentValue(Object v) {
         _currentValue = v;
     }
-    
+
     // // // Factory methods
 
     public static CBORReadContext createRootContext(DupDetector dups) {

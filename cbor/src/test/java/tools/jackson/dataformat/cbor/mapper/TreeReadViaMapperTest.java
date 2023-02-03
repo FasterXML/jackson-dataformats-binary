@@ -16,7 +16,7 @@ import tools.jackson.dataformat.cbor.CBORTestBase;
 public class TreeReadViaMapperTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
-    
+
     public void testSimple() throws Exception
     {
         JsonNode result = MAPPER.readTree(cborDoc(SAMPLE_DOC_JSON_SPEC));
@@ -24,13 +24,13 @@ public class TreeReadViaMapperTest extends CBORTestBase
         assertType(result, ObjectNode.class);
         assertEquals(1, result.size());
         assertTrue(result.isObject());
-        
+
         ObjectNode main = (ObjectNode) result;
         assertEquals("Image", main.propertyNames().next());
         JsonNode ob = main.elements().next();
         assertType(ob, ObjectNode.class);
         ObjectNode imageMap = (ObjectNode) ob;
-        
+
         assertEquals(5, imageMap.size());
         ob = imageMap.get("Width");
         assertTrue(ob.isIntegralNumber());
@@ -39,11 +39,11 @@ public class TreeReadViaMapperTest extends CBORTestBase
         ob = imageMap.get("Height");
         assertTrue(ob.isIntegralNumber());
         assertEquals(SAMPLE_SPEC_VALUE_HEIGHT, ob.intValue());
-        
+
         ob = imageMap.get("Title");
         assertTrue(ob.isTextual());
         assertEquals(SAMPLE_SPEC_VALUE_TITLE, ob.textValue());
-        
+
         ob = imageMap.get("Thumbnail");
         assertType(ob, ObjectNode.class);
         ObjectNode tn = (ObjectNode) ob;
@@ -56,7 +56,7 @@ public class TreeReadViaMapperTest extends CBORTestBase
         ob = tn.get("Width");
         assertTrue(ob.isTextual());
         assertEquals(SAMPLE_SPEC_VALUE_TN_WIDTH, ob.textValue());
-        
+
         ob = imageMap.get("IDs");
         assertTrue(ob.isArray());
         ArrayNode idList = (ArrayNode) ob;

@@ -18,7 +18,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
 	final static int LARGE_LENGTH = /*CBORGenerator.BYTE_BUFFER_FOR_OUTPUT*/ 16000 + 500;
 
 	private final ObjectMapper MAPPER = CBORMapper.shared();
-	
+
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -45,7 +45,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
      {
          testEncodeAndDecodeBytes(LARGE_LENGTH);
      }
-	
+
 	private void generateInputFile(File input, int fileSize) throws NoSuchAlgorithmException, IOException
 	{
 	    OutputStream os = new BufferedOutputStream(new FileOutputStream(input));
@@ -103,7 +103,7 @@ public class GeneratorBinaryTest //extends CBORTestBase
 	    Assert.assertEquals(file1.length(), file2.length());
 
 	    int ch;
-	    
+
 	    while ((ch = fis1.read()) >= 0) {
 	        Assert.assertEquals(ch, fis2.read());
 	    }

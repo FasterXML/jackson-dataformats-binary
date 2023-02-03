@@ -36,7 +36,7 @@ public class BasicParserTest extends CBORTestBase
         p = cborParser(out);
         assertEquals(JsonToken.VALUE_FALSE, p.nextToken());
         assertEquals("/", p.streamReadContext().toString());
-        
+
         assertNull(p.nextToken());
         p.close();
 
@@ -58,7 +58,7 @@ public class BasicParserTest extends CBORTestBase
         _testMedium(2300);
         _testMedium(3900);
     }
-    
+
     private void _testMedium(int len) throws Exception
     {
         // First, use size that should fit in output buffer, but
@@ -72,7 +72,7 @@ public class BasicParserTest extends CBORTestBase
 
         // verify that it is indeed non-chunked still...
         assertEquals((byte) (CBORConstants.PREFIX_TYPE_TEXT + 25), b[0]);
-        
+
         JsonParser p = cborParser(b);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(MEDIUM, p.getText());
@@ -138,15 +138,15 @@ public class BasicParserTest extends CBORTestBase
                         +" found 0x"+Integer.toHexString(actual.charAt(i)));
             }
         }
-        
+
         assertEquals(LONG.length(), actual.length());
-        
+
         assertEquals(LONG, p.getText());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
     }
-    
+
     public void testLongChunkedText() throws Exception
     {
         // First, try with ASCII content
@@ -154,11 +154,11 @@ public class BasicParserTest extends CBORTestBase
         for (int i = 0; i < 21000; ++i) {
             sb.append('Z');
         }
-        _testLongChunkedText(sb.toString());        
+        _testLongChunkedText(sb.toString());
         // Second, with actual variable byte-length Unicode
         _testLongChunkedText(generateUnicodeString(21000));
     }
-        
+
     @SuppressWarnings("resource")
     public void _testLongChunkedText(String input) throws Exception
     {
@@ -200,7 +200,7 @@ public class BasicParserTest extends CBORTestBase
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-        
+
         // and then with actual full parsing/access
         p = cborParser(new ThrottledInputStream(new ByteArrayInputStream(b), 3));
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -257,7 +257,7 @@ public class BasicParserTest extends CBORTestBase
         // For fun, release
         ByteArrayOutputStream extra = new ByteArrayOutputStream();
         assertEquals(0, parser.releaseBuffered(extra));
-        
+
         parser.close();
     }
 
@@ -291,11 +291,11 @@ public class BasicParserTest extends CBORTestBase
         assertEquals("arr", parser.currentName());
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
-        
+
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
         parser.close();
     }
-    
+
     public void testBufferRelease() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -323,7 +323,7 @@ public class BasicParserTest extends CBORTestBase
         assertEquals((byte) 1, extraBytes[0]);
         assertEquals((byte) 2, extraBytes[1]);
         assertEquals((byte) 3, extraBytes[2]);
-        
+
         parser.close();
     }
 }

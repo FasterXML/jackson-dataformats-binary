@@ -41,7 +41,7 @@ public class ParserInteropTest extends CBORTestBase
     public void testSelfDescribeTagRead() throws Exception
     {
         CBORParser p = cborParser(SELF_DESC_PLUS_TRUE);
-        
+
         assertEquals(-1, p.getCurrentTag());
 
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());

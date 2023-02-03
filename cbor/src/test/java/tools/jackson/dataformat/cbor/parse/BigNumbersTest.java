@@ -52,7 +52,7 @@ public class BigNumbersTest extends CBORTestBase
         sourceGen.close();
 
         byte[] b = sourceBytes.toByteArray();
-        
+
         // but verify that the original content can be parsed
         CBORParser parser = cborParser(b);
         assertToken(JsonToken.START_OBJECT, parser.nextToken());

@@ -17,7 +17,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     private final static String SIMPLE_DOC_AS_JSON = "{\"simple\":[1,true,{}]}";
 
     private final static CBORFactory CBOR_F = new CBORFactory();
-    
+
     public void testCBORFactorySerializable() throws Exception
     {
         CBORFactory f = new CBORFactory();
@@ -51,7 +51,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
             return out.toByteArray();
         }
     }
-    
+
     public void testVersions() throws Exception
     {
         ObjectMapper mapper = sharedMapper();
@@ -114,7 +114,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     /* Helper methods
     /**********************************************************
      */
-    
+
     protected byte[] jdkSerialize(Object o) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);
@@ -146,7 +146,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         g.close();
         return bytes.toByteArray();
     }
-        
+
     private void _copyDoc(CBORFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
         JsonParser p = f.createParser(ObjectReadContext.empty(), doc);

@@ -79,7 +79,7 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
-    
+
     public CBORFactoryBuilder disable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
         _formatWriteFeatures &= ~first.getMask();
         for (CBORGenerator.Feature f : other) {

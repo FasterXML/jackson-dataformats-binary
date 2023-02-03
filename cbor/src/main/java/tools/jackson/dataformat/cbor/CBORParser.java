@@ -32,7 +32,7 @@ public class CBORParser extends ParserBase
 
         final boolean _defaultState;
         final int _mask;
-        
+
         /**
          * Method that calculates bit set (flags) of all features that
          * are enabled by default.
@@ -47,12 +47,12 @@ public class CBORParser extends ParserBase
             }
             return flags;
         }
-        
+
         private Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
         }
-        
+
         @Override public boolean enabledByDefault() { return _defaultState; }
         @Override public int getMask() { return _mask; }
         @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
@@ -202,9 +202,9 @@ public class CBORParser extends ParserBase
         _tokenInputCol = -1;
     }
 
-    /*                                                                                       
+    /*
     /**********************************************************************
-    /* Versioned                                                                             
+    /* Versioned
     /**********************************************************************
      */
 
@@ -266,7 +266,7 @@ public class CBORParser extends ParserBase
         }
         return count;
     }
-    
+
     @Override
     public Object streamReadInputSource() {
         return _inputStream;
@@ -283,7 +283,7 @@ public class CBORParser extends ParserBase
         return new JsonLocation(_ioContext.contentReference(),
                 _tokenInputTotal, // bytes
                 -1, -1, (int) _tokenInputTotal); // char offset, line, column
-    }   
+    }
 
     /**
      * Overridden since we do not really have character-based locations,
@@ -556,8 +556,8 @@ public class CBORParser extends ParserBase
                 return (_currToken = JsonToken.VALUE_NULL);
             case 23:
                 return (_currToken = _decodeUndefinedValue());
-                
-            case 25: // 16-bit float... 
+
+            case 25: // 16-bit float...
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
                 {
                     _numberFloat = (float) _decodeHalfSizeFloat();
@@ -904,7 +904,7 @@ public class CBORParser extends ParserBase
             }
         }
         // and that's what we need to do for safety; now can drop to generic handling:
-        
+
         // Important! Need to push back the last byte read (but not consumed)
         --_inputPtr;
         return nextToken() == JsonToken.END_ARRAY; // should never match
@@ -1211,7 +1211,7 @@ public class CBORParser extends ParserBase
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        
+
         if (len < 9) {
             int q2 = (inBuf[inPtr++] & 0xFF);
             int left = len - 5;
@@ -1257,7 +1257,7 @@ public class CBORParser extends ParserBase
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
-    private final int _nextFieldFromSymbolsLong(PropertyNameMatcher matcher, 
+    private final int _nextFieldFromSymbolsLong(PropertyNameMatcher matcher,
             int len, int q1, int q2) throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
@@ -1269,12 +1269,12 @@ public class CBORParser extends ParserBase
         }
         _quadBuffer[0] = q1;
         _quadBuffer[1] = q2;
-        
+
         // then decode, full quads first
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
-        
+
         final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF);
@@ -1303,7 +1303,7 @@ public class CBORParser extends ParserBase
     /* Public API, traversal, optimized: nextXxxValue
     /**********************************************************
      */
-    
+
     @Override
     public String nextTextValue() throws JacksonException
     {
@@ -1481,7 +1481,7 @@ public class CBORParser extends ParserBase
 
         case 6: // another tag; not allowed
             _reportError("Multiple tags not allowed per value (first tag: "+_tagValue+")");
-            
+
         case 7:
         default: // misc: tokens, floats
             switch (lowBits) {
@@ -1498,7 +1498,7 @@ public class CBORParser extends ParserBase
                 _currToken = _decodeUndefinedValue();
                 return null;
 
-            case 25: // 16-bit float... 
+            case 25: // 16-bit float...
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
                 {
                     _numberFloat = _decodeHalfSizeFloat();
@@ -1577,7 +1577,7 @@ public class CBORParser extends ParserBase
      * after encountering end-of-input), returns null.
      * Method can be called for any event.
      */
-    @Override    
+    @Override
     public String getText() throws JacksonException
     {
         JsonToken t = _currToken;
@@ -1623,7 +1623,7 @@ public class CBORParser extends ParserBase
         return null;
     }
 
-    @Override    
+    @Override
     public int getTextLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
@@ -1631,7 +1631,7 @@ public class CBORParser extends ParserBase
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
-                return _textBuffer.size();                
+                return _textBuffer.size();
             }
             if (_currToken == JsonToken.PROPERTY_NAME) {
                 return _streamReadContext.currentName().length();
@@ -1874,7 +1874,7 @@ public class CBORParser extends ParserBase
             // Shouldn't get this far but if we do
             return _numberBigDecimal;
         }
-    
+
         // And then floating point types. But here optimal type
         // needs to be big decimal, to avoid losing any data?
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
@@ -1909,7 +1909,7 @@ public class CBORParser extends ParserBase
             }
             return NumberType.BIG_INTEGER;
         }
-    
+
         /* And then floating point types. Here optimal type
          * needs to be big decimal, to avoid losing any data?
          * However... using BD is slow, so let's allow returning
@@ -1972,7 +1972,7 @@ public class CBORParser extends ParserBase
     /**********************************************************************
     /* Numeric conversions
     /**********************************************************************
-     */    
+     */
 
     protected void _checkNumericValue(int expType) throws JacksonException
     {
@@ -1995,7 +1995,7 @@ public class CBORParser extends ParserBase
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_INT.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
                 _reportOverflowInt();
             }
@@ -2012,7 +2012,7 @@ public class CBORParser extends ParserBase
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
                 _reportOverflowInt();
             }
@@ -2022,14 +2022,14 @@ public class CBORParser extends ParserBase
         }
         _numTypesValid |= NR_INT;
     }
-    
+
     @Override // due to addition of Float as type
     protected void convertNumberToLong() throws JacksonException
     {
         if ((_numTypesValid & NR_INT) != 0) {
             _numberLong = (long) _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
-            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0 
+            if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
                 _reportOverflowLong();
             }
@@ -2045,7 +2045,7 @@ public class CBORParser extends ParserBase
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0 
+            if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
                 _reportOverflowLong();
             }
@@ -2382,7 +2382,7 @@ public class CBORParser extends ParserBase
 
         _chunkEnd = _inputPtr;
         _chunkLeft = 0;
-        
+
         while (true) {
             // at byte boundary fine to get break marker, hence different:
             if (_inputPtr >= _chunkEnd) {
@@ -2483,7 +2483,7 @@ public class CBORParser extends ParserBase
     // NOTE! ALWAYS called for non-first byte of multi-byte UTF-8 code point
     private final int _nextChunkedByte() throws JacksonException {
         int inPtr = _inputPtr;
-        
+
         // NOTE: _chunkEnd less than or equal to _inputEnd
         if (inPtr >= _chunkEnd) {
             return _nextChunkedByte2();
@@ -2655,7 +2655,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     }
 
     protected final JsonToken _decodePropertyName() throws JacksonException
-    {     
+    {
         if (_inputPtr >= _inputEnd) {
             // 30-Jan-2021, tatu: To get more specific exception, won't use
             //   "loadMoreGuaranteed()" but instead:
@@ -2895,7 +2895,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
         q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        
+
         if (len < 9) {
             int q2 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 5;
@@ -2952,12 +2952,12 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         }
         _quadBuffer[0] = q1;
         _quadBuffer[1] = q2;
-        
+
         // then decode, full quads first
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
-        
+
         final byte[] inBuf = _inputBuffer;
         do {
             int q = (inBuf[inPtr++] & 0xFF);
@@ -2993,7 +2993,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         int qlen = (len + 3) >> 2;
         return _symbols.addName(name, _quadBuffer, qlen);
     }
-    
+
     private static int[] _growArrayTo(int[] arr, int minSize) {
         return Arrays.copyOf(arr, minSize+4);
     }
@@ -3052,7 +3052,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             _invalidToken(_typeByte);
         }
     }
-    
+
     protected void _skipChunked(int expectedType) throws JacksonException
     {
         while (true) {
@@ -3100,7 +3100,7 @@ expectedType);
             }
         }
     }
-    
+
     protected void _skipBytesL(long llen) throws JacksonException
     {
         while (llen > MAX_INT_L) {
@@ -3237,7 +3237,7 @@ expType, type, ch));
         }
         return _inputBuffer[_inputPtr++] & 0xFF;
     }
-    
+
     private final int _decode16Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 1) >= _inputEnd) {
@@ -3259,7 +3259,7 @@ expType, type, ch));
         }
         return (v << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
     }
-    
+
     private final int _decode32Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 3) >= _inputEnd) {
@@ -3290,7 +3290,7 @@ expType, type, ch));
         }
         return (v << 8) + (_inputBuffer[_inputPtr++] & 0xFF);
     }
-    
+
     private final long _decode64Bits() throws JacksonException {
         int ptr = _inputPtr;
         if ((ptr + 7) >= _inputEnd) {
@@ -3308,7 +3308,7 @@ expType, type, ch));
     private final long _slow64() throws JacksonException {
         return _long(_decode32Bits(), _decode32Bits());
     }
-    
+
     private final static long _long(int i1, int i2)
     {
         long l1 = i1;
@@ -3414,7 +3414,7 @@ expType, type, ch));
         c = (c << 6) | (d & 0x3F);
         return c;
     }
-    
+
     /**
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates

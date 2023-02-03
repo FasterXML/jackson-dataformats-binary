@@ -55,7 +55,7 @@ public class UnicodeHandlingTest extends CBORTestBase
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-        
+
         // Also, verify that it works as field name
         data = cborDoc("{"+quoted+":true}");
 

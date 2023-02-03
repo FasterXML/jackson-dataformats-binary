@@ -136,7 +136,7 @@ public class CBORGenerator extends GeneratorBase
      * Special value that is use to keep tracks of arrays and maps opened with infinite length
      */
     private final static int INDEFINITE_LENGTH = -2; // just to allow -1 as marker for "one too many"
-    
+
     /*
     /**********************************************************************
     /* Configuration
@@ -264,7 +264,7 @@ public class CBORGenerator extends GeneratorBase
 
     /**
      * Alternative constructor that may be used to feed partially initialized content.
-     * 
+     *
      * @param outputBuffer
      *            Buffer to use for output before flushing to the underlying stream
      * @param offset
@@ -1198,7 +1198,7 @@ public class CBORGenerator extends GeneratorBase
 
     /**
      * Method for writing out an explicit CBOR Tag.
-     * 
+     *
      * @param tagId Positive integer (0 or higher)
      */
     public JsonGenerator writeTag(int tagId) throws JacksonException {
@@ -1754,7 +1754,7 @@ surr1, surr2));
             _reportError(String.format("%s size mismatch: expected %d more elements",
                     _streamWriteContext.typeDesc(), _currentRemainingElements));
         }
-        _currentRemainingElements = (_elementCountsPtr == 0) 
+        _currentRemainingElements = (_elementCountsPtr == 0)
                 ? INDEFINITE_LENGTH
                         : _elementCounts[--_elementCountsPtr];
     }
