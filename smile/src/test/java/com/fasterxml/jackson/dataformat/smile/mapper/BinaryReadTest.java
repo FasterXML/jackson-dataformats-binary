@@ -36,7 +36,7 @@ public class BinaryReadTest extends BaseTestForSmile
         public ByteArrays() { }
         public ByteArrays(byte[]... b) { arrays = Arrays.asList(b); }
     }
-    
+
     @JsonPropertyOrder({ "bytes1", "bytes2", "bytes3" })
     final static class Bytes3 {
         public byte[] bytes1, bytes2, bytes3;
@@ -148,13 +148,13 @@ public class BinaryReadTest extends BaseTestForSmile
     private void _testBinary(ObjectMapper mapper, int size) throws Exception
     {
         byte[] input = _bytes(size, 0);
-        
+
         // First, read/write as individual value
         byte[] raw = mapper.writeValueAsBytes(input);
         byte[] b2 = mapper.readValue(raw, byte[].class);
         assertNotNull(b2);
         Assert.assertArrayEquals(input, b2);
-        
+
         // then as POJO member
         raw = mapper.writeValueAsBytes(new Bytes(input));
         Bytes bytes = mapper.readValue(raw, Bytes.class);

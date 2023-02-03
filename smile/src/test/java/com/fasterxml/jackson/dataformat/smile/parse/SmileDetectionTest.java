@@ -13,7 +13,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 public class SmileDetectionTest extends BaseTestForSmile
 {
-    
+
     public void testSimpleObjectWithHeader() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -58,7 +58,7 @@ public class SmileDetectionTest extends BaseTestForSmile
         assertNull(jp.nextToken());
         jp.close();
     }
-    
+
     public void testSimpleArrayWithHeader() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -105,7 +105,7 @@ public class SmileDetectionTest extends BaseTestForSmile
     /* Simple negative tests
     /**********************************************************
      */
-    
+
     /*
      * Also let's ensure no match is found if data doesn't support it...
      * Let's use 0xFD since it can not be included (except in raw binary;

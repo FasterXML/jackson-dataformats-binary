@@ -69,7 +69,7 @@ public class TestGeneratorNumbers
         gen.writeNumber(-4096);
         gen.close();
         assertEquals(3, out.toByteArray().length);
-        
+
         // up to 20, 4 bytes... and so forth
         out = new ByteArrayOutputStream();
         gen = smileGenerator(out, false);
@@ -94,7 +94,7 @@ public class TestGeneratorNumbers
         gen.writeNumber(Integer.MIN_VALUE);
         gen.close();
         assertEquals(6, out.toByteArray().length);
-        
+
         // up to longest ones, taking 11 bytes
         out = new ByteArrayOutputStream();
         gen = smileGenerator(out, false);
@@ -117,7 +117,7 @@ public class TestGeneratorNumbers
         gen.writeNumber(0.125f);
         gen.close();
         assertEquals(6, out.toByteArray().length);
-    }    
+    }
 
     public void testDoubles() throws Exception
     {

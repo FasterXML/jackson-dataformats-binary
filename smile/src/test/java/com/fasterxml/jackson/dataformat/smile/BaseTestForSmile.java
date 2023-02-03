@@ -25,9 +25,9 @@ public abstract class BaseTestForSmile
     protected final static int SAMPLE_SPEC_VALUE_TN_ID1 = 116;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID2 = 943;
     protected final static int SAMPLE_SPEC_VALUE_TN_ID3 = 234;
-    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;    
+    protected final static int SAMPLE_SPEC_VALUE_TN_ID4 = 38793;
 
-    protected final static String SAMPLE_DOC_JSON_SPEC = 
+    protected final static String SAMPLE_DOC_JSON_SPEC =
             "{\n"
             +"  \"Image\" : {\n"
             +"    \"Width\" : "+SAMPLE_SPEC_VALUE_WIDTH+",\n"
@@ -56,7 +56,7 @@ public abstract class BaseTestForSmile
     protected SmileParser _smileParser(InputStream in) throws IOException {
         return _smileParser(in, false);
     }
-    
+
     protected SmileParser _smileParser(byte[] input, boolean requireHeader) throws IOException
     {
         SmileFactory f = smileFactory(requireHeader, false, false);
@@ -68,7 +68,7 @@ public abstract class BaseTestForSmile
         SmileFactory f = smileFactory(requireHeader, false, false);
         return _smileParser(f, in);
     }
-    
+
     protected SmileParser _smileParser(SmileFactory f, byte[] input) throws IOException {
         return f.createParser(input);
     }
@@ -76,11 +76,11 @@ public abstract class BaseTestForSmile
     protected SmileParser _smileParser(SmileFactory f, InputStream in) throws IOException {
         return f.createParser(in);
     }
-    
+
     protected SmileMapper smileMapper() {
         return smileMapper(false);
     }
-    
+
     protected SmileMapper smileMapper(boolean requireHeader) {
         return smileMapper(requireHeader, requireHeader, false);
     }
@@ -88,7 +88,7 @@ public abstract class BaseTestForSmile
     protected SmileMapper.Builder smileMapperBuilder(boolean requireHeader) {
         return SmileMapper.builder();
     }
-    
+
     protected SmileMapper smileMapper(boolean requireHeader,
             boolean writeHeader, boolean writeEndMarker)
     {
@@ -126,7 +126,7 @@ public abstract class BaseTestForSmile
         JsonParser p = jf.createParser(json);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator g = smileGenerator(out, writeHeader);
-    	
+
         while (p.nextToken() != null) {
         	g.copyCurrentEvent(p);
         }
@@ -195,7 +195,7 @@ public abstract class BaseTestForSmile
         }
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
     }
-    
+
     protected void _verifyBytes(byte[] actBytes, byte... expBytes)
     {
         Assert.assertArrayEquals(expBytes, actBytes);
@@ -221,7 +221,7 @@ public abstract class BaseTestForSmile
 
         return str;
     }
-    
+
     /*
     /**********************************************************
     /* Other helper methods

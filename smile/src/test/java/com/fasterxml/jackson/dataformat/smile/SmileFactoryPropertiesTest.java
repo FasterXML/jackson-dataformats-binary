@@ -109,7 +109,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         } catch (UnsupportedOperationException e) {
             verifyException(e, "for character-based");
         }
-        
+
     }
 
     // One lesser known feature is the ability to fall back to using JSON...
@@ -157,7 +157,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     protected byte[] jdkSerialize(Object o) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);
@@ -189,7 +189,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         g.close();
         return bytes.toByteArray();
     }
-        
+
     protected void _copyDoc(JsonFactory f, byte[] doc, JsonGenerator g) throws IOException
     {
         JsonParser p = f.createParser(doc);

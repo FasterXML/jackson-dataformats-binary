@@ -9,7 +9,7 @@ public class FormatDetectionTest extends BaseTestForSmile
     static class POJO {
         public int id;
         public String name;
-        
+
         public POJO() { }
         public POJO(int id, String name)
         {
@@ -17,7 +17,7 @@ public class FormatDetectionTest extends BaseTestForSmile
             this.name = name;
         }
     }
-    
+
     /*
     /**********************************************************
     /* Test methods
@@ -31,7 +31,7 @@ public class FormatDetectionTest extends BaseTestForSmile
         final String JSON = "{\"name\":\"Bob\", \"id\":3}";
 
         byte[] doc = _smileDoc(JSON, true);
-        
+
         ObjectReader detecting = jsonReader.withFormatDetection(jsonReader,
                 jsonReader.with(new SmileFactory()));
         POJO pojo = detecting.readValue(doc);

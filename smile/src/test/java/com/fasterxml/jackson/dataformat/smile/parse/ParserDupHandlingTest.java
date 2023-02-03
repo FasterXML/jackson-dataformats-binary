@@ -18,7 +18,7 @@ public class ParserDupHandlingTest extends BaseTestForSmile
             byte[] doc = _smileDoc(json);
             assertFalse(f.isEnabled(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
             _testSimpleDupsOk(doc, f);
-    
+
             f.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
             _testSimpleDupsFail(doc, f, "a");
         }
@@ -48,5 +48,5 @@ public class ParserDupHandlingTest extends BaseTestForSmile
         }
         p.close();
     }
-    
+
 }

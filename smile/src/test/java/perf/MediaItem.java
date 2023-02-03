@@ -9,7 +9,7 @@ public class  MediaItem
      public List<Image> images;
 
      public MediaItem() { }
-     
+
      public MediaItem addPhoto(Image i) {
          if (images == null) {
              images = new ArrayList<Image>();
@@ -60,8 +60,8 @@ class Image
     public String uri;
     public String title;
     public int width, height;
-    public Size size;    
-} 
+    public Size size;
+}
 
 enum Player { JAVA, FLASH; }
 
@@ -78,10 +78,10 @@ class Media {
 //    public boolean hasBitrate;
 
     public List<String> persons;
-    
+
     public Player player;
 
-    public String copyright;    // Can be unset.    
+    public String copyright;    // Can be unset.
 
     public Media addPerson(String p) {
         if (persons == null) {

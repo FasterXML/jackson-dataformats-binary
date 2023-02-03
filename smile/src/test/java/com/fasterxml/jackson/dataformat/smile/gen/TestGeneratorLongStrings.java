@@ -11,7 +11,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 public class TestGeneratorLongStrings extends BaseTestForSmile
 {
     final static int DOC_LEN = 2000000; // 2 meg test doc
-    
+
     public void testLongWithMultiBytes() throws Exception
     {
         SmileFactory f = new SmileFactory();
@@ -21,7 +21,7 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream(DOC_LEN);
         SmileGenerator gen = f.createGenerator(out);
         gen.writeStartArray();
-        
+
         // Let's create 1M doc, first using Strings
         while (out.size() < (DOC_LEN - 10000)) {
             String str = generateString(5000, rnd);
@@ -33,11 +33,11 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         // Written ok; let's try parsing then
         _verifyStrings(f, out.toByteArray(), strings);
 
-        // Then same with char[] 
+        // Then same with char[]
         out = new ByteArrayOutputStream(DOC_LEN);
         gen = f.createGenerator(out);
         gen.writeStartArray();
-        
+
         // Let's create 1M doc, first using Strings
         for (int i = 0, len = strings.size(); i < len; ++i) {
             char[] ch = strings.get(i).toCharArray();

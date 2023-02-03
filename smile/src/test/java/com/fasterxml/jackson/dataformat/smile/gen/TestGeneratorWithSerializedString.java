@@ -14,7 +14,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
 
     private final SerializedString quotedName = new SerializedString(NAME_WITH_QUOTES);
     private final SerializedString latin1Name = new SerializedString(NAME_WITH_LATIN1);
-    
+
     public void testSimple() throws Exception
     {
         SmileFactory sf = new SmileFactory();
@@ -31,7 +31,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     private void _writeSimple(JsonGenerator jgen) throws Exception
     {
         // Let's just write array of 2 objects
@@ -50,7 +50,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
         jgen.writeFieldName(quotedName);
         jgen.writeString("d");
         jgen.writeEndObject();
-        
+
         jgen.writeEndArray();
     }
 
@@ -79,7 +79,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("d", jp.getText());
         assertToken(JsonToken.END_OBJECT, jp.nextToken());
-        
+
         assertToken(JsonToken.END_ARRAY, jp.nextToken());
         assertNull(jp.nextToken());
     }

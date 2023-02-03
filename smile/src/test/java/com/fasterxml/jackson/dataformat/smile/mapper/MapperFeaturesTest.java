@@ -11,7 +11,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
     static class Bean {
         public int value;
     }
-    
+
     /*
     /**********************************************************
     /* Test methods
@@ -24,7 +24,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         Bean bean = new Bean();
         bean.value = 42;
-        
+
         byte[] smile = mapper.writeValueAsBytes(bean);
         Bean result = mapper.readValue(smile, 0, smile.length, Bean.class);
         assertEquals(42, result.value);
@@ -34,7 +34,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
     {
         ObjectMapper mapper1 = smileMapper();
         ObjectMapper mapper2 = mapper1.copy();
-        
+
         assertNotSame(mapper1, mapper2);
         assertNotSame(mapper1.getFactory(), mapper2.getFactory());
         assertEquals(SmileFactory.class, mapper2.getFactory().getClass());

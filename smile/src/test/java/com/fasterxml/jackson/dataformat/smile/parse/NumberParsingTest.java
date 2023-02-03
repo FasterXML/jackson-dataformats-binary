@@ -77,7 +77,7 @@ public class NumberParsingTest
     	assertToken(JsonToken.END_OBJECT, p.nextToken());
      p.close();
     }
-    
+
     public void testBorderLongs() throws IOException
     {
         long l = (long) Integer.MIN_VALUE - 1L;
@@ -94,7 +94,7 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-        
+
         l = 1L + (long) Integer.MAX_VALUE;
         data = _smileDoc(String.valueOf(l), false);
         assertEquals(6, data.length);
@@ -134,7 +134,7 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-        
+
         l = Long.MIN_VALUE;
         data = _smileDoc(String.valueOf(l));
         p = _smileParser(data);
@@ -190,10 +190,10 @@ public class NumberParsingTest
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	assertEquals(Long.MAX_VALUE, p.getLongValue());
     	assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
-    	
+
     	assertToken(JsonToken.END_ARRAY, p.nextToken());
     	p.close();
-    }    
+    }
 
     public void testFloats() throws IOException
     {
@@ -239,10 +239,10 @@ public class NumberParsingTest
         assertEquals((float) value, p.getFloatValue());
         assertEquals((int) value, p.getIntValue());
         assertEquals((long) value, p.getLongValue());
-        
+
         p.close();
     }
-    
+
     public void testArrayWithDoubles() throws IOException
     {
         final double[] values = new double[] {
@@ -253,7 +253,7 @@ public class NumberParsingTest
                 -2.5,
                 Double.NEGATIVE_INFINITY
         };
-        
+
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         SmileGenerator g = smileGenerator(bo, false);
         g.writeStartArray();
@@ -288,10 +288,10 @@ public class NumberParsingTest
         g.writeNumberField("y", 0.01338);
         g.writeEndObject();
         g.close();
-        
+
         byte[] data = bo.toByteArray();
 
-        // first let's just skip 
+        // first let's just skip
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
@@ -300,7 +300,7 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
-        
+
         // and then check data too (skip codepath distinct)
         p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -315,7 +315,7 @@ public class NumberParsingTest
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
-    
+
     public void testBigInteger() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -330,7 +330,7 @@ public class NumberParsingTest
         assertEquals(BigInteger.class, p.getNumberValue().getClass());
         assertEquals(in, p.getBigIntegerValue());
         p.close();
-    	
+
         // second test; verify skipping works
         bo = new ByteArrayOutputStream();
         g = smileGenerator(bo, false);
@@ -345,7 +345,7 @@ public class NumberParsingTest
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-    }    
+    }
 
     public void testBigDecimal() throws IOException
     {
@@ -499,7 +499,7 @@ public class NumberParsingTest
         assertEquals(10d, p.getDoubleValue());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(BigInteger.valueOf(10L), p.getNumberValue());
-        
+
         p.close();
     }
 
@@ -526,7 +526,7 @@ public class NumberParsingTest
         assertEquals(3L, p.getLongValue());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals((float) 4.25d, p.getFloatValue());
-        
+
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(4, p.getIntValue());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());

@@ -30,7 +30,7 @@ public class TestGeneratorBufferRecycle extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     private static void writeMapAndParse(SmileFactory factory, Map<?,?> map) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 

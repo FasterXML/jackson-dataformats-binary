@@ -21,7 +21,7 @@ import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 public class IonTimestampOffsetDateTimeDeserializerTest {
 
     private static final ZoneOffset Z1 = ZoneOffset.ofHours(-8);
-    
+
     private static final ObjectReader READER_UTC_DEFAULT = newMapperBuilder()
             .defaultTimeZone(TimeZone.getTimeZone(UTC))
             .build()
@@ -34,7 +34,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
 
     private static IonObjectMapper.Builder newMapperBuilder() {
         return IonObjectMapper.builder()
-                .addModule(new IonJavaTimeModule()); 
+                .addModule(new IonJavaTimeModule());
     }
 
     /*
@@ -296,7 +296,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     @Test
     public void testDeserializationWithTypeInfo01() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), UTC);
-        
+
         IonObjectMapper m = newMapperBuilder()
                 .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
@@ -310,7 +310,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     @Test
     public void testDeserializationWithTypeInfo01NonUTCDefault() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), Z1);
-        
+
         IonObjectMapper m = newMapperBuilder()
                 .defaultTimeZone(TimeZone.getTimeZone(Z1))
                 .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
@@ -384,13 +384,13 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationWithTypeInfo04() throws Exception {
         Instant now = Instant.now();
         OffsetDateTime expected = OffsetDateTime.ofInstant(now, UTC);
-        
+
         IonObjectMapper m = newMapperBuilder()
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(now, ZoneOffset.UTC);
-        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp.toString() + "]", 
+        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp.toString() + "]",
                 Temporal.class);
 
         assertTrue("The value should be an OffsetDateTime.", actual instanceof OffsetDateTime);
@@ -401,13 +401,13 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationWithTypeInfo04NonUTCOffset() throws Exception {
         Instant now = Instant.now();
         OffsetDateTime expected = OffsetDateTime.ofInstant(now, Z1);
-        
+
         IonObjectMapper m = newMapperBuilder()
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(now, expected.getOffset());
-        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp.toString() + "]", 
+        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp.toString() + "]",
                 Temporal.class);
 
         assertTrue("The value should be an OffsetDateTime.", actual instanceof OffsetDateTime);

@@ -71,7 +71,7 @@ public class ParserInternalsTest extends BaseTestForSmile
             }
         }
     }
-    
+
     private SmileParser _minimalParser(byte[] doc) {
         IOContext ctxt = new IOContext(null, ContentReference.rawReference(doc), false);
         return new SmileParser(ctxt, // IOContext

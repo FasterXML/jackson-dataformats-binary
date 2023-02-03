@@ -62,7 +62,7 @@ public class PolymorphicRoundtripTest {
     boolean resolveAllTypes = false; // apply resolver under test to all types, not just annotated ones
     String preferredTypeId = null; // if asked to resolve from multiple ids, choose this one.
     IonSystem ionSystem = IonSystemBuilder.standard().build();
-    
+
     @Before
     public void reset() {
         resolveAllTypes = false;
@@ -142,82 +142,82 @@ public class PolymorphicRoundtripTest {
         } catch (JsonMappingException e) {
         }
     }
-    
+
     @Test
     public void testWithIonDate() throws IOException {
         resolveAllTypes = true;
         ObjectMapper mapper = new IonObjectMapper()
             .registerModule(new IonAnnotationModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        
+
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
         java.sql.Date sDate = new java.sql.Date(etime);
-        
+
         // java.util.Date can serialize properly
         String serialized = mapper.writeValueAsString(uDate);
         IonValue ionVal = ionSystem.singleValue(serialized);
         Assert.assertEquals("Expected date to be serialized into an IonTimestamp", IonType.TIMESTAMP, ionVal.getType());
-        
+
         // java.sql.Date can serialize properly
         serialized = mapper.writeValueAsString(sDate);
         ionVal = ionSystem.singleValue(serialized);
         Assert.assertEquals("Expected date to be serialized into an IonTimestamp", IonType.TIMESTAMP, ionVal.getType());
     }
-    
+
     @Test
     public void testWithDateAsTimestamp() throws IOException {
         resolveAllTypes = true;
         ObjectMapper ionDateMapper = new IonObjectMapper()
             .registerModule(new IonAnnotationModule())
             .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        
+
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
         java.sql.Date sDate = new java.sql.Date(etime);
-        
+
         // java.util.Date can serialize properly
         String serialized = ionDateMapper.writeValueAsString(uDate);
         IonValue ionVal = ionSystem.singleValue(serialized);
         Assert.assertEquals("Expected date to be serialized into an int", IonType.INT, ionVal.getType());
-        
+
         // java.sql.Date can serialize properly
         serialized = ionDateMapper.writeValueAsString(sDate);
         ionVal = ionSystem.singleValue(serialized);
-        Assert.assertEquals("Expected date to be serialized into an int", IonType.INT, ionVal.getType());      
+        Assert.assertEquals("Expected date to be serialized into an int", IonType.INT, ionVal.getType());
     }
-    
+
     @Test
     public void testPolymorphicTypeWithDate() throws IOException{
         resolveAllTypes = true;
         long etime = 1449191416000L;
         java.util.Date uDate = new java.util.Date(etime);
         java.sql.Date sDate = new java.sql.Date(etime);
-        Bean original = new Bean("parent_field", 
+        Bean original = new Bean("parent_field",
                 new ChildBeanSub("child_field", "extra_field", uDate, sDate, null));
-        
+
         IonObjectMapper mapper = new IonObjectMapper();
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.registerModule(new IonAnnotationModule());
-        
+
         // roundtrip
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
         ChildBeanSub deserializedSub = (ChildBeanSub)deserialized.child;
         Assert.assertEquals("Date result not the same as serialized value.", uDate, deserializedSub.uDate);
-        Assert.assertEquals("Date result not the same as serialized value.", sDate, deserializedSub.sDate);        
+        Assert.assertEquals("Date result not the same as serialized value.", sDate, deserializedSub.sDate);
     }
-    
+
     @Test
     public void testPolymorphicTypeWithIonValue() throws IOException{
         resolveAllTypes = true;
         IonValue dynamicData = ionSystem.newString("dynamic");
-        Bean original = new Bean("parent_field", 
+        Bean original = new Bean("parent_field",
                 new ChildBeanSub("child_field", "extra_field", null, null, dynamicData));
-        
+
         IonObjectMapper mapper = new IonValueMapper(ionSystem);
         mapper.registerModule(new IonAnnotationModule());
-        
+
         // roundtrip
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
@@ -256,7 +256,7 @@ public class PolymorphicRoundtripTest {
         public java.util.Date uDate;
         public java.sql.Date sDate;
         public IonValue dynamicData;
-        
+
         public ChildBeanSub() {
         }
 
@@ -264,8 +264,8 @@ public class PolymorphicRoundtripTest {
             super(someField);
             this.extraField = extraField;
         }
-        
-        public ChildBeanSub(String someField, String extraField, java.util.Date uDate, java.sql.Date sDate, 
+
+        public ChildBeanSub(String someField, String extraField, java.util.Date uDate, java.sql.Date sDate,
                 IonValue dynamicData) {
             super(someField);
             this.extraField = extraField;

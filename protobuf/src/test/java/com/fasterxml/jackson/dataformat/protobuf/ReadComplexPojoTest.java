@@ -16,7 +16,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
     @JsonPropertyOrder({ "b", "i", "l", "d" })
     static class PojoWithArrays {
         public boolean[] b;
-        
+
         public int[] i;
 
         public long[] l;
@@ -71,7 +71,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
             in = new LimitingInputStream(in, 123);
         }
         result = r.readValue(in);
-        
+
         assertNotNull(result);
         byte[] b2 = w.writeValueAsBytes(result);
         assertEquals(bytes.length, b2.length);

@@ -36,7 +36,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         jgen.writeEndArray();
         jgen.close();
         byte[] json = out.toByteArray();
-        
+
         // Ok: let's verify that stuff was written out ok
         JsonParser jp = jf.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
@@ -69,7 +69,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         jgen.writeEndArray();
         jgen.close();
         byte[] json = out.toByteArray();
-        
+
         // Ok: let's verify that stuff was written out ok
         JsonParser jp = jf.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
@@ -86,7 +86,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 
     /**
      * Test to point out an issue with "raw" UTF-8 encoding
-     * 
+     *
      * @author David Yu
      */
     public void testIssue492() throws Exception
@@ -100,18 +100,18 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
     /* Helper methods
     /**********************************************************
      */
-    
+
     private void doTestIssue492(boolean asUtf8String) throws Exception
     {
         SmileFactory factory = new SmileFactory();
-        
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SmileGenerator generator = factory.createGenerator(out);
-        
+
         generator.writeStartObject();
-        
+
         generator.writeFieldName("name");
-        
+
         if(asUtf8String)
         {
             byte[] text = "PojoFoo".getBytes("ASCII");
@@ -121,15 +121,15 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         {
             generator.writeString("PojoFoo");
         }
-        
+
         generator.writeFieldName("collection");
-        
+
         generator.writeStartObject();
-        
+
         generator.writeFieldName("v");
-        
+
         generator.writeStartArray();
-        
+
         if(asUtf8String)
         {
             byte[] text = "1".getBytes("ASCII");
@@ -139,46 +139,46 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         {
             generator.writeString("1");
         }
-        
+
         generator.writeEndArray();
-        
+
         generator.writeEndObject();
-        
+
         generator.writeEndObject();
-        
+
         generator.close();
-        
+
         byte[] data = out.toByteArray();
-        
+
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         SmileParser parser = factory.createParser(in);
-        
+
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
-        
+
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
         assertEquals(parser.getCurrentName(), "name");
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
         assertEquals(parser.getText(), "PojoFoo");
-        
+
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
         assertEquals(parser.getCurrentName(), "collection");
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
-        
+
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
         assertEquals("Should have property with name 'v'", parser.getCurrentName(), "v");
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
-        
+
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
         assertEquals("Should get String value '1'", parser.getText(), "1");
-        
+
         assertToken(parser.nextToken(), JsonToken.END_ARRAY);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);
-        
-        
+
+
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);
         parser.close();
     }
-        
+
     private List<byte[]> generateStrings(Random rnd, int totalLength, boolean includeCtrlChars)
         throws IOException
     {
@@ -197,7 +197,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         } while (totalLength > 0);
         return strings;
     }
-        
+
     private String generateString(Random rnd, int length, boolean includeCtrlChars)
     {
         StringBuilder sb = new StringBuilder(length);

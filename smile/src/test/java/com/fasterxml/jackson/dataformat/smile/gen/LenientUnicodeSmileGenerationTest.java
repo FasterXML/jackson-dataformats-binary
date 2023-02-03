@@ -37,7 +37,7 @@ public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
             }
             assertEquals(1, gen.getOutputBuffered());
         }
-    
+
         try (JsonGenerator gen = MAPPER.createGenerator(out)) {
             try {
                 // Missing second surrogate character

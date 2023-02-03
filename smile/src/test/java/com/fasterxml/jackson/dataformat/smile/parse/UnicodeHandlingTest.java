@@ -11,7 +11,7 @@ import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
 public class UnicodeHandlingTest extends BaseTestForSmile
 {
     private final SmileFactory F = smileFactory(false, true, false);
-    
+
     public void testShortUnicodeWithSurrogates() throws IOException
     {
         _testLongUnicodeWithSurrogates(28, false);
@@ -27,7 +27,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         _testLongUnicodeWithSurrogates(9600, false);
         _testLongUnicodeWithSurrogates(9600, true);
     }
-    
+
     private void _testLongUnicodeWithSurrogates(int length,
         boolean throttling) throws IOException
     {
@@ -57,7 +57,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-        
+
         // Also, verify that it works as field name
         data = _smileDoc("{"+quoted+":true}");
 

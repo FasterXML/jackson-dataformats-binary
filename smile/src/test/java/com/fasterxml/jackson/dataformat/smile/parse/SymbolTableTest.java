@@ -99,7 +99,7 @@ public class SymbolTableTest extends BaseTestForSmile
             "abc", "abcd123", "abcdefghi123940963", "",
             // Unicode, also (2-byte ones ought to be ok)
             "F\u00F6\u00F6", "F\u00F6\u00F6bar", "Longer F\u00F6\u00F6bar",
-            
+
             // and then couple of longer names; total needs to exceed 64k
             generateName(77),
             generateName(2000),

@@ -18,7 +18,7 @@ public class WriteArrayTest extends ProtobufTestBase
             +" repeated string values = 1 [packed=true];\n"
             +"}\n"
     ;
-    
+
     final protected static String PROTOC_POINT_ARRAY_SPARSE = "message Points {\n"
             +" repeated Point points = 1;\n"
             +"}\n"
@@ -38,7 +38,7 @@ public class WriteArrayTest extends ProtobufTestBase
             values = v;
         }
     }
-    
+
     static class PointArray {
         public Point[] points;
 
@@ -109,7 +109,7 @@ public class WriteArrayTest extends ProtobufTestBase
         assertEquals(4, bytes[5]); // VInt 2, but with zig-zag
 
         assertEquals(0xA, bytes[6]); // similar to above
-        assertEquals(4, bytes[7]); 
+        assertEquals(4, bytes[7]);
         assertEquals(8, bytes[8]);
         assertEquals(3, bytes[9]); // Point(3, )
         assertEquals(0x10, bytes[10]);
@@ -138,5 +138,5 @@ public class WriteArrayTest extends ProtobufTestBase
         assertEquals(3, bytes[9]); // Point(3, )
         assertEquals(0x10, bytes[10]);
         assertEquals(8, bytes[11]); // Point (, 4)
-    }    
+    }
 }

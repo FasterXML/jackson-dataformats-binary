@@ -39,7 +39,7 @@ public class SimpleFailsTest extends AsyncTestBase
             verifyException(e, "Input does not start with Smile format header");
         }
     }
-    
+
     public void testHeaderFailWithJSON() throws IOException
     {
         byte[] data = "[ true ]".getBytes("UTF-8");

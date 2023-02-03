@@ -36,7 +36,7 @@ public class DataBindReadTest {
         @JsonIgnore public Object ignore;
         public byte[] blob;
     }
-    
+
     static class BeanToo { }
 
     @Test
@@ -52,12 +52,12 @@ public class DataBindReadTest {
         bean = m.readValue("{'a': bc, b : '14' }", MyBean.class);
         assertEquals("bc", bean.a);
         assertEquals(14, bean.b);
-        
+
         // and some ion timestamp (not well formed json).
         bean = m.readValue("{a:1999-08-18T00:00:01-00:00, b:2}", MyBean.class);
         assertEquals("1999-08-18T00:00:01-00:00", bean.a);
         assertEquals(2, bean.b);
-        
+
     }
 
     @Test

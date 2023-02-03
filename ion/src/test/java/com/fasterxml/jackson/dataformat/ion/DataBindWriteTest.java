@@ -36,17 +36,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class DataBindWriteTest {
-    
+
     static class MyBean {
         public String getA() { return "value"; }
         public int getB() { return 42; }
     }
-    
+
     // initialize an equivalent MyBean in Ion
-    
+
     IonSystem ion = IonSystemBuilder.standard().build();
     IonDatagram expectedMyBean;
-    
+
     @Before
     public void initializeExpectedMyBean() {
         expectedMyBean = ion.newDatagram();
@@ -58,9 +58,9 @@ public class DataBindWriteTest {
     }
 
     // initialize an equivalent array [1,2,3] in Ion
-    
+
     IonDatagram expectedArray;
-    
+
     @Before
     public void initializeExpectedArray() {
         expectedArray = ion.newDatagram();
@@ -72,7 +72,7 @@ public class DataBindWriteTest {
     }
 
     // // Test methods
-    
+
     @Test
     public void testSimpleObjectWriteText() throws Exception
     {

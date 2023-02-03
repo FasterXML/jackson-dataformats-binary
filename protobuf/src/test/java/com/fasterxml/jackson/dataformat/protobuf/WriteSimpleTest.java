@@ -15,7 +15,7 @@ public class WriteSimpleTest extends ProtobufTestBase
 {
     static class Point3D extends Point {
         public int z;
-        
+
         public Point3D(int x, int y, int z) {
             super(x, y);
             this.z = z;
@@ -36,7 +36,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         public List<Point> points;
 
         protected IdPoints() { }
-        
+
         public IdPoints(int id, int x, int y) {
             this.id = id;
             points = Arrays.asList(new Point(x, y));
@@ -55,7 +55,7 @@ public class WriteSimpleTest extends ProtobufTestBase
             return (other.id == id) && points.equals(other.points);
         }
     }
-    
+
     private final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
     /*
@@ -120,7 +120,7 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .readValue(bytes);
         assertEquals(input, result);
     }
-    
+
     public void testWriteNameManual() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
@@ -139,7 +139,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         g.writeRawUTF8String(b, 0, b.length);
         g.writeEndObject();
         g.close();
-        
+
         b = bytes.toByteArray();
         assertNotNull(bytes);
 
@@ -161,7 +161,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         g.writeNumber(Long.MAX_VALUE);
         g.writeEndObject();
         g.close();
-        
+
         byte[] b = bytes.toByteArray();
         assertNotNull(bytes);
 
@@ -230,7 +230,7 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .readValue(bytes);
         assertEquals(input, result);
     }
-    
+
     public void testWriteCoord() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Box");
@@ -239,13 +239,13 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .with(schema);
         byte[] bytes = w.writeValueAsBytes(new Box(0x3F, 0x11, 0x18, 0xF));
         assertNotNull(bytes);
-        
+
         // 11 bytes for 2 Points; 4 single-byte ids, 3 x 2-byte values, 1 x 1-byte value
         // but then 2 x 2 bytes for tag, length
 
         // Root-level has no length-prefix; so we have sequence of Box fields (topLeft, bottomRight)
         // with ids of 3 and 5, respectively.
-        // As child messages, they have typed-tag, then VInt-encoded length; lengths are 
+        // As child messages, they have typed-tag, then VInt-encoded length; lengths are
         // 4 byte each (typed tag, 1-byte ints)
         // It all adds up to 12 bytes as follows:
 
@@ -253,7 +253,7 @@ public class WriteSimpleTest extends ProtobufTestBase
             "message Point {\n"
             +" required int32 x = 1;\n"
             +" required sint32 y = 2;\n"
-            +"}\n"            
+            +"}\n"
             +"message Box {\n"
             +" required Point topLeft = 3;\n"
             +" required Point bottomRight = 5;\n"
@@ -261,7 +261,7 @@ public class WriteSimpleTest extends ProtobufTestBase
          */
 
         assertEquals(12, bytes.length);
-        
+
         assertEquals(0x1A, bytes[0]); // wire type 2 (length-prefix), tag id 3
         assertEquals(0x4, bytes[1]); // length, 4 bytes
         assertEquals(0x8, bytes[2]); // wire type 0 (vint), tag id 1

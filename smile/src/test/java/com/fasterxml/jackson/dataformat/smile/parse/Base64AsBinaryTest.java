@@ -18,7 +18,7 @@ public class Base64AsBinaryTest extends BaseTestForSmile
     private final static byte[] DECODED_BASE64 = "Test!".getBytes(StandardCharsets.US_ASCII);
 
     private final byte[] CBOR_DOC;
-    
+
     private final ObjectMapper MAPPER = smileMapper();
 
     public Base64AsBinaryTest() throws Exception {

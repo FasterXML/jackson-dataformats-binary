@@ -17,7 +17,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
 
         // boolean requireHeader, boolean writeHeader, boolean writeEndMarker
         final SmileFactory f = smileFactory(false, true, false);
-        
+
         SmileGenerator generator =  f.createGenerator(byteOut);
         generator.writeStartObject();
         generator.writeFieldName("a");
@@ -67,19 +67,19 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
             assertEquals(i, p.getIntValue());
         }
         assertToken(p.nextToken(), JsonToken.END_OBJECT);
-        
+
         assertToken(p.nextToken(), JsonToken.END_OBJECT);
         assertNull(p.nextToken());
         p.close();
 
         // One more thing: verify we don't see the end marker or null anywhere
-        
+
         for (int i = 0, end = smile.length; i < end; ++i) {
             int ch = smile[i] & 0xFF;
 
             if (ch >= 0xFE) {
                 fail("Unexpected 0x"+Integer.toHexString(ch)+" byte at #"+i+" (of "+end+")");
-                
+
             }
         }
     }
@@ -91,7 +91,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         // boolean requireHeader, boolean writeHeader, boolean writeEndMarker
         final SmileFactory f = smileFactory(false, true, false);
         f.enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
-        
+
         SmileGenerator generator =  f.createGenerator(byteOut);
         generator.writeStartArray();
 
@@ -126,13 +126,13 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         p.close();
 
         // One more thing: verify we don't see the end marker or null anywhere
-        
+
         for (int i = 0, end = smile.length; i < end; ++i) {
             int ch = smile[i] & 0xFF;
 
             if (ch >= 0xFE) {
                 fail("Unexpected 0x"+Integer.toHexString(ch)+" byte at #"+i+" (of "+end+")");
-                
+
             }
         }
     }

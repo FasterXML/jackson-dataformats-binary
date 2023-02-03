@@ -70,7 +70,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
     final protected static String PROTOC_FLOAT_ARRAY_PACKED = "message Floats {\n"
             +" repeated float values = 1 [packed=true];\n"
             +"}\n";
-    
+
     static class IntArray {
         public int[] values;
 
@@ -106,7 +106,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
             values = v;
         }
     }
-    
+
     static class StringArray {
         public String[] values;
 
@@ -123,7 +123,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
      */
 
     final ObjectMapper MAPPER = newObjectMapper();
-    
+
     public void testVIntArraySparse() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse(PROTOC_INT_ARRAY_SPARSE));
@@ -232,7 +232,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         LongArray result = MAPPER.readerFor(LongArray.class).with(schema)
                 .readValue(bytes);
         Assert.assertArrayEquals(input.values, result.values);
- 
+
         _verifyLongArray(bytes, schema, input.values);
     }
 
@@ -265,12 +265,12 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertEquals((float) inputValues[3], p.getFloatValue());
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
-        
+
         p.close();
     }
-    
+
     /*
     /**********************************************************
     /* Test methods, floating-point arrays
@@ -344,12 +344,12 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertEquals(Double.valueOf(inputValues[3]), p.getDoubleValue());
         assertEquals((long) inputValues[3], p.getLongValue());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
-        
+
         p.close();
     }
-    
+
     public void testFloatArraySparse() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_FLOAT_ARRAY_SPARSE);
@@ -404,12 +404,12 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertEquals(Float.valueOf(inputValues[2]), p.getFloatValue());
         assertEquals((int) inputValues[2], p.getIntValue());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
-        
+
         p.close();
     }
-    
+
     private void _assertEquals(float[] exp, float[] act)
     {
         assertEquals(exp.length, act.length);

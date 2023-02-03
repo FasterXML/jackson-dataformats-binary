@@ -55,7 +55,7 @@ public abstract class ProtobufTestBase extends TestCase
             +" required sint32 y = 2;\n"
             +" optional sint32 z = 3;\n"
             +"}\n";
-    
+
     final protected static String PROTOC_POINT_L =
             "message Point {\n"
             +" required int64 x = 1;\n"
@@ -73,7 +73,7 @@ public abstract class ProtobufTestBase extends TestCase
             +" required double x = 1;\n"
             +" required float y = 2;\n"
             +"}\n";
-    
+
     final protected static String PROTOC_BOX =
             "message Box {\n"
             +" required Point topLeft = 3;\n"
@@ -103,7 +103,7 @@ public abstract class ProtobufTestBase extends TestCase
             +" optional string value = 3;\n"
             +"}\n"
     ;
-    
+
     // protoc definition from 'jvm-serializers' project:
     final protected static String PROTOC_MEDIA_ITEM =
 "package serializers.protobuf.media;\n"+
@@ -144,7 +144,7 @@ public abstract class ProtobufTestBase extends TestCase
 "optional string copyright = 21;\n"+
 "}\n"
 ;
-    
+
     /*
     /**********************************************************
     /* POJO classes to use with protoc definitions
@@ -157,7 +157,7 @@ public abstract class ProtobufTestBase extends TestCase
         public int y;
 
         protected Point() { }
-        
+
         public Point(int x, int y) {
             this.x = x;
             this.y = y;
@@ -182,7 +182,7 @@ public abstract class ProtobufTestBase extends TestCase
         public int x, y, z;
 
         protected Point3() { }
-        
+
         public Point3(int x, int y, int z) {
             this.x = x;
             this.y = y;
@@ -202,13 +202,13 @@ public abstract class ProtobufTestBase extends TestCase
             return (other.x == x) && (other.y == y) && (other.z == z);
         }
     }
-    
+
     static class PointL {
         public long x;
         public long y;
 
         protected PointL() { }
-        
+
         public PointL(long x, long y) {
             this.x = x;
             this.y = y;
@@ -242,7 +242,7 @@ public abstract class ProtobufTestBase extends TestCase
         public String toString() {
             return String.format("[present=%s, value=%s]", present, value);
         }
-        
+
         @Override
         public boolean equals(Object o) {
             if (o == this) return true;
@@ -261,7 +261,7 @@ public abstract class ProtobufTestBase extends TestCase
         public double y;
 
         protected PointD() { }
-        
+
         public PointD(double x, double y) {
             this.x = x;
             this.y = y;
@@ -280,7 +280,7 @@ public abstract class ProtobufTestBase extends TestCase
             return (other.x == x) && (other.y == y);
         }
     }
-    
+
     @JsonPropertyOrder({ "topLeft", "bottomRight"})
     static class Box {
         public Point topLeft, bottomRight;
@@ -318,14 +318,14 @@ public abstract class ProtobufTestBase extends TestCase
     }
 
     // // // POJOs for "JVM-serializers" case
-    
+
     protected static class  MediaItem
     {
          public Media media;
          public List<Image> images;
 
          public MediaItem() { }
-         
+
          public MediaItem addPhoto(Image i) {
              if (images == null) {
                  images = new ArrayList<Image>();
@@ -363,10 +363,10 @@ public abstract class ProtobufTestBase extends TestCase
          public String toString() {
              return "{MediaItem: media="+media+", images="+images+"}";
          }
-         
+
          @Override
          public boolean equals(Object o) {
-             if (o == this) return true;                     
+             if (o == this) return true;
              if (o == null) return false;
              if (o.getClass() != getClass()) return false;
 
@@ -392,11 +392,11 @@ public abstract class ProtobufTestBase extends TestCase
         public String uri;
         public String title;
         public int width, height;
-        public Size size;    
+        public Size size;
 
         @Override
         public boolean equals(Object o) {
-            if (o == this) return true;                     
+            if (o == this) return true;
             if (o == null) return false;
             if (o.getClass() != getClass()) return false;
 
@@ -409,8 +409,8 @@ public abstract class ProtobufTestBase extends TestCase
                     && (height == other.height)
                     ;
         }
-    } 
-    
+    }
+
     enum Player { JAVA, FLASH; }
 
     static class Media {
@@ -425,10 +425,10 @@ public abstract class ProtobufTestBase extends TestCase
         public int bitrate;         // Can be unset.
 
         public List<String> persons;
-        
+
         public Player player;
 
-        public String copyright;    // Can be unset.    
+        public String copyright;    // Can be unset.
 
         public Media addPerson(String p) {
             if (persons == null) {
@@ -440,7 +440,7 @@ public abstract class ProtobufTestBase extends TestCase
 
         @Override
         public boolean equals(Object o) {
-            if (o == this) return true;                     
+            if (o == this) return true;
             if (o == null) return false;
             if (o.getClass() != getClass()) return false;
 
@@ -497,7 +497,7 @@ public abstract class ProtobufTestBase extends TestCase
                     +"' should be null, points to "+prev.next);
         }
     }
-    
+
     protected void assertToken(JsonToken expToken, JsonToken actToken)
     {
         if (actToken != expToken) {

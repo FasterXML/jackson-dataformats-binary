@@ -12,7 +12,7 @@ public class ReadPerfUntyped extends ReaderTestBase
 
     @Override
     protected int targetSizeMegs() { return 10; }
-    
+
     public static void main(String[] args) throws Exception
     {
         if (args.length != 1) {
@@ -26,7 +26,7 @@ public class ReadPerfUntyped extends ReaderTestBase
         ObjectMapper m = new ObjectMapper(sf);
 
         byte[] smile = convert(json, jf, sf);
-        
+
         // Either Object or Map
         final Class<?> UNTYPED = Map.class;
 

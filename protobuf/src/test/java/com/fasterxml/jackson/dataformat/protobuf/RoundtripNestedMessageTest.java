@@ -86,11 +86,11 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
 
     public static class TestSubSub {
         String a;
-        
+
         public String getA() {
             return a;
         }
-        
+
         public void setA(String a) {
             this.a = a;
         }
@@ -100,7 +100,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
     @JsonPropertyOrder({ "name", "age", "emails", "boss" })
     static class Employee135 {
         public int age;
- 
+
         public String[] emails;
     }
 
@@ -167,7 +167,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("foo@gmail.com", p.getText());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         assertNull(p.nextToken());

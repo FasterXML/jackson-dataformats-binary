@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 public class ArrayGenerationTest extends BaseTestForSmile
 {
     private final SmileFactory FACTORY = new SmileFactory();
-    
+
     public void testIntArray() throws Exception
     {
         _testIntArray(false);

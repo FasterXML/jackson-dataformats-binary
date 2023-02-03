@@ -32,7 +32,7 @@ public class WriteErrorsTest extends ProtobufTestBase
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
         final ObjectWriter w = MAPPER.writerFor(Point3D.class)
                 .with(schema);
-        
+
         // First: if disabled, should get an error
         try {
             /*byte[] bytes =*/ w

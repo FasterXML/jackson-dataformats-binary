@@ -21,7 +21,7 @@ public class IonTimestampZonedDateTimeSerializerTest {
 
     private IonObjectMapper.Builder newMapperBuilder() {
         return IonObjectMapper.builder()
-                .addModule(new IonJavaTimeModule()); 
+                .addModule(new IonJavaTimeModule());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class IonTimestampZonedDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", 
+        assertEquals("The value is not correct.",
                 TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
     }
 
@@ -116,7 +116,7 @@ public class IonTimestampZonedDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", 
+        assertEquals("The value is not correct.",
                 TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
     }
 
@@ -128,7 +128,7 @@ public class IonTimestampZonedDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", 
+        assertEquals("The value is not correct.",
                 TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
     }
 
@@ -170,7 +170,7 @@ public class IonTimestampZonedDateTimeSerializerTest {
 
         String value = mapper.writeValueAsString(date);
         assertNotNull("The value should not be null.", value);
-        assertEquals("The value is not correct.","'" + ZonedDateTime.class.getName() + "'::" 
+        assertEquals("The value is not correct.","'" + ZonedDateTime.class.getName() + "'::"
                 + TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
     }
 }

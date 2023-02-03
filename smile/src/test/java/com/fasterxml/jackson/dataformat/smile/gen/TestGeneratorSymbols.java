@@ -45,7 +45,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         String digits = "01234567899";
 
         // Base is 76 chars; loop over couple of shorter ones too
-        
+
         final String LONG_NAME = "a"+digits+"b"+digits+"c"+digits+"d"+digits+"e"+digits+"f"+digits+suffix;
 
         for (int i = 0; i < 4; ++i) {
@@ -65,25 +65,25 @@ public class TestGeneratorSymbols extends BaseTestForSmile
             gen.close();
             byte[] result = out.toByteArray();
             assertEquals(11 + field.length(), result.length);
-    
+
             // better also parse it back...
             JsonParser parser = _smileParser(result);
             assertToken(JsonToken.START_ARRAY, parser.nextToken());
-    
+
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
             assertToken(JsonToken.FIELD_NAME, parser.nextToken());
             assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(1, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
-    
+
             assertToken(JsonToken.START_OBJECT, parser.nextToken());
             assertToken(JsonToken.FIELD_NAME, parser.nextToken());
             assertEquals(field, parser.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
             assertEquals(2, parser.getIntValue());
             assertToken(JsonToken.END_OBJECT, parser.nextToken());
-    
+
             assertToken(JsonToken.END_ARRAY, parser.nextToken());
             parser.close();
         }
@@ -93,12 +93,12 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     {
         _testLongNames(false);
     }
-    
+
     public void testLongNamesShared() throws Exception
     {
         _testLongNames(true);
     }
-    
+
     // [Issue#8] Test by: M. Tarik Yurt  / mtyurt@gmail.com
     public void testExpandSeenNames() throws Exception
     {
@@ -189,7 +189,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
 
                 //The second "v30"
                 // broken version would be:
-                //"66,118,51,48," +       
+                //"66,118,51,48," +
                 // and correct one:
                 "30,"+
                 "-5";
@@ -205,13 +205,13 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     /* Secondary methods
     /**********************************************************
      */
-    
+
     public void _testLongNames(boolean shareNames) throws Exception
     {
         // 68 bytes long (on boundary)
         final String FIELD_NAME = "dossier.domaine.supportsDeclaratifsForES.SupportDeclaratif.reference";
         final String VALUE = "11111";
-        
+
         SmileFactory factory = new SmileFactory();
         factory.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames);
 
@@ -223,7 +223,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         gen.writeEndObject();
         gen.writeEndObject();
         gen.close();
-        
+
         JsonParser parser = factory.createParser(os.toByteArray());
         assertNull(parser.currentToken());
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
@@ -246,5 +246,5 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         }
         sb.deleteCharAt(sb.length()-1);
         return sb.toString();
-    }    
+    }
 }

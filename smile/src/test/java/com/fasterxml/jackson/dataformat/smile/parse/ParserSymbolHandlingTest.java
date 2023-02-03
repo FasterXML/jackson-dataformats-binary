@@ -23,10 +23,10 @@ public class ParserSymbolHandlingTest
     /* Helper types, constants
     /**********************************************************
      */
-    
+
     private final static String[] SHARED_SYMBOLS = new String[] {
             "g", "J", "v", "B", "S", "JAVA",
-            "h", "J", "LARGE", 
+            "h", "J", "LARGE",
             "JAVA", "J", "SMALL"
     };
 
@@ -38,7 +38,7 @@ public class ParserSymbolHandlingTest
 
     public enum Size { SMALL, LARGE; }
     public enum Player { JAVA, FLASH; }
-    
+
     static class Image
     {
         public String uri;
@@ -72,7 +72,7 @@ public class ParserSymbolHandlingTest
         public String[] persons;
         public String copyright;
     }
-        
+
     /*
     /**********************************************************
     /* Unit tests
@@ -83,7 +83,7 @@ public class ParserSymbolHandlingTest
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
-        
+
         SmileFactory f = new SmileFactory();
         f.configure(SmileGenerator.Feature.WRITE_HEADER, false);
         f.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, true);
@@ -101,7 +101,7 @@ public class ParserSymbolHandlingTest
         gen.close();
         byte[] json = out.toByteArray();
 
-        // And verify 
+        // And verify
         f.configure(SmileParser.Feature.REQUIRE_HEADER, false);
         JsonParser jp = f.createParser(json);
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
@@ -115,7 +115,7 @@ public class ParserSymbolHandlingTest
             assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
             assertEquals(nr, jp.getIntValue());
             assertToken(JsonToken.END_OBJECT, jp.nextToken());
-            
+
         }
         assertToken(JsonToken.END_ARRAY, jp.nextToken());
         jp.close();
@@ -127,7 +127,7 @@ public class ParserSymbolHandlingTest
         byte[] baseline = writeStringValues(false, count);
         assertEquals(763589, baseline.length);
         verifyStringValues(baseline, count);
-        
+
         // and then shared; should be much smaller
         byte[] shared = writeStringValues(true, count);
         if (shared.length >= baseline.length) {
@@ -149,7 +149,7 @@ public class ParserSymbolHandlingTest
         }
         gen.writeEndArray();
         gen.close();
-        
+
         byte[] smile = out.toByteArray();
 
         JsonParser jp = f.createParser(smile);
@@ -175,7 +175,7 @@ public class ParserSymbolHandlingTest
         }
         gen.writeEndObject();
         gen.close();
-        
+
         byte[] smile = out.toByteArray();
 
         JsonParser jp = f.createParser(smile);
@@ -194,7 +194,7 @@ public class ParserSymbolHandlingTest
     {
         SmileFactory f = new SmileFactory();
         f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-        
+
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = f.createGenerator(out);
         gen.writeStartObject();
@@ -229,10 +229,10 @@ public class ParserSymbolHandlingTest
             gen.writeEndObject();
         }
         gen.writeEndArray();
-        
+
         gen.writeEndObject();
         gen.close();
-        
+
         byte[] smile = out.toByteArray();
 
         JsonParser jp = f.createParser(smile);
@@ -254,7 +254,7 @@ public class ParserSymbolHandlingTest
         assertEquals("width", jp.getCurrentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
         assertEquals(640, jp.getIntValue());
-        
+
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("format", jp.getCurrentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
@@ -276,9 +276,9 @@ public class ParserSymbolHandlingTest
         assertEquals("copyright", jp.getCurrentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("NONE", jp.getText());
-        
+
         assertToken(JsonToken.END_OBJECT, jp.nextToken()); // media
-        
+
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("images", jp.getCurrentName());
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
@@ -304,9 +304,9 @@ public class ParserSymbolHandlingTest
             assertEquals(768, jp.getIntValue());
             assertToken(JsonToken.END_OBJECT, jp.nextToken());
         }
-        
+
         assertToken(JsonToken.END_ARRAY, jp.nextToken()); // images
-        
+
         assertToken(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();
     }
@@ -472,7 +472,7 @@ public class ParserSymbolHandlingTest
         gen.writeEndObject();
         gen.writeEndArray();
         gen.close();
-        
+
         byte[] data = bout.toByteArray();
 
         // 23-Feb-2016, tatu: [dataformat-smile#34] is very particular and only affects
@@ -503,9 +503,9 @@ public class ParserSymbolHandlingTest
     /* Helper methods
     /**********************************************************
      */
-    
+
     private final String CHARS_40 = "0123456789012345678901234567890123456789";
-    
+
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
         SmileFactory f = new SmileFactory();

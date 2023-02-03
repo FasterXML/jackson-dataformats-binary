@@ -67,13 +67,13 @@ public class DocBoundaryTest
             jg.close();
         }
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
     /**********************************************************
      */
-    
+
     protected void _verifyMultiDoc(boolean addHeader, boolean addEndMarker) throws Exception
     {
         SmileFactory f = smileFactory(false, addHeader, addEndMarker);
@@ -103,7 +103,7 @@ public class DocBoundaryTest
         assertToken(JsonToken.END_ARRAY, jp.nextToken());
 
         // end
-        assertNull(jp.nextToken());        
+        assertNull(jp.nextToken());
         // and no more:
         assertNull(jp.nextToken());
         jp.close();

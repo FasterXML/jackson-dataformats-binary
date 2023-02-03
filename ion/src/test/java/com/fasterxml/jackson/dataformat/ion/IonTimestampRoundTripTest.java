@@ -35,33 +35,33 @@ import com.amazon.ion.system.IonSystemBuilder;
 
 public class IonTimestampRoundTripTest {
     IonSystem ionSystem = IonSystemBuilder.standard().build();
-      
+
     @Test
     public void testDateRoundTrip() throws IOException {
         Date date = new Date();
         IonObjectMapper m = IonObjectMapper.builder()
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
-        
+
         String val = m.writeValueAsString(date);
         IonLoader loader = ionSystem.newLoader();
         IonDatagram dgram = loader.load(val);
         IonValue ionVal = dgram.iterator().next();
-        
+
         Assert.assertEquals("Expected date to be serialized into an IonTimestamp", IonType.TIMESTAMP, ionVal.getType());
-        
+
         Date returned = m.readValue(val, Date.class);
         Assert.assertEquals("Date result not the same as serialized value.", date, returned);
-        
+
     }
-    
+
     @Test
     public void testMillisCompatibility() throws IOException {
         Date date = new Date();
         IonObjectMapper m = IonObjectMapper.builder()
                 .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
-        
+
         String val = m.writeValueAsString(date);
         Date returned = m.readValue(val, Date.class);
         Assert.assertEquals("Date result not the same as serialized value.", date, returned);
@@ -81,13 +81,13 @@ public class IonTimestampRoundTripTest {
                 .build();
 
         IonObjectMapper joiM = IonObjectMapper.builder().build();
-        
+
         String dateInMillis = nonJoiMillis.writeValueAsString(date);
         String dateFormatted = nonJoiM.writeValueAsString(date);
-        
+
         Date millisBack = joiM.readValue(dateInMillis, Date.class);
         Date formattedBack = joiM.readValue(dateFormatted, Date.class);
-        
+
         Assert.assertEquals("Date result not the same as serialized value.", date, millisBack);
         Assert.assertEquals("Date result not the same as serialized value.", date, formattedBack);
     }

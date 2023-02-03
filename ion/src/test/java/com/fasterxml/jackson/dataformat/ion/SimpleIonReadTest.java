@@ -81,7 +81,7 @@ public class SimpleIonReadTest {
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();
     }
-    
+
     @Test
     public void testMixed() throws IOException
     {
@@ -89,7 +89,7 @@ public class SimpleIonReadTest {
         JsonParser jp = f.createParser("{a:[ 1, { b:  13}, \"xyz\" ], c:null, d:true}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.START_ARRAY, jp.nextValue());
-        //assertEquals("a", jp.currentName());        
+        //assertEquals("a", jp.currentName());
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
         assertNull(jp.currentName());
         assertEquals(1, jp.getIntValue());
@@ -106,7 +106,7 @@ public class SimpleIonReadTest {
         assertEquals("c", jp.currentName());
         assertEquals(JsonToken.VALUE_TRUE, jp.nextValue());
         assertEquals("d", jp.currentName());
-        
+
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
         jp.close();
     }
@@ -126,6 +126,6 @@ public class SimpleIonReadTest {
         assertEquals(JsonToken.VALUE_NULL, jp.nextValue());
         assertEquals("c", jp.currentName());
         assertEquals(JsonToken.END_OBJECT, jp.nextToken());
-        jp.close();        
+        jp.close();
     }
 }

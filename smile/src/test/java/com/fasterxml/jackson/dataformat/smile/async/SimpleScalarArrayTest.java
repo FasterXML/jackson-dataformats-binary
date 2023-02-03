@@ -73,7 +73,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
 
         assertEquals("false", r.currentText());
         assertEquals("false", r.currentTextViaCharacters());
-        
+
         assertToken(JsonToken.END_ARRAY, r.nextToken());
 
         // and end up with "no token" as well
@@ -171,7 +171,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     /* Floating point
     /**********************************************************************
      */
-    
+
     public void testFloats() throws IOException
     {
         final float[] input = new float[] { 0.0f, 0.25f, -0.5f, 10000.125f, - 99999.075f };

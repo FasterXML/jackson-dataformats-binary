@@ -17,7 +17,7 @@ public class SymbolHandlingTest extends BaseTestForSmile
         SmileParser p = _smileParser(f, data);
         final ByteQuadsCanonicalizer symbols1 = p._symbols;
         assertEquals(0, symbols1.size());
-     
+
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
         // field names are interned:

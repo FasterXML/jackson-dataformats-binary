@@ -18,7 +18,7 @@ public class AsyncSharedStringsTest
 {
     private final static String[] SHARED_SYMBOLS = new String[] {
             "g", "J", "v", "B", "S", "JAVA",
-            "h", "J", "LARGE", 
+            "h", "J", "LARGE",
             "JAVA", "J", "SMALL"
     };
 
@@ -30,7 +30,7 @@ public class AsyncSharedStringsTest
 
     public enum Size { SMALL, LARGE; }
     public enum Player { JAVA, FLASH; }
-    
+
     static class Image
     {
         public String uri;
@@ -64,7 +64,7 @@ public class AsyncSharedStringsTest
         public String[] persons;
         public String copyright;
     }
-        
+
     /*
     /**********************************************************
     /* Test methods
@@ -74,7 +74,7 @@ public class AsyncSharedStringsTest
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
-        
+
         SmileFactory f = new SmileFactory();
         f.configure(SmileParser.Feature.REQUIRE_HEADER, false);
         f.configure(SmileGenerator.Feature.WRITE_HEADER, false);
@@ -95,7 +95,7 @@ public class AsyncSharedStringsTest
 
         AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
 
-        // And verify 
+        // And verify
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         rnd = new Random(COUNT);
         for (int i = 0; i < COUNT; ++i) {
@@ -118,7 +118,7 @@ public class AsyncSharedStringsTest
         byte[] baseline = writeStringValues(false, count);
         assertEquals(763589, baseline.length);
         verifyStringValues(baseline, count);
-        
+
         // and then shared; should be much smaller
         byte[] shared = writeStringValues(true, count);
         if (shared.length >= baseline.length) {
@@ -140,7 +140,7 @@ public class AsyncSharedStringsTest
         }
         gen.writeEndArray();
         gen.close();
-        
+
         byte[] smile = out.toByteArray();
 
         AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
@@ -166,7 +166,7 @@ public class AsyncSharedStringsTest
         }
         gen.writeEndObject();
         gen.close();
-        
+
         byte[] smile = out.toByteArray();
 
         AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
@@ -185,7 +185,7 @@ public class AsyncSharedStringsTest
     {
         SmileFactory f = new SmileFactory();
         f.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, true);
-        
+
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = f.createGenerator(out);
         gen.writeStartObject();
@@ -220,10 +220,10 @@ public class AsyncSharedStringsTest
             gen.writeEndObject();
         }
         gen.writeEndArray();
-        
+
         gen.writeEndObject();
         gen.close();
-        
+
         byte[] smile = out.toByteArray();
 
         AsyncReaderWrapper p = asyncForBytes(f, 37, smile, 0);
@@ -245,7 +245,7 @@ public class AsyncSharedStringsTest
         assertEquals("width", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(640, p.getIntValue());
-        
+
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("format", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -267,9 +267,9 @@ public class AsyncSharedStringsTest
         assertEquals("copyright", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals("NONE", p.currentText());
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken()); // media
-        
+
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("images", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
@@ -295,9 +295,9 @@ public class AsyncSharedStringsTest
             assertEquals(768, p.getIntValue());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
         }
-        
+
         assertToken(JsonToken.END_ARRAY, p.nextToken()); // images
-        
+
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
@@ -463,7 +463,7 @@ public class AsyncSharedStringsTest
         gen.writeEndObject();
         gen.writeEndArray();
         gen.close();
-        
+
         byte[] data = bout.toByteArray();
 
         // 23-Feb-2016, tatu: [dataformat-smile#34] is very particular and only affects
@@ -494,9 +494,9 @@ public class AsyncSharedStringsTest
     /* Helper methods
     /**********************************************************
      */
-    
+
     private final String CHARS_40 = "0123456789012345678901234567890123456789";
-    
+
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
         SmileFactory f = new SmileFactory();

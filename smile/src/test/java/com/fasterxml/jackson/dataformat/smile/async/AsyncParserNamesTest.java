@@ -13,7 +13,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
     {
         _testWithName(generateName(5000));
     }
-    
+
     public void testEvenLongerName() throws Exception
     {
         StringBuilder nameBuf = new StringBuilder("longString");
@@ -34,7 +34,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
         AsyncReaderWrapper p = asyncForBytes(f, 5, doc, 0);
         final ByteQuadsCanonicalizer symbols1 = ((NonBlockingByteArrayParser) p.parser()).symbolTableForTests();
         assertEquals(0, symbols1.size());
-     
+
         assertEquals(JsonToken.START_OBJECT, p.nextToken());
         assertEquals(JsonToken.FIELD_NAME, p.nextToken());
         // field names are interned:
@@ -90,7 +90,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
     /* Helper methods
     /**********************************************************
      */
-    
+
     private void _testWithName(String name) throws IOException
     {
         SmileFactory f = new SmileFactory();

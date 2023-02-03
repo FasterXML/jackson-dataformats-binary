@@ -24,7 +24,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         _testStreamingBinary(false, false);
         _testStreamingBinary(false, true);
     }
-    
+
     public void testBinaryWithoutLength() throws Exception
     {
         final SmileFactory f = new SmileFactory();
@@ -37,14 +37,14 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         }
         g.close();
     }
-    
+
     public void testStreamingBinaryPartly() throws Exception {
         _testStreamingBinaryPartly(false, false);
         _testStreamingBinaryPartly(false, true);
         _testStreamingBinaryPartly(true, false);
         _testStreamingBinaryPartly(true, true);
     }
-    
+
     private void _testStreamingBinaryPartly(boolean rawBinary, boolean throttle)
             throws Exception
     {
@@ -58,7 +58,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         } else {
             in = new ByteArrayInputStream(INPUT);
         }
-    	
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator g = f.createGenerator(out);
         g.writeStartArray();
@@ -66,23 +66,23 @@ public class GeneratorBinaryTest extends BaseTestForSmile
     	    g.writeEndArray();
     	    g.close();
     	    in.close();
-    	
+
         JsonParser p = f.createParser(out.toByteArray());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         byte[] b = p.getBinaryValue();
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();
-    	
+
         assertEquals(1, b.length);
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods
     /**********************************************************
      */
-    
+
     private final static String TEXT = "Some content so that we can test encoding of base64 data; must"
             +" be long enough include a line wrap or two...";
     private final static String TEXT4 = TEXT + TEXT + TEXT + TEXT;
@@ -91,7 +91,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
     {
         final SmileFactory f = new SmileFactory();
         f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !rawBinary);
-        
+
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
         for (int chunkSize : new int[] { 1, 2, 3, 4, 7, 11, 29, 5000 }) {
             JsonGenerator gen;
@@ -115,7 +115,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
                 in = new ByteArrayInputStream(b2);
             }
             JsonParser p = f.createParser(in);
-            
+
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] b = p.getBinaryValue();

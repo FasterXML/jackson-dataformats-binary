@@ -22,7 +22,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         public Strings() { }
         public Strings(String... v) { values = v; }
     }
-    
+
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
     public void testNextFieldAndText() throws Exception
@@ -38,7 +38,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
 
         assertFalse(p.nextFieldName(new SerializedString("values")));
         assertToken(JsonToken.START_OBJECT, p.getCurrentToken());
-        
+
         assertTrue(p.nextFieldName(new SerializedString("values")));
         assertEquals("values", p.getCurrentName());
 

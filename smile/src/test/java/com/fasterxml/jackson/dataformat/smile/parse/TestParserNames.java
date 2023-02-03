@@ -45,7 +45,7 @@ public class TestParserNames extends BaseTestForSmile
         String newName = "fake"+name;
         p.overrideCurrentName(newName);
         assertEquals(newName, p.getCurrentName());
-        
+
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(13, p.getIntValue());
         // and overridden name should stick, too
