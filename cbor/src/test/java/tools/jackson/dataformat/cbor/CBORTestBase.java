@@ -162,10 +162,20 @@ public abstract class CBORTestBase
                 .createGenerator(ObjectWriteContext.empty(), result);
     }
 
+    // @since 2.15
+    protected CBORGenerator stringrefCborGenerator(ByteArrayOutputStream result)
+        throws IOException
+    {
+        return (CBORGenerator) cborFactoryBuilder()
+                .enable(CBORGenerator.Feature.STRINGREF)
+                .build()
+                .createGenerator(ObjectWriteContext.empty(), result);
+    }
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Additional assertion methods
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected void assertToken(JsonToken expToken, JsonToken actToken)

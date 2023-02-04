@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.cbor;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static tools.jackson.dataformat.cbor.CBORConstants.*;
@@ -7,6 +9,7 @@ import static tools.jackson.dataformat.cbor.CBORConstants.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 import tools.jackson.core.*;
 import tools.jackson.core.base.GeneratorBase;
@@ -75,11 +78,25 @@ public class CBORGenerator extends GeneratorBase
          * incoming String should fail with an exception or silently be output
          * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD) or not; if not,
          * an exception will be thrown to indicate invalid content.
-         *<p>
+         * <p>
          * Default value is {@code false} (for backwards compatibility) meaning that
          * an invalid surrogate will result in exception ({@code StreamWriteException}).
          */
         LENIENT_UTF_ENCODING(false),
+
+        /**
+         * Feature that determines if string references are generated based on the
+         * <a href="http://cbor.schmorp.de/stringref">stringref</a>) extension. This can save
+         * storage space, parsing time, and pool string memory when parsing. Readers of the output
+         * must also support the stringref extension to properly decode the data. Extra overhead may
+         * be added to generation time and memory usage to compute the shared binary and text
+         * strings.
+         * <p>
+         * Default value is {@code false} meaning that the stringref extension will not be used.
+         *
+         * @since 2.15
+         */
+        STRINGREF(false),
         ;
 
         protected final boolean _defaultState;
@@ -169,7 +186,7 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-	/**
+    /**
      * Intermediate buffer in which contents are buffered before being written
      * using {@link #_out}.
      */
@@ -230,6 +247,12 @@ public class CBORGenerator extends GeneratorBase
      */
     protected boolean _bufferRecyclable;
 
+    /**
+     * Table of previously referenced text and binary strings when the STRINGREF feature is used.
+     * @since 2.15
+     */
+    protected HashMap<Object, Integer> _stringRefs;
+
     /*
     /**********************************************************************
     /* Life-cycle
@@ -250,6 +273,7 @@ public class CBORGenerator extends GeneratorBase
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = true;
+        _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
         _outputBuffer = ctxt.allocWriteEncodingBuffer(BYTE_BUFFER_FOR_OUTPUT);
         _outputEnd = _outputBuffer.length;
         _charBuffer = ctxt.allocConcatBuffer();
@@ -288,6 +312,7 @@ public class CBORGenerator extends GeneratorBase
         _bufferRecyclable = bufferRecyclable;
         _outputTail = offset;
         _outputBuffer = outputBuffer;
+        _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
         _outputEnd = _outputBuffer.length;
         _charBuffer = ctxt.allocConcatBuffer();
         _charBufferLength = _charBuffer.length;
@@ -415,6 +440,17 @@ public class CBORGenerator extends GeneratorBase
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
             return this;
+        } else if (_stringRefs != null) {
+            // Check for a string reference.
+            String str = name.getValue();
+            Integer index = _stringRefs.get(str);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                return this;
+            } else if (shouldReferenceString(_stringRefs.size(), len)) {
+                _stringRefs.put(str, _stringRefs.size());
+            }
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
@@ -428,42 +464,6 @@ public class CBORGenerator extends GeneratorBase
         }
         _writeLongNoCheck(id);
         return this;
-    }
-
-    /*
-    /**********************************************************************
-    /* Overridden methods, copying with tag-awareness
-    /**********************************************************************
-     */
-
-    /**
-     * Specialize {@link JsonGenerator#copyCurrentEvent} to handle tags.
-     */
-    @Override
-    public void copyCurrentEvent(JsonParser p) throws JacksonException {
-        maybeCopyTag(p);
-        super.copyCurrentEvent(p);
-    }
-
-    /**
-     * Specialize {@link JsonGenerator#copyCurrentStructure} to handle tags.
-     */
-    @Override
-    public void copyCurrentStructure(JsonParser p) throws JacksonException {
-        maybeCopyTag(p);
-        super.copyCurrentStructure(p);
-    }
-
-    protected void maybeCopyTag(JsonParser p) throws JacksonException {
-        if (p instanceof CBORParser) {
-            if (p.hasCurrentToken()) {
-                final int currentTag = ((CBORParser) p).getCurrentTag();
-
-                if (currentTag != -1) {
-                    writeTag(currentTag);
-                }
-            }
-        }
     }
 
     /*
@@ -750,6 +750,17 @@ public class CBORGenerator extends GeneratorBase
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
             return this;
+        } else if (_stringRefs != null) {
+            // Check for a string reference.
+            String str = sstr.getValue();
+            Integer index = _stringRefs.get(str);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                return this;
+            } else if (shouldReferenceString(_stringRefs.size(), len)) {
+                _stringRefs.put(str, _stringRefs.size());
+            }
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
@@ -760,11 +771,24 @@ public class CBORGenerator extends GeneratorBase
     public JsonGenerator writeString(char[] text, int offset, int len)
             throws JacksonException {
         _verifyValueWrite("write String value");
+        String str = null;
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
             return this;
+        } else if (_stringRefs != null && len <= MAX_LONG_STRING_CHARS) {
+            // Check for a string reference.
+            str = new String(text, offset, len);
+            Integer index = _stringRefs.get(str);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                return this;
+            }
         }
-        _writeString(text, offset, len);
+        int actual = _writeString(text, offset, len);
+        if (str != null && shouldReferenceString(_stringRefs.size(), actual)) {
+            _stringRefs.put(str, _stringRefs.size());
+        }
         return this;
     }
 
@@ -776,6 +800,17 @@ public class CBORGenerator extends GeneratorBase
         if (len == 0) {
             _writeByte(BYTE_EMPTY_STRING);
             return this;
+        } else if (_stringRefs != null) {
+            // Check for a string reference.
+            String str = new String(raw, offset, len, StandardCharsets.UTF_8);
+            Integer index = _stringRefs.get(str);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                return this;
+            } else if (shouldReferenceString(_stringRefs.size(), len)) {
+                _stringRefs.put(str, _stringRefs.size());
+            }
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
         _writeBytes(raw, 0, len);
@@ -845,8 +880,25 @@ public class CBORGenerator extends GeneratorBase
             return writeNull();
         }
         _verifyValueWrite("write Binary value");
+        ByteBuffer bytesRef = null;
+        if (_stringRefs != null) {
+            bytesRef = ByteBuffer.wrap(data, offset, len);
+            Integer index = _stringRefs.get(bytesRef);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                return this;
+            }
+        }
+
         _writeLengthMarker(PREFIX_TYPE_BYTES, len);
         _writeBytes(data, offset, len);
+
+        if (bytesRef != null && shouldReferenceString(_stringRefs.size(), len)) {
+            // Store a copy of the data to ensure that modifications don't corrupt the lookup table.
+            _stringRefs.put(ByteBuffer.wrap(Arrays.copyOfRange(data, offset, len)),
+                    _stringRefs.size());
+        }
         return this;
     }
 
@@ -865,8 +917,33 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write Binary value");
         int missing;
 
-        _writeLengthMarker(PREFIX_TYPE_BYTES, dataLength);
-        missing = _writeBytes(data, dataLength);
+        if (_stringRefs == null) {
+            _writeLengthMarker(PREFIX_TYPE_BYTES, dataLength);
+            missing = _writeBytes(data, dataLength);
+        } else {
+            // When computing string references must have the data available ahead of time.
+            byte[] bytes = new byte[dataLength];
+            try {
+                missing = dataLength - data.read(bytes);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
+            if (missing == 0) {
+                ByteBuffer bytesRef = ByteBuffer.wrap(bytes);
+                Integer index = _stringRefs.get(bytesRef);
+                if (index != null) {
+                    writeTag(TAG_ID_STRINGREF);
+                    _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                } else {
+                    _writeLengthMarker(PREFIX_TYPE_BYTES, dataLength);
+                    _writeBytes(bytes, 0, dataLength);
+                    if (shouldReferenceString(_stringRefs.size(), dataLength)) {
+                        _stringRefs.put(bytesRef, _stringRefs.size());
+                    }
+                }
+            }
+        }
+
         if (missing > 0) {
             _reportError("Too few bytes available: missing " + missing
                     + " bytes (out of " + dataLength + ")");
@@ -1011,8 +1088,23 @@ public class CBORGenerator extends GeneratorBase
         }
         byte[] data = v.toByteArray();
         final int len = data.length;
-        _writeLengthMarker(PREFIX_TYPE_BYTES, len);
-        _writeBytes(data, 0, len);
+        if (_stringRefs == null) {
+            _writeLengthMarker(PREFIX_TYPE_BYTES, len);
+            _writeBytes(data, 0, len);
+        } else {
+            ByteBuffer bytesRef = ByteBuffer.wrap(data);
+            Integer index = _stringRefs.get(bytesRef);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+            } else {
+                _writeLengthMarker(PREFIX_TYPE_BYTES, len);
+                _writeBytes(data, 0, len);
+                if (shouldReferenceString(_stringRefs.size(), len)) {
+                    _stringRefs.put(bytesRef, _stringRefs.size());
+                }
+            }
+        }
     }
 
     @Override
@@ -1258,11 +1350,26 @@ public class CBORGenerator extends GeneratorBase
             _writeByte(BYTE_EMPTY_STRING);
             return;
         }
+
+        // Check if this is a previously referenced string. This will only be done for strings that
+        // have a definite length.
+        if (_stringRefs != null && len <= MAX_LONG_STRING_CHARS) {
+            Integer index = _stringRefs.get(name);
+            if (index != null) {
+                writeTag(TAG_ID_STRINGREF);
+                _writeIntMinimal(PREFIX_TYPE_INT_POS, index);
+                return;
+            }
+        }
+
         // Actually, let's not bother with copy for shortest strings
         if (len <= MAX_SHORT_STRING_CHARS) {
-            _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate
-                                                  // length
+            _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
             int actual = _encode(_outputTail + 1, name, len);
+            // Store reference for later if valid to do so.
+            if (_stringRefs != null && shouldReferenceString(_stringRefs.size(), actual)) {
+                _stringRefs.put(name, _stringRefs.size());
+            }
             final byte[] buf = _outputBuffer;
             int ix = _outputTail;
             if (actual <= MAX_SHORT_STRING_CHARS) { // fits in prefix byte
@@ -1284,7 +1391,13 @@ public class CBORGenerator extends GeneratorBase
                     .max(_charBuffer.length + 32, len)];
         }
         name.getChars(0, len, cbuf, 0);
-        _writeString(cbuf, 0, len);
+        int actual = _writeString(cbuf, 0, len);
+        // Store reference for later if valid to do so. Actual length will be negative if an
+        // indefinite length string was written.
+        if (actual >= 0 && _stringRefs != null &&
+                shouldReferenceString(_stringRefs.size(), actual)) {
+            _stringRefs.put(name, _stringRefs.size());
+        }
     }
 
     protected final void _ensureSpace(int needed) throws JacksonException {
@@ -1293,8 +1406,8 @@ public class CBORGenerator extends GeneratorBase
         }
     }
 
-    protected final void _writeString(char[] text, int offset, int len)
-        throws JacksonException
+    protected final int _writeString(char[] text, int offset, int len)
+            throws JacksonException
     {
         if (len <= MAX_SHORT_STRING_CHARS) { // possibly short string (not necessarily)
             _ensureSpace(MAX_SHORT_STRING_BYTES); // can afford approximate length
@@ -1304,14 +1417,14 @@ public class CBORGenerator extends GeneratorBase
             if (actual <= MAX_SHORT_STRING_CHARS) { // fits in prefix byte
                 buf[ix++] = (byte) (PREFIX_TYPE_TEXT + actual);
                 _outputTail = ix + actual;
-                return;
+                return actual;
             }
             // no, have to move. Blah.
             System.arraycopy(buf, ix + 1, buf, ix + 2, actual);
             buf[ix++] = BYTE_STRING_1BYTE_LEN;
             buf[ix++] = (byte) actual;
             _outputTail = ix + actual;
-            return;
+            return actual;
         }
         if (len <= MAX_MEDIUM_STRING_CHARS) {
             _ensureSpace(MAX_MEDIUM_STRING_BYTES); // short enough, can approximate
@@ -1322,7 +1435,7 @@ public class CBORGenerator extends GeneratorBase
                 buf[ix++] = BYTE_STRING_1BYTE_LEN;
                 buf[ix++] = (byte) actual;
                 _outputTail = ix + actual;
-                return;
+                return actual;
             }
             // no, have to move. Blah.
             System.arraycopy(buf, ix + 2, buf, ix + 3, actual);
@@ -1330,22 +1443,23 @@ public class CBORGenerator extends GeneratorBase
             buf[ix++] = (byte) (actual >> 8);
             buf[ix++] = (byte) actual;
             _outputTail = ix + actual;
-            return;
+            return actual;
         }
         if (len <= MAX_LONG_STRING_CHARS) { // no need to chunk yet
             // otherwise, long but single chunk
             _ensureSpace(MAX_LONG_STRING_BYTES); // calculate accurate length to
                                                  // avoid extra flushing
             int ix = _outputTail;
-            int actual = _encode(ix + 3, text, offset, offset+len);
+            int actual = _encode(ix + 3, text, offset, offset + len);
             final byte[] buf = _outputBuffer;
             buf[ix++] = BYTE_STRING_2BYTE_LEN;
             buf[ix++] = (byte) (actual >> 8);
             buf[ix++] = (byte) actual;
             _outputTail = ix + actual;
-            return;
+            return actual;
         }
         _writeChunkedString(text, offset, len);
+        return -1;
     }
 
     protected final void _writeChunkedString(char[] text, int offset, int len)

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 /**
  * Tests that use the json.org sample document.
@@ -13,6 +14,17 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
     public void testJsonSampleDoc() throws IOException
     {
         byte[] data = cborDoc(SAMPLE_DOC_JSON_SPEC);
+        verifyJsonSpecSampleDoc(cborParser(data), true, true);
+        verifyJsonSpecSampleDoc(cborParser(data), true, false);
+        verifyJsonSpecSampleDoc(cborParser(data), false, false);
+        verifyJsonSpecSampleDoc(cborParser(data), false, true);
+    }
+
+    public void testJsonSampleDocStringref() throws IOException
+    {
+        CBORMapper cborMapper = new CBORMapper(cborFactoryBuilder()
+                .enable(CBORGenerator.Feature.STRINGREF).build());
+        byte[] data = cborDoc(cborMapper, SAMPLE_DOC_JSON_SPEC);
         verifyJsonSpecSampleDoc(cborParser(data), true, true);
         verifyJsonSpecSampleDoc(cborParser(data), true, false);
         verifyJsonSpecSampleDoc(cborParser(data), false, false);

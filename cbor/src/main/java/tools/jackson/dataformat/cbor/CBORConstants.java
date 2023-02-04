@@ -57,6 +57,18 @@ public final class CBORConstants
      */
     public final static int TAG_ID_SELF_DESCRIBE = 55799;
 
+    /**
+     * Tag denoting a namespace for string references in the following value.
+     * @since 2.15
+     */
+    public final static int TAG_ID_STRINGREF_NAMESPACE = 256;
+
+    /**
+     * Tag denoting the next integer value should be an index for a previous string.
+     * @since 2.15
+     */
+    public final static int TAG_ID_STRINGREF = 25;
+
     /*
     /**********************************************************
     /* Actual type and marker bytes
@@ -140,5 +152,14 @@ public final class CBORConstants
     public static boolean hasMajorType(int expType, byte encoded) {
         int actual = (encoded & MASK_MAJOR_TYPE) >> 5;
         return (actual == expType);
+    }
+
+    public static boolean shouldReferenceString(int index, int stringBytes) {
+        // See table in specification: http://cbor.schmorp.de/stringref
+        // Only support 32-bit indices.
+        return (index >= 0 && index <= 23 && stringBytes >= 3) ||
+                (index >= 24 && index <= 255 && stringBytes >= 4) ||
+                (index >= 256 && index <= 65535 && stringBytes >= 5) ||
+                (index >= 65536 && stringBytes >= 7);
     }
 }

@@ -268,6 +268,9 @@ public class CBORFactory
         if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatWriteFeatures)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
+        if (CBORGenerator.Feature.STRINGREF.enabledIn(_formatWriteFeatures)) {
+            gen.writeTag(CBORConstants.TAG_ID_STRINGREF_NAMESPACE);
+        }
         return gen;
     }
 
