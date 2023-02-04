@@ -15,7 +15,8 @@ Active maintainers:
 
 2.15.0 (not yet released)
 
--
+#347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
+ (contributed by Aaron B)
 
 2.14.2 (28-Jan-2023)
 
