@@ -260,3 +260,8 @@ Brian Harrington (brharrington@github)
 
 * Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
  (2.14.1)
+
+Aaron Barany (here-abarany@github)
+
+* Contributed #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
+ (2.15.0)
