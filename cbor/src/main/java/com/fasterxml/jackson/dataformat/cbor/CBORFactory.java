@@ -453,6 +453,9 @@ public class CBORFactory extends JsonFactory
         if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(formatFeat)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
+        if (CBORGenerator.Feature.STRINGREF.enabledIn(formatFeat)) {
+            gen.writeTag(CBORConstants.TAG_ID_STRINGREF_NAMESPACE);
+        }
         return gen;
     }
 

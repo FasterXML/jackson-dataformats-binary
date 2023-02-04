@@ -95,6 +95,16 @@ public abstract class CBORTestBase
                 .createGenerator(result);
     }
 
+    // @since 2.15
+    protected CBORGenerator stringrefCborGenerator(ByteArrayOutputStream result)
+        throws IOException
+    {
+        return cborFactoryBuilder()
+                .enable(CBORGenerator.Feature.STRINGREF)
+                .build()
+                .createGenerator(result);
+    }
+
     /*
     /**********************************************************
     /* Additional assertion methods
