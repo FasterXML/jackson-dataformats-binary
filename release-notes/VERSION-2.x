@@ -10,10 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.14.0 (not yet released)
+Not yet released
 
-#301: (cbor, smile) Missing configuration methods for format-specific
-  parser/generator features
+#354: Missing license file in Maven package for newer versions
+ (reported by Philipp d-S)
 
 2.13.5 (23-Jan-2023)
 2.13.4 (03-Sep-2022)
