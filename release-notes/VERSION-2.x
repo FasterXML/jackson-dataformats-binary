@@ -10,6 +10,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+Not yet released
+
+#354: Missing license file in Maven package for newer versions
+ (reported by Philipp d-S)
+
 2.12.7 (26-May-2022)
 
 No changes since 2.12.6

@@ -203,3 +203,9 @@ ZanderHuang@github:
 * Reported #302: `IllegalArgumentException` in `IonParser.getEmbeddedObject()`
  (2.12.6)
 
+Philipp de Sombre (desombre@github)
+
+* Reported #354: Missing license file in Maven package for newer versions
+ (2.12.8)
+
+
