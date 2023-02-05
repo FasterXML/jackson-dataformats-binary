@@ -13,6 +13,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+Not yet released
+
+#354: Missing license file in Maven package for newer versions
+ (reported by Philipp d-S)
+
 2.14.2 (28-Jan-2023)
 
 No changes since 2.14.1
@@ -42,6 +47,7 @@ No changes since 2.14.1
 #341: (ion) Update to Amazon Ion 1.9.5
  (suggested by Dominic B)
 
+2.13.5 (23-Jan-2023)
 2.13.4 (03-Sep-2022)
 
 No changes since 2.13.3
