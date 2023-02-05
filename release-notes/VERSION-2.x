@@ -47,6 +47,7 @@ No changes since 2.14.1
 #341: (ion) Update to Amazon Ion 1.9.5
  (suggested by Dominic B)
 
+2.13.5 (23-Jan-2023)
 2.13.4 (03-Sep-2022)
 
 No changes since 2.13.3
