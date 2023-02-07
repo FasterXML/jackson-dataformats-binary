@@ -4,4 +4,6 @@ import com.fasterxml.jackson.databind.BeanProperty;
 
 interface TagGenerator {
 	int nextTag(BeanProperty writer);
+
+	int nextTag();
 }
