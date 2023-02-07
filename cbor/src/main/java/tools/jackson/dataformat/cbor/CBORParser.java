@@ -1382,6 +1382,7 @@ public class CBORParser extends ParserBase
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
         _tagValues.clear();
+        _sharedString = null;
         // completed the whole Object?
         if (!_streamReadContext.expectMoreValues()) {
             _streamReadContext = _streamReadContext.getParent();
@@ -1393,12 +1394,27 @@ public class CBORParser extends ParserBase
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
         }
-        final int ch = _inputBuffer[_inputPtr++];
-        final int type = ((ch >> 5) & 0x7);
+        int ch = _inputBuffer[_inputPtr++] & 0xFF;
+        int type = (ch >> 5);
+        int lowBits = ch & 0x1F;
+
+        // One special case: need to consider tag as prefix first:
+        while (type == 6) {
+            _tagValues.add(_decodeTag(lowBits));
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    _eofAsNextToken();
+                    return PropertyNameMatcher.MATCH_ODD_TOKEN;
+                }
+            }
+            ch = _inputBuffer[_inputPtr++] & 0xFF;
+            type = (ch >> 5);
+            lowBits = ch & 0x1F;
+        }
 
         // offline non-String cases, as they are expected to be rare
         if (type != CBORConstants.MAJOR_TYPE_TEXT) {
-            if (ch == -1) { // end-of-object, common
+            if (ch == 0xFF) { // end-of-object, common
                 if (!_streamReadContext.hasExpectedLength()) {
                     _streamReadContext = _streamReadContext.getParent();
                     _currToken = JsonToken.END_OBJECT;
@@ -1409,8 +1425,9 @@ public class CBORParser extends ParserBase
             return _nextNameNonText(matcher, ch);
         }
         final int lenMarker = ch & 0x1F;
-        // also off-line handling of long(er) names
-        if (lenMarker > 23) {
+        // also off-line handling of long(er) names or will create a stringref
+        if (lenMarker > 23 || (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker))) {
             return _nextNameLong(matcher, lenMarker);
         }
         if (lenMarker == 0) {
@@ -1481,6 +1498,11 @@ public class CBORParser extends ParserBase
             name = _decodeChunkedName();
         } else {
             name = _decodeLongerName(actualLen);
+            if (!_stringRefs.empty() &&
+                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), actualLen)) {
+                _stringRefs.peek().stringRefs.add(name);
+                _sharedString = name;
+            }
         }
         _streamReadContext.setCurrentName(name);
         _currToken = JsonToken.PROPERTY_NAME;
