@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import tools.jackson.core.*;
 
 import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORGenerator;
 import tools.jackson.dataformat.cbor.CBORParser;
 import tools.jackson.dataformat.cbor.CBORTestBase;
@@ -151,6 +152,66 @@ public class ArrayGenerationTest extends CBORTestBase
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.LONG, p.getNumberType());
         assertEquals(input[1], p.getLongValue());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
+    }
+
+    public void testMinimalFloatValuesForDouble() throws Exception
+    {
+        // Array with 2 values, one that can be represented as a float without losing precision and
+        // one that cannot.
+        final double[] input = new double[] {
+                1.5, // can be exactly represented as a float
+                0.123456789 // must be kept as double
+        };
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        final ObjectMapper mapperWithMinimalFloats = cborMapper(
+                cborFactoryBuilder().enable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES)
+                    .build());
+
+        CBORGenerator gen = (CBORGenerator) mapperWithMinimalFloats.createGenerator(bytes);
+        assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES));
+        gen.writeArray(input, 0, 2);
+        gen.close();
+
+        // With minimal doubles enabled, should get:
+        byte[] encoded = bytes.toByteArray();
+        assertEquals(15, encoded.length);
+
+        // then verify contents
+
+        CBORParser p = (CBORParser) mapperWithMinimalFloats.createParser(encoded);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.FLOAT, p.getNumberType());
+        assertEquals(input[0], p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(input[1], p.getDoubleValue());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
+
+        // but then also check without minimization
+        bytes = new ByteArrayOutputStream();
+        gen = (CBORGenerator) MAPPER.createGenerator(bytes);
+
+        gen.writeArray(input, 0, 2);
+        gen.close();
+
+        // With default settings, should get:
+        encoded = bytes.toByteArray();
+        assertEquals(19, encoded.length);
+
+        // then verify contents
+
+        p = (CBORParser) MAPPER.createParser(encoded);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(input[0], p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(input[1], p.getDoubleValue());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();
     }

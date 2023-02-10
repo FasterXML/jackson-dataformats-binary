@@ -73,7 +73,11 @@ public abstract class CBORTestBase
     }
 
     protected CBORMapper cborMapper() {
-        return new CBORMapper(cborFactory());
+        return cborMapper(cborFactory());
+    }
+
+    protected CBORMapper cborMapper(CBORFactory f) {
+        return new CBORMapper(f);
     }
 
     protected CBORMapper.Builder cborMapperBuilder() {

@@ -17,6 +17,9 @@ Active maintainers:
 
 #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
  (contributed by Aaron B)
+#356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s as `float`s
+  if safe to do so
+ (contributed by Aaron B)
 
 2.14.2 (28-Jan-2023)
 

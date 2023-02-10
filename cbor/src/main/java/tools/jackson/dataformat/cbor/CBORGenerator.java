@@ -97,6 +97,19 @@ public class CBORGenerator extends GeneratorBase
          * @since 2.15
          */
         STRINGREF(false),
+
+        /**
+         * Feature that determines whether generator should try to write doubles
+         * as floats: if {@code true}, will write a {@code double} as a 4-byte float if no
+         * precision loss will occur; if {@code false}, will always write a {@code double}
+         * as an 8-byte double.
+         * <p>
+         * Default value is {@code false} meaning that doubles will always be written as
+         * 8-byte values.
+         *
+         * @since 2.15
+         */
+        WRITE_MINIMAL_DOUBLES(false),
         ;
 
         protected final boolean _defaultState;
@@ -160,17 +173,19 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    final protected IOContext _ioContext;
+    protected final IOContext _ioContext;
 
-    final protected OutputStream _out;
+    protected final OutputStream _out;
 
     /**
      * Bit flag composed of bits that indicate which
      * {@link CBORGenerator.Feature}s are enabled.
      */
-    protected int _formatFeatures;
+    protected final int _formatFeatures;
 
-    protected boolean _cfgMinimalInts;
+    protected final boolean _cfgMinimalInts;
+
+    protected final boolean _cfgMinimalDoubles;
 
     /*
     /**********************************************************************
@@ -271,6 +286,7 @@ public class CBORGenerator extends GeneratorBase
                 : null;
         _streamWriteContext = CBORWriteContext.createRootContext(dups);
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+        _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = true;
         _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
@@ -308,6 +324,7 @@ public class CBORGenerator extends GeneratorBase
                 : null;
         _streamWriteContext = CBORWriteContext.createRootContext(dups);
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+        _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = bufferRecyclable;
         _outputTail = offset;
@@ -389,10 +406,13 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
+    /*
     public CBORGenerator enable(Feature f) {
         _formatFeatures |= f.getMask();
         if (f == Feature.WRITE_MINIMAL_INTS) {
             _cfgMinimalInts = true;
+        } else if (f == Feature.WRITE_MINIMAL_DOUBLES) {
+            _cfgMinimalDoubles = true;
         }
         return this;
     }
@@ -401,9 +421,12 @@ public class CBORGenerator extends GeneratorBase
         _formatFeatures &= ~f.getMask();
         if (f == Feature.WRITE_MINIMAL_INTS) {
             _cfgMinimalInts = false;
+        } else if (f == Feature.WRITE_MINIMAL_DOUBLES) {
+            _cfgMinimalDoubles = false;
         }
         return this;
     }
+    */
 
     public final boolean isEnabled(Feature f) {
         return (_formatFeatures & f.getMask()) != 0;
@@ -610,8 +633,14 @@ public class CBORGenerator extends GeneratorBase
         // short-cut, do not create child array context etc
         _verifyValueWrite("write int array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
-        for (int i = offset, end = offset+length; i < end; ++i) {
-            _writeDoubleNoCheck(array[i]);
+        if (_cfgMinimalDoubles) {
+            for (int i = offset, end = offset+length; i < end; ++i) {
+                _writeDoubleMinimal(array[i]);
+            }
+        } else {
+            for (int i = offset, end = offset+length; i < end; ++i) {
+                _writeDoubleNoCheck(array[i]);
+            }
         }
         return this;
     }
@@ -705,8 +734,24 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) i;
     }
 
+    private final void _writeFloatNoCheck(float f) throws JacksonException {
+        _ensureRoomForOutput(5);
+        /*
+         * 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more
+         * accurate to use exact representation; and possibly faster. However,
+         * if there are cases where collapsing of NaN was needed (for non-Java
+         * clients), this can be changed
+         */
+        int i = Float.floatToRawIntBits(f);
+        _outputBuffer[_outputTail++] = BYTE_FLOAT32;
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+    }
+
     private final void _writeDoubleNoCheck(double d) throws JacksonException {
-        _ensureRoomForOutput(11);
+        _ensureRoomForOutput(9);
         // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
         // more accurate to use exact representation; and possibly faster.
         // However, if there are cases where collapsing of NaN was needed (for
@@ -724,6 +769,15 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
+    }
+
+    private final void _writeDoubleMinimal(double d) throws JacksonException {
+        float f = (float)d;
+        if (f == d) {
+            _writeFloatNoCheck(f);
+        } else {
+            _writeDoubleNoCheck(d);
+        }
     }
 
     /*
@@ -1110,47 +1164,18 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeNumber(double d) throws JacksonException {
         _verifyValueWrite("write number");
-        _ensureRoomForOutput(11);
-        /*
-         * 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
-         * more accurate to use exact representation; and possibly faster.
-         * However, if there are cases where collapsing of NaN was needed (for
-         * non-Java clients), this can be changed
-         */
-        long l = Double.doubleToRawLongBits(d);
-        _outputBuffer[_outputTail++] = BYTE_FLOAT64;
-
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (_cfgMinimalDoubles) {
+            _writeDoubleMinimal(d);
+        } else {
+            _writeDoubleNoCheck(d);
+        }
         return this;
     }
 
     @Override
     public JsonGenerator writeNumber(float f) throws JacksonException {
-        // Ok, now, we needed token type byte plus 5 data bytes (7 bits each)
-        _ensureRoomForOutput(6);
         _verifyValueWrite("write number");
-
-        /*
-         * 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more
-         * accurate to use exact representation; and possibly faster. However,
-         * if there are cases where collapsing of NaN was needed (for non-Java
-         * clients), this can be changed
-         */
-        int i = Float.floatToRawIntBits(f);
-        _outputBuffer[_outputTail++] = BYTE_FLOAT32;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeFloatNoCheck(f);
         return this;
     }
 

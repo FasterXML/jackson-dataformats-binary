@@ -19,6 +19,10 @@ public class GeneratorSimpleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    private final ObjectMapper MAPPER_NO_MINIMAL_INT = cborMapper(
+            cborFactoryBuilder().disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .build());
+
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
@@ -51,7 +55,8 @@ public class GeneratorSimpleTest extends CBORTestBase
     public void testMinimalIntValues() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CBORGenerator gen = cborGenerator(out);
+
+        CBORGenerator gen = (CBORGenerator) MAPPER.createGenerator(out);
         assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
         gen.writeNumber(17);
         gen.close();
@@ -60,16 +65,16 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         // then without minimal
         out = new ByteArrayOutputStream();
-        gen = cborGenerator(out);
-        gen.disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS);
+        gen = (CBORGenerator) MAPPER_NO_MINIMAL_INT.createGenerator(out);
         gen.writeNumber(17);
         gen.close();
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_INT_POS + 26),
                 (byte) 0, (byte) 0, (byte) 0, (byte) 17);
 
+        // And again with minimal
         out = new ByteArrayOutputStream();
-        gen = cborGenerator(out);
+        gen = (CBORGenerator) MAPPER.createGenerator(out);
         gen.writeNumber((long) Integer.MAX_VALUE);
         gen.close();
         _verifyBytes(out.toByteArray(),
@@ -77,7 +82,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
 
         out = new ByteArrayOutputStream();
-        gen = cborGenerator(out);
+        gen = (CBORGenerator) MAPPER.createGenerator(out);
         gen.writeNumber((long) Integer.MIN_VALUE);
         gen.close();
         _verifyBytes(out.toByteArray(),
