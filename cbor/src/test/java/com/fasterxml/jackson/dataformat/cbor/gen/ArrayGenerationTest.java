@@ -150,6 +150,64 @@ public class ArrayGenerationTest extends CBORTestBase
         p.close();
     }
 
+    public void testMinimalFloatValuesForDouble() throws Exception
+    {
+        // Array with 2 values, one that can be represented as a float without losing precision and
+        // one that cannot.
+        final double[] input = new double[] {
+                1.5, // can be exactly represented as a float
+                0.123456789 // must be kept as double
+        };
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        CBORGenerator gen = FACTORY.createGenerator(bytes);
+        assertFalse(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES));
+        gen.enable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES);
+        gen.writeArray(input, 0, 2);
+        gen.close();
+
+        // With minimal doubles enabled, should get:
+        byte[] encoded = bytes.toByteArray();
+        assertEquals(15, encoded.length);
+
+        // then verify contents
+
+        CBORParser p = FACTORY.createParser(encoded);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.FLOAT, p.getNumberType());
+        assertEquals(input[0], p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(input[1], p.getDoubleValue());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
+
+        // but then also check without minimization
+        bytes = new ByteArrayOutputStream();
+        gen = FACTORY.createGenerator(bytes);
+        gen.disable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES);
+
+        gen.writeArray(input, 0, 2);
+        gen.close();
+
+        // With default settings, should get:
+        encoded = bytes.toByteArray();
+        assertEquals(19, encoded.length);
+
+        // then verify contents
+
+        p = FACTORY.createParser(encoded);
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(input[0], p.getDoubleValue());
+        assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(input[1], p.getDoubleValue());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
+        p.close();
+    }
+
     private void _testIntArray() throws Exception {
         // first special cases of 0, 1 values
         _testIntArray(0, 0, 0);

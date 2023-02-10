@@ -4,6 +4,8 @@ import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
+import org.junit.Assert;
+
 public class CBORMapperTest extends CBORTestBase
 {
     /*
@@ -14,23 +16,31 @@ public class CBORMapperTest extends CBORTestBase
 
     public void testStreamingFeaturesViaMapper() throws Exception
     {
-        final Integer SMALL_INT = Integer.valueOf(3);
-        CBORMapper mapperWithMinimalInts = CBORMapper.builder()
+        final int SMALL_INT = 3;
+        final int BIG_INT = 0x7FFFFFFF;
+        final double LOW_RPECISION_DOUBLE = 1.5;
+        final double HIGH_RPECISION_DOUBLE = 0.123456789;
+        Object[] values = {SMALL_INT, BIG_INT, LOW_RPECISION_DOUBLE, HIGH_RPECISION_DOUBLE};
+        Object[] minimalValues = {
+                SMALL_INT, BIG_INT, (float)LOW_RPECISION_DOUBLE, HIGH_RPECISION_DOUBLE};
+        CBORMapper mapperWithMinimal = CBORMapper.builder()
                 .enable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .enable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES)
                 .build();
-        byte[] encodedMinimal = mapperWithMinimalInts.writeValueAsBytes(SMALL_INT);
-        assertEquals(1, encodedMinimal.length);
+        byte[] encodedMinimal = mapperWithMinimal.writeValueAsBytes(values);
+        assertEquals(21, encodedMinimal.length);
 
-        CBORMapper mapperFullInts = CBORMapper.builder()
+        CBORMapper mapperFull = CBORMapper.builder()
                 .disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .disable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES)
                 .build();
-        byte[] encodedNotMinimal = mapperFullInts.writeValueAsBytes(SMALL_INT);
-        assertEquals(5, encodedNotMinimal.length);
+        byte[] encodedNotMinimal = mapperFull.writeValueAsBytes(values);
+        assertEquals(29, encodedNotMinimal.length);
 
         // And then verify we can read it back, either way
-        assertEquals(SMALL_INT, mapperWithMinimalInts.readValue(encodedMinimal, Object.class));
-        assertEquals(SMALL_INT, mapperWithMinimalInts.readValue(encodedNotMinimal, Object.class));
-        assertEquals(SMALL_INT, mapperFullInts.readValue(encodedMinimal, Object.class));
-        assertEquals(SMALL_INT, mapperFullInts.readValue(encodedNotMinimal, Object.class));
+        Assert.assertArrayEquals(minimalValues, mapperWithMinimal.readValue(encodedMinimal, Object[].class));
+        Assert.assertArrayEquals(values, mapperWithMinimal.readValue(encodedNotMinimal, Object[].class));
+        Assert.assertArrayEquals(minimalValues, mapperFull.readValue(encodedMinimal, Object[].class));
+        Assert.assertArrayEquals(values, mapperFull.readValue(encodedNotMinimal, Object[].class));
     }
 }
