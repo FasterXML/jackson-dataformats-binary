@@ -425,7 +425,7 @@ public class IonFactory extends JsonFactory
     protected String _readAll(Reader r, IOContext ctxt) throws IOException
     {
         // Let's use Jackson's efficient aggregators... better than JDK defaults
-        TextBuffer tb = ctxt.constructTextBuffer();
+        TextBuffer tb = ctxt.constructReadConstrainedTextBuffer();
         char[] buf = tb.emptyAndGetCurrentSegment();
 
         // this gets bit ugly. Blah.

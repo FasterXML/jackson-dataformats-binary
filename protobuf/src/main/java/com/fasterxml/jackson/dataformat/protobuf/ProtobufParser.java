@@ -305,7 +305,7 @@ public class ProtobufParser extends ParserMinimalBase
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-        _textBuffer = ctxt.constructTextBuffer();
+        _textBuffer = ctxt.constructReadConstrainedTextBuffer();
         _parsingContext = ProtobufReadContext.createRootContext();
 
         _tokenInputRow = -1;

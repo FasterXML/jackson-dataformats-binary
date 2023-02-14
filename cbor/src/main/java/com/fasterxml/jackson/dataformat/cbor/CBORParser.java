@@ -525,7 +525,7 @@ public class CBORParser extends ParserMinimalBase
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-        _textBuffer = ctxt.constructTextBuffer();
+        _textBuffer = ctxt.constructReadConstrainedTextBuffer();
         DupDetector dups = JsonParser.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = CBORReadContext.createRootContext(dups);
