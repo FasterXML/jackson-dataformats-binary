@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.*;
 
 public class RoundtripTest extends MapTest
@@ -69,14 +70,8 @@ public class RoundtripTest extends MapTest
         input.id = "123";
         input.name = "John";
 
-        byte[] avroData = null;
-        try {
-            avroData = writ.writeValueAsBytes(input);
-            assertNotNull(avroData);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        byte[] avroData = writ.writeValueAsBytes(input);
+        assertNotNull(avroData);
 
         CharSeqBean output = mapper.reader(CHARSEQ_SCHEMA)
                 .forType(CharSeqBean.class).readValue(avroData);
@@ -84,5 +79,30 @@ public class RoundtripTest extends MapTest
 
         assertEquals(input.id, output.id);
         assertEquals(input.name, output.name);
+    }
+
+    public void testCharSequencesLowStringLimit() throws Exception
+    {
+        AvroFactory factory = AvroFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(1).build())
+                .build();
+        ObjectMapper mapper = new AvroMapper(factory)
+                .enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        ObjectWriter writ = mapper.writer(CHARSEQ_SCHEMA);
+
+        CharSeqBean input = new CharSeqBean();
+        input.id = "123";
+        input.name = "John";
+
+        byte[] avroData = writ.writeValueAsBytes(input);
+        assertNotNull(avroData);
+
+        try {
+            mapper.reader(CHARSEQ_SCHEMA)
+                    .forType(CharSeqBean.class).readValue(avroData);
+            fail("expected IllegalStateException");
+        } catch (IllegalStateException ise) {
+            assertEquals("String length (3) exceeds the maximum length (1)", ise.getMessage());
+        }
     }
 }
