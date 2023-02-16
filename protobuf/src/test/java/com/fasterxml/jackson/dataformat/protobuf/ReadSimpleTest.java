@@ -5,6 +5,8 @@ import java.io.StringWriter;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -356,5 +358,29 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNotNull(result);
         assertEquals(input.x, result.x);
         assertEquals(input.y, result.y);
+    }
+
+    public void testStringArraySimpleLowLimit() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
+        ProtobufFactory protobufFactory = ProtobufFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(1).build())
+                .build();
+        ProtobufMapper protobufMapper = ProtobufMapper.builder(protobufFactory).build();
+        final ObjectWriter w = protobufMapper.writerFor(Strings.class)
+                .with(schema);
+        Strings input = new Strings("Dogs", "like", "Baco\u00F1");
+        byte[] bytes = w.writeValueAsBytes(input);
+        assertNotNull(bytes);
+        assertEquals(20, bytes.length);
+
+        try {
+            protobufMapper.readerFor(Strings.class).with(schema).readValue(bytes);
+            fail("Expected JsonMappingException");
+        } catch (JsonMappingException jme) {
+            String message = jme.getMessage();
+            assertTrue("unexpected message: " + message,
+                    message.startsWith("String length (4) exceeds the maximum length (1)"));
+        }
     }
 }
