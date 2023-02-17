@@ -5,9 +5,13 @@ import java.io.IOException;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonToken;
-
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.databind.ObjectWriter;
+
+import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 public class SimpleStringArrayTest extends AsyncTestBase
 {
@@ -99,6 +103,37 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(input, data, 1, 9000);
         _testStrings(input, data, 1, 3);
         _testStrings(input, data, 1, 1);
+    }
+
+    public void testLongAsciiStringsLowStringLimit() throws IOException
+    {
+        final String[] input = new String[] {
+                // ~100 chars for long(er) content
+                String.format("%s %s %s %s %s %s %s %s %s %s %s %s",
+                        str0to9,str0to9,"...",str0to9,"/", str0to9,
+                        str0to9,"",str0to9,str0to9,"...",str0to9),
+                LONG_ASCII
+        };
+        SmileFactory f = SmileFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(10).build())
+                .enable(SmileParser.Feature.REQUIRE_HEADER)
+                .enable(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .build();
+        SmileMapper mapper = new SmileMapper(f);
+        byte[] data = _stringDoc(mapper.writer(), input);
+
+        AsyncReaderWrapper r = asyncForBytes(mapper, 1, data, 0);
+        // start with "no token"
+        assertNull(r.currentToken());
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        try {
+            r.currentText();
+            fail("expected IllegalStateException");
+        } catch (IllegalStateException ise) {
+            assertEquals("String length (98) exceeds the maximum length (10)", ise.getMessage());
+        }
     }
 
     public void testLongUnicodeStrings() throws IOException

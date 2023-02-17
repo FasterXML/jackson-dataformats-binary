@@ -2,7 +2,9 @@ package tools.jackson.dataformat.cbor.seq;
 
 import java.util.List;
 
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.databind.*;
+import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
 public class ReadTreesTest extends CBORTestBase
@@ -61,4 +63,27 @@ public class ReadTreesTest extends CBORTestBase
     /* not differ)
     /**********************************************************
      */
+
+    public void testReadTreeSequenceLowStringLimit() throws Exception
+    {
+        final byte[] INPUT = concat(
+                cborDoc(a2q("{\"id\":1, \"value\":137 }")),
+                cborDoc(a2q("{\"id\":2, \"value\":256 }\n")),
+                cborDoc(a2q("{\"id\":3, \"value\":-89 }"))
+        );
+
+        CBORFactory cborFactory = cborFactoryBuilder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(1).build())
+                .build();
+        try (MappingIterator<JsonNode> it = cborMapper(cborFactory).readerFor(JsonNode.class)
+                .readValues(INPUT)) {
+            assertTrue(it.hasNextValue());
+            try {
+                it.nextValue();
+                fail("expected IllegalStateException");
+            } catch (IllegalStateException ise) {
+                assertEquals("String length (2) exceeds the maximum length (1)", ise.getMessage());
+            }
+        }
+    }
 }

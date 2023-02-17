@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.avro;
 
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteFeature;
 
 import tools.jackson.databind.*;
@@ -73,13 +74,8 @@ public class RoundtripTest extends MapTest
         input.id = "123";
         input.name = "John";
 
-        byte[] avroData;
-        try {
-            avroData = writ.writeValueAsBytes(input);
-            assertNotNull(avroData);
-        } catch (Exception e) {
-            throw e;
-        }
+        byte[] avroData = writ.writeValueAsBytes(input);
+        assertNotNull(avroData);
 
         CharSeqBean output = mapper.reader(CHARSEQ_SCHEMA)
                 .forType(CharSeqBean.class).readValue(avroData);
@@ -87,5 +83,31 @@ public class RoundtripTest extends MapTest
 
         assertEquals(input.id, output.id);
         assertEquals(input.name, output.name);
+    }
+
+    public void testCharSequencesLowStringLimit() throws Exception
+    {
+        AvroFactory factory = AvroFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(1).build())
+                .build();
+        ObjectMapper mapper = AvroMapper.builder(factory)
+                .enable(StreamWriteFeature.IGNORE_UNKNOWN)
+                .build();
+        ObjectWriter writ = mapper.writer(CHARSEQ_SCHEMA);
+
+        CharSeqBean input = new CharSeqBean();
+        input.id = "123";
+        input.name = "John";
+
+        byte[] avroData = writ.writeValueAsBytes(input);
+        assertNotNull(avroData);
+
+        try {
+            mapper.reader(CHARSEQ_SCHEMA)
+                    .forType(CharSeqBean.class).readValue(avroData);
+            fail("expected IllegalStateException");
+        } catch (IllegalStateException ise) {
+            assertEquals("String length (3) exceeds the maximum length (1)", ise.getMessage());
+        }
     }
 }

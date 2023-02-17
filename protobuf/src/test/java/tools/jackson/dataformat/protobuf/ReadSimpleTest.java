@@ -5,8 +5,9 @@ import java.io.StringWriter;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamReadFeature;
-
+import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
@@ -365,5 +366,29 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNotNull(result);
         assertEquals(input.x, result.x);
         assertEquals(input.y, result.y);
+    }
+
+    public void testStringArraySimpleLowLimit() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
+        ProtobufFactory protobufFactory = ProtobufFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(1).build())
+                .build();
+        ProtobufMapper protobufMapper = ProtobufMapper.builder(protobufFactory).build();
+        final ObjectWriter w = protobufMapper.writerFor(Strings.class)
+                .with(schema);
+        Strings input = new Strings("Dogs", "like", "Baco\u00F1");
+        byte[] bytes = w.writeValueAsBytes(input);
+        assertNotNull(bytes);
+        assertEquals(20, bytes.length);
+
+        try {
+            protobufMapper.readerFor(Strings.class).with(schema).readValue(bytes);
+            fail("Expected DatabindException");
+        } catch (DatabindException jme) {
+            String message = jme.getMessage();
+            assertTrue("unexpected message: " + message,
+                    message.startsWith("String length (4) exceeds the maximum length (1)"));
+        }
     }
 }
