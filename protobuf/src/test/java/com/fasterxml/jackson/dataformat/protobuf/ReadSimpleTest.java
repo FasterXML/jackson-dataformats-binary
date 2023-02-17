@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -376,8 +377,8 @@ public class ReadSimpleTest extends ProtobufTestBase
 
         try {
             protobufMapper.readerFor(Strings.class).with(schema).readValue(bytes);
-            fail("Expected JsonMappingException");
-        } catch (JsonMappingException jme) {
+            fail("Expected DatabindException");
+        } catch (DatabindException jme) {
             String message = jme.getMessage();
             assertTrue("unexpected message: " + message,
                     message.startsWith("String length (4) exceeds the maximum length (1)"));

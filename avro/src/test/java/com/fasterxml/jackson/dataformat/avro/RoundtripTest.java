@@ -51,7 +51,7 @@ public class RoundtripTest extends MapTest
     public void testIssue9() throws Exception
     {
         AvroSchema jsch = getEmployeeSchema();
-        ObjectMapper mapper = new ObjectMapper(new AvroFactory());
+        ObjectMapper mapper = new AvroMapper();
 
         ObjectWriter writ = mapper.writer(jsch);
         ObjectMapper unzip = new ObjectMapper();
@@ -62,8 +62,9 @@ public class RoundtripTest extends MapTest
 
     public void testCharSequences() throws Exception
     {
-        ObjectMapper mapper = new AvroMapper()
-            .enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        ObjectMapper mapper = AvroMapper.builder()
+            .enable(JsonGenerator.Feature.IGNORE_UNKNOWN)
+            .build();
         ObjectWriter writ = mapper.writer(CHARSEQ_SCHEMA);
 
         CharSeqBean input = new CharSeqBean();
@@ -86,8 +87,9 @@ public class RoundtripTest extends MapTest
         AvroFactory factory = AvroFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(1).build())
                 .build();
-        ObjectMapper mapper = new AvroMapper(factory)
-                .enable(JsonGenerator.Feature.IGNORE_UNKNOWN);
+        ObjectMapper mapper = AvroMapper.builder(factory)
+                .enable(JsonGenerator.Feature.IGNORE_UNKNOWN)
+                .build();
         ObjectWriter writ = mapper.writer(CHARSEQ_SCHEMA);
 
         CharSeqBean input = new CharSeqBean();
