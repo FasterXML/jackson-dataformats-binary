@@ -269,7 +269,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = JsonReadContext.createRootContext(dups);
 
-        _textBuffer = ctxt.constructTextBuffer();
+        _textBuffer = ctxt.constructReadConstrainedTextBuffer();
         _smileBufferRecycler = _smileBufferRecycler();
     }
 
