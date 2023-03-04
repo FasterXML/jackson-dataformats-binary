@@ -669,5 +669,5 @@ public abstract class AvroParserImpl
         return JsonToken.VALUE_NUMBER_FLOAT;
     }
 
-    protected abstract JsonToken setString(String str);
+    protected abstract JsonToken setString(String str) throws IOException;
 }

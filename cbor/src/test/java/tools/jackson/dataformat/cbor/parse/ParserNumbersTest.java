@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 import tools.jackson.core.*;
 import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.dataformat.cbor.*;
 import tools.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
@@ -363,9 +364,9 @@ public class ParserNumbersTest extends CBORTestBase
         try (CBORParser parser = cborParser(b)) {
             try {
                 parser.nextToken();
-                fail("expected NumberFormatException");
-            } catch (NumberFormatException nfe) {
-                assertEquals("Number length (4153) exceeds the maximum length (1000)", nfe.getMessage());
+                fail("expected StreamConstraintsException");
+            } catch (StreamConstraintsException e) {
+                assertEquals("Number length (4153) exceeds the maximum length (1000)", e.getMessage());
             }
         }
     }

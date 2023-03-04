@@ -3,7 +3,9 @@ package tools.jackson.dataformat.cbor.seq;
 import java.util.List;
 
 import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.*;
+
 import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
@@ -81,7 +83,7 @@ public class ReadTreesTest extends CBORTestBase
             try {
                 it.nextValue();
                 fail("expected IllegalStateException");
-            } catch (IllegalStateException ise) {
+            } catch (StreamConstraintsException ise) {
                 assertEquals("String length (2) exceeds the maximum length (1)", ise.getMessage());
             }
         }

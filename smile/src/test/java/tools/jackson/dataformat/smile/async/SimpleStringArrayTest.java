@@ -6,6 +6,7 @@ import java.io.IOException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.smile.SmileFactory;
@@ -130,8 +131,8 @@ public class SimpleStringArrayTest extends AsyncTestBase
         assertToken(JsonToken.VALUE_STRING, r.nextToken());
         try {
             r.currentText();
-            fail("expected IllegalStateException");
-        } catch (IllegalStateException ise) {
+            fail("expected StreamConstraintsException");
+        } catch (StreamConstraintsException ise) {
             assertEquals("String length (98) exceeds the maximum length (10)", ise.getMessage());
         }
     }
