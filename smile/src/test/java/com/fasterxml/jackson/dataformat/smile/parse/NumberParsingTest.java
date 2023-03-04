@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
@@ -397,8 +398,8 @@ public class NumberParsingTest
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             try {
                 p.getNumberType();
-                fail("expected NumberFormatException");
-            } catch (NumberFormatException nfe) {
+                fail("expected StreamConstraintsException");
+            } catch (StreamConstraintsException nfe) {
                 assertEquals("Number length (4153) exceeds the maximum length (1000)", nfe.getMessage());
             }
         }

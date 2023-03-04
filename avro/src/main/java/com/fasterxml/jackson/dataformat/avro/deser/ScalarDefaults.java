@@ -53,7 +53,7 @@ public class ScalarDefaults
         }
 
         @Override
-        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) {
+        public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return parser.setString(_defaults);
         }
     }

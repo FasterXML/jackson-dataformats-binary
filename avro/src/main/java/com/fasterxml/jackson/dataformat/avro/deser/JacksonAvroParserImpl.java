@@ -1011,7 +1011,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
      */
 
     @Override
-    protected JsonToken setString(String str) {
+    protected JsonToken setString(String str) throws IOException {
         _textBuffer.resetWithString(str);
         return JsonToken.VALUE_STRING;
     }

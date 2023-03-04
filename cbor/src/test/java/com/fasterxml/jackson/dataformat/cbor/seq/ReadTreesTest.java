@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor.seq;
 import java.util.List;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
@@ -82,7 +83,7 @@ public class ReadTreesTest extends CBORTestBase
             try {
                 it.nextValue();
                 fail("expected IllegalStateException");
-            } catch (IllegalStateException ise) {
+            } catch (StreamConstraintsException ise) {
                 assertEquals("String length (2) exceeds the maximum length (1)", ise.getMessage());
             }
         }

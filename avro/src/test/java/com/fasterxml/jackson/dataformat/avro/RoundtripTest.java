@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.*;
 
 public class RoundtripTest extends MapTest
@@ -102,8 +103,8 @@ public class RoundtripTest extends MapTest
         try {
             mapper.reader(CHARSEQ_SCHEMA)
                     .forType(CharSeqBean.class).readValue(avroData);
-            fail("expected IllegalStateException");
-        } catch (IllegalStateException ise) {
+            fail("expected StreamConstraintsException");
+        } catch (StreamConstraintsException ise) {
             assertEquals("String length (3) exceeds the maximum length (1)", ise.getMessage());
         }
     }
