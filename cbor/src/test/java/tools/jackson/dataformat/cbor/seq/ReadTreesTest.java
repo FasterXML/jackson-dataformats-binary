@@ -82,7 +82,7 @@ public class ReadTreesTest extends CBORTestBase
             assertTrue(it.hasNextValue());
             try {
                 it.nextValue();
-                fail("expected IllegalStateException");
+                fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException ise) {
                 assertEquals("String length (2) exceeds the maximum length (1)", ise.getMessage());
             }
