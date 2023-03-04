@@ -376,7 +376,7 @@ public class CBORParser extends ParserMinimalBase
             return _stringRefs.empty();
         }
 
-        private Stack<StringRefList> _stringRefs = _stringRefs = new Stack<>();
+        private Stack<StringRefList> _stringRefs = new Stack<>();
         private int _nestedDepth = 0;
     }
 
