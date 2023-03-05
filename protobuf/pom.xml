@@ -13,7 +13,10 @@
   </parent>
   <artifactId>jackson-dataformat-protobuf</artifactId>
   <name>Jackson dataformat: Protobuf</name>
-  <packaging>jar</packaging>
+  <!-- 04-Mar-2023, tatu: not sure why, but use of "jar" does not work
+         with Shade plugin inclusion, somehow
+    -->
+  <packaging>bundle</packaging>
   <description>Support for reading and writing protobuf-encoded data via Jackson
 abstractions.
   </description>
