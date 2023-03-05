@@ -13,7 +13,10 @@
   </parent>
   <artifactId>jackson-dataformat-protobuf</artifactId>
   <name>Jackson dataformat: protobuf</name>
-  <packaging>jar</packaging>
+  <!-- 04-Mar-2023, tatu: not sure why, but use of "jar" does not work
+         with Shade plugin inclusion, somehow
+    -->
+  <packaging>bundle</packaging>
   <description>Support for reading and writing protobuf-encoded data via Jackson
 abstractions.
   </description>
@@ -77,7 +80,6 @@ abstractions.
         <!--  We will shade proto-parser, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${version.plugin.shade}</version>
         <executions>
           <execution>
             <phase>package</phase>
