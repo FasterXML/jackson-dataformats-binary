@@ -931,7 +931,7 @@ public class CBORParser extends ParserMinimalBase
                 if (!_tagValues.isEmpty()) {
                     return _handleTaggedArray(_tagValues, len);
                 }
-                _streamReadContext = _streamReadContext.createChildArrayContext(len);
+                createChildArrayContext(len);
             }
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -940,7 +940,7 @@ public class CBORParser extends ParserMinimalBase
             _currToken = JsonToken.START_OBJECT;
             {
                 int len = _decodeExplicitLength(lowBits);
-                _streamReadContext = _streamReadContext.createChildObjectContext(len);
+                createChildObjectContext(len);
             }
             return _currToken;
 
@@ -1128,7 +1128,7 @@ public class CBORParser extends ParserMinimalBase
         // For simplicity, let's create matching array context -- in perfect
         // world that wouldn't be necessarily, but in this one there are
         // some constraints that make it necessary
-        _streamReadContext = _streamReadContext.createChildArrayContext(len);
+        createChildArrayContext(len);
 
         // BigDecimal is the only thing we know for sure
         if (!tags.contains(CBORConstants.TAG_DECIMAL_FRACTION)) {
@@ -1711,7 +1711,7 @@ public class CBORParser extends ParserMinimalBase
             _currToken = JsonToken.START_ARRAY;
             {
                 int len = _decodeExplicitLength(lowBits);
-                _streamReadContext = _streamReadContext.createChildArrayContext(len);
+                createChildArrayContext(len);
             }
             return null;
 
@@ -1719,7 +1719,7 @@ public class CBORParser extends ParserMinimalBase
             _currToken = JsonToken.START_OBJECT;
             {
                 int len = _decodeExplicitLength(lowBits);
-                _streamReadContext = _streamReadContext.createChildObjectContext(len);
+                createChildObjectContext(len);
             }
             return null;
 
@@ -4059,5 +4059,15 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         // 03-Dec-2017, tatu: [dataformats-binary#124] Careful with overflow
         BigInteger unsignedBase = _bigPositive(l);
         return unsignedBase.negate().subtract(BigInteger.ONE);
+    }
+
+    private void createChildArrayContext(final int len) throws IOException {
+        _streamReadContext = _streamReadContext.createChildArrayContext(len);
+        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+    }
+
+    private void createChildObjectContext(final int len) throws IOException {
+        _streamReadContext = _streamReadContext.createChildObjectContext(len);
+        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 }

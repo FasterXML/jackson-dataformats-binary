@@ -23,6 +23,9 @@ public abstract class CBORTestBase
     protected CBORParser cborParser(ByteArrayOutputStream bytes) throws IOException {
         return cborParser(bytes.toByteArray());
     }
+    protected CBORParser cborParser(CBORFactory cborFactory, ByteArrayOutputStream bytes) throws IOException {
+        return cborParser(cborFactory, bytes.toByteArray());
+    }
 
     protected CBORParser cborParser(byte[] input) throws IOException {
         return cborParser(cborFactory(), input);
