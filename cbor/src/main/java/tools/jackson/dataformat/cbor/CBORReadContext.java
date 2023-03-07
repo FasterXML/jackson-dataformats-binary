@@ -57,6 +57,7 @@ public final class CBORReadContext
         _type = type;
         _expEntryCount = expEntryCount;
         _index = -1;
+        _nestingDepth = parent == null ? 0 : parent._nestingDepth + 1;
     }
 
     protected void reset(int type, int expEntryCount)
