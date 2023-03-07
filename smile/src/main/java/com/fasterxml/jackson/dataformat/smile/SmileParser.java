@@ -529,7 +529,7 @@ versionBits));
                 }
                 return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
             case 0x18: // START_ARRAY
-                _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
+                createChildArrayContext(-1, -1);
                 return (_currToken = JsonToken.START_ARRAY);
             case 0x19: // END_ARRAY
                 if (!_streamReadContext.inArray()) {
@@ -538,7 +538,7 @@ versionBits));
                 _streamReadContext = _streamReadContext.getParent();
                 return (_currToken = JsonToken.END_ARRAY);
             case 0x1A: // START_OBJECT
-                _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
+                createChildObjectContext(-1, -1);
                 return (_currToken = JsonToken.START_OBJECT);
             case 0x1B: // not used in this mode; would be END_OBJECT
                 _reportError("Invalid type marker byte 0xFB in value mode (would be END_OBJECT in key mode)");
@@ -3115,6 +3115,16 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         }
         close();
         return (_currToken = null);
+    }
+
+    private void createChildArrayContext(final int lineNr, final int colNr) throws IOException {
+        _streamReadContext = _streamReadContext.createChildArrayContext(lineNr, colNr);
+        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+    }
+
+    private void createChildObjectContext(final int lineNr, final int colNr) throws IOException {
+        _streamReadContext = _streamReadContext.createChildObjectContext(lineNr, colNr);
+        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 }
 
