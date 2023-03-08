@@ -2549,68 +2549,72 @@ public class CBORParser extends ParserMinimalBase
         // Let's actually do a tight loop for ASCII first:
         final int end = inPtr + len;
 
-        int i;
-        while ((i = inputBuf[inPtr]) >= 0) {
-            outBuf[outPtr++] = (char) i;
-            if (++inPtr == end) {
-                String str = _textBuffer.setCurrentAndReturn(outPtr);
-                if (stringRefs != null) {
-                    stringRefs.stringRefs.add(str);
-                    _sharedString = str;
+        try {
+            int i;
+            while ((i = inputBuf[inPtr]) >= 0) {
+                outBuf[outPtr++] = (char) i;
+                if (++inPtr == end) {
+                    String str = _textBuffer.setCurrentAndReturn(outPtr);
+                    if (stringRefs != null) {
+                        stringRefs.stringRefs.add(str);
+                        _sharedString = str;
+                    }
+                    return str;
                 }
-                return str;
             }
-        }
-        final int[] codes = UTF8_UNIT_CODES;
-        do {
-            i = inputBuf[inPtr++] & 0xFF;
-            switch (codes[i]) {
-            case 0:
-                break;
-            case 1:
-                {
-                    final int c2 = inputBuf[inPtr++];
-                    if ((c2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(c2 & 0xFF, inPtr);
+            final int[] codes = UTF8_UNIT_CODES;
+            do {
+                i = inputBuf[inPtr++] & 0xFF;
+                switch (codes[i]) {
+                    case 0:
+                        break;
+                    case 1:
+                    {
+                        final int c2 = inputBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x1F) << 6) | (c2 & 0x3F);
                     }
-                    i = ((i & 0x1F) << 6) | (c2 & 0x3F);
+                    break;
+                    case 2:
+                    {
+                        final int c2 = inputBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inputBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    }
+                    break;
+                    case 3:
+                        // 30-Jan-2021, tatu: TODO - validate these too?
+                        i = ((i & 0x07) << 18)
+                                | ((inputBuf[inPtr++] & 0x3F) << 12)
+                                | ((inputBuf[inPtr++] & 0x3F) << 6)
+                                | (inputBuf[inPtr++] & 0x3F);
+                        // note: this is the codepoint value; need to split, too
+                        i -= 0x10000;
+                        outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                        i = 0xDC00 | (i & 0x3FF);
+                        break;
+                    default: // invalid
+                        _reportInvalidInitial(i);
                 }
-                break;
-            case 2:
-                {
-                    final int c2 = inputBuf[inPtr++];
-                    if ((c2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(c2 & 0xFF, inPtr);
-                    }
-                    final int c3 = inputBuf[inPtr++];
-                    if ((c3 & 0xC0) != 0x080) {
-                        _reportInvalidOther(c3 & 0xFF, inPtr);
-                    }
-                    i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                }
-                break;
-            case 3:
-                // 30-Jan-2021, tatu: TODO - validate these too?
-                i = ((i & 0x07) << 18)
-                    | ((inputBuf[inPtr++] & 0x3F) << 12)
-                    | ((inputBuf[inPtr++] & 0x3F) << 6)
-                    | (inputBuf[inPtr++] & 0x3F);
-                // note: this is the codepoint value; need to split, too
-                i -= 0x10000;
-                outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
-                i = 0xDC00 | (i & 0x3FF);
-                break;
-            default: // invalid
-                _reportInvalidInitial(i);
+                outBuf[outPtr++] = (char) i;
+            } while (inPtr < end);
+            String str = _textBuffer.setCurrentAndReturn(outPtr);
+            if (stringRefs != null) {
+                stringRefs.stringRefs.add(str);
+                _sharedString = str;
             }
-            outBuf[outPtr++] = (char) i;
-        } while (inPtr < end);
-        String str = _textBuffer.setCurrentAndReturn(outPtr);
-        if (stringRefs != null) {
-            stringRefs.stringRefs.add(str);
-            _sharedString = str;
+            return str;
+        } catch (RuntimeException re) {
+            throw new IOException("Failed to parse CBOR input", re);
         }
-        return str;
     }
 
     private final String _finishLongText(int len) throws IOException
