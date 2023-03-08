@@ -22,15 +22,18 @@ abstract class RecordReader extends AvroStructureReader
     protected final int _count;
 
     protected RecordReader(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId)
+            throws IOException
     {
         super(parent, TYPE_OBJECT, typeId);
         _fieldReaders = fieldReaders;
         _parser = parser;
         _count = fieldReaders.length;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
     @Override
-    public abstract RecordReader newReader(AvroReadContext parent, AvroParserImpl parser);
+    public abstract RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException;
 
     @Override
     public String getCurrentName() { return _currentName; }
@@ -92,16 +95,17 @@ abstract class RecordReader extends AvroStructureReader
     public final static class Std
         extends RecordReader
     {
-        public Std(AvroFieldReader[] fieldReaders, String typeId) {
+        public Std(AvroFieldReader[] fieldReaders, String typeId) throws IOException {
             super(null, fieldReaders, null, typeId);
         }
 
-        public Std(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId) {
+        public Std(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId)
+                throws IOException {
             super(parent, fieldReaders, parser, typeId);
         }
 
         @Override
-        public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+        public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return new Std(parent, _fieldReaders, parser, _typeId);
         }
 
@@ -166,15 +170,16 @@ abstract class RecordReader extends AvroStructureReader
     public final static class Resolving
         extends RecordReader
     {
-        public Resolving(AvroFieldReader[] fieldReaders, String typeId) {
+        public Resolving(AvroFieldReader[] fieldReaders, String typeId) throws IOException {
             super(null, fieldReaders, null, typeId);
         }
-        public Resolving(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId) {
+        public Resolving(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId)
+                throws IOException {
             super(parent, fieldReaders, parser, typeId);
         }
 
         @Override
-        public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+        public RecordReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return new Resolving(parent, _fieldReaders, parser, _typeId);
         }
 

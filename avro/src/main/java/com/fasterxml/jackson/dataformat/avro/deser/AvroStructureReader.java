@@ -47,9 +47,9 @@ public abstract class AvroStructureReader
 
     /**
      * Method for creating actual instance to use for reading (initial
-     * instance constructed is so-called blue print).
+     * instance constructed is so-called blueprint).
      */
-    public abstract AvroStructureReader newReader(AvroReadContext parent, AvroParserImpl parser);
+    public abstract AvroStructureReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException;
 
     @Override
     public abstract JsonToken nextToken() throws IOException;

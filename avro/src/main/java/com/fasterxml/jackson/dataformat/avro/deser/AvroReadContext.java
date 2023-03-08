@@ -31,6 +31,7 @@ public abstract class AvroReadContext extends JsonStreamContext
         super();
         _parent = parent;
         _typeId = typeId;
+        _nestingDepth = parent == null ? 0 : parent._nestingDepth + 1;
     }
 
     /*

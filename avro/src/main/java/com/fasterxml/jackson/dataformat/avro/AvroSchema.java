@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -158,7 +159,7 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
     /**********************************************************************
      */
 
-    public AvroStructureReader getReader()
+    public AvroStructureReader getReader() throws IOException
     {
         AvroStructureReader r = _reader.get();
         if (r == null) {
@@ -168,7 +169,7 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
         return r;
     }
 
-    protected AvroStructureReader _constructReader() {
+    protected AvroStructureReader _constructReader() throws IOException {
         return AvroReaderFactory.createFor(_writerSchema);
     }
 
@@ -222,7 +223,7 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
         }
 
         @Override
-        protected AvroStructureReader _constructReader() {
+        protected AvroStructureReader _constructReader() throws IOException {
             return AvroReaderFactory.createFor(_writerSchema, _readerSchema);
         }
 

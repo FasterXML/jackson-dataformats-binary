@@ -20,17 +20,22 @@ public abstract class ArrayReader extends AvroStructureReader
     protected String _currentName;
 
     protected ArrayReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String elementTypeId)
+            throws IOException
     {
         super(parent, TYPE_ARRAY, typeId);
         _parser = parser;
         _elementTypeId = elementTypeId;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
-    public static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId) {
+    public static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId)
+            throws IOException {
         return new Scalar(reader, typeId, elementTypeId);
     }
 
-    public static ArrayReader construct(AvroStructureReader reader, String typeId, String elementTypeId) {
+    public static ArrayReader construct(AvroStructureReader reader, String typeId, String elementTypeId)
+            throws IOException{
         return new NonScalar(reader, typeId, elementTypeId);
     }
 
@@ -75,18 +80,18 @@ public abstract class ArrayReader extends AvroStructureReader
     {
         private final ScalarDecoder _elementReader;
 
-        public Scalar(ScalarDecoder reader, String typeId, String elementTypeId) {
+        public Scalar(ScalarDecoder reader, String typeId, String elementTypeId) throws IOException {
             this(null, reader, null, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId());
         }
 
         private Scalar(AvroReadContext parent, ScalarDecoder reader,
-                AvroParserImpl parser, String typeId, String elementTypeId) {
+                AvroParserImpl parser, String typeId, String elementTypeId) throws IOException {
             super(parent, parser, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId());
             _elementReader = reader;
         }
 
         @Override
-        public Scalar newReader(AvroReadContext parent, AvroParserImpl parser) {
+        public Scalar newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return new Scalar(parent, _elementReader, parser, _typeId, _elementTypeId);
         }
 
@@ -142,20 +147,19 @@ public abstract class ArrayReader extends AvroStructureReader
     {
         private final AvroStructureReader _elementReader;
 
-        public NonScalar(AvroStructureReader reader, String typeId, String elementTypeId) {
+        public NonScalar(AvroStructureReader reader, String typeId, String elementTypeId) throws IOException {
             this(null, reader, null, typeId, elementTypeId);
         }
 
         private NonScalar(AvroReadContext parent,
                 AvroStructureReader reader,
-                AvroParserImpl parser, String typeId, String elementTypeId) {
+                AvroParserImpl parser, String typeId, String elementTypeId) throws IOException {
             super(parent, parser, typeId, elementTypeId);
             _elementReader = reader;
         }
 
         @Override
-        public NonScalar newReader(AvroReadContext parent,
-                AvroParserImpl parser) {
+        public NonScalar newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return new NonScalar(parent, _elementReader, parser, _typeId, _elementTypeId);
         }
 
