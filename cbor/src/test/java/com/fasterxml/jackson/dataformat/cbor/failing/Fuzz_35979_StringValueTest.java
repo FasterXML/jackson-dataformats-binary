@@ -14,6 +14,11 @@ public class Fuzz_35979_StringValueTest extends CBORTestBase
 
     // [dataformats-binary#316]
     // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=35979
+    //
+    // Problem is decoding of a 256 byte malformed String, last byte of
+    // which indicates multi-byte UTF-8 character; decoder does not verify
+    // there are more bytes available. If at end of buffer, hits ArrayIndex;
+    // otherwise would return corrupt character with data past content end
     public void testInvalidTextValueWithBrokenUTF8() throws Exception
     {
         final byte[] input = readResource("/data/clusterfuzz-cbor-35979.cbor");
