@@ -30,8 +30,16 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         SmileFactory jf = new SmileFactory();
         JsonGenerator jgen = jf.createGenerator(out, JsonEncoding.UTF8);
         jgen.writeStartArray();
+        int counter = 0;
         for (byte[] str : strings) {
-            jgen.writeRawUTF8String(str, 0, str.length);
+            // 09-Mar-2023, tatu: Let's use offset...
+            if ((++counter & 3) == 0) {
+                byte[] tmp = new byte[str.length + 4];
+                System.arraycopy(str, 0, tmp, 2, str.length);
+                jgen.writeRawUTF8String(tmp, 2, str.length);
+            } else {
+                jgen.writeRawUTF8String(str, 0, str.length);
+            }
         }
         jgen.writeEndArray();
         jgen.close();

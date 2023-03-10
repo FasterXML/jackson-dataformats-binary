@@ -21,6 +21,13 @@ Active maintainers:
   if safe to do so
  (contributed by Aaron B)
 
+Not yet released
+
+#354: (all) Missing license file in Maven package for newer versions
+ (reported by Philipp d-S)
+#366: `CBORGenerator.writeRawUTF8String()` seems to ignore offset
+ (reported by Nik E)
+
 2.14.2 (28-Jan-2023)
 
 No changes since 2.14.1

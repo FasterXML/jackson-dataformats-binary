@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -284,6 +285,14 @@ public abstract class CBORTestBase
         return '"'+str+'"';
     }
 
+    protected static byte[] utf8Bytes(String str) {
+        return str.getBytes(StandardCharsets.UTF_8);
+    }
+
+    protected static String utf8String(ByteArrayOutputStream bytes) {
+        return new String(bytes.toByteArray(), StandardCharsets.UTF_8);
+    }
+    
     protected static byte[] concat(byte[] ... chunks)
     {
         int len = 0;
