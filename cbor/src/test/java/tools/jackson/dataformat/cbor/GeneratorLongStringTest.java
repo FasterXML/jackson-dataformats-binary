@@ -44,10 +44,22 @@ public class GeneratorLongStringTest extends CBORTestBase
         for (int i = 0, len = strings.size(); i < len; ++i) {
             String str = strings.get(i);
             // let's mix in alternative representaton as well
-            if ((++fuzz % 7) == 1) {
-                byte[] b = str.getBytes("UTF-8");
-                gen.writeRawUTF8String(b, 0, b.length);
-            } else {
+            switch (++fuzz % 7) {
+            case 1:
+                {
+                    byte[] b = utf8Bytes(str);
+                    gen.writeRawUTF8String(b, 0, b.length);
+                }
+                break;
+            case 2:
+                {
+                    byte[] b = utf8Bytes(str);
+                    byte[] tmp = new byte[b.length + 4];
+                    System.arraycopy(b, 0, tmp, 2, b.length);
+                    gen.writeRawUTF8String(tmp, 2, b.length);
+                }
+                break;
+            default:
                 char[] ch = str.toCharArray();
                 gen.writeString(ch, 0, ch.length);
             }

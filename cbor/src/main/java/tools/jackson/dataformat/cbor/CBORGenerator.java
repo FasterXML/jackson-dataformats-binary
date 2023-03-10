@@ -867,7 +867,7 @@ public class CBORGenerator extends GeneratorBase
             }
         }
         _writeLengthMarker(PREFIX_TYPE_TEXT, len);
-        _writeBytes(raw, 0, len);
+        _writeBytes(raw, offset, len);
         return this;
     }
 

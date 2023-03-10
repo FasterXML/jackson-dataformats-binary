@@ -29,8 +29,16 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream(16000);
         JsonGenerator g = MAPPER.createGenerator(out, JsonEncoding.UTF8);
         g.writeStartArray();
+        int counter = 0;
         for (byte[] str : strings) {
-            g.writeRawUTF8String(str, 0, str.length);
+            // 09-Mar-2023, tatu: Let's use offset...
+            if ((++counter & 3) == 0) {
+                byte[] tmp = new byte[str.length + 4];
+                System.arraycopy(str, 0, tmp, 2, str.length);
+                g.writeRawUTF8String(tmp, 2, str.length);
+            } else {
+                g.writeRawUTF8String(str, 0, str.length);
+            }
         }
         g.writeEndArray();
         g.close();
