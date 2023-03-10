@@ -265,3 +265,9 @@ Brian Harrington (brharrington@github)
 
 * Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
  (2.14.1)
+
+Nik Everett (nik9000@github)
+
+* Reported #366: `CBORGenerator.writeRawUTF8String()` seems to ignore offset
+ (2.14.3)
+
