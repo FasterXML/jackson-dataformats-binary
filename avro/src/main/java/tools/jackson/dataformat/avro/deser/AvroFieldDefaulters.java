@@ -10,7 +10,8 @@ import tools.jackson.databind.JsonNode;
 public class AvroFieldDefaulters
 {
     public static AvroFieldReader createDefaulter(String name,
-            JsonNode defaultAsNode) {
+            JsonNode defaultAsNode)
+    {
         switch (defaultAsNode.asToken()) {
         case VALUE_TRUE:
             return new ScalarDefaults.BooleanDefaults(name, true);

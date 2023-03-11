@@ -25,6 +25,9 @@ public abstract class ArrayReader extends AvroStructureReader
         super(parent, TYPE_ARRAY, typeId);
         _parser = parser;
         _elementTypeId = elementTypeId;
+        if (parser != null) {
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
+        }
     }
 
     public static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId) {
@@ -161,8 +164,7 @@ public abstract class ArrayReader extends AvroStructureReader
         }
         
         @Override
-        public NonScalar newReader(AvroReadContext parent,
-                AvroParserImpl parser) {
+        public NonScalar newReader(AvroReadContext parent, AvroParserImpl parser) {
             return new NonScalar(parent, _elementReader, parser, _typeId, _elementTypeId);
         }
 

@@ -21,15 +21,18 @@ public abstract class MapReader extends AvroStructureReader
 
     protected int _state;
 
-    protected MapReader(String typeId, String keyTypeId, String valueTypeId) {
+    protected MapReader(String typeId, String keyTypeId, String valueTypeId){
         this(null, null, typeId, keyTypeId, valueTypeId);
     }
 
-    protected MapReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String keyTypeId, String valueTypeId) {
+    protected MapReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String keyTypeId, String valueTypeId)
+    {
         super(parent, TYPE_OBJECT, typeId);
         _parser = parser;
         _keyTypeId = keyTypeId;
         _valueTypeId = valueTypeId;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
     public static MapReader construct(ScalarDecoder dec, String typeId, String keyTypeId, String valueTypeId) {
@@ -119,7 +122,8 @@ public abstract class MapReader extends AvroStructureReader
         }
 
         protected Scalar(AvroReadContext parent,
-                AvroParserImpl parser, ScalarDecoder sd, String typeId, String keyTypeId, String valueTypeId) {
+                AvroParserImpl parser, ScalarDecoder sd, String typeId, String keyTypeId, String valueTypeId)
+        {
             super(parent, parser, typeId, keyTypeId, valueTypeId != null ? valueTypeId : sd.getTypeId());
             _scalarDecoder = sd;
         }
@@ -196,7 +200,8 @@ public abstract class MapReader extends AvroStructureReader
         }
 
         public NonScalar(AvroReadContext parent,
-                AvroParserImpl parser, AvroStructureReader reader, String typeId, String keyTypeId) {
+                AvroParserImpl parser, AvroStructureReader reader, String typeId, String keyTypeId)
+        {
             super(parent, parser, typeId, keyTypeId, null);
             _structureReader = reader;
         }

@@ -14,16 +14,16 @@ import tools.jackson.core.JsonToken;
 public class StructDefaults
 {
     public static AvroFieldReader createObjectDefaults(String name,
-            List<AvroFieldReader> fieldReaders) {
-
+            List<AvroFieldReader> fieldReaders)
+    {
         return AvroFieldReader.construct(name, new ObjectDefaults(
                 null, null,
                 fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()])));
     }
 
     public static AvroFieldReader createArrayDefaults(String name,
-            List<AvroFieldReader> fieldReaders) {
-
+            List<AvroFieldReader> fieldReaders)
+    {
         return AvroFieldReader.construct(name, new ArrayDefaults(
                 null, null,
                 fieldReaders.toArray(new AvroFieldReader[fieldReaders.size()])));

@@ -191,7 +191,7 @@ public abstract class AvroParserImpl
     public abstract String nextTextValue() throws JacksonException;
 
     @Override
-    public final void _initSchema(AvroSchema schema) {
+    public final void _initSchema(AvroSchema schema) throws JacksonException {
         _avroContext = new RootReader(this, schema.getReader());
     }
 

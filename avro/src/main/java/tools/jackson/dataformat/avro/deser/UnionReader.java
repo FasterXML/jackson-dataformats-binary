@@ -24,6 +24,8 @@ final class UnionReader extends AvroStructureReader
         super(parent, TYPE_ROOT, null);
         _memberReaders = memberReaders;
         _parser = parser;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
     @Override

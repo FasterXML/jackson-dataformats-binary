@@ -28,6 +28,8 @@ abstract class RecordReader extends AvroStructureReader
         _fieldReaders = fieldReaders;
         _parser = parser;
         _count = fieldReaders.length;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
     @Override
@@ -104,7 +106,8 @@ abstract class RecordReader extends AvroStructureReader
             super(null, fieldReaders, null, typeId);
         }
 
-        public Std(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId) {
+        public Std(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId)
+        {
             super(parent, fieldReaders, parser, typeId);
         }
 
@@ -199,7 +202,9 @@ abstract class RecordReader extends AvroStructureReader
         public Resolving(AvroFieldReader[] fieldReaders, String typeId) {
             super(null, fieldReaders, null, typeId);
         }
-        public Resolving(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId) {
+
+        public Resolving(AvroReadContext parent, AvroFieldReader[] fieldReaders, AvroParserImpl parser, String typeId)
+        {
             super(parent, fieldReaders, parser, typeId);
         }
 
