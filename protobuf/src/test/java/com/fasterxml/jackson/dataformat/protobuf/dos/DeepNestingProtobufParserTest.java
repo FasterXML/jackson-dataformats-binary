@@ -15,14 +15,6 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
  */
 public class DeepNestingProtobufParserTest extends ProtobufTestBase
 {
-    protected final String NODE_SCHEMA_JSON = "{\n"
-            +"\"type\": \"record\",\n"
-            +"\"name\": \"Node\",\n"
-            +"\"fields\": [\n"
-            +" {\"name\": \"id\", \"type\": \"int\"},\n"
-            +" {\"name\": \"next\", \"type\": [\"Node\",\"null\"]}\n"
-            +"]}";
-
     static class Node {
         public int id;
         public Node next;
