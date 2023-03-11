@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AvroJavaTimeModule_schemaCreationTest {
 
     @Parameter(0)
-    public Class testClass;
+    public Class<?> testClass;
 
     @Parameter(1)
     public Schema.Type expectedType;
@@ -36,7 +36,7 @@ public class AvroJavaTimeModule_schemaCreationTest {
     public String expectedLogicalType;
 
     @Parameters(name = "With {0}")
-    public static Collection testData() {
+    public static Collection<?> testData() {
         return Arrays.asList(new Object[][]{
                 // Java type    | expected Avro type    | expected logicalType
                 {Instant.class, Schema.Type.LONG, "timestamp-millis"},
