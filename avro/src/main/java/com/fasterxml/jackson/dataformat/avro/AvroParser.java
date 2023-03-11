@@ -222,7 +222,7 @@ public abstract class AvroParser extends ParserBase
             // 27-Jan-2016, tatu: Crap, can't expose exception directly.
             try {
                 _initSchema((AvroSchema) schema);
-            } catch (JsonProcessingException e) {
+            } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
         } else {
@@ -231,7 +231,7 @@ public abstract class AvroParser extends ParserBase
         }
     }
 
-    protected abstract void _initSchema(AvroSchema schema) throws JsonProcessingException;
+    protected abstract void _initSchema(AvroSchema schema) throws IOException;
 
     @Override
     public boolean canReadTypeId() {

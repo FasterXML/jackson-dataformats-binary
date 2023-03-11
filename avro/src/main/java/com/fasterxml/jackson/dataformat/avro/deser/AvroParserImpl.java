@@ -135,12 +135,8 @@ public abstract class AvroParserImpl
     public abstract String nextTextValue() throws IOException;
 
     @Override
-    public final void _initSchema(AvroSchema schema) throws JsonProcessingException {
-        try {
-            _avroContext = new RootReader(this, schema.getReader());
-        } catch (IOException e) {
-            throw new AvroStreamException("Problem parsing Avro Schema", e);
-        }
+    public final void _initSchema(AvroSchema schema) throws IOException {
+        _avroContext = new RootReader(this, schema.getReader());
     }
 
     /**
