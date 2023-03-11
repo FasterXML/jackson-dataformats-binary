@@ -584,6 +584,7 @@ public class ProtobufParser extends ParserMinimalBase
 
         case STATE_ARRAY_START:
             _parsingContext = _parsingContext.createChildArrayContext(_currentField);
+            streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
             _state = STATE_ARRAY_VALUE_FIRST;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -601,6 +602,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _currentEndOffset = newEnd;
             _parsingContext = _parsingContext.createChildArrayContext(_currentField, newEnd);
+            streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
             _state = STATE_ARRAY_VALUE_PACKED;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -921,6 +923,7 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentEndOffset = newEnd;
                 _state = STATE_NESTED_KEY;
                 _parsingContext = _parsingContext.createChildObjectContext(msg, _currentField, newEnd);
+                streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
                 _currentField = msg.firstField();
             }
             return JsonToken.START_OBJECT;

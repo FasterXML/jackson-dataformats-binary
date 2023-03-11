@@ -64,6 +64,7 @@ public final class ProtobufReadContext
         _type = type;
         _endOffset = endOffset;
         _index = -1;
+        _nestingDepth = parent == null ? 0 : parent._nestingDepth + 1;
     }
 
     protected void reset(ProtobufMessage messageType, int type, int endOffset)
