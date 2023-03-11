@@ -20,27 +20,31 @@ public abstract class MapReader extends AvroStructureReader
 
     protected int _state;
 
-    protected MapReader(String typeId, String keyTypeId, String valueTypeId) {
+    protected MapReader(String typeId, String keyTypeId, String valueTypeId) throws IOException {
         this(null, null, typeId, keyTypeId, valueTypeId);
     }
 
-    protected MapReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String keyTypeId, String valueTypeId) {
+    protected MapReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String keyTypeId, String valueTypeId)
+            throws IOException {
         super(parent, TYPE_OBJECT, typeId);
         _parser = parser;
         _keyTypeId = keyTypeId;
         _valueTypeId = valueTypeId;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
-    public static MapReader construct(ScalarDecoder dec, String typeId, String keyTypeId, String valueTypeId) {
+    public static MapReader construct(ScalarDecoder dec, String typeId, String keyTypeId, String valueTypeId)
+            throws IOException {
         return new Scalar(dec, typeId, keyTypeId, valueTypeId);
     }
 
-    public static MapReader construct(AvroStructureReader reader, String typeId, String keyTypeId) {
+    public static MapReader construct(AvroStructureReader reader, String typeId, String keyTypeId) throws IOException {
         return new NonScalar(reader, typeId, keyTypeId);
     }
 
     @Override
-    public abstract MapReader newReader(AvroReadContext parent, AvroParserImpl parser);
+    public abstract MapReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException;
 
     @Override
     public String getCurrentName() { return _currentName; }
@@ -99,13 +103,15 @@ public abstract class MapReader extends AvroStructureReader
         private final ScalarDecoder _scalarDecoder;
         protected long _count;
 
-        protected Scalar(ScalarDecoder dec, String typeId, String keyTypeId, String valueTypeId) {
+        protected Scalar(ScalarDecoder dec, String typeId, String keyTypeId, String valueTypeId)
+                throws IOException {
             super(typeId, keyTypeId, valueTypeId != null ? valueTypeId : dec.getTypeId());
             _scalarDecoder = dec;
         }
 
         protected Scalar(AvroReadContext parent,
-                AvroParserImpl parser, ScalarDecoder sd, String typeId, String keyTypeId, String valueTypeId) {
+                AvroParserImpl parser, ScalarDecoder sd, String typeId, String keyTypeId, String valueTypeId)
+                throws IOException {
             super(parent, parser, typeId, keyTypeId, valueTypeId != null ? valueTypeId : sd.getTypeId());
             _scalarDecoder = sd;
         }
@@ -116,7 +122,7 @@ public abstract class MapReader extends AvroStructureReader
         }
 
         @Override
-        public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+        public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return new Scalar(parent, parser, _scalarDecoder, _typeId, _keyTypeId, _valueTypeId);
         }
 
@@ -176,13 +182,14 @@ public abstract class MapReader extends AvroStructureReader
         private final AvroStructureReader _structureReader;
         protected long _count;
 
-        public NonScalar(AvroStructureReader reader, String typeId, String keyTypeId) {
+        public NonScalar(AvroStructureReader reader, String typeId, String keyTypeId) throws IOException {
             super(typeId, keyTypeId, null);
             _structureReader = reader;
         }
 
         public NonScalar(AvroReadContext parent,
-                AvroParserImpl parser, AvroStructureReader reader, String typeId, String keyTypeId) {
+                AvroParserImpl parser, AvroStructureReader reader, String typeId, String keyTypeId)
+                throws IOException {
             super(parent, parser, typeId, keyTypeId, null);
             _structureReader = reader;
         }
@@ -193,7 +200,7 @@ public abstract class MapReader extends AvroStructureReader
         }
 
         @Override
-        public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+        public MapReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
             return new NonScalar(parent, parser, _structureReader, _typeId, _keyTypeId);
         }
 

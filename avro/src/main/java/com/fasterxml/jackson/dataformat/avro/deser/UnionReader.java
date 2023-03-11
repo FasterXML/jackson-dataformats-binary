@@ -13,20 +13,22 @@ final class UnionReader extends AvroStructureReader
     private final AvroStructureReader[] _memberReaders;
     private final AvroParserImpl _parser;
 
-    public UnionReader(AvroStructureReader[] memberReaders) {
+    public UnionReader(AvroStructureReader[] memberReaders) throws IOException {
         this(null, memberReaders, null);
     }
 
     private UnionReader(AvroReadContext parent,
-            AvroStructureReader[] memberReaders, AvroParserImpl parser)
+            AvroStructureReader[] memberReaders, AvroParserImpl parser) throws IOException
     {
         super(parent, TYPE_ROOT, null);
         _memberReaders = memberReaders;
         _parser = parser;
+        if (parser != null)
+            parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
     @Override
-    public UnionReader newReader(AvroReadContext parent, AvroParserImpl parser) {
+    public UnionReader newReader(AvroReadContext parent, AvroParserImpl parser) throws IOException {
         return new UnionReader(parent, _memberReaders, parser);
     }
 

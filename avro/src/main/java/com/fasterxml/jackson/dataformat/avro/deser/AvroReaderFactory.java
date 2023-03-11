@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.apache.avro.Schema;
@@ -35,12 +36,12 @@ public abstract class AvroReaderFactory
     /**********************************************************************
      */
 
-    public static AvroStructureReader createFor(Schema schema) {
+    public static AvroStructureReader createFor(Schema schema) throws IOException {
         return new NonResolving().createReader(schema);
     }
 
     public static AvroStructureReader createFor(Schema writerSchema,
-            Schema readerSchema) {
+            Schema readerSchema) throws IOException {
         return new Resolving().createReader(writerSchema, readerSchema);
     }
 
@@ -116,7 +117,7 @@ public abstract class AvroReaderFactory
      * only using specific schema that was used to encoded data
      * ("writer schema").
      */
-    public AvroStructureReader createReader(Schema schema)
+    public AvroStructureReader createReader(Schema schema) throws IOException
     {
         AvroStructureReader reader = _knownReaders.get(AvroSchemaHelper.getFullName(schema));
         if (reader != null) {
@@ -137,7 +138,7 @@ public abstract class AvroReaderFactory
         }
     }
 
-    protected AvroStructureReader createArrayReader(Schema schema)
+    protected AvroStructureReader createArrayReader(Schema schema) throws IOException
     {
         Schema elementType = schema.getElementType();
         ScalarDecoder scalar = createScalarValueDecoder(elementType);
@@ -157,7 +158,7 @@ public abstract class AvroReaderFactory
         return ArrayReader.construct(createReader(elementType), typeId, elementTypeId);
     }
 
-    protected AvroStructureReader createMapReader(Schema schema)
+    protected AvroStructureReader createMapReader(Schema schema) throws IOException
     {
         Schema elementType = schema.getValueType();
         ScalarDecoder dec = createScalarValueDecoder(elementType);
@@ -174,7 +175,7 @@ public abstract class AvroReaderFactory
         return MapReader.construct(createReader(elementType), typeId, keyTypeId);
     }
 
-    protected AvroStructureReader createRecordReader(Schema schema)
+    protected AvroStructureReader createRecordReader(Schema schema) throws IOException
     {
         final List<Schema.Field> fields = schema.getFields();
         AvroFieldReader[] fieldReaders = new AvroFieldReader[fields.size()];
@@ -187,7 +188,7 @@ public abstract class AvroReaderFactory
         return reader;
     }
 
-    protected AvroStructureReader createUnionReader(Schema schema)
+    protected AvroStructureReader createUnionReader(Schema schema) throws IOException
     {
         final List<Schema> types = schema.getTypes();
         AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
@@ -198,7 +199,7 @@ public abstract class AvroReaderFactory
         return new UnionReader(typeReaders);
     }
 
-    protected AvroFieldReader createFieldReader(Schema.Field field) {
+    protected AvroFieldReader createFieldReader(Schema.Field field) throws IOException {
         final String name = field.name();
         final Schema type = field.schema();
 
@@ -238,6 +239,7 @@ public abstract class AvroReaderFactory
          * Method for creating a reader instance for specified type.
          */
         public AvroStructureReader createReader(Schema writerSchema, Schema readerSchema)
+            throws IOException
         {
             // NOTE: it is assumed writer-schema has been modified with aliases so
             //   that the names are same, so we could use either name:
@@ -263,6 +265,7 @@ public abstract class AvroReaderFactory
         }
 
         protected AvroStructureReader createArrayReader(Schema writerSchema, Schema readerSchema)
+                throws IOException
         {
             readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
             Schema writerElementType = writerSchema.getElementType();
@@ -276,7 +279,7 @@ public abstract class AvroReaderFactory
             return ArrayReader.construct(createReader(writerElementType, readerSchema.getElementType()), typeId, elementTypeId);
         }
 
-        protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema)
+        protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema) throws IOException
         {
             readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
             Schema writerElementType = writerSchema.getValueType();
@@ -291,6 +294,7 @@ public abstract class AvroReaderFactory
         }
 
         protected AvroStructureReader createRecordReader(Schema writerSchema, Schema readerSchema)
+                throws IOException
         {
             readerSchema = _verifyMatchingStructure(readerSchema, writerSchema);
 
@@ -354,6 +358,7 @@ public abstract class AvroReaderFactory
         }
 
         protected AvroStructureReader createUnionReader(Schema writerSchema, Schema readerSchema)
+                throws IOException
         {
             final List<Schema> types = writerSchema.getTypes();
             AvroStructureReader[] typeReaders = new AvroStructureReader[types.size()];
@@ -368,7 +373,7 @@ public abstract class AvroReaderFactory
         }
 
         protected AvroFieldReader createFieldReader(String name,
-                Schema writerSchema, Schema readerSchema)
+                Schema writerSchema, Schema readerSchema) throws IOException
         {
             ScalarDecoder scalar = createScalarValueDecoder(writerSchema);
             if (scalar != null) {
@@ -379,7 +384,7 @@ public abstract class AvroReaderFactory
         }
 
         protected AvroFieldReader createFieldSkipper(String name,
-                Schema writerSchema)
+                Schema writerSchema) throws IOException
         {
             ScalarDecoder scalar = createScalarValueDecoder(writerSchema);
             if (scalar != null) {

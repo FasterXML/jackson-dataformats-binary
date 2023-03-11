@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonToken;
 public class StructDefaults
 {
     public static AvroFieldReader createObjectDefaults(String name,
-            List<AvroFieldReader> fieldReaders) {
+            List<AvroFieldReader> fieldReaders) throws IOException {
 
         return AvroFieldReader.construct(name, new ObjectDefaults(
                 null, null,
@@ -22,7 +22,7 @@ public class StructDefaults
     }
 
     public static AvroFieldReader createArrayDefaults(String name,
-            List<AvroFieldReader> fieldReaders) {
+            List<AvroFieldReader> fieldReaders) throws IOException {
 
         return AvroFieldReader.construct(name, new ArrayDefaults(
                 null, null,
@@ -34,7 +34,7 @@ public class StructDefaults
         protected final AvroFieldReader[] _fieldReaders;
 
         public ObjectDefaults(AvroReadContext parent,
-                AvroParserImpl parser, AvroFieldReader[] fieldReaders)
+                AvroParserImpl parser, AvroFieldReader[] fieldReaders) throws IOException
         {
             super(parent, parser, null, null, null);
             _fieldReaders = fieldReaders;
@@ -47,7 +47,7 @@ public class StructDefaults
 
         @Override
         public MapReader newReader(AvroReadContext parent,
-                AvroParserImpl parser) {
+                AvroParserImpl parser) throws IOException {
             return new ObjectDefaults(parent, parser, _fieldReaders);
         }
 
@@ -90,7 +90,7 @@ public class StructDefaults
         protected final AvroFieldReader[] _valueReaders;
 
         public ArrayDefaults(AvroReadContext parent,
-                AvroParserImpl parser, AvroFieldReader[] valueReaders)
+                AvroParserImpl parser, AvroFieldReader[] valueReaders) throws IOException
         {
             super(parent, parser, null, null);
             _valueReaders = valueReaders;
@@ -98,7 +98,7 @@ public class StructDefaults
 
         @Override
         public ArrayReader newReader(AvroReadContext parent,
-                AvroParserImpl parser) {
+                AvroParserImpl parser) throws IOException {
             return new ArrayDefaults(parent, parser, _valueReaders);
         }
 

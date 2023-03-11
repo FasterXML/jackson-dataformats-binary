@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
+import java.io.IOException;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class AvroFieldDefaulters
 {
     public static AvroFieldReader createDefaulter(String name,
-            JsonNode defaultAsNode) {
+            JsonNode defaultAsNode) throws IOException {
         switch (defaultAsNode.asToken()) {
         case VALUE_TRUE:
             return new ScalarDefaults.BooleanDefaults(name, true);
