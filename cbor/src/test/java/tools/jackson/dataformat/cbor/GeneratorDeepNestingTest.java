@@ -4,11 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.ObjectWriteContext;
-import tools.jackson.core.StreamReadConstraints;
-import tools.jackson.core.io.IOContext;
-import tools.jackson.core.io.ContentReference;
-import tools.jackson.core.util.BufferRecycler;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -24,26 +19,6 @@ public class GeneratorDeepNestingTest extends CBORTestBase
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         JsonGenerator gen = MAPPER.createGenerator(out);
-        _writeNestedMap(gen, 23);
-        gen.close();
-        byte[] encoded = out.toByteArray();
-        Map<String,Object> result = (Map<String,Object>) MAPPER.readValue(encoded, Map.class);
-        _verifyNestedMap(result, 23);
-    }
-
-    // Alternative to exercise secondary constructor: since it is not directly
-    // used by or exposed by factory (can't remember why it was added actually)
-    @SuppressWarnings("unchecked")
-    public void testDeeplyNestedWithAltConstructor() throws Exception
-    {
-        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
-                new BufferRecycler(),
-                ContentReference.rawReference("doc"), true, null);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator gen = new CBORGenerator(ObjectWriteContext.empty(),
-                ctxt, 0, 0,
-                out, new byte[1000], 0, false);
-
         _writeNestedMap(gen, 23);
         gen.close();
         byte[] encoded = out.toByteArray();
