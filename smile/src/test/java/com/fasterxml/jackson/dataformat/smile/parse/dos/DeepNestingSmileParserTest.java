@@ -1,12 +1,12 @@
-package com.fasterxml.jackson.dataformat.cbor.parse.dos;
+package com.fasterxml.jackson.dataformat.smile.parse.dos;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,14 +14,14 @@ import java.io.IOException;
 /**
  * Unit tests for deeply nested JSON
  */
-public class DeepNestingParserTest extends CBORTestBase
+public class DeepNestingSmileParserTest extends BaseTestForSmile
 {
     public void testDeeplyNestedObjects() throws Exception
     {
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        try (JsonParser jp = cborParser(out)) {
+        try (JsonParser jp = _smileParser(out.toByteArray())) {
             JsonToken jt;
             while ((jt = jp.nextToken()) != null) {
 
@@ -37,10 +37,10 @@ public class DeepNestingParserTest extends CBORTestBase
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        CBORFactory cborFactory = CBORFactory.builder()
+        SmileFactory smileFactory = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = cborParser(cborFactory, out)) {
+        try (JsonParser jp = _smileParser(smileFactory, out.toByteArray())) {
             JsonToken jt;
             while ((jt = jp.nextToken()) != null) {
 
@@ -53,7 +53,7 @@ public class DeepNestingParserTest extends CBORTestBase
         final int depth = 750;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        try (JsonParser jp = cborParser(out)) {
+        try (JsonParser jp = _smileParser(out.toByteArray())) {
             JsonToken jt;
             while ((jt = jp.nextToken()) != null) {
 
@@ -69,10 +69,10 @@ public class DeepNestingParserTest extends CBORTestBase
         final int depth = 750;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        CBORFactory cborFactory = CBORFactory.builder()
+        SmileFactory smileFactory = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = cborParser(cborFactory, out)) {
+        try (JsonParser jp = _smileParser(smileFactory, out.toByteArray())) {
             JsonToken jt;
             while ((jt = jp.nextToken()) != null) {
 
@@ -81,7 +81,7 @@ public class DeepNestingParserTest extends CBORTestBase
     }
 
     private void genDeepDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = cborGenerator(out)) {
+        try (JsonGenerator gen = smileGenerator(out, true)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeFieldName("a");
@@ -94,7 +94,7 @@ public class DeepNestingParserTest extends CBORTestBase
     }
 
     private void genDeepArrayDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = cborGenerator(out)) {
+        try (JsonGenerator gen = smileGenerator(out, true)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeFieldName("a");
