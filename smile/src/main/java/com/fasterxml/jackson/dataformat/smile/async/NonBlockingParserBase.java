@@ -529,7 +529,7 @@ public abstract class NonBlockingParserBase
         return _symbols.findName(_quadBuffer, offset);
     }
 
-    protected final String _addDecodedToSymbols(int len, String name)
+    protected final String _addDecodedToSymbols(int len, String name) throws IOException
     {
         if (len < 5) {
             return _symbols.addName(name, _quad1);
