@@ -39,17 +39,16 @@ public class DeepNestingAvroParserTest extends AvroTestBase
 
     private final AvroMapper DEFAULT_MAPPER = newMapper();
 
-    // Unlike default depth of 1000 for other formats, use lower (500) here
+    // Unlike default depth of 1000 for other formats, use lower (400) here
     // because we cannot actually generate 1000 levels due to Avro codec's
     // limitations
+    private final AvroMapper MAPPER_400;
 
-    // ... and from command-line, even lower, for Jackson 3.x?
-    private final AvroMapper MAPPER_500;
     {
         AvroFactory f = AvroFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(400).build())
                 .build();
-        MAPPER_500 = new AvroMapper(f);
+        MAPPER_400 = new AvroMapper(f);
     }
 
     private final AvroSchema NODE_SCHEMA;
@@ -73,7 +72,7 @@ public class DeepNestingAvroParserTest extends AvroTestBase
     public void testDeeplyNestedObjectsLowLimits() throws Exception
     {
         byte[] doc = genDeepDoc(410);
-        try (JsonParser jp = avroParser(MAPPER_500, doc)) {
+        try (JsonParser jp = avroParser(MAPPER_400, doc)) {
             while (jp.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
