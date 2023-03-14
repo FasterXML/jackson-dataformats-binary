@@ -183,20 +183,4 @@ public class ProtobufSchemaLoader
         }
         return sb.toString();
     }
-
-    public void _throw(Exception e0) throws IOException
-    {
-        // First, peel it
-        Throwable e = e0;
-        while (e.getCause() != null) {
-            e = e.getCause();
-        }
-        if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
-        }
-        if (e instanceof IOException){
-            throw (IOException) e;
-        }
-        throw new IOException(e.getMessage(), e);
-    }
 }
