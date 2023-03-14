@@ -38,12 +38,16 @@ public class DeepNestingAvroParserTest extends AvroTestBase
     }
 
     private final AvroMapper DEFAULT_MAPPER = newMapper();
-    private final AvroMapper MAPPER_200;
+
+    // Unlike default depth of 1000 for other formats, use lower (500) here
+    // because we cannot actually generate 1000 levels due to Avro codec's
+    // limitations
+    private final AvroMapper MAPPER_500;
     {
         AvroFactory f = AvroFactory.builder()
-                .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(200).build())
+                .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(500).build())
                 .build();
-        MAPPER_200 = new AvroMapper(f);
+        MAPPER_500 = new AvroMapper(f);
     }
 
     private final AvroSchema NODE_SCHEMA;
@@ -58,7 +62,7 @@ public class DeepNestingAvroParserTest extends AvroTestBase
     
     public void testDeeplyNestedObjectsHighLimits() throws Exception
     {
-        byte[] doc = genDeepDoc(300);
+        byte[] doc = genDeepDoc(550);
         try (JsonParser jp = avroParser(DEFAULT_MAPPER, doc)) {
             while (jp.nextToken() != null) { }
         }
@@ -66,12 +70,12 @@ public class DeepNestingAvroParserTest extends AvroTestBase
 
     public void testDeeplyNestedObjectsLowLimits() throws Exception
     {
-        byte[] doc = genDeepDoc(300);
-        try (JsonParser jp = avroParser(MAPPER_200, doc)) {
+        byte[] doc = genDeepDoc(550);
+        try (JsonParser jp = avroParser(MAPPER_500, doc)) {
             while (jp.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertEquals("Depth (201) exceeds the maximum allowed nesting depth (200)",
+            assertEquals("Depth (501) exceeds the maximum allowed nesting depth (500)",
                     e.getMessage());
         }
     }
