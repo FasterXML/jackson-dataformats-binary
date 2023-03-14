@@ -16,7 +16,7 @@ import tools.jackson.dataformat.avro.AvroTestBase;
 /**
  * Unit tests for deeply nested Documents
  */
-public class DeepNestingParserTest extends AvroTestBase
+public class DeepNestingAvroParserTest extends AvroTestBase
 {
     protected final String NODE_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"

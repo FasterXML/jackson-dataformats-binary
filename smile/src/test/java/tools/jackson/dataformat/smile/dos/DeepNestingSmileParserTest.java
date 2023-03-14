@@ -12,7 +12,7 @@ import tools.jackson.dataformat.smile.databind.SmileMapper;
 /**
  * Unit tests for deeply nested JSON
  */
-public class DeepNestingParserTest extends BaseTestForSmile
+public class DeepNestingSmileParserTest extends BaseTestForSmile
 {
     SmileMapper DEFAULT_MAPPER = newSmileMapper();
 

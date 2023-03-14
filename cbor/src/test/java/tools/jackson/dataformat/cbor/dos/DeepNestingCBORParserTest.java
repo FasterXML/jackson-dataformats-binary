@@ -12,7 +12,7 @@ import tools.jackson.dataformat.cbor.CBORTestBase;
 /**
  * Unit tests for deeply nested JSON
  */
-public class DeepNestingParserTest extends CBORTestBase
+public class DeepNestingCBORParserTest extends CBORTestBase
 {
     public void testDeeplyNestedObjects() throws Exception
     {
