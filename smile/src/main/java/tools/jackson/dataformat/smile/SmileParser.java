@@ -1860,7 +1860,7 @@ _typeAsInt);
         return newShared;
     }
 
-    private final String _addDecodedToSymbols(int len, String name)
+    private final String _addDecodedToSymbols(int len, String name) throws IOException
     {
         if (len < 5) {
             return _symbols.addName(name, _quad1);
