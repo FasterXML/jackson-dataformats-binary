@@ -5,6 +5,7 @@ Modules:
   jackson-dataformat-ion (since 2.9)
   jackson-dataformat-protobuf
   jackson-dataformat-smile
+
 Active maintainers:
   * Tyler Gregg (@tgregg): maintainer of jackson-dataformat-ion
   * Tatu Saloranta (@cowtowncoder): author or co-author of all other modules
@@ -13,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.0 (not yet released)
+2.15.0-rc1 (18-Mar-2023)
 
 #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
  (contributed by Aaron B)
