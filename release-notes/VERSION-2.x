@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.0-rc1 (18-Mar-2023)
+2.15.0-rc2 (28-Mar-2023)
 
 #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
  (contributed by Aaron B)
@@ -22,7 +22,7 @@ Active maintainers:
   if safe to do so
  (contributed by Aaron B)
 
-Not yet released
+2.14.3 (Not yet released)
 
 #354: (all) Missing license file in Maven package for newer versions
  (reported by Philipp d-S)
