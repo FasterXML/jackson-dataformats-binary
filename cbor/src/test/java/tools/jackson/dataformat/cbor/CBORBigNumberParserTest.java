@@ -43,25 +43,51 @@ public class CBORBigNumberParserTest extends CBORTestBase
 
     private void _testBigDecimal(BigDecimal expValue) throws Exception
     {
+        _testBigDecimalInArray(expValue);
+        _testBigDecimalInObject(expValue);
+    }
+
+    private void _testBigDecimalInArray(BigDecimal expValue) throws Exception
+    {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
-        final CBORGenerator sourceGen = cborGenerator(sourceBytes);
-        sourceGen.writeStartObject();
-        sourceGen.writeName("a");
-        sourceGen.writeNumber(expValue);
-        sourceGen.writeEndObject();
-        sourceGen.close();
+        try (final CBORGenerator sourceGen = cborGenerator(sourceBytes)) {
+            sourceGen.writeStartArray();
+            sourceGen.writeNumber(expValue);
+            sourceGen.writeEndArray();
+        }
 
         byte[] b = sourceBytes.toByteArray();
 
         // but verify that the original content can be parsed
-        CBORParser parser = cborParser(b);
-        assertToken(JsonToken.START_OBJECT, parser.nextToken());
-        assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
-        assertEquals("a", parser.currentName());
-        assertToken(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
-        assertEquals(expValue, parser.getDecimalValue());
-        assertToken(JsonToken.END_OBJECT, parser.nextToken());
-        parser.close();
+        try (CBORParser parser = cborParser(b)) {
+            assertToken(JsonToken.START_ARRAY, parser.nextToken());
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+            assertEquals(expValue, parser.getDecimalValue());
+            assertToken(JsonToken.END_ARRAY, parser.nextToken());
+        }
+    }
+
+    private void _testBigDecimalInObject(BigDecimal expValue) throws Exception
+    {
+        final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
+        try (final CBORGenerator sourceGen = cborGenerator(sourceBytes)) {
+            sourceGen.writeStartObject();
+            sourceGen.writeName("a");
+            sourceGen.writeNumber(expValue);
+            sourceGen.writeEndObject();
+        }
+
+        byte[] b = sourceBytes.toByteArray();
+
+        // but verify that the original content can be parsed
+        try (CBORParser parser = cborParser(b)) {
+            assertToken(JsonToken.START_OBJECT, parser.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
+            assertEquals("a", parser.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
+            assertEquals(expValue, parser.getDecimalValue());
+            assertToken(JsonToken.END_OBJECT, parser.nextToken());
+        }
     }
 
     public void testBigInteger() throws Exception
@@ -77,26 +103,26 @@ public class CBORBigNumberParserTest extends CBORTestBase
     private void _testBigInteger(BigInteger expValue) throws Exception
     {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
-        final CBORGenerator sourceGen = cborGenerator(sourceBytes);
-        sourceGen.writeNumber(expValue);
-        sourceGen.close();
-
-        // but verify that the original content can be parsed
-        CBORParser parser = cborParser(sourceBytes.toByteArray());
-        assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
-        assertEquals(expValue, parser.getBigIntegerValue());
-
-        // also, coercion to long at least
-        long expL = expValue.longValue();
-        assertEquals(expL, parser.getLongValue());
-
-        // and int, if feasible
-        if (expL >= Integer.MIN_VALUE && expL <= Integer.MAX_VALUE) {
-            assertEquals((int) expL, parser.getIntValue());
+        try (CBORGenerator sourceGen = cborGenerator(sourceBytes)) {
+            sourceGen.writeNumber(expValue);
+            sourceGen.close();
         }
 
-        assertNull(parser.nextToken());
-        parser.close();
-
+        // but verify that the original content can be parsed
+        try (CBORParser parser = cborParser(sourceBytes.toByteArray())) {
+            assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
+            assertEquals(expValue, parser.getBigIntegerValue());
+    
+            // also, coercion to long at least
+            long expL = expValue.longValue();
+            assertEquals(expL, parser.getLongValue());
+    
+            // and int, if feasible
+            if (expL >= Integer.MIN_VALUE && expL <= Integer.MAX_VALUE) {
+                assertEquals((int) expL, parser.getIntValue());
+            }
+    
+            assertNull(parser.nextToken());
+        }
     }
 }
