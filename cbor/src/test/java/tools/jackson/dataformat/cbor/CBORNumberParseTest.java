@@ -12,7 +12,7 @@ import tools.jackson.dataformat.cbor.*;
 import tools.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 @SuppressWarnings("resource")
-public class ParserNumbersTest extends CBORTestBase
+public class CBORNumberParseTest extends CBORTestBase
 {
     public void testIntValues() throws Exception
     {
