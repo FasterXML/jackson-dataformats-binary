@@ -14,6 +14,8 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+#373: (cbor) Remove optimized `CBORParser.nextTextValue()` implementation
+
 2.15.0-rc2 (28-Mar-2023)
 
 #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
