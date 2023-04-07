@@ -10,7 +10,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 // tests for [cbor#17]
-public class BigNumbersTest extends CBORTestBase
+public class CBORBigNumberParserTest extends CBORTestBase
 {
     public void testBigDecimalShort() throws Exception
     {

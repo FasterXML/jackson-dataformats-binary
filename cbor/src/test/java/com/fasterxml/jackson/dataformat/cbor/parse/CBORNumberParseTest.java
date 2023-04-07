@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 @SuppressWarnings("resource")
-public class ParserNumbersTest extends CBORTestBase
+public class CBORNumberParseTest extends CBORTestBase
 {
     private final CBORFactory CBOR_F = cborFactory();
 
