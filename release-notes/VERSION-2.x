@@ -14,15 +14,14 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-#373: (cbor) Remove optimized `CBORParser.nextTextValue()` implementation
-
-2.15.0-rc2 (28-Mar-2023)
+2.15.0-rc3 (14-Apr-2023)
 
 #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
  (contributed by Aaron B)
 #356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s as `float`s
   if safe to do so
  (contributed by Aaron B)
+#373: (cbor) Remove optimized `CBORParser.nextTextValue()` implementation
 
 2.14.3 (Not yet released)
 
