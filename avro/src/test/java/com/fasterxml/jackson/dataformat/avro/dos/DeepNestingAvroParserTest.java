@@ -75,8 +75,8 @@ public class DeepNestingAvroParserTest extends AvroTestBase
             while (jp.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertEquals("Depth (401) exceeds the maximum allowed nesting depth (400)",
-                    e.getMessage());
+            assertTrue("unexpected message: " + e.getMessage(),
+                    e.getMessage().startsWith("Document nesting depth (401) exceeds the maximum allowed"));
         }
     }
 
