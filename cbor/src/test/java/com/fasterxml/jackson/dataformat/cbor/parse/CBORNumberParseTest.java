@@ -374,7 +374,8 @@ public class CBORNumberParseTest extends CBORTestBase
                 parser.nextToken();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException e) {
-                assertEquals("Number length (4153) exceeds the maximum length (1000)", e.getMessage());
+                assertTrue("unexpected exception message: " + e.getMessage(),
+                        e.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"));
             }
         }
     }

@@ -84,7 +84,8 @@ public class ReadTreesTest extends CBORTestBase
                 it.nextValue();
                 fail("expected IllegalStateException");
             } catch (StreamConstraintsException ise) {
-                assertEquals("String length (2) exceeds the maximum length (1)", ise.getMessage());
+                assertTrue("unexpected exception message: " + ise.getMessage(),
+                        ise.getMessage().startsWith("String value length (2) exceeds the maximum allowed"));
             }
         }
     }

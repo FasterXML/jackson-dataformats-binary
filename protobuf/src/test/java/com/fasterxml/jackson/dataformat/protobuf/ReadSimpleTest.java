@@ -381,7 +381,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         } catch (DatabindException jme) {
             String message = jme.getMessage();
             assertTrue("unexpected message: " + message,
-                    message.startsWith("String length (4) exceeds the maximum length (1)"));
+                    message.startsWith("String value length (4) exceeds the maximum allowed"));
         }
     }
 }
