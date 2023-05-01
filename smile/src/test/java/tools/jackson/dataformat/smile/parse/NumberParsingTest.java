@@ -403,7 +403,8 @@ public class NumberParsingTest
                 p.getNumberType();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException nfe) {
-                assertEquals("Number length (4153) exceeds the maximum length (1000)", nfe.getMessage());
+                assertTrue("unexpected exception message: " + nfe.getMessage(),
+                        nfe.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"));
             }
         }
     }

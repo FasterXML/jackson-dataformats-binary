@@ -107,7 +107,8 @@ public class RoundtripTest extends MapTest
                     .forType(CharSeqBean.class).readValue(avroData);
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
-            assertEquals("String length (3) exceeds the maximum length (1)", ise.getMessage());
+            assertTrue("unexpected exception message: " + ise.getMessage(),
+                    ise.getMessage().startsWith("String value length (3) exceeds the maximum allowed"));
         }
     }
 }

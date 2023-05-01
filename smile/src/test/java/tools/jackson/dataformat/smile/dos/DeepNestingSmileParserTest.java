@@ -36,7 +36,8 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertEquals("Depth (1001) exceeds the maximum allowed nesting depth (1000)", e.getMessage());
+            assertTrue("unexpected message: " + e.getMessage(),
+                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
         }
     }
 
@@ -65,7 +66,8 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertEquals("Depth (1001) exceeds the maximum allowed nesting depth (1000)", e.getMessage());
+            assertTrue("unexpected message: " + e.getMessage(),
+                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
         }
     }
 
