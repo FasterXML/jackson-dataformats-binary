@@ -414,7 +414,7 @@ public class SmileFactory extends JsonFactory
         IOContext ctxt = _createContext(null, false);
         // 13-Mar-2021, tatu: [dataformats-binary#252] Leave async parser with
         //   always-canonicalizing, for now (2.13) -- to be improved in future
-        ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
+        ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChildOrPlaceholder(_factoryFeatures);
         return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can);
     }
 

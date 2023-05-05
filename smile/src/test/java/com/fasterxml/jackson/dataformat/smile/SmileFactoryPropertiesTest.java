@@ -5,6 +5,7 @@ import java.io.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.ContentReference;
+import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -151,6 +152,20 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         g.writeStartArray();
         g.writeEndArray();
         g.close();
+    }
+
+    public void testCanonicalization() throws Exception
+    {
+        try (NonBlockingByteArrayParser parser = new SmileFactory()
+                .createNonBlockingByteArrayParser()) {
+            assertTrue(parser._symbolsCanonical);
+        }
+        try (NonBlockingByteArrayParser parser = SmileFactory.builder()
+                .disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES)
+                .build()
+                .createNonBlockingByteArrayParser()) {
+            assertFalse(parser._symbolsCanonical);
+        }
     }
 
     /*
