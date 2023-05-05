@@ -23,7 +23,7 @@ Active maintainers:
  (contributed by Aaron B)
 #373: (cbor) Remove optimized `CBORParser.nextTextValue()` implementation
 
-2.14.3 (Not yet released)
+2.14.3 (05-May-2023)
 
 #354: (all) Missing license file in Maven package for newer versions
  (reported by Philipp d-S)
