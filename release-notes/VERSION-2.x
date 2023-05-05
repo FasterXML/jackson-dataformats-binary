@@ -13,7 +13,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-Not yet released
+2.14.3 (05-May-2023)
 
 #354: (all) Missing license file in Maven package for newer versions
  (reported by Philipp d-S)
