@@ -531,6 +531,10 @@ public abstract class NonBlockingParserBase
 
     protected final String _addDecodedToSymbols(int len, String name) throws IOException
     {
+        // 5-May-2023, ckozak: [core#1015] respect CANONICALIZE_FIELD_NAMES factory config.
+        if (!_symbolsCanonical) {
+            return name;
+        }
         if (len < 5) {
             return _symbols.addName(name, _quad1);
         }
