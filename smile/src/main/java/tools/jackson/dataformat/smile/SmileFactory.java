@@ -211,9 +211,7 @@ public class SmileFactory
     @Override
     public NonBlockingByteArrayParser createNonBlockingByteArrayParser(ObjectReadContext readCtxt)
     {
-        // 13-Mar-2021, tatu: [dataformats-binary#252] Leave async parser with
-        //   always-canonicalizing, for now (2.13) -- to be improved in future
-        ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChild(_factoryFeatures);
+        ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChildOrPlaceholder(_factoryFeatures);
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),

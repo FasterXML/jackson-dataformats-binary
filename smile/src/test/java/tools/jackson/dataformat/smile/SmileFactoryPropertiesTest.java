@@ -4,9 +4,11 @@ import java.io.*;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;
+import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.io.ContentReference;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -145,6 +147,20 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         g.writeStartArray();
         g.writeEndArray();
         g.close();
+    }
+
+    public void testCanonicalization() throws Exception
+    {
+        try (NonBlockingByteArrayParser parser = new SmileFactory()
+                .createNonBlockingByteArrayParser(ObjectReadContext.empty())) {
+            assertTrue(parser._symbolsCanonical);
+        }
+        try (NonBlockingByteArrayParser parser = SmileFactory.builder()
+                .disable(JsonFactory.Feature.CANONICALIZE_PROPERTY_NAMES)
+                .build()
+                .createNonBlockingByteArrayParser(ObjectReadContext.empty())) {
+            assertFalse(parser._symbolsCanonical);
+        }
     }
 
     /*
