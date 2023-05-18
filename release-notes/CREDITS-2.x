@@ -278,3 +278,8 @@ Aaron Barany (here-abarany@github)
 * Contributed #356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s
   as `float`s if safe to do so
  (2.15.0)
+
+Kyle Silver (kyle-silver@github)
+
+* Reported *379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
+ (2.15.2)

@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.15.2 (not yet released)
+
+#379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
+ (reported by Kyle S)
+
 2.15.1 (16-May-2023)
 
 No changes since 2.15.0
