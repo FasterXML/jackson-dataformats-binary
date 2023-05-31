@@ -14,6 +14,7 @@
 
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
@@ -95,7 +96,7 @@ public class IonAnnotationIntrospector extends NopAnnotationIntrospector {
                 typeIdResolver.init(baseType);
 
                 TypeResolverBuilder<?> typeResolverBuilder = new IonAnnotationTypeResolverBuilder();
-                typeResolverBuilder.init(/* ignored */ null, typeIdResolver);
+                typeResolverBuilder.init(/* ignored */ (JsonTypeInfo.Id) null, typeIdResolver);
                 typeResolverBuilder.defaultImpl(baseType.getRawClass());
                 return typeResolverBuilder;
             }
