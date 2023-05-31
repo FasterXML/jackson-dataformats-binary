@@ -30,7 +30,8 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
                     JsonTypeInfo.As.PROPERTY, // N/A for custom
                     "@class", // similarly, N/A
                     null, // defaultImpl
-                    false); // id visible
+                    false, // id visible
+                    null); // require type info for subtypes
         }
         // no use for annotation info, at this point?
         return new AvroTypeResolverBuilder(config);
