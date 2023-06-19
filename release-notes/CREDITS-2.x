@@ -283,3 +283,8 @@ Kyle Silver (kyle-silver@github)
 
 * Reported *379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
  (2.15.2)
+
+Simon Daudin (@simondaudin)
+
+* Reported #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
+ (2.15.3)
