@@ -120,4 +120,13 @@ public class IonAnnotationTypeResolverBuilder
         }
         return new IonAnnotationTypeResolverBuilder(this, defaultImpl);
     }
+
+    @Override // since 2.16, modified from jackson-databind/StdTypeResolverBuilder
+    public IonAnnotationTypeResolverBuilder withSettings(JsonTypeInfo.Value settings)
+    {
+        // We don't have most of relevant things, just default implementation so:
+        defaultImpl = settings.getDefaultImpl();
+        typeIdVisible = settings.getIdVisible();
+        return this;
+    }
 }
