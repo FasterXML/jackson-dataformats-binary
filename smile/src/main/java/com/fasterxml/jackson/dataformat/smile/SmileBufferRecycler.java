@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Simple helper class used for implementing simple reuse system for Smile-specific
  * buffers that are used.
@@ -12,40 +14,27 @@ public class SmileBufferRecycler<T>
 
     public final static int DEFAULT_STRING_VALUE_BUFFER_LENGTH = 64;
 
-    protected T[] _seenNamesBuffer;
+    protected AtomicReference<T[]> _seenNamesBuffer = new AtomicReference<>();
 
-    protected T[] _seenStringValuesBuffer;
+    protected AtomicReference<T[]> _seenStringValuesBuffer = new AtomicReference<>();
 
     public SmileBufferRecycler() { }
 
     public T[] allocSeenNamesBuffer()
     {
-        // 11-Feb-2011, tatu: Used to alloc here; but due to generics, can't easily any more
-        T[] result = _seenNamesBuffer;
-        if (result != null) {
-            // let's ensure we don't retain it here, unless returned
-            _seenNamesBuffer = null;
-            // note: caller must have cleaned it up before returning
-        }
-        return result;
+        return _seenNamesBuffer.getAndSet(null);
     }
 
     public T[] allocSeenStringValuesBuffer()
     {
-        // 11-Feb-2011, tatu: Used to alloc here; but due to generics, can't easily any more
-        T[] result = _seenStringValuesBuffer;
-        if (result != null) {
-            _seenStringValuesBuffer = null;
-            // note: caller must have cleaned it up before returning
-        }
-        return result;
+        return _seenStringValuesBuffer.getAndSet(null);
     }
 
     public void releaseSeenNamesBuffer(T[] buffer) {
-        _seenNamesBuffer = buffer;
+        _seenNamesBuffer.set(buffer);
     }
 
     public void releaseSeenStringValuesBuffer(T[] buffer) {
-        _seenStringValuesBuffer = buffer;
+        _seenStringValuesBuffer.set(buffer);
     }
 }
