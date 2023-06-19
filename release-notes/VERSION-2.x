@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.15.3 (not yet released)
+
+#384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
+ (reported by Simon D)
+
 2.15.2 (30-May-2023)
 
 #379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
