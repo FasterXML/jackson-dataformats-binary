@@ -155,6 +155,11 @@ public class ProtobufGenerator extends GeneratorBase
         _pbContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
     }
 
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
+    }
+
     @Override // since 2.13
     public Object currentValue() {
         return _pbContext.getCurrentValue();

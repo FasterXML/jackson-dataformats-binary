@@ -586,6 +586,11 @@ public class SmileGenerator
         return this;
     }
 
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
+    }
+
     /*
     /**********************************************************
     /* Extended API, other

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileFactoryBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,7 +85,10 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
     }
 
     private void genDeepDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = smileGenerator(out, true)) {
+        SmileFactory smileFactory = SmileFactory.builder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .build();
+        try (JsonGenerator gen = smileGenerator(smileFactory, out, true)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeFieldName("a");
@@ -96,7 +101,10 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
     }
 
     private void genDeepArrayDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = smileGenerator(out, true)) {
+        SmileFactory smileFactory = SmileFactory.builder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .build();
+        try (JsonGenerator gen = smileGenerator(smileFactory, out, true)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeFieldName("a");

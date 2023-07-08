@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.FormatFeature;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.StreamWriteCapability;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -146,6 +147,11 @@ public class IonGenerator
     @Override
     public Version version() {
         return PackageVersion.VERSION;
+    }
+
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
     }
 
     /*

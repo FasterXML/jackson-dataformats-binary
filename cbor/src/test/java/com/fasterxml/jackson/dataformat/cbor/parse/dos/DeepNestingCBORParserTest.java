@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
@@ -83,7 +84,10 @@ public class DeepNestingCBORParserTest extends CBORTestBase
     }
 
     private void genDeepDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = cborGenerator(out)) {
+        CBORFactory cborFactory = cborFactoryBuilder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .build();
+        try (JsonGenerator gen = cborGenerator(cborFactory, out)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeFieldName("a");
@@ -96,7 +100,10 @@ public class DeepNestingCBORParserTest extends CBORTestBase
     }
 
     private void genDeepArrayDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = cborGenerator(out)) {
+        CBORFactory cborFactory = cborFactoryBuilder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .build();
+        try (JsonGenerator gen = cborGenerator(cborFactory, out)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeFieldName("a");

@@ -379,6 +379,11 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
+    }
+
     /**
      * No way (or need) to indent anything, so let's block any attempts. (should
      * we throw an exception instead?)
