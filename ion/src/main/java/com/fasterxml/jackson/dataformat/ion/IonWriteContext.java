@@ -26,7 +26,7 @@ import com.fasterxml.jackson.core.json.JsonWriteContext;
  * context to track that. Sexp handling is modeled after arrays.
  */
 public class IonWriteContext extends JsonWriteContext {
-    // Both contstants are in the tens instead of the ones to avoid conflict with the native
+    // Both constants are in the tens instead of the ones to avoid conflict with the native
     // Jackson ones
 
     // Ion-specific contexts

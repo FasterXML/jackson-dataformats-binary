@@ -524,6 +524,7 @@ public class IonGenerator
     public void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
+        streamWriteConstraints().validateNestingDepth(_writeContext.getNestingDepth());
         _writer.stepIn(IonType.LIST);
     }
 
@@ -531,6 +532,7 @@ public class IonGenerator
     public void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
+        streamWriteConstraints().validateNestingDepth(_writeContext.getNestingDepth());
         _writer.stepIn(IonType.STRUCT);
     }
 
@@ -540,6 +542,7 @@ public class IonGenerator
     public void writeStartSexp() throws IOException {
         _verifyValueWrite("start a sexp");
         _writeContext = ((IonWriteContext) _writeContext).createChildSexpContext();
+        streamWriteConstraints().validateNestingDepth(_writeContext.getNestingDepth());
         _writer.stepIn(IonType.SEXP);
     }
 
