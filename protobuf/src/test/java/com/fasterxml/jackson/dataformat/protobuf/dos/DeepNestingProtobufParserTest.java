@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +32,7 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
     {
         ProtobufFactory f = ProtobufFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
         MAPPER_UNLIMITED = new ProtobufMapper(f);
     }
@@ -71,7 +73,7 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
         while (--depth > 0) {
             node = new Node(depth, node);
         }
-        return DEFAULT_MAPPER.writer(NODE_SCHEMA)
+        return MAPPER_UNLIMITED.writer(NODE_SCHEMA)
                 .writeValueAsBytes(node);
     }
 
