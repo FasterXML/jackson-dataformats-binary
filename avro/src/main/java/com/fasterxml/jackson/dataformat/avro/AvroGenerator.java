@@ -379,6 +379,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _avroContext = _avroContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_avroContext.getNestingDepth());
         _complete = false;
     }
 
@@ -397,12 +398,14 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartObject() throws IOException {
         _avroContext = _avroContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_avroContext.getNestingDepth());
         _complete = false;
     }
 
     @Override
     public void writeStartObject(Object forValue) throws IOException {
         _avroContext = _avroContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_avroContext.getNestingDepth());
         _complete = false;
     }
 
