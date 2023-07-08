@@ -89,7 +89,7 @@ public class IonFactory
      */
 
     public IonFactory() {
-        super(StreamReadConstraints.defaults(),
+        super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
                 DEFAULT_ION_PARSER_FEATURE_FLAGS, DEFAULT_ION_GENERATOR_FEATURE_FLAGS);
         _cfgBinaryWriters = DEFAULT_CREATE_BINARY;
         _system = IonSystemBuilder.standard().build();

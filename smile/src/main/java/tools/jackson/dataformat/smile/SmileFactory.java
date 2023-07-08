@@ -89,7 +89,7 @@ public class SmileFactory
      * factory instance.
      */
     public SmileFactory() {
-        super(StreamReadConstraints.defaults(),
+        super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
                 DEFAULT_SMILE_PARSER_FEATURE_FLAGS, DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS);
     }
 
