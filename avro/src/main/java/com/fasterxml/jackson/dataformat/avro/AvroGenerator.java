@@ -25,7 +25,7 @@ public class AvroGenerator extends GeneratorBase
     {
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
-         * data then absolutely necessary.
+         * data than absolutely necessary.
          * This affects buffering by underlying codec.
          * Note that disabling buffer is likely to reduce performance if the underlying
          * input/output is unbuffered.
@@ -155,6 +155,11 @@ public class AvroGenerator extends GeneratorBase
         // start with temporary root...
         _avroContext = _rootContext = AvroWriteContext.createRootContext(this,
                 schema.getAvroSchema(), _encoder);
+    }
+
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
     }
 
     /*
