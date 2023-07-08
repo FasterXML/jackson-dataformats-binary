@@ -184,8 +184,6 @@ public class SmileGenerator
     /**********************************************************************
      */
 
-    final protected IOContext _ioContext;
-
     final protected OutputStream _out;
 
     /**
@@ -303,9 +301,8 @@ public class SmileGenerator
             int streamWriteFeatures, int smileFeatures,
             OutputStream out)
     {
-        super(writeCtxt, streamWriteFeatures);
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = smileFeatures;
-        _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
@@ -348,9 +345,8 @@ public class SmileGenerator
             OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(writeCtxt, streamWriteFeatures);
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = smileFeatures;
-        _ioContext = ioCtxt;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
                 _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);

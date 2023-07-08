@@ -98,8 +98,6 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    final protected IOContext _ioContext;
-
     /**
      * Bit flag composed of bits that indicate which
      * {@link AvroGenerator.Feature}s
@@ -107,7 +105,7 @@ public class AvroGenerator extends GeneratorBase
      */
     protected int _formatWriteFeatures;
 
-    final protected AvroSchema _rootSchema;
+    protected final AvroSchema _rootSchema;
 
     /*
     /**********************************************************************
@@ -115,7 +113,7 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    final protected OutputStream _output;
+    protected final OutputStream _output;
 
     /**
      * Reference to the root context since that is needed for serialization
@@ -144,14 +142,13 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    public AvroGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
-            int jsonFeatures, int avroFeatures,
+    public AvroGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
+            int streamWriteFeatures, int avroFeatures,
             OutputStream output,
             AvroSchema schema)
         throws JacksonException
     {
-        super(writeCtxt, jsonFeatures);
-        _ioContext = ctxt;
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatWriteFeatures = avroFeatures;
         _output = output;
         _streamWriteContext = AvroWriteContext.nullContext();

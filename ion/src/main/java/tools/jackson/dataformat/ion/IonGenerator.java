@@ -103,8 +103,6 @@ public class IonGenerator
     /* Indicates whether the IonGenerator is responsible for closing the underlying IonWriter. */
     protected final boolean _ionWriterIsManaged;
 
-    protected final IOContext _ioContext;
-
     /**
      * Bit flag composed of bits that indicate which
      * {@link IonGenerator.Feature}s
@@ -146,10 +144,9 @@ public class IonGenerator
             int streamWriteFeatures, int formatWriteFeatures,
             IonWriter ion, boolean ionWriterIsManaged, Closeable dst)
     {
-        super(writeCtxt, streamWriteFeatures);
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = formatWriteFeatures;
         _writer = ion;
-        _ioContext = ioCtxt;
         _ionWriterIsManaged = ionWriterIsManaged;
         _destination = dst;
 

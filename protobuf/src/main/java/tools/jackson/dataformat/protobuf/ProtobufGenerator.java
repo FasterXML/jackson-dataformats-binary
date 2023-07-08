@@ -43,8 +43,6 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    final protected IOContext _ioContext;
-
     final protected ProtobufSchema _schema;
 
     /*
@@ -127,15 +125,14 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    public ProtobufGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+    public ProtobufGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int streamWriteFeatures, ProtobufSchema schema,
             OutputStream output)
     {
-        super(writeCtxt, streamWriteFeatures);
-        _ioContext = ctxt;
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _output = output;
         _streamWriteContext = _rootContext = ProtobufWriteContext.createNullContext();
-        _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
+        _currBuffer = _origCurrBuffer = ioCtxt.allocWriteEncodingBuffer();
         _schema = Objects.requireNonNull(schema, "Can not pass `null` 'schema'");
         // start with temporary root...
 //        _currentContext = _rootContext = ProtobufWriteContext.createRootContext(this, schema);

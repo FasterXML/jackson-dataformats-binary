@@ -173,8 +173,6 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    protected final IOContext _ioContext;
-
     protected final OutputStream _out;
 
     /**
@@ -274,12 +272,11 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+    public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int streamWriteFeatures, int formatFeatures,
             OutputStream out)
     {
-        super(writeCtxt, streamWriteFeatures);
-        _ioContext = ctxt;
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = formatFeatures;
         DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this)
@@ -290,9 +287,9 @@ public class CBORGenerator extends GeneratorBase
         _out = out;
         _bufferRecyclable = true;
         _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
-        _outputBuffer = ctxt.allocWriteEncodingBuffer(BYTE_BUFFER_FOR_OUTPUT);
+        _outputBuffer = ioCtxt.allocWriteEncodingBuffer(BYTE_BUFFER_FOR_OUTPUT);
         _outputEnd = _outputBuffer.length;
-        _charBuffer = ctxt.allocConcatBuffer();
+        _charBuffer = ioCtxt.allocConcatBuffer();
         _charBufferLength = _charBuffer.length;
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
@@ -311,13 +308,12 @@ public class CBORGenerator extends GeneratorBase
      *            Offset pointing past already buffered content; that is, number
      *            of bytes of valid content to output, within buffer.
      */
-    public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ctxt,
+    public CBORGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int streamWriteFeatures, int formatFeatures,
             OutputStream out, byte[] outputBuffer,
             int offset, boolean bufferRecyclable)
     {
-        super(writeCtxt, streamWriteFeatures);
-        _ioContext = ctxt;
+        super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = formatFeatures;
         DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this)
@@ -331,7 +327,7 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer = outputBuffer;
         _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
         _outputEnd = _outputBuffer.length;
-        _charBuffer = ctxt.allocConcatBuffer();
+        _charBuffer = ioCtxt.allocConcatBuffer();
         _charBufferLength = _charBuffer.length;
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
