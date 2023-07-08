@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileFactoryBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,8 +29,10 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("JsonMappingException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
@@ -63,8 +64,10 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("JsonMappingException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 

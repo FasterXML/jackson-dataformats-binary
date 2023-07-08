@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.ion.dos;
 
+import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
@@ -27,8 +28,10 @@ public class CyclicDataSerTest
             MAPPER.writeValueAsBytes(list);
             fail("expected JsonMappingException");
         } catch (JsonMappingException jmex) {
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamWriteConstraints.DEFAULT_MAX_DEPTH + 1);
             assertTrue("JsonMappingException message is as expected?",
-                    jmex.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+                    jmex.getMessage().startsWith(exceptionPrefix));
         }
     }
 }

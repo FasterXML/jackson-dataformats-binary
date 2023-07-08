@@ -29,8 +29,10 @@ public class DeepNestingCBORParserTest extends CBORTestBase
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("JsonMappingException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
@@ -62,8 +64,10 @@ public class DeepNestingCBORParserTest extends CBORTestBase
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("JsonMappingException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
