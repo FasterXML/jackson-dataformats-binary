@@ -379,6 +379,11 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
+    }
+
     /**
      * No way (or need) to indent anything, so let's block any attempts. (should
      * we throw an exception instead?)
@@ -570,6 +575,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -581,6 +587,7 @@ public class CBORGenerator extends GeneratorBase
     public void writeStartArray(Object forValue) throws IOException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -596,6 +603,7 @@ public class CBORGenerator extends GeneratorBase
     public void writeStartArray(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -606,6 +614,7 @@ public class CBORGenerator extends GeneratorBase
     public void writeStartArray(int elementsToWrite) throws IOException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -624,6 +633,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -636,6 +646,7 @@ public class CBORGenerator extends GeneratorBase
     public final void writeStartObject(Object forValue) throws IOException {
         _verifyValueWrite("start an object");
         CBORWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
         _streamWriteContext = ctxt;
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
@@ -652,6 +663,7 @@ public class CBORGenerator extends GeneratorBase
     public void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);

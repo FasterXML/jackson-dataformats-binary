@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.FormatFeature;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.StreamWriteCapability;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -146,6 +147,11 @@ public class IonGenerator
     @Override
     public Version version() {
         return PackageVersion.VERSION;
+    }
+
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
     }
 
     /*
@@ -524,6 +530,7 @@ public class IonGenerator
     public void writeStartArray() throws IOException {
         _verifyValueWrite("start an array");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildArrayContext();  // <-- copied from UTF8JsonGenerator
+        streamWriteConstraints().validateNestingDepth(_writeContext.getNestingDepth());
         _writer.stepIn(IonType.LIST);
     }
 
@@ -531,6 +538,7 @@ public class IonGenerator
     public void writeStartObject() throws IOException {
         _verifyValueWrite("start an object");                      // <-- copied from UTF8JsonGenerator
         _writeContext = _writeContext.createChildObjectContext();  // <-- copied from UTF8JsonGenerator
+        streamWriteConstraints().validateNestingDepth(_writeContext.getNestingDepth());
         _writer.stepIn(IonType.STRUCT);
     }
 
@@ -540,6 +548,7 @@ public class IonGenerator
     public void writeStartSexp() throws IOException {
         _verifyValueWrite("start a sexp");
         _writeContext = ((IonWriteContext) _writeContext).createChildSexpContext();
+        streamWriteConstraints().validateNestingDepth(_writeContext.getNestingDepth());
         _writer.stepIn(IonType.SEXP);
     }
 

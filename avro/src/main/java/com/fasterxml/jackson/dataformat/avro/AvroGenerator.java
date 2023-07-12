@@ -25,7 +25,7 @@ public class AvroGenerator extends GeneratorBase
     {
         /**
          * Feature that can be disabled to prevent Avro from buffering any more
-         * data then absolutely necessary.
+         * data than absolutely necessary.
          * This affects buffering by underlying codec.
          * Note that disabling buffer is likely to reduce performance if the underlying
          * input/output is unbuffered.
@@ -155,6 +155,11 @@ public class AvroGenerator extends GeneratorBase
         // start with temporary root...
         _avroContext = _rootContext = AvroWriteContext.createRootContext(this,
                 schema.getAvroSchema(), _encoder);
+    }
+
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
     }
 
     /*
@@ -374,6 +379,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartArray() throws IOException {
         _avroContext = _avroContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_avroContext.getNestingDepth());
         _complete = false;
     }
 
@@ -392,12 +398,14 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public final void writeStartObject() throws IOException {
         _avroContext = _avroContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_avroContext.getNestingDepth());
         _complete = false;
     }
 
     @Override
     public void writeStartObject(Object forValue) throws IOException {
         _avroContext = _avroContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_avroContext.getNestingDepth());
         _complete = false;
     }
 

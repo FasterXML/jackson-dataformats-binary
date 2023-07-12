@@ -155,6 +155,11 @@ public class ProtobufGenerator extends GeneratorBase
         _pbContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
     }
 
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
+    }
+
     @Override // since 2.13
     public Object currentValue() {
         return _pbContext.getCurrentValue();
@@ -413,6 +418,7 @@ public class ProtobufGenerator extends GeneratorBase
         // NOTE: do NOT clear _currField; needed for actual element type
 
         _pbContext = _pbContext.createChildArrayContext();
+        streamWriteConstraints().validateNestingDepth(_pbContext.getNestingDepth());
         _writeTag = !_currField.packed;
         /* Unpacked vs packed: if unpacked, nothing special is needed, since it
          * is equivalent to just replicating same field N times.
@@ -481,6 +487,7 @@ public class ProtobufGenerator extends GeneratorBase
             // but do NOT clear next field here
             _inObject = true;
         }
+        streamWriteConstraints().validateNestingDepth(_pbContext.getNestingDepth());
         // even if within array, object fields use tags
         _writeTag = true;
     }

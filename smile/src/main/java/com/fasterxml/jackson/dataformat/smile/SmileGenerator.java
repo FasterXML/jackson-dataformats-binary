@@ -586,6 +586,11 @@ public class SmileGenerator
         return this;
     }
 
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _ioContext.streamWriteConstraints();
+    }
+
     /*
     /**********************************************************
     /* Extended API, other
@@ -628,6 +633,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -636,6 +642,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -644,6 +651,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -653,6 +661,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
     }
 
@@ -671,6 +680,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
 
@@ -679,6 +689,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an object");
         SmileWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
         _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
@@ -687,6 +698,7 @@ public class SmileGenerator
     public void writeStartObject(Object forValue, int elementsToWrite) throws IOException {
         _verifyValueWrite("start an object");
         SmileWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
         _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
     }
