@@ -1,16 +1,13 @@
 package com.fasterxml.jackson.dataformat.smile.parse.dos;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.StreamWriteConstraints;
-import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 /**
  * Unit tests for deeply nested JSON
@@ -22,16 +19,15 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        try (JsonParser jp = _smileParser(out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = _smileParser(out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("JsonMappingException message is as expected?",
+            assertTrue("StreamConstraintsException message is as expected?",
                     e.getMessage().startsWith(exceptionPrefix));
         }
     }
@@ -44,10 +40,9 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         SmileFactory smileFactory = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = _smileParser(smileFactory, out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = _smileParser(smileFactory, out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }
@@ -57,16 +52,15 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         final int depth = 750;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        try (JsonParser jp = _smileParser(out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = _smileParser(out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("JsonMappingException message is as expected?",
+            assertTrue("StreamConstraintsException message is as expected?",
                     e.getMessage().startsWith(exceptionPrefix));
         }
     }
@@ -79,10 +73,9 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         SmileFactory smileFactory = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = _smileParser(smileFactory, out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = _smileParser(smileFactory, out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }

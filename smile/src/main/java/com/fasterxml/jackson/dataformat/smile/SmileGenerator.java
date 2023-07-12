@@ -185,6 +185,11 @@ public class SmileGenerator
 
     protected final IOContext _ioContext;
 
+    /**
+     * @since 2.16
+     */
+    protected final StreamWriteConstraints _streamWriteConstraints;
+
     protected final OutputStream _out;
 
     /**
@@ -307,6 +312,7 @@ public class SmileGenerator
         _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
@@ -353,6 +359,7 @@ public class SmileGenerator
         _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -588,7 +595,7 @@ public class SmileGenerator
 
     @Override
     public StreamWriteConstraints streamWriteConstraints() {
-        return _ioContext.streamWriteConstraints();
+        return _streamWriteConstraints;
     }
 
     /*

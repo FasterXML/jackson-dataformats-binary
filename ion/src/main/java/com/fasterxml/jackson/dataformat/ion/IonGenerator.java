@@ -112,6 +112,11 @@ public class IonGenerator
     protected final IOContext _ioContext;
 
     /**
+     * @since 2.16
+     */
+    protected final StreamWriteConstraints _streamWriteConstraints;
+
+    /**
      * Bit flag composed of bits that indicate which
      * {@link IonGenerator.Feature}s
      * are enabled.
@@ -140,8 +145,8 @@ public class IonGenerator
         _writer = ion;
         _ionWriterIsManaged = ionWriterIsManaged;
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _destination = dst;
-
     }
 
     @Override
@@ -151,7 +156,7 @@ public class IonGenerator
 
     @Override
     public StreamWriteConstraints streamWriteConstraints() {
-        return _ioContext.streamWriteConstraints();
+        return _streamWriteConstraints;
     }
 
     /*

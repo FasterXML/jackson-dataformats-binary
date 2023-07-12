@@ -1,20 +1,21 @@
-package com.fasterxml.jackson.dataformat.cbor.gen.dos;
-
-import com.fasterxml.jackson.core.StreamWriteConstraints;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+package com.fasterxml.jackson.dataformat.smile.gen.dos;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.core.StreamWriteConstraints;
+
+import com.fasterxml.jackson.databind.*;
+
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 /**
  * Simple unit tests to verify that we fail gracefully if you attempt to serialize
  * data that is cyclic (eg a list that contains itself).
  */
-public class CyclicDataSerTest extends CBORTestBase
+public class CyclicSmileDataSerTest extends BaseTestForSmile
 {
-    private final ObjectMapper MAPPER = cborMapper();
+    private final ObjectMapper MAPPER = smileMapper();
 
     public void testListWithSelfReference() throws Exception {
         List<Object> list = new ArrayList<>();
@@ -22,11 +23,11 @@ public class CyclicDataSerTest extends CBORTestBase
         try {
             MAPPER.writeValueAsBytes(list);
             fail("expected JsonMappingException");
-        } catch (JsonMappingException jmex) {
+        } catch (DatabindException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamWriteConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("JsonMappingException message is as expected?",
-                    jmex.getMessage().startsWith(exceptionPrefix));
+            assertTrue("DatabindException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 }

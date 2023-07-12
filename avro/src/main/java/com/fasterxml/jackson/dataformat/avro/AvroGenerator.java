@@ -88,8 +88,13 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    final protected IOContext _ioContext;
+    protected final IOContext _ioContext;
 
+    /**
+     * @since 2.16
+     */
+    protected final StreamWriteConstraints _streamWriteConstraints;
+    
     /**
      * Bit flag composed of bits that indicate which
      * {@link AvroGenerator.Feature}s
@@ -140,6 +145,7 @@ public class AvroGenerator extends GeneratorBase
     {
         super(jsonFeatures, codec);
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _formatFeatures = avroFeatures;
         _output = output;
         _avroContext = AvroWriteContext.nullContext();
@@ -159,7 +165,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public StreamWriteConstraints streamWriteConstraints() {
-        return _ioContext.streamWriteConstraints();
+        return _streamWriteConstraints;
     }
 
     /*

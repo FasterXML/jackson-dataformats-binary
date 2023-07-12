@@ -178,9 +178,14 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    final protected IOContext _ioContext;
+    protected final  IOContext _ioContext;
 
-    final protected OutputStream _out;
+    /**
+     * @since 2.16
+     */
+    protected final StreamWriteConstraints _streamWriteConstraints;
+    
+    protected final  OutputStream _out;
 
     /**
      * Bit flag composed of bits that indicate which
@@ -293,6 +298,7 @@ public class CBORGenerator extends GeneratorBase
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _out = out;
         _bufferRecyclable = true;
         _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
@@ -330,6 +336,7 @@ public class CBORGenerator extends GeneratorBase
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
         _outputTail = offset;
@@ -381,7 +388,7 @@ public class CBORGenerator extends GeneratorBase
 
     @Override
     public StreamWriteConstraints streamWriteConstraints() {
-        return _ioContext.streamWriteConstraints();
+        return _streamWriteConstraints;
     }
 
     /**

@@ -1,16 +1,13 @@
 package com.fasterxml.jackson.dataformat.cbor.parse.dos;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.StreamWriteConstraints;
-import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 /**
  * Unit tests for deeply nested JSON
@@ -22,10 +19,9 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        try (JsonParser jp = cborParser(out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(out)) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
@@ -44,10 +40,9 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         CBORFactory cborFactory = CBORFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = cborParser(cborFactory, out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(cborFactory, out)) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }
@@ -57,10 +52,9 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         final int depth = 750;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        try (JsonParser jp = cborParser(out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(out)) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
@@ -79,10 +73,9 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         CBORFactory cborFactory = CBORFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = cborParser(cborFactory, out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(cborFactory, out)) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }

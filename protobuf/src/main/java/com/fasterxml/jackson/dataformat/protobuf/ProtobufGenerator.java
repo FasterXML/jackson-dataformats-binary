@@ -49,7 +49,12 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    final protected IOContext _ioContext;
+    protected final IOContext _ioContext;
+
+    /**
+     * @since 2.16
+     */
+    protected final StreamWriteConstraints _streamWriteConstraints;
 
     protected ProtobufSchema _schema;
 
@@ -139,6 +144,7 @@ public class ProtobufGenerator extends GeneratorBase
     {
         super(jsonFeatures, codec, BOGUS_WRITE_CONTEXT);
         _ioContext = ctxt;
+        _streamWriteConstraints = ctxt.streamWriteConstraints();
         _output = output;
         _pbContext = _rootContext = ProtobufWriteContext.createNullContext();
         _currBuffer = _origCurrBuffer = ctxt.allocWriteEncodingBuffer();
@@ -157,7 +163,7 @@ public class ProtobufGenerator extends GeneratorBase
 
     @Override
     public StreamWriteConstraints streamWriteConstraints() {
-        return _ioContext.streamWriteConstraints();
+        return _streamWriteConstraints;
     }
 
     @Override // since 2.13
