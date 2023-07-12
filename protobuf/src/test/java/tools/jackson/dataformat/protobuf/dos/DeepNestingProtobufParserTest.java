@@ -26,6 +26,9 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
         }
     }
 
+    private final static int NESTING_DEFAULT_MAX = StreamWriteConstraints.DEFAULT_MAX_DEPTH;
+    private final static int NESTING_DEEPER = NESTING_DEFAULT_MAX + 100;
+    
     private final ProtobufMapper DEFAULT_MAPPER = newObjectMapper();
     private final ProtobufMapper MAPPER_UNLIMITED;
     {
@@ -47,7 +50,7 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
 
     public void testDeeplyNestedObjectsHighLimits() throws Exception
     {
-        byte[] doc = genDeepDoc(1200);
+        byte[] doc = genDeepDoc(NESTING_DEEPER);
         try (JsonParser p = protobufParser(MAPPER_UNLIMITED, doc)) {
             while (p.nextToken() != null) { }
         }
@@ -55,13 +58,13 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
 
     public void testDeeplyNestedObjectsLowLimits() throws Exception
     {
-        byte[] doc = genDeepDoc(1200);
+        byte[] doc = genDeepDoc(NESTING_DEEPER);
         try (JsonParser p = protobufParser(DEFAULT_MAPPER, doc)) {
             while (p.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
             assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+                    e.getMessage().startsWith("Document nesting depth ("+(NESTING_DEFAULT_MAX+1)+") exceeds the maximum allowed"));
         }
     }
 
