@@ -78,12 +78,14 @@ public class IonWriteContext extends TokenStreamContext
     /**********************************************************************
      */
 
-    protected IonWriteContext(int type, IonWriteContext parent, DupDetector dups,
+    protected IonWriteContext(int type, IonWriteContext parent, int nestingDepth,
+            DupDetector dups,
             Object currentValue)
     {
         super();
         _type = type;
         _parent = parent;
+        _nestingDepth = nestingDepth;
         _dups = dups;
         _index = -1;
         _currentValue = currentValue;
@@ -106,11 +108,12 @@ public class IonWriteContext extends TokenStreamContext
      */
 
     public static IonWriteContext createRootContext(DupDetector dd) {
-        return new IonWriteContext(TYPE_ROOT, null, dd, null);
+        return new IonWriteContext(TYPE_ROOT, null, 0, dd, null);
     }
 
     private IonWriteContext reset(int type, Object currentValue) {
         _type = type;
+        // Due to way reuse works, "_parent" and "_nestingDepth" are fine already
         _index = -1;
         _currentName = null;
         _gotPropertyId = false;
@@ -124,7 +127,7 @@ public class IonWriteContext extends TokenStreamContext
 
         if(ctxt == null) {
             // same assignment as in createChildObjectContext, createChildArrayContext
-            _child = ctxt = new IonWriteContext(TYPE_SEXP, this,
+            _child = ctxt = new IonWriteContext(TYPE_SEXP, this, _nestingDepth+1,
                     (_dups == null) ? null : _dups.child(), currentValue);
         }
 
@@ -143,7 +146,7 @@ public class IonWriteContext extends TokenStreamContext
         IonWriteContext ctxt = (IonWriteContext) _child;
 
         if (ctxt == null) {
-            _child = ctxt = new IonWriteContext(TYPE_ARRAY, this,
+            _child = ctxt = new IonWriteContext(TYPE_ARRAY, this, _nestingDepth+1,
                     (_dups == null) ? null : _dups.child(),
                             currentValue);
             return ctxt;
@@ -156,7 +159,7 @@ public class IonWriteContext extends TokenStreamContext
         IonWriteContext ctxt = (IonWriteContext) _child;
 
         if (ctxt == null) {
-            _child = ctxt = new IonWriteContext(TYPE_OBJECT, this,
+            _child = ctxt = new IonWriteContext(TYPE_OBJECT, this, _nestingDepth+1,
                     (_dups == null) ? null : _dups.child(), currentValue);
             return ctxt;
         }

@@ -174,7 +174,7 @@ public abstract class BaseTestForSmile
 
     protected SmileGenerator _smileGenerator(OutputStream result, boolean addHeader)
     {
-        return  (SmileGenerator) _smileWriter(addHeader).createGenerator(result);
+        return (SmileGenerator) _smileWriter(addHeader).createGenerator(result);
     }
 
     protected ObjectWriter _smileWriter() {

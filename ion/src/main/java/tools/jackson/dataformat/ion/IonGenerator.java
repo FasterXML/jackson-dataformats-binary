@@ -681,6 +681,7 @@ public class IonGenerator
     public JsonGenerator writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         try {
             _writer.stepIn(IonType.LIST);
         } catch (IOException e) {
@@ -693,6 +694,7 @@ public class IonGenerator
     public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         try {
             _writer.stepIn(IonType.LIST);
         } catch (IOException e) {
@@ -705,6 +707,7 @@ public class IonGenerator
     public JsonGenerator writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         try {
             _writer.stepIn(IonType.STRUCT);
         } catch (IOException e) {
@@ -717,6 +720,7 @@ public class IonGenerator
     public JsonGenerator writeStartObject(Object currValue) throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(currValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         try {
             _writer.stepIn(IonType.STRUCT);
         } catch (IOException e) {
@@ -731,6 +735,7 @@ public class IonGenerator
     public JsonGenerator writeStartSexp() throws JacksonException {
         _verifyValueWrite("start a sexp");
         _streamWriteContext = _streamWriteContext.createChildSexpContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         try {
             _writer.stepIn(IonType.SEXP);
         } catch (IOException e) {

@@ -1,7 +1,6 @@
 package tools.jackson.dataformat.smile.dos;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamConstraintsException;
@@ -20,6 +19,7 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
     {
         SmileFactory smileFactory = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
         UNCONSTRAINED_MAPPER = new SmileMapper(smileFactory);
     }
@@ -29,15 +29,16 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        try (JsonParser jp = DEFAULT_MAPPER.createParser(out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = DEFAULT_MAPPER.createParser(out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("StreamConstraintsException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
@@ -46,46 +47,46 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        try (JsonParser jp = UNCONSTRAINED_MAPPER.createParser(out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = UNCONSTRAINED_MAPPER.createParser(out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }
 
     public void testDeeplyNestedArrays() throws Exception
     {
-        final int depth = 750;
+        final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        try (JsonParser jp = DEFAULT_MAPPER.createParser(out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = DEFAULT_MAPPER.createParser(out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("StreamConstraintsException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
     public void testDeeplyNestedArraysWithUnconstrainedMapper() throws Exception
     {
-        final int depth = 750;
+        final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        try (JsonParser jp = UNCONSTRAINED_MAPPER.createParser(out.toByteArray())) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = UNCONSTRAINED_MAPPER.createParser(out.toByteArray())) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }
 
-    private void genDeepDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = _smileGenerator(out, true)) {
+    private void genDeepDoc(final ByteArrayOutputStream out, final int depth)
+    {
+        try (JsonGenerator gen = UNCONSTRAINED_MAPPER.createGenerator(out)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeName("a");
@@ -97,8 +98,9 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         }
     }
 
-    private void genDeepArrayDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = _smileGenerator(out, true)) {
+    private void genDeepArrayDoc(final ByteArrayOutputStream out, final int depth)
+    {
+        try (JsonGenerator gen = UNCONSTRAINED_MAPPER.createGenerator(out)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeName("a");

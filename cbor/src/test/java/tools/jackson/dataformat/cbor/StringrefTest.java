@@ -601,7 +601,7 @@ public class StringrefTest extends CBORTestBase
                 .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
                 .enable(CBORGenerator.Feature.STRINGREF)
                 .build()
-                .createGenerator(bytes);
+                .createGenerator(ObjectWriteContext.empty(), bytes);
 
         gen.writeStartArray();
         gen.writeNumber(new BigInteger("1234567890", 16));
@@ -650,7 +650,7 @@ public class StringrefTest extends CBORTestBase
                 .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
                 .enable(CBORGenerator.Feature.STRINGREF)
                 .build()
-                .createGenerator(bytes);
+                .createGenerator(ObjectWriteContext.empty(), bytes);
         parser.nextToken();
         gen.copyCurrentStructure(parser);
         gen.close();

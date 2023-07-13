@@ -63,8 +63,10 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
             while (p.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth ("+(NESTING_DEFAULT_MAX+1)+") exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("StreamConstraintsException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 

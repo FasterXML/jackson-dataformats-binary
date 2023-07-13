@@ -43,7 +43,7 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    final protected ProtobufSchema _schema;
+    protected final ProtobufSchema _schema;
 
     /*
     /**********************************************************************
@@ -91,7 +91,7 @@ public class ProtobufGenerator extends GeneratorBase
     /**
      * Ultimate destination
      */
-    final protected OutputStream _output;
+    protected final OutputStream _output;
 
     /**
      * Object used in cases where we need to buffer content to calculate length-prefix.
@@ -371,6 +371,7 @@ public class ProtobufGenerator extends GeneratorBase
         // NOTE: do NOT clear _currField; needed for actual element type
 
         _streamWriteContext = _streamWriteContext.createChildArrayContext();
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeTag = !_currField.packed;
         /* Unpacked vs packed: if unpacked, nothing special is needed, since it
          * is equivalent to just replicating same field N times.
@@ -455,6 +456,7 @@ public class ProtobufGenerator extends GeneratorBase
             // but do NOT clear next field here
             _inObject = true;
         }
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         // even if within array, object fields use tags
         _writeTag = true;
         return this;

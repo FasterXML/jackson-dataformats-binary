@@ -1,14 +1,11 @@
 package tools.jackson.dataformat.cbor;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
-import static tools.jackson.dataformat.cbor.CBORConstants.*;
-
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import tools.jackson.core.*;
@@ -16,6 +13,8 @@ import tools.jackson.core.base.GeneratorBase;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.json.DupDetector;
 import tools.jackson.core.util.JacksonFeatureSet;
+
+import static tools.jackson.dataformat.cbor.CBORConstants.*;
 
 /**
  * {@link JsonGenerator} implementation that writes CBOR encoded content.
@@ -262,7 +261,6 @@ public class CBORGenerator extends GeneratorBase
 
     /**
      * Table of previously referenced text and binary strings when the STRINGREF feature is used.
-     * @since 2.15
      */
     protected HashMap<Object, Integer> _stringRefs;
 
@@ -495,6 +493,7 @@ public class CBORGenerator extends GeneratorBase
     public JsonGenerator writeStartArray() throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -507,6 +506,7 @@ public class CBORGenerator extends GeneratorBase
     public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -515,10 +515,15 @@ public class CBORGenerator extends GeneratorBase
         return this;
     }
 
+    /*
+     * Unlike with JSON, this method is using slightly optimized version since
+     * CBOR has a variant that allows embedding length in array start marker.
+     */
     @Override
     public JsonGenerator writeStartArray(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_ARRAY, elementsToWrite);
@@ -539,6 +544,7 @@ public class CBORGenerator extends GeneratorBase
     public JsonGenerator writeStartObject() throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -550,7 +556,9 @@ public class CBORGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeStartObject(Object forValue) throws JacksonException {
         _verifyValueWrite("start an object");
-        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
+        CBORWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
+        _streamWriteContext = ctxt;
         if (_elementCountsPtr > 0) {
             _pushRemainingElements();
         }
@@ -563,6 +571,7 @@ public class CBORGenerator extends GeneratorBase
     public JsonGenerator writeStartObject(Object forValue, int elementsToWrite) throws JacksonException {
         _verifyValueWrite("start an object");
         _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _pushRemainingElements();
         _currentRemainingElements = elementsToWrite;
         _writeLengthMarker(PREFIX_TYPE_OBJECT, elementsToWrite);

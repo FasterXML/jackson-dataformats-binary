@@ -1,7 +1,5 @@
 package tools.jackson.dataformat.smile;
 
-import static tools.jackson.dataformat.smile.SmileConstants.*;
-
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
@@ -14,6 +12,8 @@ import tools.jackson.core.json.DupDetector;
 import tools.jackson.core.util.JacksonFeatureSet;
 import tools.jackson.core.util.SimpleStreamWriteContext;
 import tools.jackson.core.base.GeneratorBase;
+
+import static tools.jackson.dataformat.smile.SmileConstants.*;
 
 /**
  * {@link JsonGenerator} implementation for Smile-encoded content
@@ -184,7 +184,7 @@ public class SmileGenerator
     /**********************************************************************
      */
 
-    final protected OutputStream _out;
+    protected final OutputStream _out;
 
     /**
      * Bit flag composed of bits that indicate which
@@ -594,6 +594,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
         return this;
     }
@@ -603,6 +604,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
         return this;
     }
@@ -612,6 +614,7 @@ public class SmileGenerator
     {
         _verifyValueWrite("start an array");
         _streamWriteContext = _streamWriteContext.createChildArrayContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _writeByte(TOKEN_LITERAL_START_ARRAY);
         return this;
     }
@@ -631,7 +634,9 @@ public class SmileGenerator
     public JsonGenerator writeStartObject() throws JacksonException
     {
         _verifyValueWrite("start an object");
-        _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        SimpleStreamWriteContext ctxt = _streamWriteContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
+        _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
         return this;
     }
@@ -640,7 +645,9 @@ public class SmileGenerator
     public JsonGenerator writeStartObject(Object forValue) throws JacksonException
     {
         _verifyValueWrite("start an object");
-        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
+        SimpleStreamWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
+        _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
         return this;
     }
@@ -649,7 +656,9 @@ public class SmileGenerator
     public JsonGenerator writeStartObject(Object forValue, int size) throws JacksonException
     {
         _verifyValueWrite("start an object");
-        _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
+        SimpleStreamWriteContext ctxt = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(ctxt.getNestingDepth());
+        _streamWriteContext = ctxt;
         _writeByte(TOKEN_LITERAL_START_OBJECT);
         return this;
     }

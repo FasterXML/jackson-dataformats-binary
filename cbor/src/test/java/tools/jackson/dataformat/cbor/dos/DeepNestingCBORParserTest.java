@@ -19,15 +19,16 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         final int depth = 1500;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepDoc(out, depth);
-        try (JsonParser jp = cborParser(out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(out)) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("JsonMappingException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
@@ -39,10 +40,9 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         CBORFactory cborFactory = CBORFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = cborParser(cborFactory, out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(cborFactory, out)) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }
@@ -52,15 +52,16 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         final int depth = 750;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         genDeepArrayDoc(out, depth);
-        try (JsonParser jp = cborParser(out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(out)) {
+            while (p.nextToken() != null) {
+                ;
             }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (1001) exceeds the maximum allowed"));
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue("JsonMappingException message is as expected?",
+                    e.getMessage().startsWith(exceptionPrefix));
         }
     }
 
@@ -72,16 +73,18 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         CBORFactory cborFactory = CBORFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
                 .build();
-        try (JsonParser jp = cborParser(cborFactory, out)) {
-            JsonToken jt;
-            while ((jt = jp.nextToken()) != null) {
-
+        try (JsonParser p = cborParser(cborFactory, out)) {
+            while (p.nextToken() != null) {
+                ;
             }
         }
     }
 
     private void genDeepDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = cborGenerator(out)) {
+        CBORFactory cborFactory = cborFactoryBuilder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .build();
+        try (JsonGenerator gen = cborFactory.createGenerator(ObjectWriteContext.empty(), out)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeName("a");
@@ -94,7 +97,10 @@ public class DeepNestingCBORParserTest extends CBORTestBase
     }
 
     private void genDeepArrayDoc(final ByteArrayOutputStream out, final int depth) throws IOException {
-        try (JsonGenerator gen = cborGenerator(out)) {
+        CBORFactory cborFactory = cborFactoryBuilder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                .build();
+        try (JsonGenerator gen = cborFactory.createGenerator(ObjectWriteContext.empty(), out)) {
             for (int i = 0; i < depth; i++) {
                 gen.writeStartObject();
                 gen.writeName("a");
