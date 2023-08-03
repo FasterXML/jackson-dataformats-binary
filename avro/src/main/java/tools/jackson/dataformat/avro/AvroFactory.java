@@ -63,7 +63,7 @@ public class AvroFactory
     public AvroFactory()
     {
         // 09-Jan-2017, tatu: We must actually create and pass builder to be able to change
-        //    one of JsonGenerator.Featuers (See builder for details)
+        //    one of JsonGenerator.Features (See builder for details)
         super(new AvroFactoryBuilder());
     }
 

@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.protobuf;
 
+import tools.jackson.core.ErrorReportConfiguration;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
@@ -15,6 +16,7 @@ public class ProtobufFactoryBuilder extends DecorableTSFBuilder<ProtobufFactory,
 {
     public ProtobufFactoryBuilder() {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 0, 0);
     }
 

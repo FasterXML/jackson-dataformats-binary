@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.avro;
 
+import tools.jackson.core.ErrorReportConfiguration;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.StreamWriteFeature;
@@ -44,6 +45,7 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
 
     protected AvroFactoryBuilder(boolean useApacheDecoder) {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 AvroFactory.DEFAULT_AVRO_PARSER_FEATURE_FLAGS,
                 AvroFactory.DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS);
         _useApacheLibDecoder = useApacheDecoder;

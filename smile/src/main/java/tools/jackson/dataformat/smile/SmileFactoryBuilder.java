@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.smile;
 
+import tools.jackson.core.ErrorReportConfiguration;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
@@ -19,6 +20,7 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
 
     protected SmileFactoryBuilder() {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 SmileFactory.DEFAULT_SMILE_PARSER_FEATURE_FLAGS,
                 SmileFactory.DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS);
     }

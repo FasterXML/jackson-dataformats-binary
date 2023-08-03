@@ -22,7 +22,8 @@ public class ProtobufFactory
 
     public ProtobufFactory() {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
-            0, 0);
+                ErrorReportConfiguration.defaults(),
+                0, 0);
     }
 
     protected ProtobufFactory(ProtobufFactory src) {

@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.cbor;
 
+import tools.jackson.core.ErrorReportConfiguration;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
@@ -22,6 +23,7 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
     protected CBORFactoryBuilder() {
         super(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 CBORFactory.DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
                 CBORFactory.DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }

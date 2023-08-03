@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.ion;
 
+import tools.jackson.core.ErrorReportConfiguration;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.base.DecorableTSFactory.DecorableTSFBuilder;
@@ -38,6 +39,7 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
 
     protected IonFactoryBuilder(boolean createBinary) {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 IonFactory.DEFAULT_ION_PARSER_FEATURE_FLAGS,
                 IonFactory.DEFAULT_ION_GENERATOR_FEATURE_FLAGS);
         _createBinaryWriters = createBinary;

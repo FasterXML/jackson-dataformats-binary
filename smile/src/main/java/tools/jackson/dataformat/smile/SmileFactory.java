@@ -90,6 +90,7 @@ public class SmileFactory
      */
     public SmileFactory() {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 DEFAULT_SMILE_PARSER_FEATURE_FLAGS, DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS);
     }
 
