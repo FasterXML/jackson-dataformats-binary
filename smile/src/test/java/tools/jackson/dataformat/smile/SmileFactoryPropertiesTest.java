@@ -138,6 +138,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         SmileFactory f = new SmileFactory();
         IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 f._getBufferRecycler(),
                 ContentReference.rawReference("doc"), false, null);
         OutputStream bytes = new ByteArrayOutputStream();

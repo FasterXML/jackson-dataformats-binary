@@ -2,6 +2,7 @@ package tools.jackson.dataformat.smile;
 
 import java.io.InputStream;
 
+import tools.jackson.core.ErrorReportConfiguration;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.exc.StreamReadException;
@@ -78,6 +79,7 @@ public class ParserInternalsTest extends BaseTestForSmile
     private SmileParser _minimalParser(byte[] doc) {
         IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 null, ContentReference.rawReference(doc), false, null);
         return new SmileParser(null, // ObjectReadContext
                 ctxt, // IOContext
@@ -90,6 +92,7 @@ public class ParserInternalsTest extends BaseTestForSmile
     private SmileParser _minimalParser(InputStream in) {
         IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
                 null, ContentReference.rawReference(in), false, null);
         return new SmileParser(null, // ObjectReadContext
                 ctxt, // IOContext
