@@ -3,9 +3,7 @@ package tools.jackson.dataformat.smile;
 import java.io.*;
 
 import tools.jackson.core.*;
-import tools.jackson.core.io.IOContext;
 import tools.jackson.core.json.JsonFactory;
-import tools.jackson.core.io.ContentReference;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
@@ -129,26 +127,6 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
             verifyException(e, "for character-based");
         }
 
-    }
-
-    // There is one constructor designed for direct generator instantiation,
-    // not used by factory; need to ensure it does not fail spectacularly
-    public void testGeneratorConstruction() throws Exception
-    {
-        SmileFactory f = new SmileFactory();
-        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
-                StreamWriteConstraints.defaults(),
-                ErrorReportConfiguration.defaults(),
-                f._getBufferRecycler(),
-                ContentReference.rawReference("doc"), false, null);
-        OutputStream bytes = new ByteArrayOutputStream();
-        byte[] buf = new byte[1000];
-        SmileGenerator g = new SmileGenerator(ObjectWriteContext.empty(), ctxt,
-                0, 0,
-                bytes, buf, 0, false);
-        g.writeStartArray();
-        g.writeEndArray();
-        g.close();
     }
 
     public void testCanonicalization() throws Exception

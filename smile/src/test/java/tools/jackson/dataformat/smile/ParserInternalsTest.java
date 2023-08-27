@@ -2,12 +2,7 @@ package tools.jackson.dataformat.smile;
 
 import java.io.InputStream;
 
-import tools.jackson.core.ErrorReportConfiguration;
-import tools.jackson.core.StreamReadConstraints;
-import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.exc.StreamReadException;
-import tools.jackson.core.io.ContentReference;
-import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import tools.jackson.dataformat.smile.testutil.ThrottledInputStream;
@@ -77,12 +72,8 @@ public class ParserInternalsTest extends BaseTestForSmile
     }
 
     private SmileParser _minimalParser(byte[] doc) {
-        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
-                StreamWriteConstraints.defaults(),
-                ErrorReportConfiguration.defaults(),
-                null, ContentReference.rawReference(doc), false, null);
         return new SmileParser(null, // ObjectReadContext
-                ctxt, // IOContext
+                testIOContext(),
                 0, 0, // flags
                 ROOT_SYMBOLS.makeChild(0), // ByteQuadsCanonicalizer
                 null, // InputStream
@@ -90,12 +81,8 @@ public class ParserInternalsTest extends BaseTestForSmile
     }
 
     private SmileParser _minimalParser(InputStream in) {
-        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
-                StreamWriteConstraints.defaults(),
-                ErrorReportConfiguration.defaults(),
-                null, ContentReference.rawReference(in), false, null);
         return new SmileParser(null, // ObjectReadContext
-                ctxt, // IOContext
+                testIOContext(),
                 0, 0, // flags
                 ROOT_SYMBOLS.makeChild(0), // ByteQuadsCanonicalizer
                 in, // InputStream
