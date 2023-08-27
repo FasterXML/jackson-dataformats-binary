@@ -29,7 +29,7 @@ public class DateTimeVisitor_builtAvroSchemaTest {
     private static final TypeFactory TYPE_FACTORY = TypeFactory.defaultInstance();
 
     @Parameter(0)
-    public Class testClass;
+    public Class<?> testClass;
 
     @Parameter(1)
     public JsonParser.NumberType givenNumberType;
@@ -41,7 +41,7 @@ public class DateTimeVisitor_builtAvroSchemaTest {
     public String expectedLogicalType;
 
     @Parameters(name = "With {0} and number type {1}")
-    public static Collection testData() {
+    public static Collection<?> testData() {
         return Arrays.asList(new Object[][]{
                 // Java type  | given number type, | expected Avro type | expected logicalType
                 {
