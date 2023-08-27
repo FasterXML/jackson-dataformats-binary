@@ -1646,10 +1646,15 @@ public class NonBlockingByteArrayParser
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        // 26-Aug-2023, tatu: But it might not be big enough?
+        final int neededSize = len + 8;
+        if (outBuf.length < neededSize) {
+            outBuf = _textBuffer.expandCurrentSegment(neededSize);
+        }
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         // since we only check expansion for multi-byte chars, there must be
         // enough room for remaining bytes as all-ASCII
-        int estSlack = outBuf.length - len - 8;
+        int estSlack = outBuf.length - len;
 
         for (int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
@@ -1676,7 +1681,7 @@ public class NonBlockingByteArrayParser
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _reportError("Invalid byte 0x%02x in short Unicode text block (offset %d)", i & 0xFF, inPtr);
+                    _reportError("Invalid byte 0x%02x in long Unicode text block (offset %d)", i & 0xFF, inPtr);
                 }
                 estSlack -= code;
                 if (estSlack <= 0) {
