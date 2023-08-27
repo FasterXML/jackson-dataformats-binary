@@ -114,8 +114,8 @@ public class SmileFactory
     }
 
     /**
-     * Main factory method to use for constructing {@link SmileFactory} instances with
-     * different configuration.
+     * Main factory method to use for constructing {@link SmileFactory} instances
+     * with different configuration.
      */
     public static SmileFactoryBuilder builder() {
         return new SmileFactoryBuilder();
