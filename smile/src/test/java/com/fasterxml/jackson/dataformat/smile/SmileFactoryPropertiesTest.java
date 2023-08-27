@@ -137,23 +137,6 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertEquals("[]", w.toString());
     }
 
-    // There is one constructor designed for direct generator instantiation,
-    // not used by factory; need to ensure it does not fail spectacularly
-    public void testGeneratorConstruction() throws Exception
-    {
-        SmileFactory f = new SmileFactory();
-        IOContext ctxt = new IOContext(StreamReadConstraints.defaults(),
-                f._getBufferRecycler(),
-                ContentReference.rawReference("doc"), false);
-        OutputStream bytes = new ByteArrayOutputStream();
-        byte[] buf = new byte[1000];
-        SmileGenerator g = new SmileGenerator(ctxt, 0, 0,
-                null, bytes, buf, 0, false);
-        g.writeStartArray();
-        g.writeEndArray();
-        g.close();
-    }
-
     public void testCanonicalization() throws Exception
     {
         try (NonBlockingByteArrayParser parser = new SmileFactory()

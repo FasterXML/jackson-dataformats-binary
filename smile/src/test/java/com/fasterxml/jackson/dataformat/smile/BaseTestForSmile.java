@@ -9,7 +9,9 @@ import java.util.Arrays;
 import org.junit.Assert;
 
 import com.fasterxml.jackson.core.*;
-
+import com.fasterxml.jackson.core.io.ContentReference;
+import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.util.BufferRecycler;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 public abstract class BaseTestForSmile
@@ -147,6 +149,16 @@ public abstract class BaseTestForSmile
     {
         f.configure(SmileGenerator.Feature.WRITE_HEADER, addHeader);
         return f.createGenerator(result, null);
+    }
+
+    /**
+     * Factory method for creating {@link IOContext}s for tests
+     */
+    public static IOContext testIOContext() {
+        return new IOContext(StreamReadConstraints.defaults(),
+                StreamWriteConstraints.defaults(),
+                ErrorReportConfiguration.defaults(),
+                new BufferRecycler(), ContentReference.unknown(), false);
     }
 
     /*
