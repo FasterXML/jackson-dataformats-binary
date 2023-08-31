@@ -183,8 +183,6 @@ public class SmileGenerator
     /**********************************************************
      */
 
-    protected final IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -301,22 +299,21 @@ public class SmileGenerator
     /**********************************************************
      */
 
-    public SmileGenerator(IOContext ctxt, int stdFeatures, int smileFeatures,
+    public SmileGenerator(IOContext ioCtxt, int stdFeatures, int smileFeatures,
             ObjectCodec codec, OutputStream out)
     {
-        super(stdFeatures, codec, /*WriteContext*/ null);
+        super(stdFeatures, codec, ioCtxt, /*WriteContext*/ null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
                 // NOTE: we passed `null` for default write context
         _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
-        _ioContext = ctxt;
-        _streamWriteConstraints = ctxt.streamWriteConstraints();
+        _streamWriteConstraints = ioCtxt.streamWriteConstraints();
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = true;
-        _outputBuffer = ctxt.allocWriteEncodingBuffer();
+        _outputBuffer = ioCtxt.allocWriteEncodingBuffer();
         _outputEnd = _outputBuffer.length;
         // let's just sanity check to prevent nasty odd errors
         if (_outputEnd < MIN_BUFFER_LENGTH) {
@@ -347,19 +344,18 @@ public class SmileGenerator
         }
     }
 
-    public SmileGenerator(IOContext ctxt, int stdFeatures, int smileFeatures,
+    public SmileGenerator(IOContext ioCtxt, int stdFeatures, int smileFeatures,
             ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(stdFeatures, codec, null);
+        super(stdFeatures, codec, ioCtxt, null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
                 // NOTE: we passed `null` for default write context
         _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
-        _ioContext = ctxt;
-        _streamWriteConstraints = ctxt.streamWriteConstraints();
+        _streamWriteConstraints = ioCtxt.streamWriteConstraints();
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
