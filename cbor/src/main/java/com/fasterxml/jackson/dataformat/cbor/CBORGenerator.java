@@ -178,8 +178,6 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    protected final  IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -288,7 +286,7 @@ public class CBORGenerator extends GeneratorBase
 
     public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
             ObjectCodec codec, OutputStream out) {
-        super(stdFeatures, codec, /* Write Context */ null);
+        super(stdFeatures, codec, ctxt, null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
@@ -297,7 +295,6 @@ public class CBORGenerator extends GeneratorBase
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
-        _ioContext = ctxt;
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _out = out;
         _bufferRecyclable = true;
@@ -326,7 +323,7 @@ public class CBORGenerator extends GeneratorBase
     public CBORGenerator(IOContext ctxt, int stdFeatures, int formatFeatures,
             ObjectCodec codec, OutputStream out, byte[] outputBuffer,
             int offset, boolean bufferRecyclable) {
-        super(stdFeatures, codec, /* Write Context */ null);
+        super(stdFeatures, codec, ctxt, null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
@@ -335,7 +332,6 @@ public class CBORGenerator extends GeneratorBase
         _formatFeatures = formatFeatures;
         _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
         _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
-        _ioContext = ctxt;
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _out = out;
         _bufferRecyclable = bufferRecyclable;
@@ -1369,8 +1365,6 @@ public class CBORGenerator extends GeneratorBase
                     }
                 }
             }
-            // boolean wasClosed = _closed;
-            super.close();
             _flushBuffer();
 
             if (_ioContext.isResourceManaged()
@@ -1383,7 +1377,7 @@ public class CBORGenerator extends GeneratorBase
             }
             // Internal buffer(s) generator has can now be released as well
             _releaseBuffers();
-            _ioContext.close();
+            super.close();
         }
     }
 

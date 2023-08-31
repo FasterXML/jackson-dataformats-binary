@@ -49,8 +49,6 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    protected final IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -142,8 +140,7 @@ public class ProtobufGenerator extends GeneratorBase
             ObjectCodec codec, OutputStream output)
         throws IOException
     {
-        super(jsonFeatures, codec, BOGUS_WRITE_CONTEXT);
-        _ioContext = ctxt;
+        super(jsonFeatures, codec, ctxt, BOGUS_WRITE_CONTEXT);
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _output = output;
         _pbContext = _rootContext = ProtobufWriteContext.createNullContext();
@@ -371,7 +368,6 @@ public class ProtobufGenerator extends GeneratorBase
     public void close() throws IOException
     {
         if (!isClosed()) {
-            super.close();
             if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
                 ProtobufWriteContext ctxt;
                 while ((ctxt = _pbContext) != null) {
@@ -399,7 +395,7 @@ public class ProtobufGenerator extends GeneratorBase
             }
             // Internal buffer(s) generator has can now be released as well
             _releaseBuffers();
-            _ioContext.close();
+            super.close();
         }
     }
 

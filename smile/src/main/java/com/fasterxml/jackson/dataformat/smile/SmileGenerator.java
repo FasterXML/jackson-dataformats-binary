@@ -183,8 +183,6 @@ public class SmileGenerator
     /**********************************************************
      */
 
-    protected final IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -304,14 +302,13 @@ public class SmileGenerator
     public SmileGenerator(IOContext ctxt, int stdFeatures, int smileFeatures,
             ObjectCodec codec, OutputStream out)
     {
-        super(stdFeatures, codec, /*WriteContext*/ null);
+        super(stdFeatures, codec, ctxt, null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
                 // NOTE: we passed `null` for default write context
         _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
-        _ioContext = ctxt;
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
@@ -351,14 +348,13 @@ public class SmileGenerator
             ObjectCodec codec, OutputStream out, byte[] outputBuffer, int offset,
             boolean bufferRecyclable)
     {
-        super(stdFeatures, codec, null);
+        super(stdFeatures, codec, ctxt, null);
         DupDetector dups = JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION.enabledIn(stdFeatures)
                 ? DupDetector.rootDetector(this)
                 : null;
                 // NOTE: we passed `null` for default write context
         _streamWriteContext = SmileWriteContext.createRootContext(dups);
         _formatFeatures = smileFeatures;
-        _ioContext = ctxt;
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _smileBufferRecycler = _smileBufferRecycler();
         _out = out;
@@ -1902,10 +1898,8 @@ public class SmileGenerator
                     }
                 }
             }
-            boolean wasClosed = _closed;
-            super.close();
 
-            if (!wasClosed && isEnabled(Feature.WRITE_END_MARKER)) {
+            if (isEnabled(Feature.WRITE_END_MARKER)) {
                 _writeByte(BYTE_MARKER_END_OF_CONTENT);
             }
             _flushBuffer();
@@ -1919,7 +1913,7 @@ public class SmileGenerator
             }
             // Internal buffer(s) generator has can now be released as well
             _releaseBuffers();
-            _ioContext.close();
+            super.close();
         }
     }
 

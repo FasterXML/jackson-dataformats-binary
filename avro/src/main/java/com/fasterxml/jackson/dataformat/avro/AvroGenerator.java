@@ -88,8 +88,6 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    protected final IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -143,8 +141,7 @@ public class AvroGenerator extends GeneratorBase
             ObjectCodec codec, OutputStream output)
         throws IOException
     {
-        super(jsonFeatures, codec);
-        _ioContext = ctxt;
+        super(jsonFeatures, codec, ctxt);
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _formatFeatures = avroFeatures;
         _output = output;
@@ -335,7 +332,6 @@ public class AvroGenerator extends GeneratorBase
     public void close() throws IOException
     {
         if (!isClosed()) {
-            super.close();
             if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
                 AvroWriteContext ctxt;
                 while ((ctxt = _avroContext) != null) {
@@ -375,7 +371,7 @@ public class AvroGenerator extends GeneratorBase
             }
             // Internal buffer(s) generator has can now be released as well
             _releaseBuffers();
-            _ioContext.close();
+            super.close();
         }
     }
 
