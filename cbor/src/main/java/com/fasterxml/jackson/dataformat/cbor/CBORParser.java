@@ -700,6 +700,7 @@ public class CBORParser extends ParserMinimalBase
                 // Also, internal buffer(s) can now be released as well
                 _releaseBuffers();
             }
+            _ioContext.close();
         }
     }
 

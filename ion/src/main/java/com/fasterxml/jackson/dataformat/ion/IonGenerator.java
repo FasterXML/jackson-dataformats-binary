@@ -182,6 +182,7 @@ public class IonGenerator
                     }
                 }
             }
+            _ioContext.close();
         }
     }
 

@@ -252,6 +252,7 @@ public class IonParser
                     ((Closeable) src).close();
                 }
             }
+            _ioContext.close();
             _closed = true;
         }
     }

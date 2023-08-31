@@ -370,34 +370,37 @@ public class ProtobufGenerator extends GeneratorBase
     @Override
     public void close() throws IOException
     {
-        super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
-            ProtobufWriteContext ctxt;
-            while ((ctxt = _pbContext) != null) {
-                if (ctxt.inArray()) {
-                    writeEndArray();
-                } else if (ctxt.inObject()) {
-                    writeEndObject();
-                } else {
-                    break;
+        if (!isClosed()) {
+            super.close();
+            if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+                ProtobufWriteContext ctxt;
+                while ((ctxt = _pbContext) != null) {
+                    if (ctxt.inArray()) {
+                        writeEndArray();
+                    } else if (ctxt.inObject()) {
+                        writeEndObject();
+                    } else {
+                        break;
+                    }
                 }
             }
-        }
-        // May need to finalize...
-        if (!_complete) {
-            _complete();
-        }
-        if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
-                _output.close();
-            } else if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
-                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
-                // If we can't close it, we should at least flush
-                _output.flush();
+            // May need to finalize...
+            if (!_complete) {
+                _complete();
             }
+            if (_output != null) {
+                if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+                    _output.close();
+                } else if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+                    // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
+                    // If we can't close it, we should at least flush
+                    _output.flush();
+                }
+            }
+            // Internal buffer(s) generator has can now be released as well
+            _releaseBuffers();
+            _ioContext.close();
         }
-        // Internal buffer(s) generator has can now be released as well
-        _releaseBuffers();
     }
 
     /*
