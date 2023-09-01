@@ -121,11 +121,6 @@ public class IonParser
      */
     protected JsonToken _valueToken;
 
-    /**
-     * Whether this logical parser has been closed or not
-     */
-    protected boolean _closed;
-
     /*
     /**********************************************************************
     /* Construction
@@ -199,32 +194,23 @@ public class IonParser
     /**********************************************************************
      */
 
-    @Override
-    public boolean isClosed() {
-        return _closed;
-    }
+    // Default close() is fine:
+    // public void close() { }
 
     @Override
-    public void close() {
-        if (!_closed) {
-            super.close();
-            // should only close if manage the resource
-            if (_ioContext.isResourceManaged()) {
-                Object src = _ioContext.contentReference().getRawContent();
-                if (src instanceof Closeable) {
-                    try {
-                        ((Closeable) src).close();
-                    } catch (IOException e) {
-                        throw _wrapIOFailure(e);
-                    }
+    protected void _closeInput() throws IOException {
+        // should only close if manage the resource
+        if (_ioContext.isResourceManaged()) {
+            Object src = _ioContext.contentReference().getRawContent();
+            if (src instanceof Closeable) {
+                try {
+                    ((Closeable) src).close();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
                 }
             }
-            _closed = true;
         }
     }
-
-    @Override
-    protected void _closeInput() throws IOException { }
 
     @Override
     protected void _releaseBuffers() { }

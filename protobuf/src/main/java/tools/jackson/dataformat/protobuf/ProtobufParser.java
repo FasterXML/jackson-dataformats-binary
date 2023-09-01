@@ -72,19 +72,6 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Generic I/O state
-    /**********************************************************************
-     */
-
-    /**
-     * Flag that indicates whether parser is closed or not. Gets
-     * set when parser is either closed by explicit call
-     * ({@link #close}) or when end-of-input is reached.
-     */
-    protected boolean _closed;
-
-    /*
-    /**********************************************************************
     /* Current input data
     /**********************************************************************
      */
@@ -340,10 +327,17 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Abstract impls
+    /* Abstract impls, overrides: input handling
     /**********************************************************************
      */
 
+    @Override
+    public void close()
+    {
+        super.close();
+        _state = STATE_CLOSED;
+    }
+    
     @Override
     public int releaseBuffered(OutputStream out)
     {
@@ -362,9 +356,29 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
+    protected void _closeInput() throws JacksonException {
+        if (_inputStream != null) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
+                try {
+                    _inputStream.close();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
+            }
+            _inputStream = null;
+        }
+    }
+    
+    @Override
     public Object streamReadInputSource() {
         return _inputStream;
     }
+
+    /*
+    /**********************************************************************
+    /* Abstract impls, overrides: location
+    /**********************************************************************
+     */
 
     /**
      * Overridden since we do not really have character-based locations,
@@ -407,25 +421,6 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public void close()
-    {
-        _state = STATE_CLOSED;
-        if (!_closed) {
-            _closed = true;
-            try {
-                _closeInput();
-            } finally {
-                // as per [JACKSON-324], do in finally block
-                // Also, internal buffer(s) can now be released as well
-                _releaseBuffers();
-            }
-        }
-    }
-
-    @Override
-    public boolean isClosed() { return _closed; }
-
-    @Override
     public ProtobufReadContext streamReadContext() {
         return _streamReadContext;
     }
@@ -442,11 +437,12 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Overridden methods
+    /* Overridden methods, other
     /**********************************************************************
      */
 
-    @Override public ProtobufSchema getSchema() {
+    @Override
+    public ProtobufSchema getSchema() {
         return _schema;
     }
 
@@ -462,6 +458,7 @@ public class ProtobufParser extends ParserMinimalBase
         return false;
     }
 
+    @Override
     protected void _releaseBuffers()
     {
          if (_bufferRecyclable) {
@@ -2238,19 +2235,6 @@ public class ProtobufParser extends ParserMinimalBase
             _byteArrayBuilder.reset();
         }
         return _byteArrayBuilder;
-    }
-
-    protected void _closeInput() throws JacksonException {
-        if (_inputStream != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
-                try {
-                    _inputStream.close();
-                } catch (IOException e) {
-                    throw _wrapIOFailure(e);
-                }
-            }
-            _inputStream = null;
-        }
     }
 
     @Override

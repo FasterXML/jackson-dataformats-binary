@@ -53,19 +53,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Generic I/O state
-    /**********************************************************************
-     */
-
-    /**
-     * Flag that indicates whether parser is closed or not. Gets
-     * set when parser is either closed by explicit call
-     * ({@link #close}) or when end-of-input is reached.
-     */
-    protected boolean _closed;
-
-    /*
-    /**********************************************************************
     /* Current input data
     /**********************************************************************
      */
@@ -290,6 +277,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************************
      */
 
+    @Override
     protected abstract void _closeInput() throws JacksonException;
 
     protected abstract void _parseNumericValue() throws JacksonException;
@@ -299,7 +287,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Abstract impls
+    /* Abstract impls, simple accessors
     /**********************************************************************
      */
 
@@ -307,6 +295,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
     @Override public void assignCurrentValue(Object v) { _streamReadContext.assignCurrentValue(v); }
     @Override public Object currentValue() { return _streamReadContext.currentValue(); }
     @Override public final boolean isClosed() { return _closed; }
+
+    /*
+    /**********************************************************************
+    /* Abstract impls, Location access
+    /**********************************************************************
+     */
 
     /**
      * Overridden since we do not really have character-based locations,
@@ -349,21 +343,20 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return _streamReadContext.currentName();
     }
 
+    /*
+    /**********************************************************************
+    /* Abstract impls, I/O state
+    /**********************************************************************
+     */
+
     @Override
     public final void close() throws JacksonException {
-        if (!_closed) {
-            _closed = true;
-            _inputEnd = 0;
-            _symbols.release();
-            try {
-                _closeInput();
-            } finally {
-                // Also, internal buffer(s) can now be released as well
-                _releaseBuffers();
-            }
-        }
+        super.close();
+        _inputEnd = 0;
+        _symbols.release();
     }
 
+    @Override
     protected final void _releaseBuffers() {
         _textBuffer.releaseBuffers();
         String[] nameBuf = _seenNames;
