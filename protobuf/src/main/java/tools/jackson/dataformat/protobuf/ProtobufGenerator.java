@@ -312,9 +312,8 @@ public class ProtobufGenerator extends GeneratorBase
     }
 
     @Override
-    public void close() throws JacksonException
+    protected void _closeInput() throws IOException
     {
-        super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             ProtobufWriteContext ctxt;
             while ((ctxt = _streamWriteContext) != null) {
@@ -332,20 +331,14 @@ public class ProtobufGenerator extends GeneratorBase
             _complete();
         }
         if (_output != null) {
-            try {
-                if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
-                    _output.close();
-                } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-                    // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
-                    // If we can't close it, we should at least flush
-                    _output.flush();
-                }
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
+                _output.close();
+            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
+                // If we can't close it, we should at least flush
+                _output.flush();
             }
         }
-        // Internal buffer(s) generator has can now be released as well
-        _releaseBuffers();
     }
 
     /*

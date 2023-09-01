@@ -316,9 +316,8 @@ public class AvroGenerator extends GeneratorBase
     }
 
     @Override
-    public void close()
+    protected void _closeInput() throws IOException
     {
-        super.close();
         if (isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
             AvroWriteContext ctxt;
             while ((ctxt = _streamWriteContext) != null) {
@@ -348,19 +347,13 @@ public class AvroGenerator extends GeneratorBase
             }
         }
         if (_output != null) {
-            try {
-                if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
-                    _output.close();
-                } else  if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-                    // If we can't close it, we should at least flush
-                    _output.flush();
-                }
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
+            if (_ioContext.isResourceManaged() || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
+                _output.close();
+            } else  if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                // If we can't close it, we should at least flush
+                _output.flush();
             }
         }
-        // Internal buffer(s) generator has can now be released as well
-        _releaseBuffers();
     }
 
     /*

@@ -1277,7 +1277,8 @@ public class CBORGenerator extends GeneratorBase
     }
 
     @Override
-    public void close() throws JacksonException {
+    protected void _closeInput() throws IOException
+    {
         // First: let's see that we still have buffers...
         if ((_outputBuffer != null)
                 && isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT)) {
@@ -1292,24 +1293,16 @@ public class CBORGenerator extends GeneratorBase
                 }
             }
         }
-        // boolean wasClosed = _closed;
-        super.close();
         _flushBuffer();
 
-        try {
-            if (_ioContext.isResourceManaged()
-                    || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
-                _out.close();
-            } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-                // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
-                // If we can't close it, we should at least flush
-                _out.flush();
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
+        if (_ioContext.isResourceManaged()
+                || isEnabled(StreamWriteFeature.AUTO_CLOSE_TARGET)) {
+            _out.close();
+        } else if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+            // 14-Jan-2019, tatu: [dataformats-binary#155]: unless prevented via feature
+            // If we can't close it, we should at least flush
+            _out.flush();
         }
-        // Internal buffer(s) generator has can now be released as well
-        _releaseBuffers();
     }
 
     /*

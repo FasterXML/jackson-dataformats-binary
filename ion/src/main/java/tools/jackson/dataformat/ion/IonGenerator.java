@@ -198,25 +198,18 @@ public class IonGenerator
     }
 
     @Override
-    public void close()
+    protected void _closeInput() throws IOException
     {
-        if (!_closed) {
-            _closed = true;
-            try {
-                if (_ionWriterIsManaged) {
-                    _writer.close();
+        if (_ionWriterIsManaged) {
+            _writer.close();
+        }
+        if (_ioContext.isResourceManaged()) {
+            _destination.close();
+        } else {
+            if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
+                if (_destination instanceof Flushable) {
+                    ((Flushable) _destination).flush();
                 }
-                if (_ioContext.isResourceManaged()) {
-                    _destination.close();
-                } else {
-                    if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-                        if (_destination instanceof Flushable) {
-                            ((Flushable) _destination).flush();
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
             }
         }
     }
@@ -234,11 +227,6 @@ public class IonGenerator
                 }
             }
         }
-    }
-
-    @Override
-    public boolean isClosed() {
-        return _closed;
     }
 
     /*
