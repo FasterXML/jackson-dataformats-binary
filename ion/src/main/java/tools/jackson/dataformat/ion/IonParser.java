@@ -195,7 +195,7 @@ public class IonParser
 
     /*
     /**********************************************************************
-    /* JsonParser implementation: state handling
+    /* JsonParser implementation: input state handling
     /**********************************************************************
      */
 
@@ -222,6 +222,12 @@ public class IonParser
             _closed = true;
         }
     }
+
+    @Override
+    protected void _closeInput() throws IOException { }
+
+    @Override
+    protected void _releaseBuffers() { }
 
     @Override
     public IonReader streamReadInputSource() {
