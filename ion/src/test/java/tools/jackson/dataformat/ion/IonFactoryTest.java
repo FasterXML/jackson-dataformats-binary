@@ -63,8 +63,8 @@ public class IonFactoryTest {
         throws Throwable {
         IonParser parser = supplier.get();
         assertEquals("Expected managed to be: "+expectResourceManaged,
-                expectResourceManaged, parser._ioContext.isResourceManaged());
-        Class<?> refType = parser._ioContext.contentReference().getRawContent().getClass();
+                expectResourceManaged, parser.ioContext().isResourceManaged());
+        Class<?> refType = parser.ioContext().contentReference().getRawContent().getClass();
         assertTrue("ContentReference should be a IonReader, was: "+refType,
                 IonReader.class.isAssignableFrom(refType));
         parser.close();

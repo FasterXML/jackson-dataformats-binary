@@ -77,12 +77,6 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     /**
-     * I/O context for this reader. It handles buffer allocation
-     * for the reader.
-     */
-    protected final IOContext _ioContext;
-
-    /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
      * ({@link #close}) or when end-of-input is reached.
@@ -294,7 +288,6 @@ public class ProtobufParser extends ParserMinimalBase
             boolean bufferRecyclable)
     {
         super(readCtxt, ioCtxt, parserFeatures);
-        _ioContext = ioCtxt;
 
         _inputStream = in;
         _inputBuffer = inputBuffer;

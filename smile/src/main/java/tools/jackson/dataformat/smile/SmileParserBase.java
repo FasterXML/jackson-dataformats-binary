@@ -58,12 +58,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
      */
 
     /**
-     * I/O context for this reader. It handles buffer allocation
-     * for the reader.
-     */
-    protected final IOContext _ioContext;
-
-    /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
      * ({@link #close}) or when end-of-input is reached.
@@ -242,7 +236,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     {
         super(readCtxt, ioCtxt, parserFeatures);
         _formatFeatures = formatFeatures;
-        _ioContext = ioCtxt;
         _symbols = sym;
         _symbolsCanonical = sym.isCanonicalizing();
         DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)

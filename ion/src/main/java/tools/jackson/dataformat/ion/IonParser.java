@@ -96,12 +96,6 @@ public class IonParser
 
     protected final IonReader _reader;
 
-    /**
-     * Some information about source is passed here, including underlying
-     * stream
-     */
-    protected final IOContext _ioContext;
-
     private final IonSystem _system;
 
     /**
@@ -145,7 +139,6 @@ public class IonParser
         super(readCtxt, ioCtxt, streamReadFeatures);
         _reader = r;
         _formatFeatures = formatFeatures;
-        _ioContext = ioCtxt;
         // No DupDetector in use (yet?)
         _streamReadContext = SimpleStreamReadContext.createRootContext(-1, -1, null);
         _system = system;
@@ -166,6 +159,13 @@ public class IonParser
      */
     public IonSystem getIonSystem() {
         return _system;
+    }
+
+    /**
+     * Accessor needed for testing
+     */
+    public IOContext ioContext() {
+        return _ioContext;
     }
 
     /*
@@ -207,6 +207,7 @@ public class IonParser
     @Override
     public void close() {
         if (!_closed) {
+            super.close();
             // should only close if manage the resource
             if (_ioContext.isResourceManaged()) {
                 Object src = _ioContext.contentReference().getRawContent();
