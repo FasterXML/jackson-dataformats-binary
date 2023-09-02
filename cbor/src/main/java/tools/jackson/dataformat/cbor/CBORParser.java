@@ -469,24 +469,49 @@ public class CBORParser extends ParserBase
         return _streamReadContext.currentName();
     }
 
+    /*
+    /**********************************************************************
+    /* Abstract methods/overrides, closing parser
+    /**********************************************************************
+     */
+
+    /**
+     * Method called to release internal buffers owned by the base
+     * reader. This may be called along with {@link #_closeInput} (for
+     * example, when explicitly closing this reader instance), or
+     * separately (if need be).
+     */
     @Override
-    public void close() {
-        if (!_closed) {
-            _closed = true;
-            _symbols.release();
-            try {
-                _closeInput();
-            } finally {
-                // as per [JACKSON-324], do in finally block
-                // Also, internal buffer(s) can now be released as well
-                _releaseBuffers();
+    protected void _releaseBuffers()
+    {
+        super._releaseBuffers();
+        _symbols.release();
+        if (_bufferRecyclable) {
+            byte[] buf = _inputBuffer;
+            if (buf != null) {
+                _inputBuffer = null;
+                _ioContext.releaseReadIOBuffer(buf);
             }
+        }
+    }
+
+    @Override
+    protected void _closeInput() {
+        if (_inputStream != null) {
+            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
+                try {
+                    _inputStream.close();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
+            }
+            _inputStream = null;
         }
     }
 
     /*
     /**********************************************************************
-    /* Overridden methods
+    /* Overridden methods, other
     /**********************************************************************
      */
 
@@ -499,25 +524,6 @@ public class CBORParser extends ParserBase
         }
         // other types, no benefit from accessing as char[]
         return false;
-    }
-
-    /**
-     * Method called to release internal buffers owned by the base
-     * reader. This may be called along with {@link #_closeInput} (for
-     * example, when explicitly closing this reader instance), or
-     * separately (if need be).
-     */
-    @Override
-    protected void _releaseBuffers()
-    {
-        super._releaseBuffers();
-        if (_bufferRecyclable) {
-            byte[] buf = _inputBuffer;
-            if (buf != null) {
-                _inputBuffer = null;
-                _ioContext.releaseReadIOBuffer(buf);
-            }
-        }
     }
 
     /*
@@ -3771,20 +3777,6 @@ expType, type, ch));
             _inputEnd += count;
         }
         return true;
-    }
-
-    @Override
-    protected void _closeInput() {
-        if (_inputStream != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(StreamReadFeature.AUTO_CLOSE_SOURCE)) {
-                try {
-                    _inputStream.close();
-                } catch (IOException e) {
-                    throw _wrapIOFailure(e);
-                }
-            }
-            _inputStream = null;
-        }
     }
 
     @Override
