@@ -88,8 +88,6 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    protected final IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -143,8 +141,7 @@ public class AvroGenerator extends GeneratorBase
             ObjectCodec codec, OutputStream output)
         throws IOException
     {
-        super(jsonFeatures, codec);
-        _ioContext = ctxt;
+        super(jsonFeatures, codec, ctxt);
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _formatFeatures = avroFeatures;
         _output = output;
@@ -334,46 +331,48 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public void close() throws IOException
     {
-        super.close();
-        if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
-            AvroWriteContext ctxt;
-            while ((ctxt = _avroContext) != null) {
-                if (ctxt.inArray()) {
-                    writeEndArray();
-                } else if (ctxt.inObject()) {
-                    writeEndObject();
-                } else {
-                    break;
+        if (!isClosed()) {
+            if (isEnabled(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)) {
+                AvroWriteContext ctxt;
+                while ((ctxt = _avroContext) != null) {
+                    if (ctxt.inArray()) {
+                        writeEndArray();
+                    } else if (ctxt.inObject()) {
+                        writeEndObject();
+                    } else {
+                        break;
+                    }
                 }
             }
-        }
-        // May need to finalize...
-        /* 18-Nov-2014, tatu: Since this method is (a) often called as a result of an exception,
-         *   and (b) quite likely to cause an exception of its own, need to work around
-         *   combination of problems; one part being to catch non-IOExceptions; something that
-         *   is usually NOT done. Partly this is because Avro codec is leaking low-level exceptions
-         *   such as NPE.
-         */
-        if (!_complete) {
-            try {
-                _complete();
-            } catch (IOException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new JsonGenerationException("Failed to close AvroGenerator: ("
-                        +e.getClass().getName()+"): "+e.getMessage(), e, this);
+            // May need to finalize...
+            /* 18-Nov-2014, tatu: Since this method is (a) often called as a result of an exception,
+             *   and (b) quite likely to cause an exception of its own, need to work around
+             *   combination of problems; one part being to catch non-IOExceptions; something that
+             *   is usually NOT done. Partly this is because Avro codec is leaking low-level exceptions
+             *   such as NPE.
+             */
+            if (!_complete) {
+                try {
+                    _complete();
+                } catch (IOException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new JsonGenerationException("Failed to close AvroGenerator: ("
+                            +e.getClass().getName()+"): "+e.getMessage(), e, this);
+                }
             }
-        }
-        if (_output != null) {
-            if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
-                _output.close();
-            } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
-                // If we can't close it, we should at least flush
-                _output.flush();
+            if (_output != null) {
+                if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
+                    _output.close();
+                } else  if (isEnabled(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM)) {
+                    // If we can't close it, we should at least flush
+                    _output.flush();
+                }
             }
+            // Internal buffer(s) generator has can now be released as well
+            _releaseBuffers();
+            super.close();
         }
-        // Internal buffer(s) generator has can now be released as well
-        _releaseBuffers();
     }
 
     /*

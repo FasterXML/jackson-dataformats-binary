@@ -109,8 +109,6 @@ public class IonGenerator
     /* Indicates whether the IonGenerator is responsible for closing the underlying IonWriter. */
     protected final boolean _ionWriterIsManaged;
 
-    protected final IOContext _ioContext;
-
     /**
      * @since 2.16
      */
@@ -138,13 +136,12 @@ public class IonGenerator
     public IonGenerator(int jsonFeatures, final int ionFeatures, ObjectCodec codec,
             IonWriter ion, boolean ionWriterIsManaged, IOContext ctxt, Closeable dst)
     {
-        super(jsonFeatures, codec);
+        super(jsonFeatures, codec, ctxt);
         //  Overwrite the writecontext with our own implementation
         _writeContext = IonWriteContext.createRootContext(_writeContext.getDupDetector());
         _formatFeatures = ionFeatures;
         _writer = ion;
         _ionWriterIsManaged = ionWriterIsManaged;
-        _ioContext = ctxt;
         _streamWriteConstraints = ctxt.streamWriteConstraints();
         _destination = dst;
     }
@@ -168,8 +165,7 @@ public class IonGenerator
     @Override
     public void close() throws IOException
     {
-        if (!_closed) {
-            _closed = true;
+        if (!isClosed()) {
             if (_ionWriterIsManaged) {
                 _writer.close();
             }
@@ -182,6 +178,7 @@ public class IonGenerator
                     }
                 }
             }
+            super.close();
         }
     }
 
