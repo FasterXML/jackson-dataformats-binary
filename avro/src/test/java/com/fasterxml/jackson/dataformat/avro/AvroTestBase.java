@@ -9,6 +9,8 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -248,6 +250,19 @@ public abstract class AvroTestBase extends TestCase
     }
 
     public enum Size { SMALL, LARGE; }
+
+    public enum ABC { 
+		A, 
+		B, 
+		@JsonEnumDefaultValue
+		C; 
+	}
+
+    public static class ABCDefaultClass {
+        public String name;
+        @JsonProperty(required = true)
+        public ABC abc;
+    }
 
     /*
     /**********************************************************
