@@ -17,6 +17,7 @@ import org.apache.avro.specific.SpecificData;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
@@ -71,14 +72,6 @@ public abstract class AvroSchemaHelper
             BigInteger.class, BigDecimal.class,
             String.class
     ));
-
-    /**
-     * 
-     * Jackson annotation introspector for verifying enum default annotation for Avro Schema generation
-     * 
-     * @since 2.16
-     */
-    private static final JacksonAnnotationIntrospector JACKSON_ANNOTATION_INTROSPECTOR = new JacksonAnnotationIntrospector();
 
     /**
      * Checks if a given type is "Stringable", that is one of the default
@@ -276,9 +269,10 @@ public abstract class AvroSchemaHelper
      * @param values List of enum names
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
-    public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
+    public static Schema createEnumSchema(BeanDescription bean, List<String> values,
+            AnnotationIntrospector intr) {
         final JavaType enumType = bean.getType();
-        Enum<?> defaultEnumValue = JACKSON_ANNOTATION_INTROSPECTOR.findDefaultEnumValue((Class<Enum<?>>)(Class<?>) enumType.getRawClass());
+        Enum<?> defaultEnumValue = intr.findDefaultEnumValue((Class<Enum<?>>)(Class<?>) enumType.getRawClass());
         return addAlias(Schema.createEnum(
             getName(enumType),
             bean.findClassDescription(),
