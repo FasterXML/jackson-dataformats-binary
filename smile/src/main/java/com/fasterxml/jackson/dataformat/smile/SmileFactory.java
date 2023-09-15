@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
@@ -72,6 +73,19 @@ public class SmileFactory extends JsonFactory
     protected int _smileParserFeatures;
     protected int _smileGeneratorFeatures;
 
+    /*
+    /**********************************************************
+    /* Smile-specific buffer recycling (moved here in 2.16)
+    /**********************************************************
+    
+    /**
+     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
+     * to a buffer recycler used to provide a low-cost
+     * buffer recycling for Smile-specific buffers.
+     */
+    final protected static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
+        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
+    
     /*
     /**********************************************************
     /* Factory construction, configuration
@@ -509,7 +523,8 @@ public class SmileFactory extends JsonFactory
          * But should we force writing, or throw exception, if settings are in conflict?
          * For now, let's error out...
          */
-        SmileGenerator gen = new SmileGenerator(ctxt, _generatorFeatures, feats, _objectCodec, out);
+        SmileGenerator gen = new SmileGenerator(ctxt, _generatorFeatures, feats, _objectCodec, out,
+                _smileBufferRecycler());
         if ((feats & SmileGenerator.Feature.WRITE_HEADER.getMask()) != 0) {
             gen.writeHeader();
         } else {
@@ -527,5 +542,17 @@ public class SmileFactory extends JsonFactory
             }
         }
         return gen;
+    }
+
+    protected final static SmileBufferRecycler _smileBufferRecycler()
+    {
+        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
+        SmileBufferRecycler br = (ref == null) ? null : ref.get();
+
+        if (br == null) {
+            br = new SmileBufferRecycler();
+            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
+        }
+        return br;
     }
 }
