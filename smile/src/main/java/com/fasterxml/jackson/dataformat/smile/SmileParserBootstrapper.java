@@ -88,7 +88,8 @@ public class SmileParserBootstrapper
 
     public SmileParser constructParser(int factoryFeatures,
             int generalParserFeatures, int smileFeatures,
-            ObjectCodec codec, ByteQuadsCanonicalizer rootByteSymbols)
+            ObjectCodec codec, ByteQuadsCanonicalizer rootByteSymbols,
+            SmileBufferRecycler sbr)
         throws IOException, JsonParseException
     {
         // 13-Mar-2021, tatu: [dataformats-binary#252] Create canonicalizing OR
@@ -104,7 +105,7 @@ public class SmileParserBootstrapper
         }
 
         SmileParser p = new SmileParser(_context, generalParserFeatures, smileFeatures,
-                codec, can,
+                codec, can, sbr,
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         boolean hadSig = false;
 
