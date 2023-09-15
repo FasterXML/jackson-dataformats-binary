@@ -1,7 +1,6 @@
 package tools.jackson.dataformat.smile;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -277,34 +276,20 @@ public class SmileGenerator
 
     /*
     /**********************************************************************
-    /* Thread-local recycling
-    /**********************************************************************
-     */
-
-    /**
-     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
-
-    /*
-    /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
 
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
-            int streamWriteFeatures, int smileFeatures,
-            OutputStream out)
+            int streamWriteFeatures, int smileFeatures, OutputStream out,
+            SmileBufferRecycler sbr)
     {
         super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = smileFeatures;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
-        _smileBufferRecycler = _smileBufferRecycler();
+        _smileBufferRecycler = sbr;
         _out = out;
         _bufferRecyclable = true;
         _outputBuffer = ioCtxt.allocWriteEncodingBuffer();
@@ -339,16 +324,16 @@ public class SmileGenerator
     }
 
     public SmileGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
-            int streamWriteFeatures, int smileFeatures,
-            OutputStream out, byte[] outputBuffer, int offset,
-            boolean bufferRecyclable)
+            int streamWriteFeatures, int smileFeatures, OutputStream out,
+            SmileBufferRecycler sbr,
+            byte[] outputBuffer, int offset, boolean bufferRecyclable)
     {
         super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatFeatures = smileFeatures;
         final DupDetector dups = StreamWriteFeature.STRICT_DUPLICATE_DETECTION.enabledIn(streamWriteFeatures)
                 ? DupDetector.rootDetector(this) : null;
                 _streamWriteContext = SimpleStreamWriteContext.createRootContext(dups);
-        _smileBufferRecycler = _smileBufferRecycler();
+        _smileBufferRecycler = sbr;
         _out = out;
         _bufferRecyclable = bufferRecyclable;
         _outputTail = offset;
@@ -404,18 +389,6 @@ public class SmileGenerator
         }
         _writeBytes(HEADER_BYTE_1, HEADER_BYTE_2, HEADER_BYTE_3, (byte) last);
         return this;
-    }
-
-    protected final static SmileBufferRecycler _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
-        }
-        return br;
     }
 
     /*

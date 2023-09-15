@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.smile;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,6 +72,19 @@ public class SmileFactory
      * parsers use different name canonicalization method.
      */
     protected final transient ByteQuadsCanonicalizer _byteSymbolCanonicalizer = ByteQuadsCanonicalizer.createRoot();
+
+    /*
+    /**********************************************************
+    /* Smile-specific buffer recycling (moved here in 2.16)
+    /**********************************************************
+
+    /**
+     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
+     * to a buffer recycler used to provide a low-cost
+     * buffer recycling for Smile-specific buffers.
+     */
+    protected final static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
+        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
 
     /*
     /**********************************************************************
@@ -275,8 +289,8 @@ public class SmileFactory
          */
         SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
-                smileFeatures,
-                out);
+                smileFeatures, out,
+                _smileBufferRecycler());
         if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {
             gen.writeHeader();
         } else {
@@ -309,5 +323,17 @@ public class SmileFactory
     public PropertyNameMatcher constructCINameMatcher(List<Named> matches, boolean alreadyInterned,
             Locale locale) {
         return BinaryNameMatcher.constructCaseInsensitive(locale, matches, alreadyInterned);
+    }
+
+    protected final static SmileBufferRecycler _smileBufferRecycler()
+    {
+        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
+        SmileBufferRecycler br = (ref == null) ? null : ref.get();
+
+        if (br == null) {
+            br = new SmileBufferRecycler();
+            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
+        }
+        return br;
     }
 }
