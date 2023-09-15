@@ -16,6 +16,7 @@ import tools.jackson.core.async.NonBlockingInputFeeder;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 import tools.jackson.core.util.VersionUtil;
+import tools.jackson.dataformat.smile.SmileBufferRecycler;
 import tools.jackson.dataformat.smile.SmileConstants;
 import tools.jackson.dataformat.smile.SmileParser;
 import tools.jackson.dataformat.smile.SmileUtil;
@@ -55,9 +56,9 @@ public class NonBlockingByteArrayParser
 
     public NonBlockingByteArrayParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             int parserFeatures, int smileFeatures,
-            ByteQuadsCanonicalizer sym)
+            ByteQuadsCanonicalizer sym, SmileBufferRecycler sbr)
     {
-        super(readCtxt, ioCtxt, parserFeatures, smileFeatures, sym);
+        super(readCtxt, ioCtxt, parserFeatures, smileFeatures, sym, sbr);
     }
 
     /*

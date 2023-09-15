@@ -230,7 +230,8 @@ public class SmileFactory
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                can);
+                can,
+                _smileBufferRecycler());
     }
 
     /*
@@ -250,7 +251,8 @@ public class SmileFactory
             .constructParser(readCtxt, _factoryFeatures,
                     readCtxt.getStreamReadFeatures(_streamReadFeatures),
                     readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                    _byteSymbolCanonicalizer);
+                    _byteSymbolCanonicalizer,
+                    _smileBufferRecycler());
     }
 
     @Override
@@ -261,7 +263,8 @@ public class SmileFactory
             .constructParser(readCtxt, _factoryFeatures,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                _byteSymbolCanonicalizer);
+                _byteSymbolCanonicalizer,
+                _smileBufferRecycler());
     }
 
     @Override

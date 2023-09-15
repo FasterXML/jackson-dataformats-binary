@@ -1,6 +1,5 @@
 package tools.jackson.dataformat.smile;
 
-import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -197,17 +196,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Thread-local recycling
+    /* Buffer recycling
     /**********************************************************************
      */
-
-    /**
-     * <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    protected final static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
 
     /**
      * Helper object used for low-level recycling of Smile-generator
@@ -223,7 +214,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     public SmileParserBase(ObjectReadContext readCtxt, IOContext ioCtxt,
             int parserFeatures, int formatFeatures,
-            ByteQuadsCanonicalizer sym)
+            ByteQuadsCanonicalizer sym, SmileBufferRecycler sbr)
     {
         super(readCtxt, ioCtxt, parserFeatures);
         _formatFeatures = formatFeatures;
@@ -232,21 +223,8 @@ public abstract class SmileParserBase extends ParserMinimalBase
         DupDetector dups = StreamReadFeature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = SimpleStreamReadContext.createRootContext(dups);
-
         _textBuffer = ioCtxt.constructReadConstrainedTextBuffer();
-        _smileBufferRecycler = _smileBufferRecycler();
-    }
-
-    protected final static SmileBufferRecycler _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
-        }
-        return br;
+        _smileBufferRecycler = sbr;
     }
 
     /*

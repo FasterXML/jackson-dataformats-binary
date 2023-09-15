@@ -135,10 +135,11 @@ public class SmileParser extends SmileParserBase
     public SmileParser(ObjectReadContext readCtxt, IOContext ctxt,
             int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym,
+            SmileBufferRecycler sbr,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(readCtxt, ctxt, parserFeatures, smileFeatures, sym);
+        super(readCtxt, ctxt, parserFeatures, smileFeatures, sym, sbr);
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
