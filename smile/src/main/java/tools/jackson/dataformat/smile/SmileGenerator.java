@@ -131,7 +131,7 @@ public class SmileGenerator
      * Helper class used for keeping track of possibly shareable String
      * references (for property names and/or short String values)
      */
-    protected final static class SharedStringNode
+    public final static class SharedStringNode
     {
         public final String value;
         public final int index;
@@ -195,7 +195,7 @@ public class SmileGenerator
      * Helper object used for low-level recycling of Smile-generator
      * specific buffers.
      */
-    final protected SmileBufferRecycler<SharedStringNode> _smileBufferRecycler;
+    protected final SmileBufferRecycler _smileBufferRecycler;
 
     /*
     /**********************************************************************
@@ -286,8 +286,8 @@ public class SmileGenerator
      * to a buffer recycler used to provide a low-cost
      * buffer recycling for Smile-specific buffers.
      */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>>();
+    final protected static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
+        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
 
     /*
     /**********************************************************************
@@ -319,7 +319,7 @@ public class SmileGenerator
             _seenNames = null;
             _seenNameCount = -1;
         } else {
-            _seenNames = _smileBufferRecycler.allocSeenNamesBuffer();
+            _seenNames = _smileBufferRecycler.allocSeenNamesWriteBuffer();
             if (_seenNames == null) {
                 _seenNames = new SharedStringNode[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
             }
@@ -330,7 +330,7 @@ public class SmileGenerator
             _seenStringValues = null;
             _seenStringValueCount = -1;
         } else {
-            _seenStringValues = _smileBufferRecycler.allocSeenStringValuesBuffer();
+            _seenStringValues = _smileBufferRecycler.allocSeenStringValuesWriteBuffer();
             if (_seenStringValues == null) {
                 _seenStringValues = new SharedStringNode[SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH];
             }
@@ -364,7 +364,7 @@ public class SmileGenerator
             _seenNames = null;
             _seenNameCount = -1;
         } else {
-            _seenNames = _smileBufferRecycler.allocSeenNamesBuffer();
+            _seenNames = _smileBufferRecycler.allocSeenNamesWriteBuffer();
             if (_seenNames == null) {
                 _seenNames = new SharedStringNode[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
             }
@@ -375,7 +375,7 @@ public class SmileGenerator
             _seenStringValues = null;
             _seenStringValueCount = -1;
         } else {
-            _seenStringValues = _smileBufferRecycler.allocSeenStringValuesBuffer();
+            _seenStringValues = _smileBufferRecycler.allocSeenStringValuesWriteBuffer();
             if (_seenStringValues == null) {
                 _seenStringValues = new SharedStringNode[SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH];
             }
@@ -406,14 +406,14 @@ public class SmileGenerator
         return this;
     }
 
-    protected final static SmileBufferRecycler<SharedStringNode> _smileBufferRecycler()
+    protected final static SmileBufferRecycler _smileBufferRecycler()
     {
-        SoftReference<SmileBufferRecycler<SharedStringNode>> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler<SharedStringNode> br = (ref == null) ? null : ref.get();
+        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
+        SmileBufferRecycler br = (ref == null) ? null : ref.get();
 
         if (br == null) {
-            br = new SmileBufferRecycler<SharedStringNode>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<SharedStringNode>>(br));
+            br = new SmileBufferRecycler();
+            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
         }
         return br;
     }
@@ -2626,7 +2626,7 @@ surr1, surr2));
                 if (_seenNameCount > 0) {
                     Arrays.fill(nameBuf, null);
                 }
-                _smileBufferRecycler.releaseSeenNamesBuffer(nameBuf);
+                _smileBufferRecycler.releaseSeenNamesWriteBuffer(nameBuf);
             }
         }
         {
@@ -2639,7 +2639,7 @@ surr1, surr2));
                 if (_seenStringValueCount > 0) {
                     Arrays.fill(valueBuf, null);
                 }
-                _smileBufferRecycler.releaseSeenStringValuesBuffer(valueBuf);
+                _smileBufferRecycler.releaseSeenStringValuesWriteBuffer(valueBuf);
             }
         }
     }

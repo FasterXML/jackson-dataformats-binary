@@ -206,14 +206,14 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * to a buffer recycler used to provide a low-cost
      * buffer recycling for Smile-specific buffers.
      */
-    protected final static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<String>>>();
+    protected final static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
+        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
 
     /**
      * Helper object used for low-level recycling of Smile-generator
      * specific buffers.
      */
-    protected final SmileBufferRecycler<String> _smileBufferRecycler;
+    protected final SmileBufferRecycler _smileBufferRecycler;
 
     /*
     /**********************************************************************
@@ -237,14 +237,14 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _smileBufferRecycler = _smileBufferRecycler();
     }
 
-    protected final static SmileBufferRecycler<String> _smileBufferRecycler()
+    protected final static SmileBufferRecycler _smileBufferRecycler()
     {
-        SoftReference<SmileBufferRecycler<String>> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler<String> br = (ref == null) ? null : ref.get();
+        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
+        SmileBufferRecycler br = (ref == null) ? null : ref.get();
 
         if (br == null) {
-            br = new SmileBufferRecycler<String>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<String>>(br));
+            br = new SmileBufferRecycler();
+            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
         }
         return br;
     }
@@ -371,7 +371,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             if (_seenNameCount > 0) {
                 Arrays.fill(nameBuf, 0, _seenNameCount, null);
             }
-            _smileBufferRecycler.releaseSeenNamesBuffer(nameBuf);
+            _smileBufferRecycler.releaseSeenNamesReadBuffer(nameBuf);
         }
         String[] valueBuf = _seenStringValues;
         if (valueBuf != null && valueBuf.length > 0) {
@@ -381,7 +381,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
             if (_seenStringValueCount > 0) {
                 Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
             }
-            _smileBufferRecycler.releaseSeenStringValuesBuffer(valueBuf);
+            _smileBufferRecycler.releaseSeenStringValuesReadBuffer(valueBuf);
         }
         _releaseBuffers2();
     }
