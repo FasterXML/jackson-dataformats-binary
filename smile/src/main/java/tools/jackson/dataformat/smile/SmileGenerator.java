@@ -173,8 +173,6 @@ public class SmileGenerator
     /**
      * The replacement character to use to fix invalid Unicode sequences
      * (mismatched surrogate pair).
-     *
-     * @since 2.13
      */
     protected final static int REPLACEMENT_CHAR = 0xfffd;
 
@@ -211,7 +209,7 @@ public class SmileGenerator
     protected SimpleStreamWriteContext _streamWriteContext;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output buffering
     /**********************************************************************
      */
@@ -272,7 +270,7 @@ public class SmileGenerator
     protected int _seenStringValueCount;
 
     /**
-     * Flag that indicates whether the output buffer is recycable (and
+     * Flag that indicates whether the output buffer is recyclable (and
      * needs to be returned to recycler once we are done) or not.
      */
     protected boolean _bufferRecyclable;

@@ -162,6 +162,22 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected int _quad1, _quad2, _quad3;
 
     /**
+     * Marker flag to indicate that standard symbol handling is used
+     * (one with symbol table assisted canonicalization. May be disabled
+     * in which case alternate stream-line, non-canonicalizing handling
+     * is used: usually due to set of symbols
+     * (Object property names) is unbounded and will not benefit from
+     * canonicalization attempts.
+     */
+    protected final boolean _symbolsCanonical;
+
+    /*
+    /**********************************************************************
+    /* Back-references
+    /**********************************************************************
+     */
+
+    /**
      * Array of recently seen field names, which may be back referenced
      * by later fields.
      * Defaults set to enable handling even if no header found.
@@ -178,18 +194,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected String[] _seenStringValues = null;
 
     protected int _seenStringValueCount = -1;
-
-    /**
-     * Marker flag to indicate that standard symbol handling is used
-     * (one with symbol table assisted canonicalization. May be disabled
-     * in which case alternate stream-line, non-canonicalizing handling
-     * is used: usually due to set of symbols
-     * (Object property names) is unbounded and will not benefit from
-     * canonicalization attempts.
-     *
-     * @since 2.13
-     */
-    protected final boolean _symbolsCanonical;
 
     /*
     /**********************************************************************
