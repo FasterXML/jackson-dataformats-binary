@@ -33,9 +33,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Config
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -57,9 +57,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected boolean _mayContainRawBinary;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Generic I/O state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -76,9 +76,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected boolean _closed;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Current input data
-    /**********************************************************
+    /**********************************************************************
      */
 
     // Note: type of actual buffer depends on sub-class, can't include
@@ -94,9 +94,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected int _inputEnd = 0;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Parsing state, location
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -120,9 +120,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected JsonReadContext _streamReadContext;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Decoded values, text, binary
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -155,9 +155,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected byte[] _binaryValue;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Decoded values, numbers
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected NumberType _numberType;
@@ -181,9 +181,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected double _numberDouble;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Symbol handling, decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -200,6 +200,24 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Quads used for hash calculation
      */
     protected int _quad1, _quad2, _quad3;
+
+    /**
+     * Marker flag to indicate that standard symbol handling is used
+     * (one with symbol table assisted canonicalization. May be disabled
+     * in which case alternate stream-line, non-canonicalizing handling
+     * is used: usually due to set of symbols
+     * (Object property names) is unbounded and will not benefit from
+     * canonicalization attempts.
+     *
+     * @since 2.13
+     */
+    protected final boolean _symbolsCanonical;
+
+    /*
+    /**********************************************************************
+    /* Back-references
+    /**********************************************************************
+     */
 
     /**
      * Array of recently seen field names, which may be back referenced
@@ -219,22 +237,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected int _seenStringValueCount = -1;
 
-    /**
-     * Marker flag to indicate that standard symbol handling is used
-     * (one with symbol table assisted canonicalization. May be disabled
-     * in which case alternate stream-line, non-canonicalizing handling
-     * is used: usually due to set of symbols
-     * (Object property names) is unbounded and will not benefit from
-     * canonicalization attempts.
-     *
-     * @since 2.13
-     */
-    protected final boolean _symbolsCanonical;
-
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Thread-local recycling
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -252,9 +258,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected final SmileBufferRecycler<String> _smileBufferRecycler;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,

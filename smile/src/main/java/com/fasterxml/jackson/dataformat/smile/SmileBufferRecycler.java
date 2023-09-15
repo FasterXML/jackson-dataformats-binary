@@ -14,9 +14,9 @@ public class SmileBufferRecycler<T>
 
     public final static int DEFAULT_STRING_VALUE_BUFFER_LENGTH = 64;
 
-    protected AtomicReference<T[]> _seenNamesBuffer = new AtomicReference<>();
+    protected final AtomicReference<T[]> _seenNamesBuffer = new AtomicReference<>();
 
-    protected AtomicReference<T[]> _seenStringValuesBuffer = new AtomicReference<>();
+    protected final AtomicReference<T[]> _seenStringValuesBuffer = new AtomicReference<>();
 
     public SmileBufferRecycler() { }
 

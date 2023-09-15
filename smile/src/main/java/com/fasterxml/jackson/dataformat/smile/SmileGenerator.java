@@ -178,9 +178,9 @@ public class SmileGenerator
     protected final static int REPLACEMENT_CHAR = 0xfffd;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -204,18 +204,18 @@ public class SmileGenerator
     protected final SmileBufferRecycler<SharedStringNode> _smileBufferRecycler;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output state
-    /**********************************************************
+    /**********************************************************************
      */
 
     // @since 2.10 (named _smileContext before 2.13)
     protected SmileWriteContext _streamWriteContext;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Output buffering
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -244,9 +244,9 @@ public class SmileGenerator
     protected int _bytesWritten;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Shared String detection
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -274,15 +274,15 @@ public class SmileGenerator
     protected int _seenStringValueCount;
 
     /**
-     * Flag that indicates whether the output buffer is recycable (and
+     * Flag that indicates whether the output buffer is recyclable (and
      * needs to be returned to recycler once we are done) or not.
      */
     protected boolean _bufferRecyclable;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Thread-local recycling
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -294,9 +294,9 @@ public class SmileGenerator
         = new ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>>();
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SmileGenerator(IOContext ioCtxt, int stdFeatures, int smileFeatures,
