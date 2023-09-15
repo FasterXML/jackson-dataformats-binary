@@ -555,7 +555,7 @@ public abstract class NonBlockingParserBase
         int len = oldShared.length;
         String[] newShared;
         if (len == 0) {
-            newShared = _smileBufferRecycler.allocSeenNamesBuffer();
+            newShared = _smileBufferRecycler.allocSeenNamesReadBuffer();
             if (newShared == null) {
                 newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
             }
@@ -630,7 +630,7 @@ public abstract class NonBlockingParserBase
         int len = oldShared.length;
         String[] newShared;
         if (len == 0) {
-            newShared = _smileBufferRecycler.allocSeenStringValuesBuffer();
+            newShared = _smileBufferRecycler.allocSeenStringValuesReadBuffer();
             if (newShared == null) {
                 newShared = new String[SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH];
             }
