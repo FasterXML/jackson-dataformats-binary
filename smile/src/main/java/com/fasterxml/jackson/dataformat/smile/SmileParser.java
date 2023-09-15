@@ -141,13 +141,16 @@ public class SmileParser extends SmileParserBase
     /**********************************************************
      */
 
+    /**
+     * @since 2.16
+     */
     public SmileParser(IOContext ctxt, int parserFeatures, int smileFeatures,
-            ObjectCodec codec,
-            ByteQuadsCanonicalizer sym,
+            ObjectCodec codec, ByteQuadsCanonicalizer sym,
+            SmileBufferRecycler sbr,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);
+        super(ctxt, parserFeatures, smileFeatures, sym, sbr);
         _objectCodec = codec;
 
         _inputStream = in;
@@ -155,6 +158,20 @@ public class SmileParser extends SmileParserBase
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
+    }
+
+    /**
+     * @deprecated Since 2.16
+     */
+    @Deprecated // @since 2.16
+    public SmileParser(IOContext ctxt, int parserFeatures, int smileFeatures,
+            ObjectCodec codec, ByteQuadsCanonicalizer sym,
+            InputStream in, byte[] inputBuffer, int start, int end,
+            boolean bufferRecyclable)
+    {
+        this(ctxt, parserFeatures, smileFeatures,
+                codec, sym, new SmileBufferRecycler(),
+                in, inputBuffer, start, end, bufferRecyclable);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -239,17 +238,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Thread-local recycling
+    /* Buffer recycling
     /**********************************************************************
      */
-
-    /**
-     * <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    protected final static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
 
     /**
      * Helper object used for low-level recycling of Smile-generator
@@ -263,8 +254,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**********************************************************************
      */
 
-    public SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
-            ByteQuadsCanonicalizer sym)
+    /**
+     * @since 2.16
+     */
+    protected SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
+            ByteQuadsCanonicalizer sym, SmileBufferRecycler sbr)
     {
         super(parserFeatures);
         _formatFeatures = formatFeatures;
@@ -276,24 +270,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _streamReadContext = JsonReadContext.createRootContext(dups);
 
         _textBuffer = ctxt.constructReadConstrainedTextBuffer();
-        _smileBufferRecycler = _smileBufferRecycler();
+        _smileBufferRecycler = sbr;
     }
 
     @Override
     public StreamReadConstraints streamReadConstraints() {
         return _ioContext.streamReadConstraints();
-    }
-
-    protected final static SmileBufferRecycler _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
-        }
-        return br;
     }
 
     /*

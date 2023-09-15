@@ -138,10 +138,13 @@ public abstract class NonBlockingParserBase
     /**********************************************************************
      */
 
-    public NonBlockingParserBase(IOContext ctxt, int parserFeatures, int smileFeatures,
-            ByteQuadsCanonicalizer sym)
+    /**
+     * @since 2.16
+     */
+    protected NonBlockingParserBase(IOContext ctxt, int parserFeatures, int smileFeatures,
+            ByteQuadsCanonicalizer sym, SmileBufferRecycler sbr)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym);
+        super(ctxt, parserFeatures, smileFeatures, sym, sbr);
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
         _inputCopy = ctxt.allocReadIOBuffer(500);
 

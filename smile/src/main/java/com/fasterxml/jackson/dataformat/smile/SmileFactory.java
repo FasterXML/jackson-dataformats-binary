@@ -429,7 +429,8 @@ public class SmileFactory extends JsonFactory
         // 13-Mar-2021, tatu: [dataformats-binary#252] Leave async parser with
         //   always-canonicalizing, for now (2.13) -- to be improved in future
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChildOrPlaceholder(_factoryFeatures);
-        return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can);
+        return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can,
+                _smileBufferRecycler());
     }
 
     /*
@@ -446,7 +447,8 @@ public class SmileFactory extends JsonFactory
     {
         SmileParserBootstrapper bs = new SmileParserBootstrapper(ctxt, in);
         return bs.constructParser(_factoryFeatures, _parserFeatures,
-        		_smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer);
+                _smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer,
+                _smileBufferRecycler());
     }
 
     @Override
@@ -473,7 +475,8 @@ public class SmileFactory extends JsonFactory
     {
         return new SmileParserBootstrapper(ctxt, data, offset, len).constructParser(
                 _factoryFeatures, _parserFeatures, _smileParserFeatures,
-                _objectCodec, _byteSymbolCanonicalizer);
+                _objectCodec, _byteSymbolCanonicalizer,
+                _smileBufferRecycler());
     }
 
     @Override
