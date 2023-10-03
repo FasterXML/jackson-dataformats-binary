@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.VersionUtil;
-import com.fasterxml.jackson.dataformat.smile.SmileBufferRecycler;
+
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
@@ -53,19 +53,9 @@ public class NonBlockingByteArrayParser
      */
 
     public NonBlockingByteArrayParser(IOContext ctxt, int parserFeatures, int smileFeatures,
-            ByteQuadsCanonicalizer sym, SmileBufferRecycler sbr)
-    {
-        super(ctxt, parserFeatures, smileFeatures, sym, sbr);
-    }
-
-    /**
-     * @deprecated Since 2.16
-     */
-    @Deprecated
-    public NonBlockingByteArrayParser(IOContext ctxt, int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        this(ctxt, parserFeatures, smileFeatures, sym, new SmileBufferRecycler());
+        super(ctxt, parserFeatures, smileFeatures, sym);
     }
 
     /*

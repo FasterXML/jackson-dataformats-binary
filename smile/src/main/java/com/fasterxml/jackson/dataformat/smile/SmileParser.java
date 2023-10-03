@@ -141,16 +141,12 @@ public class SmileParser extends SmileParserBase
     /**********************************************************
      */
 
-    /**
-     * @since 2.16
-     */
     public SmileParser(IOContext ctxt, int parserFeatures, int smileFeatures,
             ObjectCodec codec, ByteQuadsCanonicalizer sym,
-            SmileBufferRecycler sbr,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(ctxt, parserFeatures, smileFeatures, sym, sbr);
+        super(ctxt, parserFeatures, smileFeatures, sym);
         _objectCodec = codec;
 
         _inputStream = in;
@@ -158,20 +154,6 @@ public class SmileParser extends SmileParserBase
         _inputPtr = start;
         _inputEnd = end;
         _bufferRecyclable = bufferRecyclable;
-    }
-
-    /**
-     * @deprecated Since 2.16
-     */
-    @Deprecated // @since 2.16
-    public SmileParser(IOContext ctxt, int parserFeatures, int smileFeatures,
-            ObjectCodec codec, ByteQuadsCanonicalizer sym,
-            InputStream in, byte[] inputBuffer, int start, int end,
-            boolean bufferRecyclable)
-    {
-        this(ctxt, parserFeatures, smileFeatures,
-                codec, sym, new SmileBufferRecycler(),
-                in, inputBuffer, start, end, bufferRecyclable);
     }
 
     @Override
@@ -628,15 +610,12 @@ versionBits));
         int len = oldShared.length;
         String[] newShared;
         if (len == 0) {
-            newShared = _smileBufferRecycler.allocSeenStringValuesReadBuffer();
-            if (newShared == null) {
-                newShared = new String[SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH];
-            }
+            newShared = new String[DEFAULT_STRING_VALUE_BUFFER_LENGTH];
         } else if (len == SmileConstants.MAX_SHARED_STRING_VALUES) { // too many? Just flush...
            newShared = oldShared;
            _seenStringValueCount = 0; // could also clear, but let's not yet bother
         } else {
-            int newSize = (len == SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_STRING_VALUES;
+            int newSize = (len == DEFAULT_NAME_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_STRING_VALUES;
             newShared = Arrays.copyOf(oldShared, newSize);
         }
         _seenStringValues = newShared;
@@ -1543,15 +1522,12 @@ versionBits));
         int len = oldShared.length;
         String[] newShared;
         if (len == 0) {
-            newShared = _smileBufferRecycler.allocSeenNamesReadBuffer();
-            if (newShared == null) {
-                newShared = new String[SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH];
-            }
+            newShared = new String[DEFAULT_NAME_BUFFER_LENGTH];
         } else if (len == SmileConstants.MAX_SHARED_NAMES) { // too many? Just flush...
       	   newShared = oldShared;
       	   _seenNameCount = 0; // could also clear, but let's not yet bother
         } else {
-            int newSize = (len == SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_NAMES;
+            int newSize = (len == DEFAULT_STRING_VALUE_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_NAMES;
             newShared = Arrays.copyOf(oldShared, newSize);
         }
         return newShared;

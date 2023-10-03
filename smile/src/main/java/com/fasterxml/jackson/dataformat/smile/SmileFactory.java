@@ -75,19 +75,6 @@ public class SmileFactory extends JsonFactory
 
     /*
     /**********************************************************
-    /* Smile-specific buffer recycling (moved here in 2.16)
-    /**********************************************************
-    
-    /**
-     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
-    
-    /*
-    /**********************************************************
     /* Factory construction, configuration
     /**********************************************************
      */
@@ -429,8 +416,7 @@ public class SmileFactory extends JsonFactory
         // 13-Mar-2021, tatu: [dataformats-binary#252] Leave async parser with
         //   always-canonicalizing, for now (2.13) -- to be improved in future
         ByteQuadsCanonicalizer can = _byteSymbolCanonicalizer.makeChildOrPlaceholder(_factoryFeatures);
-        return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can,
-                _smileBufferRecycler());
+        return new NonBlockingByteArrayParser(ctxt, _parserFeatures, _smileParserFeatures, can);
     }
 
     /*
@@ -447,8 +433,7 @@ public class SmileFactory extends JsonFactory
     {
         SmileParserBootstrapper bs = new SmileParserBootstrapper(ctxt, in);
         return bs.constructParser(_factoryFeatures, _parserFeatures,
-                _smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer,
-                _smileBufferRecycler());
+                _smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer);
     }
 
     @Override
@@ -475,8 +460,7 @@ public class SmileFactory extends JsonFactory
     {
         return new SmileParserBootstrapper(ctxt, data, offset, len).constructParser(
                 _factoryFeatures, _parserFeatures, _smileParserFeatures,
-                _objectCodec, _byteSymbolCanonicalizer,
-                _smileBufferRecycler());
+                _objectCodec, _byteSymbolCanonicalizer);
     }
 
     @Override
@@ -526,8 +510,7 @@ public class SmileFactory extends JsonFactory
          * But should we force writing, or throw exception, if settings are in conflict?
          * For now, let's error out...
          */
-        SmileGenerator gen = new SmileGenerator(ctxt, _generatorFeatures, feats, _objectCodec, out,
-                _smileBufferRecycler());
+        SmileGenerator gen = new SmileGenerator(ctxt, _generatorFeatures, feats, _objectCodec, out);
         if ((feats & SmileGenerator.Feature.WRITE_HEADER.getMask()) != 0) {
             gen.writeHeader();
         } else {
@@ -545,17 +528,5 @@ public class SmileFactory extends JsonFactory
             }
         }
         return gen;
-    }
-
-    protected final static SmileBufferRecycler _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
-        }
-        return br;
     }
 }
