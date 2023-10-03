@@ -1,14 +1,15 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.net.URL;
+import java.util.Objects;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+import com.fasterxml.jackson.core.util.RecyclerPool;
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
 /**
@@ -62,6 +63,11 @@ public class SmileFactory extends JsonFactory
      */
 
     /**
+     * @since 2.16
+     */
+    protected RecyclerPool<SmileBufferRecycler> _smileRecyclerPool;
+
+    /**
      * Whether non-supported methods (ones trying to output using
      * char-based targets like {@link java.io.Writer}, for example)
      * should be delegated to regular Jackson JSON processing
@@ -73,19 +79,6 @@ public class SmileFactory extends JsonFactory
     protected int _smileParserFeatures;
     protected int _smileGeneratorFeatures;
 
-    /*
-    /**********************************************************
-    /* Smile-specific buffer recycling (moved here in 2.16)
-    /**********************************************************
-    
-    /**
-     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    final protected static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
-    
     /*
     /**********************************************************
     /* Factory construction, configuration
@@ -106,6 +99,7 @@ public class SmileFactory extends JsonFactory
 
     public SmileFactory(ObjectCodec oc) {
         super(oc);
+        _smileRecyclerPool = SmileBufferRecyclers.defaultPool();
         _smileParserFeatures = DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
         _smileGeneratorFeatures = DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
     }
@@ -119,6 +113,7 @@ public class SmileFactory extends JsonFactory
     public SmileFactory(SmileFactory src, ObjectCodec oc)
     {
         super(src, oc);
+        _smileRecyclerPool = src._smileRecyclerPool;
         _cfgDelegateToTextual = src._cfgDelegateToTextual;
         _smileParserFeatures = src._smileParserFeatures;
         _smileGeneratorFeatures = src._smileGeneratorFeatures;
@@ -129,6 +124,7 @@ public class SmileFactory extends JsonFactory
      */
     protected SmileFactory(SmileFactoryBuilder b) {
         super(b, false);
+        _smileRecyclerPool = b.smileRecyclerPool();
         _smileParserFeatures = b.formatParserFeaturesMask();
         _smileGeneratorFeatures = b.formatGeneratorFeaturesMask();
     }
@@ -332,6 +328,17 @@ public class SmileFactory extends JsonFactory
     @Override
     public int getFormatGeneratorFeatures() {
         return _smileGeneratorFeatures;
+    }
+
+    /*
+    /**********************************************************
+    /* Configuration, other
+    /**********************************************************
+     */
+
+    public SmileFactory setSmileRecyclerPool(RecyclerPool<SmileBufferRecycler> p) {
+        _smileRecyclerPool = Objects.requireNonNull(p);
+        return this;
     }
 
     /*
@@ -547,15 +554,8 @@ public class SmileFactory extends JsonFactory
         return gen;
     }
 
-    protected final static SmileBufferRecycler _smileBufferRecycler()
+    protected SmileBufferRecycler _smileBufferRecycler()
     {
-        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
-        }
-        return br;
+        return _smileRecyclerPool.acquireAndLinkPooled();
     }
 }

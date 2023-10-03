@@ -246,7 +246,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Helper object used for low-level recycling of Smile-generator
      * specific buffers.
      */
-    protected final SmileBufferRecycler _smileBufferRecycler;
+    protected SmileBufferRecycler _smileBufferRecycler;
 
     /*
     /**********************************************************************
@@ -420,25 +420,30 @@ public abstract class SmileParserBase extends ParserMinimalBase
             _nameCopyBuffer = null;
             _ioContext.releaseNameCopyBuffer(buf);
         }
-        String[] nameBuf = _seenNames;
-        if (nameBuf != null && nameBuf.length > 0) {
-            _seenNames = null;
-            // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-            //   but we only need to clear up to count as it is not a hash area
-            if (_seenNameCount > 0) {
-                Arrays.fill(nameBuf, 0, _seenNameCount, null);
+        SmileBufferRecycler br = _smileBufferRecycler;
+        if (br != null) {
+            String[] nameBuf = _seenNames;
+            if (nameBuf != null && nameBuf.length > 0) {
+                _seenNames = null;
+                // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
+                //   but we only need to clear up to count as it is not a hash area
+                if (_seenNameCount > 0) {
+                    Arrays.fill(nameBuf, 0, _seenNameCount, null);
+                }
+                _smileBufferRecycler.releaseSeenNamesReadBuffer(nameBuf);
             }
-            _smileBufferRecycler.releaseSeenNamesReadBuffer(nameBuf);
-        }
-        String[] valueBuf = _seenStringValues;
-        if (valueBuf != null && valueBuf.length > 0) {
-            _seenStringValues = null;
-            // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-            //   but we only need to clear up to count as it is not a hash area
-            if (_seenStringValueCount > 0) {
-                Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
+            String[] valueBuf = _seenStringValues;
+            if (valueBuf != null && valueBuf.length > 0) {
+                _seenStringValues = null;
+                // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
+                //   but we only need to clear up to count as it is not a hash area
+                if (_seenStringValueCount > 0) {
+                    Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
+                }
+                _smileBufferRecycler.releaseSeenStringValuesReadBuffer(valueBuf);
             }
-            _smileBufferRecycler.releaseSeenStringValuesReadBuffer(valueBuf);
+            _smileBufferRecycler = null;
+            br.release();
         }
         _releaseBuffers2();
     }

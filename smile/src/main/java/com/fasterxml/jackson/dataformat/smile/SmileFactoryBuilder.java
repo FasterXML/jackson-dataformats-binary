@@ -1,6 +1,9 @@
 package com.fasterxml.jackson.dataformat.smile;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.core.TSFBuilder;
+import com.fasterxml.jackson.core.util.RecyclerPool;
 
 /**
  * {@link com.fasterxml.jackson.core.TSFBuilder}
@@ -18,6 +21,11 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
      */
 
     /**
+     * @since 2.16
+     */
+    protected RecyclerPool<SmileBufferRecycler> _smileRecyclerPool;
+    
+    /**
      * Set of {@link SmileParser.Feature}s enabled, as bitmask.
      */
     protected int _formatParserFeatures;
@@ -34,12 +42,14 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
      */
 
     protected SmileFactoryBuilder() {
+        _smileRecyclerPool = SmileBufferRecyclers.defaultPool();
         _formatParserFeatures = SmileFactory.DEFAULT_SMILE_PARSER_FEATURE_FLAGS;
         _formatGeneratorFeatures = SmileFactory.DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS;
     }
 
     public SmileFactoryBuilder(SmileFactory base) {
         super(base);
+        _smileRecyclerPool = base._smileRecyclerPool;
         _formatParserFeatures = base._smileParserFeatures;
         _formatGeneratorFeatures = base._smileGeneratorFeatures;
     }
@@ -114,7 +124,26 @@ public class SmileFactoryBuilder extends TSFBuilder<SmileFactory, SmileFactoryBu
         return state ? enable(f) : disable(f);
     }
 
+    // // // Other configuration
+
+    /**
+     * @param p RecyclerPool to use for buffer allocation
+     *
+     * @return this builder (for call chaining)
+     *
+     * @since 2.16
+     */
+    public SmileFactoryBuilder smileRcyclerPool(RecyclerPool<SmileBufferRecycler> p) {
+        _smileRecyclerPool = Objects.requireNonNull(p);
+        return _this();
+    }
+    
     // // // Accessors
+
+    // @since 2.16
+    public RecyclerPool<SmileBufferRecycler> smileRecyclerPool() {
+        return _smileRecyclerPool;
+    }
 
     public int formatParserFeaturesMask() { return _formatParserFeatures; }
     public int formatGeneratorFeaturesMask() { return _formatGeneratorFeatures; }

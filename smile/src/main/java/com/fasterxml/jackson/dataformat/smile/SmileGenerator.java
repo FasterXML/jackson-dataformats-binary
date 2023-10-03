@@ -200,7 +200,7 @@ public class SmileGenerator
      * Helper object used for low-level recycling of Smile-generator
      * specific buffers.
      */
-    protected final SmileBufferRecycler _smileBufferRecycler;
+    protected SmileBufferRecycler _smileBufferRecycler;
 
     /*
     /**********************************************************************
@@ -2632,7 +2632,8 @@ surr1, surr2));
         /* Ok: since clearing up of larger arrays is much slower,
          * let's only recycle default-sized buffers...
          */
-        {
+        SmileBufferRecycler br = _smileBufferRecycler;
+        if (br != null) {
             SharedStringNode[] nameBuf = _seenNames;
             if (nameBuf != null && nameBuf.length == SmileBufferRecycler.DEFAULT_NAME_BUFFER_LENGTH) {
                 _seenNames = null;
@@ -2644,8 +2645,6 @@ surr1, surr2));
                 }
                 _smileBufferRecycler.releaseSeenNamesWriteBuffer(nameBuf);
             }
-        }
-        {
             SharedStringNode[] valueBuf = _seenStringValues;
             if (valueBuf != null && valueBuf.length == SmileBufferRecycler.DEFAULT_STRING_VALUE_BUFFER_LENGTH) {
                 _seenStringValues = null;
@@ -2657,6 +2656,8 @@ surr1, surr2));
                 }
                 _smileBufferRecycler.releaseSeenStringValuesWriteBuffer(valueBuf);
             }
+            _smileBufferRecycler = null;
+            br.release();
         }
     }
 
