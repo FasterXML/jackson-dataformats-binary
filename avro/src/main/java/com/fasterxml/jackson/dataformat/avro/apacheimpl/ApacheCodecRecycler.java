@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.io.*;
 
@@ -23,8 +24,8 @@ public final class ApacheCodecRecycler
     protected final static ThreadLocal<SoftReference<ApacheCodecRecycler>> _recycler
             = new ThreadLocal<SoftReference<ApacheCodecRecycler>>();
 
-    private BinaryDecoder decoder;
-    private BinaryEncoder encoder;
+    private final AtomicReference<BinaryDecoder> decoderRef = new AtomicReference<>();
+    private final AtomicReference<BinaryEncoder> encoderRef = new AtomicReference<>();
 
     private ApacheCodecRecycler() { }
 
@@ -57,11 +58,11 @@ public final class ApacheCodecRecycler
     }
 
     public static void release(BinaryDecoder dec) {
-        _recycler().decoder = (BinaryDecoder) dec;
+        _recycler().decoderRef.set(dec);
     }
 
     public static void release(BinaryEncoder enc) {
-        _recycler().encoder = enc;
+        _recycler().encoderRef.set(enc);
     }
 
     /*
@@ -76,21 +77,17 @@ public final class ApacheCodecRecycler
 
         if (r == null) {
             r = new ApacheCodecRecycler();
-            _recycler.set(new SoftReference<ApacheCodecRecycler>(r));
+            _recycler.set(new SoftReference<>(r));
         }
         return r;
     }
 
     private BinaryDecoder claimDecoder() {
-        BinaryDecoder d = decoder;
-        decoder = null;
-        return d;
+        return decoderRef.getAndSet(null);
     }
 
     private BinaryEncoder claimEncoder() {
-        BinaryEncoder e = encoder;
-        encoder = null;
-        return e;
+        return encoderRef.getAndSet(null);
     }
 
     /*
