@@ -14,6 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.16.0 (not yet released)
+
+#403: Remove Smile-specific buffer-recycling
+
 2.15.3 (not yet released)
 
 #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency

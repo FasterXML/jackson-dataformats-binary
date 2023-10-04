@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
@@ -26,6 +25,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
     // 2.12.3: [dataformats-binary#260] Avoid OOME/DoS for bigger binary;
     //  read only up to 250k
     protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
+
+    // @since 2.16
+    protected final static int DEFAULT_NAME_BUFFER_LENGTH = 64;    
+
+    // @since 2.16
+    protected final static int DEFAULT_STRING_VALUE_BUFFER_LENGTH = 64;
 
     // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
@@ -238,27 +243,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Buffer recycling
-    /**********************************************************************
-     */
-
-    /**
-     * Helper object used for low-level recycling of Smile-generator
-     * specific buffers.
-     */
-    protected final SmileBufferRecycler _smileBufferRecycler;
-
-    /*
-    /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
 
-    /**
-     * @since 2.16
-     */
     protected SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
-            ByteQuadsCanonicalizer sym, SmileBufferRecycler sbr)
+            ByteQuadsCanonicalizer sym)
     {
         super(parserFeatures);
         _formatFeatures = formatFeatures;
@@ -268,9 +258,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = JsonReadContext.createRootContext(dups);
-
         _textBuffer = ctxt.constructReadConstrainedTextBuffer();
-        _smileBufferRecycler = sbr;
     }
 
     @Override
@@ -419,26 +407,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
         if (buf != null) {
             _nameCopyBuffer = null;
             _ioContext.releaseNameCopyBuffer(buf);
-        }
-        String[] nameBuf = _seenNames;
-        if (nameBuf != null && nameBuf.length > 0) {
-            _seenNames = null;
-            // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-            //   but we only need to clear up to count as it is not a hash area
-            if (_seenNameCount > 0) {
-                Arrays.fill(nameBuf, 0, _seenNameCount, null);
-            }
-            _smileBufferRecycler.releaseSeenNamesReadBuffer(nameBuf);
-        }
-        String[] valueBuf = _seenStringValues;
-        if (valueBuf != null && valueBuf.length > 0) {
-            _seenStringValues = null;
-            // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-            //   but we only need to clear up to count as it is not a hash area
-            if (_seenStringValueCount > 0) {
-                Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
-            }
-            _smileBufferRecycler.releaseSeenStringValuesReadBuffer(valueBuf);
         }
         _releaseBuffers2();
     }
