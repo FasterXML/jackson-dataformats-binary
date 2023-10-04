@@ -87,8 +87,7 @@ public class SmileParserBootstrapper
     public SmileParser constructParser(ObjectReadContext readCtxt,
             int factoryFeatures,
             int generalParserFeatures, int smileFeatures,
-            ByteQuadsCanonicalizer rootByteSymbols,
-            SmileBufferRecycler sbr)
+            ByteQuadsCanonicalizer rootByteSymbols)
         throws JacksonException
     {
         // 13-Mar-2021, tatu: [dataformats-binary#252] Create canonicalizing OR
@@ -108,7 +107,7 @@ public class SmileParserBootstrapper
         }
 
         SmileParser p = new SmileParser(readCtxt, _ioContext, generalParserFeatures, smileFeatures,
-                can, sbr,
+                can,
                 _in, _inputBuffer, _inputPtr, _inputEnd, _bufferRecyclable);
         boolean hadSig = false;
 

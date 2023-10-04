@@ -74,19 +74,6 @@ public class SmileFactory
     protected final transient ByteQuadsCanonicalizer _byteSymbolCanonicalizer = ByteQuadsCanonicalizer.createRoot();
 
     /*
-    /**********************************************************
-    /* Smile-specific buffer recycling (moved here in 2.16)
-    /**********************************************************
-
-    /**
-     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    protected final static ThreadLocal<SoftReference<SmileBufferRecycler>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler>>();
-
-    /*
     /**********************************************************************
     /* Factory construction, configuration
     /**********************************************************************
@@ -230,8 +217,7 @@ public class SmileFactory
         return new NonBlockingByteArrayParser(readCtxt, _createContext(null, false),
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                can,
-                _smileBufferRecycler());
+                can);
     }
 
     /*
@@ -251,8 +237,7 @@ public class SmileFactory
             .constructParser(readCtxt, _factoryFeatures,
                     readCtxt.getStreamReadFeatures(_streamReadFeatures),
                     readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                    _byteSymbolCanonicalizer,
-                    _smileBufferRecycler());
+                    _byteSymbolCanonicalizer);
     }
 
     @Override
@@ -263,8 +248,7 @@ public class SmileFactory
             .constructParser(readCtxt, _factoryFeatures,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                _byteSymbolCanonicalizer,
-                _smileBufferRecycler());
+                _byteSymbolCanonicalizer);
     }
 
     @Override
@@ -292,8 +276,7 @@ public class SmileFactory
          */
         SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
-                smileFeatures, out,
-                _smileBufferRecycler());
+                smileFeatures, out);
         if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {
             gen.writeHeader();
         } else {
@@ -326,17 +309,5 @@ public class SmileFactory
     public PropertyNameMatcher constructCINameMatcher(List<Named> matches, boolean alreadyInterned,
             Locale locale) {
         return BinaryNameMatcher.constructCaseInsensitive(locale, matches, alreadyInterned);
-    }
-
-    protected final static SmileBufferRecycler _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler>(br));
-        }
-        return br;
     }
 }

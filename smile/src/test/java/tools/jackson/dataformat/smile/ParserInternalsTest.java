@@ -76,7 +76,6 @@ public class ParserInternalsTest extends BaseTestForSmile
                 testIOContext(),
                 0, 0, // flags
                 ROOT_SYMBOLS.makeChild(0), // ByteQuadsCanonicalizer
-                new SmileBufferRecycler(),
                 null, // InputStream
                 doc, 0, doc.length, false);
     }
@@ -86,7 +85,6 @@ public class ParserInternalsTest extends BaseTestForSmile
                 testIOContext(),
                 0, 0, // flags
                 ROOT_SYMBOLS.makeChild(0), // ByteQuadsCanonicalizer
-                new SmileBufferRecycler(),
                 in, // InputStream
                 new byte[1], 0, 0, false);
     }
