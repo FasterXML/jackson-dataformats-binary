@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
-import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -16,8 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public final class ApacheCodecRecycler
 {
-    protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
-
     protected final static ThreadLocal<SoftReference<ApacheCodecRecycler>> _recycler
             = new ThreadLocal<SoftReference<ApacheCodecRecycler>>();
 
@@ -32,18 +29,8 @@ public final class ApacheCodecRecycler
     /**********************************************************
      */
 
-    public static BinaryDecoder decoder(InputStream in, boolean buffering)
-    {
-        BinaryDecoder prev = _recycler().claimDecoder();
-        return buffering
-                ? DECODER_FACTORY.binaryDecoder(in, prev)
-                : DECODER_FACTORY.directBinaryDecoder(in, prev);
-    }
-
-    public static BinaryDecoder decoder(byte[] buffer, int offset, int len)
-    {
-        BinaryDecoder prev = _recycler().claimDecoder();
-        return DECODER_FACTORY.binaryDecoder(buffer, offset, len, prev);
+    public static BinaryDecoder acquireDecoder() {
+        return _recycler().claimDecoder();
     }
 
     public static BinaryEncoder acquireEncoder() {

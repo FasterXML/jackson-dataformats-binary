@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.Writer;
 
 import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.DecoderFactory;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
@@ -17,6 +18,11 @@ import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
  */
 public class ApacheAvroParserImpl extends AvroParserImpl
 {
+    /**
+     * @since 2.16
+     */
+    protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
+
     /*
     /**********************************************************
     /* Input source config
@@ -74,17 +80,21 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         _inputEnd = 0;
         _bufferRecyclable = true;
 
-        _decoder = ApacheCodecRecycler.decoder(in,
-                Feature.AVRO_BUFFERING.enabledIn(avroFeatures));
+        final boolean buffering = Feature.AVRO_BUFFERING.enabledIn(avroFeatures);
+        BinaryDecoder decoderToReuse = ApacheCodecRecycler.acquireDecoder();
+        _decoder = buffering
+                ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)
+                : DECODER_FACTORY.directBinaryDecoder(in, decoderToReuse);
     }
 
     public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
             ObjectCodec codec,
-            byte[] data, int offset, int len)
+            byte[] buffer, int offset, int len)
     {
         super(ctxt, parserFeatures, avroFeatures, codec);
         _inputStream = null;
-        _decoder = ApacheCodecRecycler.decoder(data, offset, len);
+        BinaryDecoder decoderToReuse = ApacheCodecRecycler.acquireDecoder();
+        _decoder = DECODER_FACTORY.binaryDecoder(buffer, offset, len, decoderToReuse);
     }
 
     @Override
