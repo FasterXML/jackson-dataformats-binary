@@ -5,8 +5,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.io.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 /**
  * Simple helper class that contains extracted functionality for
  * simple encoder/decoder recycling.
@@ -30,11 +28,11 @@ public final class ApacheCodecRecycler
      */
 
     public static BinaryDecoder acquireDecoder() {
-        return _recycler().claimDecoder();
+        return _recycler().decoderRef.getAndSet(null);
     }
 
     public static BinaryEncoder acquireEncoder() {
-        return _recycler().claimEncoder();
+        return _recycler().encoderRef.getAndSet(null);
     }
 
     public static void release(BinaryDecoder dec) {
@@ -60,28 +58,5 @@ public final class ApacheCodecRecycler
             _recycler.set(new SoftReference<>(r));
         }
         return r;
-    }
-
-    private BinaryDecoder claimDecoder() {
-        return decoderRef.getAndSet(null);
-    }
-
-    private BinaryEncoder claimEncoder() {
-        return encoderRef.getAndSet(null);
-    }
-
-    /*
-    /**********************************************************
-    /* Helper class
-    /**********************************************************
-     */
-
-    public static class BadSchemaException extends JsonProcessingException
-    {
-        private static final long serialVersionUID = 1L;
-
-        public BadSchemaException(String msg, Throwable src) {
-            super(msg, src);
-        }
     }
 }
