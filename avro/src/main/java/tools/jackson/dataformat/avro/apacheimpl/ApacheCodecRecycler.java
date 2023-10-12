@@ -5,8 +5,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.io.*;
 
-import tools.jackson.core.JacksonException;
-
 /**
  * Simple helper class that contains extracted functionality for
  * simple encoder/decoder recycling.
@@ -28,11 +26,11 @@ public final class ApacheCodecRecycler
      */
 
     public static BinaryDecoder acquireDecoder() {
-        return _recycler().claimDecoder();
+        return _recycler().decoderRef.getAndSet(null);
     }
 
     public static BinaryEncoder acquireEncoder() {
-        return _recycler().claimEncoder();
+        return _recycler().encoderRef.getAndSet(null);
     }
 
     public static void release(BinaryDecoder dec) {
@@ -58,34 +56,5 @@ public final class ApacheCodecRecycler
             _recycler.set(new SoftReference<>(r));
         }
         return r;
-    }
-
-    private BinaryDecoder claimDecoder() {
-        return decoderRef.getAndSet(null);
-    }
-
-    private BinaryEncoder claimEncoder() {
-        return encoderRef.getAndSet(null);
-    }
-
-    /*
-    /**********************************************************************
-    /* Helper class
-    /**********************************************************************
-     */
-
-    // 24-Jan-2021, tatu: Is this actually used? If not, maybe remove from Jackson 3.0
-    public static class BadSchemaException extends JacksonException
-    {
-        private static final long serialVersionUID = 1L;
-
-        public BadSchemaException(String msg, Throwable src) {
-            super(msg, src);
-        }
-
-        @Override
-        public Object processor() {
-            return null;
-        }
     }
 }
