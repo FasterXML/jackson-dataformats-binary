@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.EncoderFactory;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
@@ -91,6 +92,11 @@ public class AvroGenerator extends GeneratorBase
     /**
      * @since 2.16
      */
+    protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
+    
+    /**
+     * @since 2.16
+     */
     protected final StreamWriteConstraints _streamWriteConstraints;
     
     /**
@@ -146,7 +152,12 @@ public class AvroGenerator extends GeneratorBase
         _formatFeatures = avroFeatures;
         _output = output;
         _avroContext = AvroWriteContext.nullContext();
-        _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+
+        final boolean buffering = isEnabled(Feature.AVRO_BUFFERING);
+        BinaryEncoder encoderToReuse = ApacheCodecRecycler.acquireEncoder();
+        _encoder = buffering
+                ? ENCODER_FACTORY.binaryEncoder(output, encoderToReuse)
+                : ENCODER_FACTORY.directBinaryEncoder(output, encoderToReuse);
     }
 
     public void setSchema(AvroSchema schema)
