@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.EncoderFactory;
 
 import tools.jackson.core.*;
 import tools.jackson.core.base.GeneratorBase;
@@ -99,6 +100,11 @@ public class AvroGenerator extends GeneratorBase
      */
 
     /**
+     * @since 2.16
+     */
+    protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
+
+    /**
      * Bit flag composed of bits that indicate which
      * {@link AvroGenerator.Feature}s
      * are enabled.
@@ -152,7 +158,11 @@ public class AvroGenerator extends GeneratorBase
         _formatWriteFeatures = avroFeatures;
         _output = output;
         _streamWriteContext = AvroWriteContext.nullContext();
-        _encoder = ApacheCodecRecycler.encoder(_output, isEnabled(Feature.AVRO_BUFFERING));
+        final boolean buffering = isEnabled(Feature.AVRO_BUFFERING);
+        BinaryEncoder encoderToReuse = ApacheCodecRecycler.acquireEncoder();
+        _encoder = buffering
+                ? ENCODER_FACTORY.binaryEncoder(output, encoderToReuse)
+                : ENCODER_FACTORY.directBinaryEncoder(output, encoderToReuse);
         _rootSchema = Objects.requireNonNull(schema, "Can not pass `null` 'schema'");
         // start with temporary root...
         _streamWriteContext = _rootContext = AvroWriteContext.createRootContext(this,
