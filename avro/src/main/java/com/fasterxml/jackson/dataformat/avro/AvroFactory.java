@@ -7,7 +7,8 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
-
+import com.fasterxml.jackson.core.util.RecyclerPool;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
 /**
@@ -39,6 +40,11 @@ public class AvroFactory extends JsonFactory
     /* Configuration
     /**********************************************************
      */
+
+    /**
+     * @since 2.16
+     */
+    protected RecyclerPool<ApacheCodecRecycler> _avroRecyclerPool; 
 
     protected int _avroParserFeatures;
 
