@@ -93,7 +93,12 @@ public class AvroGenerator extends GeneratorBase
      * @since 2.16
      */
     protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
-    
+
+    /**
+     * @since 2.16
+     */
+    protected ApacheCodecRecycler _apacheCodecRecycler;
+
     /**
      * @since 2.16
      */
@@ -144,6 +149,7 @@ public class AvroGenerator extends GeneratorBase
      */
 
     public AvroGenerator(IOContext ctxt, int jsonFeatures, int avroFeatures,
+            ApacheCodecRecycler apacheCodecRecycler,
             ObjectCodec codec, OutputStream output)
         throws IOException
     {
@@ -153,8 +159,9 @@ public class AvroGenerator extends GeneratorBase
         _output = output;
         _avroContext = AvroWriteContext.nullContext();
 
+        _apacheCodecRecycler = apacheCodecRecycler;
         final boolean buffering = isEnabled(Feature.AVRO_BUFFERING);
-        BinaryEncoder encoderToReuse = ApacheCodecRecycler.acquireEncoder();
+        BinaryEncoder encoderToReuse = _apacheCodecRecycler.acquireEncoder();
         _encoder = buffering
                 ? ENCODER_FACTORY.binaryEncoder(output, encoderToReuse)
                 : ENCODER_FACTORY.directBinaryEncoder(output, encoderToReuse);
@@ -626,10 +633,15 @@ public class AvroGenerator extends GeneratorBase
     @Override
     protected void _releaseBuffers() {
         // no super implementation to call
-        BinaryEncoder e = _encoder;
-        if (e != null) {
-            _encoder = null;
-            ApacheCodecRecycler.release(e);
+        ApacheCodecRecycler recycler = _apacheCodecRecycler;
+        if (recycler != null) {
+            _apacheCodecRecycler = null;
+            BinaryEncoder e = _encoder;
+            if (e != null) {
+                _encoder = null;
+                recycler.release(e);
+            }
+            recycler.releaseToPool();
         }
     }
 
