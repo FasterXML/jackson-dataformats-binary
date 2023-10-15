@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.RecyclerPool;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
+import com.fasterxml.jackson.dataformat.avro.apacheimpl.AvroRecyclerPools;
 import com.fasterxml.jackson.dataformat.avro.deser.*;
 
 /**
@@ -44,7 +45,8 @@ public class AvroFactory extends JsonFactory
     /**
      * @since 2.16
      */
-    protected RecyclerPool<ApacheCodecRecycler> _avroRecyclerPool; 
+    protected RecyclerPool<ApacheCodecRecycler> _avroRecyclerPool
+        = AvroRecyclerPools.defaultPool();
 
     protected int _avroParserFeatures;
 
@@ -469,6 +471,7 @@ public class AvroFactory extends JsonFactory
     {
         int feats = _avroGeneratorFeatures;
         AvroGenerator gen = new AvroGenerator(ctxt, _generatorFeatures, feats,
+                _avroRecyclerPool.acquireAndLinkPooled(),
                 _objectCodec, out);
         return gen;
     }

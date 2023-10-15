@@ -75,7 +75,8 @@ public final class ApacheCodecRecycler
      *
      * @since 2.16
      */
-    public void release() {
+    @Override
+    public void releaseToPool() {
         if (_pool != null) {
             RecyclerPool<ApacheCodecRecycler> tmpPool = _pool;
             // nullify the reference to the pool in order to avoid the risk of releasing
