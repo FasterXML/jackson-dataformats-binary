@@ -105,6 +105,11 @@ public class AvroGenerator extends GeneratorBase
     protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
 
     /**
+     * @since 2.16
+     */
+    protected ApacheCodecRecycler _apacheCodecRecycler;
+
+    /**
      * Bit flag composed of bits that indicate which
      * {@link AvroGenerator.Feature}s
      * are enabled.
@@ -150,16 +155,18 @@ public class AvroGenerator extends GeneratorBase
 
     public AvroGenerator(ObjectWriteContext writeCtxt, IOContext ioCtxt,
             int streamWriteFeatures, int avroFeatures,
-            OutputStream output,
-            AvroSchema schema)
+            ApacheCodecRecycler apacheCodecRecycler,
+            AvroSchema schema,
+            OutputStream output)
         throws JacksonException
     {
         super(writeCtxt, ioCtxt, streamWriteFeatures);
         _formatWriteFeatures = avroFeatures;
         _output = output;
         _streamWriteContext = AvroWriteContext.nullContext();
+        _apacheCodecRecycler = apacheCodecRecycler;
         final boolean buffering = isEnabled(Feature.AVRO_BUFFERING);
-        BinaryEncoder encoderToReuse = ApacheCodecRecycler.acquireEncoder();
+        BinaryEncoder encoderToReuse = apacheCodecRecycler.acquireEncoder();
         _encoder = buffering
                 ? ENCODER_FACTORY.binaryEncoder(output, encoderToReuse)
                 : ENCODER_FACTORY.directBinaryEncoder(output, encoderToReuse);
@@ -681,10 +688,15 @@ public class AvroGenerator extends GeneratorBase
     @Override
     protected void _releaseBuffers() {
         // no super implementation to call
-        BinaryEncoder e = _encoder;
-        if (e != null) {
-            _encoder = null;
-            ApacheCodecRecycler.release(e);
+        ApacheCodecRecycler recycler = _apacheCodecRecycler;
+        if (recycler != null) {
+            _apacheCodecRecycler = null;
+            BinaryEncoder e = _encoder;
+            if (e != null) {
+                _encoder = null;
+                recycler.release(e);
+            }
+            recycler.releaseToPool();
         }
     }
 

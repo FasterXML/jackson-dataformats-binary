@@ -18,7 +18,7 @@ Active maintainers:
 
 #403: Remove Smile-specific buffer-recycling
 
-2.15.3 (not yet released)
+2.15.3 (12-Oct-2023)
 
 #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
  (reported by Simon D)

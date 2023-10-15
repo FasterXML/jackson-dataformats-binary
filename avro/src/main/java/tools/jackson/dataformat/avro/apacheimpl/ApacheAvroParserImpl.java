@@ -18,10 +18,21 @@ import tools.jackson.dataformat.avro.deser.AvroParserImpl;
  */
 public class ApacheAvroParserImpl extends AvroParserImpl
 {
+    /*
+    /**********************************************************
+    /* Configuration
+    /**********************************************************
+     */
+
     /**
      * @since 2.16
      */
     protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
+
+    /**
+     * @since 2.16
+     */
+    protected ApacheCodecRecycler _apacheCodecRecycler;
 
     /*
     /**********************************************************************
@@ -69,9 +80,11 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     /* Life-cycle
     /**********************************************************************
      */
-    
+
     public ApacheAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
-            int parserFeatures, int avroFeatures, AvroSchema schema,
+            int parserFeatures, int avroFeatures,
+            ApacheCodecRecycler apacheCodecRecycler,
+            AvroSchema schema,
             InputStream in)
     {
         super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
@@ -80,20 +93,25 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         _inputPtr = 0;
         _inputEnd = 0;
         _bufferRecyclable = true;
+        _apacheCodecRecycler = apacheCodecRecycler;
+
         final boolean buffering = Feature.AVRO_BUFFERING.enabledIn(avroFeatures);
-        BinaryDecoder decoderToReuse = ApacheCodecRecycler.acquireDecoder();
+        BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = buffering
                 ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)
                 : DECODER_FACTORY.directBinaryDecoder(in, decoderToReuse);
     }
 
     public ApacheAvroParserImpl(ObjectReadContext readCtxt, IOContext ioCtxt,
-            int parserFeatures, int avroFeatures, AvroSchema schema,
+            int parserFeatures, int avroFeatures,
+            ApacheCodecRecycler apacheCodecRecycler,
+            AvroSchema schema,
             byte[] buffer, int offset, int len)
     {
         super(readCtxt, ioCtxt, parserFeatures, avroFeatures, schema);
         _inputStream = null;
-        BinaryDecoder decoderToReuse = ApacheCodecRecycler.acquireDecoder();
+        _apacheCodecRecycler = apacheCodecRecycler;
+        BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = DECODER_FACTORY.binaryDecoder(buffer, offset, len, decoderToReuse);
     }
 
@@ -107,13 +125,17 @@ public class ApacheAvroParserImpl extends AvroParserImpl
                 _ioContext.releaseReadIOBuffer(buf);
             }
         }
-        BinaryDecoder d = _decoder;
-        if (d != null) {
-            _decoder = null;
-            ApacheCodecRecycler.release(d);
+        ApacheCodecRecycler recycler = _apacheCodecRecycler;
+        if (recycler != null) {
+            _apacheCodecRecycler = null;
+            BinaryDecoder d = _decoder;
+            if (d != null) {
+                _decoder = null;
+                recycler.release(d);
+            }
+            recycler.releaseToPool();
         }
     }
-
 
     /*
     /**********************************************************************

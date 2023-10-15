@@ -2,10 +2,14 @@ package tools.jackson.dataformat.avro;
 
 import java.io.*;
 
+import tools.jackson.dataformat.avro.apacheimpl.AvroRecyclerPools;
+
 import tools.jackson.core.*;
 import tools.jackson.core.base.BinaryTSFactory;
 import tools.jackson.core.io.IOContext;
+import tools.jackson.core.util.RecyclerPool;
 import tools.jackson.dataformat.avro.apacheimpl.ApacheAvroParserImpl;
+import tools.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
 import tools.jackson.dataformat.avro.deser.*;
 
 /**
@@ -37,6 +41,12 @@ public class AvroFactory
     /* Configuration
     /**********************************************************
      */
+
+    /**
+     * @since 2.16
+     */
+    protected RecyclerPool<ApacheCodecRecycler> _avroRecyclerPool
+        = AvroRecyclerPools.defaultPool();
 
     /**
      * Flag that is set if Apache Avro lib's decoder is to be used for decoding;
@@ -234,6 +244,7 @@ public class AvroFactory
           return new ApacheAvroParserImpl(readCtxt, ioCtxt,
                   readCtxt.getStreamReadFeatures(_streamReadFeatures),
                   readCtxt.getFormatReadFeatures(_formatReadFeatures),
+                  _avroRecyclerPool.acquireAndLinkPooled(),
                   (AvroSchema) readCtxt.getSchema(),
                   in);
         }
@@ -253,6 +264,7 @@ public class AvroFactory
             return new ApacheAvroParserImpl(readCtxt, ioCtxt,
                     readCtxt.getStreamReadFeatures(_streamReadFeatures),
                     readCtxt.getFormatReadFeatures(_formatReadFeatures),
+                    _avroRecyclerPool.acquireAndLinkPooled(),
                     (AvroSchema) readCtxt.getSchema(),
                     data, offset, len);
         }
@@ -286,7 +298,8 @@ public class AvroFactory
         return new AvroGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
-                out,
-                (AvroSchema) writeCtxt.getSchema());
+                _avroRecyclerPool.acquireAndLinkPooled(),
+                (AvroSchema) writeCtxt.getSchema(),
+                out);
     }
 }
