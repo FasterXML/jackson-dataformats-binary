@@ -15,7 +15,12 @@ import tools.jackson.core.util.RecyclerPool.WithPool;
 public final class ApacheCodecRecycler
     implements WithPool<ApacheCodecRecycler>
 {
+    // NOTE: AtomicReference only needed for ThreadLocal recycling where
+    //  single-thread access is not (ironically enough) ensured
     private final AtomicReference<BinaryDecoder> decoderRef = new AtomicReference<>();
+
+    // NOTE: AtomicReference only needed for ThreadLocal recycling where
+    //  single-thread access is not (ironically enough) ensured
     private final AtomicReference<BinaryEncoder> encoderRef = new AtomicReference<>();
 
     private RecyclerPool<ApacheCodecRecycler> _pool;
