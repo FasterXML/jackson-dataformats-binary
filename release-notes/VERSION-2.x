@@ -16,11 +16,13 @@ Active maintainers:
 
 2.16.0 (not yet released)
 
-#403: Remove Smile-specific buffer-recycling
+#400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
+  use new `RecyclerPool`, allow configuring use of non-ThreadLocal based pools
+#403: (smile) Remove Smile-specific buffer-recycling
 
 2.15.3 (12-Oct-2023)
 
-#384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
+#384: (smile) `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
  (reported by Simon D)
 
 2.15.2 (30-May-2023)
