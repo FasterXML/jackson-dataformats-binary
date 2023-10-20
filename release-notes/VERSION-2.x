@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.16.0 (not yet released)
+2.16.0-rc1 (20-Oct-2023)
 
 #400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
   use new `RecyclerPool`, allow configuring use of non-ThreadLocal based pools
