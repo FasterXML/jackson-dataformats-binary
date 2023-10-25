@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -135,7 +136,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         // call flush() for fun, at root level, to verify that works
         g.flush();
         g.writeFieldName(new SerializedString("last"));
-        byte[] b = "Bob".getBytes("UTF-8");
+        byte[] b = "Bob".getBytes(StandardCharsets.UTF_8);
         g.writeRawUTF8String(b, 0, b.length);
         g.writeEndObject();
         g.close();

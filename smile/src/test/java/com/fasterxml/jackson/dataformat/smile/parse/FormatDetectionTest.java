@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
+import java.nio.charset.StandardCharsets;
+
 public class FormatDetectionTest extends BaseTestForSmile
 {
     static class POJO {
@@ -39,7 +41,7 @@ public class FormatDetectionTest extends BaseTestForSmile
         assertEquals("Bob", pojo.name);
 
         // let's verify it also works for plain JSON...
-        pojo = detecting.readValue(JSON.getBytes("UTF-8"));
+        pojo = detecting.readValue(JSON.getBytes(StandardCharsets.UTF_8));
         assertEquals(3, pojo.id);
         assertEquals("Bob", pojo.name);
     }

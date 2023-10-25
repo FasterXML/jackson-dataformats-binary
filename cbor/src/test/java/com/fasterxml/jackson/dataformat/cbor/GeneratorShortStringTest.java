@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -34,7 +35,7 @@ public class GeneratorShortStringTest extends CBORTestBase
                 gen.writeString(value);
                 gen.close();
                 _verifyBytes(out.toByteArray(), (byte) (CBORConstants.PREFIX_TYPE_TEXT + len),
-                        value.getBytes("UTF-8"));
+                        value.getBytes(StandardCharsets.UTF_8));
                 _verifyString(out.toByteArray(), value);
             }
         }
@@ -49,7 +50,7 @@ public class GeneratorShortStringTest extends CBORTestBase
                 gen.writeString(value.toCharArray(), 0, len);
                 gen.close();
                 _verifyBytes(out.toByteArray(), (byte) (CBORConstants.PREFIX_TYPE_TEXT + len),
-                        value.getBytes("UTF-8"));
+                        value.getBytes(StandardCharsets.UTF_8));
                 _verifyString(out.toByteArray(), value);
             }
         }
@@ -65,7 +66,7 @@ public class GeneratorShortStringTest extends CBORTestBase
                 gen.close();
                 _verifyBytes(out.toByteArray(),
                         CBORConstants.BYTE_STRING_1BYTE_LEN, (byte) len,
-                        value.getBytes("UTF-8"));
+                        value.getBytes(StandardCharsets.UTF_8));
                 _verifyString(out.toByteArray(), value);
             }
         }
@@ -81,7 +82,7 @@ public class GeneratorShortStringTest extends CBORTestBase
                 gen.close();
                 _verifyBytes(out.toByteArray(),
                         CBORConstants.BYTE_STRING_1BYTE_LEN, (byte) len,
-                        value.getBytes("UTF-8"));
+                        value.getBytes(StandardCharsets.UTF_8));
                 _verifyString(out.toByteArray(), value);
             }
         }

@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
@@ -113,13 +114,13 @@ public class BasicParserTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         final String LONG = generateUnicodeString(37000);
-        final byte[] LONG_B = LONG.getBytes("UTF-8");
+        final byte[] LONG_B = LONG.getBytes(StandardCharsets.UTF_8);
         final int BYTE_LEN = LONG_B.length;
         out.write(CBORConstants.BYTE_ARRAY_INDEFINITE);
         out.write((byte) (CBORConstants.PREFIX_TYPE_TEXT + 25));
         out.write((byte) (BYTE_LEN >> 8));
         out.write((byte) BYTE_LEN);
-        out.write(LONG.getBytes("UTF-8"));
+        out.write(LONG.getBytes(StandardCharsets.UTF_8));
         out.write(CBORConstants.BYTE_BREAK);
 
         final byte[] b = out.toByteArray();
@@ -167,7 +168,7 @@ public class BasicParserTest extends CBORTestBase
         gen.writeString(input);
         gen.close();
 
-        final int textByteCount = input.getBytes("UTF-8").length;
+        final int textByteCount = input.getBytes(StandardCharsets.UTF_8).length;
         final byte[] b = out.toByteArray();
         assertEquals((byte) (CBORConstants.PREFIX_TYPE_TEXT + 0x1F), b[0]);
         assertEquals(CBORConstants.BYTE_BREAK, b[b.length-1]);

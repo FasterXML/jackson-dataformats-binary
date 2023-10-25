@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 
+import java.nio.charset.StandardCharsets;
+
 public class TreeNodesTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
@@ -19,7 +21,7 @@ public class TreeNodesTest extends CBORTestBase
          ObjectNode foo1 = top1.putObject("foo");
          foo1.put("bar", "baz");
          final String TEXT =  "Caf\u00e9 1\u20ac";
-         final byte[] TEXT_BYTES =  TEXT.getBytes("UTF-8");
+         final byte[] TEXT_BYTES =  TEXT.getBytes(StandardCharsets.UTF_8);
          foo1.put("dat", TEXT_BYTES);
 
          byte[] doc = MAPPER.writeValueAsBytes(top1);

@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 
@@ -51,7 +52,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         final SmileFactory f = new SmileFactory();
         f.configure(Feature.ENCODE_BINARY_AS_7BIT, rawBinary);
 
-        final byte[] INPUT = TEXT4.getBytes("UTF-8");
+        final byte[] INPUT = TEXT4.getBytes(StandardCharsets.UTF_8);
         InputStream in;
         if (throttle) {
             in = new ThrottledInputStream(INPUT, 3);
@@ -92,7 +93,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         final SmileFactory f = new SmileFactory();
         f.configure(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT, !rawBinary);
 
-        final byte[] INPUT = TEXT4.getBytes("UTF-8");
+        final byte[] INPUT = TEXT4.getBytes(StandardCharsets.UTF_8);
         for (int chunkSize : new int[] { 1, 2, 3, 4, 7, 11, 29, 5000 }) {
             JsonGenerator gen;
 

@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -132,7 +133,7 @@ public class WriteStringsTest extends ProtobufTestBase
     private void _testSimpleLongMapper(String longName) throws Exception
     {
         final ObjectWriter w = MAPPER.writer(NAME_SCHEMA);
-        final byte[] LONG_BYTES = longName.getBytes("UTF-8");
+        final byte[] LONG_BYTES = longName.getBytes(StandardCharsets.UTF_8);
 
         final int longLen = LONG_BYTES.length;
 

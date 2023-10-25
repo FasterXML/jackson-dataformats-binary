@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.cbor.gen;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.junit.Assert;
@@ -352,7 +353,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         final String SHORT_ASCII = generateLongAsciiString(240);
         gen.writeString(SHORT_ASCII);
         gen.close();
-        byte[] b = SHORT_ASCII.getBytes("UTF-8");
+        byte[] b = SHORT_ASCII.getBytes(StandardCharsets.UTF_8);
         int len = b.length;
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + 24), (byte) len, b);
@@ -363,7 +364,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         final String SHORT_UNICODE = generateUnicodeString(160);
         gen.writeString(SHORT_UNICODE);
         gen.close();
-        b = SHORT_UNICODE.getBytes("UTF-8");
+        b = SHORT_UNICODE.getBytes(StandardCharsets.UTF_8);
         len = b.length;
         // just a sanity check; will break if generation changes
         assertEquals(196, len);
@@ -376,7 +377,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         final String MEDIUM_UNICODE = generateUnicodeString(800);
         gen.writeString(MEDIUM_UNICODE);
         gen.close();
-        b = MEDIUM_UNICODE.getBytes("UTF-8");
+        b = MEDIUM_UNICODE.getBytes(StandardCharsets.UTF_8);
         len = b.length;
         // just a sanity check; will break if generation changes
         assertEquals(926, len);

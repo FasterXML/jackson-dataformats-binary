@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -296,7 +297,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         final AvroSchema dstSchema = MAPPER.schemaFrom(SCHEMA_XY_JSON);
         final AvroSchema xlate = srcSchema.withReaderSchema(dstSchema);
 
-        byte[] binary = generateAsciiString(9000).getBytes("UTF-8");
+        byte[] binary = generateAsciiString(9000).getBytes(StandardCharsets.UTF_8);
         byte[] avro = MAPPER.writer(srcSchema).writeValueAsBytes(new PointXBinaryY(Integer.MIN_VALUE,
                 Integer.MAX_VALUE, binary));
 

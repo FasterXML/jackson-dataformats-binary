@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.avro.io.BinaryEncoder;
 
@@ -450,7 +451,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeUTF8String(byte[] text, int offset, int len) throws IOException {
-        writeString(new String(text, offset, len, "UTF-8"));
+        writeString(new String(text, offset, len, StandardCharsets.UTF_8));
     }
 
     /*

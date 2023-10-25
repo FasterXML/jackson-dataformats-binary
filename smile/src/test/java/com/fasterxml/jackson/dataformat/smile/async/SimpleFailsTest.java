@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
@@ -42,13 +43,13 @@ public class SimpleFailsTest extends AsyncTestBase
 
     public void testHeaderFailWithJSON() throws IOException
     {
-        byte[] data = "[ true ]".getBytes("UTF-8");
+        byte[] data = "[ true ]".getBytes(StandardCharsets.UTF_8);
         // and finally, error case too
         _testHeaderFailWithJSON(F_REQ_HEADERS, data, 0, 100);
         _testHeaderFailWithJSON(F_REQ_HEADERS, data, 0, 3);
         _testHeaderFailWithJSON(F_REQ_HEADERS, data, 0, 1);
 
-        data = "{\"f\" : 123 }".getBytes("UTF-8");
+        data = "{\"f\" : 123 }".getBytes(StandardCharsets.UTF_8);
         // and finally, error case too
         _testHeaderFailWithJSON(F_REQ_HEADERS, data, 0, 100);
         _testHeaderFailWithJSON(F_REQ_HEADERS, data, 0, 3);

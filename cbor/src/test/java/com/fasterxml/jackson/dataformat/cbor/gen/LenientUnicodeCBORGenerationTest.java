@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 
@@ -83,7 +84,7 @@ public class LenientUnicodeCBORGenerationTest extends CBORTestBase
         // Unmatched first surrogate character
         gen.writeString("x\ud83d");
         gen.close();
-        b = "x\ufffd".getBytes("utf-8");
+        b = "x\ufffd".getBytes(StandardCharsets.UTF_8);
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + b.length), b);
 
@@ -94,7 +95,7 @@ public class LenientUnicodeCBORGenerationTest extends CBORTestBase
         // Unmatched second surrogate character
         gen.writeString("x\ude01");
         gen.close();
-        b = "x\ufffd".getBytes("utf-8");
+        b = "x\ufffd".getBytes(StandardCharsets.UTF_8);
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + b.length), b);
 
@@ -105,7 +106,7 @@ public class LenientUnicodeCBORGenerationTest extends CBORTestBase
         // Unmatched second surrogate character (2)
         gen.writeString("x\ude01x");
         gen.close();
-        b = "x\ufffdx".getBytes("utf-8");
+        b = "x\ufffdx".getBytes(StandardCharsets.UTF_8);
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + b.length), b);
     }
@@ -123,7 +124,7 @@ public class LenientUnicodeCBORGenerationTest extends CBORTestBase
         // Broken surrogate pair
         gen.writeString("X\ud83dY");
         gen.close();
-        b = "X\ufffdY".getBytes("utf-8");
+        b = "X\ufffdY".getBytes(StandardCharsets.UTF_8);
         _verifyBytes(out.toByteArray(),
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + b.length), b);
     }

@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -51,7 +52,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         for (byte[] inputBytes : strings) {
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
             String string = jp.getText();
-            byte[] outputBytes = string.getBytes("UTF-8");
+            byte[] outputBytes = string.getBytes(StandardCharsets.UTF_8);
             assertEquals(inputBytes.length, outputBytes.length);
             assertArrayEquals(inputBytes, outputBytes);
         }
@@ -84,7 +85,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         for (byte[] inputBytes : strings) {
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
             String string = jp.getText();
-            byte[] outputBytes = string.getBytes("UTF-8");
+            byte[] outputBytes = string.getBytes(StandardCharsets.UTF_8);
             assertEquals(inputBytes.length, outputBytes.length);
             assertArrayEquals(inputBytes, outputBytes);
         }
@@ -122,7 +123,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 
         if(asUtf8String)
         {
-            byte[] text = "PojoFoo".getBytes("ASCII");
+            byte[] text = "PojoFoo".getBytes(StandardCharsets.US_ASCII);
             generator.writeUTF8String(text, 0, text.length);
         }
         else
@@ -140,7 +141,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 
         if(asUtf8String)
         {
-            byte[] text = "1".getBytes("ASCII");
+            byte[] text = "1".getBytes(StandardCharsets.US_ASCII);
             generator.writeUTF8String(text, 0, text.length);
         }
         else
@@ -199,7 +200,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
             }
             len = 1 + ((len + len) / 3);
             String str = generateString(rnd, len, includeCtrlChars);
-            byte[] bytes = str.getBytes("UTF-8");
+            byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
             strings.add(bytes);
             totalLength -= bytes.length;
         } while (totalLength > 0);
