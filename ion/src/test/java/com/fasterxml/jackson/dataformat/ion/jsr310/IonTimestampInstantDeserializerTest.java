@@ -295,7 +295,7 @@ public class IonTimestampInstantDeserializerTest {
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(expected, ZoneOffset.UTC);
-        Temporal actual = m.readValue("[\"" + Instant.class.getName() + "\"," + timestamp.toString() + "]",
+        Temporal actual = m.readValue("[\"" + Instant.class.getName() + "\"," + timestamp + "]",
                 Temporal.class);
 
         assertTrue("The actual should be an Instant.", actual instanceof Instant);

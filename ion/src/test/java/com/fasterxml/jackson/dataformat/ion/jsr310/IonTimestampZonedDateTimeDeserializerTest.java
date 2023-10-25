@@ -394,7 +394,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(now, ZoneOffset.UTC);
-        Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\"," + timestamp.toString() + "]",
+        Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\"," + timestamp + "]",
                 Temporal.class);
 
         assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
@@ -411,7 +411,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(now, expected.getOffset());
-        Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\"," + timestamp.toString() + "]",
+        Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\"," + timestamp + "]",
                 Temporal.class);
 
         assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);

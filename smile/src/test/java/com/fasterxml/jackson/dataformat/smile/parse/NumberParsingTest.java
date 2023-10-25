@@ -320,7 +320,7 @@ public class NumberParsingTest
     public void testBigInteger() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        BigInteger in = new BigInteger(String.valueOf(Long.MIN_VALUE)+"0012575934");
+        BigInteger in = new BigInteger(Long.MIN_VALUE +"0012575934");
         SmileGenerator g = smileGenerator(bo, false);
         g.writeNumber(in);
         g.close();

@@ -390,7 +390,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(now, ZoneOffset.UTC);
-        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp.toString() + "]",
+        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp + "]",
                 Temporal.class);
 
         assertTrue("The value should be an OffsetDateTime.", actual instanceof OffsetDateTime);
@@ -407,7 +407,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
                 .build();
 
         Timestamp timestamp = TimestampUtils.toTimestamp(now, expected.getOffset());
-        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp.toString() + "]",
+        Temporal actual = m.readValue("[\"" + OffsetDateTime.class.getName() + "\"," + timestamp + "]",
                 Temporal.class);
 
         assertTrue("The value should be an OffsetDateTime.", actual instanceof OffsetDateTime);

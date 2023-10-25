@@ -171,6 +171,6 @@ public class IonTimestampZonedDateTimeSerializerTest {
         String value = mapper.writeValueAsString(date);
         assertNotNull("The value should not be null.", value);
         assertEquals("The value is not correct.","'" + ZonedDateTime.class.getName() + "'::"
-                + TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
+                + TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()), value);
     }
 }
