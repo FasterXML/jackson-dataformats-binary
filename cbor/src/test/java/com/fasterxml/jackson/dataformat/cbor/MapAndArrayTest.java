@@ -188,7 +188,7 @@ public class MapAndArrayTest extends CBORTestBase
         CBORParser parser = factory.createParser(bytes);
         parser.nextToken();
         parser.nextToken();
-        assertTrue(parser.getCurrentName().equals("1504"));
+        assertEquals("1504", parser.getCurrentName());
         parser.close();
     }
 
