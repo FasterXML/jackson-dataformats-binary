@@ -538,12 +538,12 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public void writeNumber(int i) throws IOException {
-        _avroContext.writeValue(Integer.valueOf(i));
+        _avroContext.writeValue(i);
     }
 
     @Override
     public void writeNumber(long l) throws IOException {
-        _avroContext.writeValue(Long.valueOf(l));
+        _avroContext.writeValue(l);
     }
 
     @Override
@@ -558,12 +558,12 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public void writeNumber(double d) throws IOException {
-        _avroContext.writeValue(Double.valueOf(d));
+        _avroContext.writeValue(d);
     }
 
     @Override
     public void writeNumber(float f) throws IOException {
-        _avroContext.writeValue(Float.valueOf(f));
+        _avroContext.writeValue(f);
     }
 
     @Override

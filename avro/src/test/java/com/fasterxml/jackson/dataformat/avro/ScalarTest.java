@@ -32,7 +32,7 @@ public class ScalarTest extends AvroTestBase
 
     public void testRootInt() throws Exception
     {
-        Integer inputValue = Integer.valueOf(0xE134567);
+        Integer inputValue = 0xE134567;
         AvroSchema schema = MAPPER.schemaFrom(quote("int"));
         byte[] avro = MAPPER.writer(schema)
                 .writeValueAsBytes(inputValue);
@@ -62,7 +62,7 @@ public class ScalarTest extends AvroTestBase
                 Long.MAX_VALUE,
                 Long.MIN_VALUE,
         }) {
-            Long inputValue = Long.valueOf(l);
+            Long inputValue = l;
             AvroSchema schema = MAPPER.schemaFor(Long.class);
             byte[] avro = MAPPER.writer(schema)
                     .writeValueAsBytes(inputValue);
@@ -94,7 +94,7 @@ public class ScalarTest extends AvroTestBase
                 0.1,
                 -9125436547457.903576
         }) {
-            Double inputValue = Double.valueOf(d);
+            Double inputValue = d;
             AvroSchema schema = MAPPER.schemaFor(Double.class);
             byte[] avro = MAPPER.writer(schema)
                     .writeValueAsBytes(inputValue);
@@ -126,7 +126,7 @@ public class ScalarTest extends AvroTestBase
                 0.1f,
                 -125657.306347f
         }) {
-            Float inputValue = Float.valueOf(f);
+            Float inputValue = f;
             AvroSchema schema = MAPPER.schemaFor(Float.class);
             byte[] avro = MAPPER.writer(schema)
                     .writeValueAsBytes(inputValue);

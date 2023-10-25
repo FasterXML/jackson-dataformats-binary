@@ -102,7 +102,7 @@ public class GeneratorDeepNestingTest extends CBORTestBase
             assertEquals(0, list.size());
         } else {
             assertEquals(2,list.size());
-            assertEquals(Integer.valueOf(level), list.get(0));
+            assertEquals(level, list.get(0));
             _verifyNesteArray((List<?>) list.get(1), level-1);
         }
     }

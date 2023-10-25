@@ -102,7 +102,7 @@ public class NumberBeanTest extends CBORTestBase
     // for [dataformats-binary#32] coercion of Float into Double
     public void testUntypedWithFloat() throws Exception
     {
-        Object[] input = new Object[] { Float.valueOf(0.5f) };
+        Object[] input = new Object[] {0.5f};
         byte[] b = MAPPER.writeValueAsBytes(input);
         Object[] result = MAPPER.readValue(b, Object[].class);
         assertEquals(1, result.length);
@@ -122,7 +122,7 @@ public class NumberBeanTest extends CBORTestBase
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
-        assertEquals(Integer.valueOf(123), result.nr);
+        assertEquals(123, result.nr);
 
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
@@ -131,7 +131,7 @@ public class NumberBeanTest extends CBORTestBase
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
-        assertEquals(Long.valueOf(Long.MAX_VALUE), result.nr);
+        assertEquals(Long.MAX_VALUE, result.nr);
 
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
@@ -155,7 +155,7 @@ public class NumberBeanTest extends CBORTestBase
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
-        assertEquals(Float.valueOf(0.25f), result.nr);
+        assertEquals(0.25f, result.nr);
 
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
@@ -164,7 +164,7 @@ public class NumberBeanTest extends CBORTestBase
             g.writeEndObject();
         }
         result = MAPPER.readValue(bytes.toByteArray(), NumberWrapper.class);
-        assertEquals(Double.valueOf(0.5), result.nr);
+        assertEquals(0.5, result.nr);
 
         bytes = new ByteArrayOutputStream();
         try (CBORGenerator g = cborGenerator(bytes)) {
@@ -202,23 +202,23 @@ public class NumberBeanTest extends CBORTestBase
 
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.INT, p.getNumberType());
-            assertEquals(Integer.valueOf(101), p.getNumberValue());
-            assertEquals(Integer.valueOf(101), p.getNumberValueExact());
+            assertEquals(101, p.getNumberValue());
+            assertEquals(101, p.getNumberValueExact());
 
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             assertEquals(NumberType.DOUBLE, p.getNumberType());
-            assertEquals(Double.valueOf(0.25), p.getNumberValue());
-            assertEquals(Double.valueOf(0.25), p.getNumberValueExact());
+            assertEquals(0.25, p.getNumberValue());
+            assertEquals(0.25, p.getNumberValueExact());
 
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.LONG, p.getNumberType());
-            assertEquals(Long.valueOf(13117L), p.getNumberValue());
-            assertEquals(Long.valueOf(13117L), p.getNumberValueExact());
+            assertEquals(13117L, p.getNumberValue());
+            assertEquals(13117L, p.getNumberValueExact());
 
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             assertEquals(NumberType.FLOAT, p.getNumberType());
-            assertEquals(Float.valueOf(0.5f), p.getNumberValue());
-            assertEquals(Float.valueOf(0.5f), p.getNumberValueExact());
+            assertEquals(0.5f, p.getNumberValue());
+            assertEquals(0.5f, p.getNumberValueExact());
 
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.BIG_INTEGER, p.getNumberType());

@@ -72,7 +72,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertEquals("age", p.getCurrentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
-        assertEquals(Integer.valueOf(empl.age), p.getNumberValue());
+        assertEquals(empl.age, p.getNumberValue());
         assertEquals(empl.age, p.getIntValue());
         assertFalse(p.isNaN());
         assertEquals((double) empl.age, p.getDoubleValue());

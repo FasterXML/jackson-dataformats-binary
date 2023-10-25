@@ -211,7 +211,7 @@ public class NumberParsingTest
         assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
         assertEquals(value, p.getFloatValue());
         assertFalse(p.isNaN());
-        assertEquals(Float.valueOf(value), p.getNumberValue());
+        assertEquals(value, p.getNumberValue());
 
         assertEquals((double) value, p.getDoubleValue());
         assertEquals((int) value, p.getIntValue());
@@ -235,7 +235,7 @@ public class NumberParsingTest
         assertFalse(p.isNaN());
         assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
         assertEquals(value, p.getDoubleValue());
-        assertEquals(Double.valueOf(value), p.getNumberValue());
+        assertEquals(value, p.getNumberValue());
 
         assertEquals((float) value, p.getFloatValue());
         assertEquals((int) value, p.getIntValue());
@@ -468,7 +468,7 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(123f, p.getFloatValue());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(Integer.valueOf(123), p.getNumberValue());
+        assertEquals(123, p.getNumberValue());
 
         // for longs
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -478,7 +478,7 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(BigInteger.valueOf(LONG_VALUE), p.getBigIntegerValue());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(Long.valueOf(LONG_VALUE), p.getNumberValue());
+        assertEquals(LONG_VALUE, p.getNumberValue());
         // and can't represent as int so:
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         try {

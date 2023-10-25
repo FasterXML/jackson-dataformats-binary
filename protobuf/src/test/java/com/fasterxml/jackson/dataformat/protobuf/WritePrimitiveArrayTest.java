@@ -251,7 +251,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.LONG, p.getNumberType());
-        assertEquals(Long.valueOf(inputValues[0]), p.getNumberValue());
+        assertEquals(inputValues[0], p.getNumberValue());
         assertFalse(p.isNaN());
         assertEquals(BigInteger.valueOf(inputValues[0]), p.getBigIntegerValue());
 
@@ -333,7 +333,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.DOUBLE, p.getNumberType());
-        assertEquals(Double.valueOf(inputValues[0]), p.getNumberValue());
+        assertEquals(inputValues[0], p.getNumberValue());
         assertFalse(p.isNaN());
         assertEquals(new BigDecimal(inputValues[0]), p.getDecimalValue());
 
@@ -341,7 +341,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertNull(p.nextFieldName()); // just for funsies
 
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-        assertEquals(Double.valueOf(inputValues[3]), p.getDoubleValue());
+        assertEquals(inputValues[3], p.getDoubleValue());
         assertEquals((long) inputValues[3], p.getLongValue());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
@@ -395,13 +395,13 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.FLOAT, p.getNumberType());
-        assertEquals(Float.valueOf(inputValues[0]), p.getNumberValue());
+        assertEquals(inputValues[0], p.getNumberValue());
         assertFalse(p.isNaN());
 
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
 
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-        assertEquals(Float.valueOf(inputValues[2]), p.getFloatValue());
+        assertEquals(inputValues[2], p.getFloatValue());
         assertEquals((int) inputValues[2], p.getIntValue());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 

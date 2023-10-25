@@ -64,9 +64,9 @@ public class MapperSimpleReadTest extends CBORTestBase
 
         Map<?,?> output = MAPPER.readValue(b, Map.class);
         assertEquals(4, output.size());
-        assertEquals(Integer.valueOf(1), output.get("a"));
+        assertEquals(1, output.get("a"));
         assertEquals("foo", output.get("bar"));
-        assertEquals(Double.valueOf(-3.25), output.get(NON_ASCII_NAME));
+        assertEquals(-3.25, output.get(NON_ASCII_NAME));
         assertEquals("", output.get(""));
     }
 

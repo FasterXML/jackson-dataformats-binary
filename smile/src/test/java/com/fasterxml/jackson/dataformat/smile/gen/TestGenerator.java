@@ -279,7 +279,7 @@ public class TestGenerator extends BaseTestForSmile
         final SmileFactory smileFactory = new SmileFactory();
         ObjectMapper mapper = new ObjectMapper(smileFactory);
         File f = File.createTempFile("test", ".tst");
-        mapper.writeValue(f, Integer.valueOf(3));
+        mapper.writeValue(f, 3);
 
         JsonParser jp = smileFactory.createParser(f);
         assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());

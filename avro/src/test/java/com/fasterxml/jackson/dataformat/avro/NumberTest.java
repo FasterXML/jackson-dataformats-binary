@@ -45,12 +45,12 @@ public class NumberTest extends AvroTestBase
         AvroSchema schema = MAPPER.schemaFor(NumberWrapper.class);
 
         byte[] bytes = MAPPER.writer(schema)
-                .writeValueAsBytes(new NumberWrapper(Integer.valueOf(17)));
+                .writeValueAsBytes(new NumberWrapper(17));
         NumberWrapper result = MAPPER.readerFor(NumberWrapper.class)
                 .with(schema)
                 .readValue(bytes);
         assertNotNull(result);
-        assertEquals(Integer.valueOf(17), result.value);
+        assertEquals(17, result.value);
     }
 
     public void testNumberCoercions() throws Exception
@@ -70,7 +70,7 @@ public class NumberTest extends AvroTestBase
         assertEquals(NumberType.INT, p.getNumberType());
         assertFalse(p.isNaN());
         assertEquals(input.i, p.getIntValue());
-        assertEquals(Integer.valueOf(input.i), p.getNumberValue());
+        assertEquals(input.i, p.getNumberValue());
         assertEquals((float) input.i, p.getFloatValue());
         assertEquals((double) input.i, p.getDoubleValue());
         assertEquals(BigInteger.valueOf(input.i), p.getBigIntegerValue());
@@ -81,7 +81,7 @@ public class NumberTest extends AvroTestBase
         assertEquals(NumberType.LONG, p.getNumberType());
         assertFalse(p.isNaN());
         assertEquals(input.l, p.getLongValue());
-        assertEquals(Long.valueOf(input.l), p.getNumberValue());
+        assertEquals(input.l, p.getNumberValue());
         assertEquals(BigDecimal.valueOf(input.l), p.getDecimalValue());
         assertEquals((float) input.l, p.getFloatValue());
         assertEquals((double) input.l, p.getDoubleValue());
@@ -94,7 +94,7 @@ public class NumberTest extends AvroTestBase
         assertEquals(input.f, p.getFloatValue());
         // NOTE: order of execution important here; access as Double would
         // result in type seemingly changing
-        assertEquals(Float.valueOf(input.f), p.getNumberValue());
+        assertEquals(input.f, p.getNumberValue());
 
         assertEquals((double) input.f, p.getDoubleValue());
         assertEquals((int) input.f, p.getIntValue());
@@ -108,7 +108,7 @@ public class NumberTest extends AvroTestBase
         assertEquals(input.d, p.getDoubleValue());
         assertEquals((int) input.d, p.getIntValue());
         assertEquals((long) input.d, p.getLongValue());
-        assertEquals(Double.valueOf(input.d), p.getNumberValue());
+        assertEquals(input.d, p.getNumberValue());
 
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
