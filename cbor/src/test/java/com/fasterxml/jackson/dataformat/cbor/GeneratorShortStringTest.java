@@ -13,7 +13,6 @@ public class GeneratorShortStringTest extends CBORTestBase
         try (CBORGenerator gen = cborGenerator(out)) {
             // First with String as input
             gen.writeString("");
-            gen.close();
         }
         _verifyBytes(out.toByteArray(), CBORConstants.BYTE_EMPTY_STRING);
 
@@ -21,7 +20,6 @@ public class GeneratorShortStringTest extends CBORTestBase
         out = new ByteArrayOutputStream();
         try (CBORGenerator gen = cborGenerator(out)) {
             gen.writeString(new char[0], 0, 0);
-            gen.close();
         }
         _verifyBytes(out.toByteArray(), CBORConstants.BYTE_EMPTY_STRING);
     }

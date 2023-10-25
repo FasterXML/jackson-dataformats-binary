@@ -105,7 +105,6 @@ public class CBORBigNumberParserTest extends CBORTestBase
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         try (CBORGenerator sourceGen = cborGenerator(sourceBytes)) {
             sourceGen.writeNumber(expValue);
-            sourceGen.close();
         }
 
         // but verify that the original content can be parsed
