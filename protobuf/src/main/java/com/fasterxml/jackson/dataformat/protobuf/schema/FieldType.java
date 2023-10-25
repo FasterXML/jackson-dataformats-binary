@@ -52,7 +52,7 @@ public enum FieldType
 
     private final  DataType.ScalarType[] _aliases;
 
-    private FieldType(int wt, DataType.ScalarType... aliases) {
+    FieldType(int wt, DataType.ScalarType... aliases) {
         _wireType = wt;
         _aliases = aliases;
     }

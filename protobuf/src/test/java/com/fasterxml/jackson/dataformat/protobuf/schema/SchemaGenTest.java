@@ -24,7 +24,7 @@ public class SchemaGenTest extends ProtobufTestBase
 			public int id;
 		}
 
-		public static enum NestedEnum {
+		public enum NestedEnum {
 			A, B, C;
 		}
 	}

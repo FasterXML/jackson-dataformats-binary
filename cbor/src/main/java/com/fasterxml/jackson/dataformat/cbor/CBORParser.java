@@ -49,7 +49,7 @@ public class CBORParser extends ParserMinimalBase
             return flags;
         }
 
-        private Feature(boolean defaultState) {
+        Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
         }

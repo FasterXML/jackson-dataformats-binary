@@ -41,19 +41,19 @@ public class AvroAliasTest extends InteropTestBase {
     }
 
     @AvroAlias(alias = "Size", space = "com.fasterxml.jackson.dataformat.avro.AvroTestBase$")
-    public static enum NewSize {
+    public enum NewSize {
         SMALL,
         LARGE;
     }
 
     @AvroAlias(alias = "NewestSize")
-    public static enum NewerSize {
+    public enum NewerSize {
         SMALL,
         LARGE;
     }
 
     @AvroAlias(alias = "NewerSize")
-    public static enum NewestSize {
+    public enum NewestSize {
         SMALL,
         LARGE;
     }

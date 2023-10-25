@@ -47,7 +47,7 @@ public class SmileParser extends SmileParserBase
             return flags;
         }
 
-        private Feature(boolean defaultState) {
+        Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
         }
