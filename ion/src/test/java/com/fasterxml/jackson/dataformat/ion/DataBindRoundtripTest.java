@@ -130,8 +130,7 @@ public class DataBindRoundtripTest
         doTests(new Bean(), new IonObjectMapper());
     }
 
-    private void doTests(Bean bean, IonObjectMapper mapper) throws IOException
-    {
+    private void doTests(Bean bean, IonObjectMapper mapper) {
         for (RoundTrippers rt : RoundTrippers.values()) {
             try
             {
