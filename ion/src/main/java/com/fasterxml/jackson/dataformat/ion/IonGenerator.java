@@ -19,6 +19,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 
 import com.fasterxml.jackson.core.Base64Variant;
@@ -228,7 +229,7 @@ public class IonGenerator
     @Override
     public void writeNumber(int value) throws IOException {
         _verifyValueWrite("write numeric value");
-        _writer.writeInt((long)value);
+        _writer.writeInt(value);
     }
 
     @Override
@@ -256,7 +257,7 @@ public class IonGenerator
     @Override
     public void writeNumber(float value) throws IOException {
         _verifyValueWrite("write numeric value");
-        _writer.writeFloat((double) value);
+        _writer.writeFloat(value);
     }
 
     @Override
@@ -322,7 +323,7 @@ public class IonGenerator
     @Override
     public void writeUTF8String(byte[] buffer, int offset, int length) throws IOException {
         // Ion doesn't have matching optimized method, so:
-        writeString(new String(buffer, offset, length, "UTF-8"));
+        writeString(new String(buffer, offset, length, StandardCharsets.UTF_8));
     }
 
     /*
