@@ -21,10 +21,7 @@ public abstract class EnumLookup
         if (enumEntries.isEmpty()) { // can this occur?
             return Empty.instance;
         }
-        List<Map.Entry<String,Integer>> l = new ArrayList<>();
-        for (Map.Entry<String,Integer> entry : enumDef.valueMapping().entrySet()) {
-            l.add(entry);
-        }
+        List<Map.Entry<String, Integer>> l = new ArrayList<>(enumDef.valueMapping().entrySet());
         switch (l.size()) {
         case 1:
             return new Small1(l.get(0).getKey(), l.get(0).getValue());
