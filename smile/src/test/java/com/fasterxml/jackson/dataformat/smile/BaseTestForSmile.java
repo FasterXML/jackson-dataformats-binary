@@ -189,7 +189,7 @@ public abstract class BaseTestForSmile
         String lmsg = (msg == null) ? "" : msg.toLowerCase();
         for (String match : matches) {
             String lmatch = match.toLowerCase();
-            if (lmsg.indexOf(lmatch) >= 0) {
+            if (lmsg.contains(lmatch)) {
                 return;
             }
         }

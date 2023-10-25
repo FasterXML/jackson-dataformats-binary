@@ -121,7 +121,7 @@ public abstract class AvroSchemaHelper
     protected static String getName(Class<?> cls) {
         String name = cls.getSimpleName();
         // Alas, some characters not accepted...
-        while (name.indexOf("[]") >= 0) {
+        while (name.contains("[]")) {
             name = name.replace("[]", "Array");
         }
         return name;
