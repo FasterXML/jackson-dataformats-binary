@@ -38,9 +38,9 @@ public class FileFormatTest extends AvroTestBase
         assertNotNull(bytes);
         assertEquals(301, bytes.length);
 
-        DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>(schema.getAvroSchema());
+        DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema.getAvroSchema());
         @SuppressWarnings("resource")
-        DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(new SeekableByteArrayInput(bytes),
+        DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new SeekableByteArrayInput(bytes),
                 datumReader);
         GenericRecord output = dataFileReader.next();
 

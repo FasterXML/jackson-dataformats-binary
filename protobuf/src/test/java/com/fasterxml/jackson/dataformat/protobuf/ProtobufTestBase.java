@@ -328,7 +328,7 @@ public abstract class ProtobufTestBase extends TestCase
 
          public MediaItem addPhoto(Image i) {
              if (images == null) {
-                 images = new ArrayList<Image>();
+                 images = new ArrayList<>();
              }
              images.add(i);
              return this;
@@ -432,7 +432,7 @@ public abstract class ProtobufTestBase extends TestCase
 
         public Media addPerson(String p) {
             if (persons == null) {
-                persons = new ArrayList<String>();
+                persons = new ArrayList<>();
             }
             persons.add(p);
             return this;

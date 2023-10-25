@@ -137,7 +137,7 @@ public abstract class AvroTestBase extends TestCase
 
         public void addPhoto(Image p) {
             if (_images == null) {
-                _images = new ArrayList<Image>();
+                _images = new ArrayList<>();
             }
             _images.add(p);
         }
@@ -185,7 +185,7 @@ public abstract class AvroTestBase extends TestCase
 
         public void addPerson(String p) {
             if (_persons == null) {
-                _persons = new ArrayList<String>();
+                _persons = new ArrayList<>();
             }
             _persons.add(p);
         }

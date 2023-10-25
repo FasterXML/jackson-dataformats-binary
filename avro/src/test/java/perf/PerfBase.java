@@ -50,7 +50,7 @@ abstract class PerfBase
 
          public MediaItem addPhoto(Image i) {
              if (images == null) {
-                 images = new ArrayList<Image>();
+                 images = new ArrayList<>();
              }
              images.add(i);
              return this;
@@ -98,7 +98,7 @@ abstract class PerfBase
 
         public Media addPerson(String p) {
             if (persons == null) {
-                persons = new ArrayList<String>();
+                persons = new ArrayList<>();
             }
             persons.add(p);
             return this;
@@ -133,7 +133,7 @@ abstract class PerfBase
     protected GenericRecord itemToRecord(MediaItem item) throws IOException
     {
         final byte[] avro = itemWriter.writeValueAsBytes(item);
-        GenericDatumReader<GenericRecord> r = new GenericDatumReader<GenericRecord>(itemSchema.getAvroSchema());
+        GenericDatumReader<GenericRecord> r = new GenericDatumReader<>(itemSchema.getAvroSchema());
         return r.read(null,
                 DECODER_FACTORY.binaryDecoder(new ByteArrayInputStream(avro), null));
     }

@@ -255,7 +255,7 @@ public class TestGenerator extends BaseTestForSmile
         smileFactory.disable(SmileGenerator.Feature.WRITE_HEADER);
         smileFactory.disable(SmileParser.Feature.REQUIRE_HEADER);
         final ObjectMapper smileObjectMapper = new ObjectMapper(smileFactory);
-        final HashMap<String, String> data = new HashMap<String,String>();
+        final HashMap<String, String> data = new HashMap<>();
         data.put("key", "value");
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final SmileGenerator smileGenerator = smileFactory.createGenerator(out);

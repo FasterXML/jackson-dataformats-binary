@@ -12,7 +12,7 @@ public class  MediaItem
 
      public MediaItem addPhoto(Image i) {
          if (images == null) {
-             images = new ArrayList<Image>();
+             images = new ArrayList<>();
          }
          images.add(i);
          return this;
@@ -85,7 +85,7 @@ class Media {
 
     public Media addPerson(String p) {
         if (persons == null) {
-            persons = new ArrayList<String>();
+            persons = new ArrayList<>();
         }
         persons.add(p);
         return this;

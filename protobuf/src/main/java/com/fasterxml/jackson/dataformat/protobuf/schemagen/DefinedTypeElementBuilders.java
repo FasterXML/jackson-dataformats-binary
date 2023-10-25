@@ -12,7 +12,7 @@ public class DefinedTypeElementBuilders
 {
     protected Map<JavaType, TypeElementBuilder> _definedTypeElementBuilders = new LinkedHashMap<>();
 
-    protected Set<JavaType> _isNestedType = new HashSet<JavaType>();
+    protected Set<JavaType> _isNestedType = new HashSet<>();
 
     public DefinedTypeElementBuilders() { }
 
@@ -39,7 +39,7 @@ public class DefinedTypeElementBuilders
     }
 
     public Set<TypeElementBuilder> getAllBuilders() {
-        return new HashSet<TypeElementBuilder>(_definedTypeElementBuilders.values());
+        return new HashSet<>(_definedTypeElementBuilders.values());
     }
 
     public Set<TypeElementBuilder> getAllNestedBuilders() {

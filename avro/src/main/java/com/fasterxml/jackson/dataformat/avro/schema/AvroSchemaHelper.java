@@ -65,7 +65,7 @@ public abstract class AvroSchemaHelper
      *
      * @since 2.8.7
      */
-    protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<Class<?>>(Arrays.asList(
+    protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<>(Arrays.asList(
             URI.class, URL.class, File.class,
             BigInteger.class, BigDecimal.class,
             String.class
@@ -129,7 +129,7 @@ public abstract class AvroSchemaHelper
 
     protected static Schema unionWithNull(Schema otherSchema)
     {
-        List<Schema> schemas = new ArrayList<Schema>();
+        List<Schema> schemas = new ArrayList<>();
         schemas.add(Schema.create(Schema.Type.NULL));
 
         // two cases: existing union

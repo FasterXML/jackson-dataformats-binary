@@ -125,7 +125,7 @@ public class NativeProtobufSchema
     }
 
     private String[] _getMessageNames() {
-        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<String> names = new ArrayList<>();
         for (TypeElement type : _nativeTypes) {
             if (type instanceof MessageElement) {
                 names.add(type.name());

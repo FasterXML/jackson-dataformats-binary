@@ -48,7 +48,7 @@ public class TestGeneratorBufferRecycle extends BaseTestForSmile
     }
 
     private static Map<?,?> buildMap(String prefix, int size) {
-        HashMap<String,String> props = new HashMap<String, String>();
+        HashMap<String,String> props = new HashMap<>();
         for (int it = 0; it < size; it++) {
             String key = prefix + "prop_" + it;
             props.put(key, "a");

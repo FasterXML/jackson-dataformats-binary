@@ -43,9 +43,9 @@ public class ListWithComplexTest extends InteropTestBase
     @Test
     public void testListWithListElements() throws IOException {
         List<List<List<String>>> original = new ArrayList<>();
-        original.add(new ArrayList<List<String>>());
+        original.add(new ArrayList<>());
         original.get(0).add(Collections.singletonList("Hello"));
-        original.add(new ArrayList<List<String>>());
+        original.add(new ArrayList<>());
         original.get(1).add(Collections.singletonList("World"));
         //
         List<List<List<String>>> result = roundTrip(type(List.class, type(List.class, type(List.class, String.class))), original);

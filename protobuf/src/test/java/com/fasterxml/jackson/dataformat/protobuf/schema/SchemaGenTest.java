@@ -170,7 +170,7 @@ public class SchemaGenTest extends ProtobufTestBase
          RootType rType = new RootType();
          rType.name = "rTpye";
          rType.value = 100;
-         rType.other = new ArrayList<String>();
+         rType.other = new ArrayList<>();
          rType.other.add("12345");
          rType.other.add("abcdefg");
          return rType;

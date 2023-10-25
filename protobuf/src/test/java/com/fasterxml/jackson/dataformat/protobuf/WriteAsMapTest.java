@@ -51,7 +51,7 @@ public class WriteAsMapTest extends ProtobufTestBase
         phone2.put("number", "654321");
         phones.add(phone2);
 
-        Map<String,Object> person = new LinkedHashMap<String,Object>(); // it is ok if using HashMap.
+        Map<String,Object> person = new LinkedHashMap<>(); // it is ok if using HashMap.
         person.put("id", 1111);
         person.put("name", "aaaa");
         person.put("phone", phones);

@@ -21,7 +21,7 @@ public final class ApacheCodecRecycler
     protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
 
     protected final static ThreadLocal<SoftReference<ApacheCodecRecycler>> _recycler
-            = new ThreadLocal<SoftReference<ApacheCodecRecycler>>();
+            = new ThreadLocal<>();
 
     private BinaryDecoder decoder;
     private BinaryEncoder encoder;
@@ -76,7 +76,7 @@ public final class ApacheCodecRecycler
 
         if (r == null) {
             r = new ApacheCodecRecycler();
-            _recycler.set(new SoftReference<ApacheCodecRecycler>(r));
+            _recycler.set(new SoftReference<>(r));
         }
         return r;
     }

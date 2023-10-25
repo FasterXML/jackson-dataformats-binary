@@ -12,7 +12,7 @@ public class FieldTypes
 
     private FieldTypes()
     {
-        _types = new EnumMap<DataType.ScalarType, FieldType>(DataType.ScalarType.class);
+        _types = new EnumMap<>(DataType.ScalarType.class);
         // Note: since ENUM and MESSAGE have no aliases, they won't be mapped here
         for (FieldType type : FieldType.values()) {
             for (DataType.ScalarType id : type.aliases()) {

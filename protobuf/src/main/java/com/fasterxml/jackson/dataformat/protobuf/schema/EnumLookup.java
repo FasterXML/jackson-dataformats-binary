@@ -21,7 +21,7 @@ public abstract class EnumLookup
         if (enumEntries.isEmpty()) { // can this occur?
             return Empty.instance;
         }
-        List<Map.Entry<String,Integer>> l = new ArrayList<Map.Entry<String,Integer>>();
+        List<Map.Entry<String,Integer>> l = new ArrayList<>();
         for (Map.Entry<String,Integer> entry : enumDef.valueMapping().entrySet()) {
             l.add(entry);
         }
@@ -290,7 +290,7 @@ public abstract class EnumLookup
 
         public static Big construct(List<Map.Entry<String,Integer>> entries)
         {
-            LinkedHashMap<Integer,String> byId = new LinkedHashMap<Integer,String>();
+            LinkedHashMap<Integer,String> byId = new LinkedHashMap<>();
 
             // First: calculate size of primary hash area
             final int size = findSize(byId.size());
@@ -383,7 +383,7 @@ public abstract class EnumLookup
 
         @Override
         public Collection<String> getEnumValues() {
-            List<String> result = new ArrayList<String>(_hashMask+1);
+            List<String> result = new ArrayList<>(_hashMask + 1);
             for (String str : _keys) {
                 if (str != null) {
                     result.add(str);

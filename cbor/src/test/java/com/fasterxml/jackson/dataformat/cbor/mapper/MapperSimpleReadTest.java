@@ -24,7 +24,7 @@ public class MapperSimpleReadTest extends CBORTestBase
 
     public void testSimpleObject() throws Exception
     {
-        Map<String,Object> input = new LinkedHashMap<String,Object>();
+        Map<String,Object> input = new LinkedHashMap<>();
         input.put("a", 1);
         input.put("bar", "foo");
         final String NON_ASCII_NAME = "Y\\u00F6";

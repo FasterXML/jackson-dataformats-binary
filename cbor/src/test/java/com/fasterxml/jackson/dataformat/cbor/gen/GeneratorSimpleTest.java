@@ -338,7 +338,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         };
 
         _verifyBytes(out.toByteArray(), EXP);
-        Map<String,Integer> map = new LinkedHashMap<String,Integer>();
+        Map<String,Integer> map = new LinkedHashMap<>();
         map.put("a", 1);
         map.put("b", 2);
         byte[] b = MAPPER.writeValueAsBytes(map);

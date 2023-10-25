@@ -84,7 +84,7 @@ public class SchemaGenerationTest extends AvroTestBase
         assertEquals("name", f.name());
 
         // also verify that aliases are passed.
-        assertEquals(new HashSet<String>(Arrays.asList("nm", "Name")), f.aliases());
+        assertEquals(new HashSet<>(Arrays.asList("nm", "Name")), f.aliases());
     }
 
     public void testEmployee() throws Exception

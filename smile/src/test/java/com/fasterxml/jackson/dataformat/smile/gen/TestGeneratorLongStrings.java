@@ -15,7 +15,7 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
     public void testLongWithMultiBytes() throws Exception
     {
         SmileFactory f = new SmileFactory();
-        ArrayList<String> strings = new ArrayList<String>();
+        ArrayList<String> strings = new ArrayList<>();
         Random rnd = new Random(123);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(DOC_LEN);

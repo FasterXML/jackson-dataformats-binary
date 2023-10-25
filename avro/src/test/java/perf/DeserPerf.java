@@ -21,7 +21,7 @@ public final class DeserPerf extends PerfBase
     private DeserPerf() {
         // Let's try to guestimate suitable size
         REPS = 13000;
-        READER = new GenericDatumReader<GenericRecord>(itemSchema.getAvroSchema());
+        READER = new GenericDatumReader<>(itemSchema.getAvroSchema());
     }
 
     public void test()

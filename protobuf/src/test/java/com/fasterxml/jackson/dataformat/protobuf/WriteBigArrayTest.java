@@ -72,7 +72,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         final String LONG_NAME = sb.toString();
         final int longLen = LONG_NAME.length();
 
-        List<String> strings = new ArrayList<String>();
+        List<String> strings = new ArrayList<>();
         final int COUNT = 260000 / longLen;
         for (int i = 0; i < COUNT; ++i) {
             strings.add(LONG_NAME);
@@ -103,7 +103,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         final int COUNT = 35000;
         final ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
         final ObjectWriter w = mapper.writer(SPARSE_STRING_SCHEMA);
-        List<String> strings = new ArrayList<String>();
+        List<String> strings = new ArrayList<>();
         for (int i = 0; i < COUNT; ++i) {
             strings.add("Value"+i);
         }
@@ -131,7 +131,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         final ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
 
         final ObjectWriter w = mapper.writer(PACKED_STRING_SCHEMA);
-        List<String> strings = new ArrayList<String>();
+        List<String> strings = new ArrayList<>();
         for (int i = 0; i < COUNT; ++i) {
             strings.add("Value"+i);
         }
@@ -165,7 +165,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         final ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_WRAPPED_STRING);
 
         final ObjectWriter w = mapper.writer(schema);
-        List<String> strings = new ArrayList<String>();
+        List<String> strings = new ArrayList<>();
         for (int i = 0; i < COUNT; ++i) {
             strings.add("Value"+i);
         }

@@ -25,7 +25,7 @@ public final class SerPerf extends PerfBase
     {
         // Let's try to guesstimate suitable size...
         REPS = 9000;
-        WRITER = new GenericDatumWriter<GenericRecord>(itemSchema.getAvroSchema());
+        WRITER = new GenericDatumWriter<>(itemSchema.getAvroSchema());
     }
 
     public void test()

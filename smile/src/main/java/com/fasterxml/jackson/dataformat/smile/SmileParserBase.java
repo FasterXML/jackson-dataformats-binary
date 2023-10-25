@@ -243,7 +243,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * buffer recycling for Smile-specific buffers.
      */
     protected final static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<String>>>();
+        = new ThreadLocal<>();
 
     /**
      * Helper object used for low-level recycling of Smile-generator
@@ -284,8 +284,8 @@ public abstract class SmileParserBase extends ParserMinimalBase
         SmileBufferRecycler<String> br = (ref == null) ? null : ref.get();
 
         if (br == null) {
-            br = new SmileBufferRecycler<String>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<String>>(br));
+            br = new SmileBufferRecycler<>();
+            _smileRecyclerRef.set(new SoftReference<>(br));
         }
         return br;
     }

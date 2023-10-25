@@ -70,9 +70,9 @@ public class MapWithComplexTest extends InteropTestBase
     @Test
     public void testMapWithListValues() throws IOException {
         Map<String, List<List<String>>> original = new HashMap<>();
-        original.put("one", new ArrayList<List<String>>());
+        original.put("one", new ArrayList<>());
         original.get("one").add(Collections.singletonList("Hello"));
-        original.put("two", new ArrayList<List<String>>());
+        original.put("two", new ArrayList<>());
         original.get("two").add(Collections.singletonList("World"));
         //
         Map<String, List<List<String>>> result =

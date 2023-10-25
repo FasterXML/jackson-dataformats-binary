@@ -288,7 +288,7 @@ public class SmileGenerator
      * buffer recycling for Smile-specific buffers.
      */
     final protected static ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<SharedStringNode>>>();
+        = new ThreadLocal<>();
 
     /*
     /**********************************************************
@@ -416,8 +416,8 @@ public class SmileGenerator
         SmileBufferRecycler<SharedStringNode> br = (ref == null) ? null : ref.get();
 
         if (br == null) {
-            br = new SmileBufferRecycler<SharedStringNode>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<SharedStringNode>>(br));
+            br = new SmileBufferRecycler<>();
+            _smileRecyclerRef.set(new SoftReference<>(br));
         }
         return br;
     }

@@ -13,7 +13,7 @@ public class GeneratorLongStringTest extends CBORTestBase
     public void testLongWithMultiBytes() throws Exception
     {
         CBORFactory f = cborFactory();
-        ArrayList<String> strings = new ArrayList<String>();
+        ArrayList<String> strings = new ArrayList<>();
         Random rnd = new Random(123);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(DOC_LEN);

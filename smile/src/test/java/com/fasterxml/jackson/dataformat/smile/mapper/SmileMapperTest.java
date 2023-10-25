@@ -113,7 +113,7 @@ public class SmileMapperTest extends BaseTestForSmile
 
     public void testWithNestedMaps() throws IOException
     {
-        Map<Object,Object> map = new HashMap<Object,Object>();
+        Map<Object,Object> map = new HashMap<>();
         map.put("foo", Collections.singletonMap("", "bar"));
         byte[] bytes = MAPPER.writeValueAsBytes(map);
         JsonNode n = MAPPER.readTree(new ByteArrayInputStream(bytes));

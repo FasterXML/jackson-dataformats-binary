@@ -79,7 +79,7 @@ public class TypeResolver
         for (TypeElement nt : nativeTypes) {
             if (nt instanceof MessageElement) {
                 if (declaredMsgs == null) {
-                    declaredMsgs = new LinkedHashMap<String,MessageElement>();
+                    declaredMsgs = new LinkedHashMap<>();
                 }
                 declaredMsgs.put(nt.name(), (MessageElement) nt);
             } else if (nt instanceof EnumElement) {
@@ -103,7 +103,7 @@ public class TypeResolver
 
     protected static ProtobufEnum constructEnum(EnumElement nativeEnum)
     {
-        final Map<String,Integer> valuesByName = new LinkedHashMap<String,Integer>();
+        final Map<String,Integer> valuesByName = new LinkedHashMap<>();
         boolean standard = true;
         int exp = 0;
 
@@ -191,7 +191,7 @@ public class TypeResolver
 
     protected void addResolvedMessageType(String name, ProtobufMessage toResolve) {
         if (_resolvedMessageTypes.isEmpty()) {
-            _resolvedMessageTypes = new HashMap<String,ProtobufMessage>();
+            _resolvedMessageTypes = new HashMap<>();
         }
         _resolvedMessageTypes.put(name, toResolve);
         // But also: for parent scopes
