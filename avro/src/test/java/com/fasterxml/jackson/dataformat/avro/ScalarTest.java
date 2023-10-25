@@ -82,7 +82,7 @@ public class ScalarTest extends AvroTestBase
         in.close();
         if (!inputValue.equals(actual)) {
             fail(String.format("Expected 0x%08x got 0x%08x",
-                    inputValue.longValue(), actual.longValue()));
+                    inputValue, actual));
         }
     }
 
@@ -114,7 +114,7 @@ public class ScalarTest extends AvroTestBase
         in.close();
         if (inputValue.doubleValue() != actual.doubleValue()) {
             fail(String.format("Expected %f got %f",
-                    inputValue.doubleValue(), actual.doubleValue()));
+                    inputValue, actual));
         }
     }
 

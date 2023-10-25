@@ -303,7 +303,7 @@ public abstract class EnumLookup
 
             for (Map.Entry<String,Integer> entry : entries) {
                 String key = entry.getKey();
-                int index = entry.getValue().intValue();
+                int index = entry.getValue();
 
                 byId.put(entry.getValue(), key);
 

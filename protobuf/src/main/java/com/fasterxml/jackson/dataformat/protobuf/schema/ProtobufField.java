@@ -132,7 +132,7 @@ public class ProtobufField
             if (key.equals(opt.name())) {
                 Object val = opt.value();
                 if (val instanceof Boolean) {
-                    return ((Boolean) val).booleanValue();
+                    return (Boolean) val;
                 }
                 return "true".equals(String.valueOf(val).trim());
             }
