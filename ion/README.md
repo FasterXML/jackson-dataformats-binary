@@ -34,9 +34,9 @@ SomeType otherValue = mapper.readValue(data, SomeType.class);
 
 ### java.time JSR 310
 
-With version 2.12 (to be released in September 2020), there will be optional support for
+Version 2.12 (released on November 28, 2020) added support for
 (de)serializing some `java.time` classes directly from/to Ion timestamp values.
-To enable it, you need to registed module `IonJavaTimeModule` like so:
+To enable it, you need to register module `IonJavaTimeModule` like so:
 
 ```java
 IonObjectMapper mapper = IonObjectMapper.builder()
