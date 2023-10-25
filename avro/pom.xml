@@ -54,7 +54,7 @@ abstractions.
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.2.11</version>
+      <version>1.2.12</version>
       <scope>test</scope>
     </dependency>
     <!-- For validating more complex comparisons -->
