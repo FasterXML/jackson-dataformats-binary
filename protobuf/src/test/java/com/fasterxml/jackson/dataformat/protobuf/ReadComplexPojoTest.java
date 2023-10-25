@@ -94,7 +94,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
         final ObjectWriter w = MAPPER.writer(schema);
 
         int[] i = new int[] { 1, 2, 3, 5, Integer.MIN_VALUE, Integer.MAX_VALUE };
-        long[] l = new long[] { -3l, 0, Long.MAX_VALUE, Long.MIN_VALUE, -1 };
+        long[] l = new long[] { -3L, 0, Long.MAX_VALUE, Long.MIN_VALUE, -1 };
         boolean[] b = new boolean[] { true, false };
         double[] d = new double[] { 1.5, -0.25 };
 

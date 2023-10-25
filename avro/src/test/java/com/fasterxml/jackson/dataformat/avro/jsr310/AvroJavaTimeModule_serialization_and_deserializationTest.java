@@ -66,8 +66,8 @@ public class AvroJavaTimeModule_serialization_and_deserializationTest {
         AvroMapper mapper = newAvroMapper();
         AvroSchema schema = mapper.schemaFrom(SCHEMA_LONG_AND_TIMESTAMP_MILLIS);
 
-        OffsetDateTime serializedOffsetDateTime = OffsetDateTime.of(2021, 6, 6, 12, 00, 30, 333_222_111, ZoneOffset.ofHours(2));
-        OffsetDateTime expectedOffsetDateTime = OffsetDateTime.of(2021, 6, 6, 12, 00, 30, 333_000_000, ZoneOffset.ofHours(2));
+        OffsetDateTime serializedOffsetDateTime = OffsetDateTime.of(2021, 6, 6, 12, 0, 30, 333_222_111, ZoneOffset.ofHours(2));
+        OffsetDateTime expectedOffsetDateTime = OffsetDateTime.of(2021, 6, 6, 12, 0, 30, 333_000_000, ZoneOffset.ofHours(2));
 
         // WHEN
         byte[] serialized = mapper.writer(schema).writeValueAsBytes(serializedOffsetDateTime);
@@ -83,8 +83,8 @@ public class AvroJavaTimeModule_serialization_and_deserializationTest {
         AvroMapper mapper = newAvroMapper();
         AvroSchema schema = mapper.schemaFrom(SCHEMA_LONG_AND_TIMESTAMP_MILLIS);
 
-        ZonedDateTime serializedZonedDateTime = ZonedDateTime.of(2021, 6, 6, 12, 00, 30, 333_222_111, ZoneOffset.ofHours(2));
-        ZonedDateTime expectedZonedDateTime = ZonedDateTime.of(2021, 6, 6, 12, 00, 30, 333_000_000, ZoneOffset.ofHours(2));
+        ZonedDateTime serializedZonedDateTime = ZonedDateTime.of(2021, 6, 6, 12, 0, 30, 333_222_111, ZoneOffset.ofHours(2));
+        ZonedDateTime expectedZonedDateTime = ZonedDateTime.of(2021, 6, 6, 12, 0, 30, 333_000_000, ZoneOffset.ofHours(2));
 
         // WHEN
         byte[] serialized = mapper.writer(schema).writeValueAsBytes(serializedZonedDateTime);
