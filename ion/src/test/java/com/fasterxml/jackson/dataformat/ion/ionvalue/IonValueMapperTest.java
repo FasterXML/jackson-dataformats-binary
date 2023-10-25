@@ -166,7 +166,7 @@ public class IonValueMapperTest {
     public static class TestPojo3 {
         public int expected;
 
-        protected Map<String, IonValue> other = new HashMap<String, IonValue>();
+        protected Map<String, IonValue> other = new HashMap<>();
 
         // "any getter" needed for serialization
         @JsonAnyGetter

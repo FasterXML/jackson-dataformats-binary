@@ -44,7 +44,7 @@ public class IonGeneratorTest {
         "}";
 
     static {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("a", "A");
         map.put("b", "B");
         map.put("c", "C");

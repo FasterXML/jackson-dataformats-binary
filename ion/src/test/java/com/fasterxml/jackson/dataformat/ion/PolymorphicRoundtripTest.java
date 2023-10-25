@@ -319,7 +319,7 @@ public class PolymorphicRoundtripTest {
 
         @Override
         public String[] idsFromValue(Object value) {
-            List<String> ids = new ArrayList<String>();
+            List<String> ids = new ArrayList<>();
             Class<?> cls = value.getClass();
             while (null != cls) {
                 ids.add(super.idFromValueAndType(value, cls));

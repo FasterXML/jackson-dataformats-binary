@@ -95,7 +95,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
 
         final JsonFormat.Value format = findFormatOverrides(ctxt, property, handledType());
         if (format != null) {
-            return new IonTimestampInstantDeserializer<T>(this,
+            return new IonTimestampInstantDeserializer<>(this,
                     format.getFeature(Feature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE));
         }
         return this;
