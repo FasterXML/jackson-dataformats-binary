@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -155,7 +155,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
         ProtobufSchema schemaV2 = MAPPER.generateSchemaFor(OuterV2.class);
 
         EmbedV2 embedV2 = new EmbedV2();
-        embedV2.c = Arrays.asList("c");
+        embedV2.c = Collections.singletonList("c");
         embedV2.extraField = "extra";
 
         OuterV2 v2Expected = new OuterV2();

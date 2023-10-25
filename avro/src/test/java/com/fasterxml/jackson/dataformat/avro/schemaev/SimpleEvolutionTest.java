@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.schemaev;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -152,7 +152,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         @Override
         public String toString() {
             return String.format("[%d,%d,a=%s]", x, y,
-                    Arrays.asList(a));
+                    Collections.singletonList(a));
         }
     }
 

@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -40,7 +40,7 @@ public class WriteSimpleTest extends ProtobufTestBase
 
         public IdPoints(int id, int x, int y) {
             this.id = id;
-            points = Arrays.asList(new Point(x, y));
+            points = Collections.singletonList(new Point(x, y));
         }
 
         @Override
