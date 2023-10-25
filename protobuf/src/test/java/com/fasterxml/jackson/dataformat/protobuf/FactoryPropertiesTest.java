@@ -136,14 +136,11 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     @SuppressWarnings("unchecked")
     private <T> T jdkDeserialize(byte[] raw) throws IOException
     {
-        ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(raw));
-        try {
+        try (ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(raw))) {
             return (T) objIn.readObject();
         } catch (ClassNotFoundException e) {
-            fail("Missing class: "+e.getMessage());
+            fail("Missing class: " + e.getMessage());
             return null;
-        } finally {
-            objIn.close();
         }
     }
 }
