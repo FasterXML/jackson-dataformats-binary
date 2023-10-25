@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
