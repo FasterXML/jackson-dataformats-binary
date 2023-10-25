@@ -269,6 +269,6 @@ public class TypeResolver
     }
 
     private final static String _scopedName(String contextName, String localName) {
-        return new StringBuilder(contextName).append('.').append(localName).toString();
+        return contextName + '.' + localName;
     }
 }

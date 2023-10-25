@@ -464,8 +464,7 @@ public abstract class AvroSchemaHelper
         }
 
         public String nameWithSeparator(char sep) {
-            final StringBuilder sb = new StringBuilder(1 + _namespace.length() + _name.length());
-            return sb.append(_namespace).append(sep).append(_name).toString();
+            return _namespace + sep + _name;
         }
 
         @Override
