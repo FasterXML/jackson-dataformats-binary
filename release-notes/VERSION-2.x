@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+(not yet released)
+
+#410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
+ (requested by Dominik B)
+
 2.16.0-rc1 (20-Oct-2023)
 
 #400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
