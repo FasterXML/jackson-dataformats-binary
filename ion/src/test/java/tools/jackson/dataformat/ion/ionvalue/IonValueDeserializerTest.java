@@ -23,6 +23,7 @@ import tools.jackson.dataformat.ion.IonObjectMapper;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
@@ -208,7 +209,7 @@ public class IonValueDeserializerTest {
         String input2 = "{required:{}}";
         MyBean deserializedBean2 = ionObjectMapper.readValue(input2, MyBean.class);
         assertEquals(ionSystem.newEmptyStruct(), deserializedBean2.required);
-        assertEquals(null, deserializedBean2.optional);
+        assertNull(deserializedBean2.optional);
     }
 
     @Test

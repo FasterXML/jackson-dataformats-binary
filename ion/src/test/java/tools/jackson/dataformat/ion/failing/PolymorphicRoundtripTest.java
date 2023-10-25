@@ -249,14 +249,14 @@ public class PolymorphicRoundtripTest
         // to be chosen (and we expect that first id to be the most narrow type, ChildBeanSub).
         Bean deserialized = mapper.readValue(serialized, Bean.class);
 
-        assertTrue(deserialized.child.getClass().equals(ChildBeanSub.class));
+        assertEquals(deserialized.child.getClass(), ChildBeanSub.class);
         assertEquals(((ChildBeanSub) original.child).extraField, ((ChildBeanSub) deserialized.child).extraField);
 
         // second, try deserializing with the wider type (ChildBean). We're losing data (extraField)
         preferredTypeId = getClass().getCanonicalName() + "$ChildBean";
         deserialized = mapper.readValue(serialized, Bean.class);
 
-        assertTrue(deserialized.child.getClass().equals(ChildBean.class));
+        assertEquals(deserialized.child.getClass(), ChildBean.class);
         assertEquals(original.child.someField, deserialized.child.someField);
 
         // third, try deserializing into an Object. The child node should deserialize, but immediately fail mapping.
@@ -445,7 +445,7 @@ public class PolymorphicRoundtripTest
 
         @Override
         public String[] idsFromValue(Object value) {
-            List<String> ids = new ArrayList<String>();
+            List<String> ids = new ArrayList<>();
             Class<?> cls = value.getClass();
             while (null != cls) {
                 ids.add(super.idFromValueAndType(value, cls));

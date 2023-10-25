@@ -81,7 +81,7 @@ public class SimpleIonWriteTest
         gen.writeStartObject();
         gen.writeStringProperty("a", "value");
         gen.writeNumberProperty("b", 42);
-        ((IonGenerator)gen).writeName("c");
+        gen.writeName("c");
         ((IonGenerator)gen).writeNull(IonType.INT);
         gen.writeEndObject();
         gen.close();

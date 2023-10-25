@@ -45,7 +45,7 @@ public class IonGeneratorTest {
         "}";
 
     static {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("a", "A");
         map.put("b", "B");
         map.put("c", "C");
@@ -77,7 +77,7 @@ public class IonGeneratorTest {
     @Test
     public void testSimpleWrite() throws Exception {
         joiGenerator.writeBoolean(true);
-        assertThat(output.get(0), is((IonValue)ionSystem.newBool(true)));
+        assertThat(output.get(0), is(ionSystem.newBool(true)));
     }
 
     @Test

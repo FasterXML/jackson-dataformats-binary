@@ -174,9 +174,9 @@ public class DataBindRoundtripTest
         Bean bean = m.readValue(root, Bean.class);
         assertNotNull(bean);
         assertEquals(bean.a, "test");
-        assertTrue(bean.b == 0.25);
+        assertEquals(0.25, bean.b, 0.0);
         assertArrayEquals(new byte[0], bean.data);
-        assertEquals(bean.state, true);
+        assertTrue(bean.state);
         assertNotNull(bean.sub);
         assertEquals("yellow", bean.sub.getValue());
         assertEquals("testSymbol", bean.symbol);
@@ -217,7 +217,7 @@ public class DataBindRoundtripTest
 
         assertNotNull(result);
         assertEquals(bean.a, result.a);
-        assertTrue(bean.b == result.b);
+        assertEquals(bean.b, result.b, 0.0);
         assertArrayEquals(bean.data, result.data);
         assertEquals(bean.state, result.state);
         if (bean.sub == null)
@@ -233,6 +233,6 @@ public class DataBindRoundtripTest
         assertEquals(bean.enumVal, result.enumVal);
         assertEquals(bean.bigDec, result.bigDec);
         assertEquals(bean.bigInt, result.bigInt);
-        assertTrue(bean.f == result.f);
+        assertEquals(bean.f, result.f, 0.0);
     }
 }

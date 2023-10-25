@@ -70,7 +70,7 @@ public class IonParserTest
         IonParser decimalParser = ionFactory.createParser(EMPTY_READ_CTXT, ionDecimal);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, decimalParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, decimalParser.getNumberType());
-        Assert.assertTrue(new BigDecimal("" + decimalValue).compareTo((BigDecimal)decimalParser.getNumberValue()) == 0);
+        Assert.assertEquals(0, new BigDecimal("" + decimalValue).compareTo((BigDecimal) decimalParser.getNumberValue()));
 
         Double floatValue = Double.MAX_VALUE;
         IonValue ionFloat = ion.newFloat(floatValue);
@@ -84,7 +84,7 @@ public class IonParserTest
         IonParser bigDecimalParser = ionFactory.createParser(EMPTY_READ_CTXT, ionBigDecimal);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, bigDecimalParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, bigDecimalParser.getNumberType());
-        Assert.assertTrue(bigDecimalValue.compareTo((BigDecimal)bigDecimalParser.getNumberValue()) == 0);
+        Assert.assertEquals(0, bigDecimalValue.compareTo((BigDecimal) bigDecimalParser.getNumberValue()));
     }
 
     @Test
