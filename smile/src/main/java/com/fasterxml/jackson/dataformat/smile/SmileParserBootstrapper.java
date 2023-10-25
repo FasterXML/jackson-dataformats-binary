@@ -213,10 +213,7 @@ public class SmileParserBootstrapper
         }
         int ch = b & 0xFF;
         // ASCII ctrl char range is pretty good match too
-        if (ch >= 0x80 && ch <= 0x9F) {
-            return true;
-        }
-        return false;
+        return ch >= 0x80 && ch <= 0x9F;
     }
 
     /**

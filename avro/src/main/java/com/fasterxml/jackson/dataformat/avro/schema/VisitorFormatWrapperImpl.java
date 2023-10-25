@@ -251,9 +251,6 @@ public class VisitorFormatWrapperImpl
     }
 
     private boolean _isDateTimeType(JavaType type) {
-        if (Temporal.class.isAssignableFrom(type.getRawClass())) {
-            return true;
-        }
-        return false;
+        return Temporal.class.isAssignableFrom(type.getRawClass());
     }
 }

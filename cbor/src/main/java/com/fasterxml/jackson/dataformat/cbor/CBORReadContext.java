@@ -157,10 +157,7 @@ public final class CBORReadContext
      * Note that since the entry count is updated this is a state-changing method.
      */
     public boolean expectMoreValues() {
-        if (++_index == _expEntryCount) {
-            return false;
-        }
-        return true;
+        return ++_index != _expEntryCount;
     }
 
     /**
