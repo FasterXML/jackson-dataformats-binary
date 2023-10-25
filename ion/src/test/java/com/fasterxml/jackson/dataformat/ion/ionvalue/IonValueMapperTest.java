@@ -15,6 +15,7 @@
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -86,7 +87,7 @@ public class IonValueMapperTest {
         TestPojo1 t = ionValueMapper.parse(ionSystem.singleValue(value), TestPojo1.class);
         assertEquals("yes", t.myString);
         assertEquals("yes", t.mySymbol);
-        assertEquals(false, t.doesThisWork);
+        assertFalse(t.doesThisWork);
         assertEquals(5, t.iHaveSomeOtherName);
         assertEquals(ReturnCode.Success, t.imAnEnum);
         assertEquals(Timestamp.valueOf("2010-01-01T06:00:00Z"), t.someTime);
@@ -166,7 +167,7 @@ public class IonValueMapperTest {
     public static class TestPojo3 {
         public int expected;
 
-        protected Map<String, IonValue> other = new HashMap<String, IonValue>();
+        protected Map<String, IonValue> other = new HashMap<>();
 
         // "any getter" needed for serialization
         @JsonAnyGetter

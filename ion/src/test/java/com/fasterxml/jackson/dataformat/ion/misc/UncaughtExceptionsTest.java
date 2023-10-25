@@ -34,7 +34,7 @@ public class UncaughtExceptionsTest
     {
         String msg = e.getMessage();
         String lmsg = (msg == null) ? "" : msg.toLowerCase();
-        if (lmsg.indexOf(match.toLowerCase()) < 0) {
+        if (!lmsg.contains(match.toLowerCase())) {
             fail("Expected an exception with a substrings ("+match+"): got one with message \""+msg+"\"");
         }
     }
