@@ -221,7 +221,7 @@ public class IonGenerator
     @Override
     public void writeNumber(int value) throws IOException {
         _verifyValueWrite("write numeric value");
-        _writer.writeInt((long)value);
+        _writer.writeInt(value);
     }
 
     @Override
@@ -249,7 +249,7 @@ public class IonGenerator
     @Override
     public void writeNumber(float value) throws IOException {
         _verifyValueWrite("write numeric value");
-        _writer.writeFloat((double) value);
+        _writer.writeFloat(value);
     }
 
     @Override

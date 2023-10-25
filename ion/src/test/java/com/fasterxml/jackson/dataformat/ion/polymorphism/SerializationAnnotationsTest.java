@@ -111,8 +111,8 @@ public class SerializationAnnotationsTest {
         assertEquals(expectedSubclass, (Subclass) actualBaseclass);
     }
     private static void assertEquals(Subclass expected, Subclass actual) {
-        Assert.assertEquals(expected.someString, ((Subclass) actual).someString);
-        Assert.assertEquals(expected.anInt, ((Subclass) actual).anInt);
+        Assert.assertEquals(expected.someString, actual.someString);
+        Assert.assertEquals(expected.anInt, actual.anInt);
     }
 
     private static void assertEqualIonValues(IonValue expected, IonValue actual) {

@@ -78,7 +78,7 @@ public class IonGeneratorTest {
     @Test
     public void testSimpleWrite() throws Exception {
         joiGenerator.writeBoolean(true);
-        assertThat(output.get(0), is((IonValue)ionSystem.newBool(true)));
+        assertThat(output.get(0), is(ionSystem.newBool(true)));
     }
 
     @Test
