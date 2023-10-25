@@ -57,7 +57,7 @@ public final class ApacheCodecRecycler
     }
 
     public static void release(BinaryDecoder dec) {
-        _recycler().decoder = (BinaryDecoder) dec;
+        _recycler().decoder = dec;
     }
 
     public static void release(BinaryEncoder enc) {

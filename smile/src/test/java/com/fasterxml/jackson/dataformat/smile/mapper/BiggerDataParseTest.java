@@ -153,7 +153,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 	  {
            double[] data = new double[4096];
            for (int i = 0; i < data.length; ++i) {
-               data[i] = (double) i;
+               data[i] = i;
            }
 	      ObjectMapper mapper = smileMapper(useHeader);
 	      byte[] encoded = mapper.writeValueAsBytes(data);

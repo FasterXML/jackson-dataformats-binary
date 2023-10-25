@@ -1238,7 +1238,7 @@ public class ProtobufGenerator extends GeneratorBase
             return;
         }
         if (type == WireType.FIXED_64BIT) {
-            _writeInt64(Double.doubleToLongBits((double) f));
+            _writeInt64(Double.doubleToLongBits(f));
             return;
         }
         if (_currField.type == FieldType.STRING) {

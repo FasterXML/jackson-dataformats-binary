@@ -106,7 +106,7 @@ public class RecordVisitor
         VisitorFormatWrapperImpl visitorWrapper = _visitorWrapper.createChildWrapper();
         handler.acceptJsonFormatVisitor(visitorWrapper, type);
         Schema schema = visitorWrapper.getAvroSchema();
-        _fields.add(new Schema.Field(name, schema, null, (Object) null));
+        _fields.add(new Schema.Field(name, schema, null, null));
     }
 
     @Override
@@ -130,7 +130,7 @@ public class RecordVisitor
         if (!type.isPrimitive()) {
             schema = AvroSchemaHelper.unionWithNull(schema);
         }
-        _fields.add(new Schema.Field(name, schema, null, (Object) null));
+        _fields.add(new Schema.Field(name, schema, null, null));
     }
 
     /*

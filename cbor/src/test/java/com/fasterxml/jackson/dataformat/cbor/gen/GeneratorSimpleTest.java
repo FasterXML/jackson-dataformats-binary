@@ -209,7 +209,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         gen.close();
         int raw = Float.floatToIntBits(f);
         _verifyBytes(out.toByteArray(),
-                (byte) (CBORConstants.BYTE_FLOAT32),
+                CBORConstants.BYTE_FLOAT32,
                 (byte) (raw >> 24),
                 (byte) (raw >> 16),
                 (byte) (raw >> 8),
@@ -223,7 +223,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         gen.close();
         long rawL = Double.doubleToLongBits(d);
         _verifyBytes(out.toByteArray(),
-                (byte) (CBORConstants.BYTE_FLOAT64),
+                CBORConstants.BYTE_FLOAT64,
                 (byte) (rawL >> 56),
                 (byte) (rawL >> 48),
                 (byte) (rawL >> 40),

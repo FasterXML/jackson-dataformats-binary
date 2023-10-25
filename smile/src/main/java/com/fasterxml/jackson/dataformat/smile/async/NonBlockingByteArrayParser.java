@@ -1318,7 +1318,7 @@ public class NonBlockingByteArrayParser
         ptr += 4;
         i = (i << 7) + _inputBuffer[ptr++];
         _inputPtr = ptr;
-        _numberFloat = (float) Float.intBitsToFloat(i);
+        _numberFloat = Float.intBitsToFloat(i);
         _numTypesValid = NR_FLOAT;
         _numberType = NumberType.FLOAT;
         return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
@@ -1329,7 +1329,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             value = (value << 7) + _inputBuffer[_inputPtr++];
             if (++bytesRead == 5) {
-                _numberFloat = (float) Float.intBitsToFloat(value);
+                _numberFloat = Float.intBitsToFloat(value);
                 _numTypesValid = NR_FLOAT;
                 _numberType = NumberType.FLOAT;
                 return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);

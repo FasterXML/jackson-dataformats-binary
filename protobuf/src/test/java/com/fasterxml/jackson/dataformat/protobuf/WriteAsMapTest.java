@@ -65,7 +65,7 @@ public class WriteAsMapTest extends ProtobufTestBase
         ObjectReader r =  mapper.readerFor(HashMap.class).with(schema);
 
         @SuppressWarnings("unchecked")
-        Map<String,Object> person2 = (Map<String,Object>) r.readValue(bytes);
+        Map<String,Object> person2 = r.readValue(bytes);
         assertEquals(person, person2);
     }
 }

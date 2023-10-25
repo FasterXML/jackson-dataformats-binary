@@ -1724,7 +1724,7 @@ public class ProtobufParser extends ParserMinimalBase
     protected void convertNumberToLong() throws IOException
     {
         if ((_numTypesValid & NR_INT) != 0) {
-            _numberLong = (long) _numberInt;
+            _numberLong = _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
@@ -1800,13 +1800,13 @@ public class ProtobufParser extends ParserMinimalBase
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             _numberDouble = _numberBigDecimal.doubleValue();
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
-            _numberDouble = (double) _numberFloat;
+            _numberDouble = _numberFloat;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberDouble = _numberBigInt.doubleValue();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberDouble = (double) _numberLong;
         } else if ((_numTypesValid & NR_INT) != 0) {
-            _numberDouble = (double) _numberInt;
+            _numberDouble = _numberInt;
         } else {
             _throwInternal();
         }
@@ -2384,7 +2384,7 @@ public class ProtobufParser extends ParserMinimalBase
         v |= ((ch & 0x7F) << 21);
 
         // 4 bytes gotten. How about 4 more?
-        long l = (long) v;
+        long l = v;
 
         v = buf[_inputPtr++];
         if (v >= 0) {
@@ -2449,7 +2449,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return v | (l << shift);
             }
             ch &= 0x7F;
-            long l = (long) ch;
+            long l = ch;
             v |= (l << shift);
             shift += 7;
         }

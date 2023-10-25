@@ -164,7 +164,7 @@ public class WriteStringsTest extends ProtobufTestBase
             assertEquals(longLen >> 7, bytes[offset++]); // no sign bit set
         }
         for (int i = 0; i < longLen; ++i) {
-            assertEquals((byte) LONG_BYTES[i], bytes[offset+i]);
+            assertEquals(LONG_BYTES[i], bytes[offset+i]);
         }
     }
 }

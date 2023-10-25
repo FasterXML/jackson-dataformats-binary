@@ -74,9 +74,9 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
     @Test
     public void testMapWithIntegers() throws IOException {
         Map<String, Integer[]> original = new HashMap<>();
-        original.put("one", new Integer[]{(int) 1});
+        original.put("one", new Integer[]{1});
         original.put("zero", new Integer[0]);
-        original.put("negative one", new Integer[]{(int) -1});
+        original.put("negative one", new Integer[]{-1});
         original.put("min", new Integer[]{Integer.MIN_VALUE});
         original.put("max", new Integer[]{Integer.MAX_VALUE});
         //

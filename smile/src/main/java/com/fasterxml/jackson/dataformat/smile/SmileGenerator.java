@@ -166,8 +166,8 @@ public class SmileGenerator
     protected final static byte TOKEN_BYTE_FLOAT_64 =  (byte) (SmileConstants.TOKEN_PREFIX_FP | TOKEN_MISC_FLOAT_64);
     protected final static byte TOKEN_BYTE_BIG_DECIMAL =  (byte) (SmileConstants.TOKEN_PREFIX_FP | TOKEN_MISC_FLOAT_BIG);
 
-    protected final static long MIN_INT_AS_LONG = (long) Integer.MIN_VALUE;
-    protected final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
+    protected final static long MIN_INT_AS_LONG = Integer.MIN_VALUE;
+    protected final static long MAX_INT_AS_LONG = Integer.MAX_VALUE;
 
     /**
      * The replacement character to use to fix invalid Unicode sequences

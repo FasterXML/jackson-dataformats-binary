@@ -74,9 +74,9 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
     @Test
     public void testListWithIntegers() throws IOException {
         List<int[]> original = new ArrayList<>();
-        original.add(new int[]{(int) 1});
+        original.add(new int[]{1});
         original.add(new int[0]);
-        original.add(new int[]{(int) -1});
+        original.add(new int[]{-1});
         original.add(new int[]{Integer.MIN_VALUE});
         original.add(new int[]{Integer.MAX_VALUE});
         //

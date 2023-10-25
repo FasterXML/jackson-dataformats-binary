@@ -367,7 +367,7 @@ public class BasicParserTest extends BaseTestForSmile
     {
         byte[] data = new byte[] { SmileConstants.TOKEN_LITERAL_START_ARRAY,
                 (byte) SmileConstants.TOKEN_PREFIX_SHARED_STRING_SHORT,
-                (byte) SmileConstants.TOKEN_LITERAL_END_ARRAY
+                SmileConstants.TOKEN_LITERAL_END_ARRAY
         };
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.START_ARRAY, p.nextToken());

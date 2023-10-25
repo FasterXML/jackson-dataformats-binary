@@ -320,7 +320,7 @@ public abstract class AvroParserImpl
     protected final void convertNumberToLong() throws IOException
     {
         if ((_numTypesValid & NR_INT) != 0) {
-            _numberLong = (long) _numberInt;
+            _numberLong = _numberInt;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
@@ -398,13 +398,13 @@ public abstract class AvroParserImpl
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             _numberDouble = _numberBigDecimal.doubleValue();
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
-            _numberDouble = (double) _numberFloat;
+            _numberDouble = _numberFloat;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberDouble = _numberBigInt.doubleValue();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberDouble = (double) _numberLong;
         } else if ((_numTypesValid & NR_INT) != 0) {
-            _numberDouble = (double) _numberInt;
+            _numberDouble = _numberInt;
         } else {
             _throwInternal();
         }

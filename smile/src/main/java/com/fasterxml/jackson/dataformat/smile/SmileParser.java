@@ -2193,7 +2193,7 @@ versionBits));
     private final void  _finishLongSlow() throws IOException
     {
         // Ok, first, will always get 4 full data bytes first; 1 was already passed
-        long l = (long) _fourBytesToInt();
+        long l = _fourBytesToInt();
         // and loop for the rest
         while (true) {
             if (_inputPtr >= _inputEnd) {
@@ -2937,7 +2937,7 @@ currentToken(), firstCh);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        int d = (int) _inputBuffer[_inputPtr++];
+        int d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
@@ -2950,7 +2950,7 @@ currentToken(), firstCh);
             _loadMoreGuaranteed();
         }
         c1 &= 0x0F;
-        int d = (int) _inputBuffer[_inputPtr++];
+        int d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
@@ -2958,7 +2958,7 @@ currentToken(), firstCh);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        d = (int) _inputBuffer[_inputPtr++];
+        d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
@@ -2969,12 +2969,12 @@ currentToken(), firstCh);
     private final int _decodeUtf8_3fast(int c1) throws IOException
     {
         c1 &= 0x0F;
-        int d = (int) _inputBuffer[_inputPtr++];
+        int d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         int c = (c1 << 6) | (d & 0x3F);
-        d = (int) _inputBuffer[_inputPtr++];
+        d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
@@ -2991,7 +2991,7 @@ currentToken(), firstCh);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        int d = (int) _inputBuffer[_inputPtr++];
+        int d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
@@ -3000,7 +3000,7 @@ currentToken(), firstCh);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        d = (int) _inputBuffer[_inputPtr++];
+        d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
@@ -3008,7 +3008,7 @@ currentToken(), firstCh);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        d = (int) _inputBuffer[_inputPtr++];
+        d = _inputBuffer[_inputPtr++];
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }

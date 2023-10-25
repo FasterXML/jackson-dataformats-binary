@@ -108,7 +108,7 @@ abstract class ReaderTestBase
         if (lf) {
             ++roundsDone;
             if ((roundsDone % 3) == 0 ) {
-                double den = (double) roundsDone;
+                double den = roundsDone;
                 System.out.printf("Averages after %d rounds (%s/%s): %.1f / %.1f msecs\n",
                         (int) den, _desc1, _desc2,
                         timeMsecs[0] / den, timeMsecs[1] / den);
