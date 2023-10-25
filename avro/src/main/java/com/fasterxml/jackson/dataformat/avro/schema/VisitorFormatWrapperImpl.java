@@ -159,12 +159,7 @@ public class VisitorFormatWrapperImpl
         if (convertedType.isArrayType()) {
             JavaType vt = convertedType.getContentType();
             if (vt.hasRawClass(Byte.TYPE)) {
-                _builder = new SchemaBuilder() {
-                    @Override
-                    public Schema builtAvroSchema() {
-                        return AvroSchemaHelper.typedSchema(Schema.Type.BYTES, convertedType);
-                    }
-                };
+                _builder = () -> AvroSchemaHelper.typedSchema(Schema.Type.BYTES, convertedType);
                 return null;
             }
         }

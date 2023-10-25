@@ -35,58 +35,28 @@ public class ApacheAvroInteropUtil {
     /**
      * Functor of {@link #jacksonSerialize(Schema, Object)}
      */
-    public static final BiFunction<Schema, Object, byte[]> jacksonSerializer = new BiFunction<Schema, Object, byte[]>() {
-        @Override
-        public byte[] apply(Schema schema, Object originalObject) throws IOException {
-            return jacksonSerialize(schema, originalObject);
-        }
-    };
+    public static final BiFunction<Schema, Object, byte[]> jacksonSerializer = ApacheAvroInteropUtil::jacksonSerialize;
     /**
      * Functor of {@link #getJacksonSchema(Type)}
      */
-    public static final Function<Type, Schema> getJacksonSchema = new Function<Type, Schema>() {
-        @Override
-        public Schema apply(Type input) throws IOException {
-            return getJacksonSchema(input);
-        }
-    };
+    public static final Function<Type, Schema> getJacksonSchema = ApacheAvroInteropUtil::getJacksonSchema;
     /**
      * Functor of {@link #jacksonDeserialize(Schema, Type, byte[])} which uses {@link Object} as the target type,
      * requiring the use of native type IDs
      */
-    public static final BiFunction<Schema, byte[], Object> jacksonDeserializer = new BiFunction<Schema, byte[], Object>() {
-        @Override
-        public Object apply(Schema schema, byte[] originalObject) throws IOException {
-            return jacksonDeserialize(schema, Object.class, originalObject);
-        }
-    };
+    public static final BiFunction<Schema, byte[], Object> jacksonDeserializer = (schema, originalObject) -> jacksonDeserialize(schema, Object.class, originalObject);
     /**
      * Functor of {@link #getApacheSchema(Type)}
      */
-    public static final Function<Type, Schema> getApacheSchema = new Function<Type, Schema>() {
-        @Override
-        public Schema apply(Type input) throws IOException {
-            return getApacheSchema(input);
-        }
-    };
+    public static final Function<Type, Schema> getApacheSchema = ApacheAvroInteropUtil::getApacheSchema;
     /**
      * Functor of {@link #apacheDeserialize(Schema, byte[])}
      */
-    public static final BiFunction<Schema, byte[], Object> apacheDeserializer = new BiFunction<Schema, byte[], Object>() {
-        @Override
-        public Object apply(Schema first, byte[] second) throws IOException {
-            return apacheDeserialize(first, second);
-        }
-    };
+    public static final BiFunction<Schema, byte[], Object> apacheDeserializer = ApacheAvroInteropUtil::apacheDeserialize;
     /**
      * Functor of {@link #apacheSerialize(Schema, Object)}
      */
-    public static final  BiFunction<Schema, Object, byte[]> apacheSerializer = new BiFunction<Schema, Object, byte[]>() {
-        @Override
-        public byte[] apply(Schema schema, Object originalObject) throws IOException {
-            return apacheSerialize(schema, originalObject);
-        }
-    };
+    public static final  BiFunction<Schema, Object, byte[]> apacheSerializer = ApacheAvroInteropUtil::apacheSerialize;
 
     private static final AvroMapper MAPPER = new AvroMapper(new AvroModule());
 
