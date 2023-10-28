@@ -6,7 +6,7 @@ import org.apache.avro.reflect.CustomEncoding;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
-import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.dataformat.avro.CustomEncodingWrapper;
@@ -32,7 +32,7 @@ public class CustomEncodingDeserializer<T> extends ValueDeserializer<T> {
         try {
             return encoding.read(null, decoder);
         } catch (IOException e) {
-            throw WrappedIOException.construct(e);
+            throw JacksonIOException.construct(e);
         }
     }
 
@@ -43,7 +43,7 @@ public class CustomEncodingDeserializer<T> extends ValueDeserializer<T> {
         try {
             return encoding.read(intoValue, decoder);
         } catch (IOException e) {
-            throw WrappedIOException.construct(e);
+            throw JacksonIOException.construct(e);
         }
     }
 }

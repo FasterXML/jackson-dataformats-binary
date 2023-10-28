@@ -4,7 +4,7 @@ import java.io.*;
 
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamReadException;
-import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
@@ -102,7 +102,7 @@ public class SmileParserBootstrapper
                     _inputEnd += count;
                 }
             } catch (IOException e) {
-                throw WrappedIOException.construct(e);
+                throw JacksonIOException.construct(e);
             }
         }
 

@@ -16,7 +16,7 @@ import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectData;
 
-import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 
@@ -179,7 +179,7 @@ public class ApacheAvroInteropUtil {
         try {
             return (T) PATCHED_AVRO_REFLECT_DATA.createDatumReader(schema).read(null, encoder);
         } catch (IOException e) {
-            throw WrappedIOException.construct(e);
+            throw JacksonIOException.construct(e);
         }
     }
 
@@ -201,7 +201,7 @@ public class ApacheAvroInteropUtil {
             PATCHED_AVRO_REFLECT_DATA.createDatumWriter(schema).write(object, encoder);
             encoder.flush();
         } catch (IOException e) {
-            throw WrappedIOException.construct(e);
+            throw JacksonIOException.construct(e);
         }
         return baos.toByteArray();
     }
