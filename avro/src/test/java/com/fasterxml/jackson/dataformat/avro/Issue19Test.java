@@ -63,12 +63,12 @@ public class Issue19Test extends AvroTestBase
 
     public void testIssue19() throws Exception
     {
-        List<Event> sampleEvents = new ArrayList<Event>();
+        List<Event> sampleEvents = new ArrayList<>();
         sampleEvents.add(new Event(10, new EventID("sample1", 1, 2)));
         sampleEvents.add(new Event(20, new EventID("sample2", 10, 20)));
         sampleEvents.add(new Event(30, new EventID("sample3", 100, 200)));
 
-        List<Problem> sampleProblems = new ArrayList<Problem>();
+        List<Problem> sampleProblems = new ArrayList<>();
         sampleProblems.add(new Problem(800, 801));
         sampleProblems.add(new Problem(900, 901));
 

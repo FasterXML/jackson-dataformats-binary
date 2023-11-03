@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.EncoderFactory;
@@ -68,7 +69,7 @@ public class AvroGenerator extends GeneratorBase
             return flags;
         }
 
-        private Feature(boolean defaultState) {
+        Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
         }
@@ -481,7 +482,7 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public final void writeUTF8String(byte[] text, int offset, int len) throws IOException {
-        writeString(new String(text, offset, len, "UTF-8"));
+        writeString(new String(text, offset, len, StandardCharsets.UTF_8));
     }
 
     /*
@@ -568,12 +569,12 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public void writeNumber(int i) throws IOException {
-        _avroContext.writeValue(Integer.valueOf(i));
+        _avroContext.writeValue(i);
     }
 
     @Override
     public void writeNumber(long l) throws IOException {
-        _avroContext.writeValue(Long.valueOf(l));
+        _avroContext.writeValue(l);
     }
 
     @Override
@@ -588,12 +589,12 @@ public class AvroGenerator extends GeneratorBase
 
     @Override
     public void writeNumber(double d) throws IOException {
-        _avroContext.writeValue(Double.valueOf(d));
+        _avroContext.writeValue(d);
     }
 
     @Override
     public void writeNumber(float f) throws IOException {
-        _avroContext.writeValue(Float.valueOf(f));
+        _avroContext.writeValue(f);
     }
 
     @Override

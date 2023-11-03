@@ -159,12 +159,7 @@ public class VisitorFormatWrapperImpl
         if (convertedType.isArrayType()) {
             JavaType vt = convertedType.getContentType();
             if (vt.hasRawClass(Byte.TYPE)) {
-                _builder = new SchemaBuilder() {
-                    @Override
-                    public Schema builtAvroSchema() {
-                        return AvroSchemaHelper.typedSchema(Schema.Type.BYTES, convertedType);
-                    }
-                };
+                _builder = () -> AvroSchemaHelper.typedSchema(Schema.Type.BYTES, convertedType);
                 return null;
             }
         }
@@ -251,9 +246,6 @@ public class VisitorFormatWrapperImpl
     }
 
     private boolean _isDateTimeType(JavaType type) {
-        if (Temporal.class.isAssignableFrom(type.getRawClass())) {
-            return true;
-        }
-        return false;
+        return Temporal.class.isAssignableFrom(type.getRawClass());
     }
 }

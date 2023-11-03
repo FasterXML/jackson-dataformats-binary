@@ -136,7 +136,7 @@ class RootContext
     private final NonBSGenericDatumWriter<Object> _writer() {
         NonBSGenericDatumWriter<Object> w = _writer;
         if (w == null){
-            w = new NonBSGenericDatumWriter<Object>(_schema);
+            w = new NonBSGenericDatumWriter<>(_schema);
             _writer = w;
         }
         return w;
