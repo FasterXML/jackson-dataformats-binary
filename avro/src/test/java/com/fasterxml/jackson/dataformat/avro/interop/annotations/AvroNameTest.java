@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.avro.reflect.AvroName;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -34,19 +35,23 @@ public class AvroNameTest extends InteropTestBase
     }
 
     @Test
-    public void testRecordWithRenamedField() throws IOException{
+    public void testRecordWithRenamedField() throws Exception{
         RecordWithRenamed original = new RecordWithRenamed();
         original.someField = "blah";
         RecordWithRenamed result = roundTrip(original);
         assertThat(result).isEqualTo(original);
     }
 
-    public void testRecordWithNameCollision() throws IOException {
+    // 02-Nov-2023, tatu: This test has been disabled for some reason, but
+    //    without commentary. Fixed it a bit but ultimately can't enable yet
+
+    // @Test
+    public void testRecordWithNameCollision() throws Exception {
         try {
             schemaFunctor.apply(RecordWithNameCollision.class);
             fail("Should not pass");
-        } catch (IllegalArgumentException e) {
-            AvroTestBase.verifyException(e, "foobar");
+        } catch (InvalidDefinitionException e) {
+            AvroTestBase.verifyException(e, "double field entry: otherField");
         }
     }
 }
