@@ -151,7 +151,7 @@ public class AvroEncodeTest extends InteropTestBase {
         Map<String, ArrayList<Integer>> mv = new HashMap<>();
         wrapper.component.mapValue = mv;
         mv.put("birds", new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6)));
-        mv.put("cats", new ArrayList<Integer>());
+        mv.put("cats", new ArrayList<>());
         mv.put("dogs", new ArrayList<>(Arrays.asList(-1234, 56, 6767, 54134, 57, 86)));
         wrapper.component.stringValue = "Hello World!";
         wrapper.component.uuidValue = UUID.randomUUID();

@@ -31,7 +31,7 @@ public class MapTest extends AvroTestBase
             +"]}"
             ;
     static class Container {
-        public Map<String,String> stuff = new LinkedHashMap<String,String>();
+        public Map<String,String> stuff = new LinkedHashMap<>();
 
         public void setStuff(Map<String,String> arg) {
             stuff = arg;
@@ -194,7 +194,7 @@ public class MapTest extends AvroTestBase
     }
 
     private Map<String,String> _map(String... stuff) {
-        Map<String,String> map = new LinkedHashMap<String,String>();
+        Map<String,String> map = new LinkedHashMap<>();
         for (int i = 0, end = stuff.length; i < end; i += 2) {
             map.put(stuff[i], stuff[i+1]);
         }

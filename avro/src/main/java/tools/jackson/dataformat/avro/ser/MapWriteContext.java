@@ -20,7 +20,7 @@ public final class MapWriteContext
             Schema schema, Object currValue)
     {
         super(parent, generator, schema, currValue);
-        _data = new HashMap<String,Object>();
+        _data = new HashMap<>();
     }
 
     @Override

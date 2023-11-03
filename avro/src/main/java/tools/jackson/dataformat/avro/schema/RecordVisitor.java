@@ -38,7 +38,7 @@ public class RecordVisitor
 
     protected Schema _avroSchema;
 
-    protected List<Schema.Field> _fields = new ArrayList<Schema.Field>();
+    protected List<Schema.Field> _fields = new ArrayList<>();
 
     public RecordVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {

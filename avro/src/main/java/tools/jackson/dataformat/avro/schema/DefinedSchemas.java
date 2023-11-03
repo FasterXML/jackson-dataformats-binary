@@ -13,7 +13,7 @@ import tools.jackson.databind.SerializerProvider;
  */
 public class DefinedSchemas
 {
-    protected final Map<JavaType, Schema> _schemas = new LinkedHashMap<JavaType, Schema>();
+    protected final Map<JavaType, Schema> _schemas = new LinkedHashMap<>();
 
     protected SerializerProvider _provider;
 

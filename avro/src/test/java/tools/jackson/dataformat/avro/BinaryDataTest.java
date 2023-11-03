@@ -1,8 +1,8 @@
 package tools.jackson.dataformat.avro;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -17,8 +17,8 @@ public class BinaryDataTest extends AvroTestBase
     @JsonPropertyOrder({ "filename", "data", "size" })
     static class FilePojo {
         protected FilePojo() { }
-        public FilePojo(String text) throws IOException {
-            data = text.getBytes("UTF-8");
+        public FilePojo(String text) {
+            data = text.getBytes(StandardCharsets.UTF_8);
             size = data.length;
         }
         

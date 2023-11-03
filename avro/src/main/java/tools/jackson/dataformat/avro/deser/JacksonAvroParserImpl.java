@@ -377,7 +377,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr = ptr;
         // should be ok to zigzag as int, then sign-extend
         i = (i >>> 1) ^ (-(i & 1));
-        return (long) i;
+        return i;
     }
 
     private long _decodeLong2(int ptr, long lo) throws IOException
@@ -436,7 +436,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             }
         }
         i = (i >>> 1) ^ (-(i & 1));
-        return (long) i;
+        return i;
     }
 
     private long _decodeLongSlow2(long lo) throws IOException

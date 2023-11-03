@@ -3,6 +3,7 @@ package tools.jackson.dataformat.avro;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import tools.jackson.core.*;
@@ -48,7 +49,7 @@ public class ArrayTest extends AvroTestBase
         AvroSchema schema = getStringArraySchema();
         List<String> input1 = Arrays.asList("foo", "bar",
                 "...........................................................!");
-        List<String> input2 = Arrays.asList("foobar");
+        List<String> input2 = Collections.singletonList("foobar");
         String[] input3 = new String[] { "a",
 "Something very much longer than the first entry: and with \u00DCnicod\u00E9 -- at least "
 +"2 lines full of stuff... 12235u4039680346 -346-0436 34-6 -43609 4363469 436-09",

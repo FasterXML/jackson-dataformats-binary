@@ -207,7 +207,7 @@ public abstract class AvroWriteContext
             }
             schema = schema.getTypes().get(arraySchemaIndex);
         }
-        return new GenericData.Array<Object>(8, schema);
+        return new GenericData.Array<>(8, schema);
     }
 
     // Removed from 2.10, should not be needed any more

@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.avro;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 // @since 2.10
@@ -20,7 +21,7 @@ public class UUIDTest extends AvroTestBase
     public void testUUIDRoundtrip() throws Exception
     {
         final AvroSchema schema = MAPPER.schemaFor(UUIDWrapper.class);
-        UUIDWrapper input = new UUIDWrapper(UUID.nameUUIDFromBytes("BOGUS".getBytes("UTF-8")));
+        UUIDWrapper input = new UUIDWrapper(UUID.nameUUIDFromBytes("BOGUS".getBytes(StandardCharsets.UTF_8)));
         byte[] avro = MAPPER.writer(schema).writeValueAsBytes(input);
 
         UUIDWrapper output = MAPPER.readerFor(UUIDWrapper.class)

@@ -27,8 +27,7 @@ public abstract class AvroReaderFactory
      * To resolve cyclic types, need to keep track of resolved named
      * types.
      */
-    protected final TreeMap<String, AvroStructureReader> _knownReaders
-        = new TreeMap<String, AvroStructureReader>();
+    protected final TreeMap<String, AvroStructureReader> _knownReaders = new TreeMap<>();
 
     /*
     /**********************************************************************
@@ -303,10 +302,10 @@ public abstract class AvroReaderFactory
 
             // but first: find fields that only exist in reader-side and need defaults,
             // and remove those from
-            Map<String,Schema.Field> readerFields = new HashMap<String,Schema.Field>();
-            List<Schema.Field> defaultFields = new ArrayList<Schema.Field>();
+            Map<String,Schema.Field> readerFields = new HashMap<>();
+            List<Schema.Field> defaultFields = new ArrayList<>();
             {
-                Set<String> writerNames = new HashSet<String>();
+                Set<String> writerNames = new HashSet<>();
                 for (Schema.Field f : writerFields) {
                     writerNames.add(f.name());
                 }

@@ -25,9 +25,9 @@ public class RootSequenceTest extends AvroTestBase
         // First: write a sequence of 3 root-level ints
 
         SequenceWriter sw = MAPPER.writer(schema).writeValues(b);
-        sw.write(Integer.valueOf(1));
-        sw.write(Integer.valueOf(123456));
-        sw.write(Integer.valueOf(-999));
+        sw.write(1);
+        sw.write(123456);
+        sw.write(-999);
         sw.close();
 
         byte[] bytes = b.toByteArray();

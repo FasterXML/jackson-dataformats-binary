@@ -5,6 +5,10 @@ import java.io.IOException;
 import org.apache.avro.reflect.AvroName;
 import org.junit.Test;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.dataformat.avro.AvroTestBase;
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -30,6 +34,7 @@ public class AvroNameTest extends InteropTestBase
         @AvroName("otherField")
         public String firstField;
 
+        @JsonProperty
         public String otherField;
     }
 
@@ -41,12 +46,15 @@ public class AvroNameTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
+    @Test
     public void testRecordWithNameCollision() throws IOException {
         try {
             schemaFunctor.apply(RecordWithNameCollision.class);
             fail("Should not pass");
-        } catch (IllegalArgumentException e) {
-            AvroTestBase.verifyException(e, "foobar");
+        } catch (InvalidDefinitionException e) {
+            // Exception type and message vary between Jackson and Avro-schema
+            // cases... but both are DatabindExceptions and contain "otherField"
+            AvroTestBase.verifyException(e, "otherField");
         }
     }
 }

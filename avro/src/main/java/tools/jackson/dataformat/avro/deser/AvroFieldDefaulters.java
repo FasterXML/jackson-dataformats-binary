@@ -42,7 +42,7 @@ public class AvroFieldDefaulters
         case START_OBJECT:
             {
                 Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.fields();
-                List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+                List<AvroFieldReader> readers = new ArrayList<>();
                 while (it.hasNext()) {
                     Map.Entry<String,JsonNode> entry = it.next();
                     String propName = entry.getKey();
@@ -52,7 +52,7 @@ public class AvroFieldDefaulters
             }
         case START_ARRAY:
         {
-            List<AvroFieldReader> readers = new ArrayList<AvroFieldReader>();
+            List<AvroFieldReader> readers = new ArrayList<>();
             for (JsonNode value : defaultAsNode) {
                 readers.add(createDefaulter("", value));
             }
