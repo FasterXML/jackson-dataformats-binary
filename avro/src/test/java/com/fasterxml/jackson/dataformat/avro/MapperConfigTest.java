@@ -10,12 +10,7 @@ public class MapperConfigTest extends AvroTestBase
 {
     private final AvroFactory AVRO_F = new AvroFactory();
 
-    private final FormatSchema BOGUS_SCHEMA = new FormatSchema() {
-        @Override
-        public String getSchemaType() {
-            return "Test";
-        }
-    };
+    private final FormatSchema BOGUS_SCHEMA = () -> "Test";
 
     /*
     /**********************************************************
