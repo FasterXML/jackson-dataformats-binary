@@ -14,16 +14,13 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-(not yet released)
-
-#410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
- (requested by Dominik B)
-
-2.16.0-rc1 (20-Oct-2023)
+2.16.0 (15-Nov-2023)
 
 #400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
   use new `RecyclerPool`, allow configuring use of non-ThreadLocal based pools
 #403: (smile) Remove Smile-specific buffer-recycling
+#410: (ion) Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
+ (requested by Dominik B)
 
 2.15.3 (12-Oct-2023)
 
