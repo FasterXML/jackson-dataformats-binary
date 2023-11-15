@@ -14,6 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.17.0 (not yet released)
+
+-
+
 2.16.0 (15-Nov-2023)
 
 #400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
