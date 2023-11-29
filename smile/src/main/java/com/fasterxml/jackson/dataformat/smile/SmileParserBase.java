@@ -428,14 +428,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
             if (_numTypesValid == NR_UNKNOWN) {
                 _parseNumericValue(); // will also check event type
             }
-            if (_numberType == NumberType.DOUBLE) {
-                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
-                double d = _numberDouble;
-                return Double.isNaN(d) || Double.isInfinite(d);
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return !Double.isFinite(_numberDouble);
             }
-            if (_numberType == NumberType.FLOAT) {
-                float f = _numberFloat;
-                return Float.isNaN(f) || Float.isInfinite(f);
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                return !Float.isFinite(_numberFloat);
             }
         }
         return false;

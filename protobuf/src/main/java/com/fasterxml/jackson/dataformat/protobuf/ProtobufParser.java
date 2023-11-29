@@ -1495,13 +1495,10 @@ public class ProtobufParser extends ParserMinimalBase
     public boolean isNaN() {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             if ((_numTypesValid & NR_DOUBLE) != 0) {
-                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
-                double d = _numberDouble;
-                return Double.isNaN(d) || Double.isInfinite(d);
+                return !Double.isFinite(_numberDouble);
             }
             if ((_numTypesValid & NR_FLOAT) != 0) {
-                float f = _numberFloat;
-                return Float.isNaN(f) || Float.isInfinite(f);
+                return !Float.isFinite(_numberFloat);
             }
         }
         return false;
