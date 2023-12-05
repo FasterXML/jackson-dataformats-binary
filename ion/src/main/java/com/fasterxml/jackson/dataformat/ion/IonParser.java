@@ -274,8 +274,11 @@ public class IonParser
                 try {
                     // stringValue() will throw an UnknownSymbolException if we're
                     // trying to get the text for a symbol id that cannot be resolved.
+                    // stringValue() has an assert statement which could throw an
+                    // AssertionError if we're trying to get the text with a symbol
+                    // id less than or equals to 0.
                     return _reader.stringValue();
-                } catch (UnknownSymbolException e) {
+                } catch (UnknownSymbolException | AssertionError e) {
                     throw _constructError(e.getMessage(), e);
                 }
             case VALUE_NUMBER_INT:
