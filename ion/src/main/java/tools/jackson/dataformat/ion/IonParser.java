@@ -235,11 +235,20 @@ public class IonParser
                 return currentName();
             case VALUE_STRING:
                 try {
-                    // stringValue() will throw an UnknownSymbolException if we're
-                    // trying to get the text for a symbol id that cannot be resolved.
                     return _reader.stringValue();
                 } catch (UnknownSymbolException e) {
+                    // stringValue() will throw an UnknownSymbolException if we're
+                    // trying to get the text for a symbol id that cannot be resolved.
+                    // stringValue() has an assert statement which could throw an
                     throw _constructReadException(e.getMessage(), e);
+                } catch (AssertionError e) {
+                    // AssertionError if we're trying to get the text with a symbol
+                    // id less than or equals to 0.
+                    String msg = e.getMessage();
+                    if (msg == null) {
+                        msg = "UNKNOWN ROOT CAUSE";
+                    }
+                    throw _constructReadException("Internal `IonReader` error: "+msg, e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
