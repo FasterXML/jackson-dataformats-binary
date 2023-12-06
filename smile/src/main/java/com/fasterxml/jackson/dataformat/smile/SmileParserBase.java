@@ -333,7 +333,20 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public final JsonLocation getTokenLocation()
+    public final JsonLocation currentLocation()
+    {
+        final long offset = _currInputProcessed + _inputPtr;
+        return new JsonLocation(_ioContext.contentReference(),
+                offset, // bytes
+                -1, -1, (int) offset); // char offset, line, column
+    }
+
+    /**
+     * Overridden since we do not really have character-based locations,
+     * but we do have byte offset to specify.
+     */
+    @Override
+    public final JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;
@@ -343,31 +356,30 @@ public abstract class SmileParserBase extends ParserMinimalBase
                 -1, -1, (int) total); // char offset, line, column
     }
 
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
+    @Deprecated // since 2.17
     @Override
-    public final JsonLocation getCurrentLocation()
-    {
-        final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.contentReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
-    }
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
 
     /**
      * Method that can be called to get the name associated with
      * the current event.
      */
-    @Override
-    public final String getCurrentName() throws IOException
+    @Override // since 2.17
+    public String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             return _streamReadContext.getParent().getCurrentName();
         }
         return _streamReadContext.getCurrentName();
     }
+
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
 
     @Override
     public final void overrideCurrentName(String name)

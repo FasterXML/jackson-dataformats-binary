@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;

@@ -250,18 +250,24 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    public JsonLocation getTokenLocation()
-    {
+    public JsonLocation currentLocation() {
         // !!! TODO
         return null;
     }
 
     @Override
-    public JsonLocation getCurrentLocation()
-    {
+    public JsonLocation currentTokenLocation() {
         // !!! TODO
         return null;
     }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
 
     /*
     /**********************************************************
@@ -278,17 +284,8 @@ public abstract class AvroParser extends ParserBase
     /**********************************************************
      */
 
-    @Override
-    public abstract boolean hasTextCharacters();
-
-    @Override
-    public abstract String getText() throws IOException;
-
-    @Override
-    public abstract int getText(Writer writer) throws IOException;
-
-    @Override
-    public String getCurrentName() throws IOException {
+    @Override // since 2.17
+    public String currentName() throws IOException {
         return _avroContext.getCurrentName();
     }
 
@@ -300,15 +297,27 @@ public abstract class AvroParser extends ParserBase
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ctxt = ctxt.getParent();
         }
-        /* 24-Sep-2013, tatu: Unfortunate, but since we did not expose exceptions,
-         *   need to wrap this here
-         */
+        // 24-Sep-2013, tatu: Unfortunate, but since we did not expose exceptions,
+        //   need to wrap this here
         try {
             ctxt.setCurrentName(name);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
+
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
+
+    @Override
+    public abstract boolean hasTextCharacters();
+
+    @Override
+    public abstract String getText() throws IOException;
+
+    @Override
+    public abstract int getText(Writer writer) throws IOException;
 
     @Override
     public char[] getTextCharacters() throws IOException {

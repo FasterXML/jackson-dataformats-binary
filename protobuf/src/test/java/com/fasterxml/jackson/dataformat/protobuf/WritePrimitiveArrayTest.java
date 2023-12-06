@@ -246,7 +246,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("values", p.getCurrentName());
+        assertEquals("values", p.currentName());
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -328,7 +328,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("values", p.getCurrentName());
+        assertEquals("values", p.currentName());
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -390,7 +390,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("values", p.getCurrentName());
+        assertEquals("values", p.currentName());
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());

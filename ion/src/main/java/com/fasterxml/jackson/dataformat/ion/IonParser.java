@@ -487,24 +487,35 @@ public class IonParser
      */
 
     @Override
-    public JsonLocation getCurrentLocation() {
+    public JsonLocation currentLocation() {
         return JsonLocation.NA;
     }
 
     @Override
-    public String getCurrentName() throws IOException {
+    public JsonLocation currentTokenLocation() {
+        return JsonLocation.NA;
+    }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
+
+    @Override
+    public String currentName() throws IOException {
         return _parsingContext.getCurrentName();
     }
 
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
+    
     @Override
     public JsonStreamContext getParsingContext() {
         return _parsingContext;
-    }
-
-
-    @Override
-    public JsonLocation getTokenLocation() {
-        return JsonLocation.NA;
     }
 
     @Override
@@ -614,7 +625,7 @@ public class IonParser
      *****************************************************************
      * Internal helper methods
      *****************************************************************
-      */
+     */
 
     protected JsonToken _tokenFromType(IonType type)
     {

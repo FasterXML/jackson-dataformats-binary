@@ -16,7 +16,7 @@ public class ParserLocationTest
 
         JsonParser p = _smileParser(data);
         assertNull(p.getCurrentToken());
-        JsonLocation loc = p.getCurrentLocation();
+        JsonLocation loc = p.currentLocation();
         assertNotNull(loc);
         // first: -1 for "not known", for character-based stuff
         assertEquals(-1, loc.getCharOffset());
@@ -32,31 +32,31 @@ public class ParserLocationTest
 
         // array marker is a single byte, so:
         assertToken(JsonToken.START_ARRAY, p.nextToken());
-        assertEquals(5, p.getCurrentLocation().getByteOffset());
-        assertEquals(4, p.getTokenLocation().getByteOffset());
+        assertEquals(5, p.currentLocation().getByteOffset());
+        assertEquals(4, p.currentTokenLocation().getByteOffset());
 
         // same for true and others except for last int
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
-        assertEquals(6, p.getCurrentLocation().getByteOffset());
-        assertEquals(5, p.getTokenLocation().getByteOffset());
+        assertEquals(6, p.currentLocation().getByteOffset());
+        assertEquals(5, p.currentTokenLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
-        assertEquals(7, p.getCurrentLocation().getByteOffset());
-        assertEquals(6, p.getTokenLocation().getByteOffset());
+        assertEquals(7, p.currentLocation().getByteOffset());
+        assertEquals(6, p.currentTokenLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_FALSE, p.nextToken());
-        assertEquals(8, p.getCurrentLocation().getByteOffset());
-        assertEquals(7, p.getTokenLocation().getByteOffset());
+        assertEquals(8, p.currentLocation().getByteOffset());
+        assertEquals(7, p.currentTokenLocation().getByteOffset());
 
         // 0x1FF takes 3 bytes (type byte, 7/6 bit segments)
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(511, p.getIntValue());
-        assertEquals(11, p.getCurrentLocation().getByteOffset());
-        assertEquals(8, p.getTokenLocation().getByteOffset());
+        assertEquals(11, p.currentLocation().getByteOffset());
+        assertEquals(8, p.currentTokenLocation().getByteOffset());
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        assertEquals(12, p.getCurrentLocation().getByteOffset());
-        assertEquals(11, p.getTokenLocation().getByteOffset());
+        assertEquals(12, p.currentLocation().getByteOffset());
+        assertEquals(11, p.currentTokenLocation().getByteOffset());
 
         assertNull(p.nextToken());
         p.close();
@@ -85,16 +85,16 @@ public class ParserLocationTest
         SmileParser p = _smileParser(new ByteArrayInputStream(b));
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         // 4 byte header, start array read, so 4 bytes down:
-        assertEquals(5, p.getCurrentLocation().getByteOffset());
+        assertEquals(5, p.currentLocation().getByteOffset());
         for (int i = 0; i < COUNT; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(6 + i*7, p.getCurrentLocation().getByteOffset());
+            assertEquals(6 + i*7, p.currentLocation().getByteOffset());
             assertEquals("abc123", p.getText());
         }
         assertToken(JsonToken.END_ARRAY, p.nextToken());
-        assertEquals(SIZE+6, p.getCurrentLocation().getByteOffset());
+        assertEquals(SIZE+6, p.currentLocation().getByteOffset());
         assertNull(p.nextToken());
-        assertEquals(SIZE+6, p.getCurrentLocation().getByteOffset());
+        assertEquals(SIZE+6, p.currentLocation().getByteOffset());
         p.close();
     }
 }

@@ -111,7 +111,7 @@ public class ParserSymbolHandlingTest
             int nr = rnd.nextInt() % 1200;
             String name = "f"+nr;
             assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-            assertEquals(name, jp.getCurrentName());
+            assertEquals(name, jp.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
             assertEquals(nr, jp.getIntValue());
             assertToken(JsonToken.END_OBJECT, jp.nextToken());
@@ -182,7 +182,7 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.START_OBJECT, jp.nextToken());
         for (int i = 0; i < SHARED_SYMBOLS.length; ++i) {
             assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-            assertEquals("a"+i, jp.getCurrentName());
+            assertEquals("a"+i, jp.currentName());
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
             assertEquals(SHARED_SYMBOLS[i], jp.getText());
         }
@@ -239,28 +239,28 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.START_OBJECT, jp.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("media", jp.getCurrentName());
+        assertEquals("media", jp.currentName());
 
         assertToken(JsonToken.START_OBJECT, jp.nextToken());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("uri", jp.getCurrentName());
+        assertEquals("uri", jp.currentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("g", jp.getText());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("title", jp.getCurrentName());
+        assertEquals("title", jp.currentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("J", jp.getText());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("width", jp.getCurrentName());
+        assertEquals("width", jp.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
         assertEquals(640, jp.getIntValue());
 
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("format", jp.getCurrentName());
+        assertEquals("format", jp.currentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("v", jp.getText());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("persons", jp.getCurrentName());
+        assertEquals("persons", jp.currentName());
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("B", jp.getText());
@@ -269,37 +269,37 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.END_ARRAY, jp.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("player", jp.getCurrentName());
+        assertEquals("player", jp.currentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("JAVA", jp.getText());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("copyright", jp.getCurrentName());
+        assertEquals("copyright", jp.currentName());
         assertToken(JsonToken.VALUE_STRING, jp.nextToken());
         assertEquals("NONE", jp.getText());
 
         assertToken(JsonToken.END_OBJECT, jp.nextToken()); // media
 
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("images", jp.getCurrentName());
+        assertEquals("images", jp.currentName());
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
 
         // 3 instances of identical entries:
         for (int i = 0; i < 3; ++i) {
             assertToken(JsonToken.START_OBJECT, jp.nextToken());
             assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-            assertEquals("uri", jp.getCurrentName());
+            assertEquals("uri", jp.currentName());
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
             assertEquals("h", jp.getText());
             assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-            assertEquals("title", jp.getCurrentName());
+            assertEquals("title", jp.currentName());
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
             assertEquals("J", jp.getText());
             assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-            assertEquals("width", jp.getCurrentName());
+            assertEquals("width", jp.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
             assertEquals(1024, jp.getIntValue());
             assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-            assertEquals("height", jp.getCurrentName());
+            assertEquals("height", jp.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
             assertEquals(768, jp.getIntValue());
             assertToken(JsonToken.END_OBJECT, jp.nextToken());
@@ -364,13 +364,13 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("z_aaaabbbbccccddddee", parser.getCurrentName());
+        assertEquals("z_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("end", parser.getText());
 
         // This one fails...
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("a_aaaabbbbccccddddee", parser.getCurrentName());
+        assertEquals("a_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("start", parser.getText());
 
@@ -403,17 +403,17 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("term", parser.getCurrentName());
+        assertEquals("term", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.getCurrentName());
+        assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
         assertEquals("foo", parser.getText());
@@ -439,19 +439,19 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("query", parser.getCurrentName());
+        assertEquals("query", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
-        assertEquals("term", parser.getCurrentName());
+        assertEquals("term", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.START_OBJECT, token);
         token = parser.nextToken();
         assertToken(JsonToken.FIELD_NAME, token);
         // here we fail..., seems to be a problem with field caching factory level???
         // since we get the field name of the previous (bos1) document field value (withou the 2)
-        assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.getCurrentName());
+        assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
         assertEquals("bar", parser.getText());
@@ -489,7 +489,7 @@ public class ParserSymbolHandlingTest
 
         assertToken(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals(JsonTokenId.ID_FIELD_NAME, parser.getCurrentTokenId());
-        assertEquals(NAME, parser.getCurrentName());
+        assertEquals(NAME, parser.currentName());
 
         assertToken(JsonToken.VALUE_NULL, parser.nextToken());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
