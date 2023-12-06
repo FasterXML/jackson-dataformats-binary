@@ -19,9 +19,7 @@ import java.util.HashMap;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.Before;
-import org.junit.Rule;
 
 import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.databind.JsonNode;
@@ -34,6 +32,8 @@ import com.amazon.ion.system.IonSystemBuilder;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class IonGeneratorTest {
     private static final Map<String, String> testObject;
@@ -59,9 +59,6 @@ public class IonGeneratorTest {
     private IonDatagram output;
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -126,16 +123,24 @@ public class IonGeneratorTest {
     @Test
     public void testWriteFieldNameFailsInSexp() throws Exception {
         joiGenerator.writeStartSexp();
-        thrown.expect(StreamWriteException.class);
-        thrown.expectMessage("Can not write a property name, expecting a value");
-        joiGenerator.writeName("foo");
+        try {
+            joiGenerator.writeName("foo");
+            fail("Should not pass");
+        } catch (StreamWriteException e) {
+            assertEquals("Can not write a property name, expecting a value",
+                    e.getMessage());
+        }
     }
 
     @Test
     public void testWriteStartSexpFailsWithoutWriteFieldName() throws Exception {
         joiGenerator.writeStartObject();
-        thrown.expect(StreamWriteException.class);
-        thrown.expectMessage("Can not start a sexp, expecting a property name");
-        joiGenerator.writeStartSexp();
+        try {
+            joiGenerator.writeStartSexp();
+            fail("Should not pass");
+        } catch (StreamWriteException e) {
+            assertEquals("Can not start a sexp, expecting a property name",
+                    e.getMessage());
+        }
     }
 }
