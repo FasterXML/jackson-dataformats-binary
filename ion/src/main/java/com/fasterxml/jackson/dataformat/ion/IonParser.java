@@ -269,17 +269,23 @@ public class IonParser
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
             case FIELD_NAME:
-                return getCurrentName();
+                return currentName();
             case VALUE_STRING:
                 try {
+                    return _reader.stringValue();
+                } catch (UnknownSymbolException e) {
                     // stringValue() will throw an UnknownSymbolException if we're
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
+                    throw _constructError(e.getMessage(), e);
+                } catch (AssertionError e) {
                     // AssertionError if we're trying to get the text with a symbol
                     // id less than or equals to 0.
-                    return _reader.stringValue();
-                } catch (UnknownSymbolException | AssertionError e) {
-                    throw _constructError(e.getMessage(), e);
+                    String msg = e.getMessage();
+                    if (msg == null) {
+                        msg = "UNKNOWN ROOT CAUSE";
+                    }
+                    throw _constructError("Internal `IonReader` error: "+msg, e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:

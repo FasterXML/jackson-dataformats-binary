@@ -16,7 +16,9 @@ Active maintainers:
 
 2.17.0 (not yet released)
 
--
+#417: (ion) `IonReader` classes contain assert statement which could throw
+  unexpected `AssertionError`
+ (contributed by Arthur C)
 
 2.16.0 (15-Nov-2023)
 
