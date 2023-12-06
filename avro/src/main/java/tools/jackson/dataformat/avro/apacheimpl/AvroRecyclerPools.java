@@ -105,7 +105,7 @@ public final class AvroRecyclerPools
     /**
      * {@link ThreadLocal}-based {@link RecyclerPool} implementation used for
      * recycling {@link ApacheCodecRecycler} instances:
-     * see {@link RecyclerPool.ThreadLocalPoolBase} for full explanation
+     * see {@code RecyclerPool.ThreadLocalPoolBase} for full explanation
      * of functioning.
      */
     public static class ThreadLocalPool
