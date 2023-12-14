@@ -19,6 +19,7 @@ Active maintainers:
 #417: (ion) `IonReader` classes contain assert statement which could throw
   unexpected `AssertionError`
  (contributed by Arthur C)
+-(ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.0 (15-Nov-2023)
 
