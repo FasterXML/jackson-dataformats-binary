@@ -269,14 +269,23 @@ public class IonParser
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
             case FIELD_NAME:
-                return getCurrentName();
+                return currentName();
             case VALUE_STRING:
                 try {
-                    // stringValue() will throw an UnknownSymbolException if we're
-                    // trying to get the text for a symbol id that cannot be resolved.
                     return _reader.stringValue();
                 } catch (UnknownSymbolException e) {
+                    // stringValue() will throw an UnknownSymbolException if we're
+                    // trying to get the text for a symbol id that cannot be resolved.
+                    // stringValue() has an assert statement which could throw an
                     throw _constructError(e.getMessage(), e);
+                } catch (AssertionError e) {
+                    // AssertionError if we're trying to get the text with a symbol
+                    // id less than or equals to 0.
+                    String msg = e.getMessage();
+                    if (msg == null) {
+                        msg = "UNKNOWN ROOT CAUSE";
+                    }
+                    throw _constructError("Internal `IonReader` error: "+msg, e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -487,24 +496,35 @@ public class IonParser
      */
 
     @Override
-    public JsonLocation getCurrentLocation() {
+    public JsonLocation currentLocation() {
         return JsonLocation.NA;
     }
 
     @Override
-    public String getCurrentName() throws IOException {
+    public JsonLocation currentTokenLocation() {
+        return JsonLocation.NA;
+    }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
+
+    @Override
+    public String currentName() throws IOException {
         return _parsingContext.getCurrentName();
     }
 
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
+    
     @Override
     public JsonStreamContext getParsingContext() {
         return _parsingContext;
-    }
-
-
-    @Override
-    public JsonLocation getTokenLocation() {
-        return JsonLocation.NA;
     }
 
     @Override
@@ -529,6 +549,8 @@ public class IonParser
             type = _reader.next();
         } catch (IonException e) {
             _wrapError(e.getMessage(), e);
+        } catch (IndexOutOfBoundsException e) {
+            _constructError(e.getMessage(), e);
         }
         if (type == null) {
             if (_parsingContext.inRoot()) { // EOF?
@@ -614,7 +636,7 @@ public class IonParser
      *****************************************************************
      * Internal helper methods
      *****************************************************************
-      */
+     */
 
     protected JsonToken _tokenFromType(IonType type)
     {
