@@ -1139,7 +1139,10 @@ versionBits));
                 // TODO: optimize
                 return getNumberValue().toString().length();
             }
-            return _currToken.asCharArray().length;
+            final char[] ch = _currToken.asCharArray();
+            if (ch != null) {
+                return ch.length;
+            }
         }
         return 0;
     }
