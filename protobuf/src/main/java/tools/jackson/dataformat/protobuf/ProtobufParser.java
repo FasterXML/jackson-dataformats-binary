@@ -1439,13 +1439,15 @@ public class ProtobufParser extends ParserMinimalBase
                 return _textBuffer.size();
             case PROPERTY_NAME:
                 return _streamReadContext.currentName().length();
-                // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
                 return getNumberValue().toString().length();
-
             default:
-                return _currToken.asCharArray().length;
+                // fall through
+            }
+            final char[] ch = _currToken.asCharArray();
+            if (ch != null) {
+                return ch.length;
             }
         }
         return 0;

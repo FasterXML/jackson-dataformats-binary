@@ -299,7 +299,11 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_NOT_AVAILABLE:
             return 0; // or throw exception?
         default:
-            return _currToken.asCharArray().length;
+            final char[] ch = _currToken.asCharArray();
+            if (ch != null) {
+                return ch.length;
+            }
+            return 0;
         }
     }
 

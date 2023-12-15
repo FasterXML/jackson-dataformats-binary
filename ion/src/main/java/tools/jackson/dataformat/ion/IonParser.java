@@ -277,7 +277,8 @@ public class IonParser
 
     @Override
     public int getTextLength() throws JacksonException {
-        return getText().length();
+        String str = getText();
+        return (str == null) ? 0 : str.length();
     }
 
     @Override
