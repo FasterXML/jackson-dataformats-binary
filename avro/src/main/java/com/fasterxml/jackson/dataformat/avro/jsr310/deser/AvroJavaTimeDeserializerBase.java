@@ -10,7 +10,9 @@ import java.time.ZoneId;
 
 import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
 
-public abstract class AvroJavaTimeDeserializerBase<T> extends StdScalarDeserializer<T> {
+public abstract class AvroJavaTimeDeserializerBase<T> extends StdScalarDeserializer<T>
+{
+    private static final long serialVersionUID = 1L;
 
     protected AvroJavaTimeDeserializerBase(Class<T> supportedType) {
         super(supportedType);

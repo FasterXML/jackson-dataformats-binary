@@ -450,13 +450,13 @@ public class CBORGenerator extends GeneratorBase
     /**********************************************************
      */
 
-    @Override // since 2.13
-    public Object currentValue() {
-        return _streamWriteContext.getCurrentValue();
+    @Override
+    public JsonStreamContext getOutputContext() {
+        return _streamWriteContext;
     }
 
-    @Override
-    public Object getCurrentValue() {
+    @Override // since 2.13
+    public Object currentValue() {
         return _streamWriteContext.getCurrentValue();
     }
 
@@ -465,15 +465,13 @@ public class CBORGenerator extends GeneratorBase
         _streamWriteContext.setCurrentValue(v);
     }
 
+    @Deprecated // since 2.17
     @Override
-    public void setCurrentValue(Object v) {
-        _streamWriteContext.setCurrentValue(v);
-    }
+    public Object getCurrentValue() { return currentValue(); }
 
+    @Deprecated // since 2.17
     @Override
-    public JsonStreamContext getOutputContext() {
-        return _streamWriteContext;
-    }
+    public void setCurrentValue(Object v) { assignCurrentValue(v); }
 
     /*
     /**********************************************************

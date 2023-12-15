@@ -158,31 +158,6 @@ public class ProtobufGenerator extends GeneratorBase
         _pbContext = _rootContext = ProtobufWriteContext.createRootContext(schema.getRootType());
     }
 
-    @Override
-    public StreamWriteConstraints streamWriteConstraints() {
-        return _streamWriteConstraints;
-    }
-
-    @Override // since 2.13
-    public Object currentValue() {
-        return _pbContext.getCurrentValue();
-    }
-
-    @Override
-    public Object getCurrentValue() {
-        return _pbContext.getCurrentValue();
-    }
-
-    @Override // since 2.13
-    public void assignCurrentValue(Object v) {
-        _pbContext.setCurrentValue(v);
-    }
-
-    @Override
-    public void setCurrentValue(Object v) {
-        _pbContext.setCurrentValue(v);
-    }
-
     /*
     /**********************************************************
     /* Versioned
@@ -220,6 +195,11 @@ public class ProtobufGenerator extends GeneratorBase
     /* Overridden methods, configuration
     /**********************************************************
      */
+
+    @Override
+    public StreamWriteConstraints streamWriteConstraints() {
+        return _streamWriteConstraints;
+    }
 
     /**
      * Not sure whether to throw an exception or just do no-op; for now,
@@ -264,6 +244,30 @@ public class ProtobufGenerator extends GeneratorBase
         }
         setSchema((ProtobufSchema) schema);
     }
+
+    /*
+    /**********************************************************
+    /* Overridden methods, output context (and related)
+    /**********************************************************
+     */
+
+    @Override // since 2.13
+    public Object currentValue() {
+        return _pbContext.getCurrentValue();
+    }
+
+    @Override // since 2.13
+    public void assignCurrentValue(Object v) {
+        _pbContext.setCurrentValue(v);
+    }
+
+    @Deprecated // since 2.17
+    @Override
+    public Object getCurrentValue() { return currentValue(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public void setCurrentValue(Object v) { assignCurrentValue(v); }
 
     /*
     /**********************************************************************

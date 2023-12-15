@@ -30,7 +30,7 @@ public class SmileDetectionTest extends BaseTestForSmile
         JsonParser jp = matcher.createParserWithMatch();
         assertToken(JsonToken.START_OBJECT, jp.nextToken());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("a", jp.getCurrentName());
+        assertEquals("a", jp.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, jp.nextToken());
         assertEquals(3, jp.getIntValue());
         assertToken(JsonToken.END_OBJECT, jp.nextToken());
@@ -52,7 +52,7 @@ public class SmileDetectionTest extends BaseTestForSmile
         JsonParser jp = matcher.createParserWithMatch();
         assertToken(JsonToken.START_OBJECT, jp.nextToken());
         assertToken(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("abc", jp.getCurrentName());
+        assertEquals("abc", jp.currentName());
         assertToken(JsonToken.VALUE_FALSE, jp.nextToken());
         assertToken(JsonToken.END_OBJECT, jp.nextToken());
         assertNull(jp.nextToken());

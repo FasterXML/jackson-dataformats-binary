@@ -235,58 +235,53 @@ Martin Giannechini (MartinGian@github)
  (2.13.0)
 
 Tyler Gregg (tgregg@github)
-
-#325: (ion) Ensure `IonReader` instances created within `IonFactory` are
-  always resource-managed
- (2.14.0)
+ #325: (ion) Ensure `IonReader` instances created within `IonFactory` are
+   always resource-managed
+  (2.14.0)
 
 David Turner (DaveCTurner@github)
-
-#312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
- (2.14.0)
+ #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
+  (2.14.0)
 
 Matthew Pope (popematt@github)
-
-#311: (ion) `IonObjectMapper` does not throw JacksonException for some
-  invalid Ion
- (2.14.0)
+ #311: (ion) `IonObjectMapper` does not throw JacksonException for some
+   invalid Ion
+  (2.14.0)
 
 Szymon Sasin (szysas@github)
-
-#338: (cbor) Use passed "current value" in `writeStartObject()` overload
- (2.14.0)
+ #338: (cbor) Use passed "current value" in `writeStartObject()` overload
+  (2.14.0)
 
 Dominik Broj (thetric@github)
-
-#341: (ion) Update to Amazon Ion 1.9.5
- (2.14.0)
-#410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
- (2.16.0)
+ #341: (ion) Update to Amazon Ion 1.9.5
+  (2.14.0)
+ #410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
+  (2.16.0)
 
 Brian Harrington (brharrington@github)
-
-* Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
- (2.14.1)
+ * Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
+  (2.14.1)
 
 Nik Everett (nik9000@github)
-
-* Reported #366: `CBORGenerator.writeRawUTF8String()` seems to ignore offset
- (2.14.3)
+ * Reported #366: `CBORGenerator.writeRawUTF8String()` seems to ignore offset
+  (2.14.3)
 
 Aaron Barany (here-abarany@github)
-
-* Contributed #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
- (2.15.0)
-* Contributed #356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s
-  as `float`s if safe to do so
- (2.15.0)
+ * Contributed #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
+  (2.15.0)
+ * Contributed #356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s
+   as `float`s if safe to do so
+  (2.15.0)
 
 Kyle Silver (kyle-silver@github)
-
-* Reported *379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
- (2.15.2)
+ * Reported *379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
+  (2.15.2)
 
 Simon Daudin (@simondaudin)
+ * Reported #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
+  (2.15.3)
 
-* Reported #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
- (2.15.3)
+Arthur Chan (@arthurscchan)
+ * Contributed #417: (ion) `IonReader` classes contain assert statement which could throw
+   unexpected `AssertionError`
+ (2.17.0)
