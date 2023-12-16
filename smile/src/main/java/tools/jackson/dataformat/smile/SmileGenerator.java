@@ -1763,6 +1763,8 @@ public class SmileGenerator
     protected void _writeIntegralNumber(String enc, boolean neg) throws JacksonException
     {
         int len = enc.length();
+        // 16-Dec-2023, tatu: Guard against too-big numbers
+        _streamReadConstraints().validateIntegerLength(len);
         if (neg) {
             --len;
         }
@@ -1780,18 +1782,23 @@ public class SmileGenerator
             }
             return;
         } catch (NumberFormatException e) { }
-	throw _constructWriteException("Invalid String representation for Number ('"+enc
-				       +"'); can not write using Smile format");
+        throw _constructWriteException("Invalid String representation for Number ('"+enc
+                +"'); can not write using Smile format");
     }
 
     protected void _writeDecimalNumber(String enc) throws JacksonException
     {
-        try {
-            writeNumber(NumberInput.parseBigDecimal(enc, false));
-        } catch (NumberFormatException e) {
-            throw _constructWriteException("Invalid String representation for Number ('"+enc
-                    +"'); can not write using Smile format");
+        // 16-Dec-2023, tatu: Guard against too-big numbers
+        _streamReadConstraints().validateFPLength(enc.length());
+        // ... and check basic validity too
+        if (NumberInput.looksLikeValidNumber(enc)) {
+            try {
+                writeNumber(NumberInput.parseBigDecimal(enc, false));
+                return;
+            } catch (NumberFormatException e) { }
         }
+        throw _constructWriteException("Invalid String representation for Number ('"+enc
+                +"'); can not write using Smile format");
     }
 
     /*
@@ -2748,5 +2755,22 @@ surr1, surr2));
 
     protected UnsupportedOperationException _notSupported() {
         return new UnsupportedOperationException();
+    }
+
+    /*
+    /**********************************************************
+    /* Internal methods, misc other
+    /**********************************************************
+     */
+
+    /**
+     * We need access to some reader-side constraints for safety-check within
+     * number decoding for {@linl #writeNumber(String)}: for now we need to
+     * rely on global defaults; should be ok for basic safeguarding.
+     *
+     * @since 2.17
+     */
+    protected StreamReadConstraints _streamReadConstraints() {
+        return StreamReadConstraints.defaults();
     }
 }
