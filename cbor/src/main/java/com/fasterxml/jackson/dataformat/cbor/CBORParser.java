@@ -2075,30 +2075,30 @@ public class CBORParser extends ParserMinimalBase
             // Let's verify it's lossless conversion by simple roundtrip
             int result = (int) _numberLong;
             if (((long) result) != _numberLong) {
-                _reportError("Numeric value ("+getText()+") out of range of int");
+                reportOverflowInt(String.valueOf(_numberLong));
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberBigInt));
             }
             _numberInt = _numberBigInt.intValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             // Need to check boundaries
             if (_numberDouble < MIN_INT_D || _numberDouble > MAX_INT_D) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberDouble));
             }
             _numberInt = (int) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberFloat));
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberBigDecimal));
             }
             _numberInt = _numberBigDecimal.intValue();
         } else {
@@ -2114,23 +2114,23 @@ public class CBORParser extends ParserMinimalBase
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
-                reportOverflowLong();
+                reportOverflowLong(String.valueOf(_numberBigInt));
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
-                reportOverflowLong();
+                reportOverflowLong(String.valueOf(_numberDouble));
             }
             _numberLong = (long) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
-                reportOverflowInt();
+                reportOverflowLong(String.valueOf(_numberFloat));
             }
             _numberLong = (long) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowLong();
+                reportOverflowLong(String.valueOf(_numberBigDecimal));
             }
             _numberLong = _numberBigDecimal.longValue();
         } else {
