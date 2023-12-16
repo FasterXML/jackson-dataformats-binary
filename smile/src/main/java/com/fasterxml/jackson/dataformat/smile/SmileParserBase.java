@@ -719,13 +719,14 @@ public abstract class SmileParserBase extends ParserMinimalBase
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
-        if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
-            // Let's parse from String representation, to avoid rounding errors that
-            //non-decimal floating operations would incur
-            final String text = getText();
-            streamReadConstraints().validateFPLength(text.length());
-            _numberBigDecimal = NumberInput.parseBigDecimal(
-                    text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
+        if ((_numTypesValid & NR_DOUBLE) != 0) {
+            // 15-Dec-2023, tatu: Should NOT try to use String representation
+            //    since we already have decoded into double
+            _numberBigDecimal = new BigDecimal(_numberDouble);
+        } else if ((_numTypesValid &  NR_FLOAT) != 0) {
+            // 15-Dec-2023, tatu: Should NOT try to use String representation
+            //    since we already have decoded into float
+            _numberBigDecimal = new BigDecimal(_numberFloat);
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberBigDecimal = new BigDecimal(_numberBigInt);
         } else if ((_numTypesValid & NR_LONG) != 0) {
