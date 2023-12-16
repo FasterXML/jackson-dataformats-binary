@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import tools.jackson.core.*;
+import tools.jackson.core.exc.InputCoercionException;
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.core.exc.StreamReadException;
 
@@ -489,7 +490,7 @@ public class NumberParsingTest
         try {
             p.getIntValue();
             fail("Should not pass");
-        } catch (StreamReadException e) {
+        } catch (InputCoercionException e) {
             verifyException(e, "Numeric value");
             verifyException(e, "out of range of int");
         }
