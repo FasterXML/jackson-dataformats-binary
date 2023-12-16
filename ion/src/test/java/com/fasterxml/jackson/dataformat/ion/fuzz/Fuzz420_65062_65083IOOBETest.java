@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.ion.fuzz;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import java.io.InputStream;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -9,30 +8,24 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.*;
 
-import java.io.ByteArrayInputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
-// [dataformats-binary#417]
+// [dataformats-binary#420]
 public class Fuzz420_65062_65083IOOBETest
 {
-    private void testIOOBE(byte[] array) throws Exception {
+    @Test
+    public void testFuzz6506265083IOOBE() throws Exception {
        IonFactory f = IonFactory
                           .builderForTextualWriters()
                           .enable(IonParser.Feature.USE_NATIVE_TYPE_ID)
                           .build();
        IonObjectMapper mapper = IonObjectMapper.builder(f).build();
-       try {
-           mapper.readTree(mapper.getFactory().createParser(new ByteArrayInputStream(array)));
+       try (InputStream in = getClass().getResourceAsStream("/data/fuzz-420.ion")) {
+           mapper.readTree(in);
            fail("Should not pass (invalid content)");
        } catch (StreamReadException e) {
-           assertThat(e.getMessage(), Matchers.containsString("Invalid type ID"));
+           assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
        }
-    }
-
-    @Test
-    public void testFuzz6506265083IOOBE() throws Exception {
-       byte[] byteArray = Files.readAllBytes(Paths.get("tc1"));
-       testIOOBE(byteArray);
     }
 }

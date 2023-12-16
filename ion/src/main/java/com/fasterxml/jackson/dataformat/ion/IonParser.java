@@ -549,8 +549,12 @@ public class IonParser
             type = _reader.next();
         } catch (IonException e) {
             _wrapError(e.getMessage(), e);
+
+        // [dataformats-binary#420]: IonJava leaks IOOBEs so:
         } catch (IndexOutOfBoundsException e) {
-            _constructError(e.getMessage(), e);
+            _wrapError(String.format("Corrupt content to decode; underlying failure: (%s) %s",
+                    e.getClass().getName(), e.getMessage()),
+                    e);
         }
         if (type == null) {
             if (_parsingContext.inRoot()) { // EOF?

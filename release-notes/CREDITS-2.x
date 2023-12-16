@@ -285,3 +285,5 @@ Arthur Chan (@arthurscchan)
  * Contributed #417: (ion) `IonReader` classes contain assert statement which could throw
    unexpected `AssertionError`
  (2.17.0)
+ * Contributed #420: (ion) `IndexOutOfBoundsException` thrown by `IonReader` implementations
+ (2.17.0)
