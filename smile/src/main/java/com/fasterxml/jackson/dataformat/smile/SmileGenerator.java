@@ -1769,6 +1769,10 @@ public class SmileGenerator
 
         // Let's see if it's integral or not
         int i = neg ? 1 : 0;
+        if (i >= len) {
+            _writeIntegralNumber(encodedValue, neg);
+            return;
+        }
         while (true) {
             char c = encodedValue.charAt(i);
             if (c > '9' || c < '0') {
@@ -1791,22 +1795,25 @@ public class SmileGenerator
         // let's do approximate optimization
         try {
             if (len <= 9) {
-                writeNumber(Integer.parseInt(enc));
+                // Avoid exception from empty String
+                if (len > 0) {
+                    writeNumber(Integer.parseInt(enc));
+                }
             } else if (len <= 18) {
                 writeNumber(Long.parseLong(enc));
             } else {
-                writeNumber(new BigInteger(enc));
+                writeNumber(NumberInput.parseBigInteger(enc, false));
             }
-        } catch (NumberFormatException e) {
-            throw new JsonGenerationException("Invalid String representation for Number ('"+enc
-                    +"'); can not write using Smile format", this);
-        }
+            return;
+        } catch (NumberFormatException e) { }
+        throw new JsonGenerationException("Invalid String representation for Number ('"+enc
+                +"'); can not write using Smile format", this);
     }
 
     protected void _writeDecimalNumber(String enc) throws IOException
     {
         try {
-            writeNumber(NumberInput.parseBigDecimal(enc));
+            writeNumber(NumberInput.parseBigDecimal(enc, false));
         } catch (NumberFormatException e) {
             throw new JsonGenerationException("Invalid String representation for Number ('"+enc
                     +"'); can not write using Smile format", this);
