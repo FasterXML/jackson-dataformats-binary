@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.InputCoercionException;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
@@ -485,7 +486,7 @@ public class NumberParsingTest
         try {
             p.getIntValue();
             fail("Should not pass");
-        } catch (JsonParseException e) {
+        } catch (InputCoercionException e) {
             verifyException(e, "Numeric value");
             verifyException(e, "out of range of int");
         }
