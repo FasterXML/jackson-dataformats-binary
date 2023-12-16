@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import tools.jackson.core.*;
 import tools.jackson.core.exc.InputCoercionException;
 import tools.jackson.core.exc.StreamConstraintsException;
-import tools.jackson.core.exc.StreamReadException;
 
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
@@ -492,7 +491,7 @@ public class NumberParsingTest
             fail("Should not pass");
         } catch (InputCoercionException e) {
             verifyException(e, "Numeric value");
-            verifyException(e, "out of range of int");
+            verifyException(e, "out of range of `int`");
         }
 
         // for BigIntegers

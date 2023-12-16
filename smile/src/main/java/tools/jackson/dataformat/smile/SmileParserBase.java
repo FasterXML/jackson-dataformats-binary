@@ -8,7 +8,6 @@ import tools.jackson.core.base.ParserMinimalBase;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.io.ContentReference;
-import tools.jackson.core.io.NumberInput;
 import tools.jackson.core.json.DupDetector;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 import tools.jackson.core.util.JacksonFeatureSet;
