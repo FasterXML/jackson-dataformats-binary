@@ -27,7 +27,7 @@ public class Fuzz424_65065_65126NPETest
            mapper.readTree(f.createParser(new ByteArrayInputStream(bytes)));
            fail("Should not pass (invalid content)");
        } catch (StreamReadException e) {
-           assertThat(e.getMessage(), Matchers.containsString("UNKNOWN ROOT CAUSE"));
+           assertThat(e.getMessage(), Matchers.containsString("Internal `IonReader` error"));
        }
     }
 
