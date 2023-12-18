@@ -286,6 +286,13 @@ public class IonParser
                         msg = "UNKNOWN ROOT CAUSE";
                     }
                     throw _constructError("Internal `IonReader` error: "+msg, e);
+                } catch (NullPointerException e) {
+                    // NullPointerException could be thrown on invalid data
+                    String msg = e.getMessage();
+                    if (msg == null) {
+                        msg = "UNKNOWN ROOT CAUSE";
+                    }
+                    throw _constructError("Internal `IonReader` error: "+msg, e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -331,31 +338,55 @@ public class IonParser
 
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
+        NumberType nt = getNumberType();
+        if (nt == null) {
+            throw _constructError("Wrong number type: BigInteger not found.", null);
+        }
         return _reader.bigIntegerValue();
     }
 
     @Override
     public BigDecimal getDecimalValue() throws IOException {
+        NumberType nt = getNumberType();
+        if (nt == null) {
+            throw _constructError("Wrong number type: BigDecimal not found.", null);
+        }
         return _reader.bigDecimalValue();
     }
 
     @Override
     public double getDoubleValue() throws IOException {
+        NumberType nt = getNumberType();
+        if (nt == null) {
+            throw _constructError("Wrong number type: Double not found.", null);
+        }
         return _reader.doubleValue();
     }
 
     @Override
     public float getFloatValue() throws IOException {
+        NumberType nt = getNumberType();
+        if (nt == null) {
+            throw _constructError("Wrong number type: Float not found.", null);
+        }
         return (float) _reader.doubleValue();
     }
 
     @Override
     public int getIntValue() throws IOException {
+        NumberType nt = getNumberType();
+        if (nt == null) {
+            throw _constructError("Wrong number type: Int not found.", null);
+        }
         return _reader.intValue();
     }
 
     @Override
     public long getLongValue() throws IOException {
+        NumberType nt = getNumberType();
+        if (nt == null) {
+            throw _constructError("Wrong number type: Long not found.", null);
+        }
         return _reader.longValue();
     }
 
