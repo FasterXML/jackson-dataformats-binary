@@ -915,6 +915,9 @@ versionBits));
             }
             _tokenOffsetForTotal = ptr;
 //          _tokenInputTotal = _currInputProcessed + _inputPtr;
+            if ((ptr < 0) || (ptr >= _inputBuffer.length)) {
+                _reportError("Invalid text length");
+            }
             int ch = _inputBuffer[ptr++] & 0xFF;
             _typeAsInt = ch;
 
