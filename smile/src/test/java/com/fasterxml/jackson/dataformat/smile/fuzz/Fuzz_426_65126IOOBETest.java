@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-public class Fuzz65126IOOBETest extends BaseTestForSmile
+public class Fuzz_426_65126IOOBETest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
@@ -15,10 +15,13 @@ public class Fuzz65126IOOBETest extends BaseTestForSmile
     {
         final byte[] input = readResource("/data/clusterfuzz-smile-65126.smile");
         try (JsonParser p = MAPPER.createParser(input)) {
+            assertNull(p.nextTextValue());
+            assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.currentToken());
             try {
-                p.getTextOffset();
+//                byte[] b = p.getBinaryValue();
+//                assertEquals(100, b.length);
                 p.nextTextValue();
-                p.nextTextValue();
+                fail("Should not pass");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid text length");
             }
