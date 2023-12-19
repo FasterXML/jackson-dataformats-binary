@@ -18,12 +18,10 @@ public class Fuzz_426_65126IOOBETest extends BaseTestForSmile
             assertNull(p.nextTextValue());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.currentToken());
             try {
-//                byte[] b = p.getBinaryValue();
-//                assertEquals(100, b.length);
                 p.nextTextValue();
                 fail("Should not pass");
             } catch (StreamReadException e) {
-                verifyException(e, "Invalid text length");
+                verifyException(e, "Invalid content: invalid 7-bit binary encoded byte length");
             }
         }
     }
