@@ -287,5 +287,8 @@ Arthur Chan (@arthurscchan)
   (2.17.0)
  * Contributed #420: (ion) `IndexOutOfBoundsException` thrown by `IonReader` implementations
   (2.17.0)
+ * Contributed #424: (ion) `IonReader` throws `NullPointerException` for unchecked
+   invalid data
+  (2.17.0)
  * Contributed #426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
   (2.17.0)
