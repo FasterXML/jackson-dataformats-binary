@@ -278,9 +278,10 @@ public class IonParser
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
                     throw _constructError(e.getMessage(), e);
-                } catch (AssertionError e) {
+                } catch (AssertionError | NullPointerException e) {
                     // AssertionError if we're trying to get the text with a symbol
                     // id less than or equals to 0.
+                    // NullPointerException may also be thrown on invalid data
                     String msg = e.getMessage();
                     if (msg == null) {
                         msg = "UNKNOWN ROOT CAUSE";
@@ -331,32 +332,48 @@ public class IonParser
 
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.bigIntegerValue();
     }
 
     @Override
     public BigDecimal getDecimalValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.bigDecimalValue();
     }
 
     @Override
     public double getDoubleValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.doubleValue();
     }
 
     @Override
     public float getFloatValue() throws IOException {
+        _verifyIsNumberToken();
         return (float) _reader.doubleValue();
     }
 
     @Override
     public int getIntValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.intValue();
     }
 
     @Override
     public long getLongValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.longValue();
+    }
+
+    // @since 2.17
+    private void _verifyIsNumberToken() throws IOException
+    {
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            // Same as `ParserBase._parseNumericValue()` exception:
+            _reportError("Current token (%s) not numeric, can not use numeric value accessors",
+                    _currToken);
+        }
     }
 
     @Override
