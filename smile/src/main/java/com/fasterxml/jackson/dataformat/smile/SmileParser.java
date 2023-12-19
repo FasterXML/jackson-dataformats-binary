@@ -2893,6 +2893,11 @@ currentToken(), firstCh);
 
     protected void _skipBytes(int len) throws IOException
     {
+        // 18-Dec-2023, tatu: Sanity check related to some OSS-Fuzz findings:
+        if (len < 0) {
+            throw _constructReadException("Internal error: _skipBytes() called with negative value: %d",
+                    len);
+        }
         while (true) {
             int toAdd = Math.min(len, _inputEnd - _inputPtr);
             _inputPtr += toAdd;
@@ -2914,6 +2919,15 @@ currentToken(), firstCh);
         // Ok; 8 encoded bytes for 7 payload bytes first
         int chunks = origBytes / 7;
         int encBytes = chunks * 8;
+
+        // sanity check: not all length markers valid; due to signed int(32)
+        // calculations maximum length only 7/8 of 2^31
+        if (encBytes < 0) {
+            throw _constructReadException(
+                    "Invalid content: invalid 7-bit binary encoded byte length (0x%X) exceeds maximum valid value",
+                    origBytes);
+        }
+        
         // and for last 0 - 6 bytes, last+1 (except none if no leftovers)
         origBytes -= 7 * chunks;
         if (origBytes > 0) {
