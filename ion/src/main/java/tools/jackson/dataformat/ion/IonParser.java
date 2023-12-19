@@ -241,9 +241,10 @@ public class IonParser
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
                     throw _constructReadException(e.getMessage(), e);
-                } catch (AssertionError e) {
+                } catch (AssertionError | NullPointerException e) {
                     // AssertionError if we're trying to get the text with a symbol
                     // id less than or equals to 0.
+                    // NullPointerException may also be thrown on invalid data
                     String msg = e.getMessage();
                     if (msg == null) {
                         msg = "UNKNOWN ROOT CAUSE";
@@ -294,32 +295,48 @@ public class IonParser
 
     @Override
     public BigInteger getBigIntegerValue() throws JacksonException {
+        _verifyIsNumberToken();
         return _reader.bigIntegerValue();
     }
 
     @Override
     public BigDecimal getDecimalValue() throws JacksonException {
+        _verifyIsNumberToken();
         return _reader.bigDecimalValue();
     }
 
     @Override
     public double getDoubleValue() throws JacksonException {
+        _verifyIsNumberToken();
         return _reader.doubleValue();
     }
 
     @Override
     public float getFloatValue() throws JacksonException {
+        _verifyIsNumberToken();
         return (float) _reader.doubleValue();
     }
 
     @Override
     public int getIntValue() throws JacksonException {
+        _verifyIsNumberToken();
         return _reader.intValue();
     }
 
     @Override
     public long getLongValue() throws JacksonException {
+        _verifyIsNumberToken();
         return _reader.longValue();
+    }
+
+    // @since 2.17
+    private void _verifyIsNumberToken() throws JacksonException
+    {
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            // Same as `ParserBase._parseNumericValue()` exception:
+            throw _constructReadException("Current token (%s) not numeric, can not use numeric value accessors",
+                    _currToken);
+        }
     }
 
     @Override
