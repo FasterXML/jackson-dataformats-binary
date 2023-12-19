@@ -16,7 +16,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-ion</artifactId>
-  <version>2.11.1</version>
+  <version>2.16.0</version>
 </dependency>
 ```
 ## Usage
