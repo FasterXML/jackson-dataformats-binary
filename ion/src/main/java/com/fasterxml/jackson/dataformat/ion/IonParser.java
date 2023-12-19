@@ -278,16 +278,10 @@ public class IonParser
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
                     throw _constructError(e.getMessage(), e);
-                } catch (AssertionError e) {
+                } catch (AssertionError | NullPointerException e) {
                     // AssertionError if we're trying to get the text with a symbol
                     // id less than or equals to 0.
-                    String msg = e.getMessage();
-                    if (msg == null) {
-                        msg = "UNKNOWN ROOT CAUSE";
-                    }
-                    throw _constructError("Internal `IonReader` error: "+msg, e);
-                } catch (NullPointerException e) {
-                    // NullPointerException could be thrown on invalid data
+                    // NullPointerException may also be thrown on invalid data
                     String msg = e.getMessage();
                     if (msg == null) {
                         msg = "UNKNOWN ROOT CAUSE";
