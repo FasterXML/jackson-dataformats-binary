@@ -22,6 +22,8 @@ Active maintainers:
 #420: (ion) `IndexOutOfBoundsException` thrown by `IonReader` implementations
   are not handled 
  (contributed by Arthur C)
+#424: (ion) `IonReader` throws `NullPointerException` for unchecked invalid data
+ (contributed by Arthur C)
 -(ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.0 (15-Nov-2023)

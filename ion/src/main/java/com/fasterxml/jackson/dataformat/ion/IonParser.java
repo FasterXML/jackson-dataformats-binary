@@ -332,56 +332,48 @@ public class IonParser
 
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
-        NumberType nt = getNumberType();
-        if (nt == null) {
-            throw _constructError("Wrong number type: BigInteger not found.", null);
-        }
+        _verifyIsNumberToken();
         return _reader.bigIntegerValue();
     }
 
     @Override
     public BigDecimal getDecimalValue() throws IOException {
-        NumberType nt = getNumberType();
-        if (nt == null) {
-            throw _constructError("Wrong number type: BigDecimal not found.", null);
-        }
+        _verifyIsNumberToken();
         return _reader.bigDecimalValue();
     }
 
     @Override
     public double getDoubleValue() throws IOException {
-        NumberType nt = getNumberType();
-        if (nt == null) {
-            throw _constructError("Wrong number type: Double not found.", null);
-        }
+        _verifyIsNumberToken();
         return _reader.doubleValue();
     }
 
     @Override
     public float getFloatValue() throws IOException {
-        NumberType nt = getNumberType();
-        if (nt == null) {
-            throw _constructError("Wrong number type: Float not found.", null);
-        }
+        _verifyIsNumberToken();
         return (float) _reader.doubleValue();
     }
 
     @Override
     public int getIntValue() throws IOException {
-        NumberType nt = getNumberType();
-        if (nt == null) {
-            throw _constructError("Wrong number type: Int not found.", null);
-        }
+        _verifyIsNumberToken();
         return _reader.intValue();
     }
 
     @Override
     public long getLongValue() throws IOException {
-        NumberType nt = getNumberType();
-        if (nt == null) {
-            throw _constructError("Wrong number type: Long not found.", null);
-        }
+        _verifyIsNumberToken();
         return _reader.longValue();
+    }
+
+    // @since 2.17
+    private void _verifyIsNumberToken() throws IOException
+    {
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            // Same as `ParserBase._parseNumericValue()` exception:
+            _reportError("Current token (%s) not numeric, can not use numeric value accessors",
+                    _currToken);
+        }
     }
 
     @Override
