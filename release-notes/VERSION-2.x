@@ -28,6 +28,11 @@ Active maintainers:
  (fix contributed by Arthur C)
 -(ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
+2.16.1 (not yet released)
+
+#303: `NullPointerException` in `IonParser.nextToken()`
+ (reported by @ZanderHuang)
+
 2.16.0 (15-Nov-2023)
 
 #400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
