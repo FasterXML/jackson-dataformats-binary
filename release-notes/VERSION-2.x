@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.16.1 (not yet released)
+
+#303: `NullPointerException` in `IonParser.nextToken()`
+ (reported by @ZanderHuang)
+
 2.16.0 (15-Nov-2023)
 
 #400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
