@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.ion.failing;
+package tools.jackson.dataformat.ion;
 
 import java.net.URL;
 
@@ -9,7 +9,7 @@ import tools.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.Assert.*;
 
-public class UncaughtException303Test
+public class DatabindRead303Test
 {
     private final IonObjectMapper MAPPER = IonObjectMapper.builder().build();
 
@@ -22,8 +22,9 @@ public class UncaughtException303Test
             MAPPER.readTree(poc);
             fail("Should not pass with invalid content");
         } catch (StreamReadException e) {
-            // !!! TODO: change to match what we actually expect
-            verifyException(e, "MATCH MESSAGE");
+            // 19-Dec-2023, tatu: Looks like message depends on ion-java version,
+            //     cannot easily verify
+            // verifyException(e, "Value exceeds the length of its parent container");
         }
     }
 
