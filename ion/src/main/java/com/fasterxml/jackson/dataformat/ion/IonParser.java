@@ -333,13 +333,22 @@ public class IonParser
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
         _verifyIsNumberToken();
-        return _reader.bigIntegerValue();
+        try {
+            return _reader.bigIntegerValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public BigDecimal getDecimalValue() throws IOException {
+
         _verifyIsNumberToken();
-        return _reader.bigDecimalValue();
+        try {
+            return _reader.bigDecimalValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
@@ -374,6 +383,13 @@ public class IonParser
             _reportError("Current token (%s) not numeric, can not use numeric value accessors",
                     _currToken);
         }
+    }
+
+    private <T> T _reportCorruptNumber(Exception e) throws IOException
+    {
+        final String msg = String.format("Corrupt Number value to decode; underlying failure: (%s) %s",
+                e.getClass().getName(), e.getMessage());
+        throw _constructError(msg, e);
     }
 
     @Override
