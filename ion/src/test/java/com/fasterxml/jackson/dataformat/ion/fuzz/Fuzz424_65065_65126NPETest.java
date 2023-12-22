@@ -23,7 +23,6 @@ public class Fuzz424_65065_65126NPETest
            MAPPER.readTree(new ByteArrayInputStream(bytes));
            fail("Should not pass (invalid content)");
        } catch (StreamReadException e) {
-           e.printStackTrace();
            assertThat(e.getMessage(), Matchers.containsString("Internal `IonReader` error"));
        }
     }
