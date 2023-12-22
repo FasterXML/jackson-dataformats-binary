@@ -296,13 +296,21 @@ public class IonParser
     @Override
     public BigInteger getBigIntegerValue() throws JacksonException {
         _verifyIsNumberToken();
-        return _reader.bigIntegerValue();
+        try {
+            return _reader.bigIntegerValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public BigDecimal getDecimalValue() throws JacksonException {
         _verifyIsNumberToken();
-        return _reader.bigDecimalValue();
+        try {
+            return _reader.bigDecimalValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
@@ -528,13 +536,10 @@ public class IonParser
         try {
             type = _reader.next();
         } catch (IonException e) {
-            throw _constructReadException(e.getMessage(), e);
-
-        // [dataformats-binary#420]: IonJava leaks IOOBEs so:
+            return _reportCorruptContent(e);
+            // [dataformats-binary#420]: IonJava leaks IOOBEs so:
         } catch (IndexOutOfBoundsException e) {
-            throw _constructReadException(String.format("Corrupt content to decode; underlying failure: (%s) %s",
-                    e.getClass().getName(), e.getMessage()),
-                    e);
+            return _reportCorruptContent(e);
         }
         if (type == null) {
             if (_streamReadContext.inRoot()) { // EOF?
@@ -551,13 +556,15 @@ public class IonParser
         boolean inStruct = !_streamReadContext.inRoot() && _reader.isInStruct();
         // (isInStruct can return true for the first value read if the reader
         // was created from an IonValue that has a parent container)
+        final String name;
         try {
             // getFieldName() can throw an UnknownSymbolException if the text of the
             // field name symbol cannot be resolved.
-            _streamReadContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
-        } catch (UnknownSymbolException e) {
-            throw _constructReadException(e.getMessage(), e);
+            name = inStruct ? _reader.getFieldName() : null;
+        } catch (IonException e) {
+            return _reportCorruptContent(e);
         }
+        _streamReadContext.setCurrentName(name);
         JsonToken t = _tokenFromType(type);
         // and return either field name first
         if (inStruct) {
@@ -669,5 +676,19 @@ public class IonParser
             _reportError(": expected close marker for "+_streamReadContext.typeDesc()+" (from "
                     +_streamReadContext.startLocation(_ioContext.contentReference())+")");
         }
+    }
+
+    private <T> T _reportCorruptContent(Exception e) throws StreamReadException
+    {
+        final String msg = String.format("Corrupt content to decode; underlying failure: (%s) %s",
+                e.getClass().getName(), e.getMessage());
+        throw _constructReadException(msg, e);
+    }
+
+    private <T> T _reportCorruptNumber(Exception e) throws StreamReadException
+    {
+        final String msg = String.format("Corrupt Number value to decode; underlying failure: (%s) %s",
+                e.getClass().getName(), e.getMessage());
+        throw _constructReadException(msg, e);
     }
 }
