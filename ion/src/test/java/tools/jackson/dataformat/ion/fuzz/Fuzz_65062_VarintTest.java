@@ -17,7 +17,7 @@ import static org.junit.Assert.fail;
 // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=65062
 public class Fuzz_65062_VarintTest
 {
-    final IonObjectMapper MAPPER = IonObjectMapper.builder().build();
+    private final IonObjectMapper MAPPER = IonObjectMapper.builder().build();
 
     @Test
     public void testFuzz65062_Varint() throws Exception {
