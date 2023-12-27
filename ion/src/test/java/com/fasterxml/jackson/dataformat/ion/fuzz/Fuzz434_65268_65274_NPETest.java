@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.ion.fuzz;
 
-import java.io.InputStream;
+import java.io.*;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -14,9 +14,6 @@ import com.fasterxml.jackson.dataformat.ion.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-
-import java.io.*;
-import java.nio.file.*;
 
 // [dataformats-binary#434
 public class Fuzz434_65268_65274_NPETest
@@ -48,7 +45,8 @@ public class Fuzz434_65268_65274_NPETest
                  .build();
 
         try (InputStream in = getClass().getResourceAsStream("/data/fuzz-65274.ion")) {
-           byte[] invalid = in.readAllBytes();
+           byte[] invalid = new byte[in.available()];
+           new DataInputStream(in).readFully(invalid);
            try (JsonParser p = MAPPER.getFactory().createParser(new ByteArrayInputStream(invalid))) {
                MAPPER.readTree(p);
            }
