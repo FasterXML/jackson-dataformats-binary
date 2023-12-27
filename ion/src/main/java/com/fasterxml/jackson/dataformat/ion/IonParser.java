@@ -278,9 +278,10 @@ public class IonParser
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
                     throw _constructError(e.getMessage(), e);
-                } catch (AssertionError e) {
+                } catch (AssertionError | NullPointerException e) {
                     // AssertionError if we're trying to get the text with a symbol
                     // id less than or equals to 0.
+                    // NullPointerException may also be thrown on invalid data
                     String msg = e.getMessage();
                     if (msg == null) {
                         msg = "UNKNOWN ROOT CAUSE";
@@ -331,32 +332,57 @@ public class IonParser
 
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
-        return _reader.bigIntegerValue();
+        _verifyIsNumberToken();
+        try {
+            return _reader.bigIntegerValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public BigDecimal getDecimalValue() throws IOException {
-        return _reader.bigDecimalValue();
+
+        _verifyIsNumberToken();
+        try {
+            return _reader.bigDecimalValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public double getDoubleValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.doubleValue();
     }
 
     @Override
     public float getFloatValue() throws IOException {
+        _verifyIsNumberToken();
         return (float) _reader.doubleValue();
     }
 
     @Override
     public int getIntValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.intValue();
     }
 
     @Override
     public long getLongValue() throws IOException {
+        _verifyIsNumberToken();
         return _reader.longValue();
+    }
+
+    // @since 2.17
+    private void _verifyIsNumberToken() throws IOException
+    {
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            // Same as `ParserBase._parseNumericValue()` exception:
+            _reportError("Current token (%s) not numeric, can not use numeric value accessors",
+                    _currToken);
+        }
     }
 
     @Override
@@ -549,13 +575,20 @@ public class IonParser
         try {
             type = _reader.next();
         } catch (IonException e) {
-            _wrapError(e.getMessage(), e);
-
-        // [dataformats-binary#420]: IonJava leaks IOOBEs so:
+            return _reportCorruptContent(e);
         } catch (IndexOutOfBoundsException e) {
-            _wrapError(String.format("Corrupt content to decode; underlying failure: (%s) %s",
-                    e.getClass().getName(), e.getMessage()),
-                    e);
+            // [dataformats-binary#420]: IonJava leaks IOOBEs so:
+            return _reportCorruptContent(e);
+        } catch (AssertionError e) {
+            // [dataformats-binary#432]:
+            // AssertionError if we're trying to get the text with a symbol
+            // id less than or equals to 0.
+            String msg = e.getMessage();
+            if (msg == null) {
+                msg = "UNKNOWN ROOT CAUSE";
+            }
+            return _reportCorruptContent(
+                _constructError("Internal `IonReader` error: "+msg, e));
         }
         if (type == null) {
             if (_parsingContext.inRoot()) { // EOF?
@@ -572,13 +605,15 @@ public class IonParser
         boolean inStruct = !_parsingContext.inRoot() && _reader.isInStruct();
         // (isInStruct can return true for the first value read if the reader
         // was created from an IonValue that has a parent container)
+        final String name;
         try {
             // getFieldName() can throw an UnknownSymbolException if the text of the
             // field name symbol cannot be resolved.
-            _parsingContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
-        } catch (UnknownSymbolException e) {
-            _wrapError(e.getMessage(), e);
+            name = inStruct ? _reader.getFieldName() : null;
+        } catch (IonException e) {
+            return _reportCorruptContent(e);
         }
+        _parsingContext.setCurrentName(name);
         JsonToken t = _tokenFromType(type);
         // and return either field name first
         if (inStruct) {
@@ -690,6 +725,20 @@ public class IonParser
             _reportError(": expected close marker for "+_parsingContext.typeDesc()+" (from "
                     +_parsingContext.startLocation(_ioContext.contentReference())+")");
         }
+    }
+
+    private <T> T _reportCorruptContent(Exception e) throws IOException
+    {
+        final String msg = String.format("Corrupt content to decode; underlying failure: (%s) %s",
+                e.getClass().getName(), e.getMessage());
+        throw _constructError(msg, e);
+    }
+
+    private <T> T _reportCorruptNumber(Exception e) throws IOException
+    {
+        final String msg = String.format("Corrupt Number value to decode; underlying failure: (%s) %s",
+                e.getClass().getName(), e.getMessage());
+        throw _constructError(msg, e);
     }
 
     @Override
