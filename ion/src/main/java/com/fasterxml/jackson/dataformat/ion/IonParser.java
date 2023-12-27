@@ -576,6 +576,7 @@ public class IonParser
             type = _reader.next();
         } catch (IonException e) {
             return _reportCorruptContent(e);
+
         } catch (IndexOutOfBoundsException e) {
             // [dataformats-binary#420]: IonJava leaks IOOBEs so:
             return _reportCorruptContent(e);
