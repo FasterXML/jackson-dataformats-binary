@@ -398,6 +398,9 @@ public class IonParser
                 return NumberType.BIG_DECIMAL;
             case INT:
                 IntegerSize size = _reader.getIntegerSize();
+                if (size == null) {
+                    _reportError("Current token (%s) not integer", _currToken);
+                }
                 switch (size) {
                 case INT:
                     return NumberType.INT;
