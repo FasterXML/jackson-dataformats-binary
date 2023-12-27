@@ -397,7 +397,12 @@ public class IonParser
                 //Ion decimals can be arbitrary precision, need to read as big decimal
                 return NumberType.BIG_DECIMAL;
             case INT:
-                IntegerSize size = _reader.getIntegerSize();
+                IntegerSize size = null;
+                try {
+                    size = _reader.getIntegerSize();
+                } catch (NullPointerException e) {
+                    // Possible exception
+                }
                 if (size == null) {
                     _reportError("Current token (%s) not integer", _currToken);
                 }
