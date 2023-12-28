@@ -398,6 +398,8 @@ public class IonParser
                 return NumberType.BIG_DECIMAL;
             case INT:
                 IntegerSize size = null;
+                // Temporary measure until this bug fixing is merged and published
+                // https://github.com/amazon-ion/ion-java/issues/685
                 try {
                     size = _reader.getIntegerSize();
                 } catch (NullPointerException e) {
