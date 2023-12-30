@@ -26,6 +26,8 @@ Active maintainers:
  (fix contributed by Arthur C)
 #426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
  (fix contributed by Arthur C)
+#432: (ion) More methods from `IonReader` could throw an unexpected `AssertionError`
+ (fix contributed by Arthur C)
 -(ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.1 (24-Dec-2023)

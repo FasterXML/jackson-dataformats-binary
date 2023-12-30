@@ -273,20 +273,16 @@ public class IonParser
             case VALUE_STRING:
                 try {
                     return _reader.stringValue();
-                } catch (UnknownSymbolException e) {
+                } catch (UnknownSymbolException
                     // stringValue() will throw an UnknownSymbolException if we're
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
-                    throw _constructError(e.getMessage(), e);
-                } catch (AssertionError | NullPointerException e) {
+                    | AssertionError | NullPointerException e
                     // AssertionError if we're trying to get the text with a symbol
                     // id less than or equals to 0.
                     // NullPointerException may also be thrown on invalid data
-                    String msg = e.getMessage();
-                    if (msg == null) {
-                        msg = "UNKNOWN ROOT CAUSE";
-                    }
-                    throw _constructError("Internal `IonReader` error: "+msg, e);
+                    ) {
+                    return _reportCorruptContent(e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -586,8 +582,11 @@ public class IonParser
             type = _reader.next();
         } catch (IonException e) {
             return _reportCorruptContent(e);
+
+        } catch (IndexOutOfBoundsException | AssertionError e) {
             // [dataformats-binary#420]: IonJava leaks IOOBEs so:
-        } catch (IndexOutOfBoundsException e) {
+            // [dataformats-binary#432]: AssertionError if we're trying to get the text
+            //   with a symbol id less than or equals to 0.
             return _reportCorruptContent(e);
         }
         if (type == null) {
@@ -727,17 +726,25 @@ public class IonParser
         }
     }
 
-    private <T> T _reportCorruptContent(Exception e) throws IOException
+    private <T> T _reportCorruptContent(Throwable e) throws IOException
     {
-        final String msg = String.format("Corrupt content to decode; underlying failure: (%s) %s",
-                e.getClass().getName(), e.getMessage());
+        String origMsg = e.getMessage();
+        if (origMsg == null) {
+            origMsg = "[no exception message]";
+        }
+        final String msg = String.format("Corrupt content to decode; underlying `IonReader` problem: (%s) %s",
+                e.getClass().getName(), origMsg);
         throw _constructError(msg, e);
     }
 
-    private <T> T _reportCorruptNumber(Exception e) throws IOException
+    private <T> T _reportCorruptNumber(Throwable e) throws IOException
     {
-        final String msg = String.format("Corrupt Number value to decode; underlying failure: (%s) %s",
-                e.getClass().getName(), e.getMessage());
+        String origMsg = e.getMessage();
+        if (origMsg == null) {
+            origMsg = "[no exception message]";
+        }
+        final String msg = String.format("Corrupt Number value to decode; underlying `IonReader` problem: (%s) %s",
+                e.getClass().getName(), origMsg);
         throw _constructError(msg, e);
     }
 
