@@ -102,6 +102,10 @@ public class IonParserTest
         reader.stepIn();
         // Step next.
         reader.next();
+        // 30-Dec-2023, tatu: This is problematic as created parser is expected
+        //    to point to `JsonToken.VALUE_NUMBER_FLOAT`, but `createParser()`
+        //    does not initialize state. For now, `IonParser.getNumberType()` has
+        //    special handling allowing this case but that should not be needed
         final IonParser floatParser = ionFactory.createParser(ctxt, reader);
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
     }

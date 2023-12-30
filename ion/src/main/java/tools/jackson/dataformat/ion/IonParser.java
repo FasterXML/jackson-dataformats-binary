@@ -346,27 +346,47 @@ public class IonParser
     @Override
     public NumberType getNumberType() throws JacksonException
     {
-        IonType type = _reader.getType();
-        if (type != null) {
-            // Hmmh. Looks like Ion gives little bit looser definition here;
-            // harder to pin down exact type. But let's try some checks still.
-            switch (type) {
-            case DECIMAL:
-                //Ion decimals can be arbitrary precision, need to read as big decimal
-                return NumberType.BIG_DECIMAL;
-            case INT:
-                IntegerSize size = _reader.getIntegerSize();
-                switch (size) {
+        if (_currToken == JsonToken.VALUE_NUMBER_INT
+                || _currToken == JsonToken.VALUE_NUMBER_FLOAT
+                // 30-Dec-2023, tatu: This is odd, but some current tests seem to
+                //    expect this case to work when creating `IonParser` from `IonReader`,
+                //    which does not seem to work without work-around like this:
+                || ((_currToken == null) && !isClosed())) {
+            IonType type = _reader.getType();
+            if (type != null) {
+                // Hmmh. Looks like Ion gives little bit looser definition here;
+                // harder to pin down exact type. But let's try some checks still.
+                switch (type) {
+                case DECIMAL:
+                    //Ion decimals can be arbitrary precision, need to read as big decimal
+                    return NumberType.BIG_DECIMAL;
                 case INT:
-                    return NumberType.INT;
-                case LONG:
-                    return NumberType.LONG;
+                    final IntegerSize size;
+                    // [dataformats-binary#434]: another problem with corrupt data handling.
+                    // Temporary measure until this bug fixing is merged and published
+                    // https://github.com/amazon-ion/ion-java/issues/685
+                    try {
+                        size = _reader.getIntegerSize();
+                    } catch (IonException e) {
+                        return _reportCorruptNumber(e);
+                    } catch (NullPointerException e) {
+                        return _reportCorruptContent(e);
+                    }
+                    if (size == null) {
+                        _reportError("Current token (%s) not integer", _currToken);
+                    }
+                    switch (size) {
+                    case INT:
+                        return NumberType.INT;
+                    case LONG:
+                        return NumberType.LONG;
+                    default:
+                        return NumberType.BIG_INTEGER;
+                    }
+                case FLOAT:
+                    return NumberType.DOUBLE;
                 default:
-                    return NumberType.BIG_INTEGER;
                 }
-            case FLOAT:
-                return NumberType.DOUBLE;
-            default:
             }
         }
         return null;
