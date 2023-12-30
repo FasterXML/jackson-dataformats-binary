@@ -33,7 +33,7 @@ public class Fuzz_65062_VarintTest
            fail("Should not pass (invalid content)");
        } catch (StreamReadException e) {
            // 21-Dec-2023, tatu: Not 100% sure why we won't get Number-specific fail but:
-           assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode; underlying failure"));
+           assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode; underlying"));
        }
     }
 }

@@ -27,7 +27,7 @@ public class Fuzz417_64721InvalidIonTest
            mapper.readValue("$0/", EnumFuzz.class);
            fail("Should not pass (invalid content)");
        } catch (StreamReadException e) {
-           assertThat(e.getMessage(), Matchers.containsString("Internal `IonReader` error"));
+           assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
        }
     }
 }

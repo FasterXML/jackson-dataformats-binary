@@ -292,3 +292,6 @@ Arthur Chan (@arthurscchan)
   (2.17.0)
  * Contributed #426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
   (2.17.0)
+ * Contributed #432 (ion) More methods from `IonReader` could throw an unexpected
+   `AssertionError`
+  (2.17.0)
