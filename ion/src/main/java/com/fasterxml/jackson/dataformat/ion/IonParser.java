@@ -722,7 +722,7 @@ public class IonParser
         if (origMsg == null) {
             origMsg = "[no exception message]";
         }
-        final String msg = String.format("Corrupt content to decode; underlying failure: (%s) %s",
+        final String msg = String.format("Corrupt content to decode; underlying `IonReader` error: (%s) %s",
                 e.getClass().getName(), origMsg);
         throw _constructError(msg, e);
     }

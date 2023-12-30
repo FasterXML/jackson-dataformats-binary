@@ -6,15 +6,13 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-// [dataformats-binary#4432
+// [dataformats-binary#4432]
 public class Fuzz432_65273_AssertionTest
 {
     private final IonFactory factory =
@@ -28,7 +26,7 @@ public class Fuzz432_65273_AssertionTest
            }
            fail("Should not pass (invalid content)");
        } catch (StreamReadException e) {
-           assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode; underlying failure"));
+           assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode; underlying"));
        }
     }
 }
