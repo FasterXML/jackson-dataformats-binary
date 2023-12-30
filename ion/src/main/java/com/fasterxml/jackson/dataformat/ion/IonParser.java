@@ -282,7 +282,7 @@ public class IonParser
                     // id less than or equals to 0.
                     // NullPointerException may also be thrown on invalid data
                     ) {
-                    _reportCorruptContent(e);
+                    return _reportCorruptContent(e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -722,15 +722,19 @@ public class IonParser
         if (origMsg == null) {
             origMsg = "[no exception message]";
         }
-        final String msg = String.format("Corrupt content to decode; underlying `IonReader` error: (%s) %s",
+        final String msg = String.format("Corrupt content to decode; underlying `IonReader` problem: (%s) %s",
                 e.getClass().getName(), origMsg);
         throw _constructError(msg, e);
     }
 
     private <T> T _reportCorruptNumber(Throwable e) throws IOException
     {
-        final String msg = String.format("Corrupt Number value to decode; underlying failure: (%s) %s",
-                e.getClass().getName(), e.getMessage());
+        String origMsg = e.getMessage();
+        if (origMsg == null) {
+            origMsg = "[no exception message]";
+        }
+        final String msg = String.format("Corrupt Number value to decode; underlying `IonReader` problem: (%s) %s",
+                e.getClass().getName(), origMsg);
         throw _constructError(msg, e);
     }
 
