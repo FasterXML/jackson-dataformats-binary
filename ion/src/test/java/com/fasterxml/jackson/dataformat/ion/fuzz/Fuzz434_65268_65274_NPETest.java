@@ -13,46 +13,47 @@ import com.fasterxml.jackson.dataformat.ion.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-// [dataformats-binary#434
+// [dataformats-binary#434]
 public class Fuzz434_65268_65274_NPETest
 {
+    private final ObjectMapper ION_MAPPER = new IonObjectMapper();
+
+    // Test that used to fail on "getNumberType()" for `JsonToken.VALUE_NULL`
     @Test
     public void testFuzz65268() throws Exception {
-        final IonFactory factory =
-            IonFactory.builderForTextualWriters().build();
         try (InputStream in = getClass().getResourceAsStream("/data/fuzz-65268.ion")) {
-           try (JsonParser p = factory.createParser(in)) {
-               p.nextToken();
+           try (JsonParser p = ION_MAPPER.createParser(in)) {
+               assertEquals(JsonToken.VALUE_STRING, p.nextToken());
                p.getText();
-               p.nextTextValue();
-               p.getNumberType();
+               assertNull(p.nextTextValue());
+               assertEquals(JsonToken.VALUE_NULL, p.currentToken());
+               assertNull(p.getNumberType());
            }
-           fail("Should not pass (invalid content)");
-       } catch (StreamReadException e) {
-           assertThat(e.getMessage(), Matchers.containsString("not integer"));
        }
     }
 
     @Test
-    public void testFuzz65274() throws Exception {
-        final ObjectMapper MAPPER =
-            IonObjectMapper.builder(
-                    IonFactory.builderForBinaryWriters()
-                        .enable(IonParser.Feature.USE_NATIVE_TYPE_ID)
-                        .build())
-                 .build();
-
+    public void testFuzz65274Malformed() throws Exception {
         try (InputStream in = getClass().getResourceAsStream("/data/fuzz-65274.ion")) {
-           byte[] invalid = new byte[in.available()];
-           new DataInputStream(in).readFully(invalid);
-           try (JsonParser p = MAPPER.getFactory().createParser(new ByteArrayInputStream(invalid))) {
-               MAPPER.readTree(p);
-           }
-           fail("Should not pass (invalid content)");
-       } catch (StreamReadException e) {
-           assertThat(e.getMessage(), Matchers.containsString("not integer"));
-       }
+            byte[] invalid = new byte[in.available()];
+            new DataInputStream(in).readFully(invalid);
+            ION_MAPPER.readTree(new ByteArrayInputStream(invalid));
+            fail("Should not pass (invalid content)");
+        } catch (StreamReadException e) {
+            assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
+        }
+    }
+
+    @Test
+    public void testFuzz65274Eof() throws Exception {
+        try (InputStream in = getClass().getResourceAsStream("/data/fuzz-65274.ion")) {
+            ION_MAPPER.readTree(in);
+            fail("Should not pass (invalid content)");
+        } catch (StreamReadException e) {
+            assertThat(e.getMessage(), Matchers.containsString("Corrupt Number value to decode"));
+        }
     }
 }
