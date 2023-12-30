@@ -25,10 +25,12 @@ Active maintainers:
 #424: (ion) `IonReader` throws `NullPointerException` for unchecked invalid data
  (fix contributed by Arthur C)
 #426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
- (fix contributed by Arthur C)
+ (fix contributed by Arthur C)-(
 #432: (ion) More methods from `IonReader` could throw an unexpected `AssertionError`
  (fix contributed by Arthur C)
--(ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
+#434 (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
+ (fix contributed by Arthur C)
+- (ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.1 (24-Dec-2023)
 
