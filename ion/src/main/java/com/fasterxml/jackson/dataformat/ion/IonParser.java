@@ -385,7 +385,11 @@ public class IonParser
     public NumberType getNumberType() throws IOException
     {
         if (_currToken == JsonToken.VALUE_NUMBER_INT
-                || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+                || _currToken == JsonToken.VALUE_NUMBER_FLOAT
+                // 30-Dec-2023, tatu: This is odd, but some current tests seem to
+                //    expect this case to work when creating `IonParser` from `IonReader`,
+                //    which does not seem to work without work-around like this:
+                || ((_currToken == null) && !isClosed())) {
             IonType type = _reader.getType();
             if (type != null) {
                 // Hmmh. Looks like Ion gives little bit looser definition here;
