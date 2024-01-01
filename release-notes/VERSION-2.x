@@ -30,6 +30,7 @@ Active maintainers:
  (fix contributed by Arthur C)
 #434 (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
  (fix contributed by Arthur C)
+#437 (ion) `IonReader.next()` throws NPEs for some invalid content
 - (ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.1 (24-Dec-2023)
