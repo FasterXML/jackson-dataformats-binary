@@ -331,7 +331,8 @@ public class IonParser
         _verifyIsNumberToken();
         try {
             return _reader.bigIntegerValue();
-        } catch (IonException e) {
+        } catch (IonException | ArrayIndexOutOfBoundsException e) {
+            // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE ^^^
             return _reportCorruptNumber(e);
         }
     }
@@ -342,7 +343,8 @@ public class IonParser
         _verifyIsNumberToken();
         try {
             return _reader.bigDecimalValue();
-        } catch (IonException e) {
+        } catch (IonException | ArrayIndexOutOfBoundsException e) {
+            // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE ^^^
             return _reportCorruptNumber(e);
         }
     }
