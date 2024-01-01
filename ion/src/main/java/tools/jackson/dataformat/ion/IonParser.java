@@ -554,8 +554,8 @@ public class IonParser
         } catch (IonException e) {
             return _reportCorruptContent(e);
 
-        } catch (IndexOutOfBoundsException | AssertionError e) {
-            // [dataformats-binary#420]: IonJava leaks IOOBEs so:
+        } catch (AssertionError | IndexOutOfBoundsException | NullPointerException e) {
+            // [dataformats-binary#420]: IonJava leaks IOOBEs, catch
             // [dataformats-binary#432]: AssertionError if we're trying to get the text
             //   with a symbol id less than or equals to 0.
             return _reportCorruptContent(e);
