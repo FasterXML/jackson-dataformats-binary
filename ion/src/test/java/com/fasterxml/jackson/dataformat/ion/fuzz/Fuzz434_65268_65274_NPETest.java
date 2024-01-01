@@ -24,7 +24,8 @@ public class Fuzz434_65268_65274_NPETest
     // Test that used to fail on "getNumberType()" for `JsonToken.VALUE_NULL`
     @Test
     public void testFuzz65268() throws Exception {
-        try (InputStream in = getClass().getResourceAsStream("/data/fuzz-65268.ion")) {
+        final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-65268.ion");
+        try (InputStream in = new ByteArrayInputStream(doc)) {
            try (JsonParser p = ION_MAPPER.createParser(in)) {
                assertEquals(JsonToken.VALUE_STRING, p.nextToken());
                p.getText();
@@ -37,10 +38,9 @@ public class Fuzz434_65268_65274_NPETest
 
     @Test
     public void testFuzz65274Malformed() throws Exception {
-        try (InputStream in = getClass().getResourceAsStream("/data/fuzz-65274.ion")) {
-            byte[] invalid = new byte[in.available()];
-            new DataInputStream(in).readFully(invalid);
-            ION_MAPPER.readTree(new ByteArrayInputStream(invalid));
+        final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-65274.ion");
+        try {
+            ION_MAPPER.readTree(new ByteArrayInputStream(doc));
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
             assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
