@@ -20,7 +20,7 @@ public class Fuzz437_65452_NPETest
 
     @Test
     public void testFuzz65452NPE() throws Exception {
-        final byte[] doc = FuzzTestUtil.readResource("/data/fuzz-65452.ion");
+        final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-65452.ion");
         try (InputStream in = new ByteArrayInputStream(doc)) {
             try (JsonParser p = ION_MAPPER.createParser(in)) {
                 p.nextToken();

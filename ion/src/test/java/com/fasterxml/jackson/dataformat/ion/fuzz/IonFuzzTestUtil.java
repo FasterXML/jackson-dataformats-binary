@@ -4,14 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class FuzzTestUtil
+public class IonFuzzTestUtil
 {
     public static byte[] readResource(String ref)
     {
        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
        final byte[] buf = new byte[4000];
 
-       InputStream in = FuzzTestUtil.class.getResourceAsStream(ref);
+       InputStream in = IonFuzzTestUtil.class.getResourceAsStream(ref);
        if (in != null) {
            try {
                int len;
