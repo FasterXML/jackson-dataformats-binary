@@ -509,7 +509,12 @@ public class IonParser
                 }
             case BLOB:
             case CLOB:
-                return _reader.newBytes();
+                try {
+                    return _reader.newBytes();
+                } catch (NullPointerException e) {
+                    // 02-Jan-2024, tatu: OSS-Fuzz#65479 points to NPE ^^^
+                    return _reportCorruptContent(e);
+                }
             // What about CLOB?
             default:
             }
