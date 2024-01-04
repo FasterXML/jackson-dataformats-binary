@@ -296,7 +296,7 @@ public class IonParser
     }
 
     // @since 2.17
-    private BigInteger _getBigIntegerValue() throws IOException {
+    private BigInteger _getBigIntegerValue() throws JacksonException {
         try {
             return _reader.bigIntegerValue();
         } catch (IonException | ArrayIndexOutOfBoundsException e) {
@@ -312,7 +312,7 @@ public class IonParser
     }
 
     // @since 2.17
-    private BigDecimal _getBigDecimalValue() throws IOException {
+    private BigDecimal _getBigDecimalValue() throws JacksonException {
         try {
             return _reader.bigDecimalValue();
         } catch (IonException | ArrayIndexOutOfBoundsException e) {
