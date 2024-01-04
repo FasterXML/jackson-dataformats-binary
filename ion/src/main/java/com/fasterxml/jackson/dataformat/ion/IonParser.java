@@ -329,6 +329,11 @@ public class IonParser
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
         _verifyIsNumberToken();
+        return _getBigIntegerValue();
+    }
+
+    // @since 2.17
+    private BigInteger _getBigIntegerValue() throws IOException {
         try {
             return _reader.bigIntegerValue();
         } catch (IonException | ArrayIndexOutOfBoundsException e) {
@@ -336,11 +341,16 @@ public class IonParser
             return _reportCorruptNumber(e);
         }
     }
-
+    
     @Override
     public BigDecimal getDecimalValue() throws IOException {
 
         _verifyIsNumberToken();
+        return _getBigDecimalValue();
+    }
+
+    // @since 2.17
+    private BigDecimal _getBigDecimalValue() throws IOException {
         try {
             return _reader.bigDecimalValue();
         } catch (IonException | ArrayIndexOutOfBoundsException e) {
@@ -446,9 +456,9 @@ public class IonParser
             case DOUBLE:
                 return _reader.doubleValue();
             case BIG_DECIMAL:
-                return _reader.bigDecimalValue();
+                return _getBigIntegerValue();
             case BIG_INTEGER:
-                return getBigIntegerValue();
+                return _getBigDecimalValue();
             }
         }
         return null;
