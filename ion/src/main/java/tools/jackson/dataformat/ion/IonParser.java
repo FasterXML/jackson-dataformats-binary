@@ -292,6 +292,11 @@ public class IonParser
     @Override
     public BigInteger getBigIntegerValue() throws JacksonException {
         _verifyIsNumberToken();
+        return _getBigIntegerValue();
+    }
+
+    // @since 2.17
+    private BigInteger _getBigIntegerValue() throws IOException {
         try {
             return _reader.bigIntegerValue();
         } catch (IonException | ArrayIndexOutOfBoundsException e) {
@@ -303,6 +308,11 @@ public class IonParser
     @Override
     public BigDecimal getDecimalValue() throws JacksonException {
         _verifyIsNumberToken();
+        return _getBigDecimalValue();
+    }
+
+    // @since 2.17
+    private BigDecimal _getBigDecimalValue() throws IOException {
         try {
             return _reader.bigDecimalValue();
         } catch (IonException | ArrayIndexOutOfBoundsException e) {
@@ -408,9 +418,9 @@ public class IonParser
             case DOUBLE:
                 return _reader.doubleValue();
             case BIG_DECIMAL:
-                return _reader.bigDecimalValue();
+                return _getBigDecimalValue();
             case BIG_INTEGER:
-                return getBigIntegerValue();
+                return _getBigIntegerValue();
             }
         }
         return null;
@@ -483,7 +493,12 @@ public class IonParser
                 }
             case BLOB:
             case CLOB:
-                return _reader.newBytes();
+                try {
+                    return _reader.newBytes();
+                } catch (NullPointerException e) {
+                    // 02-Jan-2024, tatu: OSS-Fuzz#65479 points to NPE ^^^
+                    return _reportCorruptContent(e);
+                }
             // What about CLOB?
             default:
             }
