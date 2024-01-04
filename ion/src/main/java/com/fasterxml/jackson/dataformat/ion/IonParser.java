@@ -456,9 +456,9 @@ public class IonParser
             case DOUBLE:
                 return _reader.doubleValue();
             case BIG_DECIMAL:
-                return _getBigIntegerValue();
-            case BIG_INTEGER:
                 return _getBigDecimalValue();
+            case BIG_INTEGER:
+                return _getBigIntegerValue();
             }
         }
         return null;
