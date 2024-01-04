@@ -341,7 +341,7 @@ public class IonParser
             return _reportCorruptNumber(e);
         }
     }
-    
+
     @Override
     public BigDecimal getDecimalValue() throws IOException {
 
