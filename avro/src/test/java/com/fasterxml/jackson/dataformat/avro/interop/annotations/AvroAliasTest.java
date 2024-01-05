@@ -66,7 +66,7 @@ public class AvroAliasTest extends InteropTestBase {
         SchemaCompatibility.SchemaPairCompatibility compatibility =
             SchemaCompatibility.checkReaderWriterCompatibility(newSchema, oldSchema);
         //
-        assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE);
+        checkSchemaIsCompatible(compatibility);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class AvroAliasTest extends InteropTestBase {
         SchemaCompatibility.SchemaPairCompatibility compatibility =
             SchemaCompatibility.checkReaderWriterCompatibility(newSchema, oldSchema);
         //
-        assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE);
+        checkSchemaIsCompatible(compatibility);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class AvroAliasTest extends InteropTestBase {
         SchemaCompatibility.SchemaPairCompatibility compatibility =
             SchemaCompatibility.checkReaderWriterCompatibility(newSchema, oldSchema);
         //
-        assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE);
+        checkSchemaIsCompatible(compatibility);
     }
 
     @Test
@@ -134,8 +134,14 @@ public class AvroAliasTest extends InteropTestBase {
         SchemaCompatibility.SchemaPairCompatibility forwardsCompatibility =
             SchemaCompatibility.checkReaderWriterCompatibility(newSchema, oldSchema);
         //
-        assertThat(backwardsCompatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE);
-        assertThat(forwardsCompatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE);
+        checkSchemaIsCompatible(backwardsCompatibility);
+        checkSchemaIsCompatible(forwardsCompatibility);
+    }
+
+    private void checkSchemaIsCompatible(SchemaCompatibility.SchemaPairCompatibility compatibility) {
+        assertThat(compatibility.getType())
+            .withFailMessage("Expected schema to be compatible but was not. Reason:\n%s", compatibility.getDescription())
+            .isEqualTo(SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE);
     }
 
 }
