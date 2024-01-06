@@ -2071,6 +2071,23 @@ public class CBORParser extends ParserBase
         return NumberType.FLOAT;
     }
 
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws JacksonException
+    {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
+    }
+
 //    public int getIntValue() throws JacksonException
 
 //    public long getLongValue() throws JacksonException

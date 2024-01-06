@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import tools.jackson.core.*;
-import tools.jackson.core.JsonParser.NumberTypeFP;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.dataformat.avro.AvroParser;
