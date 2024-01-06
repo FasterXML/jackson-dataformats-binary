@@ -3390,7 +3390,8 @@ expectedType);
             }
             return (int) l;
         }
-        throw _constructReadException("Invalid length for %s: 0x%02X,",
+        throw _constructReadException(
+                "Invalid 5-bit length indicator for `JsonToken.%s`: 0x%02X; only 0x00-0x17, 0x1F allowed",
                 currentToken(), lowBits);
     }
 
