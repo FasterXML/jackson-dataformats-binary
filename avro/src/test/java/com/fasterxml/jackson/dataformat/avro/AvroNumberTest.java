@@ -7,10 +7,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
+import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
 
-public class NumberTest extends AvroTestBase
+public class AvroNumberTest extends AvroTestBase
 {
     static class NumberWrapper {
         public Number value;
@@ -68,6 +69,7 @@ public class NumberTest extends AvroTestBase
         assertTrue(p.nextFieldName(new SerializedString("i")));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertFalse(p.isNaN());
         assertEquals(input.i, p.getIntValue());
         assertEquals(Integer.valueOf(input.i), p.getNumberValue());
@@ -79,6 +81,7 @@ public class NumberTest extends AvroTestBase
         assertTrue(p.nextFieldName(new SerializedString("l")));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.LONG, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertFalse(p.isNaN());
         assertEquals(input.l, p.getLongValue());
         assertEquals(Long.valueOf(input.l), p.getNumberValue());
@@ -90,6 +93,7 @@ public class NumberTest extends AvroTestBase
         assertTrue(p.nextFieldName(new SerializedString("f")));
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.FLOAT, p.getNumberType());
+        assertEquals(NumberTypeFP.FLOAT32, p.getNumberTypeFP());
         assertFalse(p.isNaN());
         assertEquals(input.f, p.getFloatValue());
         // NOTE: order of execution important here; access as Double would
@@ -103,6 +107,7 @@ public class NumberTest extends AvroTestBase
         assertTrue(p.nextFieldName(new SerializedString("d")));
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(NumberTypeFP.DOUBLE64, p.getNumberTypeFP());
         assertFalse(p.isNaN());
         assertEquals((float) input.d, p.getFloatValue());
         assertEquals(input.d, p.getDoubleValue());
