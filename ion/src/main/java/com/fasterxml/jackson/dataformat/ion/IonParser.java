@@ -336,8 +336,9 @@ public class IonParser
     private BigInteger _getBigIntegerValue() throws IOException {
         try {
             return _reader.bigIntegerValue();
-        } catch (IonException | ArrayIndexOutOfBoundsException e) {
-            // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE ^^^
+        } catch (IonException
+                // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE:
+                | ArrayIndexOutOfBoundsException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -353,8 +354,11 @@ public class IonParser
     private BigDecimal _getBigDecimalValue() throws IOException {
         try {
             return _reader.bigDecimalValue();
-        } catch (IonException | ArrayIndexOutOfBoundsException e) {
-            // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE ^^^
+        } catch (IonException
+                // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE:
+                | ArrayIndexOutOfBoundsException
+                // 05-Jan-2024, tatu: OSS-Fuzz#65557 points to NPE:
+                | NullPointerException e) {
             return _reportCorruptNumber(e);
         }
     }
