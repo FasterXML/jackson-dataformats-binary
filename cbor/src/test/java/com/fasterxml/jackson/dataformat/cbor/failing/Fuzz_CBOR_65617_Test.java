@@ -16,7 +16,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 //
 // but does not quite fail the way Fuzzer does (AIOOBE on nextToken when
 // skipping VALUE_EMBEDDED_OBJECT
-public class Fuzz_65617_Test extends CBORTestBase
+public class Fuzz_CBOR_65617_Test extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 

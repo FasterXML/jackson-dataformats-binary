@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz_35979_StringValueTest extends CBORTestBase
+public class Fuzz_CBOR_35979_StringValueTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
