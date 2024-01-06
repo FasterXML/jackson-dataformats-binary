@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
+import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
@@ -47,6 +48,7 @@ public class CBORNumberParseTest extends CBORTestBase
         JsonParser p = cborParser(f, out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(value, p.getIntValue());
         assertEquals((double) value, p.getDoubleValue());
         assertEquals(BigInteger.valueOf(value), p.getBigIntegerValue());
@@ -81,6 +83,7 @@ public class CBORNumberParseTest extends CBORTestBase
         // should be exposed as `long` because these uint32 values do not fit in Java `int`
         assertEquals(0xFFFFFFFFL, p.getLongValue());
         assertEquals(NumberType.LONG, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         p.close();
 
         // and then the reverse; something that ought to be negative
@@ -124,6 +127,7 @@ public class CBORNumberParseTest extends CBORTestBase
         gen.close();
         JsonParser p = cborParser(f, out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(value, p.getLongValue());
         assertEquals(NumberType.LONG, p.getNumberType());
         assertEquals((double) value, p.getDoubleValue());
@@ -157,6 +161,7 @@ public class CBORNumberParseTest extends CBORTestBase
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         // should be exposed as BigInteger
         assertEquals(NumberType.BIG_INTEGER, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         BigInteger exp = BigInteger.valueOf(Long.MAX_VALUE).shiftLeft(1)
                 .add(BigInteger.ONE);
         assertEquals(exp, p.getBigIntegerValue());
@@ -213,6 +218,7 @@ public class CBORNumberParseTest extends CBORTestBase
         if (NumberType.DOUBLE != p.getNumberType()) {
             fail("Expected `NumberType.DOUBLE`, got "+p.getNumberType()+": "+p.getText());
         }
+        assertEquals(NumberTypeFP.DOUBLE64, p.getNumberTypeFP());
         assertEquals(value, p.getDoubleValue());
         assertEquals(isNaN, p.isNaN());
         assertEquals((float) value, p.getFloatValue());
@@ -262,6 +268,7 @@ public class CBORNumberParseTest extends CBORTestBase
         if (NumberType.FLOAT != p.getNumberType()) {
             fail("Expected `NumberType.FLOAT`, got "+p.getNumberType()+": "+p.getText());
         }
+        assertEquals(NumberTypeFP.FLOAT32, p.getNumberTypeFP());
         assertEquals((float) value, p.getFloatValue());
         assertEquals(isNaN, p.isNaN());
         assertEquals(value, p.getDoubleValue());
@@ -288,6 +295,8 @@ public class CBORNumberParseTest extends CBORTestBase
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(expNaN, p.isNaN());
         assertEquals(NumberType.FLOAT, p.getNumberType());
+        // Alas, while we have FP type (FLOAT16), not yet connected to this
+        assertEquals(NumberTypeFP.FLOAT32, p.getNumberTypeFP());
         assertEquals(value, p.getDoubleValue());
         assertNull(p.nextToken());
         p.close();
@@ -308,17 +317,18 @@ public class CBORNumberParseTest extends CBORTestBase
         generator.writeEndObject();
         generator.close();
 
-        CBORParser parser = cborParser(out.toByteArray());
-        assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
-        assertEquals(NumberType.FLOAT, parser.getNumberType());
-        assertEquals(3f, parser.getFloatValue());
-        assertEquals(3d, parser.getDoubleValue());
-        assertEquals(3, parser.getIntValue());
-        assertEquals(3, parser.getLongValue());
-        assertEquals(JsonToken.END_OBJECT, parser.nextToken());
-        parser.close();
+        CBORParser p = cborParser(out.toByteArray());
+        assertEquals(JsonToken.START_OBJECT, p.nextToken());
+        assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+        assertEquals(NumberType.FLOAT, p.getNumberType());
+        assertEquals(NumberTypeFP.FLOAT32, p.getNumberTypeFP());
+        assertEquals(3f, p.getFloatValue());
+        assertEquals(3d, p.getDoubleValue());
+        assertEquals(3, p.getIntValue());
+        assertEquals(3, p.getLongValue());
+        assertEquals(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
     }
 
     public void testBigDecimalType() throws IOException {
@@ -329,13 +339,14 @@ public class CBORNumberParseTest extends CBORTestBase
         generator.close();
 
         final byte[] b = out.toByteArray();
-        try (CBORParser parser = cborParser(b)) {
-            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
-            assertEquals(NumberType.BIG_DECIMAL, parser.getNumberType());
-            assertEquals(NR, parser.getDecimalValue());
-            assertEquals(NR.doubleValue(), parser.getDoubleValue());
-            assertEquals(NR.intValue(), parser.getIntValue());
-            assertNull(parser.nextToken());
+        try (CBORParser p = cborParser(b)) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, p.getNumberType());
+            assertEquals(NumberTypeFP.BIG_DECIMAL, p.getNumberTypeFP());
+            assertEquals(NR, p.getDecimalValue());
+            assertEquals(NR.doubleValue(), p.getDoubleValue());
+            assertEquals(NR.intValue(), p.getIntValue());
+            assertNull(p.nextToken());
         }
     }
 
@@ -348,11 +359,12 @@ public class CBORNumberParseTest extends CBORTestBase
                 0x21,  // int -- -2
                 0x19, 0x6a, (byte) 0xb3 // int 27315
         };
-        try (CBORParser parser = cborParser(spec)) {
-            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, parser.nextToken());
-            assertEquals(NumberType.BIG_DECIMAL, parser.getNumberType());
-            assertEquals(new BigDecimal("273.15"), parser.getDecimalValue());
-            assertNull(parser.nextToken());
+        try (CBORParser p = cborParser(spec)) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(NumberType.BIG_DECIMAL, p.getNumberType());
+            assertEquals(NumberTypeFP.BIG_DECIMAL, p.getNumberTypeFP());
+            assertEquals(new BigDecimal("273.15"), p.getDecimalValue());
+            assertNull(p.nextToken());
         }
     }
 
