@@ -7,7 +7,7 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz_35979_StringValueTest extends CBORTestBase
+public class Fuzz_CBOR_35979_StringValueTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
