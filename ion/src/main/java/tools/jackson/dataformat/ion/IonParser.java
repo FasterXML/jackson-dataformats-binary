@@ -408,6 +408,26 @@ public class IonParser
         return null;
     }
 
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws IOException
+    {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            final IonType type = _reader.getType();
+            if (type == IonType.FLOAT) {
+                // 06-Jan-2024, tatu: Existing code maps Ion `FLOAT` into Java
+                //    `float`. But code in `IonReader` suggests `Double` might
+                //    be more accurate mapping... odd.
+                return NumberTypeFP.FLOAT32;
+            }
+            if (type == IonType.DECIMAL) {
+                // 06-Jan-2024, tatu: Seems like `DECIMAL` is expected to map
+                //    to `BigDecimal`, as per existing code so:
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
+    }
+
     @Override
     public Number getNumberValue() throws JacksonException {
         NumberType nt = getNumberType();
