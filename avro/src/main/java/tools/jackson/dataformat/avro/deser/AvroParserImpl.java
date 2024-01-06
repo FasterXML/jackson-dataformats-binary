@@ -33,14 +33,6 @@ public abstract class AvroParserImpl
      */
     protected int _enumIndex;
 
-    /**
-     * Value if decoded directly as `float`.
-     *<p>
-     * NOTE: base class (`ParserBase`) has other value storage, but since JSON
-     * has no distinction between double, float, only includes `float`.
-     */
-    protected float _numberFloat;
-
     /*
     /**********************************************************************
     /* Life-cycle

@@ -137,9 +137,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected int _numberInt;
 
-    protected float _numberFloat;
-
     protected long _numberLong;
+
+    protected float _numberFloat;
 
     protected double _numberDouble;
 

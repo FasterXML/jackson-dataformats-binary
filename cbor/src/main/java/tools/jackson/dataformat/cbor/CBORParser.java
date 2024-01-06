@@ -195,9 +195,6 @@ public class CBORParser extends ParserBase
      */
     protected int _typeByte;
 
-    // Base class has all other types, but no distinction between double, float, so
-    protected float _numberFloat;
-
     /**
      * Type to keep track of a list of string references. A depth is stored to know when to pop the
      * references off the stack for nested namespaces.
