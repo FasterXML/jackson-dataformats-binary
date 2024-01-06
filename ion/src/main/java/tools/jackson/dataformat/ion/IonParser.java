@@ -409,7 +409,7 @@ public class IonParser
     }
 
     @Override // since 2.17
-    public NumberTypeFP getNumberTypeFP() throws IOException
+    public NumberTypeFP getNumberTypeFP() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             final IonType type = _reader.getType();
