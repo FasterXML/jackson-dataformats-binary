@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.JsonParser.NumberType;
+import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -58,7 +60,7 @@ public class ReadSimpleTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     public void testReadPointInt() throws Exception
     {
@@ -85,6 +87,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.INT, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(input.x, p.getIntValue());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("y", p.currentName());
@@ -118,6 +122,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(input.x, p.getIntValue());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("y", p.currentName());

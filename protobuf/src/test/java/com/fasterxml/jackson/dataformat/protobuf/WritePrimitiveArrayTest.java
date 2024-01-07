@@ -8,6 +8,7 @@ import org.junit.Assert;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
+import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -333,6 +334,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.DOUBLE, p.getNumberType());
+        assertEquals(NumberTypeFP.DOUBLE64, p.getNumberTypeFP());
         assertEquals(Double.valueOf(inputValues[0]), p.getNumberValue());
         assertFalse(p.isNaN());
         assertEquals(new BigDecimal(inputValues[0]), p.getDecimalValue());
@@ -395,6 +397,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(NumberType.FLOAT, p.getNumberType());
+        assertEquals(NumberTypeFP.FLOAT32, p.getNumberTypeFP());
         assertEquals(Float.valueOf(inputValues[0]), p.getNumberValue());
         assertFalse(p.isNaN());
 
