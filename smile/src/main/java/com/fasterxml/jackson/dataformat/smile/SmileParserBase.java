@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.ContentReference;
@@ -484,6 +485,26 @@ public abstract class SmileParserBase extends ParserMinimalBase
             _parseNumericValue(); // will also check event type
         }
         return _numberType;
+    }
+
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws IOException {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            // Some decoding is done lazily so need to:
+            if (_numTypesValid == NR_UNKNOWN) {
+                _parseNumericValue(); // will also check event type
+            }
+            if (_numberType == NumberType.BIG_DECIMAL) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if (_numberType == NumberType.DOUBLE) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if (_numberType == NumberType.FLOAT) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
     }
 
     @Override
