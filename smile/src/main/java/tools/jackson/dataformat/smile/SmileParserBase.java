@@ -396,6 +396,26 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return _numberType;
     }
 
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws JacksonException {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            // Some decoding is done lazily so need to:
+            if (_numTypesValid == NR_UNKNOWN) {
+                _parseNumericValue(); // will also check event type
+            }
+            if (_numberType == NumberType.BIG_DECIMAL) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if (_numberType == NumberType.DOUBLE) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if (_numberType == NumberType.FLOAT) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
+    }
+
     @Override
     public final int getIntValue() throws JacksonException
     {
