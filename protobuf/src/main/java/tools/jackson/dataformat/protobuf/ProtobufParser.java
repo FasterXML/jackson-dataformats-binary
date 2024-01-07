@@ -14,6 +14,7 @@ import tools.jackson.core.util.ByteArrayBuilder;
 import tools.jackson.core.util.JacksonFeatureSet;
 import tools.jackson.core.util.TextBuffer;
 import tools.jackson.core.util.VersionUtil;
+
 import tools.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufParser extends ParserMinimalBase
@@ -1635,11 +1636,11 @@ public class ProtobufParser extends ParserMinimalBase
             _checkNumericValue(NR_UNKNOWN); // will also check event type
         }
         if (_currToken == JsonToken.VALUE_NUMBER_INT) {
-            if ((_numTypesValid & NR_INT) != 0) {
-                return NumberType.INT;
-            }
             if ((_numTypesValid & NR_LONG) != 0) {
                 return NumberType.LONG;
+            }
+            if ((_numTypesValid & NR_INT) != 0) {
+                return NumberType.INT;
             }
             return NumberType.BIG_INTEGER;
         }
@@ -1657,6 +1658,23 @@ public class ProtobufParser extends ParserMinimalBase
             return NumberType.DOUBLE;
         }
         return NumberType.FLOAT;
+    }
+
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws JacksonException
+    {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
     }
 
     @Override

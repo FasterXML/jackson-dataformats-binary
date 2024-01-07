@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 
 import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonParser.NumberType;
+import tools.jackson.core.JsonParser.NumberTypeFP;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamReadFeature;
@@ -54,12 +56,12 @@ public class ReadSimpleTest extends ProtobufTestBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Test methods
-    /**********************************************************
+    /**********************************************************************
      */
 
-    final ObjectMapper MAPPER = new ProtobufMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     public void testReadPointInt() throws Exception
     {
@@ -87,6 +89,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.INT, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(input.x, p.getIntValue());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("y", p.currentName());
@@ -121,6 +125,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.LONG, p.getNumberType());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(input.x, p.getIntValue());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("y", p.currentName());
