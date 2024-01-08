@@ -813,6 +813,9 @@ public class CBORParser extends ParserMinimalBase
                 return _eofAsNextToken();
             }
         }
+        if (_inputPtr < 0) {
+            throw _constructReadException("Invalid length indicator (%d)", _inputPtr);
+        }
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
         int type = (ch >> 5);
         int lowBits = ch & 0x1F;
