@@ -254,8 +254,15 @@ public class IonParser
             // Some special cases here:
             case VALUE_EMBEDDED_OBJECT:
                 if (_reader.getType() == IonType.TIMESTAMP) {
-                    Timestamp ts = _reader.timestampValue();
-                    if (ts != null) return ts.toString();
+                    try {
+                        Timestamp ts = _reader.timestampValue();
+                        if (ts != null) {
+                            return ts.toString();
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        // 07-Jan-2024, tatu: OSS-Fuzz#65628 points to AIOOBE:
+                        return _reportCorruptContent(e);
+                    }
                 }
                 // How about CLOB?
                 break;
