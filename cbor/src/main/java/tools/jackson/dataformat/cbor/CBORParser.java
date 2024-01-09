@@ -3245,7 +3245,6 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             _throwInternal();
         }
         final int lowBits = _typeByte & 0x1F;
-
         if (lowBits <= 23) {
             if (lowBits > 0) {
                 _skipBytes(lowBits);
@@ -3286,8 +3285,8 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             // verify that type matches
             int type = (ch >> 5);
             if (type != expectedType) {
-                throw _constructReadException("Mismatched chunk in chunked content: expected "+expectedType
-                        +" but encountered "+type);
+                throw _constructReadException(
+"Mismatched chunk in chunked content: expected %d but encountered %s", expectedType, type);
             }
 
             final int lowBits = ch & 0x1F;
@@ -3313,7 +3312,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 break;
             case 31:
                 throw _constructReadException(
-"Illegal chunked-length indicator within chunked-length value (type %d)",
+"Invalid chunked-length indicator within chunked-length value (type %d)",
 expectedType);
             default:
                 _invalidToken(_typeByte);
@@ -3323,6 +3322,11 @@ expectedType);
 
     protected void _skipBytesL(long llen) throws JacksonException
     {
+        if (llen < 0L) {
+            throw _constructReadException(
+"Corrupt content: invalid length indicator (%d) encountered during skipping, current token: %s",
+llen, currentToken());
+        }
         while (llen > MAX_INT_L) {
             _skipBytes((int) MAX_INT_L);
             llen -= MAX_INT_L;
@@ -3332,6 +3336,11 @@ expectedType);
 
     protected void _skipBytes(int len) throws JacksonException
     {
+        if (len < 0) {
+            throw _constructReadException(
+"Corrupt content: invalid length indicator (%d) encountered during skipping, current token: %s",
+len, currentToken());
+        }
         while (true) {
             int toAdd = Math.min(len, _inputEnd - _inputPtr);
             _inputPtr += toAdd;

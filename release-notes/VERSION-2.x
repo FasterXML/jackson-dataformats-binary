@@ -28,10 +28,12 @@ Active maintainers:
  (fix contributed by Arthur C)-(
 #432: (ion) More methods from `IonReader` could throw an unexpected `AssertionError`
  (fix contributed by Arthur C)
-#434 (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
+#434: (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
  (fix contributed by Arthur C)
-#437 (ion) `IonReader.next()` throws NPEs for some invalid content
-#449 (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl` for invalid input
+#437: (ion) `IonReader.next()` throws NPEs for some invalid content
+#449: (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl` for invalid input
+ (fix contributed by Arthur C)
+#451: (cbor) `IndexOutOfBoundsException` in `CBORParser` for invalid input
  (fix contributed by Arthur C)
 - (ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 

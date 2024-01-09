@@ -301,3 +301,5 @@ Arthur Chan (@arthurscchan)
  * Contributed #449: (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl`
    for invalid input
   (2.17.0)
+ * Contributed #451: (cbor) `IndexOutOfBoundsException` in `CBORParser` for invalid input
+  (2.17.0)
