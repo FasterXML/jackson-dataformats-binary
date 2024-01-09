@@ -626,13 +626,15 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
 
         final int[] codes = sUtf8UnitLengths;
+
         do {
             i = inputBuf[inPtr++] & 0xFF;
-            if (inPtr >= inputBuf.length) {
+            if (inPtr >= end) {
                 throw _constructError("Malformed UTF-8 character at end of short (non-chunked) text segment");
             }
             switch (codes[i]) {
             case 0:
+                outBuf[outPtr++] = (char) i;
                 break;
             case 1:
                 i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
