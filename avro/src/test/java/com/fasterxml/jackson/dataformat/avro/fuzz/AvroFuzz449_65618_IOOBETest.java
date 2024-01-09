@@ -39,7 +39,7 @@ public class AvroFuzz449_65618_IOOBETest extends AvroTestBase
             p.nextToken();
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
-            assertTrue(e.getMessage().contains("Malformed UTF-8 character"));
+            verifyException(e, "Malformed 2-byte UTF-8 character at the end of");
         }
     }
 }
