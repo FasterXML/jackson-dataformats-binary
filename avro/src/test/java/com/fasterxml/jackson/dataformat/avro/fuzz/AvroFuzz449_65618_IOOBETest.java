@@ -22,7 +22,7 @@ public class AvroFuzz449_65618_IOOBETest extends AvroTestBase
 
     @Test
     public void testFuzz65618IOOBE() throws Exception {
-        final AvroFactory factory = AvroFactory.builderWithApacheDecoder().build();
+        final AvroFactory factory = AvroFactory.builderWithNativeDecoder().build();
         final AvroMapper mapper = new AvroMapper(factory);
 
         final byte[] doc = {
@@ -32,7 +32,7 @@ public class AvroFuzz449_65618_IOOBETest extends AvroTestBase
         };
 
         final AvroSchema schema = mapper.schemaFor(RootType.class);
-        try (AvroParser p = factory.createParser(doc)) {
+        try (AvroParser p =  (AvroParser) mapper.createParser(doc)) {
             p.setSchema(schema);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
