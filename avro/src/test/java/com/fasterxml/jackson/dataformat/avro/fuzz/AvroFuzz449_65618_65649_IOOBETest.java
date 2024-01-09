@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 // [dataformats-binary#449]
-public class AvroFuzz449_65618_IOOBETest extends AvroTestBase
+public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase
 {
     @JsonPropertyOrder({ "name", "value" })
     static class RootType {
@@ -20,26 +20,36 @@ public class AvroFuzz449_65618_IOOBETest extends AvroTestBase
         public int value;
     }
 
-    @Test
-    public void testFuzz65618IOOBE() throws Exception {
+    private void testFuzzIOOBE(byte[] input, String msg) throws Exception {
         final AvroFactory factory = AvroFactory.builderWithNativeDecoder().build();
         final AvroMapper mapper = new AvroMapper(factory);
+        final AvroSchema schema = mapper.schemaFor(RootType.class);
+        try (AvroParser p =  (AvroParser) mapper.createParser(input)) {
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            p.nextToken();
+            p.nextToken();
+            fail("Should not pass (invalid content)");
+        } catch (StreamReadException e) {
+            verifyException(e, msg);
+        }
+    }
 
+    @Test
+    public void testFuzz65618IOOBE() throws Exception {
         final byte[] doc = {
             (byte) 2, (byte) 22, (byte) 36, (byte) 2, (byte) 0,
             (byte) 0, (byte) 8, (byte) 3, (byte) 3, (byte) 3,
             (byte) 122, (byte) 3, (byte) -24
         };
+        testFuzzIOOBE(doc, "Malformed 2-byte UTF-8 character at the end of");
+);
+    }
 
-        final AvroSchema schema = mapper.schemaFor(RootType.class);
-        try (AvroParser p =  (AvroParser) mapper.createParser(doc)) {
-            p.setSchema(schema);
-            assertToken(JsonToken.START_OBJECT, p.nextToken());
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
-            p.nextToken();
-            fail("Should not pass (invalid content)");
-        } catch (StreamReadException e) {
-            verifyException(e, "Malformed 2-byte UTF-8 character at the end of");
-        }
+    @Test
+    public void testFuzz65649IOOBE() throws Exception {
+        final byte[] doc = AvroFuzzTestUtil.readResource("/data/fuzz-65649.avro");
+        testFuzzIOOBE(doc, "Malformed 3-byte UTF-8 character at the end of");
     }
 }
