@@ -19,7 +19,7 @@ public class RecordEvolutionTest extends AvroTestBase
         + " \"fields\": [\n"
         + "     {\n"
         + "        \"name\": \"name\",\n"
-        + "        \"type\": [\"string\", \"null\"],\n"
+        + "        \"type\": [\"null\", \"string\"],\n"
         + "        \"default\": null\n"
         + "    },\n"
         + "     {\n"
@@ -41,7 +41,7 @@ public class RecordEvolutionTest extends AvroTestBase
         + " \"fields\": [\n"
         + "     {\n"
         + "        \"name\": \"fullName\",\n"
-        + "        \"type\": [\"string\", \"null\"],\n"
+        + "        \"type\": [\"null\", \"string\"],\n"
         + "        \"default\": null,\n"
         + "        \"aliases\": [\"name\"]\n"
         + "    },\n"
@@ -138,27 +138,27 @@ public class RecordEvolutionTest extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
-	public void testEvolutionInvolvingComplexRecords() throws Exception
-	{
-		final AvroSchema schemaV1 = MAPPER.schemaFrom(SCHEMA_V1);
-		final AvroSchema schemaV2 = MAPPER.schemaFrom(SCHEMA_V2);
-		final AvroSchema combinedSchema = schemaV1.withReaderSchema(schemaV2);
+    public void testEvolutionInvolvingComplexRecords() throws Exception
+    {
+        final AvroSchema schemaV1 = MAPPER.schemaFrom(SCHEMA_V1);
+        final AvroSchema schemaV2 = MAPPER.schemaFrom(SCHEMA_V2);
+        final AvroSchema combinedSchema = schemaV1.withReaderSchema(schemaV2);
 
-		final Map<String, List<String>> preferences = new HashMap<>();
-		final List<String> list = new ArrayList<>();
-		list.add("yes");
+        final Map<String, List<String>> preferences = new HashMap<>();
+        final List<String> list = new ArrayList<>();
+        list.add("yes");
 
-		preferences.put("jackson", list);
+        preferences.put("jackson", list);
 
-		final UserV1 userV1 = new UserV1("foo", preferences);
+        final UserV1 userV1 = new UserV1("foo", preferences);
 
-		final byte[] avro = MAPPER.writer(schemaV1).writeValueAsBytes(userV1);
+        final byte[] avro = MAPPER.writer(schemaV1).writeValueAsBytes(userV1);
 
-		final UserV2 userV2 = MAPPER.readerFor(UserV2.class)
-			.with(combinedSchema)
-			.readValue(avro);
+        final UserV2 userV2 = MAPPER.readerFor(UserV2.class)
+                .with(combinedSchema)
+                .readValue(avro);
 
-		assertEquals(userV2.fullName, userV1.name);
-		assertEquals(userV2.preferences, userV1.preferences);
-	}
+        assertEquals(userV2.fullName, userV1.name);
+        assertEquals(userV2.preferences, userV1.preferences);
+    }
 }
