@@ -700,19 +700,13 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 break;
             case 3: // 4-byte UTF
                 c = _decodeUTF8_4(c);
-                // if outPtr >= outBuf.length before adding
-                // the input is malformed.
-                if (outPtr >= outBuf.length) {
-                    throw _constructError(String.format(
-                            "Malformed %d-byte UTF-8 character at the end of Unicode text block", code));
-                }
-                // Let's add first part right away:
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
                     outEnd = outBuf.length;
                 }
+                // Let's add first part right away:
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 c = 0xDC00 | (c & 0x3FF);
                 // And let the other char output down below
                 break;

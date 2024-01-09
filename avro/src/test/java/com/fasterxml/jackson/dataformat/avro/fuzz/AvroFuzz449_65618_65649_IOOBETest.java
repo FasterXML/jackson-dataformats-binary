@@ -20,9 +20,10 @@ public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase
         public int value;
     }
 
+    final private AvroFactory factory = AvroFactory.builderWithNativeDecoder().build();
+    final private AvroMapper mapper = new AvroMapper(factory);
+
     private void testFuzzIOOBE(byte[] input, String msg) throws Exception {
-        final AvroFactory factory = AvroFactory.builderWithNativeDecoder().build();
-        final AvroMapper mapper = new AvroMapper(factory);
         final AvroSchema schema = mapper.schemaFor(RootType.class);
         try (AvroParser p =  (AvroParser) mapper.createParser(input)) {
             p.setSchema(schema);
@@ -37,7 +38,7 @@ public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase
     }
 
     @Test
-    public void testFuzz65618IOOBE() throws Exception {
+    public void testFuzz65618_IOOBE() throws Exception {
         final byte[] doc = {
             (byte) 2, (byte) 22, (byte) 36, (byte) 2, (byte) 0,
             (byte) 0, (byte) 8, (byte) 3, (byte) 3, (byte) 3,
@@ -47,8 +48,8 @@ public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase
     }
 
     @Test
-    public void testFuzz65649IOOBE() throws Exception {
+    public void testFuzz65649_IOOBE() throws Exception {
         final byte[] doc = AvroFuzzTestUtil.readResource("/data/fuzz-65649.avro");
-        testFuzzIOOBE(doc, "Malformed 3-byte UTF-8 character at the end of");
+        testFuzzIOOBE(doc, "Invalid UTF-8 start byte 0x80");
     }
 }
