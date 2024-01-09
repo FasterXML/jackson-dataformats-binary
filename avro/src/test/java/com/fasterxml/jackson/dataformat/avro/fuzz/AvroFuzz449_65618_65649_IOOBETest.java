@@ -44,7 +44,6 @@ public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase
             (byte) 122, (byte) 3, (byte) -24
         };
         testFuzzIOOBE(doc, "Malformed 2-byte UTF-8 character at the end of");
-);
     }
 
     @Test
