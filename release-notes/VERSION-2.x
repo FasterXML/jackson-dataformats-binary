@@ -31,6 +31,8 @@ Active maintainers:
 #434 (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
  (fix contributed by Arthur C)
 #437 (ion) `IonReader.next()` throws NPEs for some invalid content
+#449 (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl` for invalid input
+ (fix contributed by Arthur C)
 - (ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.1 (24-Dec-2023)

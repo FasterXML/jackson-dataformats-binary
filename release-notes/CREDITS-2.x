@@ -295,5 +295,9 @@ Arthur Chan (@arthurscchan)
  * Contributed #432 (ion) More methods from `IonReader` could throw an unexpected
    `AssertionError`
   (2.17.0)
- * Contributed #434 (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
+ * Contributed #434: (ion) Unexpected `NullPointerException` thrown from
+  `IonParser::getNumberType()`
+  (2.17.0)
+ * Contributed #449: (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl`
+   for invalid input
   (2.17.0)
