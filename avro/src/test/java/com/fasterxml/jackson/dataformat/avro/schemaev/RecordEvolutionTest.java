@@ -66,6 +66,7 @@ public class RecordEvolutionTest extends AvroTestBase
 			this.preferences = preferences;
 		}
 
+		@Override
 		public boolean equals(final Object object) {
 			if (this == object) {
 				return true;
@@ -81,6 +82,7 @@ public class RecordEvolutionTest extends AvroTestBase
 				preferences.equals(user.preferences);
 		}
 
+          @Override
 		public int hashCode() {
 			return Objects.hash(name, preferences);
 		}
@@ -106,6 +108,7 @@ public class RecordEvolutionTest extends AvroTestBase
 			this.preferences = preferences;
 		}
 
+          @Override
 		public boolean equals(final Object object) {
 			if (this == object) {
 				return true;
@@ -120,6 +123,7 @@ public class RecordEvolutionTest extends AvroTestBase
 			return fullName.equals(user.fullName) && preferences.equals(user.preferences);
 		}
 
+          @Override
 		public int hashCode() {
 			return Objects.hash(fullName, preferences);
 		}
