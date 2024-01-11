@@ -296,7 +296,7 @@ public class IonParser
                         if (ts != null) {
                             return ts.toString();
                         }
-                    } catch (ArrayIndexOutOfBoundsException e) {
+                    } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
                         // 07-Jan-2024, tatu: OSS-Fuzz#65628 points to AIOOBE:
                         return _reportCorruptContent(e);
                     }
@@ -543,8 +543,7 @@ public class IonParser
             case TIMESTAMP:
                 try { 
                     return _reader.timestampValue();
-                } catch (NullPointerException e) {
-                    // 07-Jan-2024, tatu: OSS-Fuzz suggests this occurs too so
+                } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
                     return _reportCorruptContent(e);
                 } catch (IllegalArgumentException e) {
                     throw _constructError(String.format(
