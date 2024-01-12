@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
  */
 public class AvroTypeIdResolver extends ClassNameIdResolver
 {
+    private static final long serialVersionUID = 1L;
+
     private final Map<String, Class<?>> _idTypes = new HashMap<>();
 
     // 04-Jan-2021, tatu: Not sure why this is being kept around, not used as of
