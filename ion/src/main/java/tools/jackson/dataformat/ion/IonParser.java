@@ -335,13 +335,24 @@ public class IonParser
     @Override
     public double getDoubleValue() throws JacksonException {
         _verifyIsNumberToken();
-        return _reader.doubleValue();
+        return _getDoubleValue();
     }
 
+    // @since 2.17
+    private double _getDoubleValue() throws IOException {
+        try {
+            return _reader.doubleValue();
+        } catch (IonException
+                // 11-Jan-2024, tatu: OSS-Fuzz#65679 points to AIOOBE:
+                | ArrayIndexOutOfBoundsException
+                | NullPointerException e) {
+            return _reportCorruptNumber(e);
+        }
+    }
     @Override
     public float getFloatValue() throws JacksonException {
         _verifyIsNumberToken();
-        return (float) _reader.doubleValue();
+        return (float) _getDoubleValue();
     }
 
     @Override
