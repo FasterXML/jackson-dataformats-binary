@@ -339,7 +339,7 @@ public class IonParser
     }
 
     // @since 2.17
-    private double _getDoubleValue() throws IOException {
+    private double _getDoubleValue() throws JacksonException {
         try {
             return _reader.doubleValue();
         } catch (IonException

@@ -10,8 +10,6 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.ion.*;
 
-import tools.jackson.dataformat.ion.fuzz.IonFuzzTestUtil;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 

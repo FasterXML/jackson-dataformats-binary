@@ -5,7 +5,6 @@ import java.net.URL;
 import org.junit.Test;
 
 import tools.jackson.core.exc.StreamReadException;
-import tools.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.Assert.*;
 

@@ -1,6 +1,5 @@
 package tools.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
 import java.util.*;
 
 import org.apache.avro.Schema;
