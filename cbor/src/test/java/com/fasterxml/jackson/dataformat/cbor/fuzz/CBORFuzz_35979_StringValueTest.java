@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.cbor.failing;
+package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz_CBOR_35979_StringValueTest extends CBORTestBase
+public class CBORFuzz_35979_StringValueTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
@@ -27,7 +27,7 @@ public class Fuzz_CBOR_35979_StringValueTest extends CBORTestBase
             p.getText();
             fail("Should not pass");
         } catch (StreamReadException e) {
-            verifyException(e, "Truncated UTF-8 character in Short Unicode Name (36 bytes)");
+            verifyException(e, "Malformed UTF-8 character at the end of a");
         }
 
     }

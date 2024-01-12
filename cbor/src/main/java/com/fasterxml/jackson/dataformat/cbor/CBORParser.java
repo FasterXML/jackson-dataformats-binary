@@ -2346,8 +2346,9 @@ public class CBORParser extends ParserMinimalBase
     private final String _finishShortText(int len) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-        if (outBuf.length < len) { // one minor complication
-            outBuf = _textBuffer.expandCurrentSegment(len);
+        if (outBuf.length <= len) { // one minor complication
+            // +1 to catch possible broken 4-byte segment at the end
+            outBuf = _textBuffer.expandCurrentSegment(len+1);
         }
 
         StringRefList stringRefs = null;
@@ -2420,6 +2421,12 @@ public class CBORParser extends ParserMinimalBase
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
+        // 11-Jan-2024, tatu: Not the best way to deal with malformed last
+        //    character, but let's try this wrt
+        //    https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=35979
+        if (inPtr > end) {
+            throw _constructReadException("Malformed UTF-8 character at the end of a (non-chunked) text segment");
+        }
         String str = _textBuffer.setCurrentAndReturn(outPtr);
         if (stringRefs != null) {
             stringRefs.stringRefs.add(str);
