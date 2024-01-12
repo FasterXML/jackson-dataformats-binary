@@ -438,6 +438,7 @@ public class PolymorphicRoundtripTest
 
     // Extends Jackson's ClassNameIdResolver to add superclass names, recursively
     class MultipleClassNameIdResolver extends ClassNameIdResolver implements MultipleTypeIdResolver {
+        private static final long serialVersionUID = 1L;
 
         MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory,
                 PolymorphicTypeValidator ptv) {

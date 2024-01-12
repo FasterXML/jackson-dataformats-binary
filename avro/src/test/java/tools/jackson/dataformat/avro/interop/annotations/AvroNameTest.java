@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.dataformat.avro.AvroTestBase;
 import tools.jackson.dataformat.avro.interop.InteropTestBase;

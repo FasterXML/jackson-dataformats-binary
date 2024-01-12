@@ -1,7 +1,6 @@
 package tools.jackson.dataformat.smile;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.Locale;
 
@@ -28,8 +27,6 @@ import tools.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
  * used for Smile-format documents, and thus will either downgrade to
  * textual JSON (when parsing), or throw exception (when trying to create
  * generator).
- *
- * @author Tatu Saloranta
  */
 public class SmileFactory
     extends BinaryTSFactory
