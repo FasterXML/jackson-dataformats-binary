@@ -349,6 +349,7 @@ public class IonParser
             return _reportCorruptNumber(e);
         }
     }
+
     @Override
     public float getFloatValue() throws JacksonException {
         _verifyIsNumberToken();
@@ -364,7 +365,17 @@ public class IonParser
     @Override
     public long getLongValue() throws JacksonException {
         _verifyIsNumberToken();
-        return _reader.longValue();
+        return _getLongValue();
+    }
+
+    private long _getLongValue() throws JacksonException {
+        try {
+            return _reader.longValue();
+        } catch (IonException
+                // 14-Jan-2024, tatu: OSS-Fuzz#65731 points to AIOOBE:
+                | ArrayIndexOutOfBoundsException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     // @since 2.17
@@ -454,11 +465,11 @@ public class IonParser
             case INT:
                 return _reader.intValue();
             case LONG:
-                return _reader.longValue();
+                return _getLongValue();
             case FLOAT:
-                return (float) _reader.doubleValue();
+                return (float) _getDoubleValue();
             case DOUBLE:
-                return _reader.doubleValue();
+                return _getDoubleValue();
             case BIG_DECIMAL:
                 return _getBigDecimalValue();
             case BIG_INTEGER:
