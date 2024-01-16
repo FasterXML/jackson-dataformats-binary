@@ -43,7 +43,7 @@ public class Fuzz434_65268_65274_NPETest
             ION_MAPPER.readTree(new ByteArrayInputStream(doc));
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
-            assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
+            assertThat(e.getMessage(), Matchers.containsString("Corrupt Number value to decode"));
         }
     }
 

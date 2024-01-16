@@ -359,7 +359,18 @@ public class IonParser
     @Override
     public int getIntValue() throws JacksonException {
         _verifyIsNumberToken();
-        return _reader.intValue();
+        return _getIntValue();
+    }
+
+    // @since 2.17
+    private int _getIntValue() throws IOException {
+        try {
+            return _reader.intValue();
+        } catch (IonException
+                // 15-Jan-2024, tatu: other OSS-Fuzz tests suggest we need this:
+                | ArrayIndexOutOfBoundsException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
@@ -414,8 +425,8 @@ public class IonParser
                         size = _reader.getIntegerSize();
                     } catch (IonException e) {
                         return _reportCorruptNumber(e);
-                    } catch (NullPointerException e) {
-                        return _reportCorruptContent(e);
+                    } catch (AssertionError | NullPointerException e) {
+                        return _reportCorruptNumber(e);
                     }
                     if (size == null) {
                         _reportError("Current token (%s) not integer", _currToken);
@@ -463,7 +474,7 @@ public class IonParser
         if (nt != null) {
             switch (nt) {
             case INT:
-                return _reader.intValue();
+                return _getIntValue();
             case LONG:
                 return _getLongValue();
             case FLOAT:
