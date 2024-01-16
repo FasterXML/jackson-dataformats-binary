@@ -303,3 +303,5 @@ Arthur Chan (@arthurscchan)
   (2.17.0)
  * Contributed #451: (cbor) `IndexOutOfBoundsException` in `CBORParser` for invalid input
   (2.17.0)
+ * Contributed #458: (cbor) Unexpected NullPointerException in `CBORParser`
+  (2.17.0)
