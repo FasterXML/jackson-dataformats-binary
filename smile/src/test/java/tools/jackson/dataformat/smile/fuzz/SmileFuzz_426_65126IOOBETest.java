@@ -6,7 +6,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
-public class Fuzz_426_65126IOOBETest extends BaseTestForSmile
+public class SmileFuzz_426_65126IOOBETest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 

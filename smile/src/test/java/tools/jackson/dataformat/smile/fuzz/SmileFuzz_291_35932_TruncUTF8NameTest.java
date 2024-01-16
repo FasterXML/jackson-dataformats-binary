@@ -8,7 +8,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
 // For https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=35932
-public class Fuzz_291_35932_TruncUTF8NameTest extends BaseTestForSmile
+public class SmileFuzz_291_35932_TruncUTF8NameTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 

@@ -532,13 +532,13 @@ public class CBORParser extends ParserBase
     @Override
     public JsonToken nextToken() throws JacksonException
     {
-        _numTypesValid = NR_UNKNOWN;
         // For longer tokens (text, binary), we'll only read when requested
         if (_tokenIncomplete) {
             _skipIncomplete();
         }
         _tokenInputTotal = _currInputProcessed + _inputPtr;
         // also: clear any data retained so far
+        _numTypesValid = NR_UNKNOWN;
         _binaryValue = null;
 
         // First: need to keep track of lengths of defined-length Arrays and
@@ -867,6 +867,9 @@ public class CBORParser extends ParserBase
         } else {
             // 12-May-2016, tatu: Since that's all we know, let's otherwise
             //   just return default Binary data marker
+            // 16-Jan-2024, tatu: Esoteric edge case where we have marked
+            //   `int` as being tokenized
+            _numTypesValid = NR_UNKNOWN;
             return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
         }
 
@@ -2288,6 +2291,11 @@ public class CBORParser extends ParserBase
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
             final String text = getText();
+            // 16-Jan-2024, tatu: OSS-Fuzz managed to trigger this; let's fail
+            //   explicitly
+            if (text == null) {
+                _throwInternal();
+            }
             streamReadConstraints().validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
