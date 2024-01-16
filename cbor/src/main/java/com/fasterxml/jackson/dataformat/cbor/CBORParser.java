@@ -2224,6 +2224,9 @@ public class CBORParser extends ParserMinimalBase
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
             final String text = getText();
+            if (text == null) {
+                throw _constructReadException("No more values");
+            }
             streamReadConstraints().validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
