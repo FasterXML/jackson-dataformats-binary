@@ -363,7 +363,7 @@ public class IonParser
     }
 
     // @since 2.17
-    private int _getIntValue() throws IOException {
+    private int _getIntValue() throws JacksonException {
         try {
             return _reader.intValue();
         } catch (IonException
