@@ -84,17 +84,22 @@ public class ReadSimpleTest extends ProtobufTestBase
         JsonParser p = MAPPER.getFactory().createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertNull(p.currentName());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(NumberType.INT, p.getNumberType());
+        assertEquals("x", p.currentName());
         assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(input.x, p.getIntValue());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("y", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals("y", p.currentName());
         assertEquals(input.y, p.getIntValue());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
+        // 17-Jan-2024, tatu: This should return `null` but somehow return "y"?
+        // assertNull(p.currentName());
         p.close();
     }
 
