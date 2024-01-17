@@ -424,6 +424,9 @@ public class ProtobufParser extends ParserMinimalBase
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ProtobufReadContext parent = _parsingContext.getParent();
+            if (parent == null) {
+                throw _constructError("No parent object found");
+            }
             return parent.getCurrentName();
         }
         return _parsingContext.getCurrentName();
