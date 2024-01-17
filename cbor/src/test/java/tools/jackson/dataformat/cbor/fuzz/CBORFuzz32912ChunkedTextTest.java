@@ -7,7 +7,7 @@ import tools.jackson.core.exc.UnexpectedEndOfInputException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz32912ChunkedTextTest extends CBORTestBase
+public class CBORFuzz32912ChunkedTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 

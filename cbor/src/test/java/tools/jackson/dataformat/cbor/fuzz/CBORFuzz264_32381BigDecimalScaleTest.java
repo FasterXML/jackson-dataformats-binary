@@ -10,7 +10,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
 // [dataformats-binary#264]
-public class Fuzz264_32381BigDecimalScaleTest extends CBORTestBase
+public class CBORFuzz264_32381BigDecimalScaleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 

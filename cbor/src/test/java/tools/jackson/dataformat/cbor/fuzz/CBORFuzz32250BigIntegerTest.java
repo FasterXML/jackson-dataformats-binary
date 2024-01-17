@@ -6,7 +6,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz32250BigIntegerTest extends CBORTestBase
+public class CBORFuzz32250BigIntegerTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 

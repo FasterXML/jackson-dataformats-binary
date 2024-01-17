@@ -5,7 +5,7 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz288_35750_NonCanonicalNameTest extends CBORTestBase
+public class CBORFuzz288_35750_NonCanonicalNameTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 

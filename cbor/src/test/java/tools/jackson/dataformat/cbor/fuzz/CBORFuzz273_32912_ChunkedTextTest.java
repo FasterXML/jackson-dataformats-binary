@@ -6,7 +6,7 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-public class Fuzz273_32912_ChunkedTextTest extends CBORTestBase
+public class CBORFuzz273_32912_ChunkedTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
