@@ -2374,6 +2374,20 @@ public class CBORParser extends ParserMinimalBase
         // Let's actually do a tight loop for ASCII first:
         final int end = inPtr + len;
 
+        // If the provided len is malformed, the end value
+        // could be larger than the length of inputBuf.
+        // This could cause the following while loop
+        // not returning in the correct location,
+        // result in ArrayIndexOutOfBoundsException
+        // It could also throw AIOOBE if the inPtr
+        // already pointing to the end of inputBuf
+        // and no more data is left in inputBuf.
+        // It will also be a problem if end is
+        // negative when provided len is negative.
+        if ((end <= 0) || (end >= inputBuf.length) || (inPtr >= inputBuf.length)) {
+            throw _constructReadException("Requested length too long.");
+        }
+
         int i;
         while ((i = inputBuf[inPtr]) >= 0) {
             outBuf[outPtr++] = (char) i;
