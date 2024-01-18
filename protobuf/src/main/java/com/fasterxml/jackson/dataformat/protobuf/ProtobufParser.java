@@ -465,6 +465,11 @@ public class ProtobufParser extends ParserMinimalBase
                 _releaseBuffers();
             }
             _ioContext.close();
+            // 17-Jan-2024, tatu: Most code paths won't update context so:
+            if (!_parsingContext.inRoot()) {
+                _parsingContext = _parsingContext.getParent();
+            }
+            _parsingContext.setCurrentName(null);
         }
     }
 
@@ -598,7 +603,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return t;
             }
         case STATE_NESTED_KEY:
-            if (_checkEnd()) {
+            if (_checkEnd()) { // will update _parsingContext
                 return (_currToken = JsonToken.END_OBJECT);
             }
             return _handleNestedKey(_decodeVInt());
@@ -967,7 +972,7 @@ public class ProtobufParser extends ParserMinimalBase
             _skipUnknownValue(wireType);
             // 05-Dec-2017, tatu: as per [#126] seems like we need to check this not just for
             //    STATE_NESTED_KEY but for arrays too at least?
-            if (_checkEnd()) {
+            if (_checkEnd()) { // updates _parsingContext
                 return (_currToken = JsonToken.END_OBJECT);
             }
             if (_state == STATE_NESTED_KEY) {
@@ -1069,7 +1074,7 @@ public class ProtobufParser extends ParserMinimalBase
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
+            if (_checkEnd()) { // updates _parsingContext
                 _currToken = JsonToken.END_OBJECT;
                 return false;
             }
@@ -1153,7 +1158,7 @@ public class ProtobufParser extends ParserMinimalBase
             return name;
         }
         if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
+            if (_checkEnd()) { // updates _parsingContext
                 _currToken = JsonToken.END_OBJECT;
                 return null;
             }
