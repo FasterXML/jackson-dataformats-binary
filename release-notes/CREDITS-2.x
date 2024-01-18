@@ -307,3 +307,6 @@ Arthur Chan (@arthurscchan)
   (2.17.0)
  * Contributed #460: (protobuf) Unexpected `NullPointerException` in `ProtobufParser.currentName()`
   (2.17.0)
+ * Contributed #464: (cbor) Unexpected `ArrayIndexOutOfBoundsException` in `CBORParser`
+   for corrupt String value
+  (2.17.0)
