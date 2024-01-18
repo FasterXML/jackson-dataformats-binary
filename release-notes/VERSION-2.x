@@ -37,6 +37,9 @@ Active maintainers:
  (fix contributed by Arthur C)
 #458: (cbor) Unexpected NullPointerException in `CBORParser`
  (fix contributed by Arthur C)
+#460: (protobuf) Unexpected `NullPointerException` in `ProtobufParser.currentName()`
+ (fix contributed by Arthur C)
+#462: (protobuf) `ProtobufParser.currentName()` returns wrong value at root level
 - (ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
 
 2.16.1 (24-Dec-2023)

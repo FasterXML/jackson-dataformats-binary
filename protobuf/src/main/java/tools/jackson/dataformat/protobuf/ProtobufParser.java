@@ -337,6 +337,11 @@ public class ProtobufParser extends ParserMinimalBase
     {
         super.close();
         _state = STATE_CLOSED;
+        // 17-Jan-2024, tatu: Most code paths won't update context so:
+        if (!_streamReadContext.inRoot()) {
+            _streamReadContext = _streamReadContext.getParent();
+        }
+        _streamReadContext.setCurrentName(null);
     }
     
     @Override
@@ -416,6 +421,9 @@ public class ProtobufParser extends ParserMinimalBase
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ProtobufReadContext parent = _streamReadContext.getParent();
+            if (parent == null) { // should we error out or... ?
+                return null;
+            }
             return parent.currentName();
         }
         return _streamReadContext.currentName();
@@ -545,7 +553,7 @@ public class ProtobufParser extends ParserMinimalBase
                 return t;
             }
         case STATE_NESTED_KEY:
-            if (_checkEnd()) {
+            if (_checkEnd()) { // will update _parsingContext
                 return (_currToken = JsonToken.END_OBJECT);
             }
             return _handleNestedKey(_decodeVInt());
@@ -914,7 +922,7 @@ public class ProtobufParser extends ParserMinimalBase
             _skipUnknownValue(wireType);
             // 05-Dec-2017, tatu: as per [#126] seems like we need to check this not just for
             //    STATE_NESTED_KEY but for arrays too at least?
-            if (_checkEnd()) {
+            if (_checkEnd()) { // updates _parsingContext
                 return (_currToken = JsonToken.END_OBJECT);
             }
             if (_state == STATE_NESTED_KEY) {
@@ -1103,7 +1111,7 @@ public class ProtobufParser extends ParserMinimalBase
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
+            if (_checkEnd()) { // updates _parsingContext
                 _currToken = JsonToken.END_OBJECT;
                 return false;
             }
@@ -1190,7 +1198,7 @@ public class ProtobufParser extends ParserMinimalBase
             return matcher.matchName(name);
         }
         if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
+            if (_checkEnd()) { // updates _parsingContext
                 _currToken = JsonToken.END_OBJECT;
                 return PropertyNameMatcher.MATCH_END_OBJECT;
             }
