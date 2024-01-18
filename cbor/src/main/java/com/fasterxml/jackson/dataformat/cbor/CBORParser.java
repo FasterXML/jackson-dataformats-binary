@@ -2289,7 +2289,9 @@ public class CBORParser extends ParserMinimalBase
         // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
         //    the longest individual unit is 4 bytes (surrogate pair) so we
         //    actually need len+3 bytes to avoid bounds checks
-        final int needed = len + 3;
+        // 18-Jan-2024, tatu: For malicious input / Fuzzers, need to worry about overflow
+        //    like Integer.MAX_VALUE
+        final int needed = Math.max(len, len + 3);
         final int available = _inputEnd - _inputPtr;
 
         if ((available >= needed)
