@@ -2416,7 +2416,8 @@ public class CBORParser extends ParserBase
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length <= len) { // one minor complication
-            // +1 to catch possible broken 4-byte segment at the end
+            // +1 to catch possible broken 4-byte UTF-8 code point (which
+            // expands to 2 chars, unlike 1 - 3 byte ones) at the end
             outBuf = _textBuffer.expandCurrentSegment(len+1);
         }
 
