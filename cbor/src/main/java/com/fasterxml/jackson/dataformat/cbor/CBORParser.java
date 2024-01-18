@@ -2289,7 +2289,9 @@ public class CBORParser extends ParserMinimalBase
         // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
         //    the longest individual unit is 4 bytes (surrogate pair) so we
         //    actually need len+3 bytes to avoid bounds checks
-        final int needed = len + 3;
+        // 18-Jan-2024, tatu: For malicious input / Fuzzers, need to worry about overflow
+        //    like Integer.MAX_VALUE
+        final int needed = Math.max(len, len + 3);
         final int available = _inputEnd - _inputPtr;
 
         if ((available >= needed)
@@ -2373,20 +2375,6 @@ public class CBORParser extends ParserMinimalBase
 
         // Let's actually do a tight loop for ASCII first:
         final int end = inPtr + len;
-
-        // If the provided len is malformed, the end value
-        // could be larger than the length of inputBuf.
-        // This could cause the following while loop
-        // not returning in the correct location,
-        // result in ArrayIndexOutOfBoundsException
-        // It could also throw AIOOBE if the inPtr
-        // already pointing to the end of inputBuf
-        // and no more data is left in inputBuf.
-        // It will also be a problem if end is
-        // negative when provided len is negative.
-        if ((end <= 0) || (end >= inputBuf.length) || (inPtr >= inputBuf.length)) {
-            throw _constructReadException("Requested length too long.");
-        }
 
         int i;
         while ((i = inputBuf[inPtr]) >= 0) {

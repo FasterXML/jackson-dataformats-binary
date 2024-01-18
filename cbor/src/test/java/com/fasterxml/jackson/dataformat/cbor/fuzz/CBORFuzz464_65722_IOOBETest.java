@@ -20,11 +20,12 @@ public class CBORFuzz464_65722_IOOBETest extends CBORTestBase
         };
         try (JsonParser p = MAPPER.createParser(input)) {
             try {
-                p.nextToken();
+                assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                // oddly enough `getText()` didn't do it but this:
                 p.getTextLength();
                 fail("Should not reach here (invalid input)");
             } catch (StreamReadException e) {
-                verifyException(e, "Requested length too long.");
+                verifyException(e, "Unexpected end-of-input in VALUE_STRING");
             }
         }
     }
