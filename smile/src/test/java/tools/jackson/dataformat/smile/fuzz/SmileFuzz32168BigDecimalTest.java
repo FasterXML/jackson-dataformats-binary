@@ -7,7 +7,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
 // For [dataformats-binary#257]
-public class Fuzz32168BigDecimalTest extends BaseTestForSmile
+public class SmileFuzz32168BigDecimalTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 

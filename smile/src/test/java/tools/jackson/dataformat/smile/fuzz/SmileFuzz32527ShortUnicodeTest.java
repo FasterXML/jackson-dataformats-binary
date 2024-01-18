@@ -5,14 +5,13 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
-public class Fuzz32654ShortUnicodeTest extends BaseTestForSmile
+public class SmileFuzz32527ShortUnicodeTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
     // [dataformats-binary#266]
     public void testInvalidShortUnicode() throws Exception
     {
-        /*
         final byte[] input = new byte[] {
                 0x3A, 0x29, 0x0A, 0x00, // smile signature
                 (byte) 0xFA, // START_OBJECT
@@ -27,16 +26,14 @@ public class Fuzz32654ShortUnicodeTest extends BaseTestForSmile
                 0x00, 0x00, 0x04, (byte) 0xE5,
                 0x04
         };
-        */
-        final byte[] input = readResource("/data/clusterfuzz-smile-32654.smile");
         try (JsonParser p = MAPPER.createParser(input)) {
-            assertToken(JsonToken.START_ARRAY, p.nextToken());
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            // 08-Jul-2021, tatu: Used to fail later but after unrelated fix, fails here:
             try {
-                String text = p.getText();
-                fail("Should have failed, instead decoded String of "+text.length()+" chars");
+                p.nextToken();
+                fail("Should have failed");
             } catch (StreamReadException e) {
-                verifyException(e, "Invalid byte 0xB4 in short Unicode text");
+                verifyException(e, "Truncated UTF-8 character in Short Unicode Name (10 bytes)");
             }
         }
     }
