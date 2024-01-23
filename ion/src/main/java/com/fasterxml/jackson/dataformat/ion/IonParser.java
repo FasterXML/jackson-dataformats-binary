@@ -345,7 +345,9 @@ public class IonParser
             return _reader.bigIntegerValue();
         } catch (IonException
                 // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE:
-                | ArrayIndexOutOfBoundsException e) {
+                | ArrayIndexOutOfBoundsException
+                // 22-Jan-2024, tatu: OSS-Fuzz#66068 points to NPE:
+                | NullPointerException e) {
             return _reportCorruptNumber(e);
         }
     }
