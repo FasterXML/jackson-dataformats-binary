@@ -291,14 +291,9 @@ public class IonParser
             // Some special cases here:
             case VALUE_EMBEDDED_OBJECT:
                 if (_reader.getType() == IonType.TIMESTAMP) {
-                    try {
-                        Timestamp ts = _reader.timestampValue();
-                        if (ts != null) {
-                            return ts.toString();
-                        }
-                    } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-                        // 07-Jan-2024, tatu: OSS-Fuzz#65628 points to AIOOBE:
-                        return _reportCorruptContent(e);
+                    Timestamp ts = _timestampFromIonReader();
+                    if (ts != null) {
+                        return ts.toString();
                     }
                 }
                 // How about CLOB?
@@ -549,7 +544,7 @@ public class IonParser
             switch (_reader.getType()) {
             case BLOB:
             case CLOB: // looks like CLOBs are much like BLOBs...
-                return _reader.newBytes();
+                return _bytesFromIonReader();
             default:
             }
         }
@@ -577,28 +572,41 @@ public class IonParser
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
             case TIMESTAMP:
-                try { 
-                    return _reader.timestampValue();
-                } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-                    return _reportCorruptContent(e);
-                } catch (IllegalArgumentException e) {
-                    throw _constructError(String.format(
-                            "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
-                            e);
-                }
+                return _timestampFromIonReader();
             case BLOB:
             case CLOB:
-                try {
-                    return _reader.newBytes();
-                } catch (NullPointerException e) {
-                    // 02-Jan-2024, tatu: OSS-Fuzz#65479 points to NPE ^^^
-                    return _reportCorruptContent(e);
-                }
+                return _bytesFromIonReader();
             // What about CLOB?
             default:
             }
         }
         return getIonValue();
+    }
+
+    // @since 2.17
+    private byte[] _bytesFromIonReader() throws IOException {
+        try {
+            return _reader.newBytes();
+        } catch (NullPointerException
+            // 02-Jan-2024, tatu: OSS-Fuzz#65479 points to NPE ^^^
+                | NegativeArraySizeException e) {
+            // 23-Jan-2024, tatu: OSS-Fuzz#66077 points to NASE ^^^
+            return _reportCorruptContent(e);
+        }
+    }
+
+    // @since 2.17
+    private Timestamp _timestampFromIonReader() throws IOException {
+        try {
+            return _reader.timestampValue();
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+            // 07-Jan-2024, tatu: OSS-Fuzz#65628 points to AIOOBE:
+            return _reportCorruptContent(e);
+        } catch (IllegalArgumentException e) {
+            throw _constructError(String.format(
+                    "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
+                    e);
+        }
     }
 
     /*
