@@ -16,6 +16,8 @@ Active maintainers:
 
 2.17.0 (not yet released)
 
+#316 (cbor) Uncaught exception in
+  `com.fasterxml.jackson.dataformat.cbor.CBORParser._finishShortText`
 #417: (ion) `IonReader` classes contain assert statement which could throw
   unexpected `AssertionError`
  (fix contributed by Arthur C)
