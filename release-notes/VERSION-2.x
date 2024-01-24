@@ -45,7 +45,9 @@ Active maintainers:
 #464: (cbor) Unexpected `ArrayIndexOutOfBoundsException` in `CBORParser`
   for corrupt String value
  (fix contributed by Arthur C)
-- (ion) Update `com.amazon.ion:ion-java` to 1.11.0 (from 1.10.5)
+#468: (ion) Upgrade `ion-java` to 1.11.1 and remove catch clauses for exceptions
+  that are no longer leaked
+ (contributed by @tgregg)
 
 2.16.1 (24-Dec-2023)
 
