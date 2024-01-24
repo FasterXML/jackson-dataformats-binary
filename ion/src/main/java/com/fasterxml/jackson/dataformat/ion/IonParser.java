@@ -273,14 +273,15 @@ public class IonParser
             case VALUE_STRING:
                 try {
                     return _reader.stringValue();
-                } catch (UnknownSymbolException
+                } catch (IonException
                     // stringValue() will throw an UnknownSymbolException if we're
                     // trying to get the text for a symbol id that cannot be resolved.
                     // stringValue() has an assert statement which could throw an
-                    | AssertionError | NullPointerException e
+                    | AssertionError e
                     // AssertionError if we're trying to get the text with a symbol
-                    // id less than or equals to 0.
-                    // NullPointerException may also be thrown on invalid data
+                    // id less than or equals to 0. This is a bug in ion-java that
+                    // will be fixed by https://github.com/amazon-ion/ion-java/issues/702
+                    // at which point this AssertionError clause should be removed.
                     ) {
                     return _reportCorruptContent(e);
                 }
@@ -338,11 +339,7 @@ public class IonParser
     private BigInteger _getBigIntegerValue() throws IOException {
         try {
             return _reader.bigIntegerValue();
-        } catch (IonException
-                // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE:
-                | ArrayIndexOutOfBoundsException
-                // 22-Jan-2024, tatu: OSS-Fuzz#66068 points to NPE:
-                | NullPointerException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -358,11 +355,7 @@ public class IonParser
     private BigDecimal _getBigDecimalValue() throws IOException {
         try {
             return _reader.bigDecimalValue();
-        } catch (IonException
-                // 01-Jan-2024, tatu: OSS-Fuzz#65062 points to AIOOBE:
-                | ArrayIndexOutOfBoundsException
-                // 05-Jan-2024, tatu: OSS-Fuzz#65557 points to NPE:
-                | NullPointerException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -377,10 +370,7 @@ public class IonParser
     private double _getDoubleValue() throws IOException {
         try {
             return _reader.doubleValue();
-        } catch (IonException
-                // 11-Jan-2024, tatu: OSS-Fuzz#65679 points to AIOOBE:
-                | ArrayIndexOutOfBoundsException
-                | NullPointerException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -401,9 +391,7 @@ public class IonParser
     private int _getIntValue() throws IOException {
         try {
             return _reader.intValue();
-        } catch (IonException
-                // 15-Jan-2024, tatu: other OSS-Fuzz tests suggest we need this:
-                | ArrayIndexOutOfBoundsException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -418,9 +406,7 @@ public class IonParser
     private long _getLongValue() throws IOException {
         try {
             return _reader.longValue();
-        } catch (IonException
-                // 14-Jan-2024, tatu: OSS-Fuzz#65731 points to AIOOBE:
-                | ArrayIndexOutOfBoundsException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -454,14 +440,9 @@ public class IonParser
                     return NumberType.BIG_DECIMAL;
                 case INT:
                     final IntegerSize size;
-                    // [dataformats-binary#434]: another problem with corrupt data handling.
-                    // Temporary measure until this bug fixing is merged and published
-                    // https://github.com/amazon-ion/ion-java/issues/685
                     try {
                         size = _reader.getIntegerSize();
                     } catch (IonException e) {
-                        return _reportCorruptNumber(e);
-                    } catch (AssertionError | NullPointerException e) {
                         return _reportCorruptNumber(e);
                     }
                     if (size == null) {
@@ -585,23 +566,13 @@ public class IonParser
 
     // @since 2.17
     private byte[] _bytesFromIonReader() throws IOException {
-        try {
-            return _reader.newBytes();
-        } catch (NullPointerException
-            // 02-Jan-2024, tatu: OSS-Fuzz#65479 points to NPE ^^^
-                | NegativeArraySizeException e) {
-            // 23-Jan-2024, tatu: OSS-Fuzz#66077 points to NASE ^^^
-            return _reportCorruptContent(e);
-        }
+        return _reader.newBytes();
     }
 
     // @since 2.17
     private Timestamp _timestampFromIonReader() throws IOException {
         try {
             return _reader.timestampValue();
-        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            // 07-Jan-2024, tatu: OSS-Fuzz#65628 points to AIOOBE:
-            return _reportCorruptContent(e);
         } catch (IllegalArgumentException e) {
             throw _constructError(String.format(
                     "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
@@ -687,10 +658,11 @@ public class IonParser
         } catch (IonException e) {
             return _reportCorruptContent(e);
 
-        } catch (AssertionError | IndexOutOfBoundsException | NullPointerException e) {
-            // [dataformats-binary#420]: IonJava leaks IOOBEs, catch
+        } catch (AssertionError e) {
             // [dataformats-binary#432]: AssertionError if we're trying to get the text
-            //   with a symbol id less than or equals to 0.
+            //   with a symbol id less than or equals to 0. This is a bug in ion-java that
+            //   will be fixed by https://github.com/amazon-ion/ion-java/issues/702
+            //   at which point this AssertionError clause should be removed.
             return _reportCorruptContent(e);
         }
         if (type == null) {
