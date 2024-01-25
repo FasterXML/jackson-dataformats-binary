@@ -11,14 +11,15 @@ import com.fasterxml.jackson.dataformat.ion.fuzz.IonFuzzTestUtil;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
-// [dataformats-binary#469]: Similar to OSS-Fuzz#66077 (but not necessarily same)
-public class IonFuzz_469_66077_NegArraySizeTest
+// [dataformats-binary#469]: NegativeArraySizeException
+// https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=66141
+public class IonFuzz_469_66149_NegArraySizeTest
 {
     private final ObjectMapper ION_MAPPER = new IonObjectMapper();
 
     @Test
-    public void testFuzz66077_NegativeArraySize() throws Exception {
-        final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-66077.ion");
+    public void testFuzz66149_NegativeArraySize() throws Exception {
+        final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-66149.ion");
         try {
             ION_MAPPER.readTree(doc);
             fail("Should not pass (invalid content)");
