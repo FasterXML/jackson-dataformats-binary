@@ -22,7 +22,7 @@ public class IonFuzz_473_66131_AIOOBE_Test
     private final ObjectMapper ION_MAPPER = new IonObjectMapper();
 
     @Test
-    public void testFuzz66077_NegativeArraySize() throws Exception {
+    public void testFuzz66077_ArrayIndexOOBE() throws Exception {
         final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-66131.ion");
         try (JsonParser p = ION_MAPPER.createParser(doc)) {
             assertEquals(JsonToken.VALUE_STRING, p.nextToken());
