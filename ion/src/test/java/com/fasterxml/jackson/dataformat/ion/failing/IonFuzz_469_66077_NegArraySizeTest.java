@@ -11,8 +11,8 @@ import com.fasterxml.jackson.dataformat.ion.fuzz.IonFuzzTestUtil;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
-// Similar to OSS-Fuzz#66077 (but not same)
-public class IonFuzz_66077_NegArraySizeTest
+// [dataformats-binary#469]: Similar to OSS-Fuzz#66077 (but not necessarily same)
+public class IonFuzz_469_66077_NegArraySizeTest
 {
     private final ObjectMapper ION_MAPPER = new IonObjectMapper();
 
