@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-//[dataformats-binary#]: ArrayIndexOutOfBoundsException
+//[dataformats-binary#473]: ArrayIndexOutOfBoundsException
 //https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=66131
 public class IonFuzz_473_66131_AIOOBE_Test
 {
