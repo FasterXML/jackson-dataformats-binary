@@ -183,6 +183,11 @@ public class CBORParser extends ParserMinimalBase
     protected final IOContext _ioContext;
 
     /**
+     * @since 2.17
+     */
+    protected final StreamReadConstraints _streamReadConstraints;
+    
+    /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
      * ({@link #close}) or when end-of-input is reached.
@@ -532,11 +537,13 @@ public class CBORParser extends ParserMinimalBase
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
+
+        _streamReadConstraints = ctxt.streamReadConstraints();
     }
 
     @Override
     public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
+        return _streamReadConstraints;
     }
 
     @Override
@@ -1127,7 +1134,7 @@ public class CBORParser extends ParserMinimalBase
         if (_binaryValue.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            streamReadConstraints().validateIntegerLength(_binaryValue.length);
+            _streamReadConstraints.validateIntegerLength(_binaryValue.length);
             BigInteger nr = new BigInteger(_binaryValue);
             if (neg) {
                 nr = nr.negate();
@@ -2163,7 +2170,7 @@ public class CBORParser extends ParserMinimalBase
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
-            streamReadConstraints().validateBigIntegerScale(_numberBigDecimal.scale());
+            _streamReadConstraints.validateBigIntegerScale(_numberBigDecimal.scale());
             _numberBigInt = _numberBigDecimal.toBigInteger();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberBigInt = BigInteger.valueOf(_numberLong);
@@ -2232,7 +2239,7 @@ public class CBORParser extends ParserMinimalBase
             if (text == null) {
                 _throwInternal();
             }
-            streamReadConstraints().validateFPLength(text.length());
+            _streamReadConstraints.validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
@@ -3655,7 +3662,7 @@ expType, type, ch));
     {
         if (_inputStream != null) {
             _currInputProcessed += _inputEnd;
-
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
             if (count > 0) {
                 _inputPtr = 0;
@@ -3697,6 +3704,7 @@ expType, type, ch));
         }
         // Needs to be done here, as per [dataformats-binary#178]
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
             int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
@@ -3731,6 +3739,7 @@ expType, type, ch));
         }
         // Needs to be done here, as per [dataformats-binary#178]
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
             int count = _inputStream.read(_inputBuffer, _inputEnd, _inputBuffer.length - _inputEnd);
@@ -3906,11 +3915,11 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
 
     private void createChildArrayContext(final int len) throws IOException {
         _streamReadContext = _streamReadContext.createChildArrayContext(len);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 
     private void createChildObjectContext(final int len) throws IOException {
         _streamReadContext = _streamReadContext.createChildObjectContext(len);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 }

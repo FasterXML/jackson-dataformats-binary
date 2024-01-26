@@ -18,6 +18,8 @@ Active maintainers:
 
 #316 (cbor) Uncaught exception in
   `com.fasterxml.jackson.dataformat.cbor.CBORParser._finishShortText`
+#392: (cbor, smile) Support `StreamReadConstraints.maxDocumentLength`
+  validation for CBOR, Smile
 #417: (ion) `IonReader` classes contain assert statement which could throw
   unexpected `AssertionError`
  (fix contributed by Arthur C)
