@@ -72,6 +72,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected final IOContext _ioContext;
 
     /**
+     * @since 2.17
+     */
+    protected final StreamReadConstraints _streamReadConstraints;
+
+    /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
      * ({@link #close}) or when end-of-input is reached.
@@ -252,6 +257,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         super(parserFeatures);
         _formatFeatures = formatFeatures;
         _ioContext = ctxt;
+        _streamReadConstraints = ctxt.streamReadConstraints();
         _symbols = sym;
         _symbolsCanonical = sym.isCanonicalizing();
         DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
@@ -262,7 +268,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     @Override
     public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
+        return _streamReadConstraints;
     }
 
     /*
@@ -678,7 +684,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
-            streamReadConstraints().validateBigIntegerScale(_numberBigDecimal.scale());
+            _streamReadConstraints.validateBigIntegerScale(_numberBigDecimal.scale());
             _numberBigInt = _numberBigDecimal.toBigInteger();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberBigInt = BigInteger.valueOf(_numberLong);

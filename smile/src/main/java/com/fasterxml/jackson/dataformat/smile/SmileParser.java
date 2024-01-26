@@ -276,6 +276,7 @@ versionBits));
         if (_inputStream != null) {
             int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
             _currInputProcessed += _inputEnd;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             _inputPtr = 0;
             if (count > 0) {
                 _inputEnd = count;
@@ -334,6 +335,7 @@ versionBits));
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         if (amount > 0 && _inputPtr > 0) {
             //_currInputRowStart -= _inputPtr;
             System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
@@ -2246,7 +2248,7 @@ versionBits));
         if (raw.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            streamReadConstraints().validateIntegerLength(raw.length);
+            _streamReadConstraints.validateIntegerLength(raw.length);
             _numberBigInt = new BigInteger(raw);
         }
         _numTypesValid = NR_BIGINT;
@@ -2294,7 +2296,7 @@ versionBits));
         if (raw.length == 0) {
             _numberBigDecimal = BigDecimal.ZERO;
         } else {
-            streamReadConstraints().validateFPLength(raw.length);
+            _streamReadConstraints.validateFPLength(raw.length);
             BigInteger unscaledValue = new BigInteger(raw);
             _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }
@@ -3129,12 +3131,12 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
 
     private void createChildArrayContext(final int lineNr, final int colNr) throws IOException {
         _streamReadContext = _streamReadContext.createChildArrayContext(lineNr, colNr);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 
     private void createChildObjectContext(final int lineNr, final int colNr) throws IOException {
         _streamReadContext = _streamReadContext.createChildObjectContext(lineNr, colNr);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 }
 
