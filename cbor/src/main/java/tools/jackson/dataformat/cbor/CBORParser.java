@@ -882,7 +882,7 @@ public class CBORParser extends ParserBase
         if (_binaryValue.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            streamReadConstraints().validateIntegerLength(_binaryValue.length);
+            _streamReadConstraints.validateIntegerLength(_binaryValue.length);
             BigInteger nr = new BigInteger(_binaryValue);
             if (neg) {
                 nr = nr.negate();
@@ -2224,7 +2224,7 @@ public class CBORParser extends ParserBase
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
-            streamReadConstraints().validateBigIntegerScale(_numberBigDecimal.scale());
+            _streamReadConstraints.validateBigIntegerScale(_numberBigDecimal.scale());
             _numberBigInt = _numberBigDecimal.toBigInteger();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberBigInt = BigInteger.valueOf(_numberLong);
@@ -2296,7 +2296,7 @@ public class CBORParser extends ParserBase
             if (text == null) {
                 _throwInternal();
             }
-            streamReadConstraints().validateFPLength(text.length());
+            _streamReadConstraints.validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
@@ -3715,6 +3715,7 @@ expType, type, ch));
     {
         if (_inputStream != null) {
             _currInputProcessed += _inputEnd;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
 
             final int toRead = _inputBuffer.length;
             int count;
@@ -3763,6 +3764,7 @@ expType, type, ch));
         }
         // Needs to be done here, as per [dataformats-binary#178]
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
             int count;
@@ -3803,6 +3805,7 @@ expType, type, ch));
         }
         // Needs to be done here, as per [dataformats-binary#178]
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         _inputPtr = 0;
         while (_inputEnd < minAvailable) {
             int count;
@@ -3969,11 +3972,11 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
 
     private void createChildArrayContext(final int len) throws JacksonException {
         _streamReadContext = _streamReadContext.createChildArrayContext(len);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 
     private void createChildObjectContext(final int len) throws JacksonException {
         _streamReadContext = _streamReadContext.createChildObjectContext(len);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 }
