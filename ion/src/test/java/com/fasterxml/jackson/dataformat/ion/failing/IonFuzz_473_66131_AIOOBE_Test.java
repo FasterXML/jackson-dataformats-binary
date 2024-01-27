@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.*;
 import com.fasterxml.jackson.dataformat.ion.fuzz.IonFuzzTestUtil;
 
+import java.util.Arrays;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -24,12 +26,14 @@ public class IonFuzz_473_66131_AIOOBE_Test
     @Test
     public void testFuzz66077_ArrayIndexOOBE() throws Exception {
         final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-66131.ion");
-        try (JsonParser p = ION_MAPPER.createParser(doc)) {
-            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-            assertNull(p.nextToken());
+        // The binary Ion data begins at index 32. Cutting off the data at index 44 should not cause an
+        // ArrayIndexOutOfBoundsException during parsing.
+        byte[] slice = Arrays.copyOfRange(doc, 32, 44);
+        try (JsonParser p = ION_MAPPER.createParser(slice)) {
+            assertEquals(JsonToken.START_OBJECT, p.nextToken());
+            p.nextTextValue();
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
-            // May or may not be the exception message to get, change as appropriate
             assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
         }
     }
