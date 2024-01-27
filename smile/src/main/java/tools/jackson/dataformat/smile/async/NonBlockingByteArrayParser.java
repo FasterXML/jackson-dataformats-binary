@@ -1648,19 +1648,11 @@ public class NonBlockingByteArrayParser
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-<<<<<<< HEAD:smile/src/main/java/tools/jackson/dataformat/smile/async/NonBlockingByteArrayParser.java
         // 26-Aug-2023, tatu: But it might not be big enough?
         final int neededSize = len + 8;
         if (outBuf.length < neededSize) {
             outBuf = _textBuffer.expandCurrentSegment(neededSize);
         }
-=======
-        // 26-Jan-2024, tatu: Must have enough space for all-ASCII, at least:
-        if (outBuf.length < (len + 8)) {
-            outBuf = _textBuffer.expandCurrentSegment(len + 8);
-        }
-
->>>>>>> 2.17:smile/src/main/java/com/fasterxml/jackson/dataformat/smile/async/NonBlockingByteArrayParser.java
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         // since we only check expansion for multi-byte chars, there must be
         // enough room for remaining bytes as all-ASCII
