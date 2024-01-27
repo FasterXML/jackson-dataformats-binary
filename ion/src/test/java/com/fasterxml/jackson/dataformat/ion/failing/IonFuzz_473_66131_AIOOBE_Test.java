@@ -8,13 +8,9 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.*;
-import com.fasterxml.jackson.dataformat.ion.fuzz.IonFuzzTestUtil;
-
-import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 //[dataformats-binary#473]: ArrayIndexOutOfBoundsException
@@ -25,11 +21,8 @@ public class IonFuzz_473_66131_AIOOBE_Test
 
     @Test
     public void testFuzz66077_ArrayIndexOOBE() throws Exception {
-        final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-66131.ion");
-        // The binary Ion data begins at index 32. Cutting off the data at index 44 should not cause an
-        // ArrayIndexOutOfBoundsException during parsing.
-        byte[] slice = Arrays.copyOfRange(doc, 32, 44);
-        try (JsonParser p = ION_MAPPER.createParser(slice)) {
+        final byte[] doc = { (byte) 0xe0, 0x01, 0x00, (byte) 0xea, (byte) 0xdc, (byte) 0x9a };
+        try (JsonParser p = ION_MAPPER.createParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             p.nextTextValue();
             fail("Should not pass (invalid content)");
