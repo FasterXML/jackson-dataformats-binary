@@ -1641,6 +1641,11 @@ public class NonBlockingByteArrayParser
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        // 26-Jan-2024, tatu: Must have enough space for all-ASCII, at least:
+        if (outBuf.length < (len + 8)) {
+            outBuf = _textBuffer.expandCurrentSegment(len + 8);
+        }
+
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         // since we only check expansion for multi-byte chars, there must be
         // enough room for remaining bytes as all-ASCII
