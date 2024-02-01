@@ -16,6 +16,8 @@ Active maintainers:
 
 2.17.0 (not yet released)
 
+#251 (ion) Unable to deserialize Object with unknown `Timestamp` field
+ (reported by @mgoertzen)
 #316 (cbor) Uncaught exception in
   `com.fasterxml.jackson.dataformat.cbor.CBORParser._finishShortText`
 #392: (cbor, smile) Support `StreamReadConstraints.maxDocumentLength`
