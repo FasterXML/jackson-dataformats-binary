@@ -18,7 +18,7 @@ public class IonFuzz_471_66141_AssertionErrorTest
     private final ObjectMapper ION_MAPPER = new IonObjectMapper();
 
     @Test
-    public void testFuzz66077_AssertionError() throws Exception {
+    public void testFuzz66141_AssertionError() throws Exception {
         final byte[] doc = IonFuzzTestUtil.readResource("/data/fuzz-66141.ion");
         try {
             ION_MAPPER.readValue(doc, java.util.Date.class);
