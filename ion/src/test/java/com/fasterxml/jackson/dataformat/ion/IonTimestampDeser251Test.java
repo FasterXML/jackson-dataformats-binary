@@ -1,7 +1,8 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion;
 
 import org.junit.Test;
 
+import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -15,12 +16,30 @@ import static org.junit.Assert.assertNotNull;
 // For [dataformats-binary#251]
 public class IonTimestampDeser251Test
 {
-    static class Message {
+    static class MessageWithoutTimestamp {
         final String message;
         final Integer count;
 
         @JsonCreator
-        public Message(@JsonProperty("message") String message,
+        public MessageWithoutTimestamp(@JsonProperty("message") String message,
+                       @JsonProperty("count") Integer count) {
+            this.message = message;
+            this.count = count;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    static class MessageWithTimestamp {
+        final String message;
+        final Integer count;
+
+        public Timestamp timestamp;
+
+        @JsonCreator
+        public MessageWithTimestamp(@JsonProperty("message") String message,
                        @JsonProperty("count") Integer count) {
             this.message = message;
             this.count = count;
@@ -38,10 +57,21 @@ public class IonTimestampDeser251Test
 
     // [dataformats-binary#251]
     @Test
-    public void testTimestampDeserWithBuffering() throws Exception {
+    public void testDeserWithIgnoredBufferedTimestamp() throws Exception {
         String ion = "{message: \"Hello, world\", timestamp:2021-03-10T01:49:30.242-00:00}";
-        Message message = ION_MAPPER.readValue(ion, Message.class);
+        MessageWithoutTimestamp message = ION_MAPPER.readValue(ion,
+                MessageWithoutTimestamp.class);
         assertNotNull(message);
         assertEquals("Hello, world", message.message);
+    }
+
+    @Test
+    public void testDeserWithBufferedTimestamp() throws Exception {
+        String ion = "{message: \"Hello, world\", timestamp:2021-03-10T01:49:30.242-00:00}";
+        MessageWithTimestamp message = ION_MAPPER.readValue(ion,
+                MessageWithTimestamp.class);
+        assertNotNull(message);
+        assertEquals("Hello, world", message.message);
+        assertNotNull(message.timestamp);
     }
 }
