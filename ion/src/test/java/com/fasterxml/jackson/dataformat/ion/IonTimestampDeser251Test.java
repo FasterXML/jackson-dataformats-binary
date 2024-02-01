@@ -5,9 +5,10 @@ import org.junit.Test;
 import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueModule;
 
 import static org.junit.Assert.assertEquals;
