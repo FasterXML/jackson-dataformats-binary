@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion.fuzz;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -24,7 +24,6 @@ public class IonFuzz_469_66149_NegArraySizeTest
             ION_MAPPER.readTree(doc);
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
-            // May or may not be the exception message to get, change as appropriate
             assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
         }
     }
