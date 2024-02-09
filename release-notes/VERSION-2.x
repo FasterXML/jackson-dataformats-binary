@@ -32,6 +32,8 @@ Active maintainers:
  (fix contributed by Arthur C)
 #426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
  (fix contributed by Arthur C)-(
+#428: (ion) `IonParser.getIntValue()` fails or does not handle value overflow checks
+ (fix contributed by @thomasdelange5)
 #432: (ion) More methods from `IonReader` could throw an unexpected `AssertionError`
  (fix contributed by Arthur C)
 #434: (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`

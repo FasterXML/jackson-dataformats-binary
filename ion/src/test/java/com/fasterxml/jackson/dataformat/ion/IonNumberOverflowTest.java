@@ -1,10 +1,9 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.exc.InputCoercionException;
-import com.fasterxml.jackson.dataformat.ion.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +12,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 
 // for [dataformats-ion#428]
-public class IonNumberOverflow428Test
+public class IonNumberOverflowTest
 {
     private final IonObjectMapper MAPPER = IonObjectMapper
             .builderForBinaryWriters()
