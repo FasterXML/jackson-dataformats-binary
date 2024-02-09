@@ -406,9 +406,7 @@ public class IonParser
             } else {
                 return _reader.intValue();
             }
-        } catch (IonException
-                // 15-Jan-2024, tatu: other OSS-Fuzz tests suggest we need this:
-                | ArrayIndexOutOfBoundsException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
@@ -431,9 +429,7 @@ public class IonParser
             } else {
                 return _reader.longValue();
             }
-        } catch (IonException
-                // 14-Jan-2024, tatu: OSS-Fuzz#65731 points to AIOOBE:
-                | ArrayIndexOutOfBoundsException e) {
+        } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
     }
