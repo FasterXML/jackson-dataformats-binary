@@ -1,10 +1,9 @@
-package tools.jackson.dataformat.ion.failing;
+package tools.jackson.dataformat.ion;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import tools.jackson.core.exc.InputCoercionException;
-import tools.jackson.dataformat.ion.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +12,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 
 // for [dataformats-ion#428]
-public class IonNumberOverflow428Test
+public class IonNumberOverflowTest
 {
     private final IonObjectMapper MAPPER = IonObjectMapper
             .builderForBinaryWriters()
@@ -42,7 +41,7 @@ public class IonNumberOverflow428Test
             Integer result = MAPPER.readValue(doc, Integer.class);
             fail("Should not pass; got: "+result+" (from "+input+")");
         } catch (InputCoercionException e) {
-            assertThat(e.getMessage(), Matchers.containsString("out of range of int"));
+            assertThat(e.getMessage(), Matchers.containsString("out of range of `int`"));
         }
     }
 
@@ -69,7 +68,7 @@ public class IonNumberOverflow428Test
             Long result = MAPPER.readValue(doc, Long.class);
             fail("Should not pass; got: "+result+" (from "+input+")");
         } catch (InputCoercionException e) {
-            assertThat(e.getMessage(), Matchers.containsString("out of range of long"));
+            assertThat(e.getMessage(), Matchers.containsString("out of range of `long`"));
         }
     }
 

@@ -343,6 +343,21 @@ public class IonParser
     // @since 2.17
     private int _getIntValue() throws JacksonException {
         try {
+            NumberType numberType = getNumberType();
+            if (numberType == NumberType.LONG) {
+                int result = _reader.intValue();
+                if ((long) result != _reader.longValue()) {
+                    _reportOverflowInt();
+                }
+                return result;
+            }
+            if (numberType == NumberType.BIG_INTEGER) {
+                BigInteger bigInteger = _reader.bigIntegerValue();
+                if (BI_MIN_INT.compareTo(bigInteger) > 0 || BI_MAX_INT.compareTo(bigInteger) < 0) {
+                    _reportOverflowInt();
+                }
+                return bigInteger.intValue();
+            }
             return _reader.intValue();
         } catch (IonException e) {
             return _reportCorruptNumber(e);
@@ -357,6 +372,13 @@ public class IonParser
 
     private long _getLongValue() throws JacksonException {
         try {
+            if (getNumberType() == NumberType.BIG_INTEGER) {
+                BigInteger bigInteger = _reader.bigIntegerValue();
+                if (BI_MIN_INT.compareTo(bigInteger) > 0 || BI_MAX_INT.compareTo(bigInteger) < 0) {
+                    _reportOverflowLong();
+                }
+                return bigInteger.longValue();
+            }
             return _reader.longValue();
         } catch (IonException e) {
             return _reportCorruptNumber(e);
