@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.ion.failing;
+package tools.jackson.dataformat.ion.fuzz;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;

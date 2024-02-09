@@ -236,16 +236,7 @@ public class IonParser
             case VALUE_STRING:
                 try {
                     return _reader.stringValue();
-                } catch (IonException
-                    // stringValue() will throw an UnknownSymbolException if we're
-                    // trying to get the text for a symbol id that cannot be resolved.
-                    // stringValue() has an assert statement which could throw an
-                    | AssertionError e
-                    // AssertionError if we're trying to get the text with a symbol
-                    // id less than or equals to 0. This is a bug in ion-java that
-                    // will be fixed by https://github.com/amazon-ion/ion-java/issues/702
-                    // at which point this AssertionError clause should be removed.
-                    ) {
+                } catch (IonException e) {
                     return _reportCorruptContent(e);
                 }
             case VALUE_NUMBER_INT:
@@ -618,12 +609,6 @@ public class IonParser
         } catch (IonException e) {
             return _reportCorruptContent(e);
 
-        } catch (AssertionError e) {
-            // [dataformats-binary#432]: AssertionError if we're trying to get the text
-            //   with a symbol id less than or equals to 0. This is a bug in ion-java that
-            //   will be fixed by https://github.com/amazon-ion/ion-java/issues/702
-            //   at which point this AssertionError clause should be removed.
-            return _reportCorruptContent(e);
         }
         if (type == null) {
             if (_streamReadContext.inRoot()) { // EOF?

@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.ion.failing;
+package tools.jackson.dataformat.ion.fuzz;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -8,7 +8,6 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.ion.*;
-import tools.jackson.dataformat.ion.fuzz.IonFuzzTestUtil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -26,8 +25,7 @@ public class IonFuzz_471_66141_AssertionErrorTest
             ION_MAPPER.readValue(doc, java.util.Date.class);
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
-            // May or may not be the exception message to get, change as appropriate
-            assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));
+            assertThat(e.getMessage(), Matchers.containsString("Corrupt Number value to decode"));
         }
     }
 }
