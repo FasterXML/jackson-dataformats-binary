@@ -240,6 +240,8 @@ Tyler Gregg (tgregg@github)
   (2.14.0)
  #468: (ion) Upgrade `ion-java` to 1.11.1 and remove catch clauses for exceptions
   (2.17.0)
+ * ... and countless others, no longer listed here but only in main Release Notes
+   (since he is the official maintainer of the Ion backend)
 
 David Turner (DaveCTurner@github)
  #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
