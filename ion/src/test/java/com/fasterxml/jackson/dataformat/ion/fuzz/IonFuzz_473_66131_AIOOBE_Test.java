@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion.fuzz;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;

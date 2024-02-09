@@ -49,8 +49,15 @@ Active maintainers:
 #464: (cbor) Unexpected `ArrayIndexOutOfBoundsException` in `CBORParser`
   for corrupt String value
  (fix contributed by Arthur C)
-#468: (ion) Upgrade `ion-java` to 1.11.1 and remove catch clauses for exceptions
-  that are no longer leaked
+#469 (ion) IonReader.newBytes() throwing `NegativeArraySizeException`
+ (contributed by @tgregg)
+#471 (ion) `IonReader` throws `AssertionError` for Timestamp value
+ (contributed by @tgregg)
+#473 (ion) `IonReader.next()` throws `ArrayIndexOutOfBoundsException` for some
+  corrupt content
+ (contributed by @tgregg)
+#482 (ion): Upgrade `ion-java` to 1.11.2 and remove handling of exceptions that
+  are no longer leaked
  (contributed by @tgregg)
 
 2.16.1 (24-Dec-2023)
