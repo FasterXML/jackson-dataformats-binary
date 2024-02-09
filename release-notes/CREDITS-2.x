@@ -314,3 +314,8 @@ Arthur Chan (@arthurscchan)
  * Contributed #464: (cbor) Unexpected `ArrayIndexOutOfBoundsException` in `CBORParser`
    for corrupt String value
   (2.17.0)
+
+Thomas de Lange (@thomasdelange5)
+ * Contributed fix for #428: (ion) `IonParser.getIntValue()` fails or does not handle
+   value overflow checks
+  (2.17.0)
