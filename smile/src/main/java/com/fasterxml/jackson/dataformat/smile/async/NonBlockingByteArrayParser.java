@@ -90,6 +90,7 @@ public class NonBlockingByteArrayParser
         }
         // Time to update pointers first
         _currInputProcessed += _origBufferLen;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
 
         // And then update buffer settings
         _inputBuffer = buf;
@@ -1291,7 +1292,7 @@ public class NonBlockingByteArrayParser
     {
         if (_decode7BitEncoded()) { // got it all!
             final byte[] array = _byteArrayBuilder.toByteArray();
-            streamReadConstraints().validateIntegerLength(array.length);
+            _streamReadConstraints.validateIntegerLength(array.length);
             _numberBigInt = new BigInteger(array);
             _numberType = NumberType.BIG_INTEGER;
             _numTypesValid = NR_BIGINT;
@@ -1440,7 +1441,7 @@ public class NonBlockingByteArrayParser
             // note: scale value is signed, needs zigzag, so:
             final int scale = SmileUtil.zigzagDecode((int) _pending64);
             final byte[] array = _byteArrayBuilder.toByteArray();
-            streamReadConstraints().validateFPLength(array.length);
+            _streamReadConstraints.validateFPLength(array.length);
             BigInteger bigInt = new BigInteger(array);
             _numberBigDecimal = new BigDecimal(bigInt, scale);
             _numberType = NumberType.BIG_DECIMAL;
@@ -1640,6 +1641,11 @@ public class NonBlockingByteArrayParser
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        // 26-Jan-2024, tatu: Must have enough space for all-ASCII, at least:
+        if (outBuf.length < (len + 8)) {
+            outBuf = _textBuffer.expandCurrentSegment(len + 8);
+        }
+
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         // since we only check expansion for multi-byte chars, there must be
         // enough room for remaining bytes as all-ASCII

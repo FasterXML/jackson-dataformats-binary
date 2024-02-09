@@ -35,8 +35,12 @@ class TimestampSerializer extends StdScalarSerializer<Timestamp>
     }
 
     @Override
-    public void serialize(Timestamp value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-        IonGenerator joiGenerator = (IonGenerator) jgen;
-        joiGenerator.writeValue(value);
+    public void serialize(Timestamp value, JsonGenerator g, SerializerProvider provider) throws IOException {
+        if (g instanceof IonGenerator) {
+            ((IonGenerator) g).writeValue(value);
+        } else {
+            // Otherwise probably `TokenBuffer`, so
+            g.writeEmbeddedObject(value);
+        }
     }
 }
