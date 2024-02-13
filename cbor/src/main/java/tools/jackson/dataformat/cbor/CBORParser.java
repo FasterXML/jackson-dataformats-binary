@@ -2554,7 +2554,7 @@ public class CBORParser extends ParserBase
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2657,7 +2657,7 @@ public class CBORParser extends ParserBase
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -3898,14 +3898,6 @@ expType, type, ch));
         throw _constructReadException("Unexpected Break (0xFF) token in definite length ("
                 +_streamReadContext.getExpectedLength()+") "
                 +(_streamReadContext.inObject() ? "Object" : "Array" ));
-    }
-
-    protected void _reportInvalidChar(int c) throws StreamReadException {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 
     protected void _reportInvalidInitial(int mask) throws StreamReadException {

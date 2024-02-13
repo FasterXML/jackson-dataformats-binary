@@ -2903,7 +2903,7 @@ currentToken(), firstCh);
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outBuf.length) {
@@ -3371,15 +3371,6 @@ currentToken(), firstCh);
         }
         throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                 index, _seenStringValueCount);
-    }
-
-    protected void _reportInvalidChar(int c) throws StreamReadException
-    {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 
     protected void _reportInvalidInitial(int mask) throws StreamReadException {
