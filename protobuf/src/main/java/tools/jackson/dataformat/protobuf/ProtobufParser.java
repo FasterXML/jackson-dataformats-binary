@@ -2102,7 +2102,7 @@ public class ProtobufParser extends ParserMinimalBase
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2664,13 +2664,5 @@ public class ProtobufParser extends ParserMinimalBase
     private void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
-    }
-
-    private void _reportInvalidChar(int c) throws StreamReadException {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 }
