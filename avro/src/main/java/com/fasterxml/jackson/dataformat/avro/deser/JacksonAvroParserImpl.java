@@ -712,7 +712,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -759,14 +759,6 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         return ((c << 6) | (d & 0x3F)) - 0x10000;
-    }
-
-    protected void _reportInvalidChar(int c) throws JsonParseException {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 
     private void _reportInvalidInitial(int mask) throws JsonParseException {
