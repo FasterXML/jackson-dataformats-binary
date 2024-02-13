@@ -2500,7 +2500,7 @@ public class CBORParser extends ParserMinimalBase
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2603,7 +2603,7 @@ public class CBORParser extends ParserMinimalBase
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -3833,21 +3833,13 @@ expType, type, ch));
         throw _constructError("Invalid CBOR value token (first byte): 0x"+Integer.toHexString(ch));
     }
 
-    protected void _reportUnexpectedBreak() throws IOException {
+    protected <T> T _reportUnexpectedBreak() throws IOException {
         if (_streamReadContext.inRoot()) {
             throw _constructError("Unexpected Break (0xFF) token in Root context");
         }
         throw _constructError("Unexpected Break (0xFF) token in definite length ("
                 +_streamReadContext.getExpectedLength()+") "
                 +(_streamReadContext.inObject() ? "Object" : "Array" ));
-    }
-
-    protected void _reportInvalidChar(int c) throws JsonParseException {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 
     protected void _reportInvalidInitial(int mask) throws JsonParseException {

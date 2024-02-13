@@ -2582,7 +2582,7 @@ currentToken(), firstCh);
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outBuf.length) {
@@ -3051,15 +3051,6 @@ currentToken(), firstCh);
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
-    }
-
-    protected void _reportInvalidChar(int c) throws JsonParseException
-    {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
