@@ -27,6 +27,10 @@ Active maintainers:
 #410: (ion) Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
  (requested by Dominik B)
 
+2.15.4 (15-Feb-2024)
+
+No changes since 2.15.3
+
 2.15.3 (12-Oct-2023)
 
 #384: (smile) `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
