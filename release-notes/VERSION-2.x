@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.17.0 (not yet released)
+2.17.0-rc1 (26-Feb-2024)
 
 #251 (ion) Unable to deserialize Object with unknown `Timestamp` field
  (reported by @mgoertzen)
@@ -74,6 +74,10 @@ Active maintainers:
 #403: (smile) Remove Smile-specific buffer-recycling
 #410: (ion) Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
  (requested by Dominik B)
+
+2.15.4 (15-Feb-2024)
+
+No changes since 2.15.3
 
 2.15.3 (12-Oct-2023)
 
