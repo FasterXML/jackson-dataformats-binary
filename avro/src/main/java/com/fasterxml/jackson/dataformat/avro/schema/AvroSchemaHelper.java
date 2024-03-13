@@ -17,8 +17,10 @@ import org.apache.avro.specific.SpecificData;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
@@ -267,12 +269,14 @@ public abstract class AvroSchemaHelper
      * @param values List of enum names
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
-    public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
+    public static Schema createEnumSchema(BeanDescription bean, List<String> values,
+            AnnotationIntrospector intr) {
         final JavaType enumType = bean.getType();
+        Enum<?> defaultEnumValue = intr.findDefaultEnumValue((Class<Enum<?>>)(Class<?>) enumType.getRawClass());
         return addAlias(Schema.createEnum(
             getName(enumType),
             bean.findClassDescription(),
-            getNamespace(enumType, bean.getClassInfo()), values
+            getNamespace(enumType, bean.getClassInfo()), values, defaultEnumValue != null ? defaultEnumValue.toString() : null
         ), bean);
     }
 
