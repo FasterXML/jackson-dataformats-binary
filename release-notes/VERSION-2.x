@@ -14,6 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.0 (not yet released)
+
+No changes since 2.17.
+
 2.17.0 (12-Mar-2024)
 
 #251 (ion) Unable to deserialize Object with unknown `Timestamp` field
