@@ -203,7 +203,7 @@ public class ProtobufMapper extends ObjectMapper
             try {
                 l = _descriptorLoader;
                 if (l == null) {
-                    l = _descriptorLoader = DescriptorLoader.construct(this);
+                    _descriptorLoader = l = DescriptorLoader.construct(this);
                 }
             } finally {
                 _lock.unlock();
