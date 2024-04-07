@@ -22,8 +22,6 @@ public class ProtobufMapper extends ObjectMapper
 {
     private static final long serialVersionUID = 1L;
 
-    private final ReentrantLock _lock = new ReentrantLock();
-
     /**
      * Base implementation for "Vanilla" {@link ObjectMapper}, used with
      * Protobuf backend.
@@ -46,6 +44,9 @@ public class ProtobufMapper extends ObjectMapper
      * @since 2.9
      */
     protected volatile DescriptorLoader _descriptorLoader;
+
+    // @since 2.18
+    private final ReentrantLock _descriptorLock = new ReentrantLock();
 
     /*
     /**********************************************************
@@ -199,14 +200,14 @@ public class ProtobufMapper extends ObjectMapper
     {
         DescriptorLoader l = _descriptorLoader;
         if (l == null) {
-            _lock.lock();
+            _descriptorLock.lock();
             try {
                 l = _descriptorLoader;
                 if (l == null) {
                     _descriptorLoader = l = DescriptorLoader.construct(this);
                 }
             } finally {
-                _lock.unlock();
+                _descriptorLock.unlock();
             }
         }
         return l;
