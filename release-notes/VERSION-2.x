@@ -16,7 +16,8 @@ Active maintainers:
 
 2.18.0 (not yet released)
 
-No changes since 2.17.
+#484: (protobuf) Rework synchronization in `ProtobufMapper`
+ (contributed by @pjfanning)
 
 2.17.0 (12-Mar-2024)
 

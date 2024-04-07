@@ -319,3 +319,7 @@ Thomas de Lange (@thomasdelange5)
  * Contributed fix for #428: (ion) `IonParser.getIntValue()` fails or does not handle
    value overflow checks
   (2.17.0)
+
+PJ Fanning (pjfanning@github)
+ * Contributed #484: Rework synchronization in `ProtobufMapper`
+  (2.18.0)
