@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.locks.ReentrantLock;
 
 import tools.jackson.core.Version;
 import tools.jackson.core.type.TypeReference;
@@ -71,7 +72,9 @@ public class ProtobufMapper extends ObjectMapper
      * Lazily constructed instance of {@link DescriptorLoader}, used for loading
      * structured protoc definitions from multiple files.
      */
-    protected DescriptorLoader _descriptorLoader;
+    protected volatile DescriptorLoader _descriptorLoader;
+
+    private final ReentrantLock _descriptorLock = new ReentrantLock();
 
     /*
     /**********************************************************************
@@ -221,11 +224,19 @@ public class ProtobufMapper extends ObjectMapper
      * Accessors that may be used instead of convenience <code>loadDescriptorSet</code>
      * methods, if alternate sources need to be used.
      */
-    public synchronized DescriptorLoader descriptorLoader() throws IOException
+    public DescriptorLoader descriptorLoader() throws IOException
     {
         DescriptorLoader l = _descriptorLoader;
         if (l == null) {
-            _descriptorLoader = l = DescriptorLoader.construct(this);
+            _descriptorLock.lock();
+            try {
+                l = _descriptorLoader;
+                if (l == null) {
+                    _descriptorLoader = l = DescriptorLoader.construct(this);
+                }
+            } finally {
+                _descriptorLock.unlock();
+            }
         }
         return l;
     }
