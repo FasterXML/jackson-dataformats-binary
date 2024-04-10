@@ -19,6 +19,10 @@ Active maintainers:
 #484: (protobuf) Rework synchronization in `ProtobufMapper`
  (contributed by @pjfanning)
 
+2.17.1 (not yet released)
+
+#485 (ion): Upgrade `ion-java` to 1.11.4 (from 1.11.2)
+
 2.17.0 (12-Mar-2024)
 
 #251 (ion) Unable to deserialize Object with unknown `Timestamp` field
