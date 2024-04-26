@@ -676,7 +676,6 @@ public class IonParser
         }
         if (type == null) {
             if (_parsingContext.inRoot()) { // EOF?
-                close();
                 _currToken = null;
             } else {
                 _parsingContext = _parsingContext.getParent();
