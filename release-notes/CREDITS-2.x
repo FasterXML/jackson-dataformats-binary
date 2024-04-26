@@ -320,6 +320,11 @@ Thomas de Lange (@thomasdelange5)
    value overflow checks
   (2.17.0)
 
+Yoann Vernageau (@yvrng)
+ * Contributed #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
+   when source is an empty `InputStream`
+  (2.17.1)
+
 PJ Fanning (pjfanning@github)
  * Contributed #484: Rework synchronization in `ProtobufMapper`
   (2.18.0)
