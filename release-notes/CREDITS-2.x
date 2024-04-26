@@ -319,3 +319,9 @@ Thomas de Lange (@thomasdelange5)
  * Contributed fix for #428: (ion) `IonParser.getIntValue()` fails or does not handle
    value overflow checks
   (2.17.0)
+
+Yoann Vernageau (@yvrng)
+ * Contributed #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
+   when source is an empty `InputStream`
+  (2.17.1)
+
