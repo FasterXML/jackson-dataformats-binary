@@ -21,7 +21,7 @@ Active maintainers:
 
 2.17.1 (not yet released)
 
-#485 (ion): Upgrade `ion-java` to 1.11.4 (from 1.11.2)
+#488 (ion): Upgrade `ion-java` to 1.11.7 (from 1.11.2)
 
 2.17.0 (12-Mar-2024)
 
