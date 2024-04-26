@@ -634,7 +634,6 @@ public class IonParser
         }
         if (type == null) {
             if (_streamReadContext.inRoot()) { // EOF?
-                close();
                 _currToken = null;
             } else {
                 _streamReadContext = _streamReadContext.getParent();
