@@ -369,6 +369,9 @@ public class IonParser
     @Override
     public float getFloatValue() throws IOException {
         _verifyIsNumberToken();
+        // 04-May-2024, tatu: May seem odd but Ion really does not
+        //   expose 32-bit floats even if it MAY use them internally
+        //   for encoding. So:
         return (float) _getDoubleValue();
     }
 
@@ -472,6 +475,7 @@ public class IonParser
                         return NumberType.BIG_INTEGER;
                     }
                 case FLOAT:
+                    // 04-May-2024, tatu: Ion really does not expose 32-bit floats, so:
                     return NumberType.DOUBLE;
                 default:
                 }
@@ -489,7 +493,9 @@ public class IonParser
                 // 06-Jan-2024, tatu: Existing code maps Ion `FLOAT` into Java
                 //    `float`. But code in `IonReader` suggests `Double` might
                 //    be more accurate mapping... odd.
-                return NumberTypeFP.FLOAT32;
+                // 04-May-2024, tatu: Ion really does not expose 32-bit floats;
+                //    must expose as 64-bit here too
+                return NumberTypeFP.DOUBLE64;
             }
             if (type == IonType.DECIMAL) {
                 // 06-Jan-2024, tatu: Seems like `DECIMAL` is expected to map
