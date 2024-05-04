@@ -75,7 +75,8 @@ public class IonParserTest
         IonParser floatParser = new IonFactory().createParser(ionFloat);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
-        Assert.assertEquals(JsonParser.NumberTypeFP.FLOAT32, floatParser.getNumberTypeFP());
+        // [dataformats-binary#490]: float coerces to double
+        Assert.assertEquals(JsonParser.NumberTypeFP.DOUBLE64, floatParser.getNumberTypeFP());
         Assert.assertEquals(floatValue, floatParser.getNumberValue());
 
         BigDecimal bigDecimalValue = new BigDecimal(Double.MAX_VALUE + "1");
