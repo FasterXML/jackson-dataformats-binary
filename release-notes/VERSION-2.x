@@ -24,8 +24,9 @@ Active maintainers:
 #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
   when source is an empty `InputStream`
  (contributed by Yoann V)
-
 #488 (ion): Upgrade `ion-java` to 1.11.7 (from 1.11.2)
+#490 (ion) ION deserialization type change from Double to Float in 2.17.0
+ (reported by Florian H)
 
 2.17.0 (12-Mar-2024)
 
