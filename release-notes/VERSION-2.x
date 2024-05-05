@@ -18,7 +18,7 @@ Active maintainers:
 
 - No changes since 2.17
 
-2.17.1 (not yet released)
+2.17.1 (04-May-2024)
 
 #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
   when source is an empty `InputStream`
