@@ -19,7 +19,7 @@ Active maintainers:
 #484: (protobuf) Rework synchronization in `ProtobufMapper`
  (contributed by @pjfanning)
 
-2.17.1 (not yet released)
+2.17.1 (04-May-2024)
 
 #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
   when source is an empty `InputStream`
