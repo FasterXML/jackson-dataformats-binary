@@ -34,6 +34,11 @@ public class VisitorFormatWrapperImpl
     protected boolean _logicalTypesEnabled = false;
 
     /**
+     * @since 2.18
+     */
+    protected boolean _writeEnumAsString = false;
+
+    /**
      * Visitor used for resolving actual Schema, if structured type
      * (or one with complex configuration)
      */
@@ -124,6 +129,26 @@ public class VisitorFormatWrapperImpl
         return _logicalTypesEnabled;
     }
 
+    /**
+     * Enable Java enum to Avro string mapping.
+     */
+    public VisitorFormatWrapperImpl enableWriteEnumAsString() {
+    	_writeEnumAsString = true;
+        return this;
+    }
+
+    /**
+     * Disable Java enum to Avro string mapping.
+     */
+    public VisitorFormatWrapperImpl disableWriteEnumAsString() {
+        _writeEnumAsString = false;
+        return this;
+    }
+
+    public boolean isWriteEnumAsStringEnabled() {
+        return _writeEnumAsString;
+    }
+
     /*
     /**********************************************************************
     /* Callbacks
@@ -179,7 +204,7 @@ public class VisitorFormatWrapperImpl
             return null;
         }
 
-        if (Enum.class.isAssignableFrom(type.getRawClass())) {
+        if (Enum.class.isAssignableFrom(type.getRawClass()) && !isWriteEnumAsStringEnabled()) {
         	EnumVisitor v = new EnumVisitor(_provider, _schemas, type);
             _builder = v;
             return v;
