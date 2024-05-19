@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+
 import org.apache.avro.Schema;
 
 import java.time.temporal.Temporal;
@@ -177,7 +178,14 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        StringVisitor v = new StringVisitor(_provider, _schemas, type);
+
+        if (Enum.class.isAssignableFrom(type.getRawClass())) {
+        	EnumVisitor v = new EnumVisitor(_provider, _schemas, type);
+            _builder = v;
+            return v;
+        }
+
+        StringVisitor v = new StringVisitor(_provider, type);
         _builder = v;
         return v;
     }
