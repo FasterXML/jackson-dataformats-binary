@@ -40,6 +40,8 @@ public class EnumTest extends AvroTestBase
 
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
+        // Enum Gender.M is encoded as bytes array: {0}, where DEC 0 is encoded long value 0, Gender.M ordinal value
+        // Enum Gender.F is encoded as bytes array: {2}, where DEC 2 is encoded long value 1, Gender.F ordinal value
         assertEquals(1, bytes.length); // measured to be current exp size
 
         // and then back
@@ -74,8 +76,22 @@ public class EnumTest extends AvroTestBase
 
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
-        // FIXME What is expected bytes length?
-//        assertEquals(1, bytes.length); // measured to be current exp size
+        // Enum Gender.F as string is encoded as {2, 70} bytes array.
+        // Where
+        //  - DEC 2, HEX 0x2, is a long value 1 written using variable-length zig-zag coding.
+        //    It represents number of following characters in string "F"
+        //  - DEC 70, HEX 0x46, is UTF-8 code for letter F
+        //
+        // Enum Gender.M as string is encoded as {2, 77} bytes array.
+        // Where
+        //   - DEC 2, HEX 0x2, is a long value 1. It is number of following characters in string "M"),
+        //     written using variable-length zig-zag coding.
+        //   - DEC 77, HEX 0x4D, is UTF-8 code for letter M
+        //
+		// See https://avro.apache.org/docs/1.8.2/spec.html#Encodings
+        assertEquals(2, bytes.length); // measured to be current exp size
+        assertEquals(0x2, bytes[0]);
+        assertEquals(0x46, bytes[1]);
 
         // and then back
         Employee output = MAPPER.readerFor(Employee.class).with(schema)
@@ -93,8 +109,7 @@ public class EnumTest extends AvroTestBase
 
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
-        // FIXME What is expected bytes length?
-//        assertEquals(1, bytes.length); // measured to be current exp size
+        assertEquals(2, bytes.length); // measured to be current exp size
 
         // and then back
         Employee output = MAPPER.readerFor(Employee.class).with(schema)
