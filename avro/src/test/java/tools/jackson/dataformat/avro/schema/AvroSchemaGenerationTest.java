@@ -15,7 +15,7 @@ import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroDefault;
 
-public class SchemaGenerationTest extends AvroTestBase
+public class AvroSchemaGenerationTest extends AvroTestBase
 {
     public static class RootType
     {
