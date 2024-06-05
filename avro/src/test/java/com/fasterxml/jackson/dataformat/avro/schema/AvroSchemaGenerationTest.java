@@ -12,7 +12,7 @@ import com.fasterxml.jackson.dataformat.avro.*;
 
 import org.apache.avro.Schema;
 
-public class SchemaGenerationTest extends AvroTestBase
+public class AvroSchemaGenerationTest extends AvroTestBase
 {
     public static class RootType
     {
