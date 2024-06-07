@@ -10,6 +10,12 @@ import org.apache.avro.Schema;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ * Specific visitor for Java Enum types that are to be exposed as
+ * Avro Enums. Used unless Java Enums are to be mapped to Avro Strings.
+ *
+ * @since 2.18
+ */
 public class EnumVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder
 {
