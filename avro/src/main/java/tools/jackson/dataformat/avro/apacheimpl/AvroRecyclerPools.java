@@ -11,12 +11,14 @@ import tools.jackson.core.util.RecyclerPool.ConcurrentDequePoolBase;
 public final class AvroRecyclerPools
 {
     /**
+     * Method to call to get the default recycler pool instance:
+     * as of Jackson 3.0 and later this is same as calling
+     * {@link #newConcurrentDequePool()}.
+     * 
      * @return the default {@link RecyclerPool} implementation
-     *   which is the thread local based one:
-     *   basically alias to {@link #threadLocalPool()}).
      */
     public static RecyclerPool<ApacheCodecRecycler> defaultPool() {
-        return threadLocalPool();
+        return newConcurrentDequePool();
     }
 
     /**
