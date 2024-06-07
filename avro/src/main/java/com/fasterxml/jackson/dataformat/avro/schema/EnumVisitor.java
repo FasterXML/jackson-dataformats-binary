@@ -33,7 +33,7 @@ public class EnumVisitor extends JsonStringFormatVisitor.Base
     @Override
     public Schema builtAvroSchema() {
         if (_enums == null) {
-        	throw new IllegalStateException("Possible enum values cannot be null");
+            throw new IllegalStateException("Possible enum values cannot be null");
         }
 
         BeanDescription bean = _provider.getConfig().introspectClassAnnotations(_type);
@@ -41,5 +41,4 @@ public class EnumVisitor extends JsonStringFormatVisitor.Base
         _schemas.addSchema(_type, schema);
         return schema;
     }
-
 }
