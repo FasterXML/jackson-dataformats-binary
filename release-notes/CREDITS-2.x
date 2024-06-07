@@ -222,6 +222,9 @@ Michal Foksa (MichalFoksa@github)
 * Contributed #310: (avro) Avro schema generation: allow override namespace with new
   `@AvroNamespace` annotation
  (2.14.0)
+* Contributed #494: Avro Schema generation: allow mapping Java Enum properties to
+  Avro String values
+ (2.18.0)
 
 Hunter Herman (hherman1@github)
 
@@ -325,6 +328,11 @@ Yoann Vernageau (@yvrng)
    when source is an empty `InputStream`
   (2.17.1)
 
-PJ Fanning (pjfanning@github)
+PJ Fanning (@pjfanning)
  * Contributed #484: Rework synchronization in `ProtobufMapper`
+  (2.18.0)
+
+Joachim Lous (@jlous)
+ * Requested #494: Avro Schema generation: allow mapping Java Enum properties to
+   Avro String values
   (2.18.0)
