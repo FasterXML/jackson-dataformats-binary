@@ -18,6 +18,10 @@ Active maintainers:
 
 #484: (protobuf) Rework synchronization in `ProtobufMapper`
  (contributed by @pjfanning)
+#494: Avro Schema generation: allow mapping Java Enum properties to
+  Avro String values
+ (requested by Joachim L)
+ (contributed by Michal F)
 
 2.17.1 (04-May-2024)
 
