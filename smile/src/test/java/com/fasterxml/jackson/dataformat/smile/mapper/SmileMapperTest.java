@@ -10,9 +10,11 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -173,12 +175,7 @@ public class SmileMapperTest extends BaseTestForSmile
         return b.toByteArray();
     }
 
-    /*
-    /**********************************************************
-    /* Tests for [dataformats-binary#301]
-    /**********************************************************
-     */
-
+    // Test for [dataformats-binary#301]
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         SmileMapper mapperWithHeaders = SmileMapper.builder()
@@ -209,5 +206,17 @@ public class SmileMapperTest extends BaseTestForSmile
         } catch (StreamReadException e) {
             verifyException(e, "Input does not start with Smile format header");
         }
+    }
+
+    // [databind#3212]
+    public void testMapperCopy() throws Exception
+    {
+        SmileMapper src = smileMapper();
+        assertNotSame(src, src.copy());
+
+        SmileFactory streamingF = new SmileFactory();
+        ObjectMapper m2 = src.copyWith(streamingF);
+        assertNotSame(src, m2);
+        assertSame(streamingF, m2.tokenStreamFactory());
     }
 }

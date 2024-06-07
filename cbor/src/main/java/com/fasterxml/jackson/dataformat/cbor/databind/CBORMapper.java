@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.cbor.databind;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,6 +92,11 @@ public class CBORMapper extends ObjectMapper
         super(src);
     }
 
+    // @since 2.18
+    protected CBORMapper(CBORMapper src, CBORFactory f) {
+        super(src, f);
+    }
+
     public static CBORMapper.Builder builder() {
         return new Builder(new CBORMapper());
     }
@@ -104,6 +110,12 @@ public class CBORMapper extends ObjectMapper
     {
         _checkInvalidCopy(CBORMapper.class);
         return new CBORMapper(this);
+    }
+
+    @Override // since 2.18
+    public CBORMapper copyWith(JsonFactory factory) {
+        _checkInvalidCopy(CBORMapper.class);
+        return new CBORMapper(this, (CBORFactory) factory);
     }
 
     @Override

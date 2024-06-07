@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.databind;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -125,6 +126,11 @@ public class SmileMapper extends ObjectMapper
         super(src);
     }
 
+    // @since 2.18
+    protected SmileMapper(SmileMapper src, SmileFactory f) {
+        super(src, f);
+    }
+
     public static SmileMapper.Builder builder() {
         return new Builder(new SmileMapper());
     }
@@ -138,6 +144,12 @@ public class SmileMapper extends ObjectMapper
     {
         _checkInvalidCopy(SmileMapper.class);
         return new SmileMapper(this);
+    }
+
+    @Override // since 2.18
+    public SmileMapper copyWith(JsonFactory factory) {
+        _checkInvalidCopy(SmileMapper.class);
+        return new SmileMapper(this, (SmileFactory) factory);
     }
 
     @Override
