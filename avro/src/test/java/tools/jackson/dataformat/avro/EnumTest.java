@@ -2,7 +2,8 @@ package tools.jackson.dataformat.avro;
 
 public class EnumTest extends AvroTestBase
 {
-    protected final static String ENUM_SCHEMA_JSON = "{\n"
+    // gender as Avro enum
+	protected final static String ENUM_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"
             +"\"name\": \"Employee\",\n"
             +"\"fields\": [\n"
@@ -11,8 +12,16 @@ public class EnumTest extends AvroTestBase
             +"}\n"
             +"]}";
 
-    protected enum Gender { M, F; } 
-    
+    // gender as Avro string
+    protected final static String STRING_SCHEMA_JSON = "{"
+            +" \"type\": \"record\", "
+            +" \"name\": \"Employee\", "
+            +" \"fields\": ["
+            +" {\"name\": \"gender\", \"type\": \"string\"}"
+            +"]}";
+
+    protected enum Gender { M, F; }
+
     protected static class Employee {
         public Gender gender;
     }
@@ -21,9 +30,9 @@ public class EnumTest extends AvroTestBase
         public String gender;
     }
 
-    private final AvroMapper MAPPER = new AvroMapper();
-    
-    public void testSimple() throws Exception
+    private final AvroMapper MAPPER = newMapper();
+
+    public void test_avroSchemaWithEnum_fromEnumValueToEnumValue() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);
         Employee input = new Employee();
@@ -31,6 +40,8 @@ public class EnumTest extends AvroTestBase
 
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
         assertNotNull(bytes);
+        // Enum Gender.M is encoded as bytes array: {0}, where DEC 0 is encoded long value 0, Gender.M ordinal value
+        // Enum Gender.F is encoded as bytes array: {2}, where DEC 2 is encoded long value 1, Gender.F ordinal value
         assertEquals(1, bytes.length); // measured to be current exp size
 
         // and then back
@@ -40,7 +51,7 @@ public class EnumTest extends AvroTestBase
         assertEquals(Gender.F, output.gender);
     }
 
-    public void testEnumValueAsString() throws Exception
+    public void test_avroSchemaWithEnum_fromStringValueToEnumValue() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);
         EmployeeStr input = new EmployeeStr();
@@ -56,4 +67,55 @@ public class EnumTest extends AvroTestBase
         assertNotNull(output);
         assertEquals(Gender.F, output.gender);
     }
+
+    public void test_avroSchemaWithString_fromEnumValueToEnumValue() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(STRING_SCHEMA_JSON);
+        Employee input = new Employee();
+        input.gender = Gender.F;
+
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+        assertNotNull(bytes);
+        // Enum Gender.F as string is encoded as {2, 70} bytes array.
+        // Where
+        //  - DEC 2, HEX 0x2, is a long value 1 written using variable-length zig-zag coding.
+        //    It represents number of following characters in string "F"
+        //  - DEC 70, HEX 0x46, is UTF-8 code for letter F
+        //
+        // Enum Gender.M as string is encoded as {2, 77} bytes array.
+        // Where
+        //   - DEC 2, HEX 0x2, is a long value 1. It is number of following characters in string "M"),
+        //     written using variable-length zig-zag coding.
+        //   - DEC 77, HEX 0x4D, is UTF-8 code for letter M
+        //
+		// See https://avro.apache.org/docs/1.8.2/spec.html#Encodings
+        assertEquals(2, bytes.length); // measured to be current exp size
+        assertEquals(0x2, bytes[0]);
+        assertEquals(0x46, bytes[1]);
+
+        // and then back
+        Employee output = MAPPER.readerFor(Employee.class).with(schema)
+                .readValue(bytes);
+        assertNotNull(output);
+        assertEquals(Gender.F, output.gender);
+    }
+
+    // Not sure this test makes sense
+    public void test_avroSchemaWithString_fromStringValueToEnumValue() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(STRING_SCHEMA_JSON);
+        EmployeeStr input = new EmployeeStr();
+        input.gender = "F";
+
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+        assertNotNull(bytes);
+        assertEquals(2, bytes.length); // measured to be current exp size
+
+        // and then back
+        Employee output = MAPPER.readerFor(Employee.class).with(schema)
+                .readValue(bytes);
+        assertNotNull(output);
+        assertEquals(Gender.F, output.gender);
+    }
+
 }

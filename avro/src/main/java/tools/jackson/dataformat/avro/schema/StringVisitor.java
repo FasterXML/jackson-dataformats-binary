@@ -1,7 +1,6 @@
 package tools.jackson.dataformat.avro.schema;
 
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.avro.Schema;
 
@@ -19,13 +18,9 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
 {
     protected final SerializerProvider _provider;
     protected final JavaType _type;
-    protected final DefinedSchemas _schemas;
 
-    protected Set<String> _enums;
-
-    public StringVisitor(SerializerProvider provider, DefinedSchemas schemas, JavaType t) {
-        _schemas = schemas;
-        _type = t;
+    public StringVisitor(SerializerProvider provider, JavaType type) {
+        _type = type;
         _provider = provider;
     }
 
@@ -36,7 +31,7 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
 
     @Override
     public void enumTypes(Set<String> enums) {
-        _enums = enums;
+    	// Do nothing
     }
 
     @Override
@@ -51,12 +46,6 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
             return AvroSchemaHelper.createUUIDSchema();
         }
         AnnotatedClass annotations = _provider.introspectClassAnnotations(_type);
-        if (_enums != null) {
-            Schema s = AvroSchemaHelper.createEnumSchema(_provider.getConfig(), _type,
-                    annotations, new ArrayList<>(_enums));
-            _schemas.addSchema(_type, s);
-            return s;
-        }
         Schema schema = Schema.create(Schema.Type.STRING);
         // Stringable classes need to include the type
         if (AvroSchemaHelper.isStringable(annotations) && !_type.hasRawClass(String.class)) {
