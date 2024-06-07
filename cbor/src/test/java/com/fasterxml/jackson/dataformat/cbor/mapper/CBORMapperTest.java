@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
@@ -8,12 +10,7 @@ import org.junit.Assert;
 
 public class CBORMapperTest extends CBORTestBase
 {
-    /*
-    /**********************************************************
-    /* Tests for [dataformats-binary#301]
-    /**********************************************************
-     */
-
+    // For [dataformats-binary#301]
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         final int SMALL_INT = 3;
@@ -42,5 +39,17 @@ public class CBORMapperTest extends CBORTestBase
         Assert.assertArrayEquals(values, mapperWithMinimal.readValue(encodedNotMinimal, Object[].class));
         Assert.assertArrayEquals(minimalValues, mapperFull.readValue(encodedMinimal, Object[].class));
         Assert.assertArrayEquals(values, mapperFull.readValue(encodedNotMinimal, Object[].class));
+    }
+
+    // [databind#3212]
+    public void testMapperCopy() throws Exception
+    {
+        CBORMapper src = cborMapper();
+        assertNotSame(src, src.copy());
+
+        CBORFactory streamingF = new CBORFactory();
+        ObjectMapper m2 = src.copyWith(streamingF);
+        assertNotSame(src, m2);
+        assertSame(streamingF, m2.tokenStreamFactory());
     }
 }
