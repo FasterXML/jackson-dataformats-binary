@@ -20,7 +20,7 @@ Active maintainers:
 
 2.17.2 (not yet released)
 
-#497: Failed copy(): `IonValueMapper` does not override copy()
+#497: (ion) Failed copy(): `IonValueMapper` does not override copy()
  (reported by @mr-robert)
 
 2.17.1 (04-May-2024)
