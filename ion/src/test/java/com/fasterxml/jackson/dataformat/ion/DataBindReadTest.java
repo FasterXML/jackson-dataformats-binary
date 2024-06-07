@@ -19,7 +19,7 @@ import java.io.*;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonStruct;
 import com.amazon.ion.IonSystem;
@@ -38,6 +38,15 @@ public class DataBindReadTest {
     }
 
     static class BeanToo { }
+
+    // Not the best place for test but will have to do
+    @Test
+    public void testMapperCopy() throws IOException
+    {
+        IonObjectMapper vanilla = IonObjectMapper.builder().build();
+        ObjectMapper copy = vanilla.copy();
+        assertNotSame(vanilla, copy);
+    }
 
     @Test
     public void testSimple() throws IOException
