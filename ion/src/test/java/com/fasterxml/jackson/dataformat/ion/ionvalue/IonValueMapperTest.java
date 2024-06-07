@@ -17,6 +17,7 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
@@ -65,6 +67,12 @@ public class IonValueMapperTest {
         public int iHaveSomeOtherName;
         public ReturnCode imAnEnum;
         public Timestamp someTime;
+    }
+
+    @Test
+    public void testMapperCopy() throws Exception {
+        ObjectMapper mapper2 = ionValueMapper.copy();
+        assertNotSame(ionValueMapper, mapper2);
     }
 
     @Test

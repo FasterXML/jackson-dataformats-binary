@@ -18,6 +18,11 @@ Active maintainers:
 
 - No changes since 2.17
 
+2.17.2 (not yet released)
+
+#497: (ion) Failed copy(): `IonValueMapper` does not override copy()
+ (reported by @mr-robert)
+
 2.17.1 (04-May-2024)
 
 #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`

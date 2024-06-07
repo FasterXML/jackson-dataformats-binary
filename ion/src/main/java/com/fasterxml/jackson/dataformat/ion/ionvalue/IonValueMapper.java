@@ -16,6 +16,7 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.ion.EnumAsIonSymbolModule;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
@@ -45,6 +46,11 @@ public class IonValueMapper extends IonObjectMapper
         this(ionSystem, null);
     }
 
+    // @since 2.18: needed for `copy()`
+    protected IonValueMapper(IonValueMapper src) {
+        super(src);
+    }
+
     /**
      * Constructor that provides an override on the default Constructor for the PropertyNamingStrategy.
      *
@@ -60,6 +66,12 @@ public class IonValueMapper extends IonObjectMapper
         this.setPropertyNamingStrategy(strategy);
     }
 
+    @Override // @since 2.18
+    public ObjectMapper copy() {
+        _checkInvalidCopy(IonValueMapper.class);
+        return new IonValueMapper(this);
+    }
+    
     public <T> T parse(IonValue value, Class<T> clazz) throws IOException {
         if (value == null) {
             return null;
