@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tools.jackson.core.StreamWriteConstraints;
-
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.smile.BaseTestForSmile;
@@ -23,7 +23,7 @@ public class CyclicSmileDataSerTest extends BaseTestForSmile
         try {
             MAPPER.writeValueAsBytes(list);
             fail("expected JsonMappingException");
-        } catch (DatabindException e) {
+        } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamWriteConstraints.DEFAULT_MAX_DEPTH + 1);
             assertTrue("DatabindException message is as expected?",

@@ -170,9 +170,7 @@ public class RecordVisitor
                 if (prop instanceof BeanPropertyWriter) {
                     BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
                     ser = bpw.getSerializer();
-                    /*
-                     * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
-                     */
+                    // 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
                     optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                 }
                 final SerializerProvider prov = getProvider();
