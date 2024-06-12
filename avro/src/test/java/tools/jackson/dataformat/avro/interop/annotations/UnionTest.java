@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tools.jackson.databind.DatabindException;
+import org.junit.Test;
+
+import tools.jackson.core.JacksonException;
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
 
 import org.apache.avro.UnresolvedUnionException;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Union;
-
-import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -144,7 +144,7 @@ public class UnionTest extends InteropTestBase {
         try {
             roundTrip(cage);
             fail("Should throw exception about Bird not being in union");
-        } catch (UnresolvedUnionException | DatabindException e) {
+        } catch (UnresolvedUnionException | JacksonException e) {
             // success
         }
     }

@@ -3,12 +3,13 @@ package tools.jackson.dataformat.ion.dos;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+
 import tools.jackson.core.StreamWriteConstraints;
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.ion.IonObjectMapper;
-
-import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -28,7 +29,7 @@ public class CyclicIonDataSerTest
         try {
             MAPPER.writeValueAsBytes(list);
             fail("expected DatabindException");
-        } catch (DatabindException e) {
+        } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamWriteConstraints.DEFAULT_MAX_DEPTH + 1);
             assertTrue("DatabindException message is as expected?",

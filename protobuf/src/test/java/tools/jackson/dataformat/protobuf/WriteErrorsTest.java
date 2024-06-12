@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.StreamWriteFeature;
-
+import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
@@ -41,7 +41,7 @@ public class WriteErrorsTest extends ProtobufTestBase
             /*byte[] bytes =*/ w
                 .without(StreamWriteFeature.IGNORE_UNKNOWN)
                 .writeValueAsBytes(new Point3D(1, 2, 3));
-        } catch (DatabindException e) {
+        } catch (StreamWriteException e) {
             verifyException(e, "Unrecognized field 'z'");
         }
 

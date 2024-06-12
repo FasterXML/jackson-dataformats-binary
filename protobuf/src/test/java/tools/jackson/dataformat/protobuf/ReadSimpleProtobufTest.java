@@ -9,14 +9,14 @@ import tools.jackson.core.JsonParser.NumberTypeFP;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamReadFeature;
-import tools.jackson.databind.DatabindException;
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
-public class ReadSimpleTest extends ProtobufTestBase
+public class ReadSimpleProtobufTest extends ProtobufTestBase
 {
     final protected static String PROTOC_STRINGS =
             "message Strings {\n"
@@ -450,8 +450,8 @@ public class ReadSimpleTest extends ProtobufTestBase
 
         try {
             protobufMapper.readerFor(Strings.class).with(schema).readValue(bytes);
-            fail("Expected DatabindException");
-        } catch (DatabindException jme) {
+            fail("Expected StreamConstraintsException");
+        } catch (StreamConstraintsException jme) {
             String message = jme.getMessage();
             assertTrue("unexpected message: " + message,
                     message.startsWith("String value length (4) exceeds the maximum allowed"));

@@ -7,12 +7,13 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.StreamWriteFeature;
 
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.ObjectMapper;
 
-public class SimpleGenerationTest extends AvroTestBase
+public class SimpleAvroGenerationTest extends AvroTestBase
 {
     protected final String SCHEMA_WITH_BINARY_JSON_SRC = "{\n"
             +"\"type\": \"record\",\n"
@@ -61,7 +62,7 @@ public class SimpleGenerationTest extends AvroTestBase
 
     private final AvroSchema SCHEMA_WITH_BINARY_JSON;
 
-    public SimpleGenerationTest() throws IOException
+    public SimpleAvroGenerationTest() throws IOException
     {
         SCHEMA_WITH_BINARY_JSON = getMapper().schemaFrom(SCHEMA_WITH_BINARY_JSON_SRC);
     }
@@ -120,7 +121,7 @@ public class SimpleGenerationTest extends AvroTestBase
         try {
              mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValue(b, input);
              fail("Should have thrown exception");
-        } catch (DatabindException e) {
+        } catch (JacksonException e) {
             verifyException(e, "no field named");
         }
 
@@ -146,7 +147,7 @@ public class SimpleGenerationTest extends AvroTestBase
         try {
              mapper.writer(SCHEMA_WITH_BINARY_JSON).writeValueAsBytes(input);
              fail("Should have thrown exception");
-        } catch (DatabindException e) {
+        } catch (JacksonException e) {
             verifyException(e, "no field named 'stuff'");
         }
 

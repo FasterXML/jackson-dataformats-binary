@@ -31,8 +31,8 @@ import com.amazon.ion.IonSystem;
 import com.amazon.ion.system.IonSystemBuilder;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class IonGeneratorTest {
@@ -127,8 +127,7 @@ public class IonGeneratorTest {
             joiGenerator.writeName("foo");
             fail("Should not pass");
         } catch (StreamWriteException e) {
-            assertEquals("Can not write a property name, expecting a value",
-                    e.getMessage());
+            assertThat(e.getMessage(), startsWith("Can not write a property name, expecting a value"));
         }
     }
 
@@ -139,8 +138,7 @@ public class IonGeneratorTest {
             joiGenerator.writeStartSexp();
             fail("Should not pass");
         } catch (StreamWriteException e) {
-            assertEquals("Can not start a sexp, expecting a property name",
-                    e.getMessage());
+            assertThat(e.getMessage(), startsWith("Can not start a sexp, expecting a property name"));
         }
     }
 }
