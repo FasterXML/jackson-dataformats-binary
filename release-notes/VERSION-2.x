@@ -27,6 +27,7 @@ Active maintainers:
 
 #497: (ion) Failed copy(): `IonValueMapper` does not override copy()
  (reported by @mr-robert)
+#501: (ion) Upgrade `ion-java` to 1.11.8 (from 1.11.7)
 
 2.17.1 (04-May-2024)
 
