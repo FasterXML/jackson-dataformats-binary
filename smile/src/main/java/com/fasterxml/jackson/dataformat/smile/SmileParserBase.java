@@ -72,11 +72,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected final IOContext _ioContext;
 
     /**
-     * @since 2.17
-     */
-    protected final StreamReadConstraints _streamReadConstraints;
-
-    /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
      * ({@link #close}) or when end-of-input is reached.
@@ -254,21 +249,15 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(parserFeatures);
+        super(parserFeatures, ctxt.streamReadConstraints());
         _formatFeatures = formatFeatures;
         _ioContext = ctxt;
-        _streamReadConstraints = ctxt.streamReadConstraints();
         _symbols = sym;
         _symbolsCanonical = sym.isCanonicalizing();
         DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = JsonReadContext.createRootContext(dups);
         _textBuffer = ctxt.constructReadConstrainedTextBuffer();
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _streamReadConstraints;
     }
 
     /*

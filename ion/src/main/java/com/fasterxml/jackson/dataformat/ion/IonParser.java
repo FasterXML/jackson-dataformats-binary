@@ -163,17 +163,13 @@ public class IonParser
      * @since 2.13
      */
     IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec, int ionParserFeatures) {
+        super(ctxt.streamReadConstraints());
         this._reader = r;
         this._ioContext = ctxt;
         this._objectCodec = codec;
         this._parsingContext = JsonReadContext.createRootContext(-1, -1, null);
         this._system = system;
         this._formatFeatures = ionParserFeatures;
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
     }
 
     @Override

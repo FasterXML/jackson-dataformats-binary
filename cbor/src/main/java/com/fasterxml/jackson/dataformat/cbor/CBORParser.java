@@ -183,11 +183,6 @@ public class CBORParser extends ParserMinimalBase
     protected final IOContext _ioContext;
 
     /**
-     * @since 2.17
-     */
-    protected final StreamReadConstraints _streamReadConstraints;
-    
-    /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
      * ({@link #close}) or when end-of-input is reached.
@@ -519,7 +514,7 @@ public class CBORParser extends ParserMinimalBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(parserFeatures);
+        super(parserFeatures, ctxt.streamReadConstraints());
         _ioContext = ctxt;
         _objectCodec = codec;
         _symbols = sym;
@@ -537,13 +532,6 @@ public class CBORParser extends ParserMinimalBase
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
-
-        _streamReadConstraints = ctxt.streamReadConstraints();
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _streamReadConstraints;
     }
 
     @Override

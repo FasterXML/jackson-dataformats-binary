@@ -297,7 +297,7 @@ public class ProtobufParser extends ParserMinimalBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(parserFeatures);
+        super(parserFeatures, ctxt.streamReadConstraints());
         _ioContext = ctxt;
         _objectCodec = codec;
 
@@ -311,11 +311,6 @@ public class ProtobufParser extends ParserMinimalBase
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
     }
 
     public void setSchema(ProtobufSchema schema)
@@ -610,7 +605,7 @@ public class ProtobufParser extends ParserMinimalBase
 
         case STATE_ARRAY_START:
             _parsingContext = _parsingContext.createChildArrayContext(_currentField);
-            streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
+            _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
             _state = STATE_ARRAY_VALUE_FIRST;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -628,7 +623,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _currentEndOffset = newEnd;
             _parsingContext = _parsingContext.createChildArrayContext(_currentField, newEnd);
-            streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
+            _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
             _state = STATE_ARRAY_VALUE_PACKED;
             return (_currToken = JsonToken.START_ARRAY);
 
@@ -949,7 +944,7 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentEndOffset = newEnd;
                 _state = STATE_NESTED_KEY;
                 _parsingContext = _parsingContext.createChildObjectContext(msg, _currentField, newEnd);
-                streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
+                _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
                 _currentField = msg.firstField();
             }
             return JsonToken.START_OBJECT;
@@ -1799,7 +1794,7 @@ public class ProtobufParser extends ParserMinimalBase
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
-            streamReadConstraints().validateBigIntegerScale(_numberBigDecimal.scale());
+            _streamReadConstraints.validateBigIntegerScale(_numberBigDecimal.scale());
             _numberBigInt = _numberBigDecimal.toBigInteger();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberBigInt = BigInteger.valueOf(_numberLong);
@@ -1863,7 +1858,7 @@ public class ProtobufParser extends ParserMinimalBase
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
             final String text = getText();
-            streamReadConstraints().validateFPLength(text.length());
+            _streamReadConstraints.validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
