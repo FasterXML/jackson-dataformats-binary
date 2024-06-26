@@ -479,7 +479,7 @@ versionBits);
                         if (_currToken == null) {
                             return _nextAfterHeader();
                         }
-                        return (_currToken = null);
+                        return _updateTokenToNull();
                     }
                     throw _constructReadException("Unrecognized token byte 0x3A (malformed segment header?");
             	}
@@ -539,7 +539,7 @@ versionBits);
                 _tokenIncomplete = true;
                 return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
             case 0x1F: // 0xFF, end of content
-                return (_currToken = null);
+                return _updateTokenToNull();
             }
             break;
         }
@@ -567,7 +567,7 @@ versionBits);
         if ((_inputPtr < _inputEnd) || _loadMore()) {
             if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
                 // danger zone; just set and return null token
-                return (_currToken = null);
+                return _updateTokenToNull();
             }
         }
         // Otherwise safe enough to do recursion
@@ -3434,7 +3434,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
             _handleEOF();
         }
         close();
-        return (_currToken = null);
+        return _updateTokenToNull();
     }
 
     private void createChildArrayContext(final int lineNr, final int colNr) throws JacksonException {

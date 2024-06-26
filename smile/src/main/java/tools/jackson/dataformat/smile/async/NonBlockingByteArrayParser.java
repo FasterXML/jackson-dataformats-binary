@@ -395,7 +395,7 @@ public class NonBlockingByteArrayParser
                 _mayContainRawBinary = ((ch & SmileConstants.HEADER_BIT_HAS_RAW_BINARY) != 0);
             }
             _majorState = MAJOR_ROOT;
-            _currToken = null;
+            _updateTokenToNull();
 
             // Mild difference here: initial marker not reported separately, but in-line
             // ones need to be reported as `null` tokens as they are logical document end
@@ -510,7 +510,7 @@ public class NonBlockingByteArrayParser
                 // should we validate this is legal? (as per header)
                 return _startRawBinary();
             case 0x1F: // 0xFF, end of content
-                return (_currToken = null);
+                return _updateTokenToNull();
             }
             break;
         }

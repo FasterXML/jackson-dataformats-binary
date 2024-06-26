@@ -3874,7 +3874,7 @@ expType, type, ch));
         // 30-Jan-2021, tatu: But also MUST verify that end-of-content is actually
         //   allowed (see [dataformats-binary#240] for example)
         _handleEOF();
-        return (_currToken = null);
+        return _updateTokenToNull();
     }
 
     /*
