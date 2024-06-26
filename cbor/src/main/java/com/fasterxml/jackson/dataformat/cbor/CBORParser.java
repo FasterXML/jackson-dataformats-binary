@@ -791,16 +791,16 @@ public class CBORParser extends ParserMinimalBase
                 if (!_streamReadContext.expectMoreValues()) {
                     _stringRefs.pop();
                     _streamReadContext = _streamReadContext.getParent();
-                    return (_currToken = JsonToken.END_OBJECT);
+                    return _updateToken(JsonToken.END_OBJECT);
                 }
-                return (_currToken = _decodePropertyName());
+                return _updateToken(_decodePropertyName());
             }
         } else {
             if (!_streamReadContext.expectMoreValues()) {
                 _stringRefs.pop();
                 _tagValues.clear();
                 _streamReadContext = _streamReadContext.getParent();
-                return (_currToken = JsonToken.END_ARRAY);
+                return _updateToken(JsonToken.END_ARRAY);
             }
         }
         if (_inputPtr >= _inputEnd) {
@@ -874,7 +874,7 @@ public class CBORParser extends ParserMinimalBase
             if (!_tagValues.isEmpty()) {
                 return _handleTaggedInt(_tagValues);
             }
-            return (_currToken = JsonToken.VALUE_NUMBER_INT);
+            return _updateToken(JsonToken.VALUE_NUMBER_INT);
         case 1: // negative int
             _numTypesValid = NR_INT;
             if (lowBits <= 23) {
@@ -917,7 +917,7 @@ public class CBORParser extends ParserMinimalBase
                     _invalidToken(ch);
                 }
             }
-            return (_currToken = JsonToken.VALUE_NUMBER_INT);
+            return _updateToken(JsonToken.VALUE_NUMBER_INT);
 
         case 2: // byte[]
             _typeByte = ch;
@@ -925,12 +925,12 @@ public class CBORParser extends ParserMinimalBase
             if (!_tagValues.isEmpty()) {
                 return _handleTaggedBinary(_tagValues);
             }
-            return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
+            return _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
 
         case 3: // String
             _typeByte = ch;
             _tokenIncomplete = true;
-            return (_currToken = JsonToken.VALUE_STRING);
+            return _updateToken(JsonToken.VALUE_STRING);
 
         case 4: // Array
             _stringRefs.push(stringrefNamespace);
@@ -941,11 +941,11 @@ public class CBORParser extends ParserMinimalBase
                 }
                 createChildArrayContext(len);
             }
-            return (_currToken = JsonToken.START_ARRAY);
+            return _updateToken(JsonToken.START_ARRAY);
 
         case 5: // Object
             _stringRefs.push(stringrefNamespace);
-            _currToken = JsonToken.START_OBJECT;
+            _updateToken(JsonToken.START_OBJECT);
             {
                 int len = _decodeExplicitLength(lowBits);
                 createChildObjectContext(len);
@@ -956,13 +956,13 @@ public class CBORParser extends ParserMinimalBase
         default: // misc: tokens, floats
             switch (lowBits) {
             case 20:
-                return (_currToken = JsonToken.VALUE_FALSE);
+                return _updateToken(JsonToken.VALUE_FALSE);
             case 21:
-                return (_currToken = JsonToken.VALUE_TRUE);
+                return _updateToken(JsonToken.VALUE_TRUE);
             case 22:
-                return (_currToken = JsonToken.VALUE_NULL);
+                return _updateToken(JsonToken.VALUE_NULL);
             case 23:
-                return (_currToken = _decodeUndefinedValue());
+                return _updateToken(_decodeUndefinedValue());
 
             case 25: // 16-bit float...
                 // As per [http://stackoverflow.com/questions/5678432/decompressing-half-precision-floats-in-javascript]
@@ -970,29 +970,29 @@ public class CBORParser extends ParserMinimalBase
                     _numberFloat = (float) _decodeHalfSizeFloat();
                     _numTypesValid = NR_FLOAT;
                 }
-                return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+                return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
             case 26: // Float32
                 {
                     _numberFloat = Float.intBitsToFloat(_decode32Bits());
                     _numTypesValid = NR_FLOAT;
                 }
-                return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+                return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
             case 27: // Float64
                 _numberDouble = Double.longBitsToDouble(_decode64Bits());
                 _numTypesValid = NR_DOUBLE;
-                return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+                return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
             case 31: // Break
                 if (_streamReadContext.inArray()) {
                     if (!_streamReadContext.hasExpectedLength()) {
                         _stringRefs.pop();
                         _streamReadContext = _streamReadContext.getParent();
-                        return (_currToken = JsonToken.END_ARRAY);
+                        return _updateToken(JsonToken.END_ARRAY);
                     }
                 }
                 // Object end-marker can't occur here
                 _reportUnexpectedBreak();
             }
-            return (_currToken = _decodeSimpleValue(lowBits, ch));
+            return _updateToken(_decodeSimpleValue(lowBits, ch));
         }
     }
 
@@ -1072,7 +1072,7 @@ public class CBORParser extends ParserMinimalBase
     protected JsonToken _handleTaggedInt(TagList tags) throws IOException {
         // For now all we should get is stringref
         if (!tags.contains(TAG_ID_STRINGREF)) {
-            return (_currToken = JsonToken.VALUE_NUMBER_INT);
+            return _updateToken(JsonToken.VALUE_NUMBER_INT);
         }
 
         if (_stringRefs.empty()) {
@@ -1090,7 +1090,7 @@ public class CBORParser extends ParserMinimalBase
         Object str = stringRefs.stringRefs.get(_numberInt);
         if (str instanceof String) {
             _sharedString = (String) str;
-            return (_currToken = JsonToken.VALUE_STRING);
+            return _updateToken(JsonToken.VALUE_STRING);
         }
         _binaryValue = (byte[]) str;
         return _handleTaggedBinary(tags);
@@ -1110,7 +1110,7 @@ public class CBORParser extends ParserMinimalBase
             // 16-Jan-2024, tatu: Esoteric edge case where we have marked
             //   `int` as being tokenized
             _numTypesValid = NR_UNKNOWN;
-            return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
+            return _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
 
         // First: get the data
@@ -1131,7 +1131,7 @@ public class CBORParser extends ParserMinimalBase
         }
         _numTypesValid = NR_BIGINT;
         _tagValues.clear();
-        return (_currToken = JsonToken.VALUE_NUMBER_INT);
+        return _updateToken(JsonToken.VALUE_NUMBER_INT);
     }
 
     protected JsonToken _handleTaggedArray(TagList tags, int len) throws IOException
@@ -1143,9 +1143,9 @@ public class CBORParser extends ParserMinimalBase
 
         // BigDecimal is the only thing we know for sure
         if (!tags.contains(CBORConstants.TAG_DECIMAL_FRACTION)) {
-            return (_currToken = JsonToken.START_ARRAY);
+            return _updateToken(JsonToken.START_ARRAY);
         }
-        _currToken = JsonToken.START_ARRAY;
+        _updateToken(JsonToken.START_ARRAY);
 
         // but has to have length of 2; otherwise we have a problem...
         if (len != 2) {
@@ -1181,7 +1181,7 @@ public class CBORParser extends ParserMinimalBase
         // which needs to be reset here
         _numberBigDecimal = dec;
         _numTypesValid = NR_BIGDECIMAL;
-        return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+        return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
     }
 
     /**
@@ -1200,7 +1200,7 @@ public class CBORParser extends ParserMinimalBase
             _tagValues.clear();
             _stringRefs.pop();
             _streamReadContext = _streamReadContext.getParent();
-            _currToken = JsonToken.END_ARRAY;
+            _updateToken(JsonToken.END_ARRAY);
             return false;
         }
 
@@ -1273,7 +1273,7 @@ public class CBORParser extends ParserMinimalBase
                 }
             }
             if (tagValues == null) {
-                _currToken = JsonToken.VALUE_NUMBER_INT;
+                _updateToken(JsonToken.VALUE_NUMBER_INT);
             } else {
                 _handleTaggedInt(tagValues);
             }
@@ -1320,7 +1320,7 @@ public class CBORParser extends ParserMinimalBase
                     _invalidToken(ch);
                 }
             }
-            _currToken = JsonToken.VALUE_NUMBER_INT;
+            _updateToken(JsonToken.VALUE_NUMBER_INT);
             return true;
 
         case 2: // byte[]
@@ -1330,7 +1330,7 @@ public class CBORParser extends ParserMinimalBase
             }
             _typeByte = ch;
             _tokenIncomplete = true;
-            _currToken = _handleTaggedBinary(tagValues);
+            _updateToken(_handleTaggedBinary(tagValues));
             return (_currToken == JsonToken.VALUE_NUMBER_INT);
         }
 
@@ -1348,7 +1348,7 @@ public class CBORParser extends ParserMinimalBase
             _tagValues.clear();
             _stringRefs.pop();
             _streamReadContext = _streamReadContext.getParent();
-            _currToken = JsonToken.END_ARRAY;
+            _updateToken(JsonToken.END_ARRAY);
             return true;
         }
 
@@ -1411,7 +1411,7 @@ public class CBORParser extends ParserMinimalBase
             if (!_streamReadContext.expectMoreValues()) {
                 _stringRefs.pop();
                 _streamReadContext = _streamReadContext.getParent();
-                _currToken = JsonToken.END_OBJECT;
+                _updateToken(JsonToken.END_OBJECT);
                 return false;
             }
             byte[] nameBytes = str.asQuotedUTF8();
@@ -1439,7 +1439,7 @@ public class CBORParser extends ParserMinimalBase
                                         _stringRefs.peek().stringRefs.add(strValue);
                                     }
                                     _streamReadContext.setCurrentName(strValue);
-                                    _currToken = JsonToken.FIELD_NAME;
+                                    _updateToken(JsonToken.FIELD_NAME);
                                     return true;
                                 }
                                 if (nameBytes[i] != _inputBuffer[ptr + i]) {
@@ -1471,7 +1471,7 @@ public class CBORParser extends ParserMinimalBase
             if (!_streamReadContext.expectMoreValues()) {
                 _stringRefs.pop();
                 _streamReadContext = _streamReadContext.getParent();
-                _currToken = JsonToken.END_OBJECT;
+                _updateToken(JsonToken.END_OBJECT);
                 return null;
             }
             // inlined "_decodeFieldName()"
@@ -1505,13 +1505,13 @@ public class CBORParser extends ParserMinimalBase
                     if (!_streamReadContext.hasExpectedLength()) {
                         _stringRefs.pop();
                         _streamReadContext = _streamReadContext.getParent();
-                        _currToken = JsonToken.END_OBJECT;
+                        _updateToken(JsonToken.END_OBJECT);
                         return null;
                     }
                     _reportUnexpectedBreak();
                 }
                 _decodeNonStringName(ch, _tagValues);
-                _currToken = JsonToken.FIELD_NAME;
+                _updateToken(JsonToken.FIELD_NAME);
                 return getText();
             }
             final int lenMarker = ch & 0x1F;
@@ -1552,7 +1552,7 @@ public class CBORParser extends ParserMinimalBase
                 _sharedString = name;
             }
             _streamReadContext.setCurrentName(name);
-            _currToken = JsonToken.FIELD_NAME;
+            _updateToken(JsonToken.FIELD_NAME);
             return name;
         }
         // otherwise just fall back to default handling; should occur rarely
