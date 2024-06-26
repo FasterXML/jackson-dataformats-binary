@@ -108,7 +108,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _updateToken(_avroContext.getCurrentToken());
+            _nullSafeUpdateToken(_avroContext.getCurrentToken());
             return null;
         }
         _updateToken(JsonToken.FIELD_NAME);
@@ -124,7 +124,7 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _updateToken(_avroContext.getCurrentToken());
+            _nullSafeUpdateToken(_avroContext.getCurrentToken());
             return false;
         }
         _updateToken(JsonToken.FIELD_NAME);
