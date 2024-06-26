@@ -527,7 +527,7 @@ public class IonParser
         if (_system == null) {
             throw new IllegalStateException("This "+getClass().getSimpleName()+" instance cannot be used for IonValue mapping");
         }
-        _currToken = JsonToken.VALUE_EMBEDDED_OBJECT;
+        _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
         try {
@@ -619,7 +619,7 @@ public class IonParser
     {
         // special case: if we return field name, we know value type, return it:
         if (_currToken == JsonToken.PROPERTY_NAME) {
-            return (_currToken = _valueToken);
+            return _updateToken(_valueToken);
         }
         // also, when starting array/object, need to create new context
         if (_currToken == JsonToken.START_OBJECT) {
@@ -640,10 +640,10 @@ public class IonParser
         }
         if (type == null) {
             if (_streamReadContext.inRoot()) { // EOF?
-                _currToken = null;
+                _updateTokenToNull();
             } else {
                 _streamReadContext = _streamReadContext.getParent();
-                _currToken = _reader.isInStruct() ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+                _updateToken(_reader.isInStruct() ? JsonToken.END_OBJECT : JsonToken.END_ARRAY);
                 _reader.stepOut();
             }
             return _currToken;
@@ -665,10 +665,10 @@ public class IonParser
         // and return either field name first
         if (inStruct) {
             _valueToken = t;
-            return (_currToken = JsonToken.PROPERTY_NAME);
+            return _updateToken(JsonToken.PROPERTY_NAME);
         }
         // or just the value (for lists, root value)
-        return (_currToken = t);
+        return _updateToken(t);
     }
 
     /**
@@ -694,9 +694,8 @@ public class IonParser
         }
         int open = 1;
 
-        /* Since proper matching of start/end markers is handled
-         * by nextToken(), we'll just count nesting levels here
-         */
+        // Since proper matching of start/end markers is handled
+        // by nextToken(), we'll just count nesting levels here
         while (true) {
             JsonToken t = nextToken();
             if (t == null) {
