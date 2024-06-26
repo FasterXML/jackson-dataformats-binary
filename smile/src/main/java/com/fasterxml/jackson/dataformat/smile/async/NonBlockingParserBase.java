@@ -148,7 +148,7 @@ public abstract class NonBlockingParserBase
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
         _inputCopy = ctxt.allocReadIOBuffer(500);
 
-        _currToken = null;
+        _updateTokenToNull();
         _majorState = MAJOR_INITIAL;
     }
 
@@ -590,7 +590,7 @@ public abstract class NonBlockingParserBase
             _handleEOF();
         }
         close();
-        return (_currToken = null);
+        return _updateTokenToNull();
     }
 
     protected final JsonToken _valueComplete(JsonToken t) throws IOException
