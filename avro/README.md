@@ -114,7 +114,7 @@ and that's about it, for now.
 
 ## Avro Logical Types
 
-Following is an extract from [Logical Types](http://avro.apache.org/docs/current/spec.html#Logical+Types) paragraph in 
+Following is an extract from [Logical Types](http://avro.apache.org/docs/current/specification/_print/#logical-types) paragraph in 
 Avro schema specification:
 > A logical type is an Avro primitive or complex type with extra attributes to represent a derived type. The attribute 
 > `logicalType` is always be present for a logical type, and is a string with the name of one of the logical types 

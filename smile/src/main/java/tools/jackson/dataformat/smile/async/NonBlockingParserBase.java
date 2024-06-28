@@ -378,7 +378,7 @@ public abstract class NonBlockingParserBase
         _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
         _majorState = MAJOR_ARRAY_ELEMENT;
         _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
-        return (_currToken = JsonToken.START_ARRAY);
+        return _updateToken(JsonToken.START_ARRAY);
     }
 
     protected final JsonToken _startObjectScope() throws JacksonException
@@ -386,7 +386,7 @@ public abstract class NonBlockingParserBase
         _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
         _majorState = MAJOR_OBJECT_FIELD;
         _majorStateAfterValue = MAJOR_OBJECT_FIELD;
-        return (_currToken = JsonToken.START_OBJECT);
+        return _updateToken(JsonToken.START_OBJECT);
     }
 
     protected final JsonToken _closeArrayScope() throws JacksonException
@@ -406,7 +406,7 @@ public abstract class NonBlockingParserBase
         }
         _majorState = st;
         _majorStateAfterValue = st;
-        return (_currToken = JsonToken.END_ARRAY);
+        return _updateToken(JsonToken.END_ARRAY);
     }
 
     protected final JsonToken _closeObjectScope() throws JacksonException
@@ -426,7 +426,7 @@ public abstract class NonBlockingParserBase
         }
         _majorState = st;
         _majorStateAfterValue = st;
-        return (_currToken = JsonToken.END_OBJECT);
+        return _updateToken(JsonToken.END_OBJECT);
     }
 
     /*
@@ -575,8 +575,7 @@ public abstract class NonBlockingParserBase
     protected final JsonToken _valueComplete(JsonToken t) throws JacksonException
     {
         _majorState = _majorStateAfterValue;
-        _currToken = t;
-        return t;
+        return _updateToken(t);
     }
 
     protected final JsonToken _handleSharedString(int index) throws JacksonException
@@ -595,7 +594,7 @@ public abstract class NonBlockingParserBase
         }
         _streamReadContext.setCurrentName(_seenNames[index]);
         _majorState = MAJOR_OBJECT_VALUE;
-        return (_currToken = JsonToken.PROPERTY_NAME);
+        return _updateToken(JsonToken.PROPERTY_NAME);
     }
 
     protected final void _addSeenStringValue(String v) throws JacksonException

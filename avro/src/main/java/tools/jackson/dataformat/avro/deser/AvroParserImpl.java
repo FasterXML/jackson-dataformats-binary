@@ -115,10 +115,10 @@ public abstract class AvroParserImpl
             throw _wrapIOFailure(e);
         }
         if (name == null) {
-            _currToken = _avroContext.currentToken();
+            _nullSafeUpdateToken(_avroContext.currentToken());
             return null;
         }
-        _currToken = JsonToken.PROPERTY_NAME;
+        _updateToken(JsonToken.PROPERTY_NAME);
         return name;
     }
 
@@ -136,10 +136,10 @@ public abstract class AvroParserImpl
             throw _wrapIOFailure(e);
         }
         if (name == null) {
-            _currToken = _avroContext.currentToken();
+            _nullSafeUpdateToken(_avroContext.currentToken());
             return false;
         }
-        _currToken = JsonToken.PROPERTY_NAME;
+        _updateToken(JsonToken.PROPERTY_NAME);
         String toMatch = sstr.getValue();
         if (toMatch == name) {
             return true;

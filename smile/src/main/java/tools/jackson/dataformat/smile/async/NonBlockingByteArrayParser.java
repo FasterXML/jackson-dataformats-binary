@@ -252,7 +252,7 @@ public class NonBlockingByteArrayParser
                     }
                     _streamReadContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
-                    return (_currToken = JsonToken.PROPERTY_NAME);
+                    return _updateToken(JsonToken.PROPERTY_NAME);
                 }
                 // Otherwise append to buffer, not done
                 System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, avail);
@@ -349,7 +349,7 @@ public class NonBlockingByteArrayParser
         case 0:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
-                return (_currToken = JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             ch = _inputBuffer[_inputPtr++];
             if (ch!= SmileConstants.HEADER_BYTE_2) {
@@ -361,7 +361,7 @@ public class NonBlockingByteArrayParser
         case 1:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
-                return (_currToken = JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             ch = _inputBuffer[_inputPtr++];
             if (ch != SmileConstants.HEADER_BYTE_3) {
@@ -372,7 +372,7 @@ public class NonBlockingByteArrayParser
         case 2:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
-                return (_currToken = JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             ch = _inputBuffer[_inputPtr++];
             {
@@ -497,7 +497,7 @@ public class NonBlockingByteArrayParser
                 // did not get it all; mark the state so we know where to return:
                 _pending32 = ch;
                 _minorState = MINOR_VALUE_STRING_SHARED_2BYTE;
-                return (_currToken = JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             case 0x18: // START_ARRAY
                 return _startArrayScope();
             case 0x19: // END_ARRAY
@@ -537,7 +537,7 @@ public class NonBlockingByteArrayParser
             case 0x20: // empty String as name, legal if unusual
                 _streamReadContext.setCurrentName("");
                 _majorState = MAJOR_OBJECT_VALUE;
-                return (_currToken = JsonToken.PROPERTY_NAME);
+                return _updateToken(JsonToken.PROPERTY_NAME);
             case 0x30: // long shared
             case 0x31:
             case 0x32:
@@ -548,7 +548,7 @@ public class NonBlockingByteArrayParser
                 {
                     _minorState = MINOR_PROPERTY_NAME_2BYTE;
                     _pending32 = (ch & 0x3) << 8;
-                    return (_currToken = JsonToken.NOT_AVAILABLE);
+                    return _updateTokenToNA();
                 }
             case 0x34: // long ASCII/Unicode name
                 return _finishLongFieldName(0);
@@ -577,7 +577,7 @@ public class NonBlockingByteArrayParser
                     }
                     _streamReadContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
-                    return (_currToken = JsonToken.PROPERTY_NAME);
+                    return _updateToken(JsonToken.PROPERTY_NAME);
                 }
                 // Nope: need to copy
                 _pending32 = len;
@@ -588,7 +588,7 @@ public class NonBlockingByteArrayParser
                 }
             }
             _minorState = MINOR_PROPERTY_NAME_SHORT_ASCII;
-            return (_currToken = JsonToken.NOT_AVAILABLE);
+            return _updateTokenToNA();
 
         case 3: // short Unicode; possibly doable
             // all valid, except for 0xFF
@@ -619,7 +619,7 @@ public class NonBlockingByteArrayParser
                     }
                     _streamReadContext.setCurrentName(name);
                     _majorState = MAJOR_OBJECT_VALUE;
-                    return (_currToken = JsonToken.PROPERTY_NAME);
+                    return _updateToken(JsonToken.PROPERTY_NAME);
                 }
                 // Nope: need to copy
                 _pending32 = len;
@@ -629,7 +629,7 @@ public class NonBlockingByteArrayParser
                     System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
                 }
                 _minorState = MINOR_PROPERTY_NAME_SHORT_UNICODE;
-                return (_currToken = JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
         }
         // Other byte values are illegal
@@ -660,7 +660,7 @@ public class NonBlockingByteArrayParser
                 _inputPtr = srcPtr;
                 _minorState = MINOR_PROPERTY_NAME_LONG;
                 _inputCopyLen = outPtr;
-                return (_currToken = JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             // otherwise increase copy buffer length
             int oldLen = copyBuffer.length;
@@ -711,7 +711,7 @@ public class NonBlockingByteArrayParser
         }
         _streamReadContext.setCurrentName(name);
         _majorState = MAJOR_OBJECT_VALUE;
-        return (_currToken = JsonToken.PROPERTY_NAME);
+        return _updateToken(JsonToken.PROPERTY_NAME);
     }
 
     /*
@@ -740,7 +740,7 @@ public class NonBlockingByteArrayParser
             System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
         }
         _minorState = MINOR_VALUE_STRING_SHORT_ASCII;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startShortUnicode(final int len) throws JacksonException
@@ -763,7 +763,7 @@ public class NonBlockingByteArrayParser
             _inputPtr = inPtr + left;
         }
         _minorState = MINOR_VALUE_STRING_SHORT_UNICODE;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
@@ -799,7 +799,7 @@ public class NonBlockingByteArrayParser
         // denote current length; no partial input to save
         _textBuffer.setCurrentLength(outPtr);
         _minorState = MINOR_VALUE_STRING_LONG_ASCII;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishLongASCII() throws JacksonException
@@ -939,7 +939,7 @@ public class NonBlockingByteArrayParser
         }
         _textBuffer.setCurrentLength(outPtr);
         _minorState = MINOR_VALUE_STRING_LONG_UNICODE;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishLongUnicode() throws JacksonException
@@ -947,7 +947,7 @@ public class NonBlockingByteArrayParser
         // First things first: did we have partially decoded multi-byte UTF-8 character?
         if (_inputCopyLen > 0) {
             if (!_finishPartialUnicodeChar()) {
-                return JsonToken.NOT_AVAILABLE;
+                return _updateTokenToNA();
             }
         }
 
@@ -1206,7 +1206,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_INT;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startLong() throws JacksonException
@@ -1260,7 +1260,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_LONG;
         _pending64 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startBigInt() throws JacksonException
@@ -1292,7 +1292,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishBigIntBody() throws JacksonException
@@ -1306,7 +1306,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
         }
         _minorState = MINOR_VALUE_NUMBER_BIGINT_BODY;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
@@ -1346,7 +1346,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_FLOAT;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     protected final JsonToken _startDouble() throws JacksonException
@@ -1385,7 +1385,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_DOUBLE;
         _pending64 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startBigDecimal() throws JacksonException
@@ -1418,7 +1418,7 @@ public class NonBlockingByteArrayParser
         // note! Scale stored here, need _pending32 for byte length
         _pending64 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishBigDecimalLen(int value, int bytesRead) throws JacksonException
@@ -1439,7 +1439,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishBigDecimalBody() throws JacksonException
@@ -1456,7 +1456,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
         }
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_BODY;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateToken(JsonToken.NOT_AVAILABLE);
     }
 
     /*
@@ -1497,7 +1497,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_RAW_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateToken(JsonToken.NOT_AVAILABLE);
     }
 
     private final JsonToken _finishRawBinaryBody() throws JacksonException
@@ -1519,7 +1519,7 @@ public class NonBlockingByteArrayParser
         _pending32 = totalLen;
         _inputCopyLen = offset+avail;
         _minorState = MINOR_VALUE_BINARY_RAW_BODY;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateToken(JsonToken.NOT_AVAILABLE);
     }
 
     private final JsonToken _start7BitBinary() throws JacksonException
@@ -1551,7 +1551,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_7BIT_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateToken(JsonToken.NOT_AVAILABLE);
     }
 
     private final JsonToken _finish7BitBinaryBody() throws JacksonException
@@ -1561,7 +1561,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
         _minorState = MINOR_VALUE_BINARY_7BIT_BODY;
-        return (_currToken = JsonToken.NOT_AVAILABLE);
+        return _updateToken(JsonToken.NOT_AVAILABLE);
     }
 
     /*
