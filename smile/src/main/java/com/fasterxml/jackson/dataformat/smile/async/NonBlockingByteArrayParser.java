@@ -342,7 +342,7 @@ public class NonBlockingByteArrayParser
         case 0:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
-                return _updateToken(JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             ch = _inputBuffer[_inputPtr++];
             if (ch!= SmileConstants.HEADER_BYTE_2) {
@@ -354,7 +354,7 @@ public class NonBlockingByteArrayParser
         case 1:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
-                return _updateToken(JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             ch = _inputBuffer[_inputPtr++];
             if (ch != SmileConstants.HEADER_BYTE_3) {
@@ -365,7 +365,7 @@ public class NonBlockingByteArrayParser
         case 2:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
-                return _updateToken(JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             ch = _inputBuffer[_inputPtr++];
             {
@@ -490,7 +490,7 @@ public class NonBlockingByteArrayParser
                 // did not get it all; mark the state so we know where to return:
                 _pending32 = ch;
                 _minorState = MINOR_VALUE_STRING_SHARED_2BYTE;
-                return _updateToken(JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             case 0x18: // START_ARRAY
                 return _startArrayScope();
             case 0x19: // END_ARRAY
@@ -541,7 +541,7 @@ public class NonBlockingByteArrayParser
                 {
                     _minorState = MINOR_FIELD_NAME_2BYTE;
                     _pending32 = (ch & 0x3) << 8;
-                    return _updateToken(JsonToken.NOT_AVAILABLE);
+                    return _updateTokenToNA();
                 }
             case 0x34: // long ASCII/Unicode name
                 return _finishLongFieldName(0);
@@ -581,7 +581,7 @@ public class NonBlockingByteArrayParser
                 }
             }
             _minorState = MINOR_FIELD_NAME_SHORT_ASCII;
-            return _updateToken(JsonToken.NOT_AVAILABLE);
+            return _updateTokenToNA();
 
         case 3: // short Unicode; possibly doable
             // all valid, except for 0xFF
@@ -622,7 +622,7 @@ public class NonBlockingByteArrayParser
                     System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
                 }
                 _minorState = MINOR_FIELD_NAME_SHORT_UNICODE;
-                return _updateToken(JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
         }
         // Other byte values are illegal
@@ -653,7 +653,7 @@ public class NonBlockingByteArrayParser
                 _inputPtr = srcPtr;
                 _minorState = MINOR_FIELD_NAME_LONG;
                 _inputCopyLen = outPtr;
-                return _updateToken(JsonToken.NOT_AVAILABLE);
+                return _updateTokenToNA();
             }
             // otherwise increase copy buffer length
             int oldLen = copyBuffer.length;
@@ -733,7 +733,7 @@ public class NonBlockingByteArrayParser
             System.arraycopy(_inputBuffer, inputPtr, _inputCopy, 0, left);
         }
         _minorState = MINOR_VALUE_STRING_SHORT_ASCII;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startShortUnicode(final int len) throws IOException
@@ -756,7 +756,7 @@ public class NonBlockingByteArrayParser
             _inputPtr = inPtr + left;
         }
         _minorState = MINOR_VALUE_STRING_SHORT_UNICODE;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
@@ -792,7 +792,7 @@ public class NonBlockingByteArrayParser
         // denote current length; no partial input to save
         _textBuffer.setCurrentLength(outPtr);
         _minorState = MINOR_VALUE_STRING_LONG_ASCII;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishLongASCII() throws IOException
@@ -932,7 +932,7 @@ public class NonBlockingByteArrayParser
         }
         _textBuffer.setCurrentLength(outPtr);
         _minorState = MINOR_VALUE_STRING_LONG_UNICODE;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishLongUnicode() throws IOException
@@ -1199,7 +1199,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_INT;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startLong() throws IOException
@@ -1253,7 +1253,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_LONG;
         _pending64 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startBigInt() throws IOException
@@ -1285,7 +1285,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishBigIntBody() throws IOException
@@ -1299,7 +1299,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
         }
         _minorState = MINOR_VALUE_NUMBER_BIGINT_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
@@ -1339,7 +1339,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_FLOAT;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     protected final JsonToken _startDouble() throws IOException
@@ -1378,7 +1378,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_DOUBLE;
         _pending64 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _startBigDecimal() throws IOException
@@ -1411,7 +1411,7 @@ public class NonBlockingByteArrayParser
         // note! Scale stored here, need _pending32 for byte length
         _pending64 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishBigDecimalLen(int value, int bytesRead) throws IOException
@@ -1432,7 +1432,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishBigDecimalBody() throws IOException
@@ -1449,7 +1449,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
         }
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
@@ -1490,7 +1490,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_RAW_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishRawBinaryBody() throws IOException
@@ -1512,7 +1512,7 @@ public class NonBlockingByteArrayParser
         _pending32 = totalLen;
         _inputCopyLen = offset+avail;
         _minorState = MINOR_VALUE_BINARY_RAW_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _start7BitBinary() throws IOException
@@ -1544,7 +1544,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_7BIT_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finish7BitBinaryBody() throws IOException
@@ -1554,7 +1554,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
         _minorState = MINOR_VALUE_BINARY_7BIT_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
