@@ -1456,7 +1456,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
         }
         _minorState = MINOR_VALUE_NUMBER_BIGDEC_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
@@ -1497,7 +1497,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_RAW_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finishRawBinaryBody() throws JacksonException
@@ -1519,7 +1519,7 @@ public class NonBlockingByteArrayParser
         _pending32 = totalLen;
         _inputCopyLen = offset+avail;
         _minorState = MINOR_VALUE_BINARY_RAW_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _start7BitBinary() throws JacksonException
@@ -1551,7 +1551,7 @@ public class NonBlockingByteArrayParser
         _minorState = MINOR_VALUE_BINARY_7BIT_LEN;
         _pending32 = value;
         _inputCopyLen = bytesRead;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     private final JsonToken _finish7BitBinaryBody() throws JacksonException
@@ -1561,7 +1561,7 @@ public class NonBlockingByteArrayParser
             return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
         _minorState = MINOR_VALUE_BINARY_7BIT_BODY;
-        return _updateToken(JsonToken.NOT_AVAILABLE);
+        return _updateTokenToNA();
     }
 
     /*
