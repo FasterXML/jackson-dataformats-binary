@@ -25,8 +25,9 @@ Active maintainers:
 
 2.17.3 (not yet released)
 
-#506: Cannot deserialize `UUID` values
+#506: (protobuf) Cannot deserialize `UUID` values
  (reported by @uniquonil)
+- (ion) Upgrade `ion-java` to 1.11.9 (from 1.11.8)
 
 2.17.2 (05-Jul-2024)
 
