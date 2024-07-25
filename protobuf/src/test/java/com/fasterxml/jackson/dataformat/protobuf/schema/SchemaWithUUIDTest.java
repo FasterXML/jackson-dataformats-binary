@@ -1,7 +1,10 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
+import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
@@ -43,6 +46,17 @@ public class SchemaWithUUIDTest extends ProtobufTestBase
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(UUIDBean.class);
         assertNotNull(schema);
+
+        UUIDBean input = new UUIDBean();
+        input.messageId = UUID.nameUUIDFromBytes("abc".getBytes(StandardCharsets.UTF_8));
+
+        byte[] proto = MAPPER.writer().with(schema)
+                .writeValueAsBytes(input);
+        UUIDBean result = MAPPER.readerFor(UUIDBean.class)
+                .with(schema)
+                .readValue(proto);
+        assertNotNull(result.messageId);
+        assertEquals(input.messageId, result.messageId);
     }
 
     // [dataformats-binary#68]
@@ -56,5 +70,17 @@ public class SchemaWithUUIDTest extends ProtobufTestBase
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(BinaryBean.class);
         assertNotNull(schema);
+
+        // But let's try round-tripping too
+        BinaryBean input = new BinaryBean();
+        input.data = new byte[] { 1, 2, -1 };
+
+        byte[] proto = MAPPER.writer().with(schema)
+                .writeValueAsBytes(input);
+        BinaryBean result = MAPPER.readerFor(BinaryBean.class)
+                .with(schema)
+                .readValue(proto);
+        assertNotNull(result.data);
+        Assert.assertArrayEquals(input.data, result.data);
     }
 }
