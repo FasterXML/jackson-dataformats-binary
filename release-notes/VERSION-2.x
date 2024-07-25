@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.16.3 (not yet released)
+
+#506: Cannot deserialize `UUID` values
+ (reported by @uniquonil)
+
 2.16.2 (09-Mar-2024)
 
 No changes since 2.16.1
