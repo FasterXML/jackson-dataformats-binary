@@ -18,6 +18,11 @@ Active maintainers:
 
 - No changes since 2.17
 
+2.17.3 (not yet released)
+
+#506: Cannot deserialize `UUID` values
+ (reported by @uniquonil)
+
 2.17.2 (05-Jul-2024)
 
 #497: (ion) Failed copy(): `IonValueMapper` does not override copy()
