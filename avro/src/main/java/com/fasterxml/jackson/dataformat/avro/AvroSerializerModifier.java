@@ -34,9 +34,8 @@ public class AvroSerializerModifier
             Iterator<BeanPropertyWriter> it = beanProperties.iterator();
             while (it.hasNext()) {
                 BeanPropertyWriter prop = it.next();
-                if ("schema".equals(prop.getName())) {
+                if ("schema".equals(prop.getName()) || "specificData".equals(prop.getName())) {
                     it.remove();
-                    break;
                 }
             }
         }
