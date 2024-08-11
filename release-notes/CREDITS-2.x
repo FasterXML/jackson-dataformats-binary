@@ -329,7 +329,9 @@ Yoann Vernageau (@yvrng)
   (2.17.1)
 
 PJ Fanning (@pjfanning)
- * Contributed #484: Rework synchronization in `ProtobufMapper`
+ * Contributed #484: (protobuf) Rework synchronization in `ProtobufMapper`
+  (2.18.0)
+ * Contributed #508: (avro) Ignore `specificData` field on serialization
   (2.18.0)
 
 Joachim Lous (@jlous)
