@@ -218,8 +218,9 @@ public class AnySetterTest extends CBORTestBase
     public void testAnySetterDisable() throws Exception
     {
         try {
-            MAPPER.readValue(cborDoc(aposToQuotes("{'value':3}")),
-                    MapImitatorDisabled.class);
+            MAPPER.readerFor(MapImitatorDisabled.class)
+                .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(cborDoc(aposToQuotes("{'value':3}")));
             fail("Should not pass");
         } catch (UnrecognizedPropertyException e) {
             verifyException(e, "Unrecognized property \"value\"");

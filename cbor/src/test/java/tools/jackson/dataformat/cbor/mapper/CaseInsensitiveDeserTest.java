@@ -53,7 +53,9 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
         ObjectMapper mapper = sharedMapper();
         assertFalse(mapper.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES));
         try {
-            mapper.readValue(DOC, Issue476Bean.class);
+            mapper.readerFor(Issue476Bean.class)
+                .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(DOC);
             fail("Should not accept improper case properties by default");
         } catch (UnrecognizedPropertyException e) {
             verifyException(e, "Unrecognized property ");
