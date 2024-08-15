@@ -50,8 +50,8 @@ import com.amazon.ion.system.IonSystemBuilder;
  */
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
-    private final IonValueMapper ionValueMapper = new IonValueMapper(ionSystem,
-            PropertyNamingStrategies.SNAKE_CASE);
+    private final IonValueMapper ionValueMapper = (IonValueMapper) IonValueMapper.builder(ionSystem,
+            PropertyNamingStrategies.SNAKE_CASE).build();
 
     enum ReturnCode {
         Success,
@@ -251,5 +251,17 @@ public class IonValueMapperTest {
         Object o = ionValueMapper.parse(expected, clazz);
         IonValue actual = ionValueMapper.serialize(o);
         assertEquals(expected, actual);
+    }
+
+    // for [dataformats-binary#509]
+    @Test
+    public void testBuilders() throws Exception {
+        IonObjectMapper mapper = IonValueMapper.builder().build();
+        assertNotNull(mapper);
+        assertEquals(IonValueMapper.class, mapper.getClass());
+
+        mapper = IonValueMapper.builder(ionSystem).build();
+        assertNotNull(mapper);
+        assertEquals(IonValueMapper.class, mapper.getClass());
     }
 }
