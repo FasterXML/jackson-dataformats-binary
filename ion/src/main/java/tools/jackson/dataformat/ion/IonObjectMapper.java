@@ -159,7 +159,7 @@ public class IonObjectMapper extends ObjectMapper
 
     /*
     /**********************************************************************
-    /* Life-cycle
+    /* Life-cycle, constructors
     /**********************************************************************
      */
 
@@ -174,6 +174,12 @@ public class IonObjectMapper extends ObjectMapper
     public IonObjectMapper(Builder b) {
         super(b);
     }
+
+    /*
+    /**********************************************************************
+    /* Life-cycle, builders
+    /**********************************************************************
+     */
 
     /**
      * A builder for a mapper that will use textual writers by default. Same as
