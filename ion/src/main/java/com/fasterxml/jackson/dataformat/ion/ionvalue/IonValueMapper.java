@@ -37,6 +37,12 @@ public class IonValueMapper extends IonObjectMapper
 {
     private static final long serialVersionUID = 1L;
 
+    /*
+    /**********************************************************************
+    /* Life-cycle, constructors
+    /**********************************************************************
+     */
+
     /**
      * Constructor which provides a mapper with a null {@link PropertyNamingStrategy}.
      *
@@ -66,11 +72,31 @@ public class IonValueMapper extends IonObjectMapper
         this.setPropertyNamingStrategy(strategy);
     }
 
+    /*
+    /**********************************************************************
+    /* Life-cycle, builders
+    /**********************************************************************
+     */
+
+    // TODO: add overrides
+
+    /*
+    /**********************************************************************
+    /* Life-cycle, other
+    /**********************************************************************
+     */
+
     @Override // @since 2.18
     public ObjectMapper copy() {
         _checkInvalidCopy(IonValueMapper.class);
         return new IonValueMapper(this);
     }
+
+    /*
+    /**********************************************************************
+    /* Extended API
+    /**********************************************************************
+     */
     
     public <T> T parse(IonValue value, Class<T> clazz) throws IOException {
         if (value == null) {
