@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.ion.EnumAsIonSymbolModule;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
+import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Supports serializing Ion to POJO and back using the Jackson Ion framework.
@@ -52,9 +52,25 @@ public class IonValueMapper extends IonObjectMapper
         this(ionSystem, null);
     }
 
-    // @since 2.18: needed for `copy()`
+    /**
+     * Needed for `copy()`
+     *
+     * @since 2.18
+     */
     protected IonValueMapper(IonValueMapper src) {
         super(src);
+    }
+
+    /**
+     * Needed for some builders
+     *
+     * @since 2.18
+     */
+    protected IonValueMapper(IonFactory f, PropertyNamingStrategy strategy) {
+        super(f);
+        this.registerModule(new IonValueModule());
+        this.registerModule(new EnumAsIonSymbolModule());
+        this.setPropertyNamingStrategy(strategy);
     }
 
     /**
@@ -66,19 +82,61 @@ public class IonValueMapper extends IonObjectMapper
      *            {@link PropertyNamingStrategy}
      */
     public IonValueMapper(IonSystem ionSystem, PropertyNamingStrategy strategy) {
-        super(new IonFactory(null, ionSystem));
-        this.registerModule(new IonValueModule());
-        this.registerModule(new EnumAsIonSymbolModule());
-        this.setPropertyNamingStrategy(strategy);
+        this(new IonFactory(null, ionSystem), strategy);
     }
 
     /*
     /**********************************************************************
     /* Life-cycle, builders
+    /*
+    /* NOTE: must "override" (mask) all static methods from parent class
+    /* (most of which just call basic `builder()` or `builder(IonSystem)`
     /**********************************************************************
      */
 
-    // TODO: add overrides
+    public static Builder builder() {
+        return builder(IonSystemBuilder.standard().build());
+    }
+
+    public static Builder builder(IonSystem ionSystem) {
+        return builder(ionSystem, null);
+    }
+
+    /**
+     * Canonical {@code builder()} method that most other methods
+     * ultimately call.
+     */
+    public static Builder builder(IonSystem ionSystem, PropertyNamingStrategy strategy) {
+        return new Builder(new IonValueMapper(ionSystem, strategy));
+    }
+
+    public static Builder builderForBinaryWriters() {
+        return builderForBinaryWriters(IonSystemBuilder.standard().build());
+    }
+
+    public static Builder builderForBinaryWriters(IonSystem ionSystem) {
+        return builder(IonFactory.builderForBinaryWriters()
+                .ionSystem(ionSystem)
+                .build());
+    }
+
+    public static Builder builderForTextualWriters() {
+        return builderForTextualWriters(IonSystemBuilder.standard().build());
+    }
+
+    public static Builder builderForTextualWriters(IonSystem ionSystem) {
+        return builder(IonFactory.builderForTextualWriters()
+                .ionSystem(ionSystem)
+                .build());
+    }
+
+    public static Builder builder(IonFactory streamFactory) {
+        return builder(streamFactory, null);
+    }
+
+    public static Builder builder(IonFactory streamFactory, PropertyNamingStrategy strategy) {
+        return new Builder(new IonValueMapper(streamFactory, strategy));
+    }
 
     /*
     /**********************************************************************

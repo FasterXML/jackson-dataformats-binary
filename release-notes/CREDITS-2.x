@@ -338,3 +338,7 @@ Joachim Lous (@jlous)
  * Requested #494: Avro Schema generation: allow mapping Java Enum properties to
    Avro String values
   (2.18.0)
+
+Robert Noack (@mr-robert)
+ * Reported #509: IonValueMapper.builder() not implemented, does not register modules
+  (2.18.0)
