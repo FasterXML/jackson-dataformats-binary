@@ -108,7 +108,7 @@ public abstract class AvroSchemaHelper
         //   NOTE: was reverted in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
         if (enclosing != null) {
-            return enclosing.getName() + "$";
+            return enclosing.getName();
         }
         Package pkg = cls.getPackage();
         return (pkg == null) ? "" : pkg.getName();
@@ -351,6 +351,7 @@ public abstract class AvroSchemaHelper
             if (namespace == null) {
                 return name;
             }
+            // Backward compatibility with schemas that use dollar sign for nested classes (Apache Avro before 1.9)
             final int len = namespace.length();
             if (namespace.charAt(len-1) == '$') {
                 return namespace + name;
