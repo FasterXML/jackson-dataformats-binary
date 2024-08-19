@@ -101,7 +101,7 @@ public abstract class AvroSchemaHelper
         //   NOTE: was reverted in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
         if (enclosing != null) {
-            return enclosing.getName() + "$";
+            return enclosing.getName();
         }
         Package pkg = cls.getPackage();
         return (pkg == null) ? "" : pkg.getName();

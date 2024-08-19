@@ -35,7 +35,7 @@ public class AvroNamespaceTest {
 
         // THEN
         assertThat(actualSchema.getNamespace())
-                .isEqualTo("tools.jackson.dataformat.avro.annotation.AvroNamespaceTest$");
+                .isEqualTo("tools.jackson.dataformat.avro.annotation.AvroNamespaceTest");
     }
 
     @Test
@@ -65,7 +65,7 @@ public class AvroNamespaceTest {
 
         // THEN
         assertThat(actualSchema.getNamespace())
-                .isEqualTo("tools.jackson.dataformat.avro.annotation.AvroNamespaceTest$");
+                .isEqualTo("tools.jackson.dataformat.avro.annotation.AvroNamespaceTest");
     }
 
     @Test
