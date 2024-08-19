@@ -338,6 +338,7 @@ public abstract class AvroSchemaHelper
             if (namespace == null) {
                 return name;
             }
+            // Backward compatibility with schemas that use dollar sign for nested classes (Apache Avro before 1.9)
             final int len = namespace.length();
             if (namespace.charAt(len-1) == '$') {
                 return namespace + name;
