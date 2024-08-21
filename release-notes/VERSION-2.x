@@ -24,6 +24,8 @@ Active maintainers:
  (contributed by Michal F)
 #508: (avro) Ignore `specificData` field on serialization
  (contributed by @pjfanning)
+#509: IonValueMapper.builder() not implemented, does not register modules
+ (reported by Robert N)
 
 2.17.3 (not yet released)
 
