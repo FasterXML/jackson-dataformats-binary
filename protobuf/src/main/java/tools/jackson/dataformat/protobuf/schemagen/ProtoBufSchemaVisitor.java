@@ -80,34 +80,35 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
     /*********************************************************************
      */
 
-	@Override
-	public JsonObjectFormatVisitor expectObjectFormat(JavaType type) {
-		MessageElementVisitor visitor = new MessageElementVisitor(_provider, type, _definedTypeElementBuilders,
-				_isNested);
-		_builder = visitor;
-		_definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
-		return visitor;
-	}
+    @Override
+    public JsonObjectFormatVisitor expectObjectFormat(JavaType type) {
+        MessageElementVisitor visitor = new MessageElementVisitor(_provider, type, _definedTypeElementBuilders,
+                _isNested);
+        _builder = visitor;
+        _definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
+        return visitor;
+    }
 
-	@Override
-	public JsonMapFormatVisitor expectMapFormat(JavaType mapType) {
-         // 31-Mar-2017, tatu: I don't think protobuf v2 really supports map types natively,
-	    //   and we can't quite assume anything specific can we?
-		return _throwUnsupported("'Map' type not supported as type by protobuf module");
-	}
+    @Override
+    public JsonMapFormatVisitor expectMapFormat(JavaType mapType) {
+        // 31-Mar-2017, tatu: I don't think protobuf v2 really supports map types natively,
+        //   and we can't quite assume anything specific can we?
+        return _throwUnsupported("'Map' type not supported as type by protobuf module");
+    }
 
-	@Override
-	public JsonArrayFormatVisitor expectArrayFormat(JavaType type) {
-         // 31-Mar-2017, tatu: This is bit messy, may get Base64 encoded or int array so
-         if (ProtobufSchemaHelper.isBinaryType(type)) {
-              _simpleType = ScalarType.BYTES;
-              return null;
-         }
+    @Override
+    public JsonArrayFormatVisitor expectArrayFormat(JavaType type) {
+        // 31-Mar-2017, tatu: This is bit messy, may get Base64 encoded or int array so
+        if (ProtobufSchemaHelper.isBinaryType(type)) {
+            _simpleType = ScalarType.BYTES;
+            return null;
+        }
 
-         // !!! TODO: surely we should support array types, right?
+        // !!! TODO: surely we should support array types, right?
+        // 21-Aug-2024, tatu: [dataformats-binary#483] caused by this
 
-         return _throwUnsupported("'Map' type not supported as type by protobuf module");
-	}
+        return _throwUnsupported("'Array' type not supported as type by protobuf module");
+    }
 
     /*
     /*********************************************************************
