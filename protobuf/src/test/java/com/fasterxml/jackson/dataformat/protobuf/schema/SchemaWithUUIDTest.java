@@ -39,7 +39,7 @@ public class SchemaWithUUIDTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
+    private final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#68]
     public void testWithUUID() throws Exception
