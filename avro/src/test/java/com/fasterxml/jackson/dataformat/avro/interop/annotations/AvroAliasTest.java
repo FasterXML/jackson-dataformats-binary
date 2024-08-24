@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class AvroAliasTest extends InteropTestBase {
 
-    @AvroAlias(alias = "Employee", space = "com.fasterxml.jackson.dataformat.avro.AvroTestBase$")
+    @AvroAlias(alias = "Employee", space = "com.fasterxml.jackson.dataformat.avro.AvroTestBase")
     public static class NewEmployee {
 
         public String name;
@@ -40,7 +40,7 @@ public class AvroAliasTest extends InteropTestBase {
         public AliasedNameEmployee boss;
     }
 
-    @AvroAlias(alias = "Size", space = "com.fasterxml.jackson.dataformat.avro.AvroTestBase$")
+    @AvroAlias(alias = "Size", space = "com.fasterxml.jackson.dataformat.avro.AvroTestBase")
     public enum NewSize {
         SMALL,
         LARGE;

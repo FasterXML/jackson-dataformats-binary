@@ -108,7 +108,9 @@ public abstract class AvroSchemaHelper
         //   NOTE: was reverted in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
         if (enclosing != null) {
-            return enclosing.getName() + "$";
+            // 23-Aug-2024: Changed as per [dataformats-binary#167] 
+            // Enclosing class may also be nested
+            return enclosing.getName().replace('$', '.');
         }
         Package pkg = cls.getPackage();
         return (pkg == null) ? "" : pkg.getName();
@@ -351,6 +353,8 @@ public abstract class AvroSchemaHelper
             if (namespace == null) {
                 return name;
             }
+            // 23-Aug-2024: [dataformats-binary#167] Still needed for backwards-compatibility
+            // with schemas that use dollar sign for nested classes (Apache Avro before 1.9)
             final int len = namespace.length();
             if (namespace.charAt(len-1) == '$') {
                 return namespace + name;
@@ -441,13 +445,25 @@ public abstract class AvroSchemaHelper
             //     Check if this is a nested class
             // 19-Sep-2020, tatu: This is a horrible, horribly inefficient and all-around
             //    wrong mechanism. To be abolished if possible.
-            final String nestedClassName = key.nameWithSeparator('$');
-            try {
-                Class.forName(nestedClassName);
-                return nestedClassName;
-            } catch (ClassNotFoundException e) {
-                // Could not find a nested class, must be a regular class
-                return key.nameWithSeparator('.');
+            // 23-Aug-2024:[dataformats-binary#167] Based on SpecificData::getClass
+            //   from Apache Avro. Initially assume that namespace is a Java package
+            StringBuilder sb = new StringBuilder(key.nameWithSeparator('.'));
+            int lastDot = sb.length();
+            while (true) {
+                try {
+                    // Try to resolve the class
+                    String className = sb.toString();
+                    Class.forName(className);
+                    return className;
+                } catch (ClassNotFoundException e) {
+                    // Class does not exist - perhaps last dot is actually a nested class
+                    lastDot = sb.lastIndexOf(".", lastDot);
+                    if (lastDot == -1) {
+                        // No more dots so we are unable to resolve, should we throw an exception?
+                        return key.nameWithSeparator('.');
+                    }
+                    sb.setCharAt(lastDot, '$');
+                }
             }
         }
     }

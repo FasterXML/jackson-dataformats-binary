@@ -16,6 +16,9 @@ Active maintainers:
 
 2.18.0 (not yet released)
 
+#167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
+ (reported by @Sage-Pierce)
+ (fix contributed by Rafał H)
 #484: (protobuf) Rework synchronization in `ProtobufMapper`
  (contributed by @pjfanning)
 #494: (avro) Avro Schema generation: allow mapping Java Enum properties to
