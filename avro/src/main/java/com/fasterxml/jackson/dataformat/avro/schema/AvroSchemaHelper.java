@@ -108,6 +108,7 @@ public abstract class AvroSchemaHelper
         //   NOTE: was reverted in 2.8.8, but is enabled for Jackson 2.9.
         Class<?> enclosing = cls.getEnclosingClass();
         if (enclosing != null) {
+            // 23-Aug-2024: Changed as per [dataformats-binary#167] 
             // Enclosing class may also be nested
             return enclosing.getName().replace('$', '.');
         }
@@ -352,7 +353,8 @@ public abstract class AvroSchemaHelper
             if (namespace == null) {
                 return name;
             }
-            // Backward compatibility with schemas that use dollar sign for nested classes (Apache Avro before 1.9)
+            // 23-Aug-2024: [dataformats-binary#167] Still needed for backwards-compatibility
+            // with schemas that use dollar sign for nested classes (Apache Avro before 1.9)
             final int len = namespace.length();
             if (namespace.charAt(len-1) == '$') {
                 return namespace + name;
@@ -443,8 +445,8 @@ public abstract class AvroSchemaHelper
             //     Check if this is a nested class
             // 19-Sep-2020, tatu: This is a horrible, horribly inefficient and all-around
             //    wrong mechanism. To be abolished if possible.
-            // Based on SpecificData::getClass from apache avro
-            // Initially assume that namespace is a Java package
+            // 23-Aug-2024:[dataformats-binary#167] Based on SpecificData::getClass
+            //   from Apache Avro. Initially assume that namespace is a Java package
             StringBuilder sb = new StringBuilder(key.nameWithSeparator('.'));
             int lastDot = sb.length();
             while (true) {
