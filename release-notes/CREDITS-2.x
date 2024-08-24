@@ -328,6 +328,10 @@ Yoann Vernageau (@yvrng)
    when source is an empty `InputStream`
   (2.17.1)
 
+Rafał Harabień (@rafalh)
+ * Contributed fix for #167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
+  (2.18.0)
+
 PJ Fanning (@pjfanning)
  * Contributed #484: (protobuf) Rework synchronization in `ProtobufMapper`
   (2.18.0)
