@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.0 (not yet released)
+2.18.0 (26-Sep-2024)
 
 #167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
  (reported by @Sage-Pierce)
