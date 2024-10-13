@@ -11,7 +11,6 @@ import tools.jackson.databind.SerializerProvider;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import tools.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-import tools.jackson.databind.type.TypeFactory;
 
 public class StringVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder
@@ -38,7 +37,8 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
     public Schema builtAvroSchema() {
         // Unlike Jackson, Avro treats characters as an int with the java.lang.Character class type.
         if (_type.hasRawClass(char.class) || _type.hasRawClass(Character.class)) {
-            return AvroSchemaHelper.numericAvroSchema(NumberType.INT, TypeFactory.defaultInstance().constructType(Character.class));
+            // should we construct JavaType for `Character.class` in case of primitive or... ?
+            return AvroSchemaHelper.numericAvroSchema(NumberType.INT, _type);
         }
         // [dataformats-binary#179]: need special help with UUIDs, to coerce into Binary
         //   (could actually be

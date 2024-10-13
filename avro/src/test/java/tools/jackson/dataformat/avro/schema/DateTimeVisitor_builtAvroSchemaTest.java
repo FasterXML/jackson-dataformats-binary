@@ -26,8 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Parameterized.class)
 public class DateTimeVisitor_builtAvroSchemaTest {
 
-    private static final TypeFactory TYPE_FACTORY = TypeFactory.defaultInstance();
-
     @Parameter(0)
     public Class<?> testClass;
 
@@ -73,14 +71,16 @@ public class DateTimeVisitor_builtAvroSchemaTest {
                         LocalTime.class,
                         JsonParser.NumberType.INT,
                         Schema.Type.INT,
-                        "time-millis"},
+                        "time-millis"
+                }
         });
     }
 
     @Test
     public void builtAvroSchemaTest() {
         // GIVEN
-        DateTimeVisitor dateTimeVisitor = new DateTimeVisitor(TYPE_FACTORY.constructSimpleType(testClass, null));
+        final TypeFactory tf = TypeFactory.createDefaultInstance();
+        DateTimeVisitor dateTimeVisitor = new DateTimeVisitor(tf.constructSimpleType(testClass, null));
         dateTimeVisitor.numberType(givenNumberType);
 
         // WHEN
