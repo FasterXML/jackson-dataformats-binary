@@ -5,9 +5,6 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 public class ParseInvalidUTF8String236Test extends CBORTestBase
 {
     // [dataformats-binary#236]: Original version; broken UTF-8 all around.
