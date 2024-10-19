@@ -3848,7 +3848,7 @@ expType, type, ch));
                 expLen, actLen), _currToken);
     }
 
-    // @since 2.19
+    // @since 2.18.1
     private String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
         throws IOException
