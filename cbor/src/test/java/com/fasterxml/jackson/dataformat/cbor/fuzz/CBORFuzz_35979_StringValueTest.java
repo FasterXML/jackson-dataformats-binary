@@ -27,7 +27,7 @@ public class CBORFuzz_35979_StringValueTest extends CBORTestBase
             p.getText();
             fail("Should not pass");
         } catch (StreamReadException e) {
-            verifyException(e, "Malformed UTF-8 character at the end of a");
+            verifyException(e, "Truncated UTF-8 character in Unicode String value (256 bytes)");
         }
 
     }

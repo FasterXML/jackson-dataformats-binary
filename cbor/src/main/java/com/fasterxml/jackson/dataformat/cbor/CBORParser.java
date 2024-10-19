@@ -2281,18 +2281,14 @@ public class CBORParser extends ParserMinimalBase
             }
             return;
         }
-        // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
-        //    the longest individual unit is 4 bytes (surrogate pair) so we
-        //    actually need len+3 bytes to avoid bounds checks
         // 18-Jan-2024, tatu: For malicious input / Fuzzers, need to worry about overflow
         //    like Integer.MAX_VALUE
-        final int needed = Math.max(len, len + 3);
         final int available = _inputEnd - _inputPtr;
 
-        if ((available >= needed)
+        if ((available >= len)
                 // if not, could we read? NOTE: we do not require it, just attempt to read
-                    || ((_inputBuffer.length >= needed)
-                            && _tryToLoadToHaveAtLeast(needed))) {
+                    || ((_inputBuffer.length >= len)
+                            && _tryToLoadToHaveAtLeast(len))) {
                 _finishShortText(len);
                 return;
         }
@@ -2326,22 +2322,18 @@ public class CBORParser extends ParserMinimalBase
             _finishChunkedText();
             return _textBuffer.contentsAsString();
         }
-        // 29-Jan-2021, tatu: as per [dataformats-binary#238] must keep in mind that
-        //    the longest individual unit is 4 bytes (surrogate pair) so we
-        //    actually need len+3 bytes to avoid bounds checks
 
         // 19-Mar-2021, tatu: [dataformats-binary#259] shows the case where length
         //    we get is Integer.MAX_VALUE, leading to overflow. Could change values
         //    to longs but simpler to truncate "needed" (will never pass following test
         //    due to inputBuffer never being even close to that big).
 
-        final int needed = Math.max(len + 3, len);
         final int available = _inputEnd - _inputPtr;
 
-        if ((available >= needed)
+        if ((available >= len)
             // if not, could we read? NOTE: we do not require it, just attempt to read
-                || ((_inputBuffer.length >= needed)
-                        && _tryToLoadToHaveAtLeast(needed))) {
+                || ((_inputBuffer.length >= len)
+                        && _tryToLoadToHaveAtLeast(len))) {
             return _finishShortText(len);
         }
         // If not enough space, need handling similar to chunked
@@ -2369,7 +2361,7 @@ public class CBORParser extends ParserMinimalBase
         final byte[] inputBuf = _inputBuffer;
 
         // Let's actually do a tight loop for ASCII first:
-        final int end = inPtr + len;
+        final int end = _inputPtr;
 
         int i;
         while ((i = inputBuf[inPtr]) >= 0) {
@@ -2386,44 +2378,50 @@ public class CBORParser extends ParserMinimalBase
         final int[] codes = UTF8_UNIT_CODES;
         do {
             i = inputBuf[inPtr++] & 0xFF;
-            switch (codes[i]) {
-            case 0:
-                break;
-            case 1:
-                {
-                    final int c2 = inputBuf[inPtr++];
-                    if ((c2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(c2 & 0xFF, inPtr);
-                    }
-                    i = ((i & 0x1F) << 6) | (c2 & 0x3F);
+            int code = codes[i];
+            if (code != 0) {
+                // 05-Jul-2021, tatu: As per [dataformats-binary#289] need to
+                //     be careful wrt end-of-buffer truncated codepoints
+                if ((inPtr + code) > end) {
+                    final int firstCharOffset = len - (end - inPtr) - 1;
+                    _reportTruncatedUTF8InString(len, firstCharOffset, i, code);
                 }
-                break;
-            case 2:
-                {
-                    final int c2 = inputBuf[inPtr++];
-                    if ((c2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(c2 & 0xFF, inPtr);
+
+                switch (code) {
+                    case 1: {
+                        final int c2 = inputBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x1F) << 6) | (c2 & 0x3F);
                     }
-                    final int c3 = inputBuf[inPtr++];
-                    if ((c3 & 0xC0) != 0x080) {
-                        _reportInvalidOther(c3 & 0xFF, inPtr);
+                    break;
+                    case 2: {
+                        final int c2 = inputBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inputBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
                     }
-                    i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                    break;
+                    case 3:
+                        // 30-Jan-2021, tatu: TODO - validate these too?
+                        i = ((i & 0x07) << 18)
+                            | ((inputBuf[inPtr++] & 0x3F) << 12)
+                            | ((inputBuf[inPtr++] & 0x3F) << 6)
+                            | (inputBuf[inPtr++] & 0x3F);
+                        // note: this is the codepoint value; need to split, too
+                        i -= 0x10000;
+                        outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
+                        i = 0xDC00 | (i & 0x3FF);
+                        break;
+                    default: // invalid
+                        _reportInvalidInitial(i);
                 }
-                break;
-            case 3:
-                // 30-Jan-2021, tatu: TODO - validate these too?
-                i = ((i & 0x07) << 18)
-                    | ((inputBuf[inPtr++] & 0x3F) << 12)
-                    | ((inputBuf[inPtr++] & 0x3F) << 6)
-                    | (inputBuf[inPtr++] & 0x3F);
-                // note: this is the codepoint value; need to split, too
-                i -= 0x10000;
-                outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
-                i = 0xDC00 | (i & 0x3FF);
-                break;
-            default: // invalid
-                _reportInvalidInitial(i);
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
@@ -3850,18 +3848,16 @@ expType, type, ch));
                 expLen, actLen), _currToken);
     }
 
-    // @since 2.13
-    /*
+    // @since 2.18.1
     private String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
         throws IOException
     {
         throw _constructError(String.format(
-"Truncated UTF-8 character in Chunked Unicode String value (%d bytes): "
+"Truncated UTF-8 character in Unicode String value (%d bytes): "
 +"byte 0x%02X at offset #%d indicated %d more bytes needed",
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
-    */
 
     // @since 2.13
     private String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,

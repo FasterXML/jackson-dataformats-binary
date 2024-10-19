@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.1 (not yet released)
+
+#518: Should not read past end for CBOR string values
+ (contributed by Knut W)
+
 2.18.0 (26-Sep-2024)
 
 #167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
