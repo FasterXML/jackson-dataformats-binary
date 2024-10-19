@@ -346,3 +346,7 @@ Joachim Lous (@jlous)
 Robert Noack (@mr-robert)
  * Reported #509: IonValueMapper.builder() not implemented, does not register modules
   (2.18.0)
+
+Knut Wannheden (@knutwannheden)
+ * Contributed #518: Should not read past end for CBOR string values
+  (2.18.1)
