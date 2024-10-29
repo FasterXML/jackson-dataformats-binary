@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.1 (not yet released)
+2.18.1 (28-Oct-2024)
 
 #518: Should not read past end for CBOR string values
  (contributed by Knut W)
@@ -104,8 +104,6 @@ Active maintainers:
   are no longer leaked
  (contributed by @tgregg)
 
-=======
->>>>>>> 2.16
 2.16.2 (09-Mar-2024)
 
 No changes since 2.16.1
