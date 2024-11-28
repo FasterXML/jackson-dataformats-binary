@@ -14,6 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.2 (27-Nov-2024)
+
+No changes since 2.18.1
+
 2.18.1 (28-Oct-2024)
 
 #518: Should not read past end for CBOR string values
