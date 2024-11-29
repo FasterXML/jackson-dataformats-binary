@@ -11,7 +11,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
@@ -54,7 +54,7 @@ public class AvroInstantSerializer<T extends Temporal> extends StdScalarSerializ
     }
 
     @Override
-    public void serialize(T value, JsonGenerator gen, SerializerProvider provider) throws JacksonException {
+    public void serialize(T value, JsonGenerator gen, SerializationContext provider) throws JacksonException {
         /**
          * Number of milliseconds, independent of a particular time zone or calendar,
          * from 1 January 1970 00:00:00.000 UTC.

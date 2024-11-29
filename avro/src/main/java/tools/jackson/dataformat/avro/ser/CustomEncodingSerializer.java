@@ -7,7 +7,7 @@ import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.dataformat.avro.AvroSchema;
 import tools.jackson.dataformat.avro.CustomEncodingWrapper;
@@ -27,7 +27,7 @@ public class CustomEncodingSerializer<T> extends ValueSerializer<T> {
     }
 
     @Override
-    public void serialize(T t, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+    public void serialize(T t, JsonGenerator jsonGenerator, SerializationContext ctxt)
         throws JacksonException
     {
         jsonGenerator.writeEmbeddedObject(new CustomEncodingDatum<>(encoding, t));

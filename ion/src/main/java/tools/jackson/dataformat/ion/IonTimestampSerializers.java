@@ -20,7 +20,7 @@ import java.util.TimeZone;
 import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 
 /**
@@ -35,10 +35,10 @@ public class IonTimestampSerializers {
         }
 
         @Override
-        public void serialize(java.util.Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+        public void serialize(java.util.Date date, JsonGenerator jsonGenerator, SerializationContext ctxt)
         {
             // Still respect writing dates as millis if desired
-            if (serializerProvider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+            if (ctxt.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
                 jsonGenerator.writeNumber(date.getTime());
             } else {
                 Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -55,10 +55,10 @@ public class IonTimestampSerializers {
         }
 
         @Override
-        public void serialize(java.sql.Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+        public void serialize(java.sql.Date date, JsonGenerator jsonGenerator, SerializationContext ctxt)
         {
             // Still respect writing dates as millis if desired
-            if (serializerProvider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+            if (ctxt.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
                 jsonGenerator.writeNumber(date.getTime());
             } else {
                 Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));

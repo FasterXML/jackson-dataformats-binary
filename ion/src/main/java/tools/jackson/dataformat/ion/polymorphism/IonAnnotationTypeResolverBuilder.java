@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.jsontype.TypeIdResolver;
@@ -81,7 +81,7 @@ public class IonAnnotationTypeResolverBuilder
      * actual object data.
      */
     @Override
-    public TypeSerializer buildTypeSerializer(SerializerProvider ctxt, JavaType baseType,
+    public TypeSerializer buildTypeSerializer(SerializationContext ctxt, JavaType baseType,
             Collection<NamedType> subtypes) {
         return new IonAnnotationTypeSerializer(typeIdResolver);
     }

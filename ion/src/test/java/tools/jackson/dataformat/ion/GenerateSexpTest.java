@@ -27,7 +27,7 @@ import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
 
 import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
 
@@ -141,7 +141,7 @@ public class GenerateSexpTest {
     private static class SexpObjectSerializer extends ValueSerializer<SexpObject> {
         @Override
         public void serialize(SexpObject value, JsonGenerator jsonGenerator,
-                SerializerProvider provider)
+                SerializationContext provider)
         {
             final IonGenerator ionGenerator = (IonGenerator) jsonGenerator;
 

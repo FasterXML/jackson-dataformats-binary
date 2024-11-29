@@ -8,7 +8,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
@@ -23,7 +23,7 @@ public class ArrayVisitor
 
     protected Schema _elementSchema;
 
-    public ArrayVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
+    public ArrayVisitor(SerializationContext p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;

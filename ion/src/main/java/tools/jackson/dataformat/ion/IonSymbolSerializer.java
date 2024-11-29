@@ -18,7 +18,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.exc.StreamWriteException;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 
@@ -41,7 +41,7 @@ public class IonSymbolSerializer extends StdScalarSerializer<String>
     }
 
     @Override
-    public void serialize(String value, JsonGenerator g, SerializerProvider provider) {
+    public void serialize(String value, JsonGenerator g, SerializationContext provider) {
         if (IonGenerator.class.isAssignableFrom(g.getClass())) {
             ((IonGenerator) g).writeSymbol(value);
         } else {

@@ -28,7 +28,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
 
     protected DefinedTypeElementBuilders _definedTypeElementBuilders;
 
-    public MessageElementVisitor(SerializerProvider provider, JavaType type,
+    public MessageElementVisitor(SerializationContext provider, JavaType type,
             DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested)
     {
         super(provider);
@@ -129,7 +129,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
         return NamedType.create(type.getRawClass().getSimpleName());
     }
 
-    private ProtoBufSchemaVisitor acceptTypeElement(SerializerProvider provider, JavaType type,
+    private ProtoBufSchemaVisitor acceptTypeElement(SerializationContext provider, JavaType type,
             DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested)
     {
         // 20-Apr-2018, tatu: not 100% certain if we should get type-wrapped serializer, but

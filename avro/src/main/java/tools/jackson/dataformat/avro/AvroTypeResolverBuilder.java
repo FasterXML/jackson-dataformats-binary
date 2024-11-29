@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tools.jackson.databind.DatabindContext;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 import tools.jackson.databind.jsontype.TypeDeserializer;
@@ -38,7 +38,7 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
     }
 
     @Override
-    public TypeSerializer buildTypeSerializer(SerializerProvider ctxt, JavaType baseType,
+    public TypeSerializer buildTypeSerializer(SerializationContext ctxt, JavaType baseType,
             Collection<NamedType> subtypes) {
         // All type information is encoded in the schema, never in the data.
         return null;

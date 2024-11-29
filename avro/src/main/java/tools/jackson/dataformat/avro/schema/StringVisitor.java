@@ -7,7 +7,7 @@ import org.apache.avro.Schema;
 import tools.jackson.core.JsonParser.NumberType;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import tools.jackson.databind.jsonFormatVisitors.JsonValueFormat;
@@ -15,10 +15,10 @@ import tools.jackson.databind.jsonFormatVisitors.JsonValueFormat;
 public class StringVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder
 {
-    protected final SerializerProvider _provider;
+    protected final SerializationContext _provider;
     protected final JavaType _type;
 
-    public StringVisitor(SerializerProvider provider, JavaType type) {
+    public StringVisitor(SerializationContext provider, JavaType type) {
         _type = type;
         _provider = provider;
     }

@@ -19,7 +19,7 @@ import tools.jackson.core.exc.StreamWriteException;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 
@@ -42,7 +42,7 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
     }
 
     @Override
-    public void serialize(Enum<?> value, JsonGenerator g, SerializerProvider provider) {
+    public void serialize(Enum<?> value, JsonGenerator g, SerializationContext provider) {
         if (g instanceof IonGenerator) {
             String valueString = provider.isEnabled(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
                 ? value.toString()
