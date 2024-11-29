@@ -16,13 +16,13 @@ import java.util.Set;
 public class EnumVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder
 {
-    protected final SerializerProvider _provider;
+    protected final SerializationContext _provider;
     protected final JavaType _type;
     protected final DefinedSchemas _schemas;
 
     protected Set<String> _enums;
 
-    public EnumVisitor(SerializerProvider provider, DefinedSchemas schemas, JavaType t) {
+    public EnumVisitor(SerializationContext provider, DefinedSchemas schemas, JavaType t) {
         _schemas = schemas;
         _type = t;
         _provider = provider;

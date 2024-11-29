@@ -3,7 +3,7 @@ package tools.jackson.dataformat.protobuf.schemagen;
 import java.util.Set;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor.Base;
 import com.squareup.protoparser.EnumConstantElement;
 import com.squareup.protoparser.EnumElement;
@@ -15,7 +15,7 @@ public class EnumElementVisitor extends Base implements TypeElementBuilder {
 
 	DefaultTagGenerator _tagGenerator = new DefaultTagGenerator(0);
 
-	public EnumElementVisitor(SerializerProvider provider, JavaType type,
+	public EnumElementVisitor(SerializationContext provider, JavaType type,
 			DefinedTypeElementBuilders definedTypeElementBuilders, boolean isNested) {
 
 		if (!type.isEnumType()) {

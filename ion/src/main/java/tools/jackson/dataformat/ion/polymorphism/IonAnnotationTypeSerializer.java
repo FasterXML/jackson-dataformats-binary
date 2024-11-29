@@ -20,7 +20,7 @@ import tools.jackson.core.*;
 import tools.jackson.core.type.WritableTypeId;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DatabindContext;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsontype.TypeIdResolver;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.jsontype.impl.TypeSerializerBase;
@@ -45,7 +45,7 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
     }
 
     @Override
-    public TypeSerializer forProperty(SerializerProvider ctxt, BeanProperty prop) {
+    public TypeSerializer forProperty(SerializationContext ctxt, BeanProperty prop) {
         // We ignore the context information from BeanProperty.
         return this;
     }

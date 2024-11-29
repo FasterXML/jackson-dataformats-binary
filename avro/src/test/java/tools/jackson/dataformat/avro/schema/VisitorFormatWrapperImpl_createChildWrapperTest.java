@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.avro.schema;
 
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.AvroTestBase;
@@ -15,10 +15,10 @@ extends AvroTestBase
     public void testChildWrapper()
     {
         // GIVEN
-        SerializerProvider serializerProvider = MAPPER._serializerProvider();
+        SerializationContext ctxt = MAPPER._serializationContext();
         DefinedSchemas schemas = new DefinedSchemas();
 
-        VisitorFormatWrapperImpl src = new VisitorFormatWrapperImpl(schemas, serializerProvider);
+        VisitorFormatWrapperImpl src = new VisitorFormatWrapperImpl(schemas, ctxt);
         src.enableLogicalTypes();
 
         // WHEN
@@ -27,7 +27,7 @@ extends AvroTestBase
         // THEN
         // All settings are inherited from parent visitor wrapper.
         Assertions.assertThat(actual.getSchemas()).isEqualTo(schemas);
-        Assertions.assertThat(actual.getProvider()).isEqualTo(serializerProvider);
+        Assertions.assertThat(actual.getContext()).isEqualTo(ctxt);
         Assertions.assertThat(actual.isLogicalTypesEnabled()).isTrue();
     }
 }

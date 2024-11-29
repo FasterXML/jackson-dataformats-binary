@@ -15,7 +15,7 @@
 package tools.jackson.dataformat.ion.ionvalue;
 
 import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 import tools.jackson.dataformat.ion.IonGenerator;
 
@@ -31,7 +31,7 @@ class IonValueSerializer extends StdScalarSerializer<IonValue>
     }
 
     @Override
-    public void serialize(IonValue value, JsonGenerator g, SerializerProvider provider)
+    public void serialize(IonValue value, JsonGenerator g, SerializationContext provider)
     {
         IonGenerator joiGenerator = (IonGenerator) g;
         joiGenerator.writeValue(value);

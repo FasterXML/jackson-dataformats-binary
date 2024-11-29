@@ -5,7 +5,7 @@ import java.util.Set;
 
 import tools.jackson.core.JsonParser.NumberType;
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.*;
 
 import com.squareup.protoparser.DataType;
@@ -41,7 +41,7 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
         this(null, new DefinedTypeElementBuilders(), false);
     }
 
-    public ProtoBufSchemaVisitor(SerializerProvider provider, DefinedTypeElementBuilders defBuilders,
+    public ProtoBufSchemaVisitor(SerializationContext provider, DefinedTypeElementBuilders defBuilders,
             boolean isNested)
     {
         super(provider);
@@ -82,7 +82,7 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
 
     @Override
     public JsonObjectFormatVisitor expectObjectFormat(JavaType type) {
-        MessageElementVisitor visitor = new MessageElementVisitor(_provider, type, _definedTypeElementBuilders,
+        MessageElementVisitor visitor = new MessageElementVisitor(_context, type, _definedTypeElementBuilders,
                 _isNested);
         _builder = visitor;
         _definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
@@ -119,7 +119,7 @@ public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
     @Override
     public JsonStringFormatVisitor expectStringFormat(JavaType type) {
         if (type.isEnumType()) {
-            EnumElementVisitor visitor = new EnumElementVisitor(_provider, type, _definedTypeElementBuilders, _isNested);
+            EnumElementVisitor visitor = new EnumElementVisitor(_context, type, _definedTypeElementBuilders, _isNested);
             _builder = visitor;
             _definedTypeElementBuilders.addTypeElement(type, visitor, _isNested);
             return visitor;

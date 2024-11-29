@@ -7,7 +7,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
@@ -36,7 +36,7 @@ public class AvroLocalTimeSerializer extends StdScalarSerializer<LocalTime>
     }
 
     @Override
-    public void serialize(LocalTime value, JsonGenerator gen, SerializerProvider provider) throws JacksonException {
+    public void serialize(LocalTime value, JsonGenerator gen, SerializationContext provider) throws JacksonException {
         /**
          * Number of milliseconds, with no reference to a particular calendar, time zone or date, after
          * midnight, 00:00:00.000.

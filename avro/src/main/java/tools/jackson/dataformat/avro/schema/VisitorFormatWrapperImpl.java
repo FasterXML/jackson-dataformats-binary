@@ -5,7 +5,7 @@ import java.time.temporal.Temporal;
 import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.jsonFormatVisitors.*;
 import tools.jackson.dataformat.avro.AvroSchema;
@@ -15,7 +15,7 @@ import org.apache.avro.Schema;
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
 {
-    protected SerializerProvider _provider;
+    protected SerializationContext _context;
 
     protected final DefinedSchemas _schemas;
 
@@ -40,15 +40,15 @@ public class VisitorFormatWrapperImpl
     /**********************************************************************
      */
 
-    public VisitorFormatWrapperImpl(DefinedSchemas schemas, SerializerProvider p) {
+    public VisitorFormatWrapperImpl(DefinedSchemas schemas, SerializationContext ctxt) {
         _schemas = schemas;
-        _provider = p;
+        _context = ctxt;
     }
 
 
     protected VisitorFormatWrapperImpl(VisitorFormatWrapperImpl src) {
         this._schemas = src._schemas;
-        this._provider = src._provider;
+        this._context = src._context;
         this._logicalTypesEnabled = src._logicalTypesEnabled;
     }
 
@@ -63,14 +63,14 @@ public class VisitorFormatWrapperImpl
     }
 
     @Override
-    public SerializerProvider getProvider() {
-        return _provider;
+    public SerializationContext getContext() {
+        return _context;
     }
 
     @Override
-    public void setProvider(SerializerProvider provider) {
-        _schemas.setProvider(provider);
-        _provider = provider;
+    public void setContext(SerializationContext ctxt) {
+        _schemas.setContext(ctxt);
+        _context = ctxt;
     }
 
     protected DefinedSchemas getSchemas() {
@@ -96,8 +96,6 @@ public class VisitorFormatWrapperImpl
 
     /**
      * Enables Avro schema with Logical Types generation.
-     *
-     * @since 2.13
      */
     public VisitorFormatWrapperImpl enableLogicalTypes() {
         _logicalTypesEnabled = true;
@@ -106,8 +104,6 @@ public class VisitorFormatWrapperImpl
 
     /**
      * Disables Avro schema with Logical Types generation.
-     *
-     * @since 2.13
      */
     public VisitorFormatWrapperImpl disableLogicalTypes() {
         _logicalTypesEnabled = false;
@@ -120,8 +116,6 @@ public class VisitorFormatWrapperImpl
 
     /**
      * Enable Java enum to Avro string mapping.
-     *
-     * @since 2.18
      */
     public VisitorFormatWrapperImpl enableWriteEnumAsString() {
     	_writeEnumAsString = true;
@@ -130,8 +124,6 @@ public class VisitorFormatWrapperImpl
 
     /**
      * Disable Java enum to Avro string mapping.
-     *
-     * @since 2.18
      */
     public VisitorFormatWrapperImpl disableWriteEnumAsString() {
         _writeEnumAsString = false;
@@ -161,14 +153,14 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        RecordVisitor v = new RecordVisitor(_provider, type, this);
+        RecordVisitor v = new RecordVisitor(_context, type, this);
         _builder = v;
         return v;
     }
 
     @Override
     public JsonMapFormatVisitor expectMapFormat(JavaType mapType) {
-        MapVisitor v = new MapVisitor(_provider, mapType, this);
+        MapVisitor v = new MapVisitor(_context, mapType, this);
         _builder = v;
         return v;
     }
@@ -183,7 +175,7 @@ public class VisitorFormatWrapperImpl
                 return null;
             }
         }
-        ArrayVisitor v = new ArrayVisitor(_provider, convertedType, this);
+        ArrayVisitor v = new ArrayVisitor(_context, convertedType, this);
         _builder = v;
         return v;
     }
@@ -201,12 +193,12 @@ public class VisitorFormatWrapperImpl
         // 06-Jun-2024: [dataformats-binary#494] Enums may be exposed either
         //   as native Avro Enums, or as Avro Strings:
         if (type.isEnumType() && !isWriteEnumAsStringEnabled()) {
-            EnumVisitor v = new EnumVisitor(_provider, _schemas, type);
+            EnumVisitor v = new EnumVisitor(_context, _schemas, type);
             _builder = v;
             return v;
         }
 
-        StringVisitor v = new StringVisitor(_provider, type);
+        StringVisitor v = new StringVisitor(_context, type);
         _builder = v;
         return v;
     }

@@ -10,7 +10,7 @@ import tools.jackson.core.Version;
 
 import tools.jackson.databind.AnnotationIntrospector;
 import tools.jackson.databind.JacksonModule;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.module.SimpleDeserializers;
 import tools.jackson.databind.module.SimpleSerializers;
 import tools.jackson.databind.ser.std.StdSerializer;
@@ -120,7 +120,7 @@ public class AvroModule extends JacksonModule
         }
 
         @Override
-        public void serialize(Schema value, JsonGenerator gen, SerializerProvider prov)
+        public void serialize(Schema value, JsonGenerator gen, SerializationContext prov)
             throws JacksonException
         {
             // Let's simply write as String, for now

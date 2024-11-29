@@ -2,25 +2,25 @@ package tools.jackson.dataformat.avro.schema;
 
 import org.apache.avro.Schema;
 
-import tools.jackson.databind.SerializerProvider;
-import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWithSerializerProvider;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWithSerializationContext;
 
 public abstract class VisitorBase
-    implements JsonFormatVisitorWithSerializerProvider,
+    implements JsonFormatVisitorWithSerializationContext,
         SchemaBuilder
 {
-    protected SerializerProvider _provider;
+    protected SerializationContext _provider;
 
     @Override
     public abstract Schema builtAvroSchema();
 
     @Override
-    public SerializerProvider getProvider() {
+    public SerializationContext getContext() {
         return _provider;
     }
 
     @Override
-    public void setProvider(SerializerProvider provider) {
+    public void setContext(SerializationContext provider) {
         _provider = provider;
     }
 }

@@ -40,7 +40,7 @@ public class RecordVisitor
 
     protected List<Schema.Field> _fields = new ArrayList<>();
 
-    public RecordVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
+    public RecordVisitor(SerializationContext p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;
@@ -66,9 +66,9 @@ public class RecordVisitor
         } else if (subTypes != null && !subTypes.isEmpty()) {
             List<Schema> unionSchemas = new ArrayList<>();
             for (NamedType subType : subTypes) {
-                ValueSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
+                ValueSerializer<?> ser = getContext().findValueSerializer(subType.getType());
                 VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
-                ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
+                ser.acceptJsonFormatVisitor(visitor, getContext().getTypeFactory().constructType(subType.getType()));
                 unionSchemas.add(visitor.getAvroSchema());
             }
             _avroSchema = Schema.createUnion(unionSchemas);
@@ -173,10 +173,10 @@ public class RecordVisitor
                     // 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
                     optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                 }
-                final SerializerProvider prov = getProvider();
+                final SerializationContext prov = getContext();
                 if (ser == null) {
                     if (prov == null) {
-                        throw DatabindException.from(prov, "SerializerProvider missing for RecordVisitor");
+                        throw DatabindException.from(prov, "SerializationContext missing for RecordVisitor");
                     }
                     ser = prov.findPrimaryPropertySerializer(prop.getType(), prop);
                 }
@@ -210,7 +210,7 @@ public class RecordVisitor
         if (meta != null) {
             field.addProp(meta.key(), meta.value());
         }
-        List<PropertyName> aliases = prop.findAliases(getProvider().getConfig());
+        List<PropertyName> aliases = prop.findAliases(getContext().getConfig());
         if (!aliases.isEmpty()) {
             for (PropertyName pn : aliases) {
                 field.addAlias(pn.getSimpleName());

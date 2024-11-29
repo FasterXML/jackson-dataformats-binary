@@ -15,7 +15,7 @@
 package tools.jackson.dataformat.ion.ionvalue;
 
 import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 import tools.jackson.dataformat.ion.IonGenerator;
 
@@ -31,7 +31,7 @@ class TimestampSerializer extends StdScalarSerializer<Timestamp>
     }
 
     @Override
-    public void serialize(Timestamp value, JsonGenerator g, SerializerProvider provider) {
+    public void serialize(Timestamp value, JsonGenerator g, SerializationContext ctxt) {
         if (g instanceof IonGenerator) {
             ((IonGenerator) g).writeValue(value);
         } else {

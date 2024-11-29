@@ -7,7 +7,7 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 import org.apache.avro.Schema;
@@ -42,7 +42,7 @@ public final class CustomSerializationTest {
             @Override
             public void serialize(final House house,
                 final JsonGenerator g,
-                final SerializerProvider serializers)
+                final SerializationContext serializers)
             {
                 g.writeStartObject();
                 g.writeName("owner");

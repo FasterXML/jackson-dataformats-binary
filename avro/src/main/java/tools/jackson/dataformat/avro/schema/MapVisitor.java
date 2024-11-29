@@ -3,7 +3,7 @@ package tools.jackson.dataformat.avro.schema;
 import org.apache.avro.Schema;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import tools.jackson.databind.jsonFormatVisitors.JsonMapFormatVisitor;
@@ -19,7 +19,7 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
 
     protected JavaType _keyType;
 
-    public MapVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
+    public MapVisitor(SerializationContext p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;

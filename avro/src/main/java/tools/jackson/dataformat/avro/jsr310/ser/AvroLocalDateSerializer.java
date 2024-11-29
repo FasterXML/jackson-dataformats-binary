@@ -7,7 +7,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
@@ -36,7 +36,7 @@ public class AvroLocalDateSerializer extends StdScalarSerializer<LocalDate>
     }
 
     @Override
-    public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider provider) throws JacksonException {
+    public void serialize(LocalDate value, JsonGenerator gen, SerializationContext provider) throws JacksonException {
         /**
          * Number of days from the unix epoch, 1 January 1970.
          */

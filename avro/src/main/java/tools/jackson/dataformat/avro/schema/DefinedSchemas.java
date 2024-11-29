@@ -5,7 +5,7 @@ import java.util.*;
 import org.apache.avro.Schema;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 
 /**
  * Simple container for Schemas that have already been generated during
@@ -15,7 +15,7 @@ public class DefinedSchemas
 {
     protected final Map<JavaType, Schema> _schemas = new LinkedHashMap<>();
 
-    protected SerializerProvider _provider;
+    protected SerializationContext _serializationContext;
 
     /*
     /**********************************************************************
@@ -25,12 +25,12 @@ public class DefinedSchemas
 
     public DefinedSchemas() { }
 
-    public void setProvider(SerializerProvider provider) {
-        _provider = provider;
+    public void setContext(SerializationContext ctxt) {
+        _serializationContext = ctxt;
     }
 
-    public SerializerProvider getProvider() {
-        return _provider;
+    public SerializationContext getContext() {
+        return _serializationContext;
     }
 
     /*

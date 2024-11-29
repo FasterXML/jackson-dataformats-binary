@@ -302,7 +302,7 @@ public class IonObjectMapper extends ObjectMapper
      * @since 3.0
      */
     public IonGenerator createGenerator(IonWriter out) {
-        return (IonGenerator) tokenStreamFactory().createGenerator(_serializerProvider(), out);
+        return (IonGenerator) tokenStreamFactory().createGenerator(_serializationContext(), out);
     }
 
     /*
@@ -395,7 +395,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying writer explicitly
      */
     public void writeValue(IonWriter w, Object value) throws IOException {
-        SerializationContextExt prov = _serializerProvider();
+        SerializationContextExt prov = _serializationContext();
         _configAndWriteValue(prov,
                 tokenStreamFactory().createGenerator(prov, w), value);
     }

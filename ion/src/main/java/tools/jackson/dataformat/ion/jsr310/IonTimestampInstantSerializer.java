@@ -18,7 +18,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 import tools.jackson.dataformat.ion.IonGenerator;
 
@@ -91,7 +91,7 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
     }
 
     @Override
-    public void serialize(T value, JsonGenerator gen, SerializerProvider provider)
+    public void serialize(T value, JsonGenerator gen, SerializationContext provider)
         throws JacksonException
     {
         final Instant instant = getInstant.apply(value);
@@ -108,7 +108,7 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
     }
 
     @Override
-    public ValueSerializer<?> createContextual(SerializerProvider prov, BeanProperty property)
+    public ValueSerializer<?> createContextual(SerializationContext prov, BeanProperty property)
     {
         final JsonFormat.Value format = findFormatOverrides(prov, property, handledType());
         if (format != null) {
@@ -119,7 +119,7 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
         return this;
     }
 
-    private boolean shouldWriteTimestampsAsNanos(SerializerProvider provider) {
+    private boolean shouldWriteTimestampsAsNanos(SerializationContext provider) {
         if (Boolean.FALSE.equals(writeDateTimestampsAsNanosOverride)) {
             return false;
         }
