@@ -26,7 +26,7 @@ public class FileSerialization319Test extends AvroTestBase
         employee.emails = new String[]{"bob@aol.com", "bobby@gmail.com"};
         employee.boss = null;
 
-        final AvroFactory avroFactory = AvroFactory.builderWithApacheDecoder().enable(AvroGenerator.Feature.AVRO_FILE_OUTPUT).build();
+        final AvroFactory avroFactory = AvroFactory.builderWithApacheDecoder().enable(AvroWriteFeature.AVRO_FILE_OUTPUT).build();
         final AvroSchemaGenerator generator = new AvroSchemaGenerator();
 
         final AvroMapper mapper = AvroMapper.builder(avroFactory).build();

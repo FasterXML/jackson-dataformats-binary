@@ -20,3 +20,5 @@ implementations)
   adding default `null` in generated schema
  (contributed by kucera-jan-cz@github)
 #245: (ion) Pretty-printing not working Ion/text backend
+#522: JSTEP-8: rename `AvroParser.Feature` as `AvroReadFeature`,
+  `AvroGenerator.Feature` as `AvroWriteFeature`

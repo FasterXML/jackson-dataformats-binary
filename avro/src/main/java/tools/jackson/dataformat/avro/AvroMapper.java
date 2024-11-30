@@ -67,21 +67,21 @@ public class AvroMapper extends ObjectMapper
         /******************************************************************
          */
 
-        public Builder enable(AvroParser.Feature... features) {
-            for (AvroParser.Feature f : features) {
+        public Builder enable(AvroReadFeature... features) {
+            for (AvroReadFeature f : features) {
                 _formatReadFeatures |= f.getMask();
             }
             return this;
         }
 
-        public Builder disable(AvroParser.Feature... features) {
-            for (AvroParser.Feature f : features) {
+        public Builder disable(AvroReadFeature... features) {
+            for (AvroReadFeature f : features) {
                 _formatReadFeatures &= ~f.getMask();
             }
             return this;
         }
 
-        public Builder configure(AvroParser.Feature feature, boolean state)
+        public Builder configure(AvroReadFeature feature, boolean state)
         {
             if (state) {
                 _formatReadFeatures |= feature.getMask();
@@ -91,21 +91,21 @@ public class AvroMapper extends ObjectMapper
             return this;
         }
 
-        public Builder enable(AvroGenerator.Feature... features) {
-            for (AvroGenerator.Feature f : features) {
+        public Builder enable(AvroWriteFeature... features) {
+            for (AvroWriteFeature f : features) {
                 _formatWriteFeatures |= f.getMask();
             }
             return this;
         }
 
-        public Builder disable(AvroGenerator.Feature... features) {
-            for (AvroGenerator.Feature f : features) {
+        public Builder disable(AvroWriteFeature... features) {
+            for (AvroWriteFeature f : features) {
                 _formatWriteFeatures &= ~f.getMask();
             }
             return this;
         }
 
-        public Builder configure(AvroGenerator.Feature feature, boolean state)
+        public Builder configure(AvroWriteFeature feature, boolean state)
         {
             if (state) {
                 _formatWriteFeatures |= feature.getMask();
