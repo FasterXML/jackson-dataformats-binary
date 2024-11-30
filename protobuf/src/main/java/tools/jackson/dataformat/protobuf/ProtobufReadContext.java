@@ -191,9 +191,9 @@ public final class ProtobufReadContext
      * @return Location pointing to the point where the context
      *   start marker was found
      */
-    public JsonLocation startLocation(ContentReference srcRef, long byteOffset) {
+    public TokenStreamLocation startLocation(ContentReference srcRef, long byteOffset) {
         // not much we can tell
-        return new JsonLocation(srcRef, byteOffset, -1, -1);
+        return new TokenStreamLocation(srcRef, byteOffset, -1, -1);
     }
 
     /*

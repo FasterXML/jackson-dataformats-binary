@@ -16,7 +16,7 @@ public class ParserLocationTest
 
         JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
-        JsonLocation loc = p.currentLocation();
+        TokenStreamLocation loc = p.currentLocation();
         assertNotNull(loc);
         // first: -1 for "not known", for character-based stuff
         assertEquals(-1, loc.getCharOffset());
