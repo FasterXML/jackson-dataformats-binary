@@ -25,45 +25,7 @@ import tools.jackson.core.util.JacksonFeatureSet;
 public class CBORParser extends ParserBase
 {
     /**
-     * Enumeration that defines all togglable features for CBOR generators.
-     */
-    public enum Feature implements FormatFeature
-    {
-//        BOGUS(false)
-        ;
-
-        final boolean _defaultState;
-        final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override public boolean enabledByDefault() { return _defaultState; }
-        @Override public int getMask() { return _mask; }
-        @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
-    }
-
-    /**
      * Class for keeping track of tags in an optimized manner.
-     *
-     * @since 2.15
      */
     public static final class TagList
     {

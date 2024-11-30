@@ -165,7 +165,7 @@ public abstract class CBORTestBase
     protected CBORGenerator lenientUnicodeCborGenerator(ByteArrayOutputStream result)
     {
         return (CBORGenerator) cborFactoryBuilder()
-                .enable(CBORGenerator.Feature.LENIENT_UTF_ENCODING)
+                .enable(CBORWriteFeature.LENIENT_UTF_ENCODING)
                 .build()
                 .createGenerator(ObjectWriteContext.empty(), result);
     }
@@ -175,7 +175,7 @@ public abstract class CBORTestBase
         throws IOException
     {
         return (CBORGenerator) cborFactoryBuilder()
-                .enable(CBORGenerator.Feature.STRINGREF)
+                .enable(CBORWriteFeature.STRINGREF)
                 .build()
                 .createGenerator(ObjectWriteContext.empty(), result);
     }

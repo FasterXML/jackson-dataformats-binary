@@ -22,3 +22,4 @@ implementations)
 #245: (ion) Pretty-printing not working Ion/text backend
 #522: JSTEP-8: rename `AvroParser.Feature` as `AvroReadFeature`,
   `AvroGenerator.Feature` as `AvroWriteFeature`
+#524: JSTEP-8: rename `CBORGenerator.Feature` as `CBORWriteFeature`

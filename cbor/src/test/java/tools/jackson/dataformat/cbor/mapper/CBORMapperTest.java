@@ -1,7 +1,7 @@
 package tools.jackson.dataformat.cbor.mapper;
 
-import tools.jackson.dataformat.cbor.CBORGenerator;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 import org.junit.Assert;
@@ -24,15 +24,15 @@ public class CBORMapperTest extends CBORTestBase
         Object[] minimalValues = {
                 SMALL_INT, BIG_INT, (float)LOW_RPECISION_DOUBLE, HIGH_RPECISION_DOUBLE};
         CBORMapper mapperWithMinimal = CBORMapper.builder()
-                .enable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
-                .enable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES)
+                .enable(CBORWriteFeature.WRITE_MINIMAL_INTS)
+                .enable(CBORWriteFeature.WRITE_MINIMAL_DOUBLES)
                 .build();
         byte[] encodedMinimal = mapperWithMinimal.writeValueAsBytes(values);
         assertEquals(21, encodedMinimal.length);
 
         CBORMapper mapperFull = CBORMapper.builder()
-                .disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
-                .disable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES)
+                .disable(CBORWriteFeature.WRITE_MINIMAL_INTS)
+                .disable(CBORWriteFeature.WRITE_MINIMAL_DOUBLES)
                 .build();
         byte[] encodedNotMinimal = mapperFull.writeValueAsBytes(values);
         assertEquals(29, encodedNotMinimal.length);

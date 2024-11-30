@@ -24,7 +24,7 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         super(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
                 ErrorReportConfiguration.defaults(),
-                CBORFactory.DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
+                0,
                 CBORFactory.DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 
@@ -32,67 +32,35 @@ public class CBORFactoryBuilder extends DecorableTSFBuilder<CBORFactory, CBORFac
         super(base);
     }
 
-    // // // Parser features
-
-    public CBORFactoryBuilder enable(CBORParser.Feature f) {
-        _formatReadFeatures |= f.getMask();
-        return _this();
-    }
-
-    public CBORFactoryBuilder enable(CBORParser.Feature first, CBORParser.Feature... other) {
-        _formatReadFeatures |= first.getMask();
-        for (CBORParser.Feature f : other) {
-            _formatReadFeatures |= f.getMask();
-        }
-        return _this();
-    }
-
-    public CBORFactoryBuilder disable(CBORParser.Feature f) {
-        _formatReadFeatures &= ~f.getMask();
-        return _this();
-    }
-
-    public CBORFactoryBuilder disable(CBORParser.Feature first, CBORParser.Feature... other) {
-        _formatReadFeatures &= ~first.getMask();
-        for (CBORParser.Feature f : other) {
-            _formatReadFeatures &= ~f.getMask();
-        }
-        return _this();
-    }
-
-    public CBORFactoryBuilder configure(CBORParser.Feature f, boolean state) {
-        return state ? enable(f) : disable(f);
-    }
-
     // // // Generator features
 
-    public CBORFactoryBuilder enable(CBORGenerator.Feature f) {
+    public CBORFactoryBuilder enable(CBORWriteFeature f) {
         _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
-    public CBORFactoryBuilder enable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
+    public CBORFactoryBuilder enable(CBORWriteFeature first, CBORWriteFeature... other) {
         _formatWriteFeatures |= first.getMask();
-        for (CBORGenerator.Feature f : other) {
+        for (CBORWriteFeature f : other) {
             _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public CBORFactoryBuilder disable(CBORGenerator.Feature f) {
+    public CBORFactoryBuilder disable(CBORWriteFeature f) {
         _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
 
-    public CBORFactoryBuilder disable(CBORGenerator.Feature first, CBORGenerator.Feature... other) {
+    public CBORFactoryBuilder disable(CBORWriteFeature first, CBORWriteFeature... other) {
         _formatWriteFeatures &= ~first.getMask();
-        for (CBORGenerator.Feature f : other) {
+        for (CBORWriteFeature f : other) {
             _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public CBORFactoryBuilder configure(CBORGenerator.Feature f, boolean state) {
+    public CBORFactoryBuilder configure(CBORWriteFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 

@@ -9,6 +9,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORGenerator;
 import tools.jackson.dataformat.cbor.CBORParser;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 /**
@@ -48,7 +49,7 @@ public class ArrayGenerationTest extends CBORTestBase
         final int[] input = new int[] { v1, v2 };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = (CBORGenerator) MAPPER.createGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
+        assertTrue(gen.isEnabled(CBORWriteFeature.WRITE_MINIMAL_INTS));
         gen.writeArray(input, 0, 2);
         gen.close();
 
@@ -73,9 +74,9 @@ public class ArrayGenerationTest extends CBORTestBase
         bytes = new ByteArrayOutputStream();
         gen = (CBORGenerator) MAPPER
                 .writer()
-                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .without(CBORWriteFeature.WRITE_MINIMAL_INTS)
                 .createGenerator(bytes);
-        assertFalse(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
+        assertFalse(gen.isEnabled(CBORWriteFeature.WRITE_MINIMAL_INTS));
 
         gen.writeArray(input, 0, 2);
         gen.close();
@@ -108,7 +109,7 @@ public class ArrayGenerationTest extends CBORTestBase
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = (CBORGenerator) MAPPER.createGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
+        assertTrue(gen.isEnabled(CBORWriteFeature.WRITE_MINIMAL_INTS));
         gen.writeArray(input, 0, 2);
         gen.close();
 
@@ -132,7 +133,7 @@ public class ArrayGenerationTest extends CBORTestBase
         // but then also check without minimization
         bytes = new ByteArrayOutputStream();
         gen = (CBORGenerator) MAPPER.writer()
-                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+                .without(CBORWriteFeature.WRITE_MINIMAL_INTS)
                 .createGenerator(bytes);
 
         gen.writeArray(input, 0, 2);
@@ -166,11 +167,11 @@ public class ArrayGenerationTest extends CBORTestBase
         };
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         final ObjectMapper mapperWithMinimalFloats = cborMapper(
-                cborFactoryBuilder().enable(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES)
+                cborFactoryBuilder().enable(CBORWriteFeature.WRITE_MINIMAL_DOUBLES)
                     .build());
 
         CBORGenerator gen = (CBORGenerator) mapperWithMinimalFloats.createGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_DOUBLES));
+        assertTrue(gen.isEnabled(CBORWriteFeature.WRITE_MINIMAL_DOUBLES));
         gen.writeArray(input, 0, 2);
         gen.close();
 

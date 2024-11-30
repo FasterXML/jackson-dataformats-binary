@@ -23,7 +23,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
     public void testJsonSampleDocStringref() throws IOException
     {
         CBORMapper cborMapper = new CBORMapper(cborFactoryBuilder()
-                .enable(CBORGenerator.Feature.STRINGREF).build());
+                .enable(CBORWriteFeature.STRINGREF).build());
         byte[] data = cborDoc(cborMapper, SAMPLE_DOC_JSON_SPEC);
         verifyJsonSpecSampleDoc(cborParser(data), true, true);
         verifyJsonSpecSampleDoc(cborParser(data), true, false);
