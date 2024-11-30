@@ -10,6 +10,7 @@ import org.apache.avro.io.DecoderFactory;
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.dataformat.avro.AvroSchema;
+import tools.jackson.dataformat.avro.AvroReadFeature;
 import tools.jackson.dataformat.avro.deser.AvroParserImpl;
 
 /**
@@ -95,7 +96,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         _bufferRecyclable = true;
         _apacheCodecRecycler = apacheCodecRecycler;
 
-        final boolean buffering = Feature.AVRO_BUFFERING.enabledIn(avroFeatures);
+        final boolean buffering = AvroReadFeature.AVRO_BUFFERING.enabledIn(avroFeatures);
         BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = buffering
                 ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)

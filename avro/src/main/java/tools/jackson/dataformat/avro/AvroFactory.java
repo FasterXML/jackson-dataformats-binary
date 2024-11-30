@@ -28,13 +28,13 @@ public class AvroFactory
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
      */
-    final static int DEFAULT_AVRO_PARSER_FEATURE_FLAGS = AvroParser.Feature.collectDefaults();
+    final static int DEFAULT_AVRO_PARSER_FEATURE_FLAGS = AvroReadFeature.collectDefaults();
 
     /**
      * Bitfield (set of flags) of all generator features that are enabled
      * by default.
      */
-    final static int DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS = AvroGenerator.Feature.collectDefaults();
+    final static int DEFAULT_AVRO_GENERATOR_FEATURE_FLAGS = AvroWriteFeature.collectDefaults();
 
     /*
     /**********************************************************
@@ -188,14 +188,14 @@ public class AvroFactory
     /**
      * Checked whether specified parser feature is enabled.
      */
-    public final boolean isEnabled(AvroParser.Feature f) {
+    public final boolean isEnabled(AvroReadFeature f) {
         return (_formatReadFeatures & f.getMask()) != 0;
     }
 
     /**
      * Check whether specified generator feature is enabled.
      */
-    public final boolean isEnabled(AvroGenerator.Feature f) {
+    public final boolean isEnabled(AvroWriteFeature f) {
         return (_formatWriteFeatures & f.getMask()) != 0;
     }
 
@@ -216,13 +216,13 @@ public class AvroFactory
     }
 
     @Override
-    public Class<AvroParser.Feature> getFormatReadFeatureType() {
-        return AvroParser.Feature.class;
+    public Class<AvroReadFeature> getFormatReadFeatureType() {
+        return AvroReadFeature.class;
     }
 
     @Override
-    public Class<AvroGenerator.Feature> getFormatWriteFeatureType() {
-        return AvroGenerator.Feature.class;
+    public Class<AvroWriteFeature> getFormatWriteFeatureType() {
+        return AvroWriteFeature.class;
     }
 
     /*

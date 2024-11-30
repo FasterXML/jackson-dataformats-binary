@@ -20,52 +20,6 @@ import tools.jackson.dataformat.avro.deser.MissingReader;
  */
 public abstract class AvroParser extends ParserBase
 {
-    /**
-     * Enumeration that defines all togglable features for Avro parsers.
-     */
-    public enum Feature
-        implements FormatFeature
-    {
-        /**
-         * Feature that can be disabled to prevent Avro from buffering any more
-         * data then absolutely necessary.
-         *<p>
-         * Enabled by default to preserve the existing behavior.
-         */
-        AVRO_BUFFERING(true)
-        ;
-
-        final boolean _defaultState;
-        final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override
-        public boolean enabledByDefault() { return _defaultState; }
-        @Override
-        public int getMask() { return _mask; }
-        @Override
-        public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
-    }
-
     // @since 2.14 - require some overrides
     protected final static JacksonFeatureSet<StreamReadCapability> AVRO_READ_CAPABILITIES =
             DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
@@ -162,27 +116,27 @@ public abstract class AvroParser extends ParserBase
 
     /**
      * Method for enabling specified Avro feature
-     * (check {@link Feature} for list of features)
+     * (check {@link AvroReadFeature} for list of features)
      */
-    public JsonParser enable(AvroParser.Feature f) {
+    public JsonParser enable(AvroReadFeature f) {
         _formatFeatures |= f.getMask();
         return this;
     }
 
     /**
      * Method for disabling specified Avro feature
-     * (check {@link Feature} for list of features)
+     * (check {@link AvroReadFeature} for list of features)
      */
-    public JsonParser disable(AvroParser.Feature f) {
+    public JsonParser disable(AvroReadFeature f) {
         _formatFeatures &= ~f.getMask();
         return this;
     }
 
     /**
      * Method for enabling or disabling specified Avro feature
-     * (check {@link Feature} for list of features)
+     * (check {@link AvroReadFeature} for list of features)
      */
-    public JsonParser configure(AvroParser.Feature f, boolean state)
+    public JsonParser configure(AvroReadFeature f, boolean state)
     {
         if (state) {
             enable(f);
@@ -193,10 +147,10 @@ public abstract class AvroParser extends ParserBase
     }
 
     /**
-     * Method for checking whether specified Avro {@link Feature}
+     * Method for checking whether specified Avro {@link AvroReadFeature}
      * is enabled.
      */
-    public boolean isEnabled(AvroParser.Feature f) {
+    public boolean isEnabled(AvroReadFeature f) {
         return (_formatFeatures & f.getMask()) != 0;
     }
 

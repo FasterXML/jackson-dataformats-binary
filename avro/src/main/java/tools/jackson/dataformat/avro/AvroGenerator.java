@@ -20,79 +20,6 @@ import tools.jackson.dataformat.avro.ser.EncodedDatum;
 
 public class AvroGenerator extends GeneratorBase
 {
-    /**
-     * Enumeration that defines all togglable features for Avro generators
-     */
-    public enum Feature
-        implements FormatFeature
-    {
-        /**
-         * Feature that can be disabled to prevent Avro from buffering any more
-         * data then absolutely necessary.
-         * This affects buffering by underlying codec.
-         * Note that disabling buffer is likely to reduce performance if the underlying
-         * input/output is unbuffered.
-         *<p>
-         * Enabled by default to preserve the existing behavior.
-         */
-        AVRO_BUFFERING(true),
-
-        /**
-         * Feature that tells Avro to write data in file format (i.e. including the schema with the data)
-         * rather than the RPC format which is otherwise default
-         *<p>
-         * NOTE: reader-side will have to be aware of distinction as well, since possible inclusion
-         * of this header is not 100% reliably auto-detectable (while header has distinct marker,
-         * "raw" Avro content has no limitations and could theoretically have same pre-amble from data).
-         */
-        AVRO_FILE_OUTPUT(false),
-
-        /**
-         * Feature that enables addition of {@code null} as default value in generated schema
-         * when no real default value is defined and {@code null} is legal value for type
-         * (union type with {@code null} included).
-         *<p>
-         * Disabled by default.
-         *
-         * @since 3.0
-         * 
-         */
-        ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA(false)
-        ;
-
-        protected final boolean _defaultState;
-        protected final int _mask;
-        
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-        
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override
-        public boolean enabledByDefault() { return _defaultState; }
-
-        @Override
-        public int getMask() { return _mask; }
-
-        @Override
-        public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
-    }
-    
     /*
     /**********************************************************************
     /* Configuration
@@ -111,7 +38,7 @@ public class AvroGenerator extends GeneratorBase
 
     /**
      * Bit flag composed of bits that indicate which
-     * {@link AvroGenerator.Feature}s
+     * {@link AvroWriteFeature}s
      * are enabled.
      */
     protected int _formatWriteFeatures;
@@ -165,7 +92,7 @@ public class AvroGenerator extends GeneratorBase
         _output = output;
         _streamWriteContext = AvroWriteContext.nullContext();
         _apacheCodecRecycler = apacheCodecRecycler;
-        final boolean buffering = isEnabled(Feature.AVRO_BUFFERING);
+        final boolean buffering = isEnabled(AvroWriteFeature.AVRO_BUFFERING);
         BinaryEncoder encoderToReuse = apacheCodecRecycler.acquireEncoder();
         _encoder = buffering
                 ? ENCODER_FACTORY.binaryEncoder(output, encoderToReuse)
@@ -247,21 +174,21 @@ public class AvroGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    public AvroGenerator enable(Feature f) {
+    public AvroGenerator enable(AvroWriteFeature f) {
         _formatWriteFeatures |= f.getMask();
         return this;
     }
 
-    public AvroGenerator disable(Feature f) {
+    public AvroGenerator disable(AvroWriteFeature f) {
         _formatWriteFeatures &= ~f.getMask();
         return this;
     }
 
-    public final boolean isEnabled(Feature f) {
+    public final boolean isEnabled(AvroWriteFeature f) {
         return (_formatWriteFeatures & f.getMask()) != 0;
     }
 
-    public AvroGenerator configure(Feature f, boolean state) {
+    public AvroGenerator configure(AvroWriteFeature f, boolean state) {
         if (state) {
             enable(f);
         } else {

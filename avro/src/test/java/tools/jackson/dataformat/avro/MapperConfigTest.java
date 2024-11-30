@@ -28,9 +28,9 @@ public class MapperConfigTest extends AvroTestBase
 
     public void testFactoryDefaults() throws Exception
     {
-        assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+        assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroReadFeature.AVRO_BUFFERING));
 
-        assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
+        assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroWriteFeature.AVRO_BUFFERING));
         assertFalse(MAPPER.tokenStreamFactory().isEnabled(StreamWriteFeature.AUTO_CLOSE_CONTENT));
 
         assertFalse(MAPPER.tokenStreamFactory().canUseSchema(BOGUS_SCHEMA));
@@ -39,14 +39,14 @@ public class MapperConfigTest extends AvroTestBase
     public void testParserDefaults() throws Exception
     {
         AvroParser p = (AvroParser) MAPPER.createParser(new byte[0]);
-        assertTrue(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+        assertTrue(p.isEnabled(AvroReadFeature.AVRO_BUFFERING));
         p.close();
 
         AvroMapper mapper = AvroMapper.builder()
-                .disable(AvroParser.Feature.AVRO_BUFFERING)
+                .disable(AvroReadFeature.AVRO_BUFFERING)
                 .build();
         p = (AvroParser) mapper.createParser(new byte[0]);
-        assertFalse(p.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
+        assertFalse(p.isEnabled(AvroReadFeature.AVRO_BUFFERING));
 
         // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
         //    default set
@@ -63,16 +63,16 @@ public class MapperConfigTest extends AvroTestBase
                 .writer()
                 .with(schema)
                 .createGenerator(bytes);
-        assertTrue(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
+        assertTrue(g.isEnabled(AvroWriteFeature.AVRO_BUFFERING));
         g.close();
 
         AvroMapper mapper = AvroMapper.builder()
-                .disable(AvroGenerator.Feature.AVRO_BUFFERING)
+                .disable(AvroWriteFeature.AVRO_BUFFERING)
                 .build();
         g = (AvroGenerator) mapper.writer()
                 .with(schema)
                 .createGenerator(bytes);
-        assertFalse(g.isEnabled(AvroGenerator.Feature.AVRO_BUFFERING));
+        assertFalse(g.isEnabled(AvroWriteFeature.AVRO_BUFFERING));
         g.close();
     }
 

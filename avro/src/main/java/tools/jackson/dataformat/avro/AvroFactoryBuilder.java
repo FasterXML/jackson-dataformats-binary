@@ -84,65 +84,65 @@ public class AvroFactoryBuilder extends DecorableTSFBuilder<AvroFactory, AvroFac
 
     // // // Parser features
 
-    public AvroFactoryBuilder enable(AvroParser.Feature f) {
+    public AvroFactoryBuilder enable(AvroReadFeature f) {
         _formatReadFeatures |= f.getMask();
         return _this();
     }
 
-    public AvroFactoryBuilder enable(AvroParser.Feature first, AvroParser.Feature... other) {
+    public AvroFactoryBuilder enable(AvroReadFeature first, AvroReadFeature... other) {
         _formatReadFeatures |= first.getMask();
-        for (AvroParser.Feature f : other) {
+        for (AvroReadFeature f : other) {
             _formatReadFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public AvroFactoryBuilder disable(AvroParser.Feature f) {
+    public AvroFactoryBuilder disable(AvroReadFeature f) {
         _formatReadFeatures &= ~f.getMask();
         return _this();
     }
 
-    public AvroFactoryBuilder disable(AvroParser.Feature first, AvroParser.Feature... other) {
+    public AvroFactoryBuilder disable(AvroReadFeature first, AvroReadFeature... other) {
         _formatReadFeatures &= ~first.getMask();
-        for (AvroParser.Feature f : other) {
+        for (AvroReadFeature f : other) {
             _formatReadFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public AvroFactoryBuilder configure(AvroParser.Feature f, boolean state) {
+    public AvroFactoryBuilder configure(AvroReadFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 
     // // // Generator features
 
-    public AvroFactoryBuilder enable(AvroGenerator.Feature f) {
+    public AvroFactoryBuilder enable(AvroWriteFeature f) {
         _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
-    public AvroFactoryBuilder enable(AvroGenerator.Feature first, AvroGenerator.Feature... other) {
+    public AvroFactoryBuilder enable(AvroWriteFeature first, AvroWriteFeature... other) {
         _formatWriteFeatures |= first.getMask();
-        for (AvroGenerator.Feature f : other) {
+        for (AvroWriteFeature f : other) {
             _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public AvroFactoryBuilder disable(AvroGenerator.Feature f) {
+    public AvroFactoryBuilder disable(AvroWriteFeature f) {
         _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
     
-    public AvroFactoryBuilder disable(AvroGenerator.Feature first, AvroGenerator.Feature... other) {
+    public AvroFactoryBuilder disable(AvroWriteFeature first, AvroWriteFeature... other) {
         _formatWriteFeatures &= ~first.getMask();
-        for (AvroGenerator.Feature f : other) {
+        for (AvroWriteFeature f : other) {
             _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public AvroFactoryBuilder configure(AvroGenerator.Feature f, boolean state) {
+    public AvroFactoryBuilder configure(AvroWriteFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 }

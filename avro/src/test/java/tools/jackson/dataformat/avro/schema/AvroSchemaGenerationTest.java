@@ -228,7 +228,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
     public void testEnabledDefaultValues()
     {
         AvroMapper mapper = new AvroMapper(AvroFactory.builder()
-                .enable(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA)
+                .enable(AvroWriteFeature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA)
                 .build());
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
         mapper.acceptJsonFormatVisitor(WithDefaults.class, gen);

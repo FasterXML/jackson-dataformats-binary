@@ -17,7 +17,7 @@ import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.dataformat.avro.AvroFactory;
 import tools.jackson.dataformat.avro.AvroFixedSize;
-import tools.jackson.dataformat.avro.AvroGenerator;
+import tools.jackson.dataformat.avro.AvroWriteFeature;
 import tools.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 public class RecordVisitor
@@ -47,7 +47,7 @@ public class RecordVisitor
         _visitorWrapper = visitorWrapper;
 
         AvroFactory avroFactory = (AvroFactory) p.tokenStreamFactory();
-        _cfgAddNullDefaults = avroFactory.isEnabled(AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA);
+        _cfgAddNullDefaults = avroFactory.isEnabled(AvroWriteFeature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA);
 
         // Check if the schema for this record is overridden
         SerializationConfig config = p.getConfig();
