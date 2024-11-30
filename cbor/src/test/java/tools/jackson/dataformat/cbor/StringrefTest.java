@@ -19,7 +19,7 @@ public class StringrefTest extends CBORTestBase
     public void testSimpleObject() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         gen.writeStartObject();
@@ -101,7 +101,7 @@ public class StringrefTest extends CBORTestBase
         // SerializableString interface takes different code paths.
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         gen.writeStartObject();
@@ -190,7 +190,7 @@ public class StringrefTest extends CBORTestBase
     public void testStringArray() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         gen.writeString("1");
@@ -235,7 +235,7 @@ public class StringrefTest extends CBORTestBase
     public void testStringArrayFromChars() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         writeStringAsCharArray(gen, "1");
@@ -280,7 +280,7 @@ public class StringrefTest extends CBORTestBase
     public void testStringArraySerializedString() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         gen.writeString(new SerializedString("1"));
@@ -325,7 +325,7 @@ public class StringrefTest extends CBORTestBase
     public void testStringArrayUTF8() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         writeStringAsUTF8(gen, "1");
@@ -410,7 +410,7 @@ public class StringrefTest extends CBORTestBase
     public void testBinaryStringArray() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         writeStringAsBinary(gen, "1");
@@ -490,7 +490,7 @@ public class StringrefTest extends CBORTestBase
     public void testBinaryStringArrayStream() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.STRINGREF));
+        assertTrue(gen.isEnabled(CBORWriteFeature.STRINGREF));
 
         gen.writeStartArray();
         writeStringAsBinaryStream(gen, "1");
@@ -598,8 +598,8 @@ public class StringrefTest extends CBORTestBase
     public void testNestedTags() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = (CBORGenerator) CBORFactory.builder()
-                .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
-                .enable(CBORGenerator.Feature.STRINGREF)
+                .enable(CBORWriteFeature.WRITE_TYPE_HEADER)
+                .enable(CBORWriteFeature.STRINGREF)
                 .build()
                 .createGenerator(ObjectWriteContext.empty(), bytes);
 
@@ -647,8 +647,8 @@ public class StringrefTest extends CBORTestBase
         bytes.reset();
         parser = cborParser(encoded);
         gen = (CBORGenerator) CBORFactory.builder()
-                .enable(CBORGenerator.Feature.WRITE_TYPE_HEADER)
-                .enable(CBORGenerator.Feature.STRINGREF)
+                .enable(CBORWriteFeature.WRITE_TYPE_HEADER)
+                .enable(CBORWriteFeature.STRINGREF)
                 .build()
                 .createGenerator(ObjectWriteContext.empty(), bytes);
         parser.nextToken();

@@ -15,6 +15,7 @@ import tools.jackson.databind.ObjectWriter;
 import tools.jackson.dataformat.cbor.CBORGenerator;
 import tools.jackson.dataformat.cbor.CBORParser;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 
 public class NumberBeanTest extends CBORTestBase
 {
@@ -182,7 +183,7 @@ public class NumberBeanTest extends CBORTestBase
         ByteArrayOutputStream bytes;
 
         ObjectWriter w = MAPPER.writer()
-                .without(CBORGenerator.Feature.WRITE_MINIMAL_INTS);
+                .without(CBORWriteFeature.WRITE_MINIMAL_INTS);
         final BigDecimal EXP_BIG_DEC = new BigDecimal("0.0100");
 
         bytes = new ByteArrayOutputStream();

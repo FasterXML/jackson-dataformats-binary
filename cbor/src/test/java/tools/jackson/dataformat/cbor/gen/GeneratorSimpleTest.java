@@ -14,13 +14,14 @@ import tools.jackson.dataformat.cbor.CBORConstants;
 import tools.jackson.dataformat.cbor.CBORGenerator;
 import tools.jackson.dataformat.cbor.CBORParser;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 
 public class GeneratorSimpleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
     private final ObjectMapper MAPPER_NO_MINIMAL_INT = cborMapper(
-            cborFactoryBuilder().disable(CBORGenerator.Feature.WRITE_MINIMAL_INTS)
+            cborFactoryBuilder().disable(CBORWriteFeature.WRITE_MINIMAL_INTS)
                 .build());
 
     /**
@@ -57,7 +58,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         CBORGenerator gen = (CBORGenerator) MAPPER.createGenerator(out);
-        assertTrue(gen.isEnabled(CBORGenerator.Feature.WRITE_MINIMAL_INTS));
+        assertTrue(gen.isEnabled(CBORWriteFeature.WRITE_MINIMAL_INTS));
         gen.writeNumber(17);
         gen.close();
         _verifyBytes(out.toByteArray(),

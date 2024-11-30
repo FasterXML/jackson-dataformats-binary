@@ -3,8 +3,8 @@ package tools.jackson.dataformat.cbor.mapper;
 import java.util.*;
 
 import tools.jackson.databind.*;
-import tools.jackson.dataformat.cbor.CBORGenerator;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 /**
@@ -143,7 +143,7 @@ public class BiggerDataTest extends CBORTestBase
 		Citm citm0 = jsonMapper().readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 		ObjectMapper mapper = new CBORMapper(
-		    cborFactoryBuilder().enable(CBORGenerator.Feature.STRINGREF).build());
+		    cborFactoryBuilder().enable(CBORWriteFeature.STRINGREF).build());
 		byte[] cbor = mapper.writeValueAsBytes(citm0);
 
 		Citm citm = mapper.readValue(cbor, Citm.class);

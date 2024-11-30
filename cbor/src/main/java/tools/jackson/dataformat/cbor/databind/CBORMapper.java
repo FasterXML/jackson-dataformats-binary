@@ -7,7 +7,7 @@ import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperBuilderState;
 
 import tools.jackson.dataformat.cbor.CBORFactory;
-import tools.jackson.dataformat.cbor.CBORGenerator;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.PackageVersion;
 
 /**
@@ -74,21 +74,21 @@ public class CBORMapper extends ObjectMapper
         }
         */
 
-        public Builder enable(CBORGenerator.Feature... features) {
-            for (CBORGenerator.Feature f : features) {
+        public Builder enable(CBORWriteFeature... features) {
+            for (CBORWriteFeature f : features) {
                 _formatWriteFeatures |= f.getMask();
             }
             return this;
         }
 
-        public Builder disable(CBORGenerator.Feature... features) {
-            for (CBORGenerator.Feature f : features) {
+        public Builder disable(CBORWriteFeature... features) {
+            for (CBORWriteFeature f : features) {
                 _formatWriteFeatures &= ~f.getMask();
             }
             return this;
         }
 
-        public Builder configure(CBORGenerator.Feature feature, boolean state)
+        public Builder configure(CBORWriteFeature feature, boolean state)
         {
             if (state) {
                 _formatWriteFeatures |= feature.getMask();

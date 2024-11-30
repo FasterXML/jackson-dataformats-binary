@@ -50,106 +50,6 @@ public class CBORGenerator extends GeneratorBase
     private final static int MAX_LONG_STRING_BYTES = (MAX_LONG_STRING_CHARS * 3) + 3;
 
     /**
-     * Enumeration that defines all togglable features for CBOR generator.
-     */
-    public enum Feature implements FormatFeature {
-        /**
-         * Feature that determines whether generator should try to use smallest
-         * (size-wise) integer representation: if true, will use smallest
-         * representation that is enough to retain value; if false, will use
-         * length indicated by argument type (4-byte for <code>int</code>,
-         * 8-byte for <code>long</code> and so on).
-         */
-        WRITE_MINIMAL_INTS(true),
-
-        /**
-         * Feature that determines whether CBOR "Self-Describe Tag" (value
-         * 55799, encoded as 3-byte sequence of <code>0xD9, 0xD9, 0xF7</code>)
-         * should be written at the beginning of document or not.
-         * <p>
-         * Default value is {@code false} meaning that type tag will not be
-         * written at the beginning of a new document.
-         */
-        WRITE_TYPE_HEADER(false),
-
-        /**
-         * Feature that determines if an invalid surrogate encoding found in the
-         * incoming String should fail with an exception or silently be output
-         * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD) or not; if not,
-         * an exception will be thrown to indicate invalid content.
-         * <p>
-         * Default value is {@code false} (for backwards compatibility) meaning that
-         * an invalid surrogate will result in exception ({@code StreamWriteException}).
-         */
-        LENIENT_UTF_ENCODING(false),
-
-        /**
-         * Feature that determines if string references are generated based on the
-         * <a href="http://cbor.schmorp.de/stringref">stringref</a>) extension. This can save
-         * storage space, parsing time, and pool string memory when parsing. Readers of the output
-         * must also support the stringref extension to properly decode the data. Extra overhead may
-         * be added to generation time and memory usage to compute the shared binary and text
-         * strings.
-         * <p>
-         * Default value is {@code false} meaning that the stringref extension will not be used.
-         *
-         * @since 2.15
-         */
-        STRINGREF(false),
-
-        /**
-         * Feature that determines whether generator should try to write doubles
-         * as floats: if {@code true}, will write a {@code double} as a 4-byte float if no
-         * precision loss will occur; if {@code false}, will always write a {@code double}
-         * as an 8-byte double.
-         * <p>
-         * Default value is {@code false} meaning that doubles will always be written as
-         * 8-byte values.
-         *
-         * @since 2.15
-         */
-        WRITE_MINIMAL_DOUBLES(false),
-        ;
-
-        protected final boolean _defaultState;
-        protected final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that are
-         * enabled by default.
-         */
-        public static int collectDefaults() {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override
-        public boolean enabledByDefault() {
-            return _defaultState;
-        }
-
-        @Override
-        public boolean enabledIn(int flags) {
-            return (flags & getMask()) != 0;
-        }
-
-        @Override
-        public int getMask() {
-            return _mask;
-        }
-    }
-
-    /**
      * To simplify certain operations, we require output buffer length to allow
      * outputting of contiguous 256 character UTF-8 encoded String value. Length
      * of the longest UTF-8 code point (from Java char) is 3 bytes, and we need
@@ -176,7 +76,7 @@ public class CBORGenerator extends GeneratorBase
 
     /**
      * Bit flag composed of bits that indicate which
-     * {@link CBORGenerator.Feature}s are enabled.
+     * {@link CBORWriteFeature}s are enabled.
      */
     protected final int _formatFeatures;
 
@@ -280,11 +180,11 @@ public class CBORGenerator extends GeneratorBase
                 ? DupDetector.rootDetector(this)
                 : null;
         _streamWriteContext = CBORWriteContext.createRootContext(dups);
-        _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
-        _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
+        _cfgMinimalInts = CBORWriteFeature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+        _cfgMinimalDoubles = CBORWriteFeature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = true;
-        _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
+        _stringRefs = CBORWriteFeature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
         _outputBuffer = ioCtxt.allocWriteEncodingBuffer(BYTE_BUFFER_FOR_OUTPUT);
         _outputEnd = _outputBuffer.length;
         _charBuffer = ioCtxt.allocConcatBuffer();
@@ -317,13 +217,13 @@ public class CBORGenerator extends GeneratorBase
                 ? DupDetector.rootDetector(this)
                 : null;
         _streamWriteContext = CBORWriteContext.createRootContext(dups);
-        _cfgMinimalInts = Feature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
-        _cfgMinimalDoubles = Feature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
+        _cfgMinimalInts = CBORWriteFeature.WRITE_MINIMAL_INTS.enabledIn(formatFeatures);
+        _cfgMinimalDoubles = CBORWriteFeature.WRITE_MINIMAL_DOUBLES.enabledIn(formatFeatures);
         _out = out;
         _bufferRecyclable = bufferRecyclable;
         _outputTail = offset;
         _outputBuffer = outputBuffer;
-        _stringRefs = Feature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
+        _stringRefs = CBORWriteFeature.STRINGREF.enabledIn(formatFeatures) ? new HashMap<>() : null;
         _outputEnd = _outputBuffer.length;
         _charBuffer = ioCtxt.allocConcatBuffer();
         _charBufferLength = _charBuffer.length;
@@ -422,7 +322,7 @@ public class CBORGenerator extends GeneratorBase
     }
     */
 
-    public final boolean isEnabled(Feature f) {
+    public final boolean isEnabled(CBORWriteFeature f) {
         return (_formatFeatures & f.getMask()) != 0;
     }
 
@@ -1653,7 +1553,7 @@ public class CBORGenerator extends GeneratorBase
     private int _invalidSurrogateStart(int code, byte[] outBuf, int outputPtr)
         throws JacksonException
     {
-        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+        if (isEnabled(CBORWriteFeature.LENIENT_UTF_ENCODING)) {
             return _appendReplacementChar(outBuf, outputPtr);
         }
         // Will be called in two distinct cases: either first character is
@@ -1675,7 +1575,7 @@ code));
             byte[] outBuf, int outputPtr)
         throws JacksonException
     {
-        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+        if (isEnabled(CBORWriteFeature.LENIENT_UTF_ENCODING)) {
             return _appendReplacementChar(outBuf, outputPtr);
         }
         _reportError(String.format(

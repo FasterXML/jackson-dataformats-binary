@@ -44,16 +44,10 @@ public class CBORFactory
     public final static String FORMAT_NAME = "CBOR";
 
     /**
-     * Bitfield (set of flags) of all parser features that are enabled
-     * by default.
-     */
-    final static int DEFAULT_CBOR_PARSER_FEATURE_FLAGS = CBORParser.Feature.collectDefaults();
-
-    /**
      * Bitfield (set of flags) of all generator features that are enabled
      * by default.
      */
-    final static int DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS = CBORGenerator.Feature.collectDefaults();
+    final static int DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS = CBORWriteFeature.collectDefaults();
 
     /*
     /**********************************************************************
@@ -87,7 +81,7 @@ public class CBORFactory
         super(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
                 ErrorReportConfiguration.defaults(),
-                DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
+                0,
                 DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 
@@ -179,27 +173,22 @@ public class CBORFactory
         return false; // no (mandatory) FormatSchema for cbor
     }
 
-    @Override
-    public Class<CBORParser.Feature> getFormatReadFeatureType() {
-        return CBORParser.Feature.class;
+    // No Reader features yet for CBOR
+    /*@Override
+    public Class<CBORReadFeature> getFormatReadFeatureType() {
+        return CBORReadFeature.class;
     }
+    */
 
     @Override
-    public Class<CBORGenerator.Feature> getFormatWriteFeatureType() {
-        return CBORGenerator.Feature.class;
-    }
-
-    /**
-     * Checked whether specified parser feature is enabled.
-     */
-    public final boolean isEnabled(CBORParser.Feature f) {
-        return f.enabledIn(_formatReadFeatures);
+    public Class<CBORWriteFeature> getFormatWriteFeatureType() {
+        return CBORWriteFeature.class;
     }
 
     /**
      * Check whether specified generator feature is enabled.
      */
-    public final boolean isEnabled(CBORGenerator.Feature f) {
+    public final boolean isEnabled(CBORWriteFeature f) {
         return f.enabledIn(_formatWriteFeatures);
     }
 
@@ -267,10 +256,10 @@ public class CBORFactory
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 out);
-        if (CBORGenerator.Feature.WRITE_TYPE_HEADER.enabledIn(_formatWriteFeatures)) {
+        if (CBORWriteFeature.WRITE_TYPE_HEADER.enabledIn(_formatWriteFeatures)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
-        if (CBORGenerator.Feature.STRINGREF.enabledIn(_formatWriteFeatures)) {
+        if (CBORWriteFeature.STRINGREF.enabledIn(_formatWriteFeatures)) {
             gen.writeTag(CBORConstants.TAG_ID_STRINGREF_NAMESPACE);
         }
         return gen;
