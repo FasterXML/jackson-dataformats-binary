@@ -18,53 +18,9 @@ import tools.jackson.core.util.ByteArrayBuilder;
 public class SmileParser extends SmileParserBase
 {
     /**
-     * Enumeration that defines all togglable features for Smile generators.
-     */
-    public enum Feature implements FormatFeature
-    {
-        /**
-         * Feature that determines whether 4-byte Smile header is mandatory in input,
-         * or optional. If enabled, it means that only input that starts with the header
-         * is accepted as valid; if disabled, header is optional. In latter case,
-         * settings for content are assumed to be defaults.
-         */
-        REQUIRE_HEADER(true)
-        ;
-
-        final boolean _defaultState;
-        final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override public boolean enabledByDefault() { return _defaultState; }
-        @Override public int getMask() { return _mask; }
-        @Override public boolean enabledIn(int flags) { return (flags & getMask()) != 0; }
-    }
-
-    /**
      * Flag to indicate if the JDK version is 11 or later. This can be used in some methods
      * to choose more optimal behavior. In particular, jdk9+ have different internals for
      * the String class.
-     *
-     * @since 2.14.1
      */
     private static final boolean JDK11_OR_LATER;
     static {

@@ -7,8 +7,8 @@ import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperBuilderState;
 import tools.jackson.dataformat.smile.PackageVersion;
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 /**
  * Specialized {@link ObjectMapper} to use with Smile format backend.
@@ -47,21 +47,21 @@ public class SmileMapper extends ObjectMapper
         /******************************************************************
          */
 
-        public Builder enable(SmileParser.Feature... features) {
-            for (SmileParser.Feature f : features) {
+        public Builder enable(SmileReadFeature... features) {
+            for (SmileReadFeature f : features) {
                 _formatReadFeatures |= f.getMask();
             }
             return this;
         }
 
-        public Builder disable(SmileParser.Feature... features) {
-            for (SmileParser.Feature f : features) {
+        public Builder disable(SmileReadFeature... features) {
+            for (SmileReadFeature f : features) {
                 _formatReadFeatures &= ~f.getMask();
             }
             return this;
         }
 
-        public Builder configure(SmileParser.Feature feature, boolean state)
+        public Builder configure(SmileReadFeature feature, boolean state)
         {
             if (state) {
                 _formatReadFeatures |= feature.getMask();
@@ -71,21 +71,21 @@ public class SmileMapper extends ObjectMapper
             return this;
         }
 
-        public Builder enable(SmileGenerator.Feature... features) {
-            for (SmileGenerator.Feature f : features) {
+        public Builder enable(SmileWriteFeature... features) {
+            for (SmileWriteFeature f : features) {
                 _formatWriteFeatures |= f.getMask();
             }
             return this;
         }
 
-        public Builder disable(SmileGenerator.Feature... features) {
-            for (SmileGenerator.Feature f : features) {
+        public Builder disable(SmileWriteFeature... features) {
+            for (SmileWriteFeature f : features) {
                 _formatWriteFeatures &= ~f.getMask();
             }
             return this;
         }
 
-        public Builder configure(SmileGenerator.Feature feature, boolean state)
+        public Builder configure(SmileWriteFeature feature, boolean state)
         {
             if (state) {
                 _formatWriteFeatures |= feature.getMask();

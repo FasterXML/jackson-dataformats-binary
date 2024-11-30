@@ -381,7 +381,7 @@ public class BasicParserTest extends BaseTestForSmile
     public void testNameBoundary() throws IOException
     {
         SmileFactory f = smileFactory(true, true, false);
-        f = f.rebuild().disable(SmileGenerator.Feature.CHECK_SHARED_NAMES).build();
+        f = f.rebuild().disable(SmileWriteFeature.CHECK_SHARED_NAMES).build();
 
         // let's create 3 meg docs
         final int LEN = 3 * 1000 * 1000;
@@ -431,8 +431,8 @@ public class BasicParserTest extends BaseTestForSmile
     {
         // ensure we are using both back-ref types
         SmileFactory sf = SmileFactory.builder()
-                .enable(SmileGenerator.Feature.CHECK_SHARED_NAMES,
-                        SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .enable(SmileWriteFeature.CHECK_SHARED_NAMES,
+                        SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .build();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);
 

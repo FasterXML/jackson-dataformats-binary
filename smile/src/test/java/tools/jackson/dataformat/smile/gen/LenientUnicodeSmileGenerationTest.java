@@ -15,7 +15,7 @@ public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
     private final SmileMapper MAPPER = smileMapper();
 
     private final ObjectWriter LENIENT_WRITER = MAPPER.writer()
-            .with(SmileGenerator.Feature.LENIENT_UTF_ENCODING);
+            .with(SmileWriteFeature.LENIENT_UTF_ENCODING);
 
     /**
      * Test that encoding a String containing invalid surrogates fail with an exception

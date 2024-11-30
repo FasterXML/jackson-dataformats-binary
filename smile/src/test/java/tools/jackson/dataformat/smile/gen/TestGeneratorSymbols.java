@@ -7,6 +7,7 @@ import tools.jackson.core.json.JsonFactory;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 public class TestGeneratorSymbols extends BaseTestForSmile
 {
@@ -155,9 +156,9 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         SmileFactory sf = SmileFactory.builder()
-            .enable(SmileGenerator.Feature.WRITE_HEADER,
-                    SmileGenerator.Feature.CHECK_SHARED_NAMES,
-                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .enable(SmileWriteFeature.WRITE_HEADER,
+                    SmileWriteFeature.CHECK_SHARED_NAMES,
+                    SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
             .build();
         JsonGenerator jg = sf.createGenerator(ObjectWriteContext.empty(), out, null);
 
@@ -215,7 +216,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         final String VALUE = "11111";
 
         SmileFactory factory = SmileFactory.builder()
-                .configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, shareNames)
+                .configure(SmileWriteFeature.CHECK_SHARED_NAMES, shareNames)
                 .build();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         JsonGenerator gen = factory.createGenerator(ObjectWriteContext.empty(), os);

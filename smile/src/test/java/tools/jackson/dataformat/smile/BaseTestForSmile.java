@@ -84,9 +84,9 @@ public abstract class BaseTestForSmile
     protected ObjectReader _smileReader(boolean requireHeader) {
         ObjectReader r = SMILE_MAPPER.reader();
         if (requireHeader) {
-            r = r.with(SmileParser.Feature.REQUIRE_HEADER);
+            r = r.with(SmileReadFeature.REQUIRE_HEADER);
         } else {
-            r = r.without(SmileParser.Feature.REQUIRE_HEADER);
+            r = r.without(SmileReadFeature.REQUIRE_HEADER);
         }
         return r;
     }
@@ -124,9 +124,9 @@ public abstract class BaseTestForSmile
             boolean writeHeader, boolean writeEndMarker)
     {
         return SmileFactory.builder()
-                .configure(SmileParser.Feature.REQUIRE_HEADER, requireHeader)
-                .configure(SmileGenerator.Feature.WRITE_HEADER, writeHeader)
-                .configure(SmileGenerator.Feature.WRITE_END_MARKER, writeEndMarker);
+                .configure(SmileReadFeature.REQUIRE_HEADER, requireHeader)
+                .configure(SmileWriteFeature.WRITE_HEADER, writeHeader)
+                .configure(SmileWriteFeature.WRITE_END_MARKER, writeEndMarker);
     }
 
     protected byte[] _smileDoc(String json)
@@ -138,9 +138,9 @@ public abstract class BaseTestForSmile
     {
         ObjectWriter w = mapper.writer();
         if (writeHeader) {
-            w = w.with(SmileGenerator.Feature.WRITE_HEADER);
+            w = w.with(SmileWriteFeature.WRITE_HEADER);
         } else {
-            w = w.without(SmileGenerator.Feature.WRITE_HEADER);
+            w = w.without(SmileWriteFeature.WRITE_HEADER);
         }
         return _smileDoc(w, json);
     }
@@ -186,9 +186,9 @@ public abstract class BaseTestForSmile
     protected ObjectWriter _smileWriter(boolean addHeader) {
         ObjectWriter w = SMILE_MAPPER.writer();
         if (addHeader) {
-            w = w.with(SmileGenerator.Feature.WRITE_HEADER);
+            w = w.with(SmileWriteFeature.WRITE_HEADER);
         } else {
-            w = w.without(SmileGenerator.Feature.WRITE_HEADER);
+            w = w.without(SmileWriteFeature.WRITE_HEADER);
         }
         return w;
     }

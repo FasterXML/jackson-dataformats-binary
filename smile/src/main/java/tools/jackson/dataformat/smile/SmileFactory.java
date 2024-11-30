@@ -50,13 +50,13 @@ public class SmileFactory
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
      */
-    final static int DEFAULT_SMILE_PARSER_FEATURE_FLAGS = SmileParser.Feature.collectDefaults();
+    final static int DEFAULT_SMILE_PARSER_FEATURE_FLAGS = SmileReadFeature.collectDefaults();
 
     /**
      * Bitfield (set of flags) of all generator features that are enabled
      * by default.
      */
-    final static int DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS = SmileGenerator.Feature.collectDefaults();
+    final static int DEFAULT_SMILE_GENERATOR_FEATURE_FLAGS = SmileWriteFeature.collectDefaults();
 
     /*
     /**********************************************************************
@@ -163,14 +163,14 @@ public class SmileFactory
     /**
      * Checked whether specified parser feature is enabled.
      */
-    public final boolean isEnabled(SmileParser.Feature f) {
+    public final boolean isEnabled(SmileReadFeature f) {
         return f.enabledIn(_formatReadFeatures);
     }
 
     /**
      * Check whether specified generator feature is enabled.
      */
-    public final boolean isEnabled(SmileGenerator.Feature f) {
+    public final boolean isEnabled(SmileWriteFeature f) {
         return f.enabledIn(_formatWriteFeatures);
     }
 
@@ -191,13 +191,13 @@ public class SmileFactory
     }
 
     @Override
-    public Class<SmileParser.Feature> getFormatReadFeatureType() {
-        return SmileParser.Feature.class;
+    public Class<SmileReadFeature> getFormatReadFeatureType() {
+        return SmileReadFeature.class;
     }
 
     @Override
-    public Class<SmileGenerator.Feature> getFormatWriteFeatureType() {
-        return SmileGenerator.Feature.class;
+    public Class<SmileWriteFeature> getFormatWriteFeatureType() {
+        return SmileWriteFeature.class;
     }
 
     /*
@@ -274,15 +274,15 @@ public class SmileFactory
         SmileGenerator gen = new SmileGenerator(writeCtxt, ioCtxt,
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 smileFeatures, out);
-        if (SmileGenerator.Feature.WRITE_HEADER.enabledIn(smileFeatures)) {
+        if (SmileWriteFeature.WRITE_HEADER.enabledIn(smileFeatures)) {
             gen.writeHeader();
         } else {
-            if (SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
+            if (SmileWriteFeature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
                 throw new StreamWriteException(gen,
                         "Inconsistent settings: WRITE_HEADER disabled, but CHECK_SHARED_STRING_VALUES enabled; can not construct generator"
                         +" due to possible data loss (either enable WRITE_HEADER, or disable CHECK_SHARED_STRING_VALUES to resolve)");
             }
-            if (!SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT.enabledIn(smileFeatures)) {
+            if (!SmileWriteFeature.ENCODE_BINARY_AS_7BIT.enabledIn(smileFeatures)) {
                 throw new StreamWriteException(gen,
         			"Inconsistent settings: WRITE_HEADER disabled, but ENCODE_BINARY_AS_7BIT disabled; can not construct generator"
         			+" due to possible data loss (either enable WRITE_HEADER, or ENCODE_BINARY_AS_7BIT to resolve)");

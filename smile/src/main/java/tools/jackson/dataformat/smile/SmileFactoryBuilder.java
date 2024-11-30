@@ -43,65 +43,65 @@ public class SmileFactoryBuilder extends DecorableTSFBuilder<SmileFactory, Smile
 
     // // // Parser features
 
-    public SmileFactoryBuilder enable(SmileParser.Feature f) {
+    public SmileFactoryBuilder enable(SmileReadFeature f) {
         _formatReadFeatures |= f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder enable(SmileParser.Feature first, SmileParser.Feature... other) {
+    public SmileFactoryBuilder enable(SmileReadFeature first, SmileReadFeature... other) {
         _formatReadFeatures |= first.getMask();
-        for (SmileParser.Feature f : other) {
+        for (SmileReadFeature f : other) {
             _formatReadFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public SmileFactoryBuilder disable(SmileParser.Feature f) {
+    public SmileFactoryBuilder disable(SmileReadFeature f) {
         _formatReadFeatures &= ~f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder disable(SmileParser.Feature first, SmileParser.Feature... other) {
+    public SmileFactoryBuilder disable(SmileReadFeature first, SmileReadFeature... other) {
         _formatReadFeatures &= ~first.getMask();
-        for (SmileParser.Feature f : other) {
+        for (SmileReadFeature f : other) {
             _formatReadFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public SmileFactoryBuilder configure(SmileParser.Feature f, boolean state) {
+    public SmileFactoryBuilder configure(SmileReadFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 
     // // // Generator features
 
-    public SmileFactoryBuilder enable(SmileGenerator.Feature f) {
+    public SmileFactoryBuilder enable(SmileWriteFeature f) {
         _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder enable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
+    public SmileFactoryBuilder enable(SmileWriteFeature first, SmileWriteFeature... other) {
         _formatWriteFeatures |= first.getMask();
-        for (SmileGenerator.Feature f : other) {
+        for (SmileWriteFeature f : other) {
             _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public SmileFactoryBuilder disable(SmileGenerator.Feature f) {
+    public SmileFactoryBuilder disable(SmileWriteFeature f) {
         _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
 
-    public SmileFactoryBuilder disable(SmileGenerator.Feature first, SmileGenerator.Feature... other) {
+    public SmileFactoryBuilder disable(SmileWriteFeature first, SmileWriteFeature... other) {
         _formatWriteFeatures &= ~first.getMask();
-        for (SmileGenerator.Feature f : other) {
+        for (SmileWriteFeature f : other) {
             _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public SmileFactoryBuilder configure(SmileGenerator.Feature f, boolean state) {
+    public SmileFactoryBuilder configure(SmileWriteFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 }

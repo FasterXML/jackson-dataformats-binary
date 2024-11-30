@@ -10,8 +10,8 @@ import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 public class SimpleStringArrayTest extends AsyncTestBase
@@ -29,8 +29,8 @@ public class SimpleStringArrayTest extends AsyncTestBase
     }
 
     private final ObjectWriter WRITE_SHARED = _smileWriter(true)
-        .withFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
-                SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        .withFeatures(SmileWriteFeature.CHECK_SHARED_NAMES,
+                SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
 
     public void testShortAsciiStrings() throws IOException
     {
@@ -117,9 +117,9 @@ public class SimpleStringArrayTest extends AsyncTestBase
         };
         SmileFactory f = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(10).build())
-                .enable(SmileParser.Feature.REQUIRE_HEADER)
-                .enable(SmileGenerator.Feature.CHECK_SHARED_NAMES)
-                .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .enable(SmileReadFeature.REQUIRE_HEADER)
+                .enable(SmileWriteFeature.CHECK_SHARED_NAMES)
+                .enable(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .build();
         SmileMapper mapper = new SmileMapper(f);
         byte[] data = _stringDoc(mapper.writer(), input);

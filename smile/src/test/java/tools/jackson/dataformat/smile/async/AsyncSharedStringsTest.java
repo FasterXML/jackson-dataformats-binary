@@ -82,7 +82,7 @@ public class AsyncSharedStringsTest
         ObjectReader r = _smileReader(false);
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = _smileWriter(false)
-                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .with(SmileWriteFeature.CHECK_SHARED_NAMES)
                 .createGenerator(out);
         gen.writeStartArray();
         Random rnd = new Random(COUNT);
@@ -134,7 +134,7 @@ public class AsyncSharedStringsTest
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = _smileWriter()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
         gen.writeStartArray();
         for (String value : SHARED_SYMBOLS) {
@@ -159,7 +159,7 @@ public class AsyncSharedStringsTest
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = _smileWriter()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
         gen.writeStartObject();
         for (int i = 0; i < SHARED_SYMBOLS.length; ++i) {
@@ -186,7 +186,7 @@ public class AsyncSharedStringsTest
     public void testSharedStringsMixed() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
-        JsonGenerator gen = _smileWriter().with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+        JsonGenerator gen = _smileWriter().with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
         gen.writeStartObject();
 
@@ -305,7 +305,7 @@ public class AsyncSharedStringsTest
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-            .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .enable(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
             .build();
         MediaItem item = new MediaItem();
         Content c = new Content();
@@ -498,9 +498,9 @@ public class AsyncSharedStringsTest
     {
         ObjectWriter w = _smileWriter(true);
         if (enableSharing) {
-            w = w.with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+            w = w.with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
         } else {
-            w = w.without(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+            w = w.without(SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = w.createGenerator(out);

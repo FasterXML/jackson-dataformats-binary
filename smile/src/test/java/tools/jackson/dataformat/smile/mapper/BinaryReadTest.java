@@ -16,7 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.BinaryNode;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 import tools.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
@@ -54,7 +54,7 @@ public class BinaryReadTest extends BaseTestForSmile
     // but also one with "raw" regular binary:
     private final ObjectMapper MAPPER_RAW = SmileMapper.builder(
             SmileFactory.builder()
-                .disable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT)
+                .disable(SmileWriteFeature.ENCODE_BINARY_AS_7BIT)
                 .build()
             ).build();
 

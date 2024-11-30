@@ -38,9 +38,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /**
      * Bit flag composed of bits that indicate which
-     * {@link SmileParser.Feature}s are enabled.
+     * {@link SmileReadFeature}s are enabled.
      *<p>
-     * NOTE: currently the only feature ({@link SmileParser.Feature#REQUIRE_HEADER}
+     * NOTE: currently the only feature ({@link SmileReadFeature#REQUIRE_HEADER}
      * takes effect during bootstrapping.
      */
     protected int _formatFeatures;
