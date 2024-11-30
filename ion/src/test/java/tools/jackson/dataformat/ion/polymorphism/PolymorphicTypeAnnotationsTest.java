@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 
 import tools.jackson.dataformat.ion.IonObjectMapper;
-import tools.jackson.dataformat.ion.IonParser.Feature;
+import tools.jackson.dataformat.ion.IonReadFeature;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -53,7 +53,7 @@ public class PolymorphicTypeAnnotationsTest {
     @Test
     public void testNativeTypeIdsDisabledReadsTypeAnnotationsSuccessfully() throws IOException {
         IonObjectMapper mapper = IonObjectMapper.builder()
-                .disable(Feature.USE_NATIVE_TYPE_ID)
+                .disable(IonReadFeature.USE_NATIVE_TYPE_ID)
                 .build();
 
         Container containerWithBaseClass = mapper.readValue(CONTAINER_WITH_TYPED_OBJECT, Container.class);

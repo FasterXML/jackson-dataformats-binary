@@ -40,58 +40,6 @@ import com.amazon.ion.Timestamp;
 public class IonGenerator
     extends GeneratorBase
 {
-    /**
-     * Enumeration that defines all toggleable features for Ion generators
-     */
-    public enum Feature implements FormatFeature
-    {
-        /**
-         * Whether to use Ion native Type Id construct for indicating type (true);
-         * or "generic" type property (false) when writing. Former works better for
-         * systems that are Ion-centric; latter may be better choice for interoperability,
-         * when converting between formats or accepting other formats.
-         *<p>
-         * Enabled by default for backwards compatibility as that has been the behavior
-         * of `jackson-dataformat-ion` since 2.9 (first official public version)
-         *
-         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
-         *
-         * @since 2.12
-         */
-        USE_NATIVE_TYPE_ID(true),
-        ;
-
-        protected final boolean _defaultState;
-        protected final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override
-        public boolean enabledByDefault() { return _defaultState; }
-        @Override
-        public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
-        @Override
-        public int getMask() { return _mask; }
-    }
-
     /*
     /**********************************************************************
     /* Basic configuration
@@ -105,7 +53,7 @@ public class IonGenerator
 
     /**
      * Bit flag composed of bits that indicate which
-     * {@link IonGenerator.Feature}s
+     * {@link IonWriteFeature}s
      * are enabled.
      */
     protected int _formatFeatures;
@@ -239,7 +187,7 @@ public class IonGenerator
     public boolean canWriteTypeId() {
         // yes, Ion does support Native Type Ids!
         // 29-Nov-2020, jobarr: Except as per [dataformats-binary#225] might not want to...
-        return Feature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
+        return IonWriteFeature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
     }
 
     @Override

@@ -85,65 +85,65 @@ public class IonFactoryBuilder extends DecorableTSFBuilder<IonFactory, IonFactor
 
     // // // Parser features
 
-    public IonFactoryBuilder enable(IonParser.Feature f) {
+    public IonFactoryBuilder enable(IonReadFeature f) {
         _formatReadFeatures |= f.getMask();
         return _this();
     }
 
-    public IonFactoryBuilder enable(IonParser.Feature first, IonParser.Feature... other) {
+    public IonFactoryBuilder enable(IonReadFeature first, IonReadFeature... other) {
         _formatReadFeatures |= first.getMask();
-        for (IonParser.Feature f : other) {
+        for (IonReadFeature f : other) {
             _formatReadFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public IonFactoryBuilder disable(IonParser.Feature f) {
+    public IonFactoryBuilder disable(IonReadFeature f) {
         _formatReadFeatures &= ~f.getMask();
         return _this();
     }
 
-    public IonFactoryBuilder disable(IonParser.Feature first, IonParser.Feature... other) {
+    public IonFactoryBuilder disable(IonReadFeature first, IonReadFeature... other) {
         _formatReadFeatures &= ~first.getMask();
-        for (IonParser.Feature f : other) {
+        for (IonReadFeature f : other) {
             _formatReadFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public IonFactoryBuilder configure(IonParser.Feature f, boolean state) {
+    public IonFactoryBuilder configure(IonReadFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 
     // // // Generator features
 
-    public IonFactoryBuilder enable(IonGenerator.Feature f) {
+    public IonFactoryBuilder enable(IonWriteFeature f) {
         _formatWriteFeatures |= f.getMask();
         return _this();
     }
 
-    public IonFactoryBuilder enable(IonGenerator.Feature first, IonGenerator.Feature... other) {
+    public IonFactoryBuilder enable(IonWriteFeature first, IonWriteFeature... other) {
         _formatWriteFeatures |= first.getMask();
-        for (IonGenerator.Feature f : other) {
+        for (IonWriteFeature f : other) {
             _formatWriteFeatures |= f.getMask();
         }
         return _this();
     }
 
-    public IonFactoryBuilder disable(IonGenerator.Feature f) {
+    public IonFactoryBuilder disable(IonWriteFeature f) {
         _formatWriteFeatures &= ~f.getMask();
         return _this();
     }
 
-    public IonFactoryBuilder disable(IonGenerator.Feature first, IonGenerator.Feature... other) {
+    public IonFactoryBuilder disable(IonWriteFeature first, IonWriteFeature... other) {
         _formatWriteFeatures &= ~first.getMask();
-        for (IonGenerator.Feature f : other) {
+        for (IonWriteFeature f : other) {
             _formatWriteFeatures &= ~f.getMask();
         }
         return _this();
     }
 
-    public IonFactoryBuilder configure(IonGenerator.Feature f, boolean state) {
+    public IonFactoryBuilder configure(IonWriteFeature f, boolean state) {
         return state ? enable(f) : disable(f);
     }
 

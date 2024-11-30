@@ -20,7 +20,7 @@ public class Fuzz417_64721InvalidIonTest
     public void testFuzz64721AssertionException() throws Exception {
        IonFactory f = IonFactory
                           .builderForBinaryWriters()
-                          .enable(IonParser.Feature.USE_NATIVE_TYPE_ID)
+                          .enable(IonReadFeature.USE_NATIVE_TYPE_ID)
                           .build();
        IonObjectMapper mapper = IonObjectMapper.builder(f).build();
        try {

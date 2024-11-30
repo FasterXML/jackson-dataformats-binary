@@ -61,13 +61,13 @@ public class IonFactory
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
      */
-    protected final static int DEFAULT_ION_PARSER_FEATURE_FLAGS = IonParser.Feature.collectDefaults();
+    protected final static int DEFAULT_ION_PARSER_FEATURE_FLAGS = IonReadFeature.collectDefaults();
 
     /**
      * Bitfield (set of flags) of all generator features that are enabled
      * by default.
      */
-    protected final static int DEFAULT_ION_GENERATOR_FEATURE_FLAGS = IonGenerator.Feature.collectDefaults();
+    protected final static int DEFAULT_ION_GENERATOR_FEATURE_FLAGS = IonWriteFeature.collectDefaults();
 
     /*
     /**********************************************************************
@@ -206,14 +206,14 @@ public class IonFactory
     /**
      * Checked whether specified parser feature is enabled.
      */
-    public final boolean isEnabled(IonParser.Feature f) {
+    public final boolean isEnabled(IonReadFeature f) {
         return (_formatReadFeatures & f.getMask()) != 0;
     }
 
     /**
      * Check whether specified generator feature is enabled.
      */
-    public final boolean isEnabled(IonGenerator.Feature f) {
+    public final boolean isEnabled(IonWriteFeature f) {
         return (_formatWriteFeatures & f.getMask()) != 0;
     }
 
@@ -234,13 +234,13 @@ public class IonFactory
     }
 
     @Override
-    public Class<IonParser.Feature> getFormatReadFeatureType() {
-        return IonParser.Feature.class;
+    public Class<IonReadFeature> getFormatReadFeatureType() {
+        return IonReadFeature.class;
     }
 
     @Override
-    public Class<IonGenerator.Feature> getFormatWriteFeatureType() {
-        return IonGenerator.Feature.class;
+    public Class<IonWriteFeature> getFormatWriteFeatureType() {
+        return IonWriteFeature.class;
     }
 
     /*
