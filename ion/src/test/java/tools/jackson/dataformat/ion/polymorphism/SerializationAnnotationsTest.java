@@ -5,8 +5,8 @@ import com.amazon.ion.system.IonSystemBuilder;
 import com.amazon.ion.util.Equivalence;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import tools.jackson.dataformat.ion.IonGenerator;
 import tools.jackson.dataformat.ion.IonObjectMapper;
+import tools.jackson.dataformat.ion.IonWriteFeature;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class SerializationAnnotationsTest {
     @Test
     public void testNativeTypeIdsCanBeDisabledOnWrite() throws Exception {
         IonObjectMapper mapper = IonObjectMapper.builderForTextualWriters()
-                .disable(IonGenerator.Feature.USE_NATIVE_TYPE_ID)
+                .disable(IonWriteFeature.USE_NATIVE_TYPE_ID)
                 .build();
 
         IonValue subclassAsIon = mapper.writeValueAsIonValue(subclass);
@@ -74,7 +74,7 @@ public class SerializationAnnotationsTest {
         assertEqualIonValues(SUBCLASS_TYPED_BY_ANNOTATION, subclassAsIon);
 
         IonObjectMapper reader = IonObjectMapper.builderForTextualWriters()
-                .disable(IonGenerator.Feature.USE_NATIVE_TYPE_ID)
+                .disable(IonWriteFeature.USE_NATIVE_TYPE_ID)
                 .build();
 
         BaseClass roundTripInstance = reader.readValue(subclassAsIon, BaseClass.class);

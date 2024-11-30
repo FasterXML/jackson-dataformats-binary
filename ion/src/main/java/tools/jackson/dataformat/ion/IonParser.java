@@ -36,54 +36,6 @@ import com.amazon.ion.*;
 public class IonParser
     extends ParserMinimalBase
 {
-    /**
-     * Enumeration that defines all togglable features for Ion parsers.
-     */
-    public enum Feature implements FormatFeature
-    {
-        /**
-         * Whether to expect Ion native Type Id construct for indicating type (true);
-         * or "generic" type property (false) when deserializing.
-         *<p>
-         * Enabled by default for backwards compatibility as that has been the behavior
-         * of `jackson-dataformat-ion` since 2.9 (first official public version)
-         *
-         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
-         */
-        USE_NATIVE_TYPE_ID(true),
-        ;
-
-        final boolean _defaultState;
-        final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override
-        public boolean enabledByDefault() { return _defaultState; }
-        @Override
-        public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
-        @Override
-        public int getMask() { return _mask; }
-    }
-
     // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> ION_READ_CAPABILITIES
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
@@ -100,7 +52,7 @@ public class IonParser
 
     /**
      * Bit flag composed of bits that indicate which
-     * {@link IonParser.Feature}s are enabled.
+     * {@link IonReadFeature}s are enabled.
      */
     protected int _formatFeatures;
 
@@ -173,7 +125,7 @@ public class IonParser
     public boolean canReadTypeId() {
         // yes, Ion got 'em
         // 31-Mar-2021, manaigrn: but we might want to ignore them as per [dataformats-binary#270]
-        return Feature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
+        return IonReadFeature.USE_NATIVE_TYPE_ID.enabledIn(_formatFeatures);
     }
 
     @Override

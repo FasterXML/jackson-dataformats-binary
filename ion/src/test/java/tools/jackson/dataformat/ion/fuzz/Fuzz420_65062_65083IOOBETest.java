@@ -18,7 +18,7 @@ public class Fuzz420_65062_65083IOOBETest
     public void testFuzz6506265083IOOBE() throws Exception {
        IonFactory f = IonFactory
                           .builderForTextualWriters()
-                          .enable(IonParser.Feature.USE_NATIVE_TYPE_ID)
+                          .enable(IonReadFeature.USE_NATIVE_TYPE_ID)
                           .build();
        IonObjectMapper mapper = IonObjectMapper.builder(f).build();
        try (InputStream in = getClass().getResourceAsStream("/data/fuzz-420.ion")) {
