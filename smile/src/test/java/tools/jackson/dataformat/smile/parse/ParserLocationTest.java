@@ -5,6 +5,7 @@ import java.io.*;
 import tools.jackson.core.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 public class ParserLocationTest
     extends BaseTestForSmile
@@ -71,7 +72,7 @@ public class ParserLocationTest
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(COUNT + 10);
         SmileGenerator gen = _smileGenerator(bytes, true);
-        gen.disable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+        gen.disable(SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
         gen.writeStartArray();
         for (int i = 0; i < COUNT; ++i) {
             gen.writeString("abc123");

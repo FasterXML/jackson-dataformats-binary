@@ -18,7 +18,7 @@ import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 import tools.jackson.core.util.VersionUtil;
 
 import tools.jackson.dataformat.smile.SmileConstants;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileReadFeature;
 import tools.jackson.dataformat.smile.SmileUtil;
 
 public class NonBlockingByteArrayParser
@@ -178,7 +178,7 @@ public class NonBlockingByteArrayParser
                 _minorState = MINOR_HEADER_INITIAL;
                 return _finishHeader(0);
             }
-            if (SmileParser.Feature.REQUIRE_HEADER.enabledIn(_formatFeatures)) {
+            if (SmileReadFeature.REQUIRE_HEADER.enabledIn(_formatFeatures)) {
                 _reportMissingHeader(ch);
             }
             // otherwise fine, just drop through to next state

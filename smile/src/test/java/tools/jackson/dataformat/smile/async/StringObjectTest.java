@@ -5,7 +5,7 @@ import java.io.IOException;
 import tools.jackson.core.JsonToken;
 
 import tools.jackson.databind.ObjectWriter;
-import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 public class StringObjectTest extends AsyncTestBase
 {
@@ -33,11 +33,11 @@ public class StringObjectTest extends AsyncTestBase
 
         ObjectWriter w = _smileWriter(true);
         if (sharedNames) {
-            w = w.withFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
-                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+            w = w.withFeatures(SmileWriteFeature.CHECK_SHARED_NAMES,
+                    SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
         } else {
-            w = w.withoutFeatures(SmileGenerator.Feature.CHECK_SHARED_NAMES,
-                    SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES);
+            w = w.withoutFeatures(SmileWriteFeature.CHECK_SHARED_NAMES,
+                    SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
         }
 
         byte[] data = _smileDoc(w, json);

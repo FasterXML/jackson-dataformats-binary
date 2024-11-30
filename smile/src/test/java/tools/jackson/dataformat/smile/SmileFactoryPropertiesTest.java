@@ -22,15 +22,15 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     public void testFactoryDefaults() {
         SmileFactory f = new SmileFactory();
 
-        assertEquals(SmileParser.Feature.REQUIRE_HEADER.enabledByDefault(),
-                f.isEnabled(SmileParser.Feature.REQUIRE_HEADER));
+        assertEquals(SmileReadFeature.REQUIRE_HEADER.enabledByDefault(),
+                f.isEnabled(SmileReadFeature.REQUIRE_HEADER));
 
-        assertEquals(SmileGenerator.Feature.WRITE_HEADER.enabledByDefault(),
-                f.isEnabled(SmileGenerator.Feature.WRITE_HEADER));
-        assertEquals(SmileGenerator.Feature.CHECK_SHARED_NAMES.enabledByDefault(),
-                f.isEnabled(SmileGenerator.Feature.CHECK_SHARED_NAMES));
-        assertEquals(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES.enabledByDefault(),
-                f.isEnabled(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES));
+        assertEquals(SmileWriteFeature.WRITE_HEADER.enabledByDefault(),
+                f.isEnabled(SmileWriteFeature.WRITE_HEADER));
+        assertEquals(SmileWriteFeature.CHECK_SHARED_NAMES.enabledByDefault(),
+                f.isEnabled(SmileWriteFeature.CHECK_SHARED_NAMES));
+        assertEquals(SmileWriteFeature.CHECK_SHARED_STRING_VALUES.enabledByDefault(),
+                f.isEnabled(SmileWriteFeature.CHECK_SHARED_STRING_VALUES));
     }
 
     public void testFactorySerializable() throws Exception
@@ -38,7 +38,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         // Need to handle this in more detail to ensure freeze/thaw'd instances
         // are used
         SmileFactory f0 = SmileFactory.builder()
-                .enable(SmileGenerator.Feature.WRITE_HEADER)
+                .enable(SmileWriteFeature.WRITE_HEADER)
                 .build();
         ObjectMapper m = new ObjectMapper(f0);
         byte[] doc = _smileDoc(m, SIMPLE_DOC_AS_JSON, true);
@@ -91,8 +91,8 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     public void testCapabilities() throws Exception
     {
         assertTrue(SMILE_F.canHandleBinaryNatively());
-        assertEquals(SmileParser.Feature.class, SMILE_F.getFormatReadFeatureType());
-        assertEquals(SmileGenerator.Feature.class, SMILE_F.getFormatWriteFeatureType());
+        assertEquals(SmileReadFeature.class, SMILE_F.getFormatReadFeatureType());
+        assertEquals(SmileWriteFeature.class, SMILE_F.getFormatWriteFeatureType());
     }
 
     public void testInabilityToReadChars() throws Exception

@@ -6,7 +6,7 @@ import tools.jackson.core.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 public class TestGeneratorLongSharedRefs extends BaseTestForSmile
 {
@@ -91,7 +91,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         // boolean requireHeader, boolean writeHeader, boolean writeEndMarker
         ObjectMapper mapper = smileMapper(false, true, false);
         JsonGenerator generator = mapper.writer()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(byteOut);
         generator.writeStartArray();
 

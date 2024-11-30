@@ -17,8 +17,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 public class MapperSimpleReadTest extends BaseTestForSmile
@@ -178,15 +178,15 @@ public class MapperSimpleReadTest extends BaseTestForSmile
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         SmileMapper mapperWithHeaders = SmileMapper.builder()
-                .enable(SmileGenerator.Feature.WRITE_HEADER)
-                .enable(SmileParser.Feature.REQUIRE_HEADER)
+                .enable(SmileWriteFeature.WRITE_HEADER)
+                .enable(SmileReadFeature.REQUIRE_HEADER)
                 .build();
         byte[] encodedWithHeader = mapperWithHeaders.writeValueAsBytes("foo");
         assertEquals(8, encodedWithHeader.length);
 
         SmileMapper mapperNoHeaders = SmileMapper.builder()
-                .disable(SmileGenerator.Feature.WRITE_HEADER)
-                .disable(SmileParser.Feature.REQUIRE_HEADER)
+                .disable(SmileWriteFeature.WRITE_HEADER)
+                .disable(SmileReadFeature.REQUIRE_HEADER)
                 .build();
         byte[] encodedNoHeader  = mapperNoHeaders.writeValueAsBytes("foo");
         assertEquals(4, encodedNoHeader.length);

@@ -25,3 +25,5 @@ implementations)
 #524: JSTEP-8: rename `CBORGenerator.Feature` as `CBORWriteFeature`
 #526: JSTEP-8: rename `IonParser.Feature` as `IonReadFeature`,
   `IonGenerator.Feature` as `IonWriteFeature`
+#528: JSTEP-8: rename `SmileParser.Feature` as `SmileReadFeature`,
+  `SmileGenerator.Feature` as `SmileWriteFeature`

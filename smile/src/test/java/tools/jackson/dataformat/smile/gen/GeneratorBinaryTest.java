@@ -7,7 +7,7 @@ import org.junit.Assert;
 import tools.jackson.core.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator.Feature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 import tools.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 public class GeneratorBinaryTest extends BaseTestForSmile
@@ -47,7 +47,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
             throws Exception
     {
         final SmileFactory f = SmileFactory.builder()
-                .configure(Feature.ENCODE_BINARY_AS_7BIT, rawBinary)
+                .configure(SmileWriteFeature.ENCODE_BINARY_AS_7BIT, rawBinary)
                 .build();
 
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
@@ -89,7 +89,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
     private void _testStreamingBinary(boolean rawBinary, boolean throttle) throws Exception
     {
         final SmileFactory f = SmileFactory.builder()
-                .configure(Feature.ENCODE_BINARY_AS_7BIT, !rawBinary)
+                .configure(SmileWriteFeature.ENCODE_BINARY_AS_7BIT, !rawBinary)
                 .build();
         final byte[] INPUT = TEXT4.getBytes("UTF-8");
         for (int chunkSize : new int[] { 1, 2, 3, 4, 7, 11, 29, 5000 }) {

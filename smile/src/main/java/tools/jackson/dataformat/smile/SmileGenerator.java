@@ -21,116 +21,9 @@ import static tools.jackson.dataformat.smile.SmileConstants.*;
 public class SmileGenerator
     extends GeneratorBase
 {
-    // @since 2.16
     protected final static int DEFAULT_NAME_BUFFER_LENGTH = 64;    
 
-    // @since 2.16
     protected final static int DEFAULT_STRING_VALUE_BUFFER_LENGTH = 64;
-
-    /**
-     * Enumeration that defines all togglable features for Smile generators.
-     */
-    public enum Feature
-        implements FormatFeature
-    {
-        /**
-         * Whether to write 4-byte header sequence when starting output or not.
-         * If disabled, no header is written; this may be useful in embedded cases
-         * where context is enough to know that content is encoded using this format.
-         * Note, however, that omitting header means that default settings for
-         * shared names/string values can not be changed.
-         *<p>
-         * Default setting is true, meaning that header will be written.
-         */
-        WRITE_HEADER(true),
-
-        /**
-         * Whether write byte marker that signifies end of logical content segment
-         * ({@link SmileConstants#BYTE_MARKER_END_OF_CONTENT}) when
-         * {@link #close} is called or not. This can be useful when outputting
-         * multiple adjacent logical content segments (documents) into single
-         * physical output unit (file).
-         *<p>
-         * Default setting is false meaning that such marker is not written.
-         */
-        WRITE_END_MARKER(false),
-
-        /**
-         * Whether to use simple 7-bit per byte encoding for binary content when output.
-         * This is necessary ensure that byte 0xFF will never be included in content output.
-         * For other data types this limitation is handled automatically. This setting is enabled
-         * by default, however, overhead for binary data (14% size expansion, processing overhead)
-         * is non-negligible. If no binary data is output, feature has no effect.
-         *<p>
-         * Default setting is true, indicating that binary data is quoted as 7-bit bytes
-         * instead of written raw.
-         */
-        ENCODE_BINARY_AS_7BIT(true),
-
-        /**
-         * Whether generator should check if it can "share" property names during generating
-         * content or not. If enabled, can replace repeating property names with back references,
-         * which are more compact and should faster to decode. Downside is that there is some
-         * overhead for writing (need to track existing values, check), as well as decoding.
-         *<p>
-         * Since property names tend to repeat quite often, this setting is enabled by default.
-         */
-        CHECK_SHARED_NAMES(true),
-
-        /**
-         * Whether generator should check if it can "share" short (at most 64 bytes encoded)
-         * String value during generating
-         * content or not. If enabled, can replace repeating Short String values with back references,
-         * which are more compact and should faster to decode. Downside is that there is some
-         * overhead for writing (need to track existing values, check), as well as decoding.
-         *<p>
-         * Since efficiency of this option depends a lot on type of content being produced,
-         * this option is disabled by default, and should only be enabled if it is likely that
-         * same values repeat relatively often.
-         */
-        CHECK_SHARED_STRING_VALUES(false),
-
-        /**
-         * Feature that determines if an invalid surrogate encoding found in the
-         * incoming String should fail with an exception or silently be output
-         * as the Unicode 'REPLACEMENT CHARACTER' (U+FFFD) or not; if not,
-         * an exception will be thrown to indicate invalid content.
-         *<p>
-         * Default value is {@code false} (for backwards compatibility) meaning that
-         * an invalid surrogate will result in exception ({@code StreamWriteException}).
-         *
-         * @since 2.13
-         */
-        LENIENT_UTF_ENCODING(false),
-        ;
-
-        protected final boolean _defaultState;
-        protected final int _mask;
-
-        /**
-         * Method that calculates bit set (flags) of all features that
-         * are enabled by default.
-         */
-        public static int collectDefaults()
-        {
-            int flags = 0;
-            for (Feature f : values()) {
-                if (f.enabledByDefault()) {
-                    flags |= f.getMask();
-                }
-            }
-            return flags;
-        }
-
-        private Feature(boolean defaultState) {
-            _defaultState = defaultState;
-            _mask = (1 << ordinal());
-        }
-
-        @Override public boolean enabledByDefault() { return _defaultState; }
-        @Override public int getMask() { return _mask; }
-        @Override public boolean enabledIn(int flags) { return (flags & _mask) != 0; }
-    }
 
     /**
      * Helper class used for keeping track of possibly shareable String
@@ -191,7 +84,7 @@ public class SmileGenerator
 
     /**
      * Bit flag composed of bits that indicate which
-     * {@link tools.jackson.dataformat.smile.SmileGenerator.Feature}s
+     * {@link tools.jackson.dataformat.smile.SmileWriteFeature}s
      * are enabled.
      */
     protected int _formatFeatures;
@@ -298,7 +191,7 @@ public class SmileGenerator
                     "Internal encoding buffer length (%d) too short, must be at least %d",
                     _outputEnd, MIN_BUFFER_LENGTH));
         }
-        if (!Feature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
+        if (!SmileWriteFeature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
             _seenNames = null;
             _seenNameCount = -1;
         } else {
@@ -306,7 +199,7 @@ public class SmileGenerator
             _seenNameCount = 0;
         }
 
-        if (!Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
+        if (!SmileWriteFeature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
             _seenStringValues = null;
             _seenStringValueCount = -1;
         } else {
@@ -335,7 +228,7 @@ public class SmileGenerator
                     "Internal encoding buffer length (%d) too short, must be at least %d",
                     _outputEnd, MIN_BUFFER_LENGTH));
         }
-        if (!Feature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
+        if (!SmileWriteFeature.CHECK_SHARED_NAMES.enabledIn(smileFeatures)) {
             _seenNames = null;
             _seenNameCount = -1;
         } else {
@@ -343,7 +236,7 @@ public class SmileGenerator
             _seenNameCount = 0;
         }
 
-        if (!Feature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
+        if (!SmileWriteFeature.CHECK_SHARED_STRING_VALUES.enabledIn(smileFeatures)) {
             _seenStringValues = null;
             _seenStringValueCount = -1;
         } else {
@@ -362,13 +255,13 @@ public class SmileGenerator
     public JsonGenerator writeHeader() throws JacksonException
     {
         int last = HEADER_BYTE_4;
-        if (Feature.CHECK_SHARED_NAMES.enabledIn(_formatFeatures)) {
+        if (SmileWriteFeature.CHECK_SHARED_NAMES.enabledIn(_formatFeatures)) {
             last |= SmileConstants.HEADER_BIT_HAS_SHARED_NAMES;
         }
-        if (Feature.CHECK_SHARED_STRING_VALUES.enabledIn(_formatFeatures)) {
+        if (SmileWriteFeature.CHECK_SHARED_STRING_VALUES.enabledIn(_formatFeatures)) {
             last |= SmileConstants.HEADER_BIT_HAS_SHARED_STRING_VALUES;
         }
-        if (!Feature.ENCODE_BINARY_AS_7BIT.enabledIn(_formatFeatures)) {
+        if (!SmileWriteFeature.ENCODE_BINARY_AS_7BIT.enabledIn(_formatFeatures)) {
             last |= SmileConstants.HEADER_BIT_HAS_RAW_BINARY;
         }
         _writeBytes(HEADER_BYTE_1, HEADER_BYTE_2, HEADER_BYTE_3, (byte) last);
@@ -483,21 +376,21 @@ public class SmileGenerator
     /**********************************************************************
      */
 
-    public SmileGenerator enable(Feature f) {
+    public SmileGenerator enable(SmileWriteFeature f) {
         _formatFeatures |= f.getMask();
         return this;
     }
 
-    public SmileGenerator disable(Feature f) {
+    public SmileGenerator disable(SmileWriteFeature f) {
         _formatFeatures &= ~f.getMask();
         return this;
     }
 
-    public final boolean isEnabled(Feature f) {
+    public final boolean isEnabled(SmileWriteFeature f) {
         return (_formatFeatures & f.getMask()) != 0;
     }
 
-    public SmileGenerator configure(Feature f, boolean state) {
+    public SmileGenerator configure(SmileWriteFeature f, boolean state) {
         if (state) {
             enable(f);
         } else {
@@ -1257,7 +1150,7 @@ public class SmileGenerator
             return writeNull();
         }
         _verifyValueWrite("write Binary value");
-        if (isEnabled(Feature.ENCODE_BINARY_AS_7BIT)) {
+        if (isEnabled(SmileWriteFeature.ENCODE_BINARY_AS_7BIT)) {
             _writeByte(TOKEN_MISC_BINARY_7BIT);
             _write7BitBinaryWithLength(data, offset, len);
         } else {
@@ -1279,7 +1172,7 @@ public class SmileGenerator
         }
         _verifyValueWrite("write Binary value");
         int missing;
-        if (isEnabled(Feature.ENCODE_BINARY_AS_7BIT)) {
+        if (isEnabled(SmileWriteFeature.ENCODE_BINARY_AS_7BIT)) {
             _writeByte(TOKEN_MISC_BINARY_7BIT);
             byte[] encodingBuffer = _ioContext.allocBase64Buffer();
             try {
@@ -1853,7 +1746,7 @@ public class SmileGenerator
             }
         }
         boolean wasClosed = _closed;
-        if (!wasClosed && isEnabled(Feature.WRITE_END_MARKER)) {
+        if (!wasClosed && isEnabled(SmileWriteFeature.WRITE_END_MARKER)) {
             _writeByte(BYTE_MARKER_END_OF_CONTENT);
         }
         _flushBuffer();
@@ -2143,7 +2036,7 @@ public class SmileGenerator
     private int _invalidSurrogateStart(int code, byte[] outBuf, int outputPtr)
         throws JacksonException
     {
-        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+        if (isEnabled(SmileWriteFeature.LENIENT_UTF_ENCODING)) {
             return _appendReplacementChar(outBuf, outputPtr);
         }
         // Will be called in two distinct cases: either first character is
@@ -2165,7 +2058,7 @@ code));
             byte[] outBuf, int outputPtr)
         throws JacksonException
     {
-        if (isEnabled(Feature.LENIENT_UTF_ENCODING)) {
+        if (isEnabled(SmileWriteFeature.LENIENT_UTF_ENCODING)) {
             return _appendReplacementChar(outBuf, outputPtr);
         }
         _reportError(String.format(

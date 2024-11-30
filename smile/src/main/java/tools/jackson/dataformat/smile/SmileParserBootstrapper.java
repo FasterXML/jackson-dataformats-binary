@@ -123,7 +123,7 @@ public class SmileParserBootstrapper
             hadSig = p.handleSignature(true, true);
         }
 
-        if (!hadSig && SmileParser.Feature.REQUIRE_HEADER.enabledIn(smileFeatures)) {
+        if (!hadSig && SmileReadFeature.REQUIRE_HEADER.enabledIn(smileFeatures)) {
             // Ok, first, let's see if it looks like plain JSON...
             String msg;
 

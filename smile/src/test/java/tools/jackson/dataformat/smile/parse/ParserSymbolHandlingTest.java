@@ -8,8 +8,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 /**
  * Unit tests for verifying that symbol handling works as planned, including
@@ -87,8 +87,8 @@ public class ParserSymbolHandlingTest
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = MAPPER.writer()
-                .without(SmileGenerator.Feature.WRITE_HEADER)
-                .with(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .without(SmileWriteFeature.WRITE_HEADER)
+                .with(SmileWriteFeature.CHECK_SHARED_NAMES)
                 .createGenerator(out);
         gen.writeStartArray();
         Random rnd = new Random(COUNT);
@@ -104,7 +104,7 @@ public class ParserSymbolHandlingTest
 
         // And verify
         JsonParser p = MAPPER.reader()
-            .without(SmileParser.Feature.REQUIRE_HEADER)
+            .without(SmileReadFeature.REQUIRE_HEADER)
             .createParser(json);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         rnd = new Random(COUNT);
@@ -142,7 +142,7 @@ public class ParserSymbolHandlingTest
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = MAPPER.writer()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
         gen.writeStartArray();
         for (String value : SHARED_SYMBOLS) {
@@ -165,7 +165,7 @@ public class ParserSymbolHandlingTest
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = MAPPER.writer()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
 
         gen.writeStartObject();
@@ -192,7 +192,7 @@ public class ParserSymbolHandlingTest
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
         JsonGenerator gen = MAPPER.writer()
-                .with(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .with(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .createGenerator(out);
         gen.writeStartObject();
 
@@ -311,7 +311,7 @@ public class ParserSymbolHandlingTest
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+                .enable(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
                 .build();
         MediaItem item = new MediaItem();
         Content c = new Content();
@@ -495,8 +495,8 @@ public class ParserSymbolHandlingTest
     private byte[] writeStringValues(boolean enableSharing, int COUNT) throws IOException
     {
         SmileFactory f = SmileFactory.builder()
-                .enable(SmileGenerator.Feature.WRITE_HEADER)
-                .configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, enableSharing)
+                .enable(SmileWriteFeature.WRITE_HEADER)
+                .configure(SmileWriteFeature.CHECK_SHARED_STRING_VALUES, enableSharing)
                 .build();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);

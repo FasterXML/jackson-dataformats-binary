@@ -8,15 +8,15 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonToken;
 
 import tools.jackson.databind.ObjectWriter;
-import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 public class SimpleBinaryParseTest extends AsyncTestBase
 {
     private final ObjectWriter W_RAW = _smileWriter(true)
-            .without(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
+            .without(SmileWriteFeature.ENCODE_BINARY_AS_7BIT);
 
     private final ObjectWriter W_7BIT = _smileWriter(true)
-            .with(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT);
+            .with(SmileWriteFeature.ENCODE_BINARY_AS_7BIT);
 
     final static int[] SIZES = new int[] {
         1, 2, 3, 4, 5, 7, 11,

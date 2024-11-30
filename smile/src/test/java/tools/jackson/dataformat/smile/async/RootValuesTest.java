@@ -9,7 +9,7 @@ import tools.jackson.dataformat.smile.*;
 public class RootValuesTest extends AsyncTestBase
 {
     private final SmileFactory F_REQ_HEADERS = SmileFactory.builder()
-            .enable(SmileParser.Feature.REQUIRE_HEADER)
+            .enable(SmileReadFeature.REQUIRE_HEADER)
             .build();
 
     public void testSimpleRootSequence() throws Exception

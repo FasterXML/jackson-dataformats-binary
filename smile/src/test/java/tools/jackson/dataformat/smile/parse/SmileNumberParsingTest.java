@@ -11,7 +11,8 @@ import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 public class SmileNumberParsingTest
@@ -437,9 +438,9 @@ public class SmileNumberParsingTest
 
         SmileFactory f = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder().maxNumberLength(Integer.MAX_VALUE).build())
-                .configure(SmileParser.Feature.REQUIRE_HEADER, false)
-                .configure(SmileGenerator.Feature.WRITE_HEADER, false)
-                .configure(SmileGenerator.Feature.WRITE_END_MARKER, false)
+                .configure(SmileReadFeature.REQUIRE_HEADER, false)
+                .configure(SmileWriteFeature.WRITE_HEADER, false)
+                .configure(SmileWriteFeature.WRITE_END_MARKER, false)
                 .build();
         SmileMapper mapper = new SmileMapper(f);
         try (JsonParser p = mapper.createParser(data)) {
