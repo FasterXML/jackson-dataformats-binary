@@ -180,13 +180,13 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    public JsonLocation currentTokenLocation() {
+    public TokenStreamLocation currentTokenLocation() {
         // !!! TODO
         return null;
     }
 
     @Override
-    public JsonLocation currentLocation() {
+    public TokenStreamLocation currentLocation() {
         // !!! TODO
         return null;
     }

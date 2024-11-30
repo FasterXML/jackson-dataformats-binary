@@ -280,12 +280,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public final JsonLocation currentTokenLocation()
+    public final TokenStreamLocation currentTokenLocation()
     {
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;
         // 2.4: used to be: _tokenInputTotal
-        return new JsonLocation(_ioContext.contentReference(),
+        return new TokenStreamLocation(_ioContext.contentReference(),
                 total, // bytes
                 -1, -1, (int) total); // char offset, line, column
     }
@@ -295,10 +295,10 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public final JsonLocation currentLocation()
+    public final TokenStreamLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.contentReference(),
+        return new TokenStreamLocation(_ioContext.contentReference(),
                 offset, // bytes
                 -1, -1, (int) offset); // char offset, line, column
     }
@@ -700,7 +700,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /**
      * Helper method used to encapsulate logic of including (or not) of
-     * "source reference" when constructing {@link JsonLocation} instances.
+     * "source reference" when constructing {@link TokenStreamLocation} instances.
      */
     protected ContentReference _sourceReference() {
         if (isEnabled(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)) {

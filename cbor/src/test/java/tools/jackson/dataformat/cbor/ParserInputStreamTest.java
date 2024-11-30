@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 
-import tools.jackson.core.JsonLocation;
+import tools.jackson.core.TokenStreamLocation;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -47,7 +47,7 @@ public class ParserInputStreamTest extends CBORTestBase
             parser.nextToken();
             parser.finishToken();
 
-            final JsonLocation loc = parser.currentLocation();
+            final TokenStreamLocation loc = parser.currentLocation();
             final long start = loc.getByteOffset();
             assertEquals(7999, start);
 

@@ -167,8 +167,8 @@ public final class CBORReadContext
      *   start marker was found
      */
     @Override
-    public JsonLocation startLocation(ContentReference srcRef) {
-        return new JsonLocation(srcRef, 1L, -1, -1);
+    public TokenStreamLocation startLocation(ContentReference srcRef) {
+        return new TokenStreamLocation(srcRef, 1L, -1, -1);
     }
 
     /*
