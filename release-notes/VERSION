@@ -27,3 +27,4 @@ implementations)
   `IonGenerator.Feature` as `IonWriteFeature`
 #528: JSTEP-8: rename `SmileParser.Feature` as `SmileReadFeature`,
   `SmileGenerator.Feature` as `SmileWriteFeature`
+- Minimum Java baseline: Java 17
