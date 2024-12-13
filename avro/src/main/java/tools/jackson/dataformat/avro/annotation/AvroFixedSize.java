@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro;
+package tools.jackson.dataformat.avro.annotation;
 
 import java.lang.annotation.*;
 

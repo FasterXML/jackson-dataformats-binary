@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 
 import tools.jackson.dataformat.avro.*;
+import tools.jackson.dataformat.avro.annotation.AvroFixedSize;
 
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;

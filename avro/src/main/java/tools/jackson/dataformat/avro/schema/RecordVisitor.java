@@ -16,8 +16,8 @@ import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.dataformat.avro.AvroFactory;
-import tools.jackson.dataformat.avro.AvroFixedSize;
 import tools.jackson.dataformat.avro.AvroWriteFeature;
+import tools.jackson.dataformat.avro.annotation.AvroFixedSize;
 import tools.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 public class RecordVisitor
