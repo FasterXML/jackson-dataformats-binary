@@ -1,14 +1,10 @@
-package com.fasterxml.jackson.dataformat.avro.failing;
+package com.fasterxml.jackson.dataformat.avro;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 // for [dataformats-binary#75] -- not legit, probably,
 // but included for now to see if there's something we
