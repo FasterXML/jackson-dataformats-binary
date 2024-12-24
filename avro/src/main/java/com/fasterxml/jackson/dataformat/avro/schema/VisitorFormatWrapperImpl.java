@@ -214,6 +214,12 @@ public class VisitorFormatWrapperImpl
             return v;
         }
 
+        if (type.hasRawClass(java.util.UUID.class)) {
+            UUIDVisitor v = new UUIDVisitor(this._logicalTypesEnabled);
+            _builder = v;
+            return v;
+        }
+
         StringVisitor v = new StringVisitor(_provider, type);
         _builder = v;
         return v;

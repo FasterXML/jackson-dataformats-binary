@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.19.0 (not yet released)
+
+#536: (avro) Add Logical Type support for `java.util.UUID`
+ (contributed by Michal F)
+
 2.18.2 (27-Nov-2024)
 
 No changes since 2.18.1

@@ -225,6 +225,8 @@ Michal Foksa (MichalFoksa@github)
 * Contributed #494: Avro Schema generation: allow mapping Java Enum properties to
   Avro String values
  (2.18.0)
+* Contributed #536: (avro) Add Logical Type support for `java.util.UUID`
+ (2.19.0)
 
 Hunter Herman (hherman1@github)
 
