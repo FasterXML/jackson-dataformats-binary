@@ -40,11 +40,6 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
             // should we construct JavaType for `Character.class` in case of primitive or... ?
             return AvroSchemaHelper.numericAvroSchema(NumberType.INT, _type);
         }
-        // [dataformats-binary#179]: need special help with UUIDs, to coerce into Binary
-        //   (could actually be
-        if (_type.hasRawClass(java.util.UUID.class)) {
-            return AvroSchemaHelper.createUUIDSchema();
-        }
         AnnotatedClass annotations = _provider.introspectClassAnnotations(_type);
         Schema schema = Schema.create(Schema.Type.STRING);
         // Stringable classes need to include the type

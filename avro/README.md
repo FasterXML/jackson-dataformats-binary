@@ -114,32 +114,34 @@ and that's about it, for now.
 
 ## Avro Logical Types
 
-Following is an extract from [Logical Types](http://avro.apache.org/docs/current/specification/_print/#logical-types) paragraph in 
-Avro schema specification:
+The following is an excerpt from the [Logical Types](https://avro.apache.org/docs/1.11.1/specification/#logical-types) section of
+the Avro schema specification:
+
 > A logical type is an Avro primitive or complex type with extra attributes to represent a derived type. The attribute 
-> `logicalType` is always be present for a logical type, and is a string with the name of one of the logical types 
-> defined by Avro specification.
+> `logicalType` must always be present for a logical type, and is a string with the name of one of the logical types 
+> listed later in this section. Other attributes may be defined for particular logical types.
 
-Generation of logical types for limited set of `java.time` classes is supported at the moment. See a table bellow. 
+Logical types are supported for a limited set of `java.time` classes and for 'java.util.UUID'. See the table below for more details.
 
-### Mapping to Logical Type
+### Mapping to Logical Types
 
-Mapping to Avro type and logical type works in few steps: 
-1. Serializer for particular Java type (or class) determines a Jackson type  where the Java type will be serialized into.
-2. `AvroSchemaGenerator` determines corresponding Avro type for that Jackson type.
-2. If logical type generation is enabled, then `logicalType` is determined for the above combination of Java type and 
-   Avro type. 
+Mapping to Avro type and logical type involves these steps:
+
+1. The serializer for a Java type identifies the Jackson type it will serialize into.
+2. The `AvroSchemaGenerator` maps that Jackson type to the corresponding Avro type.
+3. `logicalType` value is combination of Java type and Jackson type.
 
 #### Java type to Avro Logical Type mapping
 
-| Java type                     | Serialization type | Generated Avro schema with Avro type and logical type
-| ----------------------------- | ------------------ | -----------------------------------------------------
-| `java.time.OffsetDateTime`    | NumberType.LONG    | `{"type": "long", "logicalType": "timestamp-millis"}`
-| `java.time.ZonedDateTime`     | NumberType.LONG    | `{"type": "long", "logicalType": "timestamp-millis"}`
-| `java.time.Instant`           | NumberType.LONG    | `{"type": "long", "logicalType": "timestamp-millis"}`
-| `java.time.LocalDate`         | NumberType.INT     | `{"type": "int",  "logicalType": "date"}`
-| `java.time.LocalTime`         | NumberType.INT     | `{"type": "int",  "logicalType": "time-millis"}`
-| `java.time.LocalDateTime`     | NumberType.LONG    | `{"type": "long", "logicalType": "local-timestamp-millis"}`
+| Java type                  | Jackson type    | Generated Avro schema with logical type                                                           |
+|----------------------------|-----------------|---------------------------------------------------------------------------------------------------|
+| `java.time.OffsetDateTime` | NumberType.LONG | `{"type": "long", "logicalType": "timestamp-millis"}`                                             |
+| `java.time.ZonedDateTime`  | NumberType.LONG | `{"type": "long", "logicalType": "timestamp-millis"}`                                             |
+| `java.time.Instant`        | NumberType.LONG | `{"type": "long", "logicalType": "timestamp-millis"}`                                             |
+| `java.time.LocalDate`      | NumberType.INT  | `{"type": "int",  "logicalType": "date"}`                                                         |
+| `java.time.LocalTime`      | NumberType.INT  | `{"type": "int",  "logicalType": "time-millis"}`                                                  |
+| `java.time.LocalDateTime`  | NumberType.LONG | `{"type": "long", "logicalType": "local-timestamp-millis"}`                                       |
+| `java.util.UUID`  (2.19+) |                 | `{"type": "fixed", "name": "UUID", "namespace": "java.util", "size": 16, "logicalType" : "uuid"}` |
 
 _Provided Avro logical type generation is enabled._
 
