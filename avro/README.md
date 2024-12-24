@@ -141,7 +141,7 @@ Mapping to Avro type and logical type involves these steps:
 | `java.time.LocalDate`      | NumberType.INT  | `{"type": "int",  "logicalType": "date"}`                                                         |
 | `java.time.LocalTime`      | NumberType.INT  | `{"type": "int",  "logicalType": "time-millis"}`                                                  |
 | `java.time.LocalDateTime`  | NumberType.LONG | `{"type": "long", "logicalType": "local-timestamp-millis"}`                                       |
-| `java.util.UUID`           |                 | `{"type": "fixed", "name": "UUID", "namespace": "java.util", "size": 16, "logicalType" : "uuid"}` |
+| `java.util.UUID`  (2.19+) |                 | `{"type": "fixed", "name": "UUID", "namespace": "java.util", "size": 16, "logicalType" : "uuid"}` |
 
 _Provided Avro logical type generation is enabled._
 
