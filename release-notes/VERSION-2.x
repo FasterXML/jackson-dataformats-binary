@@ -16,7 +16,7 @@ Active maintainers:
 
 2.18.3 (not yet released)
 
-* Upgrade `org.apache.avro:avro` dependency to 1.11.4
+#539: (avro) Upgrade `org.apache.avro:avro` dependency to 1.11.4
 
 2.18.2 (27-Nov-2024)
 
@@ -24,7 +24,7 @@ No changes since 2.18.1
 
 2.18.1 (28-Oct-2024)
 
-#518: Should not read past end for CBOR string values
+#518: (cbor) Should not read past end for CBOR string values
  (contributed by Knut W)
 
 2.18.0 (26-Sep-2024)
