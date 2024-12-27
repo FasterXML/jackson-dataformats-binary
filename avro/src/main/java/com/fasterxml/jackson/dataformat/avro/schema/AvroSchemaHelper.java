@@ -286,7 +286,7 @@ public abstract class AvroSchemaHelper
      * @since 2.11
      */
     public static Schema createUUIDSchema() {
-        return Schema.createFixed("UUID", "", "java.util", 16);
+        return Schema.createFixed("UUID", null, "java.util", 16);
     }
 
     /**

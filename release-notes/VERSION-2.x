@@ -14,8 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.3 (not yet released)
+2.19.0 (not yet released)
 
+#536: (avro) Add Logical Type support for `java.util.UUID`
+ (contributed by Michal F)
 #539: (avro) Upgrade `org.apache.avro:avro` dependency to 1.11.4
 
 2.18.2 (27-Nov-2024)

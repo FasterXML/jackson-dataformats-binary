@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class StringVisitor extends JsonStringFormatVisitor.Base
     implements SchemaBuilder
@@ -37,13 +36,10 @@ public class StringVisitor extends JsonStringFormatVisitor.Base
     public Schema builtAvroSchema() {
         // Unlike Jackson, Avro treats characters as an int with the java.lang.Character class type.
         if (_type.hasRawClass(char.class) || _type.hasRawClass(Character.class)) {
-            return AvroSchemaHelper.numericAvroSchema(NumberType.INT, TypeFactory.defaultInstance().constructType(Character.class));
+            // should we construct JavaType for `Character.class` in case of primitive or... ?
+            return AvroSchemaHelper.numericAvroSchema(NumberType.INT, _type);
         }
-        // [dataformats-binary#179]: need special help with UUIDs, to coerce into Binary
-        //   (could actually be
-        if (_type.hasRawClass(java.util.UUID.class)) {
-            return AvroSchemaHelper.createUUIDSchema();
-        }
+
         BeanDescription bean = _provider.getConfig().introspectClassAnnotations(_type);
         Schema schema = Schema.create(Schema.Type.STRING);
         // Stringable classes need to include the type
