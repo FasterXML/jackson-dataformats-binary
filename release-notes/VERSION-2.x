@@ -14,6 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.3 (not yet released)
+
+* Upgrade `org.apache.avro:avro` dependency to 1.11.4
+
 2.18.2 (27-Nov-2024)
 
 No changes since 2.18.1
