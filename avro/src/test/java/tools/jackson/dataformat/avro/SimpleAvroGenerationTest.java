@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.StreamWriteFeature;
 
-import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.ObjectMapper;
 
 public class SimpleAvroGenerationTest extends AvroTestBase
