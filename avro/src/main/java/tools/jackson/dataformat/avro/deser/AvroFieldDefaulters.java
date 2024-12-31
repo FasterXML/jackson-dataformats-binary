@@ -41,12 +41,9 @@ public class AvroFieldDefaulters
             return new ScalarDefaults.StringDefaults(name, defaultAsNode.asText());
         case START_OBJECT:
             {
-                Iterator<Map.Entry<String,JsonNode>> it = defaultAsNode.fields();
                 List<AvroFieldReader> readers = new ArrayList<>();
-                while (it.hasNext()) {
-                    Map.Entry<String,JsonNode> entry = it.next();
-                    String propName = entry.getKey();
-                    readers.add(createDefaulter(propName, entry.getValue()));
+                for (Map.Entry<String,JsonNode> entry : defaultAsNode.properties()) {
+                    readers.add(createDefaulter(entry.getKey(), entry.getValue()));
                 }
                 return StructDefaults.createObjectDefaults(name, readers);
             }
