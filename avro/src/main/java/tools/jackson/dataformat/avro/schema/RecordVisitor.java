@@ -267,7 +267,7 @@ public class RecordVisitor
             if (matchingIndex == null) {
                 matchingIndex = schema.getIndexNamed(Type.INT.getName());
             }
-        } else if (defaultValue.isTextual()) {
+        } else if (defaultValue.isString()) {
             matchingIndex = schema.getIndexNamed(Type.STRING.getName());
             if (matchingIndex == null) {
                 // search for an enum

@@ -38,7 +38,7 @@ public class AvroFieldDefaulters
                 return new ScalarDefaults.FloatDefaults(name, defaultAsNode.asLong());
             }
         case VALUE_STRING:
-            return new ScalarDefaults.StringDefaults(name, defaultAsNode.asText());
+            return new ScalarDefaults.StringDefaults(name, defaultAsNode.asString());
         case START_OBJECT:
             {
                 List<AvroFieldReader> readers = new ArrayList<>();

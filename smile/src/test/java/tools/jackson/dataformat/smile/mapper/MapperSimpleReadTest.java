@@ -122,7 +122,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
         assertEquals(1, n2.size());
         JsonNode n3 = n2.get("");
         assertNotNull(n3);
-        assertTrue(n3.isTextual());
+        assertTrue(n3.isString());
     }
 
     // for [dataformat-smile#26]
