@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.dataformat.avro.annotation.Decimal;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
@@ -141,17 +143,26 @@ public class RecordVisitor
 
     protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional) throws JsonMappingException
     {
-        Schema writerSchema;
+        Schema writerSchema = null;
         // Check if schema for property is overridden
         AvroSchema schemaOverride = prop.getAnnotation(AvroSchema.class);
         if (schemaOverride != null) {
             Schema.Parser parser = new Schema.Parser();
             writerSchema = parser.parse(schemaOverride.value());
         } else {
-            AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
-            if (fixedSize != null) {
+            if (prop.getAnnotation(AvroFixedSize.class) != null) {
+                AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
-            } else {
+            }
+            if (_visitorWrapper.isLogicalTypesEnabled() && prop.getAnnotation(Decimal.class) != null) {
+                if (writerSchema == null) {
+                    writerSchema = Schema.create(Type.BYTES);
+                }
+                Decimal decimal = prop.getAnnotation(Decimal.class);
+                writerSchema = LogicalTypes.decimal(decimal.precision(), decimal.scale())
+                        .addToSchema(writerSchema);
+            }
+            if (writerSchema == null) {
                 JsonSerializer<?> ser = null;
 
                 // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
@@ -204,7 +215,7 @@ public class RecordVisitor
 
     /**
      * A union schema with a default value must always have the schema branch corresponding to the default value first, or Avro will print a
-     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Schema.Type#UNION UNION} schema and
+     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Type#UNION UNION} schema and
      * {@code defaultValue} is non-{@code null}, this finds the appropriate branch in the union and reorders the union so that it is first.
      *
      * @param schema
