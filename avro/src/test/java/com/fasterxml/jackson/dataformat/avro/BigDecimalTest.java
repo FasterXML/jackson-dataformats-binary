@@ -13,35 +13,55 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigDecimalTest extends AvroTestBase
-{
+public class BigDecimalTest extends AvroTestBase {
     private static final AvroMapper MAPPER = new AvroMapper();
 
-    static class BigDecimalWithDecimalAnnotationToBytesWrapper {
-        @JsonProperty(required = true) // field is made required only to have simpler avro schema
+    static class BigDecimalWithDecimalAnnotationWrapper {
+        @JsonProperty(required = true) // field is required to have simpler avro schema
         @Decimal(precision = 10, scale = 2)
-        public BigDecimal bigDecimalValue;
+        public final BigDecimal bigDecimalValue;
 
-        public BigDecimalWithDecimalAnnotationToBytesWrapper(BigDecimal bigDecimalValue) {
+        public BigDecimalWithDecimalAnnotationWrapper(BigDecimal bigDecimalValue) {
             this.bigDecimalValue = bigDecimalValue;
         }
     }
 
     @Test
-    public void testSchemaCreationOnBigDecimalWithDecimalAnnotationToBytes() throws JsonMappingException {
+    public void testSchemaCreation_withLogicalTypesDisabled_onBigDecimalWithDecimalAnnotation() throws JsonMappingException {
+        // GIVEN
+        AvroSchemaGenerator gen = new AvroSchemaGenerator()
+                .disableLogicalTypes();
+
+        // WHEN
+        MAPPER.acceptJsonFormatVisitor(BigDecimalWithDecimalAnnotationWrapper.class, gen);
+        // actualSchema = MAPPER.schemaFor(BigDecimalWithDecimalAnnotationWrapper.class) would be enough in this case
+        // because logical types are disabled by default.
+        final Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
+
+        System.out.println(BigDecimalWithDecimalAnnotationWrapper.class.getSimpleName() + " schema:" + actualSchema.toString(true));
+
+        // THEN
+        assertThat(actualSchema.getField("bigDecimalValue")).isNotNull();
+        Schema bigDecimalValue = actualSchema.getField("bigDecimalValue").schema();
+        assertThat(bigDecimalValue.getType()).isEqualTo(Schema.Type.STRING);
+        assertThat(bigDecimalValue.getLogicalType()).isNull();
+        assertThat(bigDecimalValue.getProp("java-class")).isEqualTo("java.math.BigDecimal");
+    }
+
+    @Test
+    public void testSchemaCreation_withLogicalTypesEnabled_onBigDecimalWithDecimalAnnotation() throws JsonMappingException {
         // GIVEN
         AvroSchemaGenerator gen = new AvroSchemaGenerator()
                 .enableLogicalTypes();
 
         // WHEN
-        MAPPER.acceptJsonFormatVisitor(BigDecimalWithDecimalAnnotationToBytesWrapper.class, gen);
+        MAPPER.acceptJsonFormatVisitor(BigDecimalWithDecimalAnnotationWrapper.class, gen);
         final Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
 
-        System.out.println(BigDecimalWithDecimalAnnotationToBytesWrapper.class.getSimpleName() + " schema:\n" + actualSchema.toString(true));
+        System.out.println(BigDecimalWithDecimalAnnotationWrapper.class.getSimpleName() + " schema:" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getField("bigDecimalValue")).isNotNull();
-
         Schema bigDecimalValue = actualSchema.getField("bigDecimalValue").schema();
         assertThat(bigDecimalValue.getType()).isEqualTo(Schema.Type.BYTES);
         assertThat(bigDecimalValue.getLogicalType()).isEqualTo(LogicalTypes.decimal(10, 2));
@@ -49,10 +69,10 @@ public class BigDecimalTest extends AvroTestBase
     }
 
     static class BigDecimalWithDecimalAnnotationToFixedWrapper {
-        @JsonProperty(required = true) // field is made required only to have simpler avro schema
+        @JsonProperty(required = true) // field is required to have simpler avro schema
         @AvroFixedSize(typeName = "BigDecimalWithDecimalAnnotationToFixedWrapper", size = 10)
         @Decimal(precision = 6, scale = 3)
-        public BigDecimal bigDecimalValue;
+        public final BigDecimal bigDecimalValue;
 
         public BigDecimalWithDecimalAnnotationToFixedWrapper(BigDecimal bigDecimalValue) {
             this.bigDecimalValue = bigDecimalValue;
@@ -60,7 +80,7 @@ public class BigDecimalTest extends AvroTestBase
     }
 
     @Test
-    public void testSchemaCreationOnBigDecimalWithDecimalAnnotationToFixed() throws JsonMappingException {
+    public void testSchemaCreation_withLogicalTypesEnabled_onBigDecimalWithDecimalAnnotationToFixed() throws JsonMappingException {
         // GIVEN
         AvroSchemaGenerator gen = new AvroSchemaGenerator()
                 .enableLogicalTypes();
@@ -69,7 +89,7 @@ public class BigDecimalTest extends AvroTestBase
         MAPPER.acceptJsonFormatVisitor(BigDecimalWithDecimalAnnotationToFixedWrapper.class, gen);
         final Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
 
-        System.out.println(BigDecimalWithDecimalAnnotationToFixedWrapper.class.getSimpleName() + " schema:\n" + actualSchema.toString(true));
+        System.out.println(BigDecimalWithDecimalAnnotationToFixedWrapper.class.getSimpleName() + " schema:" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getField("bigDecimalValue")).isNotNull();
@@ -78,30 +98,139 @@ public class BigDecimalTest extends AvroTestBase
         assertThat(bigDecimalValue.getType()).isEqualTo(Schema.Type.FIXED);
         assertThat(bigDecimalValue.getFixedSize()).isEqualTo(10);
         assertThat(bigDecimalValue.getLogicalType()).isEqualTo(LogicalTypes.decimal(6, 3));
-                assertThat(bigDecimalValue.getProp("java-class")).isNull();
+        assertThat(bigDecimalValue.getProp("java-class")).isNull();
     }
 
-    public static class NamedAmount {
+    static class BigDecimalAndName {
+        public final BigDecimal bigDecimalValue;
         public final String name;
-        public final BigDecimal amount;
 
         @JsonCreator
-        public NamedAmount(@JsonProperty("name") String name,
-                           @JsonProperty("amount") double amount) {
+        public BigDecimalAndName(
+                @JsonProperty("bigDecimalValue") BigDecimal bigDecimalValue,
+                @JsonProperty("name") String name) {
+            this.bigDecimalValue = bigDecimalValue;
             this.name = name;
-            this.amount = BigDecimal.valueOf(amount);
         }
     }
 
-    public void testSerializeBigDecimal() throws Exception {
-        AvroSchema schema = MAPPER.schemaFor(NamedAmount.class);
+    // By default, BigDecimal is serialized to string
+    public void testSerialization_toString() throws Exception {
+        // GIVEN
+        String schemaString = "{" +
+                "  \"type\" : \"record\"," +
+                "  \"name\" : \"BigDecimalAndName\"," +
+                "  \"namespace\" : \"test\"," +
+                "  \"fields\" : [ {" +
+                "    \"name\" : \"bigDecimalValue\"," +
+                "    \"type\" : {" +
+                "      \"type\" : \"string\"," +
+                "      \"java-class\" : \"java.math.BigDecimal\"" +
+                "    }" +
+                "  }, {" +
+                "    \"name\" : \"name\"," +
+                "    \"type\" : \"string\"" +
+                "  } ]" +
+                "}";
 
+        AvroSchema schema = MAPPER.schemaFrom(schemaString);
+
+        // WHEN
+        // serialize
         byte[] bytes = MAPPER.writer(schema)
-                .writeValueAsBytes(new NamedAmount("peter", 42.0));
+                .writeValueAsBytes(new BigDecimalAndName(BigDecimal.valueOf(42.2), "peter"));
 
-        NamedAmount result = MAPPER.reader(schema).forType(NamedAmount.class).readValue(bytes);
+        // deserialize
+        BigDecimalAndName result = MAPPER.reader(schema)
+                .forType(BigDecimalAndName.class)
+                .readValue(bytes);
 
+        // THEN
+        assertEquals(BigDecimal.valueOf(42.2), result.bigDecimalValue);
         assertEquals("peter", result.name);
-        assertEquals(BigDecimal.valueOf(42.0), result.amount);
     }
+
+    public void testSerialization_toBytesWithLogicalTypeDecimal() throws Exception {
+        // GIVEN
+        String schemaString = "{" +
+                "  \"type\" : \"record\"," +
+                "  \"name\" : \"BigDecimalAndName\"," +
+                "  \"namespace\" : \"test\"," +
+                "  \"fields\" : [ {" +
+                "    \"name\" : \"bigDecimalValue\"," +
+                "    \"type\" : [ \"null\", {" +
+                "      \"type\" : \"bytes\"," +
+                "      \"logicalType\" : \"decimal\"," +
+                "      \"precision\" : 10," +
+                "      \"scale\" : 2" +
+                "    } ]" +
+                "  }, {" +
+                "    \"name\" : \"name\"," +
+                "    \"type\" : [ \"null\", \"string\" ]" +
+                "  } ]" +
+                "}";
+
+        AvroSchema schema = MAPPER.schemaFrom(schemaString);
+
+        // WHEN
+        // serialize
+        byte[] bytes = MAPPER.writer(schema)
+                .writeValueAsBytes(new BigDecimalAndName(
+                        new BigDecimal("42.2"),
+                        "peter"));
+
+        // deserialize
+        BigDecimalAndName result = MAPPER.reader(schema)
+                .forType(BigDecimalAndName.class)
+                .readValue(bytes);
+
+        // THEN
+        // Because scale of decimal logical type is 2, result is with 2 decimal places
+        assertEquals(new BigDecimal("42.20"), result.bigDecimalValue);
+        assertEquals("peter", result.name);
+    }
+
+    public void testSerialization_toFixedWithLogicalTypeDecimal() throws Exception {
+        // GIVEN
+        String schemaString = "{" +
+                "  \"type\" : \"record\"," +
+                "  \"name\" : \"BigDecimalAndName\"," +
+                "  \"namespace\" : \"com.fasterxml.jackson.dataformat.avro.BigDecimalTest\"," +
+                "  \"fields\" : [ {" +
+                "    \"name\" : \"bigDecimalValue\"," +
+                "    \"type\" : [ \"null\", {" +
+                "      \"type\" : \"fixed\"," +
+                "      \"name\" : \"BigDecimalValueType\"," +
+                "      \"namespace\" : \"\"," +
+                "      \"size\" : 10," +
+                "      \"logicalType\" : \"decimal\"," +
+                "      \"precision\" : 10," +
+                "      \"scale\" : 2" +
+                "    } ]" +
+                "  }, {" +
+                "    \"name\" : \"name\"," +
+                "    \"type\" : [ \"null\", \"string\" ]" +
+                "  } ]" +
+                "}";
+
+        AvroSchema schema = MAPPER.schemaFrom(schemaString);
+
+        // WHEN
+        // serialize
+        byte[] bytes = MAPPER.writer(schema)
+                .writeValueAsBytes(new BigDecimalAndName(
+                        new BigDecimal("42.2"),
+                        "peter"));
+
+        // deserialize
+        BigDecimalAndName result = MAPPER.reader(schema)
+                .forType(BigDecimalAndName.class)
+                .readValue(bytes);
+
+        // THEN
+        // Because scale of decimal logical type is 2, result is with 2 decimal places
+        assertEquals(new BigDecimal("42.20"), result.bigDecimalValue);
+        assertEquals("peter", result.name);
+    }
+
 }

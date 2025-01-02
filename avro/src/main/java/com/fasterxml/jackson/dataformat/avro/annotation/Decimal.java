@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Instructs the {@link com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator AvroSchemaGenerator}
+ * When generate logical types is enabled, annotation instructs the
+ * {@link com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator AvroSchemaGenerator}
  * to declare the annotated property's logical type as "decimal" ({@link org.apache.avro.LogicalTypes.Decimal}).
  * By default, the Avro type is "bytes" ({@link org.apache.avro.Schema.Type#BYTES}), unless the field is also
  * annotated with {@link com.fasterxml.jackson.dataformat.avro.AvroFixedSize}, in which case the Avro type
@@ -29,6 +30,6 @@ public @interface Decimal {
     /**
      * Scale must be zero or a positive integer less than or equal to the precision.
      */
-    int scale() default 0;
+    int scale();
 
 }

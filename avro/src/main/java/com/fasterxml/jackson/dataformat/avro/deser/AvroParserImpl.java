@@ -583,6 +583,34 @@ public abstract class AvroParserImpl
 
     /*
     /**********************************************************
+    /* Methods for AvroReadContext implementations: decimals
+    /**********************************************************
+     */
+
+    public JsonToken decodeBytesDecimal(int scale) throws IOException {
+        decodeBytes();
+        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numTypesValid = NR_BIGDECIMAL;
+        return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    public void skipBytesDecimal() throws IOException {
+        skipBytes();
+    }
+
+    public JsonToken decodeFixedDecimal(int scale, int size) throws IOException {
+        decodeFixed(size);
+        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numTypesValid = NR_BIGDECIMAL;
+        return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    public void skipFixedDecimal(int size) throws IOException {
+        skipFixed(size);
+    }
+
+    /*
+    /**********************************************************
     /* Methods for AvroReadContext impls, other
     /**********************************************************
      */
