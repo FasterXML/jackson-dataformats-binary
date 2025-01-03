@@ -28,8 +28,8 @@ public class Fuzz434_65268_65274_NPETest
         try (InputStream in = new ByteArrayInputStream(doc)) {
            try (JsonParser p = ION_MAPPER.createParser(in)) {
                assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-               p.getText();
-               assertNull(p.nextTextValue());
+               p.getString();
+               assertNull(p.nextStringValue());
                assertEquals(JsonToken.VALUE_NULL, p.currentToken());
                assertNull(p.getNumberType());
            }

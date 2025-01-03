@@ -99,7 +99,7 @@ public class GeneratorShortStringTest extends CBORTestBase
     {
         try (JsonParser p = cborParser(encoded)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(value, p.getText());
+            assertEquals(value, p.getString());
             assertNull(p.nextToken());
         }
     }

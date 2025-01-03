@@ -89,7 +89,7 @@ public class ParserLocationTest
         for (int i = 0; i < COUNT; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             assertEquals(6 + i*7, p.currentLocation().getByteOffset());
-            assertEquals("abc123", p.getText());
+            assertEquals("abc123", p.getString());
         }
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertEquals(SIZE+6, p.currentLocation().getByteOffset());

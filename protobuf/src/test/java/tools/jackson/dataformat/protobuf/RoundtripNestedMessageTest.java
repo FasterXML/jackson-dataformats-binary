@@ -165,7 +165,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
         assertEquals("emails", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("foo@gmail.com", p.getText());
+        assertEquals("foo@gmail.com", p.getString());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
         assertToken(JsonToken.END_OBJECT, p.nextToken());

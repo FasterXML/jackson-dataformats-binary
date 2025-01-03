@@ -23,7 +23,7 @@ public class CBORFuzz_35979_StringValueTest extends CBORTestBase
         final byte[] input = readResource("/data/clusterfuzz-cbor-35979.cbor");
         try (JsonParser p = MAPPER.createParser(input)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            p.getText();
+            p.getString();
             fail("Should not pass");
         } catch (StreamReadException e) {
             verifyException(e, "Truncated UTF-8 character in Unicode String value (256 bytes)");

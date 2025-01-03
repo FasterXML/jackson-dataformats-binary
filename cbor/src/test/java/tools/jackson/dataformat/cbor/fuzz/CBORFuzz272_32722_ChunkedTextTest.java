@@ -24,7 +24,7 @@ public class CBORFuzz272_32722_ChunkedTextTest extends CBORTestBase
         try (JsonParser p = MAPPER.createParser(input)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                p.getText();
+                p.getString();
                 fail("Should not pass, invalid content");
             } catch (StreamReadException e) {
                 verifyException(e, "Mismatched chunk in chunked content");

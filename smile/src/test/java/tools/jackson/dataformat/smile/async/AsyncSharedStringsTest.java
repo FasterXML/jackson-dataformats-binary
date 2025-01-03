@@ -357,13 +357,13 @@ public class AsyncSharedStringsTest
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("z_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("end", parser.getText());
+        assertEquals("end", parser.getString());
 
         // This one fails...
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("a_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("start", parser.getText());
+        assertEquals("start", parser.getString());
 
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
         parser.close();
@@ -405,7 +405,7 @@ public class AsyncSharedStringsTest
         assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
-        assertEquals("foo", parser.getText());
+        assertEquals("foo", parser.getString());
         parser.close();
 
         ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
@@ -443,7 +443,7 @@ public class AsyncSharedStringsTest
         assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
-        assertEquals("bar", parser.getText());
+        assertEquals("bar", parser.getString());
 
         parser.close();
     }

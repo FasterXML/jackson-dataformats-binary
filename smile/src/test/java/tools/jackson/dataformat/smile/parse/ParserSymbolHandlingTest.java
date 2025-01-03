@@ -155,7 +155,7 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (String value : SHARED_SYMBOLS) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(value, p.getText());
+            assertEquals(value, p.getString());
         }
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();
@@ -182,7 +182,7 @@ public class ParserSymbolHandlingTest
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("a"+i, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(SHARED_SYMBOLS[i], p.getText());
+            assertEquals(SHARED_SYMBOLS[i], p.getString());
         }
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
@@ -242,11 +242,11 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("uri", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("g", p.getText());
+        assertEquals("g", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("title", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("J", p.getText());
+        assertEquals("J", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("width", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -255,24 +255,24 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("format", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("v", p.getText());
+        assertEquals("v", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("persons", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("B", p.getText());
+        assertEquals("B", p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("S", p.getText());
+        assertEquals("S", p.getString());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("player", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("JAVA", p.getText());
+        assertEquals("JAVA", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("copyright", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("NONE", p.getText());
+        assertEquals("NONE", p.getString());
 
         assertToken(JsonToken.END_OBJECT, p.nextToken()); // media
 
@@ -286,11 +286,11 @@ public class ParserSymbolHandlingTest
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("uri", p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("h", p.getText());
+            assertEquals("h", p.getString());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("title", p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("J", p.getText());
+            assertEquals("J", p.getString());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("width", p.currentName());
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -360,13 +360,13 @@ public class ParserSymbolHandlingTest
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("z_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("end", parser.getText());
+        assertEquals("end", parser.getString());
 
         // This one fails...
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("a_aaaabbbbccccddddee", parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("start", parser.getText());
+        assertEquals("start", parser.getString());
 
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
         parser.close();
@@ -405,7 +405,7 @@ public class ParserSymbolHandlingTest
         assertEquals("doc.payload.test_record_main.string_not_analyzed__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
-        assertEquals("foo", parser.getText());
+        assertEquals("foo", parser.getString());
         parser.close();
 
         ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
@@ -443,7 +443,7 @@ public class ParserSymbolHandlingTest
         assertEquals("doc.payload.test_record_main.string_not_analyzed2__s", parser.currentName());
         token = parser.nextToken();
         assertToken(JsonToken.VALUE_STRING, token);
-        assertEquals("bar", parser.getText());
+        assertEquals("bar", parser.getString());
 
         parser.close();
     }
@@ -519,7 +519,7 @@ public class ParserSymbolHandlingTest
         for (int i = 0; i < COUNT; ++i) {
             String str = generateString(rnd.nextInt());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(str, p.getText());
+            assertEquals(str, p.getString());
         }
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();

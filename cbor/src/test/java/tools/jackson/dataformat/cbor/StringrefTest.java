@@ -61,14 +61,14 @@ public class StringrefTest extends CBORTestBase
         String nameStr = parser.currentName();
         assertEquals("name", nameStr);
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("Cocktail", parser.getText());
+        assertEquals("Cocktail", parser.getString());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
 
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertSame(nameStr, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("Bath", parser.getText());
+        assertEquals("Bath", parser.getString());
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertSame(countStr, parser.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
@@ -83,7 +83,7 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertSame(nameStr, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("Food", parser.getText());
+        assertEquals("Food", parser.getString());
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertSame(countStr, parser.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
@@ -151,14 +151,14 @@ public class StringrefTest extends CBORTestBase
         String nameStr = parser.currentName();
         assertEquals("name", nameStr);
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("Cocktail", parser.getText());
+        assertEquals("Cocktail", parser.getString());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
 
         assertToken(JsonToken.START_OBJECT, parser.nextToken());
         assertTrue(parser.nextName(new SerializedString("name")));
         assertSame(nameStr, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("Bath", parser.getText());
+        assertEquals("Bath", parser.getString());
         assertTrue(parser.nextName(new SerializedString("count")));
         assertSame(countStr, parser.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
@@ -173,7 +173,7 @@ public class StringrefTest extends CBORTestBase
         assertTrue(parser.nextName(new SerializedString("name")));
         assertSame(nameStr, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("Food", parser.getText());
+        assertEquals("Food", parser.getString());
         assertTrue(parser.nextName(new SerializedString("count")));
         assertSame(countStr, parser.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
@@ -718,33 +718,33 @@ public class StringrefTest extends CBORTestBase
 
     private String verifyNextTokenString(String expected, CBORParser parser) throws IOException {
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals(expected, parser.getText());
-        return parser.getText();
+        assertEquals(expected, parser.getString());
+        return parser.getString();
     }
 
     private void verifyNextTokenStringRef(String expected, CBORParser parser) throws IOException {
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertSame(expected, parser.getText());
+        assertSame(expected, parser.getString());
     }
 
     private void verifyNextTokenStringNotRef(String expected, CBORParser parser) throws IOException {
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals(expected, parser.getText());
-        assertNotSame(expected, parser.getText());
+        assertEquals(expected, parser.getString());
+        assertNotSame(expected, parser.getString());
     }
 
     private String verifyNextTextValue(String expected, CBORParser parser) throws IOException {
-        assertEquals(expected, parser.nextTextValue());
-        return parser.getText();
+        assertEquals(expected, parser.nextStringValue());
+        return parser.getString();
     }
 
     private void verifyNextTextValueRef(String expected, CBORParser parser) throws IOException {
-        assertSame(expected, parser.nextTextValue());
+        assertSame(expected, parser.nextStringValue());
     }
 
     private void verifyNextTextValueNotRef(String expected, CBORParser parser) throws IOException {
-        assertEquals(expected, parser.nextTextValue());
-        assertNotSame(expected, parser.getText());
+        assertEquals(expected, parser.nextStringValue());
+        assertNotSame(expected, parser.getString());
     }
 
     private byte[] verifyNextTokenBinary(String expected, CBORParser parser) throws IOException {

@@ -75,7 +75,7 @@ public class BasicParserTest extends CBORTestBase
 
         JsonParser p = cborParser(b);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(MEDIUM, p.getText());
+        assertEquals(MEDIUM, p.getString());
         assertNull(p.nextToken());
         p.close();
     }
@@ -93,12 +93,12 @@ public class BasicParserTest extends CBORTestBase
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(1, p.currentLocation().getByteOffset());
-        p.getText(); // fully read token.
+        p.getString(); // fully read token.
         assertEquals(11, p.currentLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(12, p.currentLocation().getByteOffset());
-        p.getText();
+        p.getString();
         assertEquals(22, p.currentLocation().getByteOffset());
 
         assertNull(p.nextToken());
@@ -129,7 +129,7 @@ public class BasicParserTest extends CBORTestBase
         JsonParser p = cborParser(new ByteArrayInputStream(b));
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        String actual = p.getText();
+        String actual = p.getString();
 
         final int end = Math.min(LONG.length(), actual.length());
         for (int i = 0; i < end; ++i) {
@@ -141,7 +141,7 @@ public class BasicParserTest extends CBORTestBase
 
         assertEquals(LONG.length(), actual.length());
 
-        assertEquals(LONG, p.getText());
+        assertEquals(LONG, p.getString());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -204,7 +204,7 @@ public class BasicParserTest extends CBORTestBase
         // and then with actual full parsing/access
         p = cborParser(new ThrottledInputStream(new ByteArrayInputStream(b), 3));
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        String actual = p.getText();
+        String actual = p.getString();
         assertNull(p.nextToken());
         assertEquals(input.length(), actual.length());
         if (!input.equals(actual)) {
@@ -217,7 +217,7 @@ public class BasicParserTest extends CBORTestBase
         p = cborParser(new ByteArrayInputStream(b));
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         StringWriter w = new StringWriter();
-        int len = p.getText(w);
+        int len = p.getString(w);
         actual = w.toString();
         assertEquals(len, actual.length());
         assertEquals(input.length(), actual.length());
@@ -250,8 +250,8 @@ public class BasicParserTest extends CBORTestBase
         assertEquals("a", parser.currentName());
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("a", parser.currentName());
-        assertEquals("b", parser.getText());
-        assertEquals(1, parser.getTextLength());
+        assertEquals("b", parser.getString());
+        assertEquals(1, parser.getStringLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
         // For fun, release

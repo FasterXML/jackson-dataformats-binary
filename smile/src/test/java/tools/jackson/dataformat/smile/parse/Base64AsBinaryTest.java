@@ -32,7 +32,7 @@ public class Base64AsBinaryTest extends BaseTestForSmile
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(ENCODED_BASE64, p.getText());
+            assertEquals(ENCODED_BASE64, p.getString());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
         }

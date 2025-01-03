@@ -125,7 +125,7 @@ public class DecoderOverAvroParser extends Decoder {
     @Override
     public String readString() throws IOException {
         nextValue();
-        String value = _parser.getText();
+        String value = _parser.getString();
         _parser.clearCurrentToken();
         return value;
     }

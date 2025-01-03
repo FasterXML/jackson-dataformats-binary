@@ -60,27 +60,27 @@ public class SymbolTable312Test extends BaseTestForSmile
             assertNameToken(p.nextToken());
             _assertNullStrings(FIELD1, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("a", p.getText());
+            assertEquals("a", p.getString());
 
             assertNameToken(p.nextToken());
             _assertNullStrings(FIELD2, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("b", p.getText());
+            assertEquals("b", p.getString());
 
             assertNameToken(p.nextToken());
             _assertNullStrings(FIELD3, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("c", p.getText());
+            assertEquals("c", p.getString());
 
             assertNameToken(p.nextToken());
             _assertNullStrings(FIELD4, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("d", p.getText());
+            assertEquals("d", p.getString());
 
             assertNameToken(p.nextToken());
             _assertNullStrings(FIELD5, p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("e", p.getText());
+            assertEquals("e", p.getString());
 
             assertToken(JsonToken.END_OBJECT, p.nextToken());
         }

@@ -22,7 +22,7 @@ public class CBORFuzz464_65722_IOOBETest extends CBORTestBase
             try {
                 assertToken(JsonToken.VALUE_STRING, p.nextToken());
                 // oddly enough `getText()` didn't do it but this:
-                p.getTextLength();
+                p.getStringLength();
                 fail("Should not reach here (invalid input)");
             } catch (StreamReadException e) {
                 verifyException(e, "Unexpected end-of-input in VALUE_STRING");

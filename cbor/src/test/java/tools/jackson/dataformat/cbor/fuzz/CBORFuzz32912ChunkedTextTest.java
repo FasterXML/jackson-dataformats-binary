@@ -22,7 +22,7 @@ public class CBORFuzz32912ChunkedTextTest extends CBORTestBase
             // Won't fail immediately
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should not get String value but exception, got: ["+str+"]");
             } catch (UnexpectedEndOfInputException e) {
                 verifyException(e, "Unexpected end-of-input in VALUE_STRING");

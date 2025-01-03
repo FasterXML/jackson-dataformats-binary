@@ -223,7 +223,7 @@ public abstract class NonBlockingParserBase
      */
 
     @Override
-    public boolean hasTextCharacters()
+    public boolean hasStringCharacters()
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             // yes; is or can be made available efficiently as char[]
@@ -246,7 +246,7 @@ public abstract class NonBlockingParserBase
      * Method can be called for any event.
      */
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
@@ -266,7 +266,7 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public char[] getTextCharacters() throws JacksonException
+    public char[] getStringCharacters() throws JacksonException
     {
         switch (currentTokenId()) {
         case JsonTokenId.ID_STRING:
@@ -285,7 +285,7 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public int getTextLength() throws JacksonException
+    public int getStringLength() throws JacksonException
     {
         switch (currentTokenId()) {
         case JsonTokenId.ID_STRING:
@@ -308,12 +308,12 @@ public abstract class NonBlockingParserBase
     }
 
     @Override
-    public int getTextOffset() throws JacksonException {
+    public int getStringOffset() throws JacksonException {
         return 0;
     }
 
     @Override
-    public int getText(Writer w) throws JacksonException
+    public int getString(Writer w) throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             try {
@@ -326,7 +326,7 @@ public abstract class NonBlockingParserBase
             _reportError("Current token not available: can not call this method");
         }
         // otherwise default handling works fine
-        return super.getText(w);
+        return super.getString(w);
     }
 
     /*

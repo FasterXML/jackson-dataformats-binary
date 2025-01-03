@@ -86,14 +86,14 @@ public class BasicParserTest extends BaseTestForSmile
         assertNull(p.currentToken());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("abc", p.getText());
+        assertEquals("abc", p.getString());
 
         StringWriter w = new StringWriter();
-        assertEquals(3, p.getText(w));
+        assertEquals(3, p.getString(w));
         assertEquals("abc", w.toString());
 
-        assertEquals(0, p.getTextOffset());
-        assertEquals(3, p.getTextLength());
+        assertEquals(0, p.getStringOffset());
+        assertEquals(3, p.getStringLength());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();
     }
@@ -109,7 +109,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertEquals("", p.currentName());
 
         StringWriter w = new StringWriter();
-        assertEquals(0, p.getText(w));
+        assertEquals(0, p.getString(w));
         assertEquals("", w.toString());
 
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
@@ -125,7 +125,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("abc", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("", p.getText());
+        assertEquals("", p.getString());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -138,11 +138,11 @@ public class BasicParserTest extends BaseTestForSmile
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("", p.getText());
+        assertEquals("", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("", p.getText());
+        assertEquals("", p.getString());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -160,7 +160,7 @@ public class BasicParserTest extends BaseTestForSmile
         try (JsonParser p = _smileParser(data)) {
             assertNull(p.currentToken());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-    	        assertEquals(LONG, p.getText());
+    	        assertEquals(LONG, p.getString());
     	        assertNull(p.nextToken());
         }
     }
@@ -178,10 +178,10 @@ public class BasicParserTest extends BaseTestForSmile
         JsonParser p = _smileParser(data);
         assertNull(p.currentToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(LONG, p.getText());
+        assertEquals(LONG, p.getString());
 
         StringWriter w = new StringWriter();
-        assertEquals(LONG.length(), p.getText(w));
+        assertEquals(LONG.length(), p.getString(w));
         assertEquals(LONG, w.toString());
 
         assertNull(p.nextToken());
@@ -198,7 +198,7 @@ public class BasicParserTest extends BaseTestForSmile
         };
         try (JsonParser p = _smileParser(data)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("data", p.getText());
+            assertEquals("data", p.getString());
             assertNull(p.nextToken());
         }
     }
@@ -212,7 +212,7 @@ public class BasicParserTest extends BaseTestForSmile
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("abc", p.currentName());
-        assertEquals("abc", p.getText());
+        assertEquals("abc", p.getString());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(13, p.getIntValue());
     	    assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -228,7 +228,7 @@ public class BasicParserTest extends BaseTestForSmile
 
     	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("a", p.currentName());
-    	assertEquals("a", p.getText());
+    	assertEquals("a", p.getString());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	assertEquals(8, p.getIntValue());
 
@@ -302,7 +302,7 @@ public class BasicParserTest extends BaseTestForSmile
         p = _smileParser(data);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(uc, p.getText());
+        assertEquals(uc, p.getString());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -326,7 +326,7 @@ public class BasicParserTest extends BaseTestForSmile
         p = _smileParser(data);
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(longer, p.getText());
+        assertEquals(longer, p.getString());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertNull(p.nextToken());
         p.close();
@@ -454,19 +454,19 @@ public class BasicParserTest extends BaseTestForSmile
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
+        str = new String(p.getStringCharacters(), p.getStringOffset(), p.getStringLength());
         assertEquals("key", str);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
+        str = new String(p.getStringCharacters(), p.getStringOffset(), p.getStringLength());
         assertEquals("value", str);
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
+        str = new String(p.getStringCharacters(), p.getStringOffset(), p.getStringLength());
         assertEquals("key", str);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        str = new String(p.getTextCharacters(), p.getTextOffset(), p.getTextLength());
+        str = new String(p.getStringCharacters(), p.getStringOffset(), p.getStringLength());
         assertEquals("value", str);
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
@@ -634,7 +634,7 @@ public class BasicParserTest extends BaseTestForSmile
     protected void verifyPropertyName(JsonParser p, String expName)
         throws IOException
     {
-        assertEquals(expName, p.getText());
+        assertEquals(expName, p.getString());
         assertEquals(expName, p.currentName());
     }
 
@@ -642,7 +642,7 @@ public class BasicParserTest extends BaseTestForSmile
         throws IOException
     {
         // First, via textual
-        assertEquals(String.valueOf(expValue), p.getText());
+        assertEquals(String.valueOf(expValue), p.getString());
     }
 
 }

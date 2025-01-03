@@ -206,13 +206,13 @@ public abstract class AvroParser extends ParserBase
      */
 
     @Override
-    public abstract boolean hasTextCharacters();
+    public abstract boolean hasStringCharacters();
 
     @Override
-    public abstract String getText() throws JacksonException;
+    public abstract String getString() throws JacksonException;
 
     @Override
-    public abstract int getText(Writer writer) throws JacksonException;
+    public abstract int getString(Writer writer) throws JacksonException;
 
     @Override
     public String currentName() throws JacksonException {
@@ -220,19 +220,19 @@ public abstract class AvroParser extends ParserBase
     }
 
     @Override
-    public char[] getTextCharacters() throws JacksonException {
-        String text = getText();
+    public char[] getStringCharacters() throws JacksonException {
+        String text = getString();
         return (text == null) ? null : text.toCharArray();
     }
 
     @Override
-    public int getTextLength() throws JacksonException {
-        String text = getText();
+    public int getStringLength() throws JacksonException {
+        String text = getString();
         return (text == null) ? 0 : text.length();
     }
 
     @Override
-    public int getTextOffset() throws JacksonException {
+    public int getStringOffset() throws JacksonException {
         return 0;
     }
 
@@ -258,7 +258,7 @@ public abstract class AvroParser extends ParserBase
             }
             @SuppressWarnings("resource")
             ByteArrayBuilder builder = _getByteArrayBuilder();
-            _decodeBase64(getText(), builder, variant);
+            _decodeBase64(getString(), builder, variant);
             _binaryValue = builder.toByteArray();
         }
         return _binaryValue;

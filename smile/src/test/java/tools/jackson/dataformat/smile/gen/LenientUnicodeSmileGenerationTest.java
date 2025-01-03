@@ -109,7 +109,7 @@ public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
         }
         try (JsonParser p = MAPPER.createParser(bytes.toByteArray())) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(expText, p.getText());
+            assertEquals(expText, p.getString());
             assertNull(p.nextToken());
         }
     }

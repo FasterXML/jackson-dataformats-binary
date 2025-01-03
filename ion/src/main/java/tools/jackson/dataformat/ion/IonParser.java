@@ -129,7 +129,7 @@ public class IonParser
     }
 
     @Override
-    public boolean hasTextCharacters() {
+    public boolean hasStringCharacters() {
         //This is always false because getText() is more efficient than getTextCharacters().
         // See the javadoc for JsonParser.hasTextCharacters().
         return false;
@@ -179,7 +179,7 @@ public class IonParser
      */
 
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
@@ -213,19 +213,19 @@ public class IonParser
     }
 
     @Override
-    public char[] getTextCharacters() throws JacksonException {
-        String str = getText();
+    public char[] getStringCharacters() throws JacksonException {
+        String str = getString();
         return (str == null) ? null : str.toCharArray();
     }
 
     @Override
-    public int getTextLength() throws JacksonException {
-        String str = getText();
+    public int getStringLength() throws JacksonException {
+        String str = getString();
         return (str == null) ? 0 : str.length();
     }
 
     @Override
-    public int getTextOffset() throws JacksonException {
+    public int getStringOffset() throws JacksonException {
         return 0;
     }
 

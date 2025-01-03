@@ -180,7 +180,7 @@ public abstract class AvroParserImpl
      */
 
     @Override
-    public abstract String nextTextValue() throws JacksonException;
+    public abstract String nextStringValue() throws JacksonException;
 
     @Override
     public final void _initSchema(AvroSchema schema) throws JacksonException {
@@ -304,7 +304,7 @@ public abstract class AvroParserImpl
         // Bounds/range checks would be tricky here, so let's not bother even trying...
         /*
         if (value < -Float.MAX_VALUE || value > MAX_FLOAT_D) {
-            _reportError("Numeric value ("+getText()+") out of range of Java float");
+            _reportError("Numeric value ("+getString()+") out of range of Java float");
         }
         */
         return _numberFloat;
@@ -333,7 +333,7 @@ public abstract class AvroParserImpl
             // Let's verify it's lossless conversion by simple roundtrip
             int result = (int) _numberLong;
             if (((long) result) != _numberLong) {
-                _reportError("Numeric value ("+getText()+") out of range of int");
+                _reportError("Numeric value ("+getString()+") out of range of int");
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {

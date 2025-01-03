@@ -114,18 +114,18 @@ public class WriteStringsTest extends ProtobufTestBase
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
 
         // Note: nulls are never explicitly written, but simple lead to omission of the field...
-        assertEquals("last", p.getText());
+        assertEquals("last", p.getString());
         StringWriter w = new StringWriter();
-        assertEquals(4, p.getText(w));
+        assertEquals(4, p.getString(w));
         assertEquals("last", w.toString());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        ch = p.getTextCharacters();
-        String str = new String(ch, p.getTextOffset(), p.getTextLength());
+        ch = p.getStringCharacters();
+        String str = new String(ch, p.getStringOffset(), p.getStringLength());
         assertEquals(longName, str);
 
         w = new StringWriter();
-        assertEquals(longName.length(), p.getText(w));
+        assertEquals(longName.length(), p.getString(w));
         assertEquals(longName, w.toString());
 
         assertToken(JsonToken.END_OBJECT, p.nextToken());

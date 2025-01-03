@@ -61,24 +61,24 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertEquals(NAME_WITH_QUOTES, p.getText());
+        assertEquals(NAME_WITH_QUOTES, p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("a", p.getText());
+        assertEquals("a", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertEquals(NAME_WITH_LATIN1, p.getText());
+        assertEquals(NAME_WITH_LATIN1, p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("b", p.getText());
+        assertEquals("b", p.getString());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertEquals(NAME_WITH_LATIN1, p.getText());
+        assertEquals(NAME_WITH_LATIN1, p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("c", p.getText());
+        assertEquals("c", p.getString());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertEquals(NAME_WITH_QUOTES, p.getText());
+        assertEquals(NAME_WITH_QUOTES, p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("d", p.getText());
+        assertEquals("d", p.getString());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());

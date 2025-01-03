@@ -237,7 +237,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         assertToken(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals(PROPERTY_NAME, parser.currentName());
         assertToken(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals(VALUE, parser.getText());
+        assertEquals(VALUE, parser.getString());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
         parser.close();

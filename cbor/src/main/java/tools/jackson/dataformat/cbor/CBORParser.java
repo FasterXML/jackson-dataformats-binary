@@ -475,7 +475,7 @@ public class CBORParser extends ParserBase
      */
 
     @Override
-    public boolean hasTextCharacters()
+    public boolean hasStringCharacters()
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             // yes; is or can be made available efficiently as char[]
@@ -1101,7 +1101,7 @@ public class CBORParser extends ParserBase
 
     /**
      * Method for forcing full read of current token, even if it might otherwise
-     * only be read if data is accessed via {@link #getText} and similar methods.
+     * only be read if data is accessed via {@link #getString()} and similar methods.
      */
     @Override
     public void finishToken() throws JacksonException
@@ -1605,10 +1605,10 @@ public class CBORParser extends ParserBase
      */
 
     @Override
-    public String nextTextValue() throws JacksonException
+    public String nextStringValue() throws JacksonException
     {
         if (nextToken() == JsonToken.VALUE_STRING) {
-            return getText();
+            return getString();
         }
         return null;
     }
@@ -1657,7 +1657,7 @@ public class CBORParser extends ParserBase
      * Method can be called for any event.
      */
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
         JsonToken t = _currToken;
         if (_tokenIncomplete) {
@@ -1681,7 +1681,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public char[] getTextCharacters() throws JacksonException
+    public char[] getStringCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1703,7 +1703,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int getTextLength() throws JacksonException
+    public int getStringLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1728,7 +1728,7 @@ public class CBORParser extends ParserBase
     }
 
     @Override
-    public int getTextOffset() throws JacksonException {
+    public int getStringOffset() throws JacksonException {
         return 0;
     }
 
@@ -1747,7 +1747,7 @@ public class CBORParser extends ParserBase
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
-        return getText();
+        return getString();
     }
 
     @Override
@@ -1758,11 +1758,11 @@ public class CBORParser extends ParserBase
                 return defaultValue;
             }
         }
-        return getText();
+        return getString();
     }
 
     @Override
-    public int getText(Writer writer) throws JacksonException
+    public int getString(Writer writer) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1937,7 +1937,7 @@ public class CBORParser extends ParserBase
         if (_binaryValue == null) {
             // 26-Jun-2021, tatu: Copied from ParserBase
             ByteArrayBuilder builder = _getByteArrayBuilder();
-            _decodeBase64(getText(), builder, variant);
+            _decodeBase64(getString(), builder, variant);
             _binaryValue = builder.toByteArray();
         }
         return _binaryValue;
@@ -2252,7 +2252,7 @@ public class CBORParser extends ParserBase
         if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
-            final String text = getText();
+            final String text = getString();
             // 16-Jan-2024, tatu: OSS-Fuzz managed to trigger this; let's fail
             //   explicitly
             if (text == null) {

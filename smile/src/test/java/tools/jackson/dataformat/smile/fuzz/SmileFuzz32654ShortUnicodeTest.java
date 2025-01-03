@@ -33,7 +33,7 @@ public class SmileFuzz32654ShortUnicodeTest extends BaseTestForSmile
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String text = p.getText();
+                String text = p.getString();
                 fail("Should have failed, instead decoded String of "+text.length()+" chars");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid byte 0xB4 in short Unicode text");

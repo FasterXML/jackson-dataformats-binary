@@ -15,10 +15,10 @@ public class SmileFuzz_426_65126IOOBETest extends BaseTestForSmile
     {
         final byte[] input = readResource("/data/clusterfuzz-smile-65126.smile");
         try (JsonParser p = MAPPER.createParser(input)) {
-            assertNull(p.nextTextValue());
+            assertNull(p.nextStringValue());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.currentToken());
             try {
-                p.nextTextValue();
+                p.nextStringValue();
                 fail("Should not pass");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid content: invalid 7-bit binary encoded byte length");

@@ -82,7 +82,7 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         for (int i = 0, len = strings.size(); i < len; ++i) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals(strings.get(i), p.getText());
+            assertEquals(strings.get(i), p.getString());
         }
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         p.close();
@@ -94,7 +94,7 @@ public class TestGeneratorLongStrings extends BaseTestForSmile
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             String exp = strings.get(i);
             StringWriter w = new StringWriter();
-            int strlen = p.getText(w);
+            int strlen = p.getString(w);
             assertEquals(exp.length(), strlen);
             String str = w.toString();
             assertEquals(exp.length(), str.length());

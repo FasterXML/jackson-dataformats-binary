@@ -50,15 +50,15 @@ public class SimpleObjectTest extends AsyncTestBase
         assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
         assertEquals("a", r.currentText());
         // by default no cheap access to char[] version:
-        assertFalse(r.parser().hasTextCharacters());
+        assertFalse(r.parser().hasStringCharacters());
         // but...
-        char[] ch = r.parser().getTextCharacters();
-        assertEquals(0, r.parser().getTextOffset());
-        assertEquals(1, r.parser().getTextLength());
+        char[] ch = r.parser().getStringCharacters();
+        assertEquals(0, r.parser().getStringOffset());
+        assertEquals(1, r.parser().getStringLength());
         assertEquals("a", new String(ch, 0, 1));
 
         // 04-Nov-2019, tatu: Changed in 3.0 (remove use of namecopybuffer)
-        assertFalse(r.parser().hasTextCharacters());
+        assertFalse(r.parser().hasStringCharacters());
 
         assertToken(JsonToken.VALUE_TRUE, r.nextToken());
 

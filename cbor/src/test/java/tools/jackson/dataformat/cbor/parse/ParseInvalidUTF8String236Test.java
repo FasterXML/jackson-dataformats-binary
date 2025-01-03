@@ -15,7 +15,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         try (CBORParser p = cborParser(input)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid UTF-8 middle byte 0x7d");
@@ -31,7 +31,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         try (CBORParser p = cborParser(input)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Truncated UTF-8 character in Unicode String value (3 bytes)");
@@ -47,7 +47,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         try (CBORParser p = cborParser(input)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Truncated UTF-8 character in Unicode String value (2 bytes)");
@@ -63,7 +63,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         try (CBORParser p = cborParser(input)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Unexpected end-of-input in VALUE_STRING");
@@ -81,7 +81,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         try (CBORParser p = cborParser(input2)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid UTF-8 middle byte 0x2d");
@@ -94,7 +94,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         try (CBORParser p = cborParser(input3)) {
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             try {
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid UTF-8 middle byte 0x2d");
@@ -115,7 +115,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             try {
                 p.nextToken();
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Invalid UTF-8 middle byte 0x2e");
@@ -133,7 +133,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             try {
                 p.nextToken();
-                String str = p.getText();
+                String str = p.getString();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
                 verifyException(e, "Truncated UTF-8 character in Map key (2 bytes)");

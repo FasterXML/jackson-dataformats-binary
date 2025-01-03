@@ -155,7 +155,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     // !!! TODO: optimize
     @Override
-    public String nextTextValue() throws JacksonException {
+    public String nextStringValue() throws JacksonException {
         if (nextToken() == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
         }
@@ -169,14 +169,14 @@ public class JacksonAvroParserImpl extends AvroParserImpl
      */
 
     @Override
-    public boolean hasTextCharacters() {
+    public boolean hasStringCharacters() {
         if (_currToken == JsonToken.VALUE_STRING) { return true; } // usually true
         // name might be copied but...
         return false;
     }
 
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
         JsonToken t = _currToken;
         if (t == JsonToken.VALUE_STRING) {
@@ -195,7 +195,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    public int getText(Writer writer) throws JacksonException
+    public int getString(Writer writer) throws JacksonException
     {
         JsonToken t = _currToken;
 
@@ -590,13 +590,13 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             // or if not, could we read?
             if (len >= _inputBuffer.length) {
                 // If not enough space, need handling similar to chunked
-                _finishLongText(len);
+                _finishLongString(len);
                 return;
             }
             _loadToHaveAtLeast(len);
         }
         // offline for better optimization
-        _finishShortText(len);
+        _finishShortString(len);
     }
 
     @Override
@@ -611,7 +611,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _skip(len);
     }
 
-    private final String _finishShortText(int len) throws IOException
+    private final String _finishShortString(int len) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length < len) { // one minor complication
@@ -673,7 +673,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final void _finishLongString(int len) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;

@@ -150,7 +150,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
     protected void verifyFieldName(JsonParser p, String expName)
         throws IOException
     {
-        assertEquals(expName, p.getText());
+        assertEquals(expName, p.getString());
         assertEquals(expName, p.currentName());
     }
 
@@ -158,6 +158,6 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
         throws IOException
     {
         // First, via textual
-        assertEquals(String.valueOf(expValue), jp.getText());
+        assertEquals(String.valueOf(expValue), jp.getString());
     }
 }

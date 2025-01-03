@@ -456,7 +456,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public boolean hasTextCharacters()
+    public boolean hasStringCharacters()
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.hasTextAsCharacters();
@@ -1244,7 +1244,7 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     @Override
-    public String nextTextValue() throws JacksonException
+    public String nextStringValue() throws JacksonException
     {
         // Copied from `nexdtToken()`, as appropriate
         _numTypesValid = NR_UNKNOWN;
@@ -1259,12 +1259,12 @@ public class ProtobufParser extends ParserMinimalBase
         case STATE_ROOT_VALUE:
             {
                 final JsonToken t = _updateToken(_readNextValue(_currentField.type, STATE_ROOT_KEY));
-                return (t == JsonToken.VALUE_STRING) ? getText() : null;
+                return (t == JsonToken.VALUE_STRING) ? getString() : null;
             }
         case STATE_NESTED_VALUE:
             {
                 final JsonToken t = _updateToken(_readNextValue(_currentField.type, STATE_NESTED_KEY));
-                return (t == JsonToken.VALUE_STRING) ? getText() : null;
+                return (t == JsonToken.VALUE_STRING) ? getString() : null;
             }
         case STATE_ARRAY_VALUE_FIRST: // unpacked
             if (_currentField.type == FieldType.STRING) {
@@ -1323,7 +1323,7 @@ public class ProtobufParser extends ParserMinimalBase
             }
             break;
         default:
-            return (nextToken() == JsonToken.VALUE_STRING) ? getText() : null;
+            return (nextToken() == JsonToken.VALUE_STRING) ? getString() : null;
         }
 
         // At this point we know we have text token so:
@@ -1364,7 +1364,7 @@ public class ProtobufParser extends ParserMinimalBase
      * Method can be called for any event.
      */
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             if (_tokenIncomplete) {
@@ -1393,7 +1393,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public char[] getTextCharacters() throws JacksonException
+    public char[] getStringCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1417,7 +1417,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int getTextLength() throws JacksonException
+    public int getStringLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1443,7 +1443,7 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     @Override
-    public int getTextOffset() throws JacksonException {
+    public int getStringOffset() throws JacksonException {
         return 0;
     }
 
@@ -1465,7 +1465,7 @@ public class ProtobufParser extends ParserMinimalBase
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
-        return getText();
+        return getString();
     }
 
     @Override
@@ -1476,11 +1476,11 @@ public class ProtobufParser extends ParserMinimalBase
                 return defaultValue;
             }
         }
-        return getText();
+        return getString();
     }
 
     @Override // since 2.8
-    public int getText(Writer writer) throws JacksonException
+    public int getString(Writer writer) throws JacksonException
     {
         try {
             JsonToken t = _currToken;
@@ -1777,7 +1777,7 @@ public class ProtobufParser extends ParserMinimalBase
             // Let's verify it's lossless conversion by simple roundtrip
             int result = (int) _numberLong;
             if (((long) result) != _numberLong) {
-                _reportError("Numeric value ("+getText()+") out of range of int");
+                _reportError("Numeric value ("+getString()+") out of range of int");
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
@@ -1908,7 +1908,7 @@ public class ProtobufParser extends ParserMinimalBase
         if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
-            final String text = getText();
+            final String text = getString();
             streamReadConstraints().validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));

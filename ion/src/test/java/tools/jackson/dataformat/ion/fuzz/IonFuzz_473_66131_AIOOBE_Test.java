@@ -24,7 +24,7 @@ public class IonFuzz_473_66131_AIOOBE_Test
         final byte[] doc = { (byte) 0xe0, 0x01, 0x00, (byte) 0xea, (byte) 0xdc, (byte) 0x9a };
         try (JsonParser p = ION_MAPPER.createParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
-            p.nextTextValue();
+            p.nextStringValue();
             fail("Should not pass (invalid content)");
         } catch (StreamReadException e) {
             assertThat(e.getMessage(), Matchers.containsString("Corrupt content to decode"));

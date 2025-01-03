@@ -164,17 +164,17 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     
     // For now we do not store char[] representation...
     @Override
-    public boolean hasTextCharacters() {
+    public boolean hasStringCharacters() {
         return false;
     }
 
     @Override
-    public String nextTextValue() throws JacksonException {
+    public String nextStringValue() throws JacksonException {
         return (nextToken() == JsonToken.VALUE_STRING) ? _textValue : null;
     }
 
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textValue;
@@ -192,7 +192,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     }
 
     @Override
-    public int getText(Writer writer) throws JacksonException
+    public int getString(Writer writer) throws JacksonException
     {
         JsonToken t = _currToken;
         try {

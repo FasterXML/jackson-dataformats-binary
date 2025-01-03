@@ -272,14 +272,14 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.values[0], p.getText());
+        assertEquals(input.values[0], p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.values[1], p.getText());
+        assertEquals(input.values[1], p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.values[2], p.getText());
+        assertEquals(input.values[2], p.getString());
 
         StringWriter strw = new StringWriter();
-        assertEquals(input.values[2].length(), p.getText(strw));
+        assertEquals(input.values[2].length(), p.getString(strw));
         assertEquals(input.values[2], strw.toString());
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());
@@ -298,7 +298,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         // but only skip first couple, not last
-        assertEquals(input.values[2], p.getText());
+        assertEquals(input.values[2], p.getString());
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -354,21 +354,21 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("name", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.name, p.getText());
+        assertEquals(input.name, p.getString());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("values", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertFalse(p.hasTextCharacters());
-        assertEquals(input.values[0], p.getText());
+        assertFalse(p.hasStringCharacters());
+        assertEquals(input.values[0], p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.values[1], p.getText());
+        assertEquals(input.values[1], p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.values[2], p.getText());
+        assertEquals(input.values[2], p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(input.values[3], p.getText());
+        assertEquals(input.values[3], p.getString());
 
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());

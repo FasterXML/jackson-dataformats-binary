@@ -212,7 +212,7 @@ public class CBORNumberParseTest extends CBORTestBase
         JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         if (NumberType.DOUBLE != p.getNumberType()) {
-            fail("Expected `NumberType.DOUBLE`, got "+p.getNumberType()+": "+p.getText());
+            fail("Expected `NumberType.DOUBLE`, got "+p.getNumberType()+": "+p.getString());
         }
         assertEquals(NumberTypeFP.DOUBLE64, p.getNumberTypeFP());
         assertEquals(value, p.getDoubleValue());
@@ -260,7 +260,7 @@ public class CBORNumberParseTest extends CBORTestBase
         JsonParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         if (NumberType.FLOAT != p.getNumberType()) {
-            fail("Expected `NumberType.FLOAT`, got "+p.getNumberType()+": "+p.getText());
+            fail("Expected `NumberType.FLOAT`, got "+p.getNumberType()+": "+p.getString());
         }
         assertEquals(NumberTypeFP.FLOAT32, p.getNumberTypeFP());
         assertEquals((float) value, p.getFloatValue());

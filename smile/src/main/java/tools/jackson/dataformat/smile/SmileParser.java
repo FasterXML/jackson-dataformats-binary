@@ -331,7 +331,7 @@ versionBits);
      */
 
     @Override
-    public boolean hasTextCharacters()
+    public boolean hasStringCharacters()
     {
         if (_currToken == JsonToken.VALUE_STRING) {
             // yes; is or can be made available efficiently as char[]
@@ -572,7 +572,7 @@ versionBits);
 
     /**
      * Method for forcing full read of current token, even if it might otherwise
-     * only be read if data is accessed via {@link #getText} and similar methods.
+     * only be read if data is accessed via {@link #getString} and similar methods.
      */
     @Override
     public void finishToken()
@@ -1163,7 +1163,7 @@ _typeAsInt);
      */
 
     @Override
-    public String nextTextValue() throws JacksonException
+    public String nextStringValue() throws JacksonException
     {
         // can't get text value if expecting name, so
         if (!_streamReadContext.inObject() || _currToken == JsonToken.PROPERTY_NAME) {
@@ -1275,7 +1275,7 @@ _typeAsInt);
             }
         }
         // otherwise fall back to generic handling (note: we do NOT assign 'ptr')
-        return (nextToken() == JsonToken.VALUE_STRING) ? getText() : null;
+        return (nextToken() == JsonToken.VALUE_STRING) ? getString() : null;
     }
 
     @Override
@@ -1322,7 +1322,7 @@ _typeAsInt);
      * Method can be called for any event.
      */
     @Override
-    public String getText() throws JacksonException
+    public String getString() throws JacksonException
     {
         if (_tokenIncomplete) {
             _tokenIncomplete = false;
@@ -1355,7 +1355,7 @@ _typeAsInt);
     }
 
     @Override
-    public char[] getTextCharacters() throws JacksonException
+    public char[] getStringCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1376,7 +1376,7 @@ _typeAsInt);
     }
 
     @Override
-    public int getTextLength() throws JacksonException
+    public int getStringLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
             if (_tokenIncomplete) {
@@ -1402,14 +1402,14 @@ _typeAsInt);
     }
 
     @Override
-    public int getTextOffset() throws JacksonException {
+    public int getStringOffset() throws JacksonException {
         return 0;
     }
 
     @Override
     public String getValueAsString() throws JacksonException
     {
-        // inlined 'getText()' for common case of having String
+        // inlined 'getString()' for common case of having String
         if (_tokenIncomplete) {
             _tokenIncomplete = false;
             int tb = _typeAsInt;
@@ -1428,7 +1428,7 @@ _typeAsInt);
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
-        return getText();
+        return getString();
     }
 
     @Override
@@ -1439,11 +1439,11 @@ _typeAsInt);
                 return defaultValue;
             }
         }
-        return getText();
+        return getString();
     }
 
-    @Override // since 2.8
-    public int getText(Writer writer) throws JacksonException
+    @Override
+    public int getString(Writer writer) throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
@@ -1649,7 +1649,7 @@ _typeAsInt);
         if (_binaryValue == null) {
             // 26-Jun-2021, tatu: Copied from ParserBase (except no recycling of BAB here)
             ByteArrayBuilder builder = new ByteArrayBuilder();
-            _decodeBase64(getText(), builder, variant);
+            _decodeBase64(getString(), builder, variant);
             _binaryValue = builder.toByteArray();
         }
         return _binaryValue;

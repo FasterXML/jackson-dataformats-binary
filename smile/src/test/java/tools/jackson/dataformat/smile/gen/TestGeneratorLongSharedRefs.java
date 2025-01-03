@@ -115,11 +115,11 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         assertToken(p.nextToken(), JsonToken.START_ARRAY);
         for (int i=0; i < VALUE_COUNT; i++) {
             assertToken(p.nextToken(), JsonToken.VALUE_STRING);
-            assertEquals("f_"+i, p.getText());
+            assertEquals("f_"+i, p.getString());
         }
         for (int i=0; i < VALUE_COUNT; i++) {
             assertToken(p.nextToken(), JsonToken.VALUE_STRING);
-            assertEquals("f_"+i, p.getText());
+            assertEquals("f_"+i, p.getString());
         }
         assertToken(p.nextToken(), JsonToken.END_ARRAY);
         assertNull(p.nextToken());

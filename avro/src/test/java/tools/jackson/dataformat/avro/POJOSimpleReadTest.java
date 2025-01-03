@@ -58,17 +58,17 @@ public class POJOSimpleReadTest extends AvroTestBase
         }
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertFalse(p.hasTextCharacters());
+        assertFalse(p.hasStringCharacters());
         assertEquals("name", p.currentName());
-        assertEquals("name", p.getText());
+        assertEquals("name", p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(empl.name, p.getText());
+        assertEquals(empl.name, p.getString());
 
         StringWriter sw  = new StringWriter();
-        assertEquals(empl.name.length(), p.getText(sw));
+        assertEquals(empl.name.length(), p.getString(sw));
         assertEquals(empl.name, sw.toString());
 
-        assertTrue(p.hasTextCharacters());
+        assertTrue(p.hasStringCharacters());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("age", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -81,14 +81,14 @@ public class POJOSimpleReadTest extends AvroTestBase
 
         assertEquals("emails", p.currentName());
         sw  = new StringWriter();
-        assertEquals(6, p.getText(sw));
+        assertEquals(6, p.getString(sw));
         assertEquals("emails", sw.toString());
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(empl.emails[0], p.getText());
+        assertEquals(empl.emails[0], p.getString());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(empl.emails[1], p.getText());
+        assertEquals(empl.emails[1], p.getString());
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());

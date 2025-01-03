@@ -33,7 +33,7 @@ public class SimpleIonReadTest {
         assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("a", p.currentName());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("value", p.getText());
+        assertEquals("value", p.getString());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextValue());
         assertEquals("b", p.currentName());
         assertEquals(42, p.getIntValue());
@@ -53,7 +53,7 @@ public class SimpleIonReadTest {
         assertEquals(JsonToken.VALUE_TRUE, p.nextValue());
         assertEquals(JsonToken.VALUE_NULL, p.nextValue());
         assertEquals(JsonToken.VALUE_STRING, p.nextValue());
-        assertEquals("abc", p.getText());
+        assertEquals("abc", p.getString());
         assertEquals(JsonToken.END_ARRAY, p.nextToken());
         p.close();
     }
@@ -67,9 +67,9 @@ public class SimpleIonReadTest {
         assertEquals("a", p.currentName());
         assertEquals(JsonToken.START_ARRAY, p.nextToken());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("b", p.getText());
+        assertEquals("b", p.getString());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("c", p.getText());
+        assertEquals("c", p.getString());
         assertEquals(JsonToken.END_ARRAY, p.nextToken());
         assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("b", p.currentName());
@@ -95,7 +95,7 @@ public class SimpleIonReadTest {
         assertEquals(13, p.getIntValue());
         assertEquals(JsonToken.END_OBJECT, p.nextValue());
         assertEquals(JsonToken.VALUE_STRING, p.nextValue());
-        assertEquals("xyz", p.getText());
+        assertEquals("xyz", p.getString());
         assertNull(p.currentName());
         assertEquals(JsonToken.END_ARRAY, p.nextValue());
         assertEquals(JsonToken.VALUE_NULL, p.nextValue());
@@ -114,7 +114,7 @@ public class SimpleIonReadTest {
         assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("a", p.currentName());
         assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("value", p.getText());
+        assertEquals("value", p.getString());
         assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextValue());
         assertEquals("b", p.currentName());
         assertEquals(42, p.getIntValue());

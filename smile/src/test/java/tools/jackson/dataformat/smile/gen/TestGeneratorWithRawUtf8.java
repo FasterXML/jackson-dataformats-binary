@@ -49,7 +49,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
         for (byte[] inputBytes : strings) {
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-            String string = jp.getText();
+            String string = jp.getString();
             byte[] outputBytes = string.getBytes("UTF-8");
             assertEquals(inputBytes.length, outputBytes.length);
             assertArrayEquals(inputBytes, outputBytes);
@@ -81,7 +81,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         assertToken(JsonToken.START_ARRAY, jp.nextToken());
         for (byte[] inputBytes : strings) {
             assertToken(JsonToken.VALUE_STRING, jp.nextToken());
-            String string = jp.getText();
+            String string = jp.getString();
             byte[] outputBytes = string.getBytes("UTF-8");
             assertEquals(inputBytes.length, outputBytes.length);
             assertArrayEquals(inputBytes, outputBytes);
@@ -146,7 +146,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals(parser.currentName(), "name");
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
-        assertEquals(parser.getText(), "PojoFoo");
+        assertEquals(parser.getString(), "PojoFoo");
 
         assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
         assertEquals(parser.currentName(), "collection");
@@ -157,7 +157,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
 
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
-        assertEquals("Should get String value '1'", parser.getText(), "1");
+        assertEquals("Should get String value '1'", parser.getString(), "1");
 
         assertToken(parser.nextToken(), JsonToken.END_ARRAY);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);

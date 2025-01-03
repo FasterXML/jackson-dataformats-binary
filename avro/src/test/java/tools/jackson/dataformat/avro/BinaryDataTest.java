@@ -77,6 +77,6 @@ public class BinaryDataTest extends AvroTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());
         p.close();
-        assertNull(p.nextTextValue());
+        assertNull(p.nextStringValue());
     }
 }

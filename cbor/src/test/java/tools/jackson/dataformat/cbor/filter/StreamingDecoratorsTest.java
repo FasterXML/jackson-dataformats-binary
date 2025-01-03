@@ -44,7 +44,7 @@ public class StreamingDecoratorsTest extends CBORTestBase
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(137, p.getIntValue());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("foo", p.getText());
+        assertEquals("foo", p.getString());
         assertNull(p.nextToken());
         p.close();
     }

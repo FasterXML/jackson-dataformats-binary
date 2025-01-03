@@ -21,14 +21,14 @@ public abstract class AsyncReaderWrapper
         return _streamReader.currentToken();
     }
     public String currentText() throws IOException {
-        return _streamReader.getText();
+        return _streamReader.getString();
     }
 
     public String currentTextViaCharacters()
     {
-        char[] ch = _streamReader.getTextCharacters();
-        int start = _streamReader.getTextOffset();
-        int len = _streamReader.getTextLength();
+        char[] ch = _streamReader.getStringCharacters();
+        int start = _streamReader.getStringOffset();
+        int len = _streamReader.getStringLength();
         return new String(ch, start, len);
 
     }
@@ -36,7 +36,7 @@ public abstract class AsyncReaderWrapper
     public String currentTextViaWriter()
     {
         StringWriter sw = new StringWriter();
-        int len = _streamReader.getText(sw);
+        int len = _streamReader.getString(sw);
         String str = sw.toString();
         if (len != str.length()) {
             throw new IllegalStateException(String.format(

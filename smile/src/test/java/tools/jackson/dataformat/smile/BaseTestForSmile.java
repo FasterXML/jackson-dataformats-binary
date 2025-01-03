@@ -264,10 +264,10 @@ public abstract class BaseTestForSmile
     protected String getAndVerifyText(JsonParser p) throws IOException
     {
         // Ok, let's verify other accessors
-        int actLen = p.getTextLength();
-        char[] ch = p.getTextCharacters();
-        String str2 = new String(ch, p.getTextOffset(), actLen);
-        String str = p.getText();
+        int actLen = p.getStringLength();
+        char[] ch = p.getStringCharacters();
+        String str2 = new String(ch, p.getStringOffset(), actLen);
+        String str = p.getString();
 
         if (str.length() !=  actLen) {
             fail("Internal problem (p.token == "+p.currentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);

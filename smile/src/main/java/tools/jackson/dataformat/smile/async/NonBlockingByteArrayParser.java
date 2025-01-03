@@ -295,7 +295,7 @@ public class NonBlockingByteArrayParser
                     String text = (_minorState == MINOR_PROPERTY_NAME_SHORT_ASCII)
                             ? _decodeASCIIText(_inputCopy, 0, fullLen)
                             : _decodeShortUnicodeText(_inputCopy, 0, fullLen);
-                    if (_seenStringValueCount >= 0) { // shared text values enabled
+                    if (_seenStringValueCount >= 0) { // shared String values enabled
                         _addSeenStringValue(text);
                     }
                     return _valueComplete(JsonToken.VALUE_STRING);
@@ -476,7 +476,7 @@ public class NonBlockingByteArrayParser
             _numTypesValid = NR_INT;
             _numberType = NumberType.INT;
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
-        case 7: // binary/long-text/long-shared/start-end-markers
+        case 7: // binary/long-String/long-shared/start-end-markers
             switch (ch & 0x1F) {
             case 0x00: // long variable length ASCII
                 return _startLongASCII();

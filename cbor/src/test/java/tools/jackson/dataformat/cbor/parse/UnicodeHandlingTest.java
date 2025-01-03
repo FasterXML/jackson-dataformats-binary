@@ -46,7 +46,7 @@ public class UnicodeHandlingTest extends CBORTestBase
 
         JsonParser p = _parser(data, throttling);
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(TEXT, p.getText());
+        assertEquals(TEXT, p.getString());
         assertNull(p.nextToken());
         p.close();
 

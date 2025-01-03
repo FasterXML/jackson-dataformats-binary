@@ -210,7 +210,7 @@ public class TestGenerator extends BaseTestForSmile
         _verifyName(p, mode, "");
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals("bar", p.getText());
+        assertEquals("bar", p.getString());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.nextToken());

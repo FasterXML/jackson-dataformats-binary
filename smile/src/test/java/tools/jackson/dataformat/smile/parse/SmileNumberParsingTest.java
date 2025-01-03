@@ -25,7 +25,7 @@ public class SmileNumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(255, p.getIntValue());
         assertFalse(p.isNaN());
-        assertEquals("255", p.getText());
+        assertEquals("255", p.getString());
         assertEquals(255L, p.getLongValue());
         assertEquals((float) 255, p.getFloatValue());
         assertEquals((double) 255, p.getDoubleValue());
@@ -40,7 +40,7 @@ public class SmileNumberParsingTest
         assertEquals(JsonParser.NumberType.INT, p.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(-999, p.getIntValue());
-        assertEquals("-999", p.getText());
+        assertEquals("-999", p.getString());
         p.close();
 
         data = _smileDoc("123456789");
@@ -138,7 +138,7 @@ public class SmileNumberParsingTest
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(l, p.getLongValue());
-        assertEquals(String.valueOf(l), p.getText());
+        assertEquals(String.valueOf(l), p.getString());
         p.close();
 
         // and skipping
@@ -154,7 +154,7 @@ public class SmileNumberParsingTest
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(l, p.getLongValue());
-        assertEquals(String.valueOf(l), p.getText());
+        assertEquals(String.valueOf(l), p.getString());
         p.close();
 
         // and skipping
@@ -320,11 +320,11 @@ public class SmileNumberParsingTest
         p = _smileParser(data);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertEquals("x", p.getText());
+        assertEquals("x", p.getString());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(0.5, p.getDoubleValue());
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        assertEquals("y", p.getText());
+        assertEquals("y", p.getString());
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(0.01338, p.getDoubleValue());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
