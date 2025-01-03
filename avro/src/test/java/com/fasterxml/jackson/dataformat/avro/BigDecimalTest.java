@@ -135,12 +135,21 @@ public class BigDecimalTest extends AvroTestBase {
 
         AvroSchema schema = MAPPER.schemaFrom(schemaString);
 
-        // WHEN
-        // serialize
+        // WHEN - serialize
         byte[] bytes = MAPPER.writer(schema)
                 .writeValueAsBytes(new BigDecimalAndName(BigDecimal.valueOf(42.2), "peter"));
 
-        // deserialize
+        // THEN
+        assertThat(bytes).isEqualTo(new byte[]{
+                // bigDecimalValue
+                0x08, // -> 4 dec - bigDecimalValue property string value length
+                0x34, 0x32, 0x2E, 0x32, // -> "42.2" in ASCII
+                // name
+                0x0A, // -> 5 dec - name property string length
+                0x70, 0x65, 0x74, 0x65, 0x72 // -> "peter" in ASCII
+        });
+
+        // WHEN - deserialize
         BigDecimalAndName result = MAPPER.reader(schema)
                 .forType(BigDecimalAndName.class)
                 .readValue(bytes);
@@ -172,14 +181,24 @@ public class BigDecimalTest extends AvroTestBase {
 
         AvroSchema schema = MAPPER.schemaFrom(schemaString);
 
-        // WHEN
-        // serialize
+        // WHEN - serialize
         byte[] bytes = MAPPER.writer(schema)
                 .writeValueAsBytes(new BigDecimalAndName(
                         new BigDecimal("42.2"),
                         "peter"));
+        // THEN
+        assertThat(bytes).isEqualTo(new byte[]{
+                // bigDecimalValue
+                0x02, // -> 1 dec - second bigDecimalValue property type (bytes)
+                0x04, // -> 2 dec - bigDecimalValue property bytes length
+                0x10, 0x7C, // -> 0x107C -> 4220 dec - it is 42.2 value in scale 2.
+                // name
+                0x02, // 1 dec - second name property type (string)
+                0x0A, // -> 5 dec - name property string length
+                0x70, 0x65, 0x74, 0x65, 0x72 // -> "peter" in ASCII
+        });
 
-        // deserialize
+        // WHEN - deserialize
         BigDecimalAndName result = MAPPER.reader(schema)
                 .forType(BigDecimalAndName.class)
                 .readValue(bytes);
@@ -215,14 +234,25 @@ public class BigDecimalTest extends AvroTestBase {
 
         AvroSchema schema = MAPPER.schemaFrom(schemaString);
 
-        // WHEN
-        // serialize
+        // WHEN - serialize
         byte[] bytes = MAPPER.writer(schema)
                 .writeValueAsBytes(new BigDecimalAndName(
                         new BigDecimal("42.2"),
                         "peter"));
 
-        // deserialize
+        // THEN
+        assertThat(bytes).isEqualTo(new byte[]{
+                // bigDecimalValue
+                0x02, // -> 1 dec - second bigDecimalValue property type (bytes)
+                // 10 bytes long fixed value
+                0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x10 ,0x7C, // -> 0x107C -> 4220 dec - it is 42.2 value in scale 2.
+                // name
+                0x02, // 1 dec - second name property type (string)
+                0x0A, // -> 5 dec - name property string length
+                0x70, 0x65, 0x74, 0x65, 0x72 // -> "peter" in ASCII
+        });
+
+        // WHEN - deserialize
         BigDecimalAndName result = MAPPER.reader(schema)
                 .forType(BigDecimalAndName.class)
                 .readValue(bytes);
