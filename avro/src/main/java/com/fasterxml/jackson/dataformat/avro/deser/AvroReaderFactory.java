@@ -3,6 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.dataformat.avro.deser.ScalarDecoder.*;
@@ -56,12 +57,18 @@ public abstract class AvroReaderFactory
         case BOOLEAN:
             return READER_BOOLEAN;
         case BYTES:
+            if (type.getLogicalType() instanceof LogicalTypes.Decimal) {
+                return new BytesDecimalReader(((LogicalTypes.Decimal) type.getLogicalType()).getScale());
+            }
             return READER_BYTES;
         case DOUBLE:
             return READER_DOUBLE;
         case ENUM:
             return new EnumDecoder(AvroSchemaHelper.getFullName(type), type.getEnumSymbols());
         case FIXED:
+            if (type.getLogicalType() instanceof LogicalTypes.Decimal) {
+                return new  FixedDecimalReader(((LogicalTypes.Decimal) type.getLogicalType()).getScale(), type.getFixedSize());
+            }
             return new FixedDecoder(type.getFixedSize(), AvroSchemaHelper.getFullName(type));
         case FLOAT:
             return READER_FLOAT;
