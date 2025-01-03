@@ -146,8 +146,8 @@ public class BigDecimalTest extends AvroTestBase {
                 .readValue(bytes);
 
         // THEN
-        assertEquals(BigDecimal.valueOf(42.2), result.bigDecimalValue);
-        assertEquals("peter", result.name);
+        assertThat(result.bigDecimalValue).isEqualTo(BigDecimal.valueOf(42.2));
+        assertThat(result.name).isEqualTo("peter");
     }
 
     public void testSerialization_toBytesWithLogicalTypeDecimal() throws Exception {
@@ -186,8 +186,8 @@ public class BigDecimalTest extends AvroTestBase {
 
         // THEN
         // Because scale of decimal logical type is 2, result is with 2 decimal places
-        assertEquals(new BigDecimal("42.20"), result.bigDecimalValue);
-        assertEquals("peter", result.name);
+        assertThat(result.bigDecimalValue).isEqualTo(new BigDecimal("42.20"));
+        assertThat(result.name).isEqualTo("peter");
     }
 
     public void testSerialization_toFixedWithLogicalTypeDecimal() throws Exception {
@@ -229,8 +229,8 @@ public class BigDecimalTest extends AvroTestBase {
 
         // THEN
         // Because scale of decimal logical type is 2, result is with 2 decimal places
-        assertEquals(new BigDecimal("42.20"), result.bigDecimalValue);
-        assertEquals("peter", result.name);
+        assertThat(result.bigDecimalValue).isEqualTo(new BigDecimal("42.20"));
+        assertThat(result.name).isEqualTo("peter");
     }
 
 }
