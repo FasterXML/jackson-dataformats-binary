@@ -18,6 +18,11 @@ Active maintainers:
 
 - No changes since 2.17
 
+2.17.4 (not yet released)
+
+#541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
+ (fix contributed by John H)
+
 2.17.3 (01-Nov-2024)
 
 #506: (protobuf) Cannot deserialize `UUID` values

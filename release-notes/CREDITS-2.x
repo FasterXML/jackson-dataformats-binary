@@ -325,3 +325,7 @@ Yoann Vernageau (@yvrng)
    when source is an empty `InputStream`
   (2.17.1)
 
+John Hudson (@johhud1)
+ * Contributed fix for #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()`
+   FIELD_NAME bug
+  (2.17.4)
