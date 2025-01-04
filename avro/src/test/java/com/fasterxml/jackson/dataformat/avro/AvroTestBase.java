@@ -80,7 +80,7 @@ public abstract class AvroTestBase extends TestCase
     /**********************************************************
      */
 
-    public static class PointLong
+    protected static class PointLong
     {
         public long x, y;
 
@@ -92,7 +92,7 @@ public abstract class AvroTestBase extends TestCase
         }
     }
 
-    public static class PointDouble
+    protected static class PointDouble
     {
         public double x, y;
 
@@ -104,6 +104,7 @@ public abstract class AvroTestBase extends TestCase
         }
     }
 
+    // public because needed by "AvroAliasTest"
     public static class Employee
     {
         public Employee() { }
@@ -126,7 +127,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     @JsonPropertyOrder({"content", "images"})
-    static class MediaItem
+    protected static class MediaItem
     {
         private MediaContent _content;
         private List<Image> _images;
@@ -153,7 +154,7 @@ public abstract class AvroTestBase extends TestCase
 
     @JsonPropertyOrder(alphabetic=true, value = {
             "uri","title","width","height","format","duration","size","bitrate","persons","player","copyright"})
-    static class MediaContent
+    protected static class MediaContent
     {
         public enum Player { JAVA, FLASH;  }
 
@@ -218,7 +219,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     @JsonPropertyOrder({"uri","title","width","height","size"})
-    static class Image
+    protected static class Image
     {
         private String _uri;
         private String _title;
@@ -249,16 +250,17 @@ public abstract class AvroTestBase extends TestCase
       public void setSize(Size s) { _size = s; }
     }
 
+    // public because needed by "AvroAliasTest"
     public enum Size { SMALL, LARGE; }
 
-    public enum ABC { 
+    protected enum ABC {
 		A, 
 		B, 
 		@JsonEnumDefaultValue
 		C; 
-	}
+    }
 
-    public static class ABCDefaultClass {
+    protected static class ABCDefaultClass {
         public String name;
         @JsonProperty(required = true)
         public ABC abc;
