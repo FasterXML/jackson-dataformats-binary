@@ -272,7 +272,10 @@ public abstract class AvroSchemaHelper
     public static Schema createEnumSchema(BeanDescription bean, List<String> values,
             AnnotationIntrospector intr) {
         final JavaType enumType = bean.getType();
-        Enum<?> defaultEnumValue = intr.findDefaultEnumValue((Class<Enum<?>>)(Class<?>) enumType.getRawClass());
+        @SuppressWarnings("unchecked")
+        Class<Enum<?>> rawEnumClass = (Class<Enum<?>>) enumType.getRawClass();
+        Enum<?> defaultEnumValue = intr.findDefaultEnumValue(bean.getClassInfo(),
+                rawEnumClass.getEnumConstants());
         return addAlias(Schema.createEnum(
             getName(enumType),
             bean.findClassDescription(),
