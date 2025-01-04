@@ -213,30 +213,39 @@ public class BasicParserTest extends BaseTestForSmile
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         assertEquals("abc", p.currentName());
         assertEquals("abc", p.getString());
+        assertEquals("abc", p.getValueAsString());
+        assertEquals("abc", p.getValueAsString("xyz"));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(13, p.getIntValue());
-    	    assertToken(JsonToken.END_OBJECT, p.nextToken());
-    	    p.close();
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        p.close();
     }
 
     public void testSimpleObject() throws IOException
     {
-    	byte[] data = _smileDoc("{\"a\":8, \"b\" : [ true ], \"c\" : { }, \"d\":{\"e\":null}}");
-    	JsonParser p = _smileParser(data);
-    	assertNull(p.currentToken());
-    	assertToken(JsonToken.START_OBJECT, p.nextToken());
+        byte[] data = _smileDoc("{\"a\":8, \"b\" : [ true ], \"c\" : { }, \"d\":{\"e\":null}}");
+        JsonParser p = _smileParser(data);
+        assertNull(p.currentToken());
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
 
-    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-    	assertEquals("a", p.currentName());
-    	assertEquals("a", p.getString());
-    	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-    	assertEquals(8, p.getIntValue());
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals("a", p.currentName());
+        assertEquals("a", p.getString());
+        assertEquals("a", p.getValueAsString());
+        assertEquals("a", p.getValueAsString("x"));
 
-    	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-    	assertEquals("b", p.currentName());
-    	assertToken(JsonToken.START_ARRAY, p.nextToken());
-    	assertToken(JsonToken.VALUE_TRUE, p.nextToken());
-    	assertToken(JsonToken.END_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(8, p.getIntValue());
+
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals("b", p.currentName());
+        assertEquals("b", p.getString());
+        assertEquals("b", p.getValueAsString());
+        assertEquals("b", p.getValueAsString("y"));
+
+        assertToken(JsonToken.START_ARRAY, p.nextToken());
+        assertToken(JsonToken.VALUE_TRUE, p.nextToken());
+        assertToken(JsonToken.END_ARRAY, p.nextToken());
 
     	assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
     	assertEquals("c", p.currentName());
@@ -281,8 +290,8 @@ public class BasicParserTest extends BaseTestForSmile
 
     public void testJsonSampleDoc() throws IOException
     {
-    	byte[] data = _smileDoc(SAMPLE_DOC_JSON_SPEC);
-    	verifyJsonSpecSampleDoc(_smileParser(data), true);
+        byte[] data = _smileDoc(SAMPLE_DOC_JSON_SPEC);
+        verifyJsonSpecSampleDoc(_smileParser(data), true);
     }
 
     public void testUnicodeStringValues() throws IOException

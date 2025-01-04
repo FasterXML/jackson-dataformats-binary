@@ -19,6 +19,11 @@ Active maintainers:
 #536: (avro) Add Logical Type support for `java.util.UUID`
  (contributed by Michal F)
 
+2.18.3 (not yet released)
+
+#541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
+ (fix contributed by John H)
+
 2.18.2 (27-Nov-2024)
 
 No changes since 2.18.1

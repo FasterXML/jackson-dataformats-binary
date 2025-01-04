@@ -178,6 +178,9 @@ public class IonParserTest
             Assert.assertEquals(JsonToken.START_OBJECT, parser.nextToken());
             Assert.assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
             Assert.assertEquals("a", parser.currentName());
+            Assert.assertEquals("a", parser.getString());
+            Assert.assertEquals("a", parser.getValueAsString());
+            Assert.assertEquals("a", parser.getValueAsString("b"));
             Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
             Assert.assertEquals(1, parser.getIntValue());
             parser.nextValue(); // Should encounter unknown symbol and fail

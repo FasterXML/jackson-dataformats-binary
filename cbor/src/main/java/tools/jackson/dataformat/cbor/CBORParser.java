@@ -1744,6 +1744,9 @@ public class CBORParser extends ParserBase
         if (_currToken == JsonToken.VALUE_STRING) {
             return _sharedString == null ? _textBuffer.contentsAsString() : _sharedString;
         }
+        if (_currToken == JsonToken.PROPERTY_NAME) {
+            return currentName();
+        }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
@@ -1754,6 +1757,9 @@ public class CBORParser extends ParserBase
     public String getValueAsString(String defaultValue) throws JacksonException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
+            if (_currToken == JsonToken.PROPERTY_NAME) {
+                return currentName();
+            }
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
                 return defaultValue;
             }

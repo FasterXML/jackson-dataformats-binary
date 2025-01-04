@@ -248,9 +248,14 @@ public class BasicParserTest extends CBORTestBase
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("a", parser.currentName());
+        assertEquals("a", parser.getString());
+        assertEquals("a", parser.getValueAsString());
+        assertEquals("a", parser.getValueAsString("x"));
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("a", parser.currentName());
         assertEquals("b", parser.getString());
+        assertEquals("b", parser.getValueAsString());
+        assertEquals("b", parser.getValueAsString("x"));
         assertEquals(1, parser.getStringLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
@@ -281,14 +286,23 @@ public class BasicParserTest extends CBORTestBase
 
         assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("ob", parser.currentName());
+        assertEquals("ob", parser.getString());
+        assertEquals("ob", parser.getValueAsString());
+        assertEquals("ob", parser.getValueAsString("x"));
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("num", parser.currentName());
+        assertEquals("num", parser.getString());
+        assertEquals("num", parser.getValueAsString());
+        assertEquals("num", parser.getValueAsString("y"));
         assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
         assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
         assertEquals("arr", parser.currentName());
+        assertEquals("arr", parser.getString());
+        assertEquals("arr", parser.getValueAsString());
+        assertEquals("arr", parser.getValueAsString("z"));
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
 

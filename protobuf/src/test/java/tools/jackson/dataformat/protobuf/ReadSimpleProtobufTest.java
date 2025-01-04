@@ -138,12 +138,18 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
             assertNull(p.currentName());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("x", p.currentName());
+            assertEquals("x", p.getString());
+            assertEquals("x", p.getValueAsString());
+            assertEquals("x", p.getValueAsString("y"));
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(NumberType.LONG, p.getNumberType());
             assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
             assertEquals(input.x, p.getIntValue());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("y", p.currentName());
+            assertEquals("y", p.getString());
+            assertEquals("y", p.getValueAsString());
+            assertEquals("y", p.getValueAsString("abc"));
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(input.y, p.getIntValue());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
