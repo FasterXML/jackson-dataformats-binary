@@ -14,10 +14,8 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.rules.ExpectedException;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -33,6 +31,8 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class IonGeneratorTest {
     private static final Map<String, String> testObject;
@@ -58,9 +58,6 @@ public class IonGeneratorTest {
     private IonDatagram output;
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -127,16 +124,24 @@ public class IonGeneratorTest {
     @Test
     public void testWriteFieldNameFailsInSexp() throws Exception {
         joiGenerator.writeStartSexp();
-        thrown.expect(JsonGenerationException.class);
-        thrown.expectMessage("Can not write a field name, expecting a value");
-        joiGenerator.writeFieldName("foo");
+        try {
+            joiGenerator.writeFieldName("foo");
+            fail("Should not pass");
+        } catch (JsonGenerationException e) {
+            assertEquals("Can not write a field name, expecting a value",
+                    e.getMessage());
+        }
     }
 
     @Test
     public void testWriteStartSexpFailsWithoutWriteFieldName() throws Exception {
         joiGenerator.writeStartObject();
-        thrown.expect(JsonGenerationException.class);
-        thrown.expectMessage("Can not start a sexp, expecting field name");
-        joiGenerator.writeStartSexp();
+        try {
+            joiGenerator.writeStartSexp();
+            fail("Should not pass");
+        } catch (JsonGenerationException e) {
+            assertEquals("Can not start a sexp, expecting field name",
+                    e.getMessage());
+        }
     }
 }

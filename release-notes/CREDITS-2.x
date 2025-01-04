@@ -222,6 +222,9 @@ Michal Foksa (MichalFoksa@github)
 * Contributed #310: (avro) Avro schema generation: allow override namespace with new
   `@AvroNamespace` annotation
  (2.14.0)
+* Contributed #494: Avro Schema generation: allow mapping Java Enum properties to
+  Avro String values
+ (2.18.0)
 
 Hunter Herman (hherman1@github)
 
@@ -235,58 +238,120 @@ Martin Giannechini (MartinGian@github)
  (2.13.0)
 
 Tyler Gregg (tgregg@github)
-
-#325: (ion) Ensure `IonReader` instances created within `IonFactory` are
-  always resource-managed
- (2.14.0)
+ #325: (ion) Ensure `IonReader` instances created within `IonFactory` are
+   always resource-managed
+  (2.14.0)
+ #468: (ion) Upgrade `ion-java` to 1.11.1 and remove catch clauses for exceptions
+  (2.17.0)
+ * ... and countless others, no longer listed here but only in main Release Notes
+   (since he is the official maintainer of the Ion backend)
 
 David Turner (DaveCTurner@github)
-
-#312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
- (2.14.0)
+ #312: (cbor, smile) Short NUL-only keys incorrectly detected as duplicates
+  (2.14.0)
 
 Matthew Pope (popematt@github)
-
-#311: (ion) `IonObjectMapper` does not throw JacksonException for some
-  invalid Ion
- (2.14.0)
+ #311: (ion) `IonObjectMapper` does not throw JacksonException for some
+   invalid Ion
+  (2.14.0)
 
 Szymon Sasin (szysas@github)
-
-#338: (cbor) Use passed "current value" in `writeStartObject()` overload
- (2.14.0)
+ #338: (cbor) Use passed "current value" in `writeStartObject()` overload
+  (2.14.0)
 
 Dominik Broj (thetric@github)
-
-#341: (ion) Update to Amazon Ion 1.9.5
- (2.14.0)
-#410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
- (2.16.0)
+ #341: (ion) Update to Amazon Ion 1.9.5
+  (2.14.0)
+ #410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
+  (2.16.0)
 
 Brian Harrington (brharrington@github)
-
-* Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
- (2.14.1)
+ * Contributed #342: (smile) Possible performance improvement on jdk9+ for Smile decoding
+  (2.14.1)
 
 Nik Everett (nik9000@github)
-
-* Reported #366: `CBORGenerator.writeRawUTF8String()` seems to ignore offset
- (2.14.3)
+ * Reported #366: `CBORGenerator.writeRawUTF8String()` seems to ignore offset
+  (2.14.3)
 
 Aaron Barany (here-abarany@github)
-
-* Contributed #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
- (2.15.0)
-* Contributed #356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s
-  as `float`s if safe to do so
- (2.15.0)
+ * Contributed #347: (cbor) Add support for CBOR stringref extension (`CBORGenerator.Feature.STRINGREF`)
+  (2.15.0)
+ * Contributed #356: (cbor) Add `CBORGenerat.Feature.WRITE_MINIMAL_DOUBLES` for writing `double`s
+   as `float`s if safe to do so
+  (2.15.0)
 
 Kyle Silver (kyle-silver@github)
-
-* Reported *379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
- (2.15.2)
+ * Reported *379: (avro) `logback-test.xml` in wrong place (avro/src/main/resources)
+  (2.15.2)
 
 Simon Daudin (@simondaudin)
+ * Reported #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
+  (2.15.3)
 
-* Reported #384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
- (2.15.3)
+Arthur Chan (@arthurscchan)
+ * Contributed #417: (ion) `IonReader` classes contain assert statement which could throw
+   unexpected `AssertionError`
+  (2.17.0)
+ * Contributed #420: (ion) `IndexOutOfBoundsException` thrown by `IonReader` implementations
+  (2.17.0)
+ * Contributed #424: (ion) `IonReader` throws `NullPointerException` for unchecked
+   invalid data
+  (2.17.0)
+ * Contributed #426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
+  (2.17.0)
+ * Contributed #432 (ion) More methods from `IonReader` could throw an unexpected
+   `AssertionError`
+  (2.17.0)
+ * Contributed #434: (ion) Unexpected `NullPointerException` thrown from
+  `IonParser::getNumberType()`
+  (2.17.0)
+ * Contributed #449: (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl`
+   for invalid input
+  (2.17.0)
+ * Contributed #451: (cbor) `IndexOutOfBoundsException` in `CBORParser` for invalid input
+  (2.17.0)
+ * Contributed #458: (cbor) Unexpected NullPointerException in `CBORParser`
+  (2.17.0)
+ * Contributed #460: (protobuf) Unexpected `NullPointerException` in `ProtobufParser.currentName()`
+  (2.17.0)
+ * Contributed #464: (cbor) Unexpected `ArrayIndexOutOfBoundsException` in `CBORParser`
+   for corrupt String value
+  (2.17.0)
+
+Thomas de Lange (@thomasdelange5)
+ * Contributed fix for #428: (ion) `IonParser.getIntValue()` fails or does not handle
+   value overflow checks
+  (2.17.0)
+
+Yoann Vernageau (@yvrng)
+ * Contributed #487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
+   when source is an empty `InputStream`
+  (2.17.1)
+
+John Hudson (@johhud1)
+ * Contributed fix for #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()`
+   FIELD_NAME bug
+  (2.17.4)
+
+Rafał Harabień (@rafalh)
+ * Contributed fix for #167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
+  (2.18.0)
+
+PJ Fanning (@pjfanning)
+ * Contributed #484: (protobuf) Rework synchronization in `ProtobufMapper`
+  (2.18.0)
+ * Contributed #508: (avro) Ignore `specificData` field on serialization
+  (2.18.0)
+
+Joachim Lous (@jlous)
+ * Requested #494: Avro Schema generation: allow mapping Java Enum properties to
+   Avro String values
+  (2.18.0)
+
+Robert Noack (@mr-robert)
+ * Reported #509: IonValueMapper.builder() not implemented, does not register modules
+  (2.18.0)
+
+Knut Wannheden (@knutwannheden)
+ * Contributed #518: Should not read past end for CBOR string values
+  (2.18.1)

@@ -40,7 +40,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         assertToken(JsonToken.START_OBJECT, p.getCurrentToken());
 
         assertTrue(p.nextFieldName(new SerializedString("values")));
-        assertEquals("values", p.getCurrentName());
+        assertEquals("values", p.currentName());
 
         // 23-May-2016, tatu: Not working properly yet:
 //        assertEquals("{values}", p.getParsingContext().toString());

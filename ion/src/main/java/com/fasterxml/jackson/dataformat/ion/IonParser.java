@@ -163,17 +163,13 @@ public class IonParser
      * @since 2.13
      */
     IonParser(IonReader r, IonSystem system, IOContext ctxt, ObjectCodec codec, int ionParserFeatures) {
+        super(ctxt.streamReadConstraints());
         this._reader = r;
         this._ioContext = ctxt;
         this._objectCodec = codec;
         this._parsingContext = JsonReadContext.createRootContext(-1, -1, null);
         this._system = system;
         this._formatFeatures = ionParserFeatures;
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
     }
 
     @Override
@@ -269,14 +265,12 @@ public class IonParser
          if (_currToken != null) { // null only before/after document
             switch (_currToken) {
             case FIELD_NAME:
-                return getCurrentName();
+                return currentName();
             case VALUE_STRING:
                 try {
-                    // stringValue() will throw an UnknownSymbolException if we're
-                    // trying to get the text for a symbol id that cannot be resolved.
                     return _reader.stringValue();
-                } catch (UnknownSymbolException e) {
-                    throw _constructError(e.getMessage(), e);
+                } catch (IonException e) {
+                    return _reportCorruptContent(e);
                 }
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
@@ -285,8 +279,10 @@ public class IonParser
             // Some special cases here:
             case VALUE_EMBEDDED_OBJECT:
                 if (_reader.getType() == IonType.TIMESTAMP) {
-                    Timestamp ts = _reader.timestampValue();
-                    if (ts != null) return ts.toString();
+                    Timestamp ts = _timestampFromIonReader();
+                    if (ts != null) {
+                        return ts.toString();
+                    }
                 }
                 // How about CLOB?
                 break;
@@ -305,7 +301,8 @@ public class IonParser
 
     @Override
     public int getTextLength() throws IOException {
-        return getText().length();
+        String str = getText();
+        return (str == null) ? 0 : str.length();
     }
 
     @Override
@@ -321,61 +318,188 @@ public class IonParser
 
     @Override
     public BigInteger getBigIntegerValue() throws IOException {
-        return _reader.bigIntegerValue();
+        _verifyIsNumberToken();
+        return _getBigIntegerValue();
+    }
+
+    // @since 2.17
+    private BigInteger _getBigIntegerValue() throws IOException {
+        try {
+            return _reader.bigIntegerValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public BigDecimal getDecimalValue() throws IOException {
-        return _reader.bigDecimalValue();
+
+        _verifyIsNumberToken();
+        return _getBigDecimalValue();
+    }
+
+    // @since 2.17
+    private BigDecimal _getBigDecimalValue() throws IOException {
+        try {
+            return _reader.bigDecimalValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public double getDoubleValue() throws IOException {
-        return _reader.doubleValue();
+        _verifyIsNumberToken();
+        return _getDoubleValue();
+    }
+
+    // @since 2.17
+    private double _getDoubleValue() throws IOException {
+        try {
+            return _reader.doubleValue();
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public float getFloatValue() throws IOException {
-        return (float) _reader.doubleValue();
+        _verifyIsNumberToken();
+        // 04-May-2024, tatu: May seem odd but Ion really does not
+        //   expose 32-bit floats even if it MAY use them internally
+        //   for encoding. So:
+        return (float) _getDoubleValue();
     }
 
     @Override
     public int getIntValue() throws IOException {
-        return _reader.intValue();
+        _verifyIsNumberToken();
+        return _getIntValue();
+    }
+
+    // @since 2.17
+    private int _getIntValue() throws IOException {
+        try {
+            NumberType numberType = getNumberType();
+            if (numberType == NumberType.LONG) {
+                int result = _reader.intValue();
+                if ((long) result != _reader.longValue()) {
+                    this.reportOverflowInt();
+                }
+                return result;
+            }
+            if (numberType == NumberType.BIG_INTEGER) {
+                BigInteger bigInteger = _reader.bigIntegerValue();
+                if (BI_MIN_INT.compareTo(bigInteger) > 0 || BI_MAX_INT.compareTo(bigInteger) < 0) {
+                    this.reportOverflowInt();
+                }
+                return bigInteger.intValue();
+            } else {
+                return _reader.intValue();
+            }
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
     }
 
     @Override
     public long getLongValue() throws IOException {
-        return _reader.longValue();
+        _verifyIsNumberToken();
+        return _getLongValue();
+    }
+
+    // @since 2.17
+    private long _getLongValue() throws IOException {
+        try {
+            if (this.getNumberType() == NumberType.BIG_INTEGER) {
+                BigInteger bigInteger = _reader.bigIntegerValue();
+                if (BI_MIN_INT.compareTo(bigInteger) > 0 || BI_MAX_INT.compareTo(bigInteger) < 0) {
+                    this.reportOverflowLong();
+                }
+                return bigInteger.longValue();
+            } else {
+                return _reader.longValue();
+            }
+        } catch (IonException e) {
+            return _reportCorruptNumber(e);
+        }
+    }
+    
+    // @since 2.17
+    private void _verifyIsNumberToken() throws IOException
+    {
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            // Same as `ParserBase._parseNumericValue()` exception:
+            _reportError("Current token (%s) not numeric, can not use numeric value accessors",
+                    _currToken);
+        }
     }
 
     @Override
     public NumberType getNumberType() throws IOException
     {
-        IonType type = _reader.getType();
-        if (type != null) {
-            // Hmmh. Looks like Ion gives little bit looser definition here;
-            // harder to pin down exact type. But let's try some checks still.
-            switch (type) {
-            case DECIMAL:
-                //Ion decimals can be arbitrary precision, need to read as big decimal
-                return NumberType.BIG_DECIMAL;
-            case INT:
-                IntegerSize size = _reader.getIntegerSize();
-                switch (size) {
+        if (_currToken == JsonToken.VALUE_NUMBER_INT
+                || _currToken == JsonToken.VALUE_NUMBER_FLOAT
+                // 30-Dec-2023, tatu: This is odd, but some current tests seem to
+                //    expect this case to work when creating `IonParser` from `IonReader`,
+                //    which does not seem to work without work-around like this:
+                || ((_currToken == null) && !isClosed())) {
+            IonType type = _reader.getType();
+            if (type != null) {
+                // Hmmh. Looks like Ion gives little bit looser definition here;
+                // harder to pin down exact type. But let's try some checks still.
+                switch (type) {
+                case DECIMAL:
+                    //Ion decimals can be arbitrary precision, need to read as big decimal
+                    return NumberType.BIG_DECIMAL;
                 case INT:
-                    return NumberType.INT;
-                case LONG:
-                    return NumberType.LONG;
+                    final IntegerSize size;
+                    try {
+                        size = _reader.getIntegerSize();
+                    } catch (IonException e) {
+                        return _reportCorruptNumber(e);
+                    }
+                    if (size == null) {
+                        _reportError("Current token (%s) not integer", _currToken);
+                    }
+                    switch (size) {
+                    case INT:
+                        return NumberType.INT;
+                    case LONG:
+                        return NumberType.LONG;
+                    default:
+                        return NumberType.BIG_INTEGER;
+                    }
+                case FLOAT:
+                    // 04-May-2024, tatu: Ion really does not expose 32-bit floats, so:
+                    return NumberType.DOUBLE;
                 default:
-                    return NumberType.BIG_INTEGER;
                 }
-            case FLOAT:
-                return NumberType.DOUBLE;
-            default:
             }
         }
         return null;
+    }
+
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws IOException
+    {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            final IonType type = _reader.getType();
+            if (type == IonType.FLOAT) {
+                // 06-Jan-2024, tatu: Existing code maps Ion `FLOAT` into Java
+                //    `float`. But code in `IonReader` suggests `Double` might
+                //    be more accurate mapping... odd.
+                // 04-May-2024, tatu: Ion really does not expose 32-bit floats;
+                //    must expose as 64-bit here too
+                return NumberTypeFP.DOUBLE64;
+            }
+            if (type == IonType.DECIMAL) {
+                // 06-Jan-2024, tatu: Seems like `DECIMAL` is expected to map
+                //    to `BigDecimal`, as per existing code so:
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
     }
 
     @Override
@@ -384,17 +508,17 @@ public class IonParser
         if (nt != null) {
             switch (nt) {
             case INT:
-                return _reader.intValue();
+                return _getIntValue();
             case LONG:
-                return _reader.longValue();
+                return _getLongValue();
             case FLOAT:
-                return (float) _reader.doubleValue();
+                return (float) _getDoubleValue();
             case DOUBLE:
-                return _reader.doubleValue();
+                return _getDoubleValue();
             case BIG_DECIMAL:
-                return _reader.bigDecimalValue();
+                return _getBigDecimalValue();
             case BIG_INTEGER:
-                return getBigIntegerValue();
+                return _getBigIntegerValue();
             }
         }
         return null;
@@ -418,7 +542,7 @@ public class IonParser
             switch (_reader.getType()) {
             case BLOB:
             case CLOB: // looks like CLOBs are much like BLOBs...
-                return _reader.newBytes();
+                return _bytesFromIonReader();
             default:
             }
         }
@@ -432,7 +556,7 @@ public class IonParser
         if (_system == null) {
             throw new IllegalStateException("This "+getClass().getSimpleName()+" instance cannot be used for IonValue mapping");
         }
-        _currToken = JsonToken.VALUE_EMBEDDED_OBJECT;
+        _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
         writer.writeValue(_reader);
@@ -446,21 +570,31 @@ public class IonParser
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             switch (_reader.getType()) {
             case TIMESTAMP:
-                try {
-                    return _reader.timestampValue();
-                } catch (IllegalArgumentException e) {
-                    throw _constructError(String.format(
-                            "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
-                            e);
-                }
+                return _timestampFromIonReader();
             case BLOB:
             case CLOB:
-                return _reader.newBytes();
+                return _bytesFromIonReader();
             // What about CLOB?
             default:
             }
         }
         return getIonValue();
+    }
+
+    // @since 2.17
+    private byte[] _bytesFromIonReader() throws IOException {
+        return _reader.newBytes();
+    }
+
+    // @since 2.17
+    private Timestamp _timestampFromIonReader() throws IOException {
+        try {
+            return _reader.timestampValue();
+        } catch (IllegalArgumentException e) {
+            throw _constructError(String.format(
+                    "Invalid embedded TIMESTAMP value, problem: %s", e.getMessage()),
+                    e);
+        }
     }
 
     /*
@@ -487,24 +621,35 @@ public class IonParser
      */
 
     @Override
-    public JsonLocation getCurrentLocation() {
+    public JsonLocation currentLocation() {
         return JsonLocation.NA;
     }
 
     @Override
-    public String getCurrentName() throws IOException {
+    public JsonLocation currentTokenLocation() {
+        return JsonLocation.NA;
+    }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
+
+    @Override
+    public String currentName() throws IOException {
         return _parsingContext.getCurrentName();
     }
 
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
+    
     @Override
     public JsonStreamContext getParsingContext() {
         return _parsingContext;
-    }
-
-
-    @Override
-    public JsonLocation getTokenLocation() {
-        return JsonLocation.NA;
     }
 
     @Override
@@ -512,7 +657,7 @@ public class IonParser
     {
         // special case: if we return field name, we know value type, return it:
         if (_currToken == JsonToken.FIELD_NAME) {
-            return (_currToken = _valueToken);
+            return _updateToken(_valueToken);
         }
         // also, when starting array/object, need to create new context
         if (_currToken == JsonToken.START_OBJECT) {
@@ -528,15 +673,15 @@ public class IonParser
         try {
             type = _reader.next();
         } catch (IonException e) {
-            _wrapError(e.getMessage(), e);
+            return _reportCorruptContent(e);
+
         }
         if (type == null) {
             if (_parsingContext.inRoot()) { // EOF?
-                close();
-                _currToken = null;
+                _updateTokenToNull();
             } else {
                 _parsingContext = _parsingContext.getParent();
-                _currToken = _reader.isInStruct() ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+                _updateToken(_reader.isInStruct() ? JsonToken.END_OBJECT : JsonToken.END_ARRAY);
                 _reader.stepOut();
             }
             return _currToken;
@@ -545,21 +690,23 @@ public class IonParser
         boolean inStruct = !_parsingContext.inRoot() && _reader.isInStruct();
         // (isInStruct can return true for the first value read if the reader
         // was created from an IonValue that has a parent container)
+        final String name;
         try {
             // getFieldName() can throw an UnknownSymbolException if the text of the
             // field name symbol cannot be resolved.
-            _parsingContext.setCurrentName(inStruct ? _reader.getFieldName() : null);
-        } catch (UnknownSymbolException e) {
-            _wrapError(e.getMessage(), e);
+            name = inStruct ? _reader.getFieldName() : null;
+        } catch (IonException e) {
+            return _reportCorruptContent(e);
         }
+        _parsingContext.setCurrentName(name);
         JsonToken t = _tokenFromType(type);
         // and return either field name first
         if (inStruct) {
             _valueToken = t;
-            return (_currToken = JsonToken.FIELD_NAME);
+            return _updateToken(JsonToken.FIELD_NAME);
         }
         // or just the value (for lists, root value)
-        return (_currToken = t);
+        return _updateToken(t);
     }
 
     /**
@@ -585,9 +732,8 @@ public class IonParser
         }
         int open = 1;
 
-        /* Since proper matching of start/end markers is handled
-         * by nextToken(), we'll just count nesting levels here
-         */
+        // Since proper matching of start/end markers is handled
+        // by nextToken(), we'll just count nesting levels here
         while (true) {
             JsonToken t = nextToken();
             if (t == null) {
@@ -614,7 +760,7 @@ public class IonParser
      *****************************************************************
      * Internal helper methods
      *****************************************************************
-      */
+     */
 
     protected JsonToken _tokenFromType(IonType type)
     {
@@ -663,6 +809,28 @@ public class IonParser
             _reportError(": expected close marker for "+_parsingContext.typeDesc()+" (from "
                     +_parsingContext.startLocation(_ioContext.contentReference())+")");
         }
+    }
+
+    private <T> T _reportCorruptContent(Throwable e) throws IOException
+    {
+        String origMsg = e.getMessage();
+        if (origMsg == null) {
+            origMsg = "[no exception message]";
+        }
+        final String msg = String.format("Corrupt content to decode; underlying `IonReader` problem: (%s) %s",
+                e.getClass().getName(), origMsg);
+        throw _constructError(msg, e);
+    }
+
+    private <T> T _reportCorruptNumber(Throwable e) throws IOException
+    {
+        String origMsg = e.getMessage();
+        if (origMsg == null) {
+            origMsg = "[no exception message]";
+        }
+        final String msg = String.format("Corrupt Number value to decode; underlying `IonReader` problem: (%s) %s",
+                e.getClass().getName(), origMsg);
+        throw _constructError(msg, e);
     }
 
     @Override

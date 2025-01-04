@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -42,7 +43,10 @@ public class ProtobufMapper extends ObjectMapper
      *
      * @since 2.9
      */
-    protected DescriptorLoader _descriptorLoader;
+    protected volatile DescriptorLoader _descriptorLoader;
+
+    // @since 2.18
+    private final ReentrantLock _descriptorLock = new ReentrantLock();
 
     /*
     /**********************************************************
@@ -192,11 +196,19 @@ public class ProtobufMapper extends ObjectMapper
      *
      * @since 2.9
      */
-    public synchronized DescriptorLoader descriptorLoader() throws IOException
+    public DescriptorLoader descriptorLoader() throws IOException
     {
         DescriptorLoader l = _descriptorLoader;
         if (l == null) {
-            _descriptorLoader = l = DescriptorLoader.construct(this);
+            _descriptorLock.lock();
+            try {
+                l = _descriptorLoader;
+                if (l == null) {
+                    _descriptorLoader = l = DescriptorLoader.construct(this);
+                }
+            } finally {
+                _descriptorLock.unlock();
+            }
         }
         return l;
     }

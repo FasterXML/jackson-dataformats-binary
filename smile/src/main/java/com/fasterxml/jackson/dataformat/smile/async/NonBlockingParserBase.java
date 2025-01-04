@@ -148,7 +148,7 @@ public abstract class NonBlockingParserBase
         // We don't need a lot; for most things maximum known a-priori length below 70 bytes
         _inputCopy = ctxt.allocReadIOBuffer(500);
 
-        _currToken = null;
+        _updateTokenToNull();
         _majorState = MAJOR_INITIAL;
     }
 
@@ -328,7 +328,11 @@ public abstract class NonBlockingParserBase
         case JsonTokenId.ID_NOT_AVAILABLE:
             return 0; // or throw exception?
         default:
-            return _currToken.asCharArray().length;
+            final char[] ch = _currToken.asCharArray();
+            if (ch != null) {
+                return ch.length;
+            }
+            return 0;
         }
     }
 
@@ -395,7 +399,7 @@ public abstract class NonBlockingParserBase
         _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
         _majorState = MAJOR_ARRAY_ELEMENT;
         _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
-        return (_currToken = JsonToken.START_ARRAY);
+        return _updateToken(JsonToken.START_ARRAY);
     }
 
     protected final JsonToken _startObjectScope() throws IOException
@@ -403,7 +407,7 @@ public abstract class NonBlockingParserBase
         _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
         _majorState = MAJOR_OBJECT_FIELD;
         _majorStateAfterValue = MAJOR_OBJECT_FIELD;
-        return (_currToken = JsonToken.START_OBJECT);
+        return _updateToken(JsonToken.START_OBJECT);
     }
 
     protected final JsonToken _closeArrayScope() throws IOException
@@ -423,7 +427,7 @@ public abstract class NonBlockingParserBase
         }
         _majorState = st;
         _majorStateAfterValue = st;
-        return (_currToken = JsonToken.END_ARRAY);
+        return _updateToken(JsonToken.END_ARRAY);
     }
 
     protected final JsonToken _closeObjectScope() throws IOException
@@ -443,7 +447,7 @@ public abstract class NonBlockingParserBase
         }
         _majorState = st;
         _majorStateAfterValue = st;
-        return (_currToken = JsonToken.END_OBJECT);
+        return _updateToken(JsonToken.END_OBJECT);
     }
 
     /*
@@ -586,14 +590,13 @@ public abstract class NonBlockingParserBase
             _handleEOF();
         }
         close();
-        return (_currToken = null);
+        return _updateTokenToNull();
     }
 
     protected final JsonToken _valueComplete(JsonToken t) throws IOException
     {
         _majorState = _majorStateAfterValue;
-        _currToken = t;
-        return t;
+        return _updateToken(t);
     }
 
     protected final JsonToken _handleSharedString(int index) throws IOException
@@ -612,7 +615,7 @@ public abstract class NonBlockingParserBase
         }
         _streamReadContext.setCurrentName(_seenNames[index]);
         _majorState = MAJOR_OBJECT_VALUE;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return _updateToken(JsonToken.FIELD_NAME);
     }
 
     protected final void _addSeenStringValue(String v) throws IOException

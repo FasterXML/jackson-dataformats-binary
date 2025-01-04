@@ -276,6 +276,7 @@ versionBits));
         if (_inputStream != null) {
             int count = _inputStream.read(_inputBuffer, 0, _inputBuffer.length);
             _currInputProcessed += _inputEnd;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             _inputPtr = 0;
             if (count > 0) {
                 _inputEnd = count;
@@ -334,6 +335,7 @@ versionBits));
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         if (amount > 0 && _inputPtr > 0) {
             //_currInputRowStart -= _inputPtr;
             System.arraycopy(_inputBuffer, _inputPtr, _inputBuffer, 0, amount);
@@ -429,7 +431,7 @@ versionBits));
         _binaryValue = null;
         // Two main modes: values, and field names.
         if ((_currToken != JsonToken.FIELD_NAME) && _streamReadContext.inObject()) {
-            return (_currToken = _handleFieldName());
+            return _updateToken(_handleFieldName());
         }
         if (_inputPtr >= _inputEnd) {
             if (!_loadMore()) {
@@ -452,27 +454,27 @@ versionBits));
                     switch (typeBits) {
                     case 0x00:
                         _textBuffer.resetWithEmpty();
-                        return (_currToken = JsonToken.VALUE_STRING);
+                        return _updateToken(JsonToken.VALUE_STRING);
                     case 0x01:
-                        return (_currToken = JsonToken.VALUE_NULL);
+                        return _updateToken(JsonToken.VALUE_NULL);
                     case 0x02: // false
-                        return (_currToken = JsonToken.VALUE_FALSE);
+                        return _updateToken(JsonToken.VALUE_FALSE);
                     default: // 0x03 == true
-                        return (_currToken = JsonToken.VALUE_TRUE);
+                        return _updateToken(JsonToken.VALUE_TRUE);
                     }
                 }
                 if (typeBits == 4) {
                     _finishInt();
-                    return (_currToken = JsonToken.VALUE_NUMBER_INT);
+                    return _updateToken(JsonToken.VALUE_NUMBER_INT);
                 }
                 // next 3 bytes define subtype
                 if (typeBits <= 6) { // VInt (zigzag), BigInteger
                     _tokenIncomplete = true;
-                    return (_currToken = JsonToken.VALUE_NUMBER_INT);
+                    return _updateToken(JsonToken.VALUE_NUMBER_INT);
                 }
                 if (typeBits < 11 && typeBits != 7) { // floating-point
                     _tokenIncomplete = true;
-                    return (_currToken = JsonToken.VALUE_NUMBER_FLOAT);
+                    return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
                 }
                 if (typeBits == 0x1A) { // == 0x3A == ':' -> possibly header signature for next chunk?
                     if (handleSignature(false, false)) {
@@ -485,7 +487,7 @@ versionBits));
                         if (_currToken == null) {
                             return _nextAfterHeader();
                         }
-                        return (_currToken = null);
+                        return _updateTokenToNull();
                     }
                     _reportError("Unrecognized token byte 0x3A (malformed segment header?");
             	}
@@ -504,21 +506,21 @@ versionBits));
                 return _addSeenStringValue();
             }
             _tokenIncomplete = true;
-            return (_currToken = JsonToken.VALUE_STRING);
+            return _updateToken(JsonToken.VALUE_STRING);
         case 6: // small integers; zigzag encoded
             _numberInt = SmileUtil.zigzagDecode(ch & 0x1F);
             _numTypesValid = NR_INT;
             _numberType = NumberType.INT;
-            return (_currToken = JsonToken.VALUE_NUMBER_INT);
+            return _updateToken(JsonToken.VALUE_NUMBER_INT);
         case 7: // binary/long-text/long-shared/start-end-markers
             switch (ch & 0x1F) {
             case 0x00: // long variable length ASCII
             case 0x04: // long variable length unicode
                 _tokenIncomplete = true;
-                return (_currToken = JsonToken.VALUE_STRING);
+                return _updateToken(JsonToken.VALUE_STRING);
             case 0x08: // binary, 7-bit (0xE8)
                 _tokenIncomplete = true;
-                return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
+                return _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
             case 0x0C: // long shared string (0xEC)
             case 0x0D:
             case 0x0E:
@@ -529,23 +531,23 @@ versionBits));
                 return _handleSharedString(((ch & 0x3) << 8) + (_inputBuffer[_inputPtr++] & 0xFF));
             case 0x18: // START_ARRAY
                 createChildArrayContext(-1, -1);
-                return (_currToken = JsonToken.START_ARRAY);
+                return _updateToken(JsonToken.START_ARRAY);
             case 0x19: // END_ARRAY
                 if (!_streamReadContext.inArray()) {
                     _reportMismatchedEndMarker(']', '}');
                 }
                 _streamReadContext = _streamReadContext.getParent();
-                return (_currToken = JsonToken.END_ARRAY);
+                return _updateToken(JsonToken.END_ARRAY);
             case 0x1A: // START_OBJECT
                 createChildObjectContext(-1, -1);
-                return (_currToken = JsonToken.START_OBJECT);
+                return _updateToken(JsonToken.START_OBJECT);
             case 0x1B: // not used in this mode; would be END_OBJECT
                 _reportError("Invalid type marker byte 0xFB in value mode (would be END_OBJECT in key mode)");
             case 0x1D: // binary, raw
                 _tokenIncomplete = true;
-                return (_currToken = JsonToken.VALUE_EMBEDDED_OBJECT);
+                return _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
             case 0x1F: // 0xFF, end of content
-                return (_currToken = null);
+                return _updateTokenToNull();
             }
             break;
         }
@@ -575,7 +577,7 @@ versionBits));
         if ((_inputPtr < _inputEnd) || _loadMore()) {
             if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
                 // danger zone; just set and return null token
-                return (_currToken = null);
+                return _updateTokenToNull();
             }
         }
         // Otherwise safe enough to do recursion
@@ -588,7 +590,7 @@ versionBits));
             _reportInvalidSharedStringValue(index);
         }
         _textBuffer.resetWithString(_seenStringValues[index]);
-        return (_currToken = JsonToken.VALUE_STRING);
+        return _updateToken(JsonToken.VALUE_STRING);
     }
 
     private final JsonToken _addSeenStringValue() throws IOException
@@ -601,7 +603,7 @@ versionBits));
         } else {
             _expandSeenStringValues(v);
         }
-        return (_currToken = JsonToken.VALUE_STRING);
+        return _updateToken(JsonToken.VALUE_STRING);
     }
 
     private final void _expandSeenStringValues(String newText)
@@ -677,7 +679,7 @@ versionBits));
                 case 0: // misc, including end marker
                     switch (ch) {
                     case 0x20: // empty String as name, legal if unusual
-                        _currToken = JsonToken.FIELD_NAME;
+                        _updateToken(JsonToken.FIELD_NAME);
                         _inputPtr = ptr;
                         _streamReadContext.setCurrentName("");
                         return (byteLen == 0);
@@ -693,7 +695,7 @@ versionBits));
                             final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                             _streamReadContext.setCurrentName(name);
                             _inputPtr = ptr;
-                            _currToken = JsonToken.FIELD_NAME;
+                            _updateToken(JsonToken.FIELD_NAME);
                             return name.equals(str.getValue());
                         }
                     //case 0x34: // long ASCII/Unicode name; let's not even try...
@@ -708,7 +710,7 @@ versionBits));
                         final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                         _streamReadContext.setCurrentName(name);
                         _inputPtr = ptr;
-                        _currToken = JsonToken.FIELD_NAME;
+                        _updateToken(JsonToken.FIELD_NAME);
                         return name.equals(str.getValue());
                     }
                 case 2: // short ASCII
@@ -731,7 +733,7 @@ versionBits));
                                _seenNames[_seenNameCount++] = name;
                             }
                             _streamReadContext.setCurrentName(name);
-                            _currToken = JsonToken.FIELD_NAME;
+                            _updateToken(JsonToken.FIELD_NAME);
                             return true;
                         }
                     }
@@ -742,7 +744,7 @@ versionBits));
                         int len = (ch & 0x3F);
                         if (len > 0x37) {
                             if (len == 0x3B) {
-                                _currToken = JsonToken.END_OBJECT;
+                                _updateToken(JsonToken.END_OBJECT);
                                 // 21-Mar-2021, tatu: We have `inObject()`, checked already
                                 _inputPtr = ptr;
                                 _streamReadContext = _streamReadContext.getParent();
@@ -769,7 +771,7 @@ versionBits));
                                _seenNames[_seenNameCount++] = name;
                             }
                             _streamReadContext.setCurrentName(name);
-                            _currToken = JsonToken.FIELD_NAME;
+                            _updateToken(JsonToken.FIELD_NAME);
                             return true;
                         }
                     }
@@ -806,7 +808,7 @@ versionBits));
                 switch (ch) {
                 case 0x20: // empty String as name, legal if unusual
                     _streamReadContext.setCurrentName("");
-                    _currToken = JsonToken.FIELD_NAME;
+                    _updateToken(JsonToken.FIELD_NAME);
                     return "";
                 case 0x30: // long shared
                 case 0x31:
@@ -822,11 +824,11 @@ versionBits));
                         }
                         final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                         _streamReadContext.setCurrentName(name);
-                        _currToken = JsonToken.FIELD_NAME;
+                        _updateToken(JsonToken.FIELD_NAME);
                         return name;
                     }
                 case 0x34: // long ASCII/Unicode name
-                    _currToken = JsonToken.FIELD_NAME;
+                    _updateToken(JsonToken.FIELD_NAME);
                     return _handleLongFieldName();
                 }
                 break;
@@ -838,7 +840,7 @@ versionBits));
                     }
                     final String name = _seenNames[index]; // lgtm [java/dereferenced-value-may-be-null]
                     _streamReadContext.setCurrentName(name);
-                    _currToken = JsonToken.FIELD_NAME;
+                    _updateToken(JsonToken.FIELD_NAME);
                     return name;
                 }
             case 2: // short ASCII
@@ -852,7 +854,7 @@ versionBits));
                         _seenNames[_seenNameCount++] = name;
                     }
                     _streamReadContext.setCurrentName(name);
-                    _currToken = JsonToken.FIELD_NAME;
+                    _updateToken(JsonToken.FIELD_NAME);
                     return name;
                 }
             case 3: // short Unicode
@@ -863,7 +865,7 @@ versionBits));
                         if (ch == 0x3B) {
                             // 21-Mar-2021, tatu: We have `inObject()`, checked already
                             _streamReadContext = _streamReadContext.getParent();
-                            _currToken = JsonToken.END_OBJECT;
+                            _updateToken(JsonToken.END_OBJECT);
                             return null;
                         }
                     } else {
@@ -876,7 +878,7 @@ versionBits));
                             _seenNames[_seenNameCount++] = name;
                         }
                         _streamReadContext.setCurrentName(name);
-                        _currToken = JsonToken.FIELD_NAME;
+                        _updateToken(JsonToken.FIELD_NAME);
                         return name;
                     }
                 }
@@ -932,7 +934,7 @@ versionBits));
                     _inputPtr = ptr;
                     String text = _seenStringValues[ch];
                     _textBuffer.resetWithString(text);
-                    _currToken = JsonToken.VALUE_STRING;
+                    _updateToken(JsonToken.VALUE_STRING);
                     return text;
                 } else {
                     // important: this is invalid, don't accept
@@ -945,7 +947,7 @@ versionBits));
                     if (typeBits == 0x00) {
                         _inputPtr = ptr;
                         _textBuffer.resetWithEmpty();
-                        _currToken = JsonToken.VALUE_STRING;
+                        _updateToken(JsonToken.VALUE_STRING);
                         return "";
                     }
                 }
@@ -953,7 +955,7 @@ versionBits));
             case 2: // tiny ASCII
                 // fall through
             case 3: // short ASCII
-                _currToken = JsonToken.VALUE_STRING;
+                _updateToken(JsonToken.VALUE_STRING);
                 _inputPtr = ptr;
                 {
                     final String text = _decodeShortAsciiValue(1 + (ch & 0x3F));
@@ -970,7 +972,7 @@ versionBits));
             case 4: // tiny Unicode
                 // fall through
             case 5: // short Unicode
-                _currToken = JsonToken.VALUE_STRING;
+                _updateToken(JsonToken.VALUE_STRING);
                 _inputPtr = ptr;
                 {
                     final String text = _decodeShortUnicodeValue(2 + (ch & 0x3F));
@@ -992,7 +994,7 @@ versionBits));
                 case 0x00: // long variable length ASCII
                 case 0x04: // long variable length unicode
                     _tokenIncomplete = true;
-                    return (_currToken = JsonToken.VALUE_STRING);
+                    return _updateToken(JsonToken.VALUE_STRING);
                 case 0x08: // binary, 7-bit
                     break main;
                 case 0x0C: // long shared string
@@ -1139,7 +1141,10 @@ versionBits));
                 // TODO: optimize
                 return getNumberValue().toString().length();
             }
-            return _currToken.asCharArray().length;
+            final char[] ch = _currToken.asCharArray();
+            if (ch != null) {
+                return ch.length;
+            }
         }
         return 0;
     }
@@ -1168,6 +1173,9 @@ versionBits));
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
         }
+        if (_currToken == JsonToken.FIELD_NAME) {
+            return currentName();
+        }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
@@ -1178,6 +1186,9 @@ versionBits));
     public String getValueAsString(String defaultValue) throws IOException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return currentName();
+            }
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
                 return defaultValue;
             }
@@ -2243,7 +2254,7 @@ versionBits));
         if (raw.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            streamReadConstraints().validateIntegerLength(raw.length);
+            _streamReadConstraints.validateIntegerLength(raw.length);
             _numberBigInt = new BigInteger(raw);
         }
         _numTypesValid = NR_BIGINT;
@@ -2291,7 +2302,7 @@ versionBits));
         if (raw.length == 0) {
             _numberBigDecimal = BigDecimal.ZERO;
         } else {
-            streamReadConstraints().validateFPLength(raw.length);
+            _streamReadConstraints.validateFPLength(raw.length);
             BigInteger unscaledValue = new BigInteger(raw);
             _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }
@@ -2577,7 +2588,7 @@ currentToken(), firstCh);
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outBuf.length) {
@@ -2890,6 +2901,11 @@ currentToken(), firstCh);
 
     protected void _skipBytes(int len) throws IOException
     {
+        // 18-Dec-2023, tatu: Sanity check related to some OSS-Fuzz findings:
+        if (len < 0) {
+            throw _constructReadException("Internal error: _skipBytes() called with negative value: %d",
+                    len);
+        }
         while (true) {
             int toAdd = Math.min(len, _inputEnd - _inputPtr);
             _inputPtr += toAdd;
@@ -2911,6 +2927,15 @@ currentToken(), firstCh);
         // Ok; 8 encoded bytes for 7 payload bytes first
         int chunks = origBytes / 7;
         int encBytes = chunks * 8;
+
+        // sanity check: not all length markers valid; due to signed int(32)
+        // calculations maximum length only 7/8 of 2^31
+        if (encBytes < 0) {
+            throw _constructReadException(
+                    "Invalid content: invalid 7-bit binary encoded byte length (0x%X) exceeds maximum valid value",
+                    origBytes);
+        }
+        
         // and for last 0 - 6 bytes, last+1 (except none if no leftovers)
         origBytes -= 7 * chunks;
         if (origBytes > 0) {
@@ -3034,15 +3059,6 @@ currentToken(), firstCh);
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
     }
 
-    protected void _reportInvalidChar(int c) throws JsonParseException
-    {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
-    }
-
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
@@ -3107,17 +3123,17 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
             _handleEOF();
         }
         close();
-        return (_currToken = null);
+        return _updateTokenToNull();
     }
 
     private void createChildArrayContext(final int lineNr, final int colNr) throws IOException {
         _streamReadContext = _streamReadContext.createChildArrayContext(lineNr, colNr);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 
     private void createChildObjectContext(final int lineNr, final int colNr) throws IOException {
         _streamReadContext = _streamReadContext.createChildObjectContext(lineNr, colNr);
-        streamReadConstraints().validateNestingDepth(_streamReadContext.getNestingDepth());
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 }
 

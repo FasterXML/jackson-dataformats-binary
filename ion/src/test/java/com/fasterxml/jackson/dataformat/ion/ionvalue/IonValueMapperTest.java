@@ -17,6 +17,7 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.ion.IonSymbolSerializer;
@@ -48,8 +50,8 @@ import com.amazon.ion.system.IonSystemBuilder;
  */
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();
-    private final IonValueMapper ionValueMapper = new IonValueMapper(ionSystem,
-            PropertyNamingStrategies.SNAKE_CASE);
+    private final IonValueMapper ionValueMapper = (IonValueMapper) IonValueMapper.builder(ionSystem,
+            PropertyNamingStrategies.SNAKE_CASE).build();
 
     enum ReturnCode {
         Success,
@@ -65,6 +67,12 @@ public class IonValueMapperTest {
         public int iHaveSomeOtherName;
         public ReturnCode imAnEnum;
         public Timestamp someTime;
+    }
+
+    @Test
+    public void testMapperCopy() throws Exception {
+        ObjectMapper mapper2 = ionValueMapper.copy();
+        assertNotSame(ionValueMapper, mapper2);
     }
 
     @Test
@@ -243,5 +251,17 @@ public class IonValueMapperTest {
         Object o = ionValueMapper.parse(expected, clazz);
         IonValue actual = ionValueMapper.serialize(o);
         assertEquals(expected, actual);
+    }
+
+    // for [dataformats-binary#509]
+    @Test
+    public void testBuilders() throws Exception {
+        IonObjectMapper mapper = IonValueMapper.builder().build();
+        assertNotNull(mapper);
+        assertEquals(IonValueMapper.class, mapper.getClass());
+
+        mapper = IonValueMapper.builder(ionSystem).build();
+        assertNotNull(mapper);
+        assertEquals(IonValueMapper.class, mapper.getClass());
     }
 }

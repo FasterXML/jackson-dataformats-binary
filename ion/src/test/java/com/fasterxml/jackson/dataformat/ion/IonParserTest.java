@@ -43,6 +43,7 @@ public class IonParserTest
         IonParser intParser = new IonFactory().createParser(ionInt);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, intParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.INT, intParser.getNumberType());
+        Assert.assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
         Assert.assertEquals(intValue, intParser.getNumberValue());
 
         Long longValue = Long.MAX_VALUE;
@@ -50,6 +51,7 @@ public class IonParserTest
         IonParser longParser = new IonFactory().createParser(ionLong);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, longParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.LONG, longParser.getNumberType());
+        Assert.assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
         Assert.assertEquals(longValue, longParser.getNumberValue());
 
         BigInteger bigIntValue = new BigInteger(Long.MAX_VALUE + "1");
@@ -57,6 +59,7 @@ public class IonParserTest
         IonParser bigIntParser = new IonFactory().createParser(ionBigInt);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntParser.getNumberType());
+        Assert.assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
         Assert.assertEquals(bigIntValue, bigIntParser.getNumberValue());
 
         Double decimalValue = Double.MAX_VALUE;
@@ -64,6 +67,7 @@ public class IonParserTest
         IonParser decimalParser = new IonFactory().createParser(ionDecimal);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, decimalParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, decimalParser.getNumberType());
+        Assert.assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, decimalParser.getNumberTypeFP());
         Assert.assertEquals(0, new BigDecimal("" + decimalValue).compareTo((BigDecimal) decimalParser.getNumberValue()));
 
         Double floatValue = Double.MAX_VALUE;
@@ -71,6 +75,8 @@ public class IonParserTest
         IonParser floatParser = new IonFactory().createParser(ionFloat);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
+        // [dataformats-binary#490]: float coerces to double
+        Assert.assertEquals(JsonParser.NumberTypeFP.DOUBLE64, floatParser.getNumberTypeFP());
         Assert.assertEquals(floatValue, floatParser.getNumberValue());
 
         BigDecimal bigDecimalValue = new BigDecimal(Double.MAX_VALUE + "1");
@@ -78,6 +84,7 @@ public class IonParserTest
         IonParser bigDecimalParser = new IonFactory().createParser(ionBigDecimal);
         Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, bigDecimalParser.nextToken());
         Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, bigDecimalParser.getNumberType());
+        Assert.assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, bigDecimalParser.getNumberTypeFP());
         Assert.assertEquals(0, bigDecimalValue.compareTo((BigDecimal) bigDecimalParser.getNumberValue()));
     }
 
@@ -93,6 +100,10 @@ public class IonParserTest
         reader.stepIn();
         // Step next.
         reader.next();
+        // 30-Dec-2023, tatu: This is problematic as created parser is expected
+        //    to point to `JsonToken.VALUE_NUMBER_FLOAT`, but `createParser()`
+        //    does not initialize state. For now, `IonParser.getNumberType()` has
+        //    special handling allowing this case but that should not be needed
         final IonParser floatParser = new IonFactory().createParser(reader);
         Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
     }
@@ -158,6 +169,9 @@ public class IonParserTest
             Assert.assertEquals(JsonToken.START_OBJECT, parser.nextToken());
             Assert.assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
             Assert.assertEquals("a", parser.currentName());
+            Assert.assertEquals("a", parser.getText());
+            Assert.assertEquals("a", parser.getValueAsString());
+            Assert.assertEquals("a", parser.getValueAsString("b"));
             Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
             Assert.assertEquals(1, parser.getIntValue());
             parser.nextValue(); // Should encounter unknown symbol and fail

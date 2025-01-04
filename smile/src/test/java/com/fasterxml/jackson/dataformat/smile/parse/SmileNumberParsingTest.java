@@ -5,13 +5,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.InputCoercionException;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
-public class NumberParsingTest
+public class SmileNumberParsingTest
     extends BaseTestForSmile
 {
     public void testIntsMedium() throws IOException
@@ -34,6 +35,7 @@ public class NumberParsingTest
         p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(-999, p.getIntValue());
         assertEquals("-999", p.getText());
         p.close();
@@ -42,6 +44,7 @@ public class NumberParsingTest
         p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(123456789, p.getIntValue());
         p.close();
     }
@@ -52,12 +55,14 @@ public class NumberParsingTest
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(Integer.MAX_VALUE, p.getIntValue());
         p.close();
         data = _smileDoc(String.valueOf(Integer.MIN_VALUE));
         p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.INT, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(Integer.MIN_VALUE, p.getIntValue());
         p.close();
     }
@@ -68,11 +73,11 @@ public class NumberParsingTest
     	SmileParser p = _smileParser(data);
     	assertToken(JsonToken.START_OBJECT, p.nextToken());
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("a", p.getCurrentName());
+    	assertEquals("a", p.currentName());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	// let's NOT access value, forcing skipping
     	assertToken(JsonToken.FIELD_NAME, p.nextToken());
-    	assertEquals("b", p.getCurrentName());
+    	assertEquals("b", p.currentName());
     	assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
     	// let's NOT access value, forcing skipping
     	assertToken(JsonToken.END_OBJECT, p.nextToken());
@@ -87,6 +92,7 @@ public class NumberParsingTest
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(l, p.getLongValue());
         p.close();
 
@@ -102,6 +108,7 @@ public class NumberParsingTest
         p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(l, p.getLongValue());
 
         assertEquals((double) l, p.getDoubleValue());
@@ -126,6 +133,7 @@ public class NumberParsingTest
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(l, p.getLongValue());
         assertEquals(String.valueOf(l), p.getText());
         p.close();
@@ -141,6 +149,7 @@ public class NumberParsingTest
         p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.LONG, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(l, p.getLongValue());
         assertEquals(String.valueOf(l), p.getText());
         p.close();
@@ -209,6 +218,7 @@ public class NumberParsingTest
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.FLOAT32, p.getNumberTypeFP());
         assertEquals(value, p.getFloatValue());
         assertFalse(p.isNaN());
         assertEquals(Float.valueOf(value), p.getNumberValue());
@@ -234,6 +244,7 @@ public class NumberParsingTest
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertFalse(p.isNaN());
         assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.DOUBLE64, p.getNumberTypeFP());
         assertEquals(value, p.getDoubleValue());
         assertEquals(Double.valueOf(value), p.getNumberValue());
 
@@ -328,6 +339,7 @@ public class NumberParsingTest
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals(JsonParser.NumberType.BIG_INTEGER, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(BigInteger.class, p.getNumberValue().getClass());
         assertEquals(in, p.getBigIntegerValue());
         p.close();
@@ -359,6 +371,7 @@ public class NumberParsingTest
         SmileParser p = _smileParser(data);
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, p.getNumberTypeFP());
         assertFalse(p.isNaN());
         assertEquals(BigDecimal.class, p.getNumberValue().getClass());
         assertEquals(in, p.getDecimalValue());
@@ -429,6 +442,7 @@ public class NumberParsingTest
         try (SmileParser p = _smileParser(f, data)) {
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             assertEquals(JsonParser.NumberType.BIG_DECIMAL, p.getNumberType());
+            assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, p.getNumberTypeFP());
             assertEquals(value, p.getDecimalValue());
             assertFalse(p.isNaN());
             assertEquals(value, p.getNumberValue());
@@ -485,7 +499,7 @@ public class NumberParsingTest
         try {
             p.getIntValue();
             fail("Should not pass");
-        } catch (JsonParseException e) {
+        } catch (InputCoercionException e) {
             verifyException(e, "Numeric value");
             verifyException(e, "out of range of int");
         }

@@ -108,10 +108,10 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
+            _nullSafeUpdateToken(_avroContext.getCurrentToken());
             return null;
         }
-        _currToken = JsonToken.FIELD_NAME;
+        _updateToken(JsonToken.FIELD_NAME);
         return name;
     }
 
@@ -124,10 +124,10 @@ public abstract class AvroParserImpl
         _binaryValue = null;
         String name = _avroContext.nextFieldName();
         if (name == null) {
-            _currToken = _avroContext.getCurrentToken();
+            _nullSafeUpdateToken(_avroContext.getCurrentToken());
             return false;
         }
-        _currToken = JsonToken.FIELD_NAME;
+        _updateToken(JsonToken.FIELD_NAME);
         return name.equals(sstr.getValue());
     }
 
@@ -161,13 +161,10 @@ public abstract class AvroParserImpl
     public final boolean isNaN() {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             if ((_numTypesValid & NR_DOUBLE) != 0) {
-                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
-                double d = _numberDouble;
-                return Double.isNaN(d) || Double.isInfinite(d);
+                return !Double.isFinite(_numberDouble);
             }
             if ((_numTypesValid & NR_FLOAT) != 0) {
-                float f = _numberFloat;
-                return Float.isNaN(f) || Float.isInfinite(f);
+                return !Float.isFinite(_numberFloat);
             }
         }
         return false;
@@ -239,6 +236,22 @@ public abstract class AvroParserImpl
             return NumberType.DOUBLE;
         }
         return NumberType.FLOAT;
+    }
+
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws IOException {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
     }
 
     @Override

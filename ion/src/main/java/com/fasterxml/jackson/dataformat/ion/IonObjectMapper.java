@@ -104,7 +104,7 @@ public class IonObjectMapper extends ObjectMapper
 
     /*
     /**********************************************************************
-    /* Life-cycle
+    /* Life-cycle, constructors
     /**********************************************************************
      */
 
@@ -134,6 +134,12 @@ public class IonObjectMapper extends ObjectMapper
     protected IonObjectMapper(IonObjectMapper src) {
         super(src);
     }
+
+    /*
+    /**********************************************************************
+    /* Life-cycle, builders
+    /**********************************************************************
+     */
 
     /**
      * A builder for a mapper that will use textual writers by default. Same as
@@ -189,6 +195,12 @@ public class IonObjectMapper extends ObjectMapper
         return new Builder(new IonObjectMapper(streamFactory));
     }
 
+    /*
+    /**********************************************************************
+    /* Life-cycle, other
+    /**********************************************************************
+     */
+
     @Override
     public ObjectMapper copy() {
         _checkInvalidCopy(IonObjectMapper.class);
@@ -204,7 +216,7 @@ public class IonObjectMapper extends ObjectMapper
         return PackageVersion.VERSION;
     }
 
-        /*
+    /*
     /**********************************************************************
     /* Configuration
     /**********************************************************************

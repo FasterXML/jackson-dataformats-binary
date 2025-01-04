@@ -24,8 +24,8 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
     }
 
     // Variant where the length would be valid, but the last byte is partial UTF-8
-    // code point
-    public void testShortString236EndsWithPartialUTF8() throws Exception
+    // code point and no more bytes are available due to end-of-stream
+    public void testShortString236EndsWithPartialUTF8AtEndOfStream() throws Exception
     {
         final byte[] input = {0x63, 0x41, 0x2d, (byte) 0xda};
         try (CBORParser p = cborParser(input)) {
@@ -34,7 +34,23 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
                 String str = p.getText();
                 fail("Should have failed, did not, String = '"+str+"'");
             } catch (StreamReadException e) {
-                verifyException(e, "Malformed UTF-8 character at the end of");
+                verifyException(e, "Truncated UTF-8 character in Unicode String value (3 bytes)");
+            }
+        }
+    }
+
+    // Variant where the length would be valid, but the last byte is partial UTF-8
+    // code point and the subsequent byte would be a valid continuation byte, but belongs to next data item
+    public void testShortString236EndsWithPartialUTF8() throws Exception
+    {
+        final byte[] input = {0x62, 0x33, (byte) 0xdb, (byte) 0xa0};
+        try (CBORParser p = cborParser(input)) {
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            try {
+                String str = p.getText();
+                fail("Should have failed, did not, String = '"+str+"'");
+            } catch (StreamReadException e) {
+                verifyException(e, "Truncated UTF-8 character in Unicode String value (2 bytes)");
             }
         }
     }

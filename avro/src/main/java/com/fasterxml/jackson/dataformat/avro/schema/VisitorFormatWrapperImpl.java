@@ -1,24 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import java.time.temporal.Temporal;
+
 import com.fasterxml.jackson.core.JsonGenerator;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonAnyFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonBooleanFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonMapFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNullFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonNumberFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import org.apache.avro.Schema;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
 
-import java.time.temporal.Temporal;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+
+import org.apache.avro.Schema;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
@@ -31,6 +25,11 @@ public class VisitorFormatWrapperImpl
      * @since 2.13
      */
     protected boolean _logicalTypesEnabled = false;
+
+    /**
+     * @since 2.18
+     */
+    protected boolean _writeEnumAsString = false;
 
     /**
      * Visitor used for resolving actual Schema, if structured type
@@ -105,6 +104,8 @@ public class VisitorFormatWrapperImpl
 
     /**
      * Enables Avro schema with Logical Types generation.
+     *
+     * @since 2.13
      */
     public VisitorFormatWrapperImpl enableLogicalTypes() {
         _logicalTypesEnabled = true;
@@ -113,6 +114,8 @@ public class VisitorFormatWrapperImpl
 
     /**
      * Disables Avro schema with Logical Types generation.
+     *
+     * @since 2.13
      */
     public VisitorFormatWrapperImpl disableLogicalTypes() {
         _logicalTypesEnabled = false;
@@ -121,6 +124,31 @@ public class VisitorFormatWrapperImpl
 
     public boolean isLogicalTypesEnabled() {
         return _logicalTypesEnabled;
+    }
+
+    /**
+     * Enable Java enum to Avro string mapping.
+     *
+     * @since 2.18
+     */
+    public VisitorFormatWrapperImpl enableWriteEnumAsString() {
+    	_writeEnumAsString = true;
+        return this;
+    }
+
+    /**
+     * Disable Java enum to Avro string mapping.
+     *
+     * @since 2.18
+     */
+    public VisitorFormatWrapperImpl disableWriteEnumAsString() {
+        _writeEnumAsString = false;
+        return this;
+    }
+
+    // @since 2.18
+    public boolean isWriteEnumAsStringEnabled() {
+        return _writeEnumAsString;
     }
 
     /*
@@ -177,7 +205,16 @@ public class VisitorFormatWrapperImpl
             _valueSchema = s;
             return null;
         }
-        StringVisitor v = new StringVisitor(_provider, _schemas, type);
+
+        // 06-Jun-2024: [dataformats-binary#494] Enums may be exposed either
+        //   as native Avro Enums, or as Avro Strings:
+        if (type.isEnumType() && !isWriteEnumAsStringEnabled()) {
+            EnumVisitor v = new EnumVisitor(_provider, _schemas, type);
+            _builder = v;
+            return v;
+        }
+
+        StringVisitor v = new StringVisitor(_provider, type);
         _builder = v;
         return v;
     }

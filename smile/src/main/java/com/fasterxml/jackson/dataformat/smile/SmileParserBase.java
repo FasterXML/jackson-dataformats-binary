@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.ContentReference;
-import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
@@ -250,7 +249,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
             ByteQuadsCanonicalizer sym)
     {
-        super(parserFeatures);
+        super(parserFeatures, ctxt.streamReadConstraints());
         _formatFeatures = formatFeatures;
         _ioContext = ctxt;
         _symbols = sym;
@@ -259,11 +258,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = JsonReadContext.createRootContext(dups);
         _textBuffer = ctxt.constructReadConstrainedTextBuffer();
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
     }
 
     /*
@@ -333,7 +327,20 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public final JsonLocation getTokenLocation()
+    public final JsonLocation currentLocation()
+    {
+        final long offset = _currInputProcessed + _inputPtr;
+        return new JsonLocation(_ioContext.contentReference(),
+                offset, // bytes
+                -1, -1, (int) offset); // char offset, line, column
+    }
+
+    /**
+     * Overridden since we do not really have character-based locations,
+     * but we do have byte offset to specify.
+     */
+    @Override
+    public final JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;
@@ -343,31 +350,30 @@ public abstract class SmileParserBase extends ParserMinimalBase
                 -1, -1, (int) total); // char offset, line, column
     }
 
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
+    @Deprecated // since 2.17
     @Override
-    public final JsonLocation getCurrentLocation()
-    {
-        final long offset = _currInputProcessed + _inputPtr;
-        return new JsonLocation(_ioContext.contentReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
-    }
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
 
     /**
      * Method that can be called to get the name associated with
      * the current event.
      */
-    @Override
-    public final String getCurrentName() throws IOException
+    @Override // since 2.17
+    public String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             return _streamReadContext.getParent().getCurrentName();
         }
         return _streamReadContext.getCurrentName();
     }
+
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
 
     @Override
     public final void overrideCurrentName(String name)
@@ -428,14 +434,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
             if (_numTypesValid == NR_UNKNOWN) {
                 _parseNumericValue(); // will also check event type
             }
-            if (_numberType == NumberType.DOUBLE) {
-                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
-                double d = _numberDouble;
-                return Double.isNaN(d) || Double.isInfinite(d);
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return !Double.isFinite(_numberDouble);
             }
-            if (_numberType == NumberType.FLOAT) {
-                float f = _numberFloat;
-                return Float.isNaN(f) || Float.isInfinite(f);
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                return !Float.isFinite(_numberFloat);
             }
         }
         return false;
@@ -476,6 +479,26 @@ public abstract class SmileParserBase extends ParserMinimalBase
             _parseNumericValue(); // will also check event type
         }
         return _numberType;
+    }
+
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws IOException {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            // Some decoding is done lazily so need to:
+            if (_numTypesValid == NR_UNKNOWN) {
+                _parseNumericValue(); // will also check event type
+            }
+            if (_numberType == NumberType.BIG_DECIMAL) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if (_numberType == NumberType.DOUBLE) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if (_numberType == NumberType.FLOAT) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
     }
 
     @Override
@@ -581,30 +604,30 @@ public abstract class SmileParserBase extends ParserMinimalBase
             // Let's verify it's lossless conversion by simple roundtrip
             int result = (int) _numberLong;
             if (((long) result) != _numberLong) {
-                _reportError("Numeric value (%s) out of range of int", getText());
+                reportOverflowInt(String.valueOf(_numberLong));
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             if (BI_MIN_INT.compareTo(_numberBigInt) > 0
                     || BI_MAX_INT.compareTo(_numberBigInt) < 0) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberBigInt));
             }
             _numberInt = _numberBigInt.intValue();
         } else if ((_numTypesValid & NR_DOUBLE) != 0) {
             // Need to check boundaries
             if (_numberDouble < MIN_INT_D || _numberDouble > MAX_INT_D) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberDouble));
             }
             _numberInt = (int) _numberDouble;
         } else if ((_numTypesValid & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_INT_D || _numberFloat > MAX_INT_D) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberFloat));
             }
             _numberInt = (int) _numberFloat;
         } else if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_INT.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_INT.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowInt();
+                reportOverflowInt(String.valueOf(_numberBigDecimal));
             }
             _numberInt = _numberBigDecimal.intValue();
         } else {
@@ -621,23 +644,23 @@ public abstract class SmileParserBase extends ParserMinimalBase
         } else if ((v & NR_BIGINT) != 0) {
             if (BI_MIN_LONG.compareTo(_numberBigInt) > 0
                     || BI_MAX_LONG.compareTo(_numberBigInt) < 0) {
-                reportOverflowLong();
+                reportOverflowLong(String.valueOf(_numberBigInt));
             }
             _numberLong = _numberBigInt.longValue();
         } else if ((v & NR_DOUBLE) != 0) {
             if (_numberDouble < MIN_LONG_D || _numberDouble > MAX_LONG_D) {
-                reportOverflowLong();
+                reportOverflowLong(String.valueOf(_numberDouble));
             }
             _numberLong = (long) _numberDouble;
         } else if ((v & NR_FLOAT) != 0) {
             if (_numberFloat < MIN_LONG_D || _numberFloat > MAX_LONG_D) {
-                reportOverflowInt();
+                reportOverflowLong(String.valueOf(_numberFloat));
             }
             _numberLong = (long) _numberFloat;
         } else if ((v & NR_BIGDECIMAL) != 0) {
             if (BD_MIN_LONG.compareTo(_numberBigDecimal) > 0
                 || BD_MAX_LONG.compareTo(_numberBigDecimal) < 0) {
-                reportOverflowLong();
+                reportOverflowLong(String.valueOf(_numberBigDecimal));
             }
             _numberLong = _numberBigDecimal.longValue();
         } else {
@@ -650,7 +673,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
-            streamReadConstraints().validateBigIntegerScale(_numberBigDecimal.scale());
+            _streamReadConstraints.validateBigIntegerScale(_numberBigDecimal.scale());
             _numberBigInt = _numberBigDecimal.toBigInteger();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberBigInt = BigInteger.valueOf(_numberLong);
@@ -710,13 +733,14 @@ public abstract class SmileParserBase extends ParserMinimalBase
     {
         // Note: this MUST start with more accurate representations, since we don't know which
         //  value is the original one (others get generated when requested)
-        if ((_numTypesValid & (NR_DOUBLE | NR_FLOAT)) != 0) {
-            // Let's parse from String representation, to avoid rounding errors that
-            //non-decimal floating operations would incur
-            final String text = getText();
-            streamReadConstraints().validateFPLength(text.length());
-            _numberBigDecimal = NumberInput.parseBigDecimal(
-                    text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
+        if ((_numTypesValid & NR_DOUBLE) != 0) {
+            // 15-Dec-2023, tatu: Should NOT try to use String representation
+            //    since we already have decoded into double
+            _numberBigDecimal = new BigDecimal(_numberDouble);
+        } else if ((_numTypesValid &  NR_FLOAT) != 0) {
+            // 15-Dec-2023, tatu: Should NOT try to use String representation
+            //    since we already have decoded into float
+            _numberBigDecimal = new BigDecimal(_numberFloat);
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
             _numberBigDecimal = new BigDecimal(_numberBigInt);
         } else if ((_numTypesValid & NR_LONG) != 0) {

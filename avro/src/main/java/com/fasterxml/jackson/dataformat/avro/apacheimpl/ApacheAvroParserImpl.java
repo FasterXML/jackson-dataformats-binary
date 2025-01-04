@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.Writer;
 
 import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 
 import com.fasterxml.jackson.core.*;

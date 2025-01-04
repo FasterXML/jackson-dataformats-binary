@@ -614,9 +614,8 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr += len;
         final byte[] inputBuf = _inputBuffer;
 
-        // Let's actually do a tight loop for ASCII first:
         final int end = inPtr + len;
-
+        // Let's actually do a tight loop for ASCII first:
         int i;
         while ((i = inputBuf[inPtr]) >= 0) {
             outBuf[outPtr++] = (char) i;
@@ -628,9 +627,18 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         final int[] codes = sUtf8UnitLengths;
         do {
             i = inputBuf[inPtr++] & 0xFF;
-            switch (codes[i]) {
-            case 0:
-                break;
+            final int code = codes[i];
+            if (code == 0) { // still optimized for ASCII
+                outBuf[outPtr++] = (char) i;
+                continue;
+            }
+            if ((inPtr + code) > end) {
+                if (code < 4) {
+                    throw _constructError(String.format(
+                            "Malformed %d-byte UTF-8 character at the end of Unicode text block", code));
+                }
+            }
+            switch (code) {
             case 1:
                 i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
                 break;
@@ -650,7 +658,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportError("Invalid byte "+Integer.toHexString(i)+" in Unicode text block");
+                _reportError(String.format("Invalid byte 0x2X in Unicode text block", i));
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
@@ -692,19 +700,19 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 break;
             case 3: // 4-byte UTF
                 c = _decodeUTF8_4(c);
-                // Let's add first part right away:
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
                     outEnd = outBuf.length;
                 }
+                // Let's add first part right away:
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 c = 0xDC00 | (c & 0x3FF);
                 // And let the other char output down below
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -751,14 +759,6 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         return ((c << 6) | (d & 0x3F)) - 0x10000;
-    }
-
-    protected void _reportInvalidChar(int c) throws JsonParseException {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 
     private void _reportInvalidInitial(int mask) throws JsonParseException {

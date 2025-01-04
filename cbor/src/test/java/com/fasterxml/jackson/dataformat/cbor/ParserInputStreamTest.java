@@ -49,7 +49,7 @@ public class ParserInputStreamTest extends CBORTestBase
         parser.nextToken();
         parser.finishToken();
 
-        JsonLocation loc = parser.getCurrentLocation();
+        JsonLocation loc = parser.currentLocation();
         final long start = loc.getByteOffset();
         assertEquals(7999, start);
 
@@ -59,7 +59,7 @@ public class ParserInputStreamTest extends CBORTestBase
         parser.nextToken();
         parser.finishToken();
 
-        final long end = parser.getCurrentLocation().getByteOffset();
+        final long end = parser.currentLocation().getByteOffset();
         assertEquals(8001, end);
     }
 

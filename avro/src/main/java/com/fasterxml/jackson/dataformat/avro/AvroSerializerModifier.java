@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 public class AvroSerializerModifier
     extends BeanSerializerModifier
 {
+    private static final long serialVersionUID = 1L;
+
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
             BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties)
@@ -32,9 +34,8 @@ public class AvroSerializerModifier
             Iterator<BeanPropertyWriter> it = beanProperties.iterator();
             while (it.hasNext()) {
                 BeanPropertyWriter prop = it.next();
-                if ("schema".equals(prop.getName())) {
+                if ("schema".equals(prop.getName()) || "specificData".equals(prop.getName())) {
                     it.remove();
-                    break;
                 }
             }
         }

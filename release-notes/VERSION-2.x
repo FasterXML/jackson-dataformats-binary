@@ -14,10 +14,104 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.16.3 (not yet released)
+2.18.3 (not yet released)
 
-#506: Cannot deserialize `UUID` values
+#541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
+ (fix contributed by John H)
+
+2.18.2 (27-Nov-2024)
+
+No changes since 2.18.1
+
+2.18.1 (28-Oct-2024)
+
+#518: Should not read past end for CBOR string values
+ (contributed by Knut W)
+
+2.18.0 (26-Sep-2024)
+
+#167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
+ (reported by @Sage-Pierce)
+ (fix contributed by Rafał H)
+#484: (protobuf) Rework synchronization in `ProtobufMapper`
+ (contributed by @pjfanning)
+#494: (avro) Avro Schema generation: allow mapping Java Enum properties to
+  Avro String values
+ (requested by Joachim L)
+ (contributed by Michal F)
+#508: (avro) Ignore `specificData` field on serialization
+ (contributed by @pjfanning)
+#509: IonValueMapper.builder() not implemented, does not register modules
+ (reported by Robert N)
+
+2.17.3 (01-Nov-2024)
+
+#506: (protobuf) Cannot deserialize `UUID` values
  (reported by @uniquonil)
+- (ion) Upgrade `ion-java` to 1.11.9 (from 1.11.8)
+
+2.17.2 (05-Jul-2024)
+
+#497: (ion) Failed copy(): `IonValueMapper` does not override copy()
+ (reported by @mr-robert)
+#501: (ion) Upgrade `ion-java` to 1.11.8 (from 1.11.7)
+
+2.17.1 (04-May-2024)
+
+#487 (ion): Don't close IonParser on EOF to be compatible with `MappingIterator`
+  when source is an empty `InputStream`
+ (contributed by Yoann V)
+#488 (ion): Upgrade `ion-java` to 1.11.7 (from 1.11.2)
+#490 (ion) ION deserialization type change from Double to Float in 2.17.0
+ (reported by Florian H)
+
+2.17.0 (12-Mar-2024)
+
+#251 (ion) Unable to deserialize Object with unknown `Timestamp` field
+ (reported by @mgoertzen)
+#316 (cbor) Uncaught exception in
+  `com.fasterxml.jackson.dataformat.cbor.CBORParser._finishShortText`
+#392: (cbor, smile) Support `StreamReadConstraints.maxDocumentLength`
+  validation for CBOR, Smile
+#417: (ion) `IonReader` classes contain assert statement which could throw
+  unexpected `AssertionError`
+ (fix contributed by Arthur C)
+#420: (ion) `IndexOutOfBoundsException` thrown by `IonReader` implementations
+  are not handled 
+ (fix contributed by Arthur C)
+#424: (ion) `IonReader` throws `NullPointerException` for unchecked invalid data
+ (fix contributed by Arthur C)
+#426: (smile) `SmileParser` throws unexpected IOOBE for corrupt content
+ (fix contributed by Arthur C)
+#428: (ion) `IonParser.getIntValue()` fails or does not handle value overflow checks
+ (fix contributed by Thomas d-L)
+#432: (ion) More methods from `IonReader` could throw an unexpected `AssertionError`
+ (fix contributed by Arthur C)
+#434: (ion) Unexpected `NullPointerException` thrown from `IonParser::getNumberType()`
+ (fix contributed by Arthur C)
+#437: (ion) `IonReader.next()` throws NPEs for some invalid content
+#449: (avro) `IndexOutOfBoundsException` in `JacksonAvroParserImpl` for invalid input
+ (fix contributed by Arthur C)
+#451: (cbor) `IndexOutOfBoundsException` in `CBORParser` for invalid input
+ (fix contributed by Arthur C)
+#458: (cbor) Unexpected NullPointerException in `CBORParser`
+ (fix contributed by Arthur C)
+#460: (protobuf) Unexpected `NullPointerException` in `ProtobufParser.currentName()`
+ (fix contributed by Arthur C)
+#462: (protobuf) `ProtobufParser.currentName()` returns wrong value at root level
+#464: (cbor) Unexpected `ArrayIndexOutOfBoundsException` in `CBORParser`
+  for corrupt String value
+ (fix contributed by Arthur C)
+#469 (ion) IonReader.newBytes() throwing `NegativeArraySizeException`
+ (contributed by @tgregg)
+#471 (ion) `IonReader` throws `AssertionError` for Timestamp value
+ (contributed by @tgregg)
+#473 (ion) `IonReader.next()` throws `ArrayIndexOutOfBoundsException` for some
+  corrupt content
+ (contributed by @tgregg)
+#482 (ion): Upgrade `ion-java` to 1.11.2 and remove handling of exceptions that
+  are no longer leaked
+ (contributed by @tgregg)
 
 2.16.2 (09-Mar-2024)
 

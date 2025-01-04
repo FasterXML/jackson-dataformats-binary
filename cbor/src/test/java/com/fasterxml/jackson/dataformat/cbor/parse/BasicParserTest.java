@@ -92,20 +92,20 @@ public class BasicParserTest extends CBORTestBase
         JsonParser p = cborParser(b);
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(1, p.getCurrentLocation().getByteOffset());
+        assertEquals(1, p.currentLocation().getByteOffset());
         p.getText(); // fully read token.
-        assertEquals(11, p.getCurrentLocation().getByteOffset());
+        assertEquals(11, p.currentLocation().getByteOffset());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        assertEquals(12, p.getCurrentLocation().getByteOffset());
+        assertEquals(12, p.currentLocation().getByteOffset());
         p.getText();
-        assertEquals(22, p.getCurrentLocation().getByteOffset());
+        assertEquals(22, p.currentLocation().getByteOffset());
 
         assertNull(p.nextToken());
-        assertEquals(22, p.getCurrentLocation().getByteOffset());
+        assertEquals(22, p.currentLocation().getByteOffset());
 
         p.close();
-        assertEquals(22, p.getCurrentLocation().getByteOffset());
+        assertEquals(22, p.currentLocation().getByteOffset());
     }
 
     public void testLongNonChunkedText() throws Exception
@@ -247,10 +247,15 @@ public class BasicParserTest extends CBORTestBase
         CBORParser parser = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("a", parser.getCurrentName());
+        assertEquals("a", parser.currentName());
+        assertEquals("a", parser.getText());
+        assertEquals("a", parser.getValueAsString());
+        assertEquals("a", parser.getValueAsString("x"));
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
-        assertEquals("a", parser.getCurrentName());
+        assertEquals("a", parser.currentName());
         assertEquals("b", parser.getText());
+        assertEquals("b", parser.getValueAsString());
+        assertEquals("b", parser.getValueAsString("x"));
         assertEquals(1, parser.getTextLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
@@ -280,15 +285,24 @@ public class BasicParserTest extends CBORTestBase
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
 
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("ob", parser.getCurrentName());
+        assertEquals("ob", parser.currentName());
+        assertEquals("ob", parser.getText());
+        assertEquals("ob", parser.getValueAsString());
+        assertEquals("ob", parser.getValueAsString("x"));
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("num", parser.getCurrentName());
+        assertEquals("num", parser.currentName());
+        assertEquals("num", parser.getText());
+        assertEquals("num", parser.getValueAsString());
+        assertEquals("num", parser.getValueAsString("y"));
         assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
-        assertEquals("arr", parser.getCurrentName());
+        assertEquals("arr", parser.currentName());
+        assertEquals("arr", parser.getText());
+        assertEquals("arr", parser.getValueAsString());
+        assertEquals("arr", parser.getValueAsString("z"));
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
 

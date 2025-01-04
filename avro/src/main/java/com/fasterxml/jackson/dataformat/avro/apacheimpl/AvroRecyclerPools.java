@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import com.fasterxml.jackson.core.util.RecyclerPool;
 import com.fasterxml.jackson.core.util.RecyclerPool.BoundedPoolBase;
 import com.fasterxml.jackson.core.util.RecyclerPool.ConcurrentDequePoolBase;
-import com.fasterxml.jackson.core.util.RecyclerPool.LockFreePoolBase;
 
 public final class AvroRecyclerPools
 {
@@ -59,24 +58,6 @@ public final class AvroRecyclerPools
     }
 
     /**
-     * Accessor for getting the shared/global {@link LockFreePool} instance.
-     *
-     * @return Globally shared instance of {@link LockFreePool}.
-     */
-    public static RecyclerPool<ApacheCodecRecycler> sharedLockFreePool() {
-        return LockFreePool.GLOBAL;
-    }
-
-    /**
-     * Accessor for constructing a new, non-shared {@link LockFreePool} instance.
-     *
-     * @return Globally shared instance of {@link LockFreePool}.
-     */
-    public static RecyclerPool<ApacheCodecRecycler> newLockFreePool() {
-        return LockFreePool.construct();
-    }
-
-    /**
      * Accessor for getting the shared/global {@link BoundedPool} instance.
      *
      * @return Globally shared instance of {@link BoundedPool}.
@@ -105,7 +86,7 @@ public final class AvroRecyclerPools
     /**
      * {@link ThreadLocal}-based {@link RecyclerPool} implementation used for
      * recycling {@link ApacheCodecRecycler} instances:
-     * see {@link RecyclerPool.ThreadLocalPoolBase} for full explanation
+     * see {@code RecyclerPool.ThreadLocalPoolBase} for full explanation
      * of functioning.
      */
     public static class ThreadLocalPool
@@ -182,42 +163,6 @@ public final class AvroRecyclerPools
             return new ConcurrentDequePool(SERIALIZATION_NON_SHARED);
         }
 
-        @Override
-        public ApacheCodecRecycler createPooled() {
-            return new ApacheCodecRecycler();
-        }
-
-        // // // JDK serialization support
-
-        // Make sure to re-link to global/shared or non-shared.
-        protected Object readResolve() {
-            return _resolveToShared(GLOBAL).orElseGet(() -> construct());
-        }
-    }
-
-    /**
-     * {@link RecyclerPool} implementation that uses
-     * a lock free linked list for recycling instances.
-     *<p>
-     * Pool is unbounded: see {@link RecyclerPool} for
-     * details on what this means.
-     */
-    public static class LockFreePool extends LockFreePoolBase<ApacheCodecRecycler>
-    {
-        private static final long serialVersionUID = 1L;
-
-        protected static final LockFreePool GLOBAL = new LockFreePool(SERIALIZATION_SHARED);
-
-        // // // Life-cycle (constructors, factory methods)
-
-        protected LockFreePool(int serialization) {
-            super(serialization);
-        }
-
-        public static LockFreePool construct() {
-            return new LockFreePool(SERIALIZATION_NON_SHARED);
-        }
-        
         @Override
         public ApacheCodecRecycler createPooled() {
             return new ApacheCodecRecycler();

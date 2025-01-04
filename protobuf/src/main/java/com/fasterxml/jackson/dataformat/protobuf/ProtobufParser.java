@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.core.util.TextBuffer;
 import com.fasterxml.jackson.core.util.VersionUtil;
+
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufParser extends ParserMinimalBase
@@ -296,7 +297,7 @@ public class ProtobufParser extends ParserMinimalBase
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
-        super(parserFeatures);
+        super(parserFeatures, ctxt.streamReadConstraints());
         _ioContext = ctxt;
         _objectCodec = codec;
 
@@ -310,11 +311,6 @@ public class ProtobufParser extends ParserMinimalBase
 
         _tokenInputRow = -1;
         _tokenInputCol = -1;
-    }
-
-    @Override
-    public StreamReadConstraints streamReadConstraints() {
-        return _ioContext.streamReadConstraints();
     }
 
     public void setSchema(ProtobufSchema schema)
@@ -385,20 +381,7 @@ public class ProtobufParser extends ParserMinimalBase
      * but we do have byte offset to specify.
      */
     @Override
-    public JsonLocation getTokenLocation()
-    {
-        // token location is correctly managed...
-        return new JsonLocation(_ioContext.contentReference(),
-                _tokenInputTotal, // bytes
-                -1, -1, (int) _tokenInputTotal); // char offset, line, column
-    }
-
-    /**
-     * Overridden since we do not really have character-based locations,
-     * but we do have byte offset to specify.
-     */
-    @Override
-    public JsonLocation getCurrentLocation()
+    public JsonLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
         return new JsonLocation(_ioContext.contentReference(),
@@ -407,18 +390,47 @@ public class ProtobufParser extends ParserMinimalBase
     }
 
     /**
+     * Overridden since we do not really have character-based locations,
+     * but we do have byte offset to specify.
+     */
+    @Override
+    public JsonLocation currentTokenLocation()
+    {
+        // token location is correctly managed...
+        return new JsonLocation(_ioContext.contentReference(),
+                _tokenInputTotal, // bytes
+                -1, -1, (int) _tokenInputTotal); // char offset, line, column
+    }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getCurrentLocation() { return currentLocation(); }
+
+    @Deprecated // since 2.17
+    @Override
+    public JsonLocation getTokenLocation() { return currentTokenLocation(); }
+
+    /**
      * Method that can be called to get the name associated with
      * the current event.
      */
-    @Override
-    public String getCurrentName() throws IOException
+    @Override // since 2.17
+    public String currentName() throws IOException
     {
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ProtobufReadContext parent = _parsingContext.getParent();
+            if (parent == null) { // For root level
+                // jackson-core `ParserBase` just falls through to current but we won't?
+                return null;
+            }
             return parent.getCurrentName();
         }
         return _parsingContext.getCurrentName();
     }
+
+    @Deprecated // since 2.17
+    @Override
+    public String getCurrentName() throws IOException { return currentName(); }
 
     @Override
     public void overrideCurrentName(String name)
@@ -427,6 +439,9 @@ public class ProtobufParser extends ParserMinimalBase
         ProtobufReadContext ctxt = _parsingContext;
         if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {
             ctxt = ctxt.getParent();
+            if (ctxt == null) { // should we error out or... ?
+                return;
+            }
         }
         ctxt.setCurrentName(name);
     }
@@ -445,6 +460,11 @@ public class ProtobufParser extends ParserMinimalBase
                 _releaseBuffers();
             }
             _ioContext.close();
+            // 17-Jan-2024, tatu: Most code paths won't update context so:
+            if (!_parsingContext.inRoot()) {
+                _parsingContext = _parsingContext.getParent();
+            }
+            _parsingContext.setCurrentName(null);
         }
     }
 
@@ -560,34 +580,32 @@ public class ProtobufParser extends ParserMinimalBase
             _currentField = _currentMessage.firstField();
             _state = STATE_ROOT_KEY;
             _parsingContext.setMessageType(_currentMessage);
-            return (_currToken = JsonToken.START_OBJECT);
+            return _updateToken(JsonToken.START_OBJECT);
 
         case STATE_ROOT_KEY:
             // end-of-input?
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     close();
-                    return (_currToken = JsonToken.END_OBJECT);
+                    return _updateToken(JsonToken.END_OBJECT);
                 }
             }
             return _handleRootKey(_decodeVInt());
         case STATE_ROOT_VALUE:
             {
-                JsonToken t = _readNextValue(_currentField.type, STATE_ROOT_KEY);
-                _currToken = t;
-                return t;
+                return _updateToken(_readNextValue(_currentField.type, STATE_ROOT_KEY));
             }
         case STATE_NESTED_KEY:
-            if (_checkEnd()) {
-                return (_currToken = JsonToken.END_OBJECT);
+            if (_checkEnd()) { // will update _parsingContext
+                return _updateToken(JsonToken.END_OBJECT);
             }
             return _handleNestedKey(_decodeVInt());
 
         case STATE_ARRAY_START:
             _parsingContext = _parsingContext.createChildArrayContext(_currentField);
-            streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
+            _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
             _state = STATE_ARRAY_VALUE_FIRST;
-            return (_currToken = JsonToken.START_ARRAY);
+            return _updateToken(JsonToken.START_ARRAY);
 
         case STATE_ARRAY_START_PACKED:
 
@@ -603,21 +621,17 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _currentEndOffset = newEnd;
             _parsingContext = _parsingContext.createChildArrayContext(_currentField, newEnd);
-            streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
+            _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
             _state = STATE_ARRAY_VALUE_PACKED;
-            return (_currToken = JsonToken.START_ARRAY);
+            return _updateToken(JsonToken.START_ARRAY);
 
         case STATE_ARRAY_VALUE_FIRST: // unpacked
-            {
-                // false -> not root... or should we check?
-                JsonToken t = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER);
-                _currToken = t;
-                return t;
-            }
+            // false -> not root... or should we check?
+            return _updateToken(_readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER));
 
         case STATE_ARRAY_VALUE_OTHER: // unpacked
             if (_checkEnd()) { // need to check constraints set by surrounding Message (object)
-                return (_currToken = JsonToken.END_ARRAY);
+                return _updateToken(JsonToken.END_ARRAY);
             }
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -629,17 +643,14 @@ public class ProtobufParser extends ParserMinimalBase
                     _parsingContext = parent;
                     _currentField = parent.getField();
                     _state = STATE_MESSAGE_END;
-                    return (_currToken = JsonToken.END_ARRAY);
+                    return _updateToken(JsonToken.END_ARRAY);
                 }
             }
             {
                 int tag = _decodeVInt();
                 // expected case: another value in same array
                 if (_currentField.id == (tag >> 3)) {
-                    JsonToken t = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER);
-                    _currToken = t;
-                    // remain in same state
-                    return t;
+                    return _updateToken(_readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER));
                 }
                 // otherwise, different field, need to end this array
                 _nextTag = tag;
@@ -647,19 +658,14 @@ public class ProtobufParser extends ParserMinimalBase
                 _parsingContext = parent;
                 _currentField = parent.getField();
                 _state = STATE_ARRAY_END;
-                return (_currToken = JsonToken.END_ARRAY);
+                return _updateToken(JsonToken.END_ARRAY);
             }
 
         case STATE_ARRAY_VALUE_PACKED:
             if (_checkEnd()) { // need to check constraints of this array itself
-                return (_currToken = JsonToken.END_ARRAY);
+                return _updateToken(JsonToken.END_ARRAY);
             }
-            {
-                JsonToken t = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_PACKED);
-                _currToken = t;
-                // remain in same state
-                return t;
-            }
+            return _updateToken(_readNextValue(_currentField.type, STATE_ARRAY_VALUE_PACKED));
 
         case STATE_ARRAY_END: // only used with unpacked and with "_nextTag"
 
@@ -672,15 +678,11 @@ public class ProtobufParser extends ParserMinimalBase
             return _handleNestedKey(_nextTag);
 
         case STATE_NESTED_VALUE:
-            {
-                JsonToken t = _readNextValue(_currentField.type, STATE_NESTED_KEY);
-                _currToken = t;
-                return t;
-            }
+            return _updateToken(_readNextValue(_currentField.type, STATE_NESTED_KEY));
 
         case STATE_MESSAGE_END: // occurs if we end with array
             close(); // sets state to STATE_CLOSED
-            return (_currToken = JsonToken.END_OBJECT);
+            return _updateToken(JsonToken.END_OBJECT);
 
         case STATE_CLOSED:
             return null;
@@ -748,7 +750,7 @@ public class ProtobufParser extends ParserMinimalBase
             _state = STATE_ROOT_VALUE;
         }
         _currentField = f;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return _updateToken(JsonToken.FIELD_NAME);
     }
 
     private JsonToken _handleNestedKey(int tag) throws IOException
@@ -792,7 +794,7 @@ public class ProtobufParser extends ParserMinimalBase
             _state = STATE_NESTED_VALUE;
         }
         _currentField = f;
-        return (_currToken = JsonToken.FIELD_NAME);
+        return _updateToken(JsonToken.FIELD_NAME);
     }
 
     private JsonToken _readNextValue(FieldType t, int nextState) throws IOException
@@ -924,7 +926,7 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentEndOffset = newEnd;
                 _state = STATE_NESTED_KEY;
                 _parsingContext = _parsingContext.createChildObjectContext(msg, _currentField, newEnd);
-                streamReadConstraints().validateNestingDepth(_parsingContext.getNestingDepth());
+                _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
                 _currentField = msg.firstField();
             }
             return JsonToken.START_OBJECT;
@@ -947,8 +949,8 @@ public class ProtobufParser extends ParserMinimalBase
             _skipUnknownValue(wireType);
             // 05-Dec-2017, tatu: as per [#126] seems like we need to check this not just for
             //    STATE_NESTED_KEY but for arrays too at least?
-            if (_checkEnd()) {
-                return (_currToken = JsonToken.END_OBJECT);
+            if (_checkEnd()) { // updates _parsingContext
+                return _updateToken(JsonToken.END_OBJECT);
             }
             if (_state == STATE_NESTED_KEY) {
                 if (_inputPtr >= _inputEnd) {
@@ -957,7 +959,7 @@ public class ProtobufParser extends ParserMinimalBase
             } else if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     close();
-                    return (_currToken = JsonToken.END_OBJECT);
+                    return _updateToken(JsonToken.END_OBJECT);
                 }
             }
             tag = _decodeVInt();
@@ -974,7 +976,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
-            return (_currToken = JsonToken.FIELD_NAME);
+            return _updateToken(JsonToken.FIELD_NAME);
         }
     }
 
@@ -1013,7 +1015,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     close();
-                    _currToken = JsonToken.END_OBJECT;
+                    _updateToken(JsonToken.END_OBJECT);
                     return false;
                 }
             }
@@ -1045,12 +1047,12 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_ROOT_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _updateToken(JsonToken.FIELD_NAME);
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
-                _currToken = JsonToken.END_OBJECT;
+            if (_checkEnd()) { // updates _parsingContext
+                _updateToken(JsonToken.END_OBJECT);
                 return false;
             }
             final int tag = _decodeVInt();
@@ -1081,7 +1083,7 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_NESTED_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _updateToken(JsonToken.FIELD_NAME);
             return name.equals(sstr.getValue());
         }
         return (nextToken() == JsonToken.FIELD_NAME) && sstr.getValue().equals(getCurrentName());
@@ -1094,7 +1096,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
                     close();
-                    _currToken = JsonToken.END_OBJECT;
+                    _updateToken(JsonToken.END_OBJECT);
                     return null;
                 }
             }
@@ -1129,12 +1131,12 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_ROOT_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _updateToken(JsonToken.FIELD_NAME);
             return name;
         }
         if (_state == STATE_NESTED_KEY) {
-            if (_checkEnd()) {
-                _currToken = JsonToken.END_OBJECT;
+            if (_checkEnd()) { // updates _parsingContext
+                _updateToken(JsonToken.END_OBJECT);
                 return null;
             }
             final int tag = _decodeVInt();
@@ -1168,7 +1170,7 @@ public class ProtobufParser extends ParserMinimalBase
             } else {
                 _state = STATE_NESTED_VALUE;
             }
-            _currToken = JsonToken.FIELD_NAME;
+            _updateToken(JsonToken.FIELD_NAME);
             return name;
         }
         return (nextToken() == JsonToken.FIELD_NAME) ? getCurrentName() : null;
@@ -1189,14 +1191,12 @@ public class ProtobufParser extends ParserMinimalBase
         switch (_state) {
         case STATE_ROOT_VALUE:
             {
-                JsonToken t = _readNextValue(_currentField.type, STATE_ROOT_KEY);
-                _currToken = t;
+                final JsonToken t = _updateToken(_readNextValue(_currentField.type, STATE_ROOT_KEY));
                 return (t == JsonToken.VALUE_STRING) ? getText() : null;
             }
         case STATE_NESTED_VALUE:
             {
-                JsonToken t = _readNextValue(_currentField.type, STATE_NESTED_KEY);
-                _currToken = t;
+                final JsonToken t = _updateToken(_readNextValue(_currentField.type, STATE_NESTED_KEY));
                 return (t == JsonToken.VALUE_STRING) ? getText() : null;
             }
         case STATE_ARRAY_VALUE_FIRST: // unpacked
@@ -1204,11 +1204,11 @@ public class ProtobufParser extends ParserMinimalBase
                 _state = STATE_ARRAY_VALUE_OTHER;
                 break;
             }
-            _currToken = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER);
+            _updateToken(_readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER));
             return null;
         case STATE_ARRAY_VALUE_OTHER: // unpacked
             if (_checkEnd()) { // need to check constraints set by surrounding Message (object)
-                _currToken = JsonToken.END_ARRAY;
+                _updateToken(JsonToken.END_ARRAY);
                 return null;
             }
             if (_inputPtr >= _inputEnd) {
@@ -1221,7 +1221,7 @@ public class ProtobufParser extends ParserMinimalBase
                     _parsingContext = parent;
                     _currentField = parent.getField();
                     _state = STATE_MESSAGE_END;
-                    _currToken = JsonToken.END_ARRAY;
+                    _updateToken(JsonToken.END_ARRAY);
                     return null;
                 }
             }
@@ -1232,7 +1232,7 @@ public class ProtobufParser extends ParserMinimalBase
                     if (_currentField.type == FieldType.STRING) {
                         break;
                     }
-                    _currToken = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER);
+                    _updateToken(_readNextValue(_currentField.type, STATE_ARRAY_VALUE_OTHER));
                     return null;
                 }
                 // otherwise, different field, need to end this array
@@ -1242,16 +1242,16 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentField = parent.getField();
             }
             _state = STATE_ARRAY_END;
-            _currToken = JsonToken.END_ARRAY;
+            _updateToken(JsonToken.END_ARRAY);
             return null;
 
         case STATE_ARRAY_VALUE_PACKED:
             if (_checkEnd()) { // need to check constraints of this array itself
-                _currToken = JsonToken.END_ARRAY;
+                _updateToken(JsonToken.END_ARRAY);
                 return null;
             }
             if (_currentField.type != FieldType.STRING) {
-                _currToken = _readNextValue(_currentField.type, STATE_ARRAY_VALUE_PACKED);
+                _updateToken(_readNextValue(_currentField.type, STATE_ARRAY_VALUE_PACKED));
                 return null;
             }
             break;
@@ -1262,7 +1262,7 @@ public class ProtobufParser extends ParserMinimalBase
         // At this point we know we have text token so:
         final int len = _decodeLength();
         _decodedLength = len;
-        _currToken = JsonToken.VALUE_STRING;
+        _updateToken(JsonToken.VALUE_STRING);
         if (len == 0) {
             _textBuffer.resetWithEmpty();
             return "";
@@ -1361,13 +1361,15 @@ public class ProtobufParser extends ParserMinimalBase
                 return _textBuffer.size();
             case FIELD_NAME:
                 return _parsingContext.getCurrentName().length();
-                // fall through
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
                 return getNumberValue().toString().length();
-
             default:
-                return _currToken.asCharArray().length;
+                // fall through
+            }
+            final char[] ch = _currToken.asCharArray();
+            if (ch != null) {
+                return ch.length;
             }
         }
         return 0;
@@ -1393,6 +1395,9 @@ public class ProtobufParser extends ParserMinimalBase
             }
             return _textBuffer.contentsAsString();
         }
+        if (_currToken == JsonToken.FIELD_NAME) {
+            return currentName();
+        }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
@@ -1403,6 +1408,9 @@ public class ProtobufParser extends ParserMinimalBase
     public String getValueAsString(String defaultValue) throws IOException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return currentName();
+            }
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
                 return defaultValue;
             }
@@ -1495,13 +1503,10 @@ public class ProtobufParser extends ParserMinimalBase
     public boolean isNaN() {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
             if ((_numTypesValid & NR_DOUBLE) != 0) {
-                // 10-Mar-2017, tatu: Alas, `Double.isFinite(d)` only added in JDK 8
-                double d = _numberDouble;
-                return Double.isNaN(d) || Double.isInfinite(d);
+                return !Double.isFinite(_numberDouble);
             }
             if ((_numTypesValid & NR_FLOAT) != 0) {
-                float f = _numberFloat;
-                return Float.isNaN(f) || Float.isInfinite(f);
+                return !Float.isFinite(_numberFloat);
             }
         }
         return false;
@@ -1554,11 +1559,11 @@ public class ProtobufParser extends ParserMinimalBase
             _checkNumericValue(NR_UNKNOWN); // will also check event type
         }
         if (_currToken == JsonToken.VALUE_NUMBER_INT) {
-            if ((_numTypesValid & NR_INT) != 0) {
-                return NumberType.INT;
-            }
             if ((_numTypesValid & NR_LONG) != 0) {
                 return NumberType.LONG;
+            }
+            if ((_numTypesValid & NR_INT) != 0) {
+                return NumberType.INT;
             }
             return NumberType.BIG_INTEGER;
         }
@@ -1576,6 +1581,23 @@ public class ProtobufParser extends ParserMinimalBase
             return NumberType.DOUBLE;
         }
         return NumberType.FLOAT;
+    }
+
+    @Override // since 2.17
+    public NumberTypeFP getNumberTypeFP() throws IOException
+    {
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+                return NumberTypeFP.BIG_DECIMAL;
+            }
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return NumberTypeFP.DOUBLE64;
+            }
+            if ((_numTypesValid & NR_FLOAT) != 0) {
+                return NumberTypeFP.FLOAT32;
+            }
+        }
+        return NumberTypeFP.UNKNOWN;
     }
 
     @Override
@@ -1758,7 +1780,7 @@ public class ProtobufParser extends ParserMinimalBase
     {
         if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
             // here it'll just get truncated, no exceptions thrown
-            streamReadConstraints().validateBigIntegerScale(_numberBigDecimal.scale());
+            _streamReadConstraints.validateBigIntegerScale(_numberBigDecimal.scale());
             _numberBigInt = _numberBigDecimal.toBigInteger();
         } else if ((_numTypesValid & NR_LONG) != 0) {
             _numberBigInt = BigInteger.valueOf(_numberLong);
@@ -1822,7 +1844,7 @@ public class ProtobufParser extends ParserMinimalBase
             // Let's parse from String representation, to avoid rounding errors that
             //non-decimal floating operations would incur
             final String text = getText();
-            streamReadConstraints().validateFPLength(text.length());
+            _streamReadConstraints.validateFPLength(text.length());
             _numberBigDecimal = NumberInput.parseBigDecimal(
                     text, isEnabled(StreamReadFeature.USE_FAST_BIG_NUMBER_PARSER));
         } else if ((_numTypesValid & NR_BIGINT) != 0) {
@@ -1995,7 +2017,7 @@ public class ProtobufParser extends ParserMinimalBase
                 break;
             default:
                 // Is this good enough error message?
-                _reportInvalidChar(c);
+                _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2555,13 +2577,5 @@ public class ProtobufParser extends ParserMinimalBase
     private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
-    }
-
-    private void _reportInvalidChar(int c) throws JsonParseException {
-        // Either invalid WS or illegal UTF-8 start char
-        if (c < ' ') {
-            _throwInvalidSpace(c);
-        }
-        _reportInvalidInitial(c);
     }
 }

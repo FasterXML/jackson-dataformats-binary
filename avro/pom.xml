@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>2.16.3-SNAPSHOT</version>
+    <version>2.18.3-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-avro</artifactId>
   <name>Jackson dataformat: Avro</name>
@@ -47,23 +47,20 @@ abstractions.
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
-      <version>1.8.2</version>
+      <version>1.11.3</version>
     </dependency>
 
     <!-- and for testing we need logback -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.2.13</version>
+      <version>1.3.14</version>
       <scope>test</scope>
     </dependency>
     <!-- For validating more complex comparisons -->
-    <!-- 27-Feb-2017, tatu: NOTE! Can NOT use 3.x as it requires Java 8 
-      -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>2.5.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.JsonParser.NumberType;
+import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -58,16 +60,15 @@ public class ReadSimpleTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
-    public void testReadPointInt() throws Exception
+    public void testReadPointIntAsPOJO() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
         final ObjectWriter w = MAPPER.writerFor(Point.class)
                 .with(schema);
         Point input = new Point(151, -444);
         byte[] bytes = w.writeValueAsBytes(input);
-        assertNotNull(bytes);
 
         // 6 bytes: 1 byte tags, 2 byte values
         assertEquals(6, bytes.length);
@@ -77,21 +78,38 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNotNull(result);
         assertEquals(input.x, result.x);
         assertEquals(input.y, result.y);
+    }
+
+    public void testReadPointIntStreaming() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
+        final ObjectWriter w = MAPPER.writerFor(Point.class)
+                .with(schema);
+        Point input = new Point(151, -444);
+        byte[] bytes = w.writeValueAsBytes(input);
+        assertEquals(6, bytes.length);
 
         // actually let's also try via streaming parser
         JsonParser p = MAPPER.getFactory().createParser(bytes);
         p.setSchema(schema);
         assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertNull(p.currentName());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("x", p.getCurrentName());
+        assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(NumberType.INT, p.getNumberType());
+        assertEquals("x", p.currentName());
+        assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
         assertEquals(input.x, p.getIntValue());
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("y", p.getCurrentName());
+        assertEquals("y", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals("y", p.currentName());
         assertEquals(input.y, p.getIntValue());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.currentName());
         p.close();
+        assertNull(p.currentName());
     }
 
     public void testReadPointLong() throws Exception
@@ -112,19 +130,30 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
-        p.setSchema(schema);
-        assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("x", p.getCurrentName());
-        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(input.x, p.getIntValue());
-        assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("y", p.getCurrentName());
-        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-        assertEquals(input.y, p.getIntValue());
-        assertToken(JsonToken.END_OBJECT, p.nextToken());
-        p.close();
+        try (JsonParser p = MAPPER.getFactory().createParser(bytes)) {
+            p.setSchema(schema);
+            assertNull(p.currentName());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertNull(p.currentName());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("x", p.currentName());
+            assertEquals("x", p.getText());
+            assertEquals("x", p.getValueAsString());
+            assertEquals("x", p.getValueAsString("y"));
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(NumberType.LONG, p.getNumberType());
+            assertEquals(NumberTypeFP.UNKNOWN, p.getNumberTypeFP());
+            assertEquals(input.x, p.getIntValue());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("y", p.currentName());
+            assertEquals("y", p.getText());
+            assertEquals("y", p.getValueAsString());
+            assertEquals("y", p.getValueAsString("abc"));
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(input.y, p.getIntValue());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.currentName());
+        }
     }
 
     public void testReadName() throws Exception
@@ -148,7 +177,7 @@ public class ReadSimpleTest extends ProtobufTestBase
 
     public void testReadBox() throws Exception
     {
-        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX);
+        final ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX);
         final ObjectWriter w = MAPPER.writerFor(Box.class)
                 .with(schema);
         Point topLeft = new Point(100, 150);
@@ -166,6 +195,52 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNotNull(result.bottomRight);
         assertEquals(input.topLeft, result.topLeft);
         assertEquals(input.bottomRight, result.bottomRight);
+
+        // But let's try streaming too:
+        // actually let's also try via streaming parser
+        try (JsonParser p = MAPPER.getFactory().createParser(bytes)) {
+            p.setSchema(schema);
+            assertNull(p.currentName());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertNull(p.currentName());
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("topLeft", p.currentName());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals("topLeft", p.currentName());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("x", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals("x", p.currentName());
+            assertEquals(input.topLeft.x, p.getIntValue());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("y", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals("y", p.currentName());
+            assertEquals(input.topLeft.y, p.getIntValue());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertEquals("topLeft", p.currentName());
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("bottomRight", p.currentName());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals("bottomRight", p.currentName());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("x", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals("x", p.currentName());
+            assertEquals(input.bottomRight.x, p.getIntValue());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("y", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals("y", p.currentName());
+            assertEquals(input.bottomRight.y, p.getIntValue());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertEquals("bottomRight", p.currentName());
+            
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.currentName());
+        }
     }
 
     public void testStringArraySimple() throws Exception
@@ -194,7 +269,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals("/", p.getParsingContext().toString());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("values", p.getCurrentName());
+        assertEquals("values", p.currentName());
 
         // 23-May-2016, tatu: Not working properly yet:
 //        assertEquals("{values}", p.getParsingContext().toString());
@@ -280,12 +355,12 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("name", p.getCurrentName());
+        assertEquals("name", p.currentName());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         assertEquals(input.name, p.getText());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("values", p.getCurrentName());
+        assertEquals("values", p.currentName());
         assertToken(JsonToken.START_ARRAY, p.nextToken());
 
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
@@ -308,7 +383,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertToken(JsonToken.START_OBJECT, p.nextToken());
 
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
-        assertEquals("name", p.getCurrentName());
+        assertEquals("name", p.currentName());
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         int count = p.releaseBuffered(b);
         assertEquals(count, b.size());

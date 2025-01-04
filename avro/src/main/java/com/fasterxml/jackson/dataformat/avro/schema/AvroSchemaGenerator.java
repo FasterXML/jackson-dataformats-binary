@@ -31,4 +31,17 @@ public class AvroSchemaGenerator extends VisitorFormatWrapperImpl
         super.disableLogicalTypes();
         return this;
     }
+
+    @Override
+    public AvroSchemaGenerator enableWriteEnumAsString() {
+        super.enableWriteEnumAsString();
+        return this;
+    }
+
+    @Override
+    public AvroSchemaGenerator disableWriteEnumAsString() {
+        super.disableWriteEnumAsString();
+        return this;
+    }
+
 }

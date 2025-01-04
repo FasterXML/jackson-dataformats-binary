@@ -178,7 +178,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
         throws IOException
     {
         assertEquals(expName, jp.getText());
-        assertEquals(expName, jp.getCurrentName());
+        assertEquals(expName, jp.currentName());
     }
 
     protected void verifyIntValue(JsonParser jp, long expValue)
