@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
@@ -17,6 +18,7 @@ import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.dataformat.avro.AvroFactory;
 import tools.jackson.dataformat.avro.AvroWriteFeature;
+import tools.jackson.dataformat.avro.annotation.AvroDecimal;
 import tools.jackson.dataformat.avro.annotation.AvroFixedSize;
 import tools.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
@@ -153,7 +155,7 @@ public class RecordVisitor
 
     protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional)
     {
-        Schema writerSchema;
+        Schema writerSchema = null;
         // Check if schema for property is overridden
         AvroSchema schemaOverride = prop.getAnnotation(AvroSchema.class);
         if (schemaOverride != null) {
@@ -163,7 +165,18 @@ public class RecordVisitor
             AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
             if (fixedSize != null) {
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
-            } else {
+            }
+            if (_visitorWrapper.isLogicalTypesEnabled()) {
+                AvroDecimal avroDecimal = prop.getAnnotation(AvroDecimal.class);
+                if (avroDecimal != null) {
+                    if (writerSchema == null) {
+                        writerSchema = Schema.create(Type.BYTES);
+                    }
+                    writerSchema = LogicalTypes.decimal(avroDecimal.precision(), avroDecimal.scale())
+                            .addToSchema(writerSchema);
+                }
+            }
+            if (writerSchema == null) {
                 ValueSerializer<?> ser = null;
 
                 // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
@@ -221,7 +234,7 @@ public class RecordVisitor
 
     /**
      * A union schema with a default value must always have the schema branch corresponding to the default value first, or Avro will print a
-     * warning complaining that the default value is not compatible. If {@code schema} is a {@code Schema.Type.UNION} schema and
+     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Type#UNION UNION} schema and
      * {@code defaultValue} is non-{@code null}, this finds the appropriate branch in the union and reorders the union so that it is first.
      *
      * @param schema

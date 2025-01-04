@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.apache.avro.Conversions.DecimalConversion;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
@@ -26,6 +27,9 @@ public class NonBSGenericDatumWriter<D>
     private final static Class<?> CLS_STRING = String.class;
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
     private final static Class<?> CLS_BIG_INTEGER = BigInteger.class;
+
+    // @since 2.19
+    private final static DecimalConversion BIG_DECIMAL_CONVERSION = new DecimalConversion();
 
     public NonBSGenericDatumWriter(Schema root) {
 	super(root);
@@ -97,6 +101,11 @@ public class NonBSGenericDatumWriter<D>
                 super.writeWithoutConversion(schema, ByteBuffer.wrap((byte[]) datum), out);
                 return;
             }
+            if (datum.getClass() == CLS_BIG_DECIMAL) {
+                super.writeWithoutConversion(schema, BIG_DECIMAL_CONVERSION.toBytes(
+                        (BigDecimal) datum, schema, schema.getLogicalType()), out);
+                return;
+            }
             break;
         case FIXED:
             // One more mismatch to fix
@@ -109,6 +118,11 @@ public class NonBSGenericDatumWriter<D>
             */
             if (datum instanceof byte[]) {
                 super.writeWithoutConversion(schema, new GenericData.Fixed(schema, (byte[]) datum), out);
+                return;
+            }
+            if (datum.getClass() == CLS_BIG_DECIMAL) {
+                super.writeWithoutConversion(schema, BIG_DECIMAL_CONVERSION.toFixed(
+                        (BigDecimal) datum, schema, schema.getLogicalType()), out);
                 return;
             }
             break;

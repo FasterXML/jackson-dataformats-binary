@@ -16,6 +16,12 @@ Active maintainers:
 
 2.19.0 (not yet released)
 
+#308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java `BigDecimal`)
+ (reported by Idan S)
+ (fix contributed by Michal F)
+#535: (avro) AvroSchemaGenerator: logicalType(s) never set for non-date classes
+ (reported by Cormac R)
+ (fix contributed by Michal F)
 #536: (avro) Add Logical Type support for `java.util.UUID`
  (contributed by Michal F)
 
