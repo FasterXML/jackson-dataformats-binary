@@ -330,6 +330,11 @@ Yoann Vernageau (@yvrng)
    when source is an empty `InputStream`
   (2.17.1)
 
+John Hudson (@johhud1)
+ * Contributed fix for #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()`
+   FIELD_NAME bug
+  (2.17.4)
+
 Rafał Harabień (@rafalh)
  * Contributed fix for #167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
   (2.18.0)
