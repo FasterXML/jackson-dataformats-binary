@@ -548,6 +548,9 @@ public abstract class ScalarDecoder
         }
     }
 
+    /**
+     * @since 2.19
+     */
     protected final static class FixedDecimalReader extends ScalarDecoder {
         private final int _scale;
         private final int _size;
@@ -598,6 +601,9 @@ public abstract class ScalarDecoder
         }
     }
 
+    /**
+     * @since 2.19
+     */
     protected final static class BytesDecimalReader extends ScalarDecoder {
         private final int _scale;
 

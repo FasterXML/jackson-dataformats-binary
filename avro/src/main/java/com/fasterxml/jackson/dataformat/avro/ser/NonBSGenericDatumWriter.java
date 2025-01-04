@@ -28,6 +28,7 @@ public class NonBSGenericDatumWriter<D>
     private final static Class<?> CLS_BIG_DECIMAL = BigDecimal.class;
     private final static Class<?> CLS_BIG_INTEGER = BigInteger.class;
 
+    // @since 2.19
     private final static DecimalConversion BIG_DECIMAL_CONVERSION = new DecimalConversion();
 
     public NonBSGenericDatumWriter(Schema root) {
