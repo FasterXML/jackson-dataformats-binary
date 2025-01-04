@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
-import com.fasterxml.jackson.dataformat.avro.annotation.Decimal;
+import com.fasterxml.jackson.dataformat.avro.annotation.AvroDecimal;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 public class RecordVisitor
@@ -155,12 +155,12 @@ public class RecordVisitor
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
             }
             if (_visitorWrapper.isLogicalTypesEnabled()) {
-                Decimal decimal = prop.getAnnotation(Decimal.class);
-                if (decimal != null) {
+                AvroDecimal avroDecimal = prop.getAnnotation(AvroDecimal.class);
+                if (avroDecimal != null) {
                     if (writerSchema == null) {
                         writerSchema = Schema.create(Type.BYTES);
                     }
-                    writerSchema = LogicalTypes.decimal(decimal.precision(), decimal.scale())
+                    writerSchema = LogicalTypes.decimal(avroDecimal.precision(), avroDecimal.scale())
                             .addToSchema(writerSchema);
                 }
             }

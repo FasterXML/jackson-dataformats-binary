@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Decimal {
+public @interface AvroDecimal {
 
     /**
      * Maximum precision of decimals stored in this type.
