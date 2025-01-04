@@ -248,9 +248,14 @@ public class BasicParserTest extends CBORTestBase
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals("a", parser.currentName());
+        assertEquals("a", parser.getText());
+        assertEquals("a", parser.getValueAsString());
+        assertEquals("a", parser.getValueAsString("x"));
         assertEquals(JsonToken.VALUE_STRING, parser.nextToken());
         assertEquals("a", parser.currentName());
         assertEquals("b", parser.getText());
+        assertEquals("b", parser.getValueAsString());
+        assertEquals("b", parser.getValueAsString("x"));
         assertEquals(1, parser.getTextLength());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
@@ -281,14 +286,23 @@ public class BasicParserTest extends CBORTestBase
 
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals("ob", parser.currentName());
+        assertEquals("ob", parser.getText());
+        assertEquals("ob", parser.getValueAsString());
+        assertEquals("ob", parser.getValueAsString("x"));
         assertEquals(JsonToken.START_OBJECT, parser.nextToken());
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals("num", parser.currentName());
+        assertEquals("num", parser.getText());
+        assertEquals("num", parser.getValueAsString());
+        assertEquals("num", parser.getValueAsString("y"));
         assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
         assertEquals(JsonToken.END_OBJECT, parser.nextToken());
 
         assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
         assertEquals("arr", parser.currentName());
+        assertEquals("arr", parser.getText());
+        assertEquals("arr", parser.getValueAsString());
+        assertEquals("arr", parser.getValueAsString("z"));
         assertEquals(JsonToken.START_ARRAY, parser.nextToken());
         assertEquals(JsonToken.END_ARRAY, parser.nextToken());
 
