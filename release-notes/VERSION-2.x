@@ -14,9 +14,35 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.3 (not yet released)
+2.16.3 (not yet released)
 
-#384: `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
+#506: Cannot deserialize `UUID` values
+ (reported by @uniquonil)
+
+2.16.2 (09-Mar-2024)
+
+No changes since 2.16.1
+
+2.16.1 (24-Dec-2023)
+
+#303: `NullPointerException` in `IonParser.nextToken()`
+ (reported by @ZanderHuang)
+
+2.16.0 (15-Nov-2023)
+
+#400: (avro) Rewrite Avro buffer recycling (`ApacheCodecRecycler.java`) to
+  use new `RecyclerPool`, allow configuring use of non-ThreadLocal based pools
+#403: (smile) Remove Smile-specific buffer-recycling
+#410: (ion) Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
+ (requested by Dominik B)
+
+2.15.4 (15-Feb-2024)
+
+No changes since 2.15.3
+
+2.15.3 (12-Oct-2023)
+
+#384: (smile) `Smile` decoding issue with `NonBlockingByteArrayParser`, concurrency
  (reported by Simon D)
 
 2.15.2 (30-May-2023)

@@ -55,7 +55,7 @@ public abstract class AvroParser extends ParserBase
             return flags;
         }
 
-        private Feature(boolean defaultState) {
+        Feature(boolean defaultState) {
             _defaultState = defaultState;
             _mask = (1 << ordinal());
         }

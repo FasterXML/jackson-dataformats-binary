@@ -1,10 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
-import java.io.IOException;
-
 import org.apache.avro.reflect.AvroName;
 import org.junit.Test;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -30,23 +31,38 @@ public class AvroNameTest extends InteropTestBase
         @AvroName("otherField")
         public String firstField;
 
+        @JsonProperty
         public String otherField;
     }
 
     @Test
-    public void testRecordWithRenamedField() throws IOException{
+    public void testRecordWithRenamedField() throws Exception{
         RecordWithRenamed original = new RecordWithRenamed();
         original.someField = "blah";
         RecordWithRenamed result = roundTrip(original);
         assertThat(result).isEqualTo(original);
     }
 
-    public void testRecordWithNameCollision() throws IOException {
+    // 02-Nov-2023, tatu: This test had been disabled for long time:
+    //   "Jackson Schema" case did not consider conflict where it was
+    //   possible to select precedence... so needed to add another
+    //   annotation to force problem.
+
+    @Test
+    public void testRecordWithNameCollision() throws Exception {
         try {
             schemaFunctor.apply(RecordWithNameCollision.class);
             fail("Should not pass");
-        } catch (IllegalArgumentException e) {
-            AvroTestBase.verifyException(e, "foobar");
+        } catch (DatabindException e) {
+            // InvalidDefinitionException with Avro schema
+            // JsonMapping with Jackson Schema
+
+            final String msg = e.toString();
+
+            if (!msg.contains("double field entry: otherField")
+                    && !msg.contains("property \"otherField\"")) {
+                fail("Got exception but without matching message: "+msg);
+            }
         }
     }
 }

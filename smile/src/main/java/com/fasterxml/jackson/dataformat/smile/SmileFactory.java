@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 
 import com.fasterxml.jackson.core.*;
@@ -432,7 +433,7 @@ public class SmileFactory extends JsonFactory
     {
         SmileParserBootstrapper bs = new SmileParserBootstrapper(ctxt, in);
         return bs.constructParser(_factoryFeatures, _parserFeatures,
-        		_smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer);
+                _smileParserFeatures, _objectCodec, _byteSymbolCanonicalizer);
     }
 
     @Override

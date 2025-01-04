@@ -3,8 +3,6 @@ package com.fasterxml.jackson.dataformat.smile;
 import java.io.*;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
 import static org.junit.Assert.assertArrayEquals;

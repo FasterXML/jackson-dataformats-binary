@@ -45,12 +45,14 @@ public class ApacheAvroFactory extends AvroFactory
     @Override
     protected AvroParser _createParser(InputStream in, IOContext ctxt) throws IOException {
         return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+                _avroRecyclerPool.acquireAndLinkPooled(),
                 _objectCodec, in);
     }
 
     @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
         return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
+                _avroRecyclerPool.acquireAndLinkPooled(),
                 _objectCodec, data, offset, len);
     }
 }

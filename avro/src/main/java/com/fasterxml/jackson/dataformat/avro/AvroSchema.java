@@ -35,7 +35,7 @@ public class AvroSchema implements FormatSchema
     /**
      * Lazily instantiated value reader for this schema.
      */
-    protected final AtomicReference<AvroStructureReader> _reader = new AtomicReference<AvroStructureReader>();
+    protected final AtomicReference<AvroStructureReader> _reader = new AtomicReference<>();
 
     public AvroSchema(Schema asch)
     {

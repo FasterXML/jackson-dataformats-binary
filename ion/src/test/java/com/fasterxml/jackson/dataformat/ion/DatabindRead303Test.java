@@ -1,15 +1,14 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion;
 
 import java.net.URL;
 
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 import static org.junit.Assert.*;
 
-public class UncaughtException303Test
+public class DatabindRead303Test
 {
     private final IonObjectMapper MAPPER = IonObjectMapper.builder().build();
 
@@ -21,9 +20,10 @@ public class UncaughtException303Test
         try {
             MAPPER.readTree(poc);
             fail("Should not pass with invalid content");
-        } catch (JsonProcessingException e) {
-            // !!! TODO: change to match what we actually expect
-            verifyException(e, "MATCH MESSAGE");
+        } catch (StreamReadException e) {
+            // 19-Dec-2023, tatu: Looks like message depends on ion-java version,
+            //     cannot easily verify
+            // verifyException(e, "Value exceeds the length of its parent container");
         }
     }
 
@@ -31,7 +31,7 @@ public class UncaughtException303Test
     {
         String msg = e.getMessage();
         String lmsg = (msg == null) ? "" : msg.toLowerCase();
-        if (lmsg.indexOf(match.toLowerCase()) < 0) {
+        if (!lmsg.contains(match.toLowerCase())) {
             fail("Expected an exception with a substrings ("+match+"): got one with message \""+msg+"\"");
         }
     }

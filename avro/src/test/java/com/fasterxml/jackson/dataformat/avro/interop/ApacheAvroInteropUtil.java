@@ -88,7 +88,7 @@ public class ApacheAvroInteropUtil {
         }
     };
 
-    private static final AvroMapper MAPPER = new AvroMapper(new AvroModule());
+    private static final AvroMapper MAPPER = new AvroMapper();
 
     /*
      * Special subclass of ReflectData that knows how to resolve and bind generic types. This saves us much pain of

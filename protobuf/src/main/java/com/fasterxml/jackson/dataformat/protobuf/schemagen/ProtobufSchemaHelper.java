@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
 import java.nio.ByteBuffer;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.*;
 
@@ -55,6 +56,8 @@ public class ProtobufSchemaHelper
 
     public static boolean isBinaryType(JavaType type) {
         return type.hasRawClass(byte[].class)
+                // 24-Jul-2024, tatu: [dataformats-binary#506] UUID as Binary
+                || type.hasRawClass(UUID.class)
                 || type.isTypeOrSubTypeOf(ByteBuffer.class);
     }
 }

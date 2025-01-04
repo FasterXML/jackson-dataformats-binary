@@ -1,10 +1,8 @@
 package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
@@ -28,14 +26,20 @@ public abstract class SmileParserBase extends ParserMinimalBase
     //  read only up to 250k
     protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
 
+    // @since 2.16
+    protected final static int DEFAULT_NAME_BUFFER_LENGTH = 64;    
+
+    // @since 2.16
+    protected final static int DEFAULT_STRING_VALUE_BUFFER_LENGTH = 64;
+
     // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Config
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -57,9 +61,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected boolean _mayContainRawBinary;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Generic I/O state
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -76,9 +80,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected boolean _closed;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Current input data
-    /**********************************************************
+    /**********************************************************************
      */
 
     // Note: type of actual buffer depends on sub-class, can't include
@@ -94,9 +98,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected int _inputEnd = 0;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Parsing state, location
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -120,9 +124,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected JsonReadContext _streamReadContext;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Decoded values, text, binary
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -155,9 +159,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected byte[] _binaryValue;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Decoded values, numbers
-    /**********************************************************
+    /**********************************************************************
      */
 
     protected NumberType _numberType;
@@ -181,9 +185,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected double _numberDouble;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Symbol handling, decoding
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -200,6 +204,24 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * Quads used for hash calculation
      */
     protected int _quad1, _quad2, _quad3;
+
+    /**
+     * Marker flag to indicate that standard symbol handling is used
+     * (one with symbol table assisted canonicalization. May be disabled
+     * in which case alternate stream-line, non-canonicalizing handling
+     * is used: usually due to set of symbols
+     * (Object property names) is unbounded and will not benefit from
+     * canonicalization attempts.
+     *
+     * @since 2.13
+     */
+    protected final boolean _symbolsCanonical;
+
+    /*
+    /**********************************************************************
+    /* Back-references
+    /**********************************************************************
+     */
 
     /**
      * Array of recently seen field names, which may be back referenced
@@ -219,45 +241,13 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected int _seenStringValueCount = -1;
 
-    /**
-     * Marker flag to indicate that standard symbol handling is used
-     * (one with symbol table assisted canonicalization. May be disabled
-     * in which case alternate stream-line, non-canonicalizing handling
-     * is used: usually due to set of symbols
-     * (Object property names) is unbounded and will not benefit from
-     * canonicalization attempts.
-     *
-     * @since 2.13
-     */
-    protected final boolean _symbolsCanonical;
-
     /*
-    /**********************************************************
-    /* Thread-local recycling
-    /**********************************************************
-     */
-
-    /**
-     * <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
-     * to a buffer recycler used to provide a low-cost
-     * buffer recycling for Smile-specific buffers.
-     */
-    protected final static ThreadLocal<SoftReference<SmileBufferRecycler<String>>> _smileRecyclerRef
-        = new ThreadLocal<SoftReference<SmileBufferRecycler<String>>>();
-
-    /**
-     * Helper object used for low-level recycling of Smile-generator
-     * specific buffers.
-     */
-    protected final SmileBufferRecycler<String> _smileBufferRecycler;
-
-    /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
-    public SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
+    protected SmileParserBase(IOContext ctxt, int parserFeatures, int formatFeatures,
             ByteQuadsCanonicalizer sym)
     {
         super(parserFeatures);
@@ -268,26 +258,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
         DupDetector dups = Feature.STRICT_DUPLICATE_DETECTION.enabledIn(parserFeatures)
                 ? DupDetector.rootDetector(this) : null;
         _streamReadContext = JsonReadContext.createRootContext(dups);
-
         _textBuffer = ctxt.constructReadConstrainedTextBuffer();
-        _smileBufferRecycler = _smileBufferRecycler();
     }
 
     @Override
     public StreamReadConstraints streamReadConstraints() {
         return _ioContext.streamReadConstraints();
-    }
-
-    protected final static SmileBufferRecycler<String> _smileBufferRecycler()
-    {
-        SoftReference<SmileBufferRecycler<String>> ref = _smileRecyclerRef.get();
-        SmileBufferRecycler<String> br = (ref == null) ? null : ref.get();
-
-        if (br == null) {
-            br = new SmileBufferRecycler<String>();
-            _smileRecyclerRef.set(new SoftReference<SmileBufferRecycler<String>>(br));
-        }
-        return br;
     }
 
     /*
@@ -431,26 +407,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
         if (buf != null) {
             _nameCopyBuffer = null;
             _ioContext.releaseNameCopyBuffer(buf);
-        }
-        String[] nameBuf = _seenNames;
-        if (nameBuf != null && nameBuf.length > 0) {
-            _seenNames = null;
-            // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-            //   but we only need to clear up to count as it is not a hash area
-            if (_seenNameCount > 0) {
-                Arrays.fill(nameBuf, 0, _seenNameCount, null);
-            }
-            _smileBufferRecycler.releaseSeenNamesBuffer(nameBuf);
-        }
-        String[] valueBuf = _seenStringValues;
-        if (valueBuf != null && valueBuf.length > 0) {
-            _seenStringValues = null;
-            // 28-Jun-2011, tatu: With 1.9, caller needs to clear the buffer;
-            //   but we only need to clear up to count as it is not a hash area
-            if (_seenStringValueCount > 0) {
-                Arrays.fill(valueBuf, 0, _seenStringValueCount, null);
-            }
-            _smileBufferRecycler.releaseSeenStringValuesBuffer(valueBuf);
         }
         _releaseBuffers2();
     }

@@ -1,12 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.ref.SoftReference;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+
+import com.fasterxml.jackson.core.util.RecyclerPool;
+import com.fasterxml.jackson.core.util.RecyclerPool.WithPool;
 
 import org.apache.avro.io.*;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Simple helper class that contains extracted functionality for
@@ -15,18 +15,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  * @since 2.8.7
  */
 public final class ApacheCodecRecycler
+    implements WithPool<ApacheCodecRecycler>
 {
-    protected final static DecoderFactory DECODER_FACTORY = DecoderFactory.get();
+    // NOTE: AtomicReference only needed for ThreadLocal recycling where
+    //  single-thread access is not (ironically enough) ensured
+    private final AtomicReference<BinaryDecoder> decoderRef = new AtomicReference<>();
 
-    protected final static EncoderFactory ENCODER_FACTORY = EncoderFactory.get();
+    // NOTE: AtomicReference only needed for ThreadLocal recycling where
+    //  single-thread access is not (ironically enough) ensured
+    private final AtomicReference<BinaryEncoder> encoderRef = new AtomicReference<>();
 
-    protected final static ThreadLocal<SoftReference<ApacheCodecRecycler>> _recycler
-            = new ThreadLocal<SoftReference<ApacheCodecRecycler>>();
+    private RecyclerPool<ApacheCodecRecycler> _pool;
 
-    private BinaryDecoder decoder;
-    private BinaryEncoder encoder;
-
-    private ApacheCodecRecycler() { }
+    ApacheCodecRecycler() { }
 
     /*
     /**********************************************************
@@ -34,77 +35,59 @@ public final class ApacheCodecRecycler
     /**********************************************************
      */
 
-    public static BinaryDecoder decoder(InputStream in, boolean buffering)
-    {
-        BinaryDecoder prev = _recycler().claimDecoder();
-        return buffering
-                ? DECODER_FACTORY.binaryDecoder(in, prev)
-                : DECODER_FACTORY.directBinaryDecoder(in, prev);
+    public BinaryDecoder acquireDecoder() {
+        return decoderRef.getAndSet(null);
     }
 
-    public static BinaryDecoder decoder(byte[] buffer, int offset, int len)
-    {
-        BinaryDecoder prev = _recycler().claimDecoder();
-        return DECODER_FACTORY.binaryDecoder(buffer, offset, len, prev);
+    public BinaryEncoder acquireEncoder() {
+        return encoderRef.getAndSet(null);
     }
 
-    public static BinaryEncoder encoder(OutputStream out, boolean buffering)
-    {
-        BinaryEncoder prev = _recycler().claimEncoder();
-        return buffering
-            ? ENCODER_FACTORY.binaryEncoder(out, prev)
-            : ENCODER_FACTORY.directBinaryEncoder(out, prev);
+    public void release(BinaryDecoder dec) {
+        decoderRef.set(dec);
     }
 
-    public static void release(BinaryDecoder dec) {
-        _recycler().decoder = (BinaryDecoder) dec;
-    }
-
-    public static void release(BinaryEncoder enc) {
-        _recycler().encoder = enc;
+    public void release(BinaryEncoder enc) {
+        encoderRef.set(enc);
     }
 
     /*
     /**********************************************************
-    /* Internal per-instance methods
+    /* WithPool implementation
     /**********************************************************
      */
-
-    private static ApacheCodecRecycler _recycler() {
-        SoftReference<ApacheCodecRecycler> ref = _recycler.get();
-        ApacheCodecRecycler r = (ref == null) ? null : ref.get();
-
-        if (r == null) {
-            r = new ApacheCodecRecycler();
-            _recycler.set(new SoftReference<ApacheCodecRecycler>(r));
+    
+    /**
+     * Method called by owner of this recycler instance, to provide reference to
+     * {@link RecyclerPool} into which instance is to be released (if any)
+     *
+     * @since 2.16
+     */
+    @Override
+    public ApacheCodecRecycler withPool(RecyclerPool<ApacheCodecRecycler> pool) {
+        if (this._pool != null) {
+            throw new IllegalStateException("ApacheCodecRecycler already linked to pool: "+pool);
         }
-        return r;
+        // assign to pool to which this BufferRecycler belongs in order to release it
+        // to the same pool when the work will be completed
+        _pool = Objects.requireNonNull(pool);
+        return this;
     }
 
-    private BinaryDecoder claimDecoder() {
-        BinaryDecoder d = decoder;
-        decoder = null;
-        return d;
-    }
-
-    private BinaryEncoder claimEncoder() {
-        BinaryEncoder e = encoder;
-        encoder = null;
-        return e;
-    }
-
-    /*
-    /**********************************************************
-    /* Helper class
-    /**********************************************************
+    /**
+     * Method called when owner of this recycler no longer wishes use it; this should
+     * return it to pool passed via {@code withPool()} (if any).
+     *
+     * @since 2.16
      */
-
-    public static class BadSchemaException extends JsonProcessingException
-    {
-        private static final long serialVersionUID = 1L;
-
-        public BadSchemaException(String msg, Throwable src) {
-            super(msg, src);
+    @Override
+    public void releaseToPool() {
+        if (_pool != null) {
+            RecyclerPool<ApacheCodecRecycler> tmpPool = _pool;
+            // nullify the reference to the pool in order to avoid the risk of releasing
+            // the same BufferRecycler more than once, thus compromising the pool integrity
+            _pool = null;
+            tmpPool.releasePooled(this);
         }
     }
 }

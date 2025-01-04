@@ -18,6 +18,7 @@ import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
+import static org.junit.Assert.assertNull;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
@@ -200,7 +201,7 @@ public class IonValueDeserializerTest {
         String input2 = "{required:{}}";
         MyBean deserializedBean2 = ionObjectMapper.readValue(input2, MyBean.class);
         assertEquals(ionSystem.newEmptyStruct(), deserializedBean2.required);
-        assertEquals(null, deserializedBean2.optional);
+        assertNull(deserializedBean2.optional);
     }
 
     @Test

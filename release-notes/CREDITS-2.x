@@ -260,6 +260,8 @@ Dominik Broj (thetric@github)
 
 #341: (ion) Update to Amazon Ion 1.9.5
  (2.14.0)
+#410: Update `com.amazon.ion:ion-java` to 1.10.5 (from 1.9.5)
+ (2.16.0)
 
 Brian Harrington (brharrington@github)
 

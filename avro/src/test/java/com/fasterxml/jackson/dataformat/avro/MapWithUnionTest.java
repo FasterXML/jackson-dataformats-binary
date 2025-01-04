@@ -99,9 +99,9 @@ public class MapWithUnionTest extends AvroTestBase
 
     public void testMapContainerWithNested() throws IOException
     {
-        Map<String,Object> map = new LinkedHashMap<String,Object>();
+        Map<String,Object> map = new LinkedHashMap<>();
         map.put("hello", "world");
-        Map<String,String> otherMap = new LinkedHashMap<String,String>();
+        Map<String,String> otherMap = new LinkedHashMap<>();
         otherMap.put("foo", "bar");
         otherMap.put("zap", "bing");
         map.put("otherMap", otherMap);
@@ -125,7 +125,7 @@ public class MapWithUnionTest extends AvroTestBase
     }
 
     private Map<String,Object> _map(Object... args) {
-        Map<String,Object> m = new LinkedHashMap<String,Object>();
+        Map<String,Object> m = new LinkedHashMap<>();
         for (int i = 0; i < args.length; i += 2) {
             m.put((String) args[i], args[i+1]);
         }
