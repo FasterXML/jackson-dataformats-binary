@@ -23,32 +23,37 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 public class SimpleIonReadTest {
+    private final IonFactory ION_F = new IonFactory();
     // // // Actual tests; low level
 
     @Test
     public void testSimpleStructRead() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:\"value\",b:42, c:null}");
-        assertEquals(JsonToken.START_OBJECT, jp.nextToken());
-        assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
-        assertEquals("a", jp.currentName());
-        assertEquals(JsonToken.VALUE_STRING, jp.nextToken());
-        assertEquals("value", jp.getText());
-        assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
-        assertEquals("b", jp.currentName());
-        assertEquals(42, jp.getIntValue());
-        assertEquals(JsonToken.VALUE_NULL, jp.nextValue());
-        assertEquals("c", jp.currentName());
-        assertEquals(JsonToken.END_OBJECT, jp.nextToken());
-        jp.close();
+        try (JsonParser p = ION_F.createParser("{a:\"value\",b:42, c:null}")) {
+            assertEquals(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("a", p.currentName());
+            assertEquals("a", p.getText());
+            assertEquals("a", p.getValueAsString());
+            assertEquals("a", p.getValueAsString("x"));
+            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
+            assertEquals("value", p.getText());
+            assertEquals("value", p.getText());
+            assertEquals("value", p.getValueAsString());
+            assertEquals("value", p.getValueAsString("x"));
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextValue());
+            assertEquals("b", p.currentName());
+            assertEquals(42, p.getIntValue());
+            assertEquals(JsonToken.VALUE_NULL, p.nextValue());
+            assertEquals("c", p.currentName());
+            assertEquals(JsonToken.END_OBJECT, p.nextToken());
+        }
     }
 
     @Test
     public void testSimpleListRead() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("[  12, true, null, \"abc\" ]");
+        JsonParser jp = ION_F.createParser("[  12, true, null, \"abc\" ]");
         assertEquals(JsonToken.START_ARRAY, jp.nextToken());
         assertEquals(JsonToken.VALUE_NUMBER_INT, jp.nextValue());
         assertEquals(12, jp.getIntValue());
@@ -63,8 +68,7 @@ public class SimpleIonReadTest {
     @Test
     public void testSimpleStructAndArray() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:[\"b\",\"c\"], b:null}");
+        JsonParser jp = ION_F.createParser("{a:[\"b\",\"c\"], b:null}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("a", jp.currentName());
@@ -85,8 +89,7 @@ public class SimpleIonReadTest {
     @Test
     public void testMixed() throws IOException
     {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:[ 1, { b:  13}, \"xyz\" ], c:null, d:true}");
+        JsonParser jp = ION_F.createParser("{a:[ 1, { b:  13}, \"xyz\" ], c:null, d:true}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.START_ARRAY, jp.nextValue());
         //assertEquals("a", jp.currentName());
@@ -113,8 +116,7 @@ public class SimpleIonReadTest {
 
     @Test
     public void testNullIonType() throws IOException {
-        IonFactory f = new IonFactory();
-        JsonParser jp = f.createParser("{a:\"value\",b:42, c:null.int}");
+        JsonParser jp = ION_F.createParser("{a:\"value\",b:42, c:null.int}");
         assertEquals(JsonToken.START_OBJECT, jp.nextToken());
         assertEquals(JsonToken.FIELD_NAME, jp.nextToken());
         assertEquals("a", jp.currentName());
