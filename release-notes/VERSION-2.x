@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.3 (not yet released)
+
+#541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
+ (fix contributed by John H)
+
 2.18.2 (27-Nov-2024)
 
 No changes since 2.18.1
@@ -38,11 +43,6 @@ No changes since 2.18.1
  (contributed by @pjfanning)
 #509: IonValueMapper.builder() not implemented, does not register modules
  (reported by Robert N)
-
-2.17.4 (not yet released)
-
-#541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
- (fix contributed by John H)
 
 2.17.3 (01-Nov-2024)
 
