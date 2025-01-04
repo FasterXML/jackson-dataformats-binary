@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.dataformat.avro.annotation.Decimal;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -17,6 +16,7 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
+import com.fasterxml.jackson.dataformat.avro.annotation.Decimal;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 public class RecordVisitor
@@ -150,17 +150,19 @@ public class RecordVisitor
             Schema.Parser parser = new Schema.Parser();
             writerSchema = parser.parse(schemaOverride.value());
         } else {
-            if (prop.getAnnotation(AvroFixedSize.class) != null) {
-                AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
+            AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
+            if (fixedSize != null) {
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
             }
-            if (_visitorWrapper.isLogicalTypesEnabled() && prop.getAnnotation(Decimal.class) != null) {
-                if (writerSchema == null) {
-                    writerSchema = Schema.create(Type.BYTES);
-                }
+            if (_visitorWrapper.isLogicalTypesEnabled()) {
                 Decimal decimal = prop.getAnnotation(Decimal.class);
-                writerSchema = LogicalTypes.decimal(decimal.precision(), decimal.scale())
-                        .addToSchema(writerSchema);
+                if (decimal != null) {
+                    if (writerSchema == null) {
+                        writerSchema = Schema.create(Type.BYTES);
+                    }
+                    writerSchema = LogicalTypes.decimal(decimal.precision(), decimal.scale())
+                            .addToSchema(writerSchema);
+                }
             }
             if (writerSchema == null) {
                 JsonSerializer<?> ser = null;
@@ -169,9 +171,7 @@ public class RecordVisitor
                 if (prop instanceof BeanPropertyWriter) {
                     BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
                     ser = bpw.getSerializer();
-                    /*
-                     * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
-                     */
+                    // 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
                     optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                 }
                 final SerializerProvider prov = getProvider();
