@@ -1173,6 +1173,9 @@ versionBits));
         if (_currToken == JsonToken.VALUE_STRING) {
             return _textBuffer.contentsAsString();
         }
+        if (_currToken == JsonToken.FIELD_NAME) {
+            return currentName();
+        }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
@@ -1183,6 +1186,9 @@ versionBits));
     public String getValueAsString(String defaultValue) throws IOException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return currentName();
+            }
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
                 return defaultValue;
             }

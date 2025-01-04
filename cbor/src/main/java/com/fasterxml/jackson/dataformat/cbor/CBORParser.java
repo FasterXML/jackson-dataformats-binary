@@ -1714,6 +1714,9 @@ public class CBORParser extends ParserMinimalBase
         if (_currToken == JsonToken.VALUE_STRING) {
             return _sharedString == null ? _textBuffer.contentsAsString() : _sharedString;
         }
+        if (_currToken == JsonToken.FIELD_NAME) {
+            return currentName();
+        }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
@@ -1724,6 +1727,9 @@ public class CBORParser extends ParserMinimalBase
     public String getValueAsString(String defaultValue) throws IOException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return currentName();
+            }
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
                 return defaultValue;
             }

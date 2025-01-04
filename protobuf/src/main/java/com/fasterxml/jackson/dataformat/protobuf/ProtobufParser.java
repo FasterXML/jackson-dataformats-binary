@@ -1420,6 +1420,9 @@ public class ProtobufParser extends ParserMinimalBase
             }
             return _textBuffer.contentsAsString();
         }
+        if (_currToken == JsonToken.FIELD_NAME) {
+            return currentName();
+        }
         if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
             return null;
         }
@@ -1430,6 +1433,9 @@ public class ProtobufParser extends ParserMinimalBase
     public String getValueAsString(String defaultValue) throws IOException
     {
         if (_currToken != JsonToken.VALUE_STRING) {
+            if (_currToken == JsonToken.FIELD_NAME) {
+                return currentName();
+            }
             if (_currToken == null || _currToken == JsonToken.VALUE_NULL || !_currToken.isScalarValue()) {
                 return defaultValue;
             }
