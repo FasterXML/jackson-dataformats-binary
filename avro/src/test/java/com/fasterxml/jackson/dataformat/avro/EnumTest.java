@@ -1,5 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
+
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
 public class EnumTest extends AvroTestBase
 {
     // gender as Avro enum
@@ -118,4 +126,34 @@ public class EnumTest extends AvroTestBase
         assertEquals(Gender.F, output.gender);
     }
 
+    // [dataformats-binary#388]: Default value for enums with class
+    public void testClassEnumWithDefault() throws Exception
+    {
+        AvroSchemaGenerator gen = new AvroSchemaGenerator();
+
+        MAPPER.acceptJsonFormatVisitor(ABCDefaultClass.class, gen);
+        AvroSchema schema = gen.getGeneratedSchema();
+        assertNotNull(schema);
+
+        String json = schema.getAvroSchema().toString(true);
+        assertNotNull(json);
+
+        // And read it back too just for fun
+        AvroSchema s2 = MAPPER.schemaFrom(json);
+        assertNotNull(s2);
+
+        Schema avroSchema = s2.getAvroSchema();
+
+        // String name, int value
+        assertEquals(Type.RECORD, avroSchema.getType());
+        Schema.Field f = avroSchema.getField("abc");
+        assertNotNull(f);
+        assertEquals("abc", f.name());
+
+        assertEquals(Type.ENUM, f.schema().getType());
+        assertEquals(ABC.C.toString(), f.schema().getEnumDefault());
+        assertEquals(Stream.of(ABC.values())
+                               .map(ABC::name)
+                               .collect(Collectors.toList()), f.schema().getEnumSymbols());
+    }   
 }
