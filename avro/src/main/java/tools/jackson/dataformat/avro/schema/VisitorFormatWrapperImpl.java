@@ -16,14 +16,14 @@ public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
 {
     /**
-     * Default value for {@link #_logicalTypesEnabled}: {@code false} will be changed to
-     * {@code true} in 3.0.
+     * Default value for {@link #_logicalTypesEnabled}: {@code true}
+     * for Jackson 3.x (was {@code false} for Jackson 2.x.
      */
-    public static final boolean DEFAULT_LOGICAL_TYPES_ENABLED = false;
+    public static final boolean DEFAULT_LOGICAL_TYPES_ENABLED = true;
 
     /**
      * Default value for {@link #_writeEnumAsString}: {@code false} as of
-     * Jackson 2.19 and later.
+     * Jackson 3.0.
      */
     public static final boolean DEFAULT_ENUM_AS_STRING = false;
 

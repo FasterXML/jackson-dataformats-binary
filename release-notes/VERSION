@@ -27,4 +27,6 @@ implementations)
   `IonGenerator.Feature` as `IonWriteFeature`
 #528: JSTEP-8: rename `SmileParser.Feature` as `SmileReadFeature`,
   `SmileGenerator.Feature` as `SmileWriteFeature`
+#543: (avro) Enable "logical types" support in `AvroSchemaGenerator`
+  by default (3.0)
 - Minimum Java baseline: Java 17
