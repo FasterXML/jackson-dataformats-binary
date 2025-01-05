@@ -46,7 +46,7 @@ public class VisitorFormatWrapperImpl
     /**
      * @since 2.18
      */
-    protected boolean _writeEnumAsString = false;
+    protected boolean _writeEnumAsString = DEFAULT_ENUM_AS_STRING;
 
     /**
      * Visitor used for resolving actual Schema, if structured type
