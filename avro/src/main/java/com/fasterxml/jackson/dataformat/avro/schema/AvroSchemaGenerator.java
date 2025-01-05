@@ -8,6 +8,9 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
  * An instance is typically given to
  * {@link com.fasterxml.jackson.databind.ObjectMapper#acceptJsonFormatVisitor}
  * which will invoke necessary callbacks.
+ *<p>
+ * For default configuration of things like "Logical Types support", see Javadocs
+ * of {@link VisitorFormatWrapperImpl}.
  */
 public class AvroSchemaGenerator extends VisitorFormatWrapperImpl
 {
