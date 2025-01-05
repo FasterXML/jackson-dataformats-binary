@@ -219,12 +219,17 @@ Michal Foksa (MichalFoksa@github)
  (2.13.0)
 * Contributed #290: (avro) Generate logicalType switch
  (2.13.0)
+* Contributed fix for #308: (avro) Incorrect serialization for `LogicalType.Decimal`
+  (Java `BigDecimal`)
 * Contributed #310: (avro) Avro schema generation: allow override namespace with new
   `@AvroNamespace` annotation
  (2.14.0)
 * Contributed #494: Avro Schema generation: allow mapping Java Enum properties to
   Avro String values
  (2.18.0)
+* Contributed fix for #535: (avro) AvroSchemaGenerator: logicalType(s) never set
+  for non-date classes
+ (2.19.0)
 * Contributed #536: (avro) Add Logical Type support for `java.util.UUID`
  (2.19.0)
 
@@ -330,6 +335,11 @@ Yoann Vernageau (@yvrng)
    when source is an empty `InputStream`
   (2.17.1)
 
+John Hudson (@johhud1)
+ * Contributed fix for #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()`
+   FIELD_NAME bug
+  (2.17.4)
+
 Rafał Harabień (@rafalh)
  * Contributed fix for #167: (avro) Incompatibility with Avro >=1.9.0 (upgrade to Avro 1.11.3)
   (2.18.0)
@@ -352,3 +362,13 @@ Robert Noack (@mr-robert)
 Knut Wannheden (@knutwannheden)
  * Contributed #518: Should not read past end for CBOR string values
   (2.18.1)
+
+Idan Sheinberg (@sheinbergon)
+ * Reported #308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java
+   `BigDecimal`)
+  (2.19.0)
+
+Cormac Redmond (@credmond)
+ * Reported #535: (avro) AvroSchemaGenerator: logicalType(s) never set for
+   non-Date classes
+  (2.19.0)

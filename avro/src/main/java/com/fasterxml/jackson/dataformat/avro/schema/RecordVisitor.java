@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.reflect.AvroMeta;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFixedSize;
+import com.fasterxml.jackson.dataformat.avro.annotation.AvroDecimal;
 import com.fasterxml.jackson.dataformat.avro.ser.CustomEncodingSerializer;
 
 public class RecordVisitor
@@ -141,7 +143,7 @@ public class RecordVisitor
 
     protected Schema.Field schemaFieldForWriter(BeanProperty prop, boolean optional) throws JsonMappingException
     {
-        Schema writerSchema;
+        Schema writerSchema = null;
         // Check if schema for property is overridden
         AvroSchema schemaOverride = prop.getAnnotation(AvroSchema.class);
         if (schemaOverride != null) {
@@ -151,16 +153,25 @@ public class RecordVisitor
             AvroFixedSize fixedSize = prop.getAnnotation(AvroFixedSize.class);
             if (fixedSize != null) {
                 writerSchema = Schema.createFixed(fixedSize.typeName(), null, fixedSize.typeNamespace(), fixedSize.size());
-            } else {
+            }
+            if (_visitorWrapper.isLogicalTypesEnabled()) {
+                AvroDecimal avroDecimal = prop.getAnnotation(AvroDecimal.class);
+                if (avroDecimal != null) {
+                    if (writerSchema == null) {
+                        writerSchema = Schema.create(Type.BYTES);
+                    }
+                    writerSchema = LogicalTypes.decimal(avroDecimal.precision(), avroDecimal.scale())
+                            .addToSchema(writerSchema);
+                }
+            }
+            if (writerSchema == null) {
                 JsonSerializer<?> ser = null;
 
                 // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
                 if (prop instanceof BeanPropertyWriter) {
                     BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
                     ser = bpw.getSerializer();
-                    /*
-                     * 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
-                     */
+                    // 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
                     optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema
                 }
                 final SerializerProvider prov = getProvider();
@@ -204,7 +215,7 @@ public class RecordVisitor
 
     /**
      * A union schema with a default value must always have the schema branch corresponding to the default value first, or Avro will print a
-     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Schema.Type#UNION UNION} schema and
+     * warning complaining that the default value is not compatible. If {@code schema} is a {@link Type#UNION UNION} schema and
      * {@code defaultValue} is non-{@code null}, this finds the appropriate branch in the union and reorders the union so that it is first.
      *
      * @param schema
