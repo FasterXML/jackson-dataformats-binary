@@ -15,13 +15,25 @@ import org.apache.avro.Schema;
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
 {
+    /**
+     * Default value for {@link #_logicalTypesEnabled}: {@code false} will be changed to
+     * {@code true} in 3.0.
+     */
+    public static final boolean DEFAULT_LOGICAL_TYPES_ENABLED = false;
+
+    /**
+     * Default value for {@link #_writeEnumAsString}: {@code false} as of
+     * Jackson 2.19 and later.
+     */
+    public static final boolean DEFAULT_ENUM_AS_STRING = false;
+
     protected SerializationContext _context;
 
     protected final DefinedSchemas _schemas;
 
-    protected boolean _logicalTypesEnabled = false;
+    protected boolean _logicalTypesEnabled = DEFAULT_LOGICAL_TYPES_ENABLED;
 
-    protected boolean _writeEnumAsString = false;
+    protected boolean _writeEnumAsString = DEFAULT_ENUM_AS_STRING;
 
     /**
      * Visitor used for resolving actual Schema, if structured type
@@ -45,11 +57,11 @@ public class VisitorFormatWrapperImpl
         _context = ctxt;
     }
 
-
     protected VisitorFormatWrapperImpl(VisitorFormatWrapperImpl src) {
         this._schemas = src._schemas;
         this._context = src._context;
         this._logicalTypesEnabled = src._logicalTypesEnabled;
+        this._writeEnumAsString = src._writeEnumAsString;
     }
 
     /**
