@@ -26,6 +26,7 @@ Active maintainers:
  (fix contributed by Michal F)
 #536: (avro) Add Logical Type support for `java.util.UUID`
  (contributed by Michal F)
+#539: (avro) Upgrade `org.apache.avro:avro` dependency to 1.11.4
 
 2.18.3 (not yet released)
 
@@ -38,7 +39,7 @@ No changes since 2.18.1
 
 2.18.1 (28-Oct-2024)
 
-#518: Should not read past end for CBOR string values
+#518: (cbor) Should not read past end for CBOR string values
  (contributed by Knut W)
 
 2.18.0 (26-Sep-2024)
