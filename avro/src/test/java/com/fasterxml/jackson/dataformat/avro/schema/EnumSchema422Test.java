@@ -36,8 +36,7 @@ public class EnumSchema422Test extends AvroTestBase
     public void testEnumSchemaGeneration422() throws Exception
     {
         // First, failure due to invalid enum value (when generating as Enum)
-        AvroSchemaGenerator gen = new AvroSchemaGenerator()
-                .enableLogicalTypes();
+        AvroSchemaGenerator gen = new AvroSchemaGenerator();
         try {
             MAPPER.acceptJsonFormatVisitor(Wrapper422.class, gen);
             fail("Expected failure");
@@ -49,7 +48,6 @@ public class EnumSchema422Test extends AvroTestBase
         // But then success when configuring to produce Strings for Enum types
 
         gen = new AvroSchemaGenerator()
-                .enableLogicalTypes()
                 .enableWriteEnumAsString();
         MAPPER.acceptJsonFormatVisitor(Wrapper422.class, gen);
 
