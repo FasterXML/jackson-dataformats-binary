@@ -10,6 +10,7 @@ import java.util.*;
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
+import org.apache.avro.SchemaParseException;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
@@ -269,13 +270,27 @@ public abstract class AvroSchemaHelper
      * @param values List of enum names
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
-    public static Schema createEnumSchema(BeanDescription bean, List<String> values) {
+    public static Schema createEnumSchema(BeanDescription bean, List<String> values)
+    {
         final JavaType enumType = bean.getType();
-        return addAlias(Schema.createEnum(
-            getName(enumType),
-            bean.findClassDescription(),
-            getNamespace(enumType, bean.getClassInfo()), values
-        ), bean);
+        final Schema avroSchema;
+        
+        try {
+            avroSchema = Schema.createEnum(
+                getName(enumType),
+                bean.findClassDescription(),
+                getNamespace(enumType, bean.getClassInfo()),
+                values);
+        } catch (SchemaParseException spe) {
+            final String msg = String.format("Problem generating Avro `Schema` for Enum type %s: %s",
+                    ClassUtil.getTypeDescription(enumType), spe.getMessage());
+
+            // 05-Jan-2025, tatu: SHOULD be able to throw like so but
+            //   `SchemaBuilder` does not expose checked exceptions so need to
+            // throw InvalidDefinitionException.from((JsonParser) null, msg);
+            throw new IllegalArgumentException(msg, spe);
+        }
+        return addAlias(avroSchema, bean);
     }
 
     /**
