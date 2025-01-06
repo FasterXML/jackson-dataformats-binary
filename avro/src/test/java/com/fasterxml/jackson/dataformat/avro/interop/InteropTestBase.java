@@ -5,6 +5,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.apache.avro.Schema;
+
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -23,6 +25,16 @@ public abstract class InteropTestBase
 {
     public enum DummyEnum {
         NORTH, SOUTH, EAST, WEST
+    }
+
+    // see https://github.com/FasterXML/jackson-dataformats-binary/pull/539 for
+    // explanation (need to allow-list Jackson test packages for Avro 1.11.4+)
+    @Before
+    public void init() {
+        System.setProperty("org.apache.avro.SERIALIZABLE_PACKAGES",
+                "java.lang,java.math,java.io,java.net,org.apache.avro.reflect," +
+                // ^^^ These are default trusted packages by Avro 1.11.4
+                        InteropTestBase.class.getPackage().getName());
     }
 
     /**
