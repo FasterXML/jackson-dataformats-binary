@@ -10,8 +10,8 @@ import org.apache.avro.specific.SpecificData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Enum_schemaCreationTest extends AvroTestBase {
-
+public class Enum_schemaCreationTest extends AvroTestBase
+{
     static enum NumbersEnum {
     	ONE, TWO, THREE
     }

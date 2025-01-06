@@ -10,15 +10,18 @@ import java.util.*;
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
+import org.apache.avro.SchemaParseException;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
 
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.AnnotatedConstructor;
 import tools.jackson.databind.json.JsonMapper;
@@ -257,19 +260,26 @@ public abstract class AvroSchemaHelper
      */
     public static Schema createEnumSchema(MapperConfig<?> config, JavaType enumType,
             AnnotatedClass annotations, List<String> values) {
-        return addAlias(Schema.createEnum(
-                getTypeName(enumType),
-                config.getAnnotationIntrospector().findClassDescription(config, annotations),
-                getNamespace(enumType, annotations), values
-        ), annotations);
+        final Schema avroSchema;
+        try {
+            avroSchema = Schema.createEnum(
+                    getTypeName(enumType),
+                    config.getAnnotationIntrospector().findClassDescription(config, annotations),
+                    getNamespace(enumType, annotations),
+                    values);
+        } catch (SchemaParseException spe) {
+            final String msg = String.format("Problem generating Avro `Schema` for Enum type %s: %s",
+                    ClassUtil.getTypeDescription(enumType), spe.getMessage());
+            throw InvalidDefinitionException.from((JsonGenerator) null, msg, enumType);
+        }
+
+        return addAlias(avroSchema, annotations);
     }
 
     /**
      * Helper method to enclose details of expressing best Avro Schema for
      * {@link java.util.UUID}: 16-byte fixed-length binary (alternative would
      * be basic variable length "bytes").
-     *
-     * @since 2.11
      */
     public static Schema createUUIDSchema() {
         return Schema.createFixed("UUID", null, "java.util", 16);
