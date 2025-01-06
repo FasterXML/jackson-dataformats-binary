@@ -10,8 +10,8 @@ import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificData;
 import org.junit.Test;
 
-public class Enum_schemaCreationTest extends AvroTestBase {
-
+public class Enum_schemaCreationTest extends AvroTestBase
+{
     static enum NumbersEnum {
     	ONE, TWO, THREE
     }

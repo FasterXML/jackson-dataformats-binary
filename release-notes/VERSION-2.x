@@ -19,6 +19,8 @@ Active maintainers:
 #308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java `BigDecimal`)
  (reported by Idan S)
  (fix contributed by Michal F)
+#422: Avro generation failed with enums containing values with special characters
+ (reported by @pfr-enedis)
 #535: (avro) AvroSchemaGenerator: logicalType(s) never set for non-date classes
  (reported by Cormac R)
  (fix contributed by Michal F)
