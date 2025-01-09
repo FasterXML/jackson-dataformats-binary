@@ -80,7 +80,9 @@ public class BiggerDataParseTest extends BaseTestForSmile
     /**********************************************************
      */
 
-    private final ObjectMapper JSON_MAPPER = new JsonMapper();
+    private final ObjectMapper JSON_MAPPER = JsonMapper.builder()
+			.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+			.build();
 
     public void testReading() throws Exception
     {

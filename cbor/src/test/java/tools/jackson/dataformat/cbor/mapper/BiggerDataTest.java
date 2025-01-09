@@ -3,6 +3,7 @@ package tools.jackson.dataformat.cbor.mapper;
 import java.util.*;
 
 import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
@@ -80,9 +81,13 @@ public class BiggerDataTest extends CBORTestBase
     /**********************************************************
      */
 
+	private final ObjectMapper MAPPER = JsonMapper.builder()
+			.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+			.build();
+
     public void testReading() throws Exception
 	{
-		Citm citm0 = jsonMapper().readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 
 		ObjectMapper mapper = cborMapper();
@@ -112,7 +117,7 @@ public class BiggerDataTest extends CBORTestBase
 
 	public void testRoundTrip() throws Exception
 	{
-		Citm citm0 = jsonMapper().readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 		ObjectMapper mapper = cborMapper();
 		byte[] cbor = mapper.writeValueAsBytes(citm0);
@@ -140,7 +145,7 @@ public class BiggerDataTest extends CBORTestBase
 
 	public void testRoundTripStringref() throws Exception
 	{
-		Citm citm0 = jsonMapper().readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
 				Citm.class);
 		ObjectMapper mapper = new CBORMapper(
 		    cborFactoryBuilder().enable(CBORWriteFeature.STRINGREF).build());
