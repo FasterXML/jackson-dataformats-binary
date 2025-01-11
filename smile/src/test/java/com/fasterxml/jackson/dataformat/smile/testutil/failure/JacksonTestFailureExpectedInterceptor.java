@@ -4,8 +4,6 @@ import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.extension.*;
 
-import com.fasterxml.jackson.dataformat.protobuf.testutil.failure.JacksonTestShouldFailException;
-
 /**
  * Custom {@link InvocationInterceptor} that intercepts test method invocation.
  * To pass the test ***only if*** test fails with an exception, and fail the test otherwise.
