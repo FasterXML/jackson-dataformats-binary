@@ -1,11 +1,16 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
-import org.junit.jupiter.api.Test;
+import org.apache.avro.Schema;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
+import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,8 +56,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         }
     }
 
-    @Test
-    public void testByteField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testByteField(
+            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+            throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.byteArrayField = new Byte[]{1, 0, -1, Byte.MIN_VALUE, Byte.MAX_VALUE};
         //
@@ -61,8 +73,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.byteArrayField).isEqualTo(record.byteArrayField);
     }
 
-    @Test
-    public void testCharacterField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testCharacterField(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.characterArrayField = new Character[]{1, 0, Character.MIN_VALUE, Character.MAX_VALUE};
         //
@@ -71,8 +90,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.characterArrayField).isEqualTo(record.characterArrayField);
     }
 
-    @Test
-    public void testDoubleField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testDoubleField(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.doubleArrayField = new Double[]{1D, 0D, -1D, Double.MIN_VALUE, Double.MAX_VALUE};
         //
@@ -81,8 +107,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.doubleArrayField).isEqualTo(record.doubleArrayField);
     }
 
-    @Test
-    public void testFloatField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testFloatField(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.floatArrayField = new Float[]{1F, 0F, -1F, Float.MIN_VALUE, Float.MAX_VALUE};
         //
@@ -91,8 +124,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.floatArrayField).isEqualTo(record.floatArrayField);
     }
 
-    @Test
-    public void testInteger() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testInteger(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.integerArrayField = new Integer[]{1, 0, -1, Integer.MIN_VALUE, Integer.MAX_VALUE};
         //
@@ -101,8 +141,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.integerArrayField).isEqualTo(record.integerArrayField);
     }
 
-    @Test
-    public void testLongField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testLongField(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.longArrayField = new Long[]{1L, 0L, -1L, Long.MIN_VALUE, Long.MAX_VALUE};
         //
@@ -111,8 +158,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.longArrayField).isEqualTo(record.longArrayField);
     }
 
-    @Test
-    public void testShortField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testShortField(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.shortArrayField = new Short[]{1, 0, -1, Short.MIN_VALUE, Short.MAX_VALUE};
         //
@@ -121,8 +175,15 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.shortArrayField).isEqualTo(record.shortArrayField);
     }
 
-    @Test
-    public void testStringField() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testStringField(
+            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+            throws IOException
+    {
+        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
+
         TestRecord record = new TestRecord();
         record.stringArrayField = new String[]{"", "one", "HelloWorld"};
         //

@@ -1,15 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Nullable;
-import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
+import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
+import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,30 +61,45 @@ public class AvroAliasTest extends InteropTestBase {
         LARGE;
     }
 
-    @Test
-    public void testAliasedRecordForwardsCompatible() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedRecordForwardsCompatible(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Employee.class);
         Schema newSchema = schemaFunctor.apply(NewEmployee.class);
         //
         SchemaCompatibility.SchemaPairCompatibility compatibility =
-            SchemaCompatibility.checkReaderWriterCompatibility(newSchema, oldSchema);
+                SchemaCompatibility.checkReaderWriterCompatibility(newSchema, oldSchema);
         //
         checkSchemaIsCompatible(compatibility);
     }
 
-    @Test
-    public void testAliasedRecordBackwardsCompatible() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedRecordBackwardsCompatible(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Employee.class);
         Schema newSchema = schemaFunctor.apply(NewEmployee.class);
         //
         SchemaCompatibility.SchemaPairCompatibility compatibility =
-            SchemaCompatibility.checkReaderWriterCompatibility(oldSchema, newSchema);
+                SchemaCompatibility.checkReaderWriterCompatibility(oldSchema, newSchema);
         //
         assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.INCOMPATIBLE);
     }
 
-    @Test
-    public void testAliasedRecordForwardsCompatibleSameNamespace() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedRecordForwardsCompatibleSameNamespace(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(NewEmployee.class);
         Schema newSchema = schemaFunctor.apply(AliasedNameEmployee.class);
         //
@@ -91,8 +109,13 @@ public class AvroAliasTest extends InteropTestBase {
         checkSchemaIsCompatible(compatibility);
     }
 
-    @Test
-    public void testAliasedRecordBackwardsCompatibleSameNamespace() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedRecordBackwardsCompatibleSameNamespace(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(NewEmployee.class);
         Schema newSchema = schemaFunctor.apply(AliasedNameEmployee.class);
         //
@@ -102,8 +125,13 @@ public class AvroAliasTest extends InteropTestBase {
         assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.INCOMPATIBLE);
     }
 
-    @Test
-    public void testAliasedEnumForwardsCompatible() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedEnumForwardsCompatible(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Size.class);
         Schema newSchema = schemaFunctor.apply(NewSize.class);
         //
@@ -113,8 +141,13 @@ public class AvroAliasTest extends InteropTestBase {
         checkSchemaIsCompatible(compatibility);
     }
 
-    @Test
-    public void testAliasedEnumBackwardsCompatible() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedEnumBackwardsCompatible(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Size.class);
         Schema newSchema = schemaFunctor.apply(NewSize.class);
         //
@@ -124,8 +157,13 @@ public class AvroAliasTest extends InteropTestBase {
         assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.INCOMPATIBLE);
     }
 
-    @Test
-    public void testAliasedEnumForwardsAndBackwardsCompatible() throws IOException {
+    @MethodSource("getParameters")
+    @ParameterizedTest(name = "{3}")
+    public void testAliasedEnumForwardsAndBackwardsCompatible(
+        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
+        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
+        throws IOException
+    {
         Schema oldSchema = schemaFunctor.apply(NewerSize.class);
         Schema newSchema = schemaFunctor.apply(NewestSize.class);
         //

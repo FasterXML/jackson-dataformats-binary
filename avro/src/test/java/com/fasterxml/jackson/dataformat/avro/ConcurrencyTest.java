@@ -2,8 +2,12 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple tests for some testable aspects of concurrent usage.

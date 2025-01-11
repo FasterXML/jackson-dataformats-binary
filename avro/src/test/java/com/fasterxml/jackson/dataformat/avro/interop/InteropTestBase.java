@@ -154,4 +154,14 @@ public abstract class InteropTestBase
         Schema schema = schemaFunctor.apply(schemaType);
         return (T) deserializeFunctor.apply(schema, serializeFunctor.apply(schema, object));
     }
+
+    protected void useParameters(Function<Type, Schema> schemaFunctor,
+                                 BiFunction<Schema, Object, byte[]> serializeFunctor,
+                                 BiFunction<Schema, byte[], Object> deserializeFunctor
+    ) {
+        this.schemaFunctor = schemaFunctor;
+        this.serializeFunctor = serializeFunctor;
+        this.deserializeFunctor = deserializeFunctor;
+    }
+
 }
