@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.RecyclerPool;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheCodecRecycler;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.AvroRecyclerPools;
-import com.fasterxml.jackson.dataformat.avro.deser.*;
+import com.fasterxml.jackson.dataformat.avro.deser.JacksonAvroParserImpl;
 
 /**
  * Default {@link JsonFactory} implementation for encoding/decoding Avro

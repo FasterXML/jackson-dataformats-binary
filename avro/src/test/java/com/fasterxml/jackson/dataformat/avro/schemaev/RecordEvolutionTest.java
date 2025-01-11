@@ -1,13 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
+import java.util.*;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.avro.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RecordEvolutionTest extends AvroTestBase
 {

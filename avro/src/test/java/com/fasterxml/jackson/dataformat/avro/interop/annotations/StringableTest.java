@@ -4,23 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.net.*;
+import java.util.*;
 
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Stringable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Tests support for using classes marked {@link Stringable @Stringable} as map keys. These classes must have a constructor which accepts a

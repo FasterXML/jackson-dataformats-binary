@@ -1,12 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.deser;
 
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
-
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 

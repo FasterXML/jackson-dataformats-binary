@@ -2,10 +2,15 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MapWithUnionTest extends AvroTestBase
 {
@@ -50,6 +55,7 @@ public class MapWithUnionTest extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testRootMapWithUnion() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(MAP_WITH_UNION_SCHEMA_JSON);
@@ -67,6 +73,7 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals("foobar", result.get("xy"));
     }
 
+    @Test
     public void testRootMapWithUnionSequence() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(MAP_WITH_UNION_SCHEMA_JSON);
@@ -97,6 +104,7 @@ public class MapWithUnionTest extends AvroTestBase
         it.close();
     }
 
+    @Test
     public void testMapContainerWithNested() throws IOException
     {
         Map<String,Object> map = new LinkedHashMap<>();

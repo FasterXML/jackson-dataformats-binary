@@ -3,14 +3,11 @@ package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 import java.io.IOException;
 
 import org.apache.avro.reflect.AvroIgnore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AvroIgnoreTest extends InteropTestBase

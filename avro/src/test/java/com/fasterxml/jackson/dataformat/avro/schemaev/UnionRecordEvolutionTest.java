@@ -1,8 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UnionRecordEvolutionTest extends AvroTestBase {
 
@@ -84,6 +86,7 @@ public class UnionRecordEvolutionTest extends AvroTestBase {
     /**********************************************************
      */
 
+    @Test
     public void testRoundtripToOlderCompatibleSchema() throws Exception {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_V2_ARRAY_JSON);
         final AvroSchema dstSchema = MAPPER.schemaFrom(SCHEMA_V1_ARRAY_JSON);
