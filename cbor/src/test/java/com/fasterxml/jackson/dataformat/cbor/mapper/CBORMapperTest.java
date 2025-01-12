@@ -1,16 +1,18 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CBORMapperTest extends CBORTestBase
 {
     // For [dataformats-binary#301]
+    @Test
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         final int SMALL_INT = 3;
@@ -42,6 +44,7 @@ public class CBORMapperTest extends CBORTestBase
     }
 
     // [databind#3212]
+    @Test
     public void testMapperCopy() throws Exception
     {
         CBORMapper src = cborMapper();

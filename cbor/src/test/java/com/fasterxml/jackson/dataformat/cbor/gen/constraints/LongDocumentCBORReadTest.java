@@ -4,14 +4,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LongDocumentCBORReadTest extends CBORTestBase
 {
@@ -25,6 +27,7 @@ public class LongDocumentCBORReadTest extends CBORTestBase
             .build()
             ).build());
 
+    @Test
     public void testLongDocumentConstraint() throws Exception
     {
         // Need a bit longer than minimum since checking is approximate, not exact

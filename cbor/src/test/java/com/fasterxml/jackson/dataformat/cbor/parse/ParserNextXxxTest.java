@@ -3,21 +3,26 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 import java.io.*;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
-// note: copied from test of same name from jackson-dataformat-smile
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ParserNextXxxTest extends CBORTestBase
 {
+    @Test
     public void testIsNextTokenName() throws Exception
     {
         _testIsNextTokenName1();
         _testIsNextTokenName2();
     }
 
+    @Test
     public void testNextFieldName() throws Exception
     {
         final int TESTROUNDS = 223;
@@ -59,6 +64,7 @@ public class ParserNextXxxTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testIssue38() throws Exception
     {
         final CBORFactory f = new CBORFactory();
@@ -75,6 +81,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNextNameWithLongContent() throws Exception
     {
         final CBORFactory f = new CBORFactory();
@@ -113,6 +120,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNextValuesMisc() throws Exception
     {
         final CBORFactory f = new CBORFactory();
@@ -143,6 +151,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNextTextValue() throws Exception
     {
         final CBORFactory f = new CBORFactory();

@@ -2,20 +2,22 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.*;
 
-// for [dataformat-binary#93]
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class UndefinedValueTest extends CBORTestBase
 {
     private final static byte BYTE_UNDEFINED = (byte) 0xF7;
 
     private final CBORFactory CBOR_F = cborFactory();
 
+    @Test
     public void testUndefinedLiteralStreaming() throws Exception
     {
         JsonParser p = cborParser(CBOR_F, new byte[] { BYTE_UNDEFINED });
@@ -24,6 +26,7 @@ public class UndefinedValueTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testUndefinedInArray() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -38,6 +41,7 @@ public class UndefinedValueTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testUndefinedInObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

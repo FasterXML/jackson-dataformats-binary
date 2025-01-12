@@ -2,12 +2,15 @@ package com.fasterxml.jackson.dataformat.cbor.seq;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.*;
-
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadTreesTest extends CBORTestBase
 {
@@ -23,6 +26,7 @@ public class ReadTreesTest extends CBORTestBase
     /**********************************************************
      */
 
+    @Test
     public void testReadTreeSequence() throws Exception
     {
         final byte[] INPUT = concat(
@@ -66,6 +70,7 @@ public class ReadTreesTest extends CBORTestBase
     /**********************************************************
      */
 
+    @Test
     public void testReadTreeSequenceLowStringLimit() throws Exception
     {
         final byte[] INPUT = concat(

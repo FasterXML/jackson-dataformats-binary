@@ -2,13 +2,9 @@ package com.fasterxml.jackson.dataformat.cbor.databind;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.Version;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.PackageVersion;
+import com.fasterxml.jackson.dataformat.cbor.*;
 
 /**
  * Specialized {@link ObjectMapper} to use with CBOR format backend.

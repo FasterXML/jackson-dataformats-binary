@@ -2,34 +2,42 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.nio.charset.StandardCharsets;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-// For [dataformats-binary#312]: null handling
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class SymbolTable312Test extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testNullHandling1Quad() throws Exception
     {
         _testNullHandling(1);
         _testNullHandling(2);
     }
 
+    @Test
     public void testNullHandling2Quads() throws Exception
     {
         _testNullHandling(5);
         _testNullHandling(6);
     }
 
+    @Test
     public void testNullHandling3Quads() throws Exception
     {
         _testNullHandling(9);
         _testNullHandling(10);
     }
 
+    @Test
     public void testNullHandlingNQuads() throws Exception
     {
         _testNullHandling(13);

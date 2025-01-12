@@ -3,17 +3,21 @@ package com.fasterxml.jackson.dataformat.cbor.parse.dos;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for deeply nested JSON
  */
 public class DeepNestingCBORParserTest extends CBORTestBase
 {
+    @Test
     public void testDeeplyNestedObjects() throws Exception
     {
         final int depth = 1500;
@@ -32,6 +36,7 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedObjectsWithUnconstrainedMapper() throws Exception
     {
         final int depth = 1500;
@@ -47,6 +52,7 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedArrays() throws Exception
     {
         final int depth = 750;
@@ -65,6 +71,7 @@ public class DeepNestingCBORParserTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedArraysWithUnconstrainedMapper() throws Exception
     {
         final int depth = 750;

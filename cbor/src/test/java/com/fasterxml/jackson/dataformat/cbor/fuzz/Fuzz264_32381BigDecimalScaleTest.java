@@ -2,18 +2,22 @@ package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
 import java.math.BigDecimal;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-// [dataformats-binary#264]
+import static org.junit.jupiter.api.Assertions.*;
+
 public class Fuzz264_32381BigDecimalScaleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testInvalidBigDecimal() throws Exception
     {
         final byte[] input = new byte[] {

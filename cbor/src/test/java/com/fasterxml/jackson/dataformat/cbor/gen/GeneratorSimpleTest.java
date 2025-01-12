@@ -1,20 +1,19 @@
 package com.fasterxml.jackson.dataformat.cbor.gen;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.*;
 
-import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.CBORParser;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratorSimpleTest extends CBORTestBase
 {
@@ -23,6 +22,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
+    @Test
     public void testSimpleLiterals() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -49,6 +49,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         _verifyBytes(out.toByteArray(), CBORConstants.BYTE_NULL);
     }
 
+    @Test
     public void testMinimalIntValues() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -87,6 +88,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
     // [dataformats-binary#201]
+    @Test
     public void testMinimalIntValues2() throws Exception
     {
         ByteArrayOutputStream out;
@@ -113,6 +115,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
     }
 
+    @Test
     public void testIntValues() throws Exception
     {
         // first, single-byte
@@ -179,6 +182,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF);
     }
 
+    @Test
     public void testLongValues() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -198,6 +202,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0, b[3]);
     }
 
+    @Test
     public void testFloatValues() throws Exception
     {
         // first, 32-bit float
@@ -234,6 +239,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
     // [dataformats-binary#139]: wrong encoding of BigDecimal
+    @Test
     public void testBigDecimalValues() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -254,6 +260,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         Assert.assertArrayEquals(spec, b);
     }
 
+    @Test
     public void testEmptyArray() throws Exception
     {
         // First: empty array (2 bytes)
@@ -266,6 +273,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                CBORConstants.BYTE_BREAK);
     }
 
+    @Test
     public void testEmptyObject() throws Exception
     {
         // First: empty array (2 bytes)
@@ -278,6 +286,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                CBORConstants.BYTE_BREAK);
     }
 
+    @Test
     public void testIntArray() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -313,6 +322,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         _verifyBytes(b, EXP);
     }
 
+    @Test
     public void testTrivialObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -344,6 +354,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         _verifyBytes(b, EXP);
     }
 
+    @Test
     public void testLongerText() throws Exception
     {
         // First, something with 8-bit length
@@ -386,6 +397,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 b);
     }
 
+    @Test
     public void testInvalidWrites() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -414,6 +426,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         gen.close();
     }
 
+    @Test
     public void testCopyCurrentEventWithTag() throws Exception {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
@@ -440,6 +453,7 @@ public class GeneratorSimpleTest extends CBORTestBase
             targetBytes.toByteArray());
     }
 
+    @Test
     public void testCopyCurrentStructureWithTaggedArray() throws Exception {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);
@@ -466,6 +480,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
 
+    @Test
     public void testCopyCurrentStructureWithTaggedBinary() throws Exception {
         final ByteArrayOutputStream sourceBytes = new ByteArrayOutputStream();
         final CBORGenerator sourceGen = cborGenerator(sourceBytes);

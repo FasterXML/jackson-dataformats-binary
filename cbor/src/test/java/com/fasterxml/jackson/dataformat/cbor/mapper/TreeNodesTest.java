@@ -1,17 +1,21 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TreeNodesTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
 
+    @Test
     public void testSimple() throws Exception
     {
          // create the serialized JSON with byte array
@@ -36,6 +40,7 @@ public class TreeNodesTest extends CBORTestBase
          Assert.assertArrayEquals(TEXT_BYTES, bytes);
      }
 
+    @Test
     public void testNumbers() throws Exception
     {
         ObjectNode root = MAPPER.createObjectNode();

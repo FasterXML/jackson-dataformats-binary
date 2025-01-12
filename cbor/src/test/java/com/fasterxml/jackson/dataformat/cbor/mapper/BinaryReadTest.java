@@ -1,8 +1,10 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
@@ -10,6 +12,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryReadTest extends CBORTestBase
 {
@@ -34,6 +38,7 @@ public class BinaryReadTest extends CBORTestBase
 
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testSmallBinaryValues() throws Exception {
         _testBinary(0);
         _testBinary(1);
@@ -41,12 +46,14 @@ public class BinaryReadTest extends CBORTestBase
         _testBinary(100);
     }
 
+    @Test
     public void testMediumBinaryValues() throws Exception {
         _testBinary(500);
         _testBinary(1500);
         _testBinary(8900);
     }
 
+    @Test
     public void testLargeBinaryValues() throws Exception {
         _testBinary(99000);
         _testBinary(299000);
@@ -54,6 +61,7 @@ public class BinaryReadTest extends CBORTestBase
     }
 
     // And then one test just to ensure no state corruption occurs
+    @Test
     public void testMultipleBinaryFields() throws Exception
     {
         byte[] inputBytes = new byte[900];
