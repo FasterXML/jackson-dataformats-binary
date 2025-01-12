@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroDefault;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 

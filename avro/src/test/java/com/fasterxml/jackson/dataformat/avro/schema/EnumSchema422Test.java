@@ -1,11 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // For [dataformats-binary#422]
 public class EnumSchema422Test extends AvroTestBase

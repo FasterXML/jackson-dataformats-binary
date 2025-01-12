@@ -1,16 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.math.BigDecimal;
+
+import org.apache.avro.LogicalTypes;
+import org.apache.avro.Schema;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.annotation.AvroDecimal;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
-import org.apache.avro.LogicalTypes;
-import org.apache.avro.Schema;
-import org.junit.Test;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class BigDecimal_schemaCreationTest extends AvroTestBase {
     private static final AvroMapper MAPPER = new AvroMapper();

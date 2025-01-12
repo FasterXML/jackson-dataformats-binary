@@ -2,11 +2,15 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WriteStringsTest extends ProtobufTestBase
 {
@@ -28,6 +32,7 @@ public class WriteStringsTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testSimpleShort() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(NAME_SCHEMA);
@@ -53,6 +58,7 @@ public class WriteStringsTest extends ProtobufTestBase
         assertEquals((byte) 'r', bytes[12]);
     }
 
+    @Test
     public void testSimpleLongAscii() throws Exception
     {
         _testSimpleLong(129, "Bob");
@@ -60,6 +66,7 @@ public class WriteStringsTest extends ProtobufTestBase
         _testSimpleLong(9000, "Emily");
     }
 
+    @Test
     public void testSimpleLongTwoByteUTF8() throws Exception
     {
         _testSimpleLong(90, "\u00A8a\u00F3");
@@ -68,6 +75,7 @@ public class WriteStringsTest extends ProtobufTestBase
         _testSimpleLong(7000, "\u00A8xy");
     }
 
+    @Test
     public void testSimpleLongThreeByteUTF8() throws Exception
     {
         _testSimpleLong(90, "\u2009\u3333");

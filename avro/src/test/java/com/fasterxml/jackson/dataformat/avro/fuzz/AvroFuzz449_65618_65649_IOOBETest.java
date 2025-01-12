@@ -1,15 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.fuzz;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.dataformat.avro.AvroFactory;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroParser;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+import com.fasterxml.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#449]
 public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase

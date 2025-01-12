@@ -3,10 +3,11 @@ package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.BinaryEncoder;
+
 import com.fasterxml.jackson.core.util.RecyclerPool;
 import com.fasterxml.jackson.core.util.RecyclerPool.WithPool;
-
-import org.apache.avro.io.*;
 
 /**
  * Simple helper class that contains extracted functionality for

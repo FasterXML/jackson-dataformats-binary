@@ -1,15 +1,22 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import org.apache.avro.JsonProperties;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
 import static com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper.jsonNodeToObject;
 import static com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper.objectToJsonNode;
-import junit.framework.TestCase;
-import org.apache.avro.JsonProperties;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class AvroSchemaHelperTest extends TestCase {
+public class AvroSchemaHelperTest
+{
+
 	private static final JsonNodeFactory NODE_FACTORY = new ObjectMapper().getNodeFactory();
 
+	@Test
 	public void testObjectToJsonNode() {
 		assertEquals(NODE_FACTORY.nullNode(), objectToJsonNode(null));
 		assertEquals(NODE_FACTORY.nullNode(), objectToJsonNode(JsonProperties.NULL_VALUE));
@@ -18,6 +25,7 @@ public class AvroSchemaHelperTest extends TestCase {
 		assertEquals(NODE_FACTORY.textNode("foo"), objectToJsonNode("foo"));
 	}
 
+	@Test
 	public void testJsonNodeToObject() {
 		assertNull(jsonNodeToObject(null));
 		assertEquals(JsonProperties.NULL_VALUE, jsonNodeToObject(NODE_FACTORY.nullNode()));

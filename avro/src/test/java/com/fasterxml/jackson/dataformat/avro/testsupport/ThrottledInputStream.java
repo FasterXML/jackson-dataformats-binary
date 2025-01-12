@@ -1,9 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.testsupport;
 
-import java.io.ByteArrayInputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class ThrottledInputStream extends FilterInputStream
 {

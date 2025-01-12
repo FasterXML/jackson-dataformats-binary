@@ -2,17 +2,13 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import java.time.temporal.Temporal;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
-
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-
-import org.apache.avro.Schema;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper

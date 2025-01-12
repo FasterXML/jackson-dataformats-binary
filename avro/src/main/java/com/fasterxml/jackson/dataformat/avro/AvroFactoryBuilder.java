@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.TSFBuilder;
-import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
 
 /**
  * {@link com.fasterxml.jackson.core.TSFBuilder}

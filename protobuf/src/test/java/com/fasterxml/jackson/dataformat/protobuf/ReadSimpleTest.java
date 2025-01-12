@@ -3,17 +3,16 @@ package com.fasterxml.jackson.dataformat.protobuf;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadSimpleTest extends ProtobufTestBase
 {
@@ -62,6 +61,7 @@ public class ReadSimpleTest extends ProtobufTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testReadPointIntAsPOJO() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -80,6 +80,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
     }
 
+    @Test
     public void testReadPointIntStreaming() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -112,6 +113,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNull(p.currentName());
     }
 
+    @Test
     public void testReadPointLong() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_L);
@@ -156,6 +158,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testReadName() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
@@ -175,6 +178,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.last, result.last);
     }
 
+    @Test
     public void testReadBox() throws Exception
     {
         final ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX);
@@ -243,6 +247,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testStringArraySimple() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -310,6 +315,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNull(p.nextToken());
     }
 
+    @Test
     public void testStringArrayPacked() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS_PACKED);
@@ -330,6 +336,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testStringArrayWithName() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAMED_STRINGS);
@@ -392,6 +399,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
     public void testSearchMessage() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_SEARCH_REQUEST);
@@ -416,6 +424,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.corpus, result.corpus);
     }
 
+    @Test
     public void testSkipUnknown() throws Exception
     {
         ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
@@ -436,6 +445,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
     }
 
+    @Test
     public void testStringArraySimpleLowLimit() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -455,8 +465,8 @@ public class ReadSimpleTest extends ProtobufTestBase
             fail("Expected DatabindException");
         } catch (DatabindException jme) {
             String message = jme.getMessage();
-            assertTrue("unexpected message: " + message,
-                    message.startsWith("String value length (4) exceeds the maximum allowed"));
+            assertTrue(message.startsWith("String value length (4) exceeds the maximum allowed"),
+                    "unexpected message: " + message);
         }
     }
 }

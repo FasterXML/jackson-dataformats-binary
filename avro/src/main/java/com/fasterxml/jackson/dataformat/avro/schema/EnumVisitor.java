@@ -3,12 +3,10 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 import java.util.ArrayList;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
-
 import org.apache.avro.Schema;
+
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 
 /**
  * Specific visitor for Java Enum types that are to be exposed as
