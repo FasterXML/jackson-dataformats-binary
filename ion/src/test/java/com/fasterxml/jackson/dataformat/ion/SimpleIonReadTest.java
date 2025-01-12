@@ -14,13 +14,15 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.*;
+import java.io.IOException;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class SimpleIonReadTest {
     private final IonFactory ION_F = new IonFactory();
