@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.schemaev;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.avro.*;
@@ -138,6 +140,7 @@ public class RecordEvolutionTest extends AvroTestBase
 
 	private final AvroMapper MAPPER = getMapper();
 
+	@Test
 	public void testEvolutionInvolvingComplexRecords() throws Exception
 	{
 		final AvroSchema schemaV1 = MAPPER.schemaFrom(SCHEMA_V1);
