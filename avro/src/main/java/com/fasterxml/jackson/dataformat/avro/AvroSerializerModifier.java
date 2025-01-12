@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.avro.specific.SpecificRecordBase;
 

@@ -1,13 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
+import java.io.*;
 
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;

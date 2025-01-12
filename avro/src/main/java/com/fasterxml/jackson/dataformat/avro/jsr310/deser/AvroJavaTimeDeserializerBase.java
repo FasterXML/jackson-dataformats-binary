@@ -1,12 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310.deser;
 
+import java.io.IOException;
+import java.time.ZoneId;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.type.LogicalType;
-
-import java.io.IOException;
-import java.time.ZoneId;
 
 import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
 

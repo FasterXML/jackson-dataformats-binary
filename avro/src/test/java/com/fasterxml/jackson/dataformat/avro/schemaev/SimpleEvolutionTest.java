@@ -3,13 +3,14 @@ package com.fasterxml.jackson.dataformat.avro.schemaev;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleEvolutionTest extends AvroTestBase
 {
@@ -176,6 +177,7 @@ public class SimpleEvolutionTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testAddField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XY_JSON);
@@ -212,6 +214,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         it.close();
     }
 
+    @Test
     public void testRemoveField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XYZ_JSON);
@@ -246,6 +249,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         it.close();
     }
 
+    @Test
     public void testRemoveArrayField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XAY_JSON);
@@ -290,6 +294,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         it.close();
     }
 
+    @Test
     public void testRemoveBinaryField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XBY_JSON);
@@ -313,6 +318,7 @@ public class SimpleEvolutionTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFailNewFieldNoDefault() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_X_JSON);
@@ -333,6 +339,7 @@ public class SimpleEvolutionTest extends AvroTestBase
         assertNotNull(risky);
     }
 
+    @Test
     public void testFailNameChangeNoAlias() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XYZ_JSON);

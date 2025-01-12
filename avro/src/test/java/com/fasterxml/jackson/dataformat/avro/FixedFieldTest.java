@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import org.junit.Assert;
-
 import java.io.IOException;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class FixedFieldTest extends AvroTestBase
 {
@@ -15,6 +17,7 @@ public class FixedFieldTest extends AvroTestBase
             + "    ]\n"
             + "}";
 
+    @Test
     public void testFixedField() throws IOException {
         AvroMapper mapper = getMapper();
         AvroSchema schema = mapper.schemaFrom(FIXED_SCHEMA_JSON);
@@ -24,7 +27,7 @@ public class FixedFieldTest extends AvroTestBase
         in.fixedField = bytes;
         byte[] serialized = mapper.writer(schema).writeValueAsBytes(in);
         WithFixedField deser = mapper.readerFor(WithFixedField.class).with(schema).readValue(serialized);
-        Assert.assertArrayEquals(bytes, deser.fixedField);
+        assertArrayEquals(bytes, deser.fixedField);
     }
 
     static class WithFixedField {

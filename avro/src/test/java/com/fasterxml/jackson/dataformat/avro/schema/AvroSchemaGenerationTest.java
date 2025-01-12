@@ -3,14 +3,14 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.apache.avro.Schema;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.*;
 
-import org.apache.avro.Schema;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AvroSchemaGenerationTest extends AvroTestBase
 {
@@ -60,6 +60,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
 
     private final AvroMapper MAPPER = newMapper();
 
+    @Test
     public void testBasic() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -87,6 +88,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
         assertEquals(new HashSet<String>(Arrays.asList("nm", "Name")), f.aliases());
     }
 
+    @Test
     public void testEmployee() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -118,6 +120,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
         assertEquals("Bobbee", e2.name);
     }
 
+    @Test
     public void testMap() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -136,6 +139,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
     }
 
     // [Issue#8]
+    @Test
     public void testWithDate() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -144,6 +148,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
         assertNotNull(schema);
     }
 
+    @Test
     public void testFixed() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
@@ -160,6 +165,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
 
     // as per [dataformats-binary#98], no can do (unless we start supporting polymorphic
     // handling or something...)
+    @Test
     public void testSchemaForUntypedMap() throws Exception
     {
         try {

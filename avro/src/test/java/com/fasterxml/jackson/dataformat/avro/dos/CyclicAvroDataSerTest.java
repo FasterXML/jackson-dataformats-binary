@@ -1,11 +1,14 @@
 package com.fasterxml.jackson.dataformat.avro.dos;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.dataformat.avro.AvroFactory;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+import com.fasterxml.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 
 /**
  * Simple unit tests to verify that we fail gracefully if you attempt to serialize
@@ -43,6 +46,7 @@ public class CyclicAvroDataSerTest extends AvroTestBase
         MAPPER_400 = new AvroMapper(f);
     }
 
+    @Test
     public void testDirectCyclic() throws Exception {
         Bean bean = new Bean(null, "123");
         bean.assignNext(bean);
@@ -51,12 +55,13 @@ public class CyclicAvroDataSerTest extends AvroTestBase
             MAPPER.writer(schema).writeValueAsBytes(bean);
             fail("expected InvalidDefinitionException");
         } catch (InvalidDefinitionException idex) {
-            assertTrue("InvalidDefinitionException message is as expected?",
-                    idex.getMessage().startsWith("Direct self-reference leading to cycle"));
+            assertTrue(idex.getMessage().startsWith("Direct self-reference leading to cycle"),
+                    "InvalidDefinitionException message is as expected?");
         }
     }
 
     // With 2.16 also test looser loops, wrt new limits
+    @Test
     public void testLooserCyclic() throws Exception
     {
         Bean beanRoot = new Bean(null, "123");
@@ -72,8 +77,8 @@ public class CyclicAvroDataSerTest extends AvroTestBase
                 MAPPER_400.writer(schema).writeValueAsBytes(beanRoot);
                 fail("expected InvalidDefinitionException");
             } catch (InvalidDefinitionException idex) {
-                assertTrue("InvalidDefinitionException message is as expected?",
-                        idex.getMessage().startsWith("Direct self-reference leading to cycle"));
+                assertTrue(idex.getMessage().startsWith("Direct self-reference leading to cycle"),
+                        "InvalidDefinitionException message is as expected?");
             }
         }
     }

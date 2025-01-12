@@ -1,6 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RootEmptyRecord177Test extends AvroTestBase
 {
@@ -17,6 +21,7 @@ public class RootEmptyRecord177Test extends AvroTestBase
         }
     }
 
+    @Test
     public void testEmptyRecord() throws Exception {
         final Empty empty = new Empty();
 

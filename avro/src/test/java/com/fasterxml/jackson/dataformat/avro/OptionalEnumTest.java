@@ -1,5 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class OptionalEnumTest extends AvroTestBase
 {
     protected enum Gender { M, F; }
@@ -11,6 +16,7 @@ public class OptionalEnumTest extends AvroTestBase
     private final AvroMapper MAPPER = newMapper();
 
     // [dataformat-avro#12]
+    @Test
     public void testEnumViaGeneratedSchema() throws Exception
     {
         final AvroSchema schema = MAPPER.schemaFor(Employee.class);
