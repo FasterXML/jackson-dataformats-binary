@@ -14,9 +14,7 @@
 
 package com.fasterxml.jackson.dataformat.ion.util;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.UTF8Writer;

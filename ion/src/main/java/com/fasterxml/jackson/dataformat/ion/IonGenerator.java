@@ -14,31 +14,20 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.Closeable;
-import java.io.Flushable;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.FormatFeature;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.StreamWriteCapability;
-import com.fasterxml.jackson.core.StreamWriteConstraints;
-import com.fasterxml.jackson.core.Version;
+import com.amazon.ion.*;
+
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
 import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeSerializer;
-
-import com.amazon.ion.IonType;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.IonWriter;
-import com.amazon.ion.Timestamp;
 
 /**
  * Implementation of {@link JsonGenerator} that will use an underlying

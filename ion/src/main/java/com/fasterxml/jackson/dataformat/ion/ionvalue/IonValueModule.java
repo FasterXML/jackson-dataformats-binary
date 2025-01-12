@@ -14,10 +14,10 @@
 
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
+import com.amazon.ion.Timestamp;
+
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.ion.PackageVersion;
-
-import com.amazon.ion.Timestamp;
 
 /**
  * A module which allows for the direct serialization to and from IonValue fields. The POJO can declare fields of type
