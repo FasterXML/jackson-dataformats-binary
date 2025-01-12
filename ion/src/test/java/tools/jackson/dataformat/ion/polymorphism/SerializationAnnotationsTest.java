@@ -1,18 +1,21 @@
 package tools.jackson.dataformat.ion.polymorphism;
 
+import java.io.IOException;
+
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.amazon.ion.util.Equivalence;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import tools.jackson.dataformat.ion.IonObjectMapper;
 import tools.jackson.dataformat.ion.IonWriteFeature;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class SerializationAnnotationsTest {
 
@@ -34,7 +37,7 @@ public class SerializationAnnotationsTest {
 
     private Subclass subclass;
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.subclass = new Subclass("some value", 42);
     }
@@ -108,12 +111,12 @@ public class SerializationAnnotationsTest {
     }
 
     private static void assertCorrectlyTypedAndFormed(final Subclass expectedSubclass, final BaseClass actualBaseclass) {
-        Assert.assertTrue(actualBaseclass instanceof Subclass);
-        assertEquals(expectedSubclass, (Subclass) actualBaseclass);
+        assertInstanceOf(Subclass.class, actualBaseclass);
+        _assertEquals(expectedSubclass, (Subclass) actualBaseclass);
     }
-    private static void assertEquals(Subclass expected, Subclass actual) {
-        Assert.assertEquals(expected.someString, actual.someString);
-        Assert.assertEquals(expected.anInt, actual.anInt);
+    private static void _assertEquals(Subclass expected, Subclass actual) {
+        assertEquals(expected.someString, actual.someString);
+        assertEquals(expected.anInt, actual.anInt);
     }
 
     private static void assertEqualIonValues(IonValue expected, IonValue actual) {

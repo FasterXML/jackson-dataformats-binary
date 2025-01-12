@@ -14,20 +14,13 @@
 
 package tools.jackson.dataformat.ion;
 
-import java.io.*;
-
-import org.junit.Test;
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonType;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataBindReadTest {
     static class MyBean {
@@ -40,7 +33,7 @@ public class DataBindReadTest {
     static class BeanToo { }
 
     @Test
-    public void testSimple() throws IOException
+    public void testSimple() throws Exception
     {
         IonObjectMapper m = IonObjectMapper.shared();
         MyBean bean = m.readValue("{a: \"...\", \"b\" : 39, blob:{{SGVsbG8h}} }", MyBean.class);
@@ -61,7 +54,7 @@ public class DataBindReadTest {
     }
 
     @Test
-    public void testJsonIgnoreProperty() throws IOException
+    public void testJsonIgnoreProperty() throws Exception
     {
         IonObjectMapper m = new IonObjectMapper();
         MyBean bean = m.readValue("{a: \"...\", ignore:{x:\"y\"}, \"b\" : 39 }", MyBean.class);
@@ -74,7 +67,7 @@ public class DataBindReadTest {
      * Test reading an IonValue, which also happens to not be at the top level.
      */
     @Test
-    public void testFromIon() throws IOException
+    public void testFromIon() throws Exception
     {
         IonObjectMapper m = new IonObjectMapper();
         IonSystem ion = IonSystemBuilder.standard().build();
@@ -89,7 +82,7 @@ public class DataBindReadTest {
      * Test reading some basic Ion types that aren't structs/JavaBeans
      */
     @Test
-    public void testBasicTypes() throws IOException
+    public void testBasicTypes() throws Exception
     {
         IonObjectMapper m = new IonObjectMapper();
         IonSystem ion = IonSystemBuilder.standard().build();
@@ -103,7 +96,7 @@ public class DataBindReadTest {
      * is left open.
      */
     @Test
-    public void testMultipleReads() throws IOException
+    public void testMultipleReads() throws Exception
     {
         IonObjectMapper m = new IonObjectMapper();
         IonSystem ion = IonSystemBuilder.standard().build();

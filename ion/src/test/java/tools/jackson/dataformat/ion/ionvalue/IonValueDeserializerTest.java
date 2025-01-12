@@ -1,29 +1,23 @@
 package tools.jackson.dataformat.ion.ionvalue;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.IonStruct;
+import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.util.AccessPattern;
 import tools.jackson.dataformat.ion.IonFactory;
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
@@ -193,7 +187,7 @@ public class IonValueDeserializerTest {
     }
 
     @Test
-    public void testWithMissingProperty() throws IOException
+    public void testWithMissingProperty() throws Exception
     {
         IonSystem ionSystem = IonSystemBuilder.standard().build();
         IonObjectMapper ionObjectMapper = IonObjectMapper.builder(ionSystem)

@@ -18,18 +18,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * End to end test verifying we can serialize sexps
@@ -39,7 +41,7 @@ public class GenerateSexpTest {
     private IonSystem ionSystem;
     private IonObjectMapper mapper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.ionSystem = IonSystemBuilder.standard().build();
         this.mapper = IonObjectMapper.builderForTextualWriters(ionSystem).build();
@@ -47,14 +49,14 @@ public class GenerateSexpTest {
 
     @Test
     public void topLevel() throws IOException {
-        Assert.assertEquals(
+        assertEquals(
             ionSystem.singleValue("(foo \"bar\")"),
             mapper.writeValueAsIonValue(new SexpObject("foo", "bar")));
     }
 
     @Test
     public void inList() throws IOException {
-        Assert.assertEquals(
+        assertEquals(
             ionSystem.singleValue("[(foo \"bar\"), (baz \"qux\")]"),
             mapper.writeValueAsIonValue(
                 Arrays.asList(new SexpObject("foo", "bar"), new SexpObject("baz", "qux"))));
@@ -62,21 +64,21 @@ public class GenerateSexpTest {
 
     @Test
     public void inObject() throws IOException {
-        Assert.assertEquals(
+        assertEquals(
             ionSystem.singleValue("{sexpField:(foo \"bar\")}"),
             mapper.writeValueAsIonValue(new SexpObjectContainer(new SexpObject("foo", "bar"))));
     }
 
     @Test
     public void inOtherSexp() throws IOException {
-        Assert.assertEquals(
+        assertEquals(
             ionSystem.singleValue("(foo (bar \"baz\"))"),
             mapper.writeValueAsIonValue(new SexpObject("foo", new SexpObject("bar", "baz"))));
     }
 
     @Test
     public void generatorUsedInStreamingWriteText() throws IOException {
-        Assert.assertArrayEquals("(foo 0)".getBytes(), toBytes(new SexpObject("foo", 0), mapper));
+        assertArrayEquals("(foo 0)".getBytes(), toBytes(new SexpObject("foo", 0), mapper));
     }
 
     @Test
@@ -92,7 +94,7 @@ public class GenerateSexpTest {
 
         IonObjectMapper binaryMapper = IonObjectMapper.builder(IonFactory.forBinaryWriters())
                 .build();
-        Assert.assertArrayEquals(expectedBytes, toBytes(new SexpObject("foo", 0), binaryMapper));
+        assertArrayEquals(expectedBytes, toBytes(new SexpObject("foo", 0), binaryMapper));
     }
 
     private byte[] toBytes(Object object, IonObjectMapper mapper) throws IOException {

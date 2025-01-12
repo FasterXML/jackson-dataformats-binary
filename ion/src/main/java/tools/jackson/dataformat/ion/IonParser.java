@@ -36,7 +36,6 @@ import com.amazon.ion.*;
 public class IonParser
     extends ParserMinimalBase
 {
-    // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> ION_READ_CAPABILITIES
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 

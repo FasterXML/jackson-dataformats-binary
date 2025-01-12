@@ -14,12 +14,12 @@
 
 package tools.jackson.dataformat.ion.ionvalue;
 
+import com.amazon.ion.IonValue;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 import tools.jackson.dataformat.ion.IonGenerator;
-
-import com.amazon.ion.IonValue;
 
 /**
  * Serializer that knows how to serialize an IonValue.

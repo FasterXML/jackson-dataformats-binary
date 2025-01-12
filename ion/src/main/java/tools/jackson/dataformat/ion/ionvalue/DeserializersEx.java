@@ -14,16 +14,13 @@
 
 package tools.jackson.dataformat.ion.ionvalue;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.ValueDeserializer;
+import com.amazon.ion.IonContainer;
+import com.amazon.ion.IonValue;
+
+import tools.jackson.databind.*;
 import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.module.SimpleDeserializers;
 import tools.jackson.databind.type.CollectionType;
-
-import com.amazon.ion.IonContainer;
-import com.amazon.ion.IonValue;
 
 class DeserializersEx extends SimpleDeserializers
 {

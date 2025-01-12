@@ -2,11 +2,11 @@ package tools.jackson.dataformat.ion;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.exc.StreamReadException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DatabindRead303Test
 {

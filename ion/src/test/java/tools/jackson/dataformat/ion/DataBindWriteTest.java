@@ -15,26 +15,14 @@
 package tools.jackson.dataformat.ion;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
-import com.amazon.ion.IonDatagram;
-import com.amazon.ion.IonList;
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonType;
-import com.amazon.ion.IonWriter;
-import com.amazon.ion.system.IonBinaryWriterBuilder;
-import com.amazon.ion.system.IonReaderBuilder;
-import com.amazon.ion.system.IonSystemBuilder;
-import com.amazon.ion.system.IonTextWriterBuilder;
-import com.amazon.ion.system.IonWriterBuilder;
+import com.amazon.ion.*;
+import com.amazon.ion.system.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class DataBindWriteTest {
 
@@ -48,7 +36,7 @@ public class DataBindWriteTest {
     IonSystem ion = IonSystemBuilder.standard().build();
     IonDatagram expectedMyBean;
 
-    @Before
+    @BeforeEach
     public void initializeExpectedMyBean() {
         expectedMyBean = ion.newDatagram();
         IonStruct struct = ion.newEmptyStruct();
@@ -62,7 +50,7 @@ public class DataBindWriteTest {
 
     IonDatagram expectedArray;
 
-    @Before
+    @BeforeEach
     public void initializeExpectedArray() {
         expectedArray = ion.newDatagram();
         IonList list = ion.newEmptyList();
@@ -153,7 +141,7 @@ public class DataBindWriteTest {
 
     // // Helper methods
 
-    private byte[] _writeAsBytes(Object ob) throws IOException
+    private byte[] _writeAsBytes(Object ob) throws Exception
     {
         IonObjectMapper m = IonObjectMapper.builderForBinaryWriters().build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -161,7 +149,7 @@ public class DataBindWriteTest {
         return out.toByteArray();
     }
 
-    private void _testIonWriterReuse(IonWriterBuilder ionWriterBuilder) throws IOException {
+    private void _testIonWriterReuse(IonWriterBuilder ionWriterBuilder) throws Exception {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
         IonWriter ionWriter = ionWriterBuilder.build(byteArrayOutputStream);
 

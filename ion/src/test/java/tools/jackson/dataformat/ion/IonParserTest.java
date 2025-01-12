@@ -14,23 +14,19 @@
 
 package tools.jackson.dataformat.ion;
 
-import tools.jackson.core.JsonParser;
-import tools.jackson.core.JsonToken;
-import tools.jackson.core.ObjectReadContext;
-import tools.jackson.core.StreamReadCapability;
-import tools.jackson.core.exc.StreamReadException;
-
-import org.junit.Assert;
-
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.junit.Test;
+
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
+
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("resource")
 public class IonParserTest
@@ -47,51 +43,51 @@ public class IonParserTest
         IonValue ionInt = ion.newInt(intValue);
 
         IonParser intParser = ionFactory.createParser(EMPTY_READ_CTXT, ionInt);
-        Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, intParser.nextToken());
-        Assert.assertEquals(JsonParser.NumberType.INT, intParser.getNumberType());
-        Assert.assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
-        Assert.assertEquals(intValue, intParser.getNumberValue());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, intParser.nextToken());
+        assertEquals(JsonParser.NumberType.INT, intParser.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
+        assertEquals(intValue, intParser.getNumberValue());
 
         Long longValue = Long.MAX_VALUE;
         IonValue ionLong = ion.newInt(longValue);
         IonParser longParser = ionFactory.createParser(EMPTY_READ_CTXT, ionLong);
-        Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, longParser.nextToken());
-        Assert.assertEquals(JsonParser.NumberType.LONG, longParser.getNumberType());
-        Assert.assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
-        Assert.assertEquals(longValue, longParser.getNumberValue());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, longParser.nextToken());
+        assertEquals(JsonParser.NumberType.LONG, longParser.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
+        assertEquals(longValue, longParser.getNumberValue());
 
         BigInteger bigIntValue = new BigInteger(Long.MAX_VALUE + "1");
         IonValue ionBigInt = ion.newInt(bigIntValue);
         IonParser bigIntParser = ionFactory.createParser(EMPTY_READ_CTXT, ionBigInt);
-        Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntParser.nextToken());
-        Assert.assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntParser.getNumberType());
-        Assert.assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
-        Assert.assertEquals(bigIntValue, bigIntParser.getNumberValue());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntParser.nextToken());
+        assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntParser.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
+        assertEquals(bigIntValue, bigIntParser.getNumberValue());
 
         Double decimalValue = Double.MAX_VALUE;
         IonValue ionDecimal = ion.newDecimal(decimalValue);
         IonParser decimalParser = ionFactory.createParser(EMPTY_READ_CTXT, ionDecimal);
-        Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, decimalParser.nextToken());
-        Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, decimalParser.getNumberType());
-        Assert.assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, decimalParser.getNumberTypeFP());
-        Assert.assertEquals(0, new BigDecimal("" + decimalValue).compareTo((BigDecimal) decimalParser.getNumberValue()));
+        assertEquals(JsonToken.VALUE_NUMBER_FLOAT, decimalParser.nextToken());
+        assertEquals(JsonParser.NumberType.BIG_DECIMAL, decimalParser.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, decimalParser.getNumberTypeFP());
+        assertEquals(0, new BigDecimal("" + decimalValue).compareTo((BigDecimal) decimalParser.getNumberValue()));
 
         Double floatValue = Double.MAX_VALUE;
         IonValue ionFloat = ion.newFloat(floatValue);
         IonParser floatParser = ionFactory.createParser(EMPTY_READ_CTXT, ionFloat);
-        Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
-        Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
+        assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
+        assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
         // [dataformats-binary#490]: float coerces to double
-        Assert.assertEquals(JsonParser.NumberTypeFP.DOUBLE64, floatParser.getNumberTypeFP());
-        Assert.assertEquals(floatValue, floatParser.getNumberValue());
+        assertEquals(JsonParser.NumberTypeFP.DOUBLE64, floatParser.getNumberTypeFP());
+        assertEquals(floatValue, floatParser.getNumberValue());
 
         BigDecimal bigDecimalValue = new BigDecimal(Double.MAX_VALUE + "1");
         IonValue ionBigDecimal = ion.newDecimal(bigDecimalValue);
         IonParser bigDecimalParser = ionFactory.createParser(EMPTY_READ_CTXT, ionBigDecimal);
-        Assert.assertEquals(JsonToken.VALUE_NUMBER_FLOAT, bigDecimalParser.nextToken());
-        Assert.assertEquals(JsonParser.NumberType.BIG_DECIMAL, bigDecimalParser.getNumberType());
-        Assert.assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, bigDecimalParser.getNumberTypeFP());
-        Assert.assertEquals(0, bigDecimalValue.compareTo((BigDecimal) bigDecimalParser.getNumberValue()));
+        assertEquals(JsonToken.VALUE_NUMBER_FLOAT, bigDecimalParser.nextToken());
+        assertEquals(JsonParser.NumberType.BIG_DECIMAL, bigDecimalParser.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, bigDecimalParser.getNumberTypeFP());
+        assertEquals(0, bigDecimalValue.compareTo((BigDecimal) bigDecimalParser.getNumberValue()));
     }
 
     @Test
@@ -114,7 +110,7 @@ public class IonParserTest
         //    does not initialize state. For now, `IonParser.getNumberType()` has
         //    special handling allowing this case but that should not be needed
         final IonParser floatParser = ionFactory.createParser(ctxt, reader);
-        Assert.assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
+        assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
     }
 
     @Test
@@ -129,7 +125,7 @@ public class IonParserTest
 
         parser.nextToken(); // advance to find START_OBJECT
 
-        Assert.assertEquals(className, parser.getTypeId());
+        assertEquals(className, parser.getTypeId());
     }
 
     @Test
@@ -142,61 +138,64 @@ public class IonParserTest
         try (IonParser p = new IonFactory().createParser(ObjectReadContext.empty(), ionInt)) {
             // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
             //    default set
-            Assert.assertTrue(p.streamReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+            assertTrue(p.streamReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
         }
     }
 
-
-    @Test(expected = StreamReadException.class)
-    public void testIonExceptionIsWrapped() throws IOException {
-        IonFactory f = new IonFactory();
-        try (IonParser parser = (IonParser) f.createParser(EMPTY_READ_CTXT, "[  12, true ) ]")) {
-            Assert.assertEquals(JsonToken.START_ARRAY, parser.nextToken());
-            Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
-            Assert.assertEquals(12, parser.getIntValue());
-            Assert.assertEquals(JsonToken.VALUE_TRUE, parser.nextValue());
-            parser.nextValue();
-        }
+    @Test
+    public void testIonExceptionIsWrapped() throws Exception {
+        assertThrows(StreamReadException.class, () -> {
+            try (IonParser parser = (IonParser) ionFactory.createParser(EMPTY_READ_CTXT, "[  12, true ) ]")) {
+                assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+                assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
+                assertEquals(12, parser.getIntValue());
+                assertEquals(JsonToken.VALUE_TRUE, parser.nextValue());
+                parser.nextValue();
+            }
+        });
     }
 
-    @Test(expected = StreamReadException.class)
-    public void testUnknownSymbolExceptionForValueIsWrapped() throws IOException {
-        IonFactory f = new IonFactory();
-        try (IonParser parser = (IonParser) f.createParser(EMPTY_READ_CTXT, "[  12, $99 ]")) {
-            Assert.assertEquals(JsonToken.START_ARRAY, parser.nextToken());
-            Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
-            Assert.assertEquals(12, parser.getIntValue());
-            Assert.assertEquals(JsonToken.VALUE_STRING, parser.nextValue());
-            parser.getValueAsString(); // Should encounter unknown symbol and fail
-        }
+    @Test
+    public void testUnknownSymbolExceptionForValueIsWrapped() throws Exception {
+        assertThrows(StreamReadException.class, () -> {
+            try (IonParser parser = (IonParser) ionFactory.createParser(EMPTY_READ_CTXT, "[  12, $99 ]")) {
+                assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+                assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
+                assertEquals(12, parser.getIntValue());
+                assertEquals(JsonToken.VALUE_STRING, parser.nextValue());
+                parser.getValueAsString(); // Should encounter unknown symbol and fail
+            }
+        });
     }
 
-    @Test(expected = StreamReadException.class)
-    public void testUnknownSymbolExceptionForFieldNameIsWrapped() throws IOException {
-        IonFactory f = new IonFactory();
-        try (IonParser parser = (IonParser) f.createParser(EMPTY_READ_CTXT, "{  a: 1, $99: 2 }")) {
-            Assert.assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-            Assert.assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
-            Assert.assertEquals("a", parser.currentName());
-            Assert.assertEquals("a", parser.getString());
-            Assert.assertEquals("a", parser.getValueAsString());
-            Assert.assertEquals("a", parser.getValueAsString("b"));
-            Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
-            Assert.assertEquals(1, parser.getIntValue());
-            parser.nextValue(); // Should encounter unknown symbol and fail
-        }
+    @Test
+    public void testUnknownSymbolExceptionForFieldNameIsWrapped() throws Exception {
+        assertThrows(StreamReadException.class, () -> {
+            try (IonParser parser = (IonParser) ionFactory.createParser(EMPTY_READ_CTXT, "{  a: 1, $99: 2 }")) {
+                assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+                assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
+                assertEquals("a", parser.currentName());
+                assertEquals("a", parser.getString());
+                assertEquals("a", parser.getValueAsString());
+                assertEquals("a", parser.getValueAsString("b"));
+                assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
+                assertEquals(1, parser.getIntValue());
+                parser.nextValue(); // Should encounter unknown symbol and fail
+            }
+        });
     }
 
-    @Test(expected = StreamReadException.class)
-    public void testUnknownSymbolExceptionForAnnotationIsWrapped() throws IOException {
-        IonFactory f = new IonFactory();
-        try (IonParser parser = (IonParser) f.createParser(EMPTY_READ_CTXT, "{  a: $99::1 }")) {
-            Assert.assertEquals(JsonToken.START_OBJECT, parser.nextToken());
-            Assert.assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
-            Assert.assertEquals("a", parser.currentName());
-            Assert.assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
-            Assert.assertEquals(1, parser.getIntValue());
-            parser.getTypeAnnotations(); // Should encounter unknown symbol and fail
-        }
+    @Test
+    public void testUnknownSymbolExceptionForAnnotationIsWrapped() throws Exception {
+        assertThrows(StreamReadException.class, () -> {
+            try (IonParser parser = (IonParser) ionFactory.createParser(EMPTY_READ_CTXT, "{  a: $99::1 }")) {
+                assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+                assertEquals(JsonToken.PROPERTY_NAME, parser.nextToken());
+                assertEquals("a", parser.currentName());
+                assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
+                assertEquals(1, parser.getIntValue());
+                parser.getTypeAnnotations(); // Should encounter unknown symbol and fail
+            }
+        });
     }
 }

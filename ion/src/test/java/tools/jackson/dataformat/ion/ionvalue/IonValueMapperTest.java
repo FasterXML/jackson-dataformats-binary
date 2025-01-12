@@ -19,27 +19,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.*;
 
 import tools.jackson.databind.annotation.JsonSerialize;
+
 import tools.jackson.dataformat.ion.IonFactory;
 import tools.jackson.dataformat.ion.IonObjectMapper;
 import tools.jackson.dataformat.ion.IonSymbolSerializer;
 
-import com.amazon.ion.IonSexp;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.Timestamp;
-import com.amazon.ion.system.IonSystemBuilder;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IonValueMapperTest {
     private final IonSystem ionSystem = IonSystemBuilder.standard().build();

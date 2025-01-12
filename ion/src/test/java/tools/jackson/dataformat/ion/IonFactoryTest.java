@@ -5,13 +5,13 @@ import java.io.StringReader;
 
 import com.amazon.ion.IonReader;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.ObjectReadContext;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IonFactoryTest {
     private final static ObjectReadContext EMPTY_READ_CTXT = ObjectReadContext.empty();
@@ -62,11 +62,13 @@ public class IonFactoryTest {
     private void assertResourceManaged(boolean expectResourceManaged, ThrowingSupplier<IonParser> supplier)
         throws Throwable {
         IonParser parser = supplier.get();
-        assertEquals("Expected managed to be: "+expectResourceManaged,
-                expectResourceManaged, parser.ioContext().isResourceManaged());
+        assertEquals(
+                expectResourceManaged, parser.ioContext().isResourceManaged(),
+                "Expected managed to be: "+expectResourceManaged);
         Class<?> refType = parser.ioContext().contentReference().getRawContent().getClass();
-        assertTrue("ContentReference should be a IonReader, was: "+refType,
-                IonReader.class.isAssignableFrom(refType));
+        assertTrue(
+                IonReader.class.isAssignableFrom(refType),
+                "ContentReference should be a IonReader, was: "+refType);
         parser.close();
     }
 

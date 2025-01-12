@@ -1,9 +1,10 @@
 package tools.jackson.dataformat.ion.fuzz;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -12,9 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.ion.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 // [dataformats-binary#434]
 public class Fuzz434_65268_65274_NPETest

@@ -3,7 +3,7 @@ package tools.jackson.dataformat.ion.fuzz;
 import java.io.InputStream;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -11,8 +11,8 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.dataformat.ion.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=65062
 public class Fuzz_65062_VarintTest

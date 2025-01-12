@@ -14,12 +14,12 @@
 
 package tools.jackson.dataformat.ion.ionvalue;
 
+import com.amazon.ion.Timestamp;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 import tools.jackson.dataformat.ion.IonGenerator;
-
-import com.amazon.ion.Timestamp;
 
 /**
  * Serializer that knows how to serialize a Timestamp.

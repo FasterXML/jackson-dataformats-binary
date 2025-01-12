@@ -1,6 +1,10 @@
 package tools.jackson.dataformat.ion.polymorphism;
 
+import java.io.IOException;
+
 import com.amazon.ion.IonValue;
+
+import org.junit.jupiter.api.*;
 
 import tools.jackson.core.Version;
 import tools.jackson.core.type.TypeReference;
@@ -14,13 +18,7 @@ import tools.jackson.databind.module.SimpleModule;
 
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This test checks that {@link IonAnnotationTypeDeserializer} with {@link IonAnnotationIntrospector} expecting class
@@ -35,7 +33,7 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
 
     IonObjectMapper mapperUnderTest;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupClass() throws IOException {
         ClassA inner = new ClassA();
         inner.value = 42;
@@ -50,7 +48,7 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
         ionValueWithAnnotation = mapper.writeValueAsIonValue(outer);
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         // Important: since Jackson caches type resolving information, we need to create a separate mapper for testing.
         mapperUnderTest = constructIomWithClassNameIdResolver();

@@ -14,10 +14,11 @@
 
 package tools.jackson.dataformat.ion.ionvalue;
 
+import com.amazon.ion.Timestamp;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
-import com.amazon.ion.Timestamp;
 
 /**
  * Deserializer that knows how to deserialize a Timestamp.

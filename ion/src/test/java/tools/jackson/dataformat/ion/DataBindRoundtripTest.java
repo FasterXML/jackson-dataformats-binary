@@ -14,12 +14,6 @@
 
 package tools.jackson.dataformat.ion;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,17 +21,16 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.annotation.JsonSerialize;
 
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple unit tests to check that write-then-read works as expected
@@ -173,7 +166,7 @@ public class DataBindRoundtripTest
 
         Bean bean = m.readValue(root, Bean.class);
         assertNotNull(bean);
-        assertEquals(bean.a, "test");
+        assertEquals("test", bean.a);
         assertEquals(0.25, bean.b, 0.0);
         assertArrayEquals(new byte[0], bean.data);
         assertTrue(bean.state);

@@ -1,13 +1,13 @@
 package tools.jackson.dataformat.ion.fuzz;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.dataformat.ion.*;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#417]
 public class Fuzz417_64721InvalidIonTest

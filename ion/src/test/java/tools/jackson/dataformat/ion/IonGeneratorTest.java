@@ -14,26 +14,20 @@
 
 package tools.jackson.dataformat.ion;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-
-import org.junit.Test;
-import org.junit.Before;
+import java.util.*;
 
 import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.databind.JsonNode;
 
-import com.amazon.ion.IonDatagram;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
+import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class IonGeneratorTest {
     private static final Map<String, String> testObject;
@@ -60,7 +54,7 @@ public class IonGeneratorTest {
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MAPPER = new IonObjectMapper();
         this.ionSystem = IonSystemBuilder.standard().build();

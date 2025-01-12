@@ -3,7 +3,7 @@ package tools.jackson.dataformat.ion.dos;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
@@ -11,8 +11,8 @@ import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Simple unit tests to verify that we fail gracefully if you attempt to serialize
@@ -32,8 +32,8 @@ public class CyclicIonDataSerTest
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamWriteConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("DatabindException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "DatabindException message is as expected?");
         }
     }
 }
