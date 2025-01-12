@@ -3,13 +3,16 @@ package com.fasterxml.jackson.dataformat.protobuf;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 import com.fasterxml.jackson.dataformat.protobuf.testutil.LimitingInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadComplexPojoTest extends ProtobufTestBase
 {
@@ -42,11 +45,13 @@ public class ReadComplexPojoTest extends ProtobufTestBase
 
     final ProtobufMapper MAPPER = new ProtobufMapper();
 
+    @Test
     public void testMediaItemSimple() throws Exception
     {
         _testMediaItem(false);
     }
 
+    @Test
     public void testMediaItemWithSmallReads() throws Exception
     {
         _testMediaItem(true);
@@ -76,11 +81,12 @@ public class ReadComplexPojoTest extends ProtobufTestBase
         byte[] b2 = w.writeValueAsBytes(result);
         assertEquals(bytes.length, b2.length);
 
-        Assert.assertArrayEquals(bytes, b2);
+        assertArrayEquals(bytes, b2);
 
         assertEquals(input, result);
     }
 
+    @Test
     public void testPojoWithArrays() throws Exception
     {
         _testPojoWithArrays(false);
@@ -114,9 +120,9 @@ public class ReadComplexPojoTest extends ProtobufTestBase
         PojoWithArrays result = r.readValue(in);
 
         assertNotNull(result);
-        Assert.assertArrayEquals(input.i, result.i);
-        Assert.assertArrayEquals(input.l, result.l);
-        Assert.assertArrayEquals(input.b, result.b);
+        assertArrayEquals(input.i, result.i);
+        assertArrayEquals(input.l, result.l);
+        assertArrayEquals(input.b, result.b);
         assertEquals(input.d.length, result.d.length);
         for (int ix = 0; ix < input.d.length; ++ix) {
             assertEquals(input.d[ix], result.d[ix]);
@@ -126,7 +132,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
         byte[] b2 = w.writeValueAsBytes(result);
         assertEquals(bytes.length, b2.length);
 
-        Assert.assertArrayEquals(bytes, b2);
+        assertArrayEquals(bytes, b2);
 
         // and then see what happens if empty arrays are passed; expecting empty
         // (all fields missing, since zero-length arrays can not be represented)

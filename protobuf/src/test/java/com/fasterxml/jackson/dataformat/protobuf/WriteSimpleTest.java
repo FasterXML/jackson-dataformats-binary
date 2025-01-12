@@ -4,12 +4,18 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WriteSimpleTest extends ProtobufTestBase
 {
@@ -64,6 +70,7 @@ public class WriteSimpleTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
     public void testWritePointInt() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -87,6 +94,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
     public void testWritePointLongFixed() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_FL);
@@ -105,6 +113,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
     public void testWritePointDouble() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_D);
@@ -121,6 +130,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
     public void testWriteNameManual() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
@@ -147,6 +157,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(11, b.length);
     }
 
+    @Test
     public void testWritePointWithLongsManual() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_L);
@@ -195,6 +206,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(0x01, b[20] & 0x01);
     }
 
+    @Test
     public void testBooleanAndNull() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_OPTIONAL_VALUE);
@@ -217,6 +229,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
     public void testIdPoint() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_ID_POINTS);
@@ -231,6 +244,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
     public void testWriteCoord() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Box");

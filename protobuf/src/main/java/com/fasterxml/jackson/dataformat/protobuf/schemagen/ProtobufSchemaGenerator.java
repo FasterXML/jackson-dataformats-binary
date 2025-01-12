@@ -7,7 +7,6 @@ import com.squareup.protoparser.TypeElement;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
-
 import com.fasterxml.jackson.dataformat.protobuf.schema.NativeProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
