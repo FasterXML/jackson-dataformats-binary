@@ -3,7 +3,6 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -72,9 +71,9 @@ public class BinaryReadTest extends CBORTestBase
         byte[] raw = MAPPER.writeValueAsBytes(input);
 
         Bytes3 result = MAPPER.readValue(raw, Bytes3.class);
-        Assert.assertArrayEquals(input.bytes1, result.bytes1);
-        Assert.assertArrayEquals(input.bytes2, result.bytes2);
-        Assert.assertArrayEquals(input.bytes3, result.bytes3);
+        assertArrayEquals(input.bytes1, result.bytes1);
+        assertArrayEquals(input.bytes2, result.bytes2);
+        assertArrayEquals(input.bytes3, result.bytes3);
     }
 
     public void _testBinary(int size) throws Exception
@@ -88,14 +87,14 @@ public class BinaryReadTest extends CBORTestBase
         byte[] raw = MAPPER.writeValueAsBytes(input);
         byte[] b2 = MAPPER.readValue(raw, byte[].class);
         assertNotNull(b2);
-        Assert.assertArrayEquals(input, b2);
+        assertArrayEquals(input, b2);
 
         // then as POJO member
         raw = MAPPER.writeValueAsBytes(new Bytes(input));
         Bytes bytes = MAPPER.readValue(raw, Bytes.class);
         assertNotNull(bytes);
         assertNotNull(bytes.bytes);
-        Assert.assertArrayEquals(input, bytes.bytes);
+        assertArrayEquals(input, bytes.bytes);
 
         // then using incremental access method
         raw = MAPPER.writeValueAsBytes(input);
@@ -107,7 +106,7 @@ public class BinaryReadTest extends CBORTestBase
         assertEquals(input.length, p.readBinaryValue(bout));
         assertEquals(input.length, bout.size());
         b2 = bout.toByteArray();
-        Assert.assertArrayEquals(input, b2);
+        assertArrayEquals(input, b2);
         assertNull(p.nextToken());
         p.close();
         in.close();

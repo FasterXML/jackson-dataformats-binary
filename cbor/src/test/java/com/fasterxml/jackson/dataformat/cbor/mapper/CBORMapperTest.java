@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,10 +36,10 @@ public class CBORMapperTest extends CBORTestBase
         assertEquals(29, encodedNotMinimal.length);
 
         // And then verify we can read it back, either way
-        Assert.assertArrayEquals(minimalValues, mapperWithMinimal.readValue(encodedMinimal, Object[].class));
-        Assert.assertArrayEquals(values, mapperWithMinimal.readValue(encodedNotMinimal, Object[].class));
-        Assert.assertArrayEquals(minimalValues, mapperFull.readValue(encodedMinimal, Object[].class));
-        Assert.assertArrayEquals(values, mapperFull.readValue(encodedNotMinimal, Object[].class));
+        assertArrayEquals(minimalValues, mapperWithMinimal.readValue(encodedMinimal, Object[].class));
+        assertArrayEquals(values, mapperWithMinimal.readValue(encodedNotMinimal, Object[].class));
+        assertArrayEquals(minimalValues, mapperFull.readValue(encodedMinimal, Object[].class));
+        assertArrayEquals(values, mapperFull.readValue(encodedNotMinimal, Object[].class));
     }
 
     // [databind#3212]

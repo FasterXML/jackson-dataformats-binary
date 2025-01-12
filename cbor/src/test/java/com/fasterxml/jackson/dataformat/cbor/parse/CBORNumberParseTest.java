@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
@@ -12,11 +14,9 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
-@SuppressWarnings("resource")
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Test;
-
+@SuppressWarnings("resource")
 public class CBORNumberParseTest extends CBORTestBase
 {
     private final CBORFactory CBOR_F = cborFactory();
@@ -400,8 +400,8 @@ public class CBORNumberParseTest extends CBORTestBase
                 parser.nextToken();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException e) {
-                assertTrue("unexpected exception message: " + e.getMessage(),
-                        e.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"));
+                assertTrue(e.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"),
+                        "unexpected exception message: " + e.getMessage());
             }
         }
     }

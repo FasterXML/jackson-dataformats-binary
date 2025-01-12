@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
@@ -85,6 +87,7 @@ public class BiggerDataTest extends CBORTestBase
 
 	final ObjectMapper MAPPER = new ObjectMapper();
 
+	@Test
 	public void testReading() throws Exception
 	{
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -115,6 +118,7 @@ public class BiggerDataTest extends CBORTestBase
 		assertEquals(1, citm.venueNames.size());
 	}
 
+	@Test
 	public void testRoundTrip() throws Exception
 	{
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -143,6 +147,7 @@ public class BiggerDataTest extends CBORTestBase
 		assertEquals(citm.venueNames.size(), citm2.venueNames.size());
 	}
 
+	@Test
 	public void testRoundTripStringref() throws Exception
 	{
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),

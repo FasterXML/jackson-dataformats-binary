@@ -6,7 +6,6 @@ import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -257,7 +256,7 @@ public class GeneratorSimpleTest extends CBORTestBase
                 0x19, 0x6a, (byte) 0xb3 // int 27315
         };
         assertEquals(spec.length, b.length);
-        Assert.assertArrayEquals(spec, b);
+        assertArrayEquals(spec, b);
     }
 
     @Test
@@ -444,7 +443,7 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         // copyCurrentEvent doesn't preserve fixed arrays, so we can't
         // compare with the source bytes.
-        Assert.assertArrayEquals(new byte[] {
+        assertArrayEquals(new byte[] {
                 CBORConstants.BYTE_TAG_DECIMAL_FRACTION,
                 CBORConstants.BYTE_ARRAY_2_ELEMENTS,
                 0,
@@ -470,7 +469,7 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         // copyCurrentEvent doesn't preserve fixed arrays, so we can't
         // compare with the source bytes.
-        Assert.assertArrayEquals(new byte[] {
+        assertArrayEquals(new byte[] {
                 CBORConstants.BYTE_TAG_DECIMAL_FRACTION,
                 CBORConstants.BYTE_ARRAY_2_ELEMENTS,
                 0,
@@ -495,7 +494,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         gen.close();
         cborParser.close();
 
-        Assert.assertArrayEquals(
+        assertArrayEquals(
             sourceBytes.toByteArray(),
             targetBytes.toByteArray());
     }

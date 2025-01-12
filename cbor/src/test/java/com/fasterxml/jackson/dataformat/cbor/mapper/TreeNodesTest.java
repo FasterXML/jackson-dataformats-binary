@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.cbor.mapper;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,7 +36,7 @@ public class TreeNodesTest extends CBORTestBase
              fail("Expected binary node; got "+datNode.getClass().getName());
          }
          byte[] bytes = datNode.binaryValue();
-         Assert.assertArrayEquals(TEXT_BYTES, bytes);
+         assertArrayEquals(TEXT_BYTES, bytes);
      }
 
     @Test
