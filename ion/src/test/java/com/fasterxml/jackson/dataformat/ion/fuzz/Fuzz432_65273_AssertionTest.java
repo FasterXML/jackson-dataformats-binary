@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.dataformat.ion.*;
+import com.fasterxml.jackson.dataformat.ion.IonFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#4432]
 public class Fuzz432_65273_AssertionTest

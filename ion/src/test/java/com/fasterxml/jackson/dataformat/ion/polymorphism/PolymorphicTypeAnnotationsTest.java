@@ -2,16 +2,18 @@ package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import java.io.IOException;
 
+import com.amazon.ion.IonValue;
+import com.amazon.ion.system.IonSystemBuilder;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.IonParser.Feature;
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
 
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PolymorphicTypeAnnotationsTest {
     private static final String SUBCLASS_TYPE_NAME = "subtype";
@@ -54,8 +56,8 @@ public class PolymorphicTypeAnnotationsTest {
 
         Container containerWithBaseClass = mapper.readValue(CONTAINER_WITH_TYPED_OBJECT, Container.class);
 
-        Assert.assertTrue(containerWithBaseClass.objectWithType instanceof Subclass);
-        Assert.assertEquals(SUBCLASS_TYPE_NAME, ((Subclass) containerWithBaseClass.objectWithType).base);
+        assertTrue(containerWithBaseClass.objectWithType instanceof Subclass);
+        assertEquals(SUBCLASS_TYPE_NAME, ((Subclass) containerWithBaseClass.objectWithType).base);
     }
 
     private static IonValue asIonValue(final String ionStr) {

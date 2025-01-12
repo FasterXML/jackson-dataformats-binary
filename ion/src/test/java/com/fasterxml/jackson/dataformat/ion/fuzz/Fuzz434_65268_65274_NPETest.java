@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.ion.fuzz;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -9,12 +10,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.ion.*;
+import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 // [dataformats-binary#434]
 public class Fuzz434_65268_65274_NPETest

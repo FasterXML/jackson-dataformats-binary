@@ -14,24 +14,18 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import com.fasterxml.jackson.core.Version;
-
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
@@ -40,14 +34,9 @@ import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationIntrospector;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.IonAnnotationTypeResolverBuilder;
-import com.fasterxml.jackson.dataformat.ion.polymorphism.MultipleTypeIdResolver;
+import com.fasterxml.jackson.dataformat.ion.polymorphism.*;
 
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonType;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PolymorphicRoundtripTest {
 
@@ -137,7 +126,7 @@ public class PolymorphicRoundtripTest {
         preferredTypeId = "java.lang.Object";
         try {
             deserialized = mapper.readValue(serialized, Bean.class);
-            Assert.fail("Expected jackson to complain about casting a (concrete) Object into a ChildBean.");
+            fail("Expected jackson to complain about casting a (concrete) Object into a ChildBean.");
         } catch (JsonMappingException e) {
         }
     }
@@ -156,12 +145,12 @@ public class PolymorphicRoundtripTest {
         // java.util.Date can serialize properly
         String serialized = mapper.writeValueAsString(uDate);
         IonValue ionVal = ionSystem.singleValue(serialized);
-        Assert.assertEquals("Expected date to be serialized into an IonTimestamp", IonType.TIMESTAMP, ionVal.getType());
+        assertEquals(IonType.TIMESTAMP, ionVal.getType(), "Expected date to be serialized into an IonTimestamp");
 
         // java.sql.Date can serialize properly
         serialized = mapper.writeValueAsString(sDate);
         ionVal = ionSystem.singleValue(serialized);
-        Assert.assertEquals("Expected date to be serialized into an IonTimestamp", IonType.TIMESTAMP, ionVal.getType());
+        assertEquals(IonType.TIMESTAMP, ionVal.getType(), "Expected date to be serialized into an IonTimestamp");
     }
 
     @Test
@@ -178,12 +167,12 @@ public class PolymorphicRoundtripTest {
         // java.util.Date can serialize properly
         String serialized = ionDateMapper.writeValueAsString(uDate);
         IonValue ionVal = ionSystem.singleValue(serialized);
-        Assert.assertEquals("Expected date to be serialized into an int", IonType.INT, ionVal.getType());
+        assertEquals(IonType.INT, ionVal.getType(), "Expected date to be serialized into an int");
 
         // java.sql.Date can serialize properly
         serialized = ionDateMapper.writeValueAsString(sDate);
         ionVal = ionSystem.singleValue(serialized);
-        Assert.assertEquals("Expected date to be serialized into an int", IonType.INT, ionVal.getType());
+        assertEquals(IonType.INT, ionVal.getType(), "Expected date to be serialized into an int");
     }
 
     @Test
@@ -203,8 +192,8 @@ public class PolymorphicRoundtripTest {
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
         ChildBeanSub deserializedSub = (ChildBeanSub)deserialized.child;
-        Assert.assertEquals("Date result not the same as serialized value.", uDate, deserializedSub.uDate);
-        Assert.assertEquals("Date result not the same as serialized value.", sDate, deserializedSub.sDate);
+        assertEquals(uDate, deserializedSub.uDate, "Date result not the same as serialized value.");
+        assertEquals(sDate, deserializedSub.sDate, "Date result not the same as serialized value.");
     }
 
     @Test
@@ -221,7 +210,7 @@ public class PolymorphicRoundtripTest {
         String serialized = mapper.writeValueAsString(original);
         Bean deserialized = mapper.readValue(serialized, Bean.class);
         ChildBeanSub deserializedSub = (ChildBeanSub)deserialized.child;
-        Assert.assertEquals("Dynamic data not the same as serialized IonValue.", dynamicData, deserializedSub.dynamicData);
+        assertEquals(dynamicData, deserializedSub.dynamicData, "Dynamic data not the same as serialized IonValue.");
     }
 
     static class Bean {

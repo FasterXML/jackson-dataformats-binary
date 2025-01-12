@@ -1,6 +1,10 @@
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
+import java.io.IOException;
+
 import com.amazon.ion.IonValue;
+import org.junit.jupiter.api.*;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
@@ -9,13 +13,8 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This test checks that {@link IonAnnotationTypeDeserializer} with {@link IonAnnotationIntrospector} expecting class

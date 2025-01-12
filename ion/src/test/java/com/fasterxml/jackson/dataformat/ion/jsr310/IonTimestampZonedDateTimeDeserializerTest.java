@@ -1,22 +1,18 @@
 package com.fasterxml.jackson.dataformat.ion.jsr310;
 
-import static java.time.ZoneOffset.UTC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.TimeZone;
 
+import com.amazon.ion.Timestamp;
 import org.junit.jupiter.api.Test;
 
-import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+
+import static java.time.ZoneOffset.UTC;
 
 public class IonTimestampZonedDateTimeDeserializerTest {
 

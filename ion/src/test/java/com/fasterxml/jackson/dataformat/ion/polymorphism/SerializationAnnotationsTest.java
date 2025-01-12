@@ -1,16 +1,16 @@
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
+import java.io.IOException;
+
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.amazon.ion.util.Equivalence;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.dataformat.ion.IonGenerator;
+import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 public class SerializationAnnotationsTest {
 
@@ -107,12 +107,12 @@ public class SerializationAnnotationsTest {
     }
 
     private static void assertCorrectlyTypedAndFormed(final Subclass expectedSubclass, final BaseClass actualBaseclass) {
-        Assert.assertTrue(actualBaseclass instanceof Subclass);
+        assertTrue(actualBaseclass instanceof Subclass);
         assertEquals(expectedSubclass, (Subclass) actualBaseclass);
     }
     private static void assertEquals(Subclass expected, Subclass actual) {
-        Assert.assertEquals(expected.someString, actual.someString);
-        Assert.assertEquals(expected.anInt, actual.anInt);
+        assertEquals(expected.someString, actual.someString);
+        assertEquals(expected.anInt, actual.anInt);
     }
 
     private static void assertEqualIonValues(IonValue expected, IonValue actual) {

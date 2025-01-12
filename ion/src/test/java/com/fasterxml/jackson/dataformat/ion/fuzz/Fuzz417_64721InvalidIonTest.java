@@ -1,13 +1,13 @@
 package com.fasterxml.jackson.dataformat.ion.fuzz;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.*;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#417]
 public class Fuzz417_64721InvalidIonTest

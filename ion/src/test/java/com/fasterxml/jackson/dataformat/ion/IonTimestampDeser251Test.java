@@ -1,18 +1,16 @@
 package com.fasterxml.jackson.dataformat.ion;
 
+import com.amazon.ion.Timestamp;
 import org.junit.jupiter.api.Test;
 
-import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueModule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // For [dataformats-binary#251]
 public class IonTimestampDeser251Test

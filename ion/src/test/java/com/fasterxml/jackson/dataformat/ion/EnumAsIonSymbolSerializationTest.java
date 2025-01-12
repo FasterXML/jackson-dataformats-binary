@@ -14,12 +14,14 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EnumAsIonSymbolSerializationTest
 {
@@ -38,9 +40,9 @@ public class EnumAsIonSymbolSerializationTest
     public void testUsingName() throws Exception
     {
         final IonValue EXP = ION_SYSTEM.singleValue("SOME_VALUE");
-        Assert.assertEquals(EXP,
+        assertEquals(EXP,
                 newMapper(false, false).writeValueAsIonValue(SomeEnum.SOME_VALUE));
-        Assert.assertEquals(EXP,
+        assertEquals(EXP,
                 newMapper(true, false).writeValueAsIonValue(SomeEnum.SOME_VALUE));
     }
 
@@ -48,9 +50,9 @@ public class EnumAsIonSymbolSerializationTest
     public void testUsingToString() throws Exception
     {
         final IonValue EXP = ION_SYSTEM.singleValue("some_value");
-        Assert.assertEquals(EXP,
+        assertEquals(EXP,
                 newMapper(false, true).writeValueAsIonValue(SomeEnum.SOME_VALUE));
-        Assert.assertEquals(EXP,
+        assertEquals(EXP,
                 newMapper(true, true).writeValueAsIonValue(SomeEnum.SOME_VALUE));
     }
 

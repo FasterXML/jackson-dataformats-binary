@@ -1,24 +1,19 @@
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.IonStruct;
+import java.io.IOException;
+import java.util.*;
+
+import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.util.AccessPattern;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.util.AccessPattern;
+import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
-import static org.junit.Assert.assertEquals;
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {

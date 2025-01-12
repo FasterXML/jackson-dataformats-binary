@@ -16,18 +16,15 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import java.io.*;
 
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
-import com.amazon.ion.IonDatagram;
-import com.amazon.ion.IonLoader;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonType;
-import com.amazon.ion.system.IonSystemBuilder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SimpleIonWriteTest
 {
