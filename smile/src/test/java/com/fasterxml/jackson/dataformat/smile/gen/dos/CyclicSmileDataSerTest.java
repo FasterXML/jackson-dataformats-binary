@@ -12,6 +12,10 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Simple unit tests to verify that we fail gracefully if you attempt to serialize
+ * data that is cyclic (eg a list that contains itself).
+ */
 public class CyclicSmileDataSerTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();

@@ -13,6 +13,11 @@ import com.fasterxml.jackson.dataformat.smile.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for verifying that symbol handling works as planned, including
+ * efficient reuse of names encountered during parsing.
+ * Copied and slightly modified version of `ParserSymbolHandlingTest`
+ */
 public class AsyncSharedStringsTest
 	extends AsyncTestBase
 {

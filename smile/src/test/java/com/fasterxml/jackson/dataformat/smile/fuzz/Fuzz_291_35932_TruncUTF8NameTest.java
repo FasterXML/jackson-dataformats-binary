@@ -10,6 +10,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+// For https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=35932
 public class Fuzz_291_35932_TruncUTF8NameTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// For [dataformats-binary#257]
 public class Fuzz32168BigDecimalTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();

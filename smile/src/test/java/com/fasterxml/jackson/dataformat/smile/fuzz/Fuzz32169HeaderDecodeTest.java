@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+//For [dataformats-binary#258]
 public class Fuzz32169HeaderDecodeTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();

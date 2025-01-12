@@ -11,6 +11,9 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * Basic testing for scalar-array write methods added in 2.8.
+ */
 public class ArrayGenerationTest extends BaseTestForSmile
 {
     private final SmileFactory FACTORY = new SmileFactory();

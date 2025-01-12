@@ -9,6 +9,18 @@ import com.fasterxml.jackson.dataformat.smile.testutil.ByteOutputStreamForTestin
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Set of basic unit tests that verify aspect of closing a
+ * {@link JsonGenerator} instance. This includes both closing
+ * of physical resources (target), and logical content
+ * (json content tree)
+ *<p>
+ * Specifically, features
+ * <code>JsonGenerator.Feature#AUTO_CLOSE_TARGET</code>
+ * and
+ * <code>JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT</code>
+ * are tested.
+ */
 public class TestGeneratorClosing extends BaseTestForSmile
 {
     /*

@@ -12,6 +12,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
+/* Test based on kimchy's issue (see https://gist.github.com/853232);
+ * exhibits an issue with buffer recycling.
+ */
 public class TestGeneratorBufferRecycle extends BaseTestForSmile
 {
     @Test

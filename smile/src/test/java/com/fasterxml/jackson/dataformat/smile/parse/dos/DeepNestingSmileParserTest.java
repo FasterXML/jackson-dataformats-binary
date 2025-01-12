@@ -12,6 +12,9 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for deeply nested JSON
+ */
 public class DeepNestingSmileParserTest extends BaseTestForSmile
 {
     @Test
