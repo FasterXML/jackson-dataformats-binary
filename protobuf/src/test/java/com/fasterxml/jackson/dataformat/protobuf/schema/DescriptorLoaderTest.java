@@ -2,9 +2,14 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class DescriptorLoaderTest extends ProtobufTestBase
 {
@@ -47,6 +52,7 @@ public class DescriptorLoaderTest extends ProtobufTestBase
         + "    required int32 f = 1;\n"
         + "}\n";
 
+    @Test
     public void testParsing() throws Exception
     {
         // create PB binary from known .proto schema

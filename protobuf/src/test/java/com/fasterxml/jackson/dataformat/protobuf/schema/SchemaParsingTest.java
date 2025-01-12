@@ -2,7 +2,11 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SchemaParsingTest extends ProtobufTestBase
 {
@@ -29,6 +33,7 @@ public class SchemaParsingTest extends ProtobufTestBase
             +"}\n"
     ;
 
+    @Test
     public void testSimpleSearchRequest() throws Exception
     {
         // First: with implicit first type:
@@ -50,6 +55,7 @@ public class SchemaParsingTest extends ProtobufTestBase
         _verifyMessageFieldLinking(msg);
     }
 
+    @Test
     public void testBoxAndPoint() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX);
@@ -61,6 +67,7 @@ public class SchemaParsingTest extends ProtobufTestBase
         _verifyMessageFieldLinking(schema.getRootType());
     }
 
+    @Test
     public void testRecursive() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NODE);
@@ -77,6 +84,7 @@ public class SchemaParsingTest extends ProtobufTestBase
         _verifyMessageFieldLinking(schema.getRootType());
     }
 
+    @Test
     public void testEnum() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_ENUMS);
@@ -101,6 +109,7 @@ public class SchemaParsingTest extends ProtobufTestBase
         assertFalse(f.isStdEnum);
     }
 
+    @Test
     public void testEmpty() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_EMPTY);
@@ -109,6 +118,7 @@ public class SchemaParsingTest extends ProtobufTestBase
         assertEquals(1, all.size());
     }
 
+    @Test
     public void testPacked() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS_PACKED);

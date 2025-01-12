@@ -3,17 +3,14 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.squareup.protoparser.*;
+import com.squareup.protoparser.DataType.NamedType;
+import com.squareup.protoparser.DataType.ScalarType;
+import com.squareup.protoparser.FieldElement.Label;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
-
-import com.squareup.protoparser.DataType;
-import com.squareup.protoparser.DataType.NamedType;
-import com.squareup.protoparser.DataType.ScalarType;
-import com.squareup.protoparser.FieldElement;
-import com.squareup.protoparser.FieldElement.Label;
-import com.squareup.protoparser.MessageElement;
-import com.squareup.protoparser.TypeElement;
 
 public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
     implements TypeElementBuilder

@@ -2,9 +2,13 @@ package com.fasterxml.jackson.dataformat.protobuf.failing;
 
 import java.io.StringReader;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class GenerateNestedType73Test extends ProtobufTestBase
 {
@@ -17,6 +21,7 @@ public class GenerateNestedType73Test extends ProtobufTestBase
     final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#68]
+    @Test
     public void testNestedTypes() throws Exception
     {
         final String SCHEMA_STR =

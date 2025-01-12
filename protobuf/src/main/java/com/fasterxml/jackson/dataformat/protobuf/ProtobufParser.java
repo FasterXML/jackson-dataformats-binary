@@ -8,11 +8,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.core.util.TextBuffer;
-import com.fasterxml.jackson.core.util.VersionUtil;
-
+import com.fasterxml.jackson.core.util.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufParser extends ParserMinimalBase

@@ -1,10 +1,11 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-import java.util.*;
+import java.util.Collection;
 
-import com.fasterxml.jackson.core.SerializableString;
 import com.squareup.protoparser.FieldElement;
 import com.squareup.protoparser.OptionElement;
+
+import com.fasterxml.jackson.core.SerializableString;
 
 public class ProtobufField
 // sorted in increasing order
