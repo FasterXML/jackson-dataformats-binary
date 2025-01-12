@@ -225,7 +225,7 @@ public abstract class BaseTestForSmile
         if (str.length() !=  actLen) {
             fail("Internal problem (p.token == "+p.getCurrentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
         }
-        assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
+        assertEquals(str, str2, "String access via getText(), getTextXxx() must be the same");
 
         return str;
     }

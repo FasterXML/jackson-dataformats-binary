@@ -5,11 +5,10 @@ import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.InputDecorator;
-
-@SuppressWarnings("serial")
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("serial")
 public class PrefixInputDecorator extends InputDecorator
 {
     protected final byte[] _prefix;

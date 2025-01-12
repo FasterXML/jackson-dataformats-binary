@@ -141,8 +141,8 @@ public class SimpleStringArrayTest extends AsyncTestBase
             r.currentText();
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
-            assertTrue("unexpected exception message: " + ise.getMessage(),
-                    ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"));
+            assertTrue(ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"),
+                    "unexpected exception message: " + ise.getMessage());
         }
     }
 

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CyclicSmileDataSerTest extends BaseTestForSmile
 {
@@ -26,8 +26,8 @@ public class CyclicSmileDataSerTest extends BaseTestForSmile
         } catch (DatabindException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamWriteConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("DatabindException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "DatabindException message is as expected?");
         }
     }
 }

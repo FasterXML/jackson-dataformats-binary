@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DeepNestingSmileParserTest extends BaseTestForSmile
 {
@@ -28,8 +28,8 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("StreamConstraintsException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "StreamConstraintsException message is as expected?");
         }
     }
 
@@ -63,8 +63,8 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("StreamConstraintsException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "StreamConstraintsException message is as expected?");
         }
     }
 

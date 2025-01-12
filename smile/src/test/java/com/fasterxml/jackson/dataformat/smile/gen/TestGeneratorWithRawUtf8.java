@@ -166,20 +166,20 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
 
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
-        assertEquals(parser.currentName(), "name");
+        assertEquals("name", parser.currentName());
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
-        assertEquals(parser.getText(), "PojoFoo");
+        assertEquals("PojoFoo", parser.getText());
 
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
-        assertEquals(parser.currentName(), "collection");
+        assertEquals("collection", parser.currentName());
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
 
         assertToken(parser.nextToken(), JsonToken.FIELD_NAME);
-        assertEquals("Should have property with name 'v'", parser.currentName(), "v");
+        assertEquals("v", parser.currentName(), "Should have property with name 'v'");
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
 
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
-        assertEquals("Should get String value '1'", parser.getText(), "1");
+        assertEquals("1", parser.getText(), "Should get String value '1'");
 
         assertToken(parser.nextToken(), JsonToken.END_ARRAY);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);

@@ -428,8 +428,8 @@ public class SmileNumberParsingTest
                 p.getNumberType();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException nfe) {
-                assertTrue("unexpected exception message: " + nfe.getMessage(),
-                        nfe.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"));
+                assertTrue(nfe.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"),
+                        "unexpected exception message: " + nfe.getMessage());
             }
         }
     }
