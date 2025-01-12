@@ -1,12 +1,17 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import java.io.StringReader;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
-import java.io.StringReader;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReadPackedRepeatedTest extends ProtobufTestBase
 {
+    @Test
     public void testPacked() throws Exception
     {
         final ProtobufMapper mapper = newObjectMapper();

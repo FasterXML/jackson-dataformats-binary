@@ -2,13 +2,16 @@ package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class RoundtripNestedMessageTest extends ProtobufTestBase
 {
@@ -112,6 +115,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
 
     private final ProtobufMapper MAPPER = new ProtobufMapper();
 
+    @Test
     public void testNestedRoundtrip() throws IOException
     {
        TestObject testClass = new TestObject();
@@ -136,6 +140,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
     }
 
     // [dataformats-binary#135]: endless END_OBJECT at end of doc
+    @Test
     public void testIssue135() throws Exception
     {
         String protobuf_str = "message Employee {\n"
