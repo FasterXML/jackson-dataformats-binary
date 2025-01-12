@@ -3,10 +3,12 @@ package com.fasterxml.jackson.dataformat.avro.interop;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.stream.Stream;
 
 import org.apache.avro.Schema;
-import org.junit.jupiter.api.BeforeEach;
+
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
 import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
@@ -18,6 +20,7 @@ import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUti
  * {@link #deserializeFunctor} with permutations of Apache and Jackson implementations to test all aspects of
  * interoperability between the implementations.
  */
+@RunWith(Parameterized.class)
 public abstract class InteropTestBase
 {
     public enum DummyEnum {
@@ -26,7 +29,7 @@ public abstract class InteropTestBase
 
     // see https://github.com/FasterXML/jackson-dataformats-binary/pull/539 for
     // explanation (need to allow-list Jackson test packages for Avro 1.11.4+)
-    @BeforeEach
+    @Before
     public void init() {
         System.setProperty("org.apache.avro.SERIALIZABLE_PACKAGES",
                 "java.lang,java.math,java.io,java.net,org.apache.avro.reflect," +
@@ -101,22 +104,27 @@ public abstract class InteropTestBase
         }
     }
 
+    @Parameterized.Parameter
     public Function<Type, Schema> schemaFunctor;
+    @Parameterized.Parameter(1)
     public BiFunction<Schema, Object, byte[]> serializeFunctor;
+    @Parameterized.Parameter(2)
     public BiFunction<Schema, byte[], Object> deserializeFunctor;
+    @Parameterized.Parameter(3)
     public String combinationName;
 
-    public static Stream<Object[]> getParameters() {
-        return Stream.of(
-                new Object[] {getApacheSchema, apacheSerializer, jacksonDeserializer, "Apache to Jackson with Apache schema"},
-                new Object[] {getJacksonSchema, apacheSerializer, jacksonDeserializer, "Apache to Jackson with Jackson schema"},
-                new Object[] {getApacheSchema, jacksonSerializer, jacksonDeserializer, "Jackson to Jackson with Apache schema"},
-                new Object[] {getJacksonSchema, jacksonSerializer, jacksonDeserializer, "Jackson to Jackson with Jackson schema"},
-                new Object[] {getApacheSchema, jacksonSerializer, apacheDeserializer, "Jackson to Apache with Apache schema"},
-                new Object[] {getJacksonSchema, jacksonSerializer, apacheDeserializer, "Jackson to Apache with Jackson schema"},
-                new Object[] {getJacksonSchema, apacheSerializer, apacheDeserializer, "Apache to Apache with Jackson schema"},
-                new Object[] {getApacheSchema, apacheSerializer, apacheDeserializer, "Apache to Apache with Apache schema"}
-        );
+    @Parameterized.Parameters(name = "{3}")
+    public static Object[][] getParameters() {
+        return new Object[][]{
+                {getApacheSchema, apacheSerializer, jacksonDeserializer, "Apache to Jackson with Apache schema"},
+                {getJacksonSchema, apacheSerializer, jacksonDeserializer, "Apache to Jackson with Jackson schema"},
+                {getApacheSchema, jacksonSerializer, jacksonDeserializer, "Jackson to Jackson with Apache schema"},
+                {getJacksonSchema, jacksonSerializer, jacksonDeserializer, "Jackson to Jackson with Jackson schema"},
+                {getApacheSchema, jacksonSerializer, apacheDeserializer, "Jackson to Apache with Apache schema"},
+                {getJacksonSchema, jacksonSerializer, apacheDeserializer, "Jackson to Apache with Jackson schema"},
+                {getJacksonSchema, apacheSerializer, apacheDeserializer, "Apache to Apache with Jackson schema"},
+                {getApacheSchema, apacheSerializer, apacheDeserializer, "Apache to Apache with Apache schema"}
+        };
     }
 
     /**
@@ -154,14 +162,4 @@ public abstract class InteropTestBase
         Schema schema = schemaFunctor.apply(schemaType);
         return (T) deserializeFunctor.apply(schema, serializeFunctor.apply(schema, object));
     }
-
-    protected void useParameters(Function<Type, Schema> schemaFunctor,
-                                 BiFunction<Schema, Object, byte[]> serializeFunctor,
-                                 BiFunction<Schema, byte[], Object> deserializeFunctor
-    ) {
-        this.schemaFunctor = schemaFunctor;
-        this.serializeFunctor = serializeFunctor;
-        this.deserializeFunctor = deserializeFunctor;
-    }
-
 }
