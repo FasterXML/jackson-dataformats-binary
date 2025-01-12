@@ -1,21 +1,15 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.avro.AvroTypeException;
-import org.apache.avro.Schema;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
-import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
-import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -25,15 +19,8 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class RecordWithComplexTest extends InteropTestBase
 {
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testEmptyRecordWithRecordValues(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testEmptyRecordWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         //
         Map<String, DummyRecord> result = roundTrip(type(Map.class, String.class, DummyRecord.class), original);
@@ -41,15 +28,8 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testRecordWithListFields(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testRecordWithListFields() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.requiredList.add(9682584);
         //
@@ -59,15 +39,8 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result.requiredList).isEqualTo(original.requiredList);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testRecordWithMapFields(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testRecordWithMapFields() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.simpleMap.put("Hello World", 9682584);
         //
@@ -77,15 +50,8 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result.simpleMap.get("Hello World")).isEqualTo(original.simpleMap.get("Hello World"));
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testRecordWithMissingRequiredEnumFields(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testRecordWithMissingRequiredEnumFields() {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.requiredEnum = null;
         //
@@ -99,15 +65,8 @@ public class RecordWithComplexTest extends InteropTestBase
         }
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testRecordWithNullRequiredFields(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testRecordWithNullRequiredFields() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord(null, 12353, new DummyRecord("World", 234));
         //
         try {
@@ -120,15 +79,8 @@ public class RecordWithComplexTest extends InteropTestBase
         }
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testRecordWithOptionalEnumField(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testRecordWithOptionalEnumField() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.optionalEnum = DummyEnum.SOUTH;
         //
@@ -137,15 +89,8 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testRecordWithRecordValues(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testRecordWithRecordValues() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         //
         RecursiveDummyRecord result = roundTrip(RecursiveDummyRecord.class, original);

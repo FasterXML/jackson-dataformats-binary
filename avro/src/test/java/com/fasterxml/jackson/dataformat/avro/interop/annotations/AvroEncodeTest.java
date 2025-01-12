@@ -1,24 +1,21 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.Encoder;
-import org.apache.avro.reflect.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.apache.avro.reflect.AvroEncode;
+import org.apache.avro.reflect.CustomEncoding;
+import org.apache.avro.reflect.Nullable;
+import org.apache.avro.reflect.ReflectData;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
-import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
-import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -143,7 +140,7 @@ public class AvroEncodeTest extends InteropTestBase {
     protected Wrapper wrapper;
     protected Wrapper result;
 
-    @BeforeEach
+    @Before
     public void setup() throws IOException {
         wrapper = new Wrapper();
         //
@@ -168,109 +165,47 @@ public class AvroEncodeTest extends InteropTestBase {
         cc.stringValue = "Nested Hello World!";
         cc.uuidValue = UUID.randomUUID();
         wrapper.component.nestedRecordValue = cc;
+        //
+        result = roundTrip(wrapper);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testByteValue(
-        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
-        result = roundTrip(wrapper);
+    @Test
+    public void testByteValue() {
         assertThat(result.component.byteValue).isEqualTo(wrapper.component.byteValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testShortValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testShortValue() {
         assertThat(result.component.shortValue).isEqualTo(wrapper.component.shortValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testStringValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testStringValue() {
         assertThat(result.component.stringValue).isEqualTo(wrapper.component.stringValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testDoubleValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testDoubleValue() {
         assertThat(result.component.doubleValue).isEqualTo(wrapper.component.doubleValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testLongValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testLongValue() {
         assertThat(result.component.longValue).isEqualTo(wrapper.component.longValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testIntegerValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testIntegerValue() {
         assertThat(result.component.intValue).isEqualTo(wrapper.component.intValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testNestedUuidValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testNestedUuidValue() {
         assertThat(result.component.nestedRecordValue.uuidValue).isEqualTo(wrapper.component.nestedRecordValue.uuidValue);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testUuidValue(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-            throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-        result = roundTrip(wrapper);
-
+    @Test
+    public void testUuidValue() {
         assertThat(result.component.uuidValue).isEqualTo(wrapper.component.uuidValue);
     }
 }

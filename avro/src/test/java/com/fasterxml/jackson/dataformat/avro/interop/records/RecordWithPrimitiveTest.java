@@ -1,16 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 
-import org.apache.avro.Schema;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
-import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
-import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,15 +52,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         }
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testByteField(
-            Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-            BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testByteField() throws IOException {
         TestRecord record = new TestRecord();
         record.byteField = Byte.MAX_VALUE;
         //
@@ -74,16 +62,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         assertThat(result.byteField).isEqualTo(record.byteField);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testCharacterField(
-           Function<Type, Schema> schemaFunctor,
-           BiFunction<Schema, Object, byte[]> serializeFunctor,
-           BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testCharacterField() throws IOException {
         TestRecord record = new TestRecord();
         record.characterField = Character.MAX_VALUE;
         //
@@ -92,15 +72,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         assertThat(result.characterField).isEqualTo(record.characterField);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testDoubleField(
-        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testDoubleField() throws IOException {
         TestRecord record = new TestRecord();
         record.doubleField = Double.MAX_VALUE;
         //
@@ -109,15 +82,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         assertThat(result.doubleField).isEqualTo(record.doubleField);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testFloatField(
-        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testFloatField() throws IOException {
         TestRecord record = new TestRecord();
         record.floatField = Float.MAX_VALUE;
         //
@@ -126,15 +92,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         assertThat(result.floatField).isEqualTo(record.floatField);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testInteger(
-        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testInteger() throws IOException {
         TestRecord record = new TestRecord();
         record.integerField = Integer.MAX_VALUE;
         //
@@ -143,15 +102,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         assertThat(result.integerField).isEqualTo(record.integerField);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testLongField(
-        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testLongField() throws IOException {
         TestRecord record = new TestRecord();
         record.longField = Long.MAX_VALUE;
         //
@@ -160,15 +112,8 @@ public class RecordWithPrimitiveTest extends InteropTestBase
         assertThat(result.longField).isEqualTo(record.longField);
     }
 
-    @MethodSource("getParameters")
-    @ParameterizedTest(name = "{3}")
-    public void testShortField(
-        Function<Type, Schema> schemaFunctor, BiFunction<Schema, Object, byte[]> serializeFunctor,
-        BiFunction<Schema, byte[], Object> deserializeFunctor, String combinationName)
-        throws IOException
-    {
-        useParameters(schemaFunctor, serializeFunctor, deserializeFunctor);
-
+    @Test
+    public void testShortField() throws IOException {
         TestRecord record = new TestRecord();
         record.shortField = Short.MAX_VALUE;
         //
