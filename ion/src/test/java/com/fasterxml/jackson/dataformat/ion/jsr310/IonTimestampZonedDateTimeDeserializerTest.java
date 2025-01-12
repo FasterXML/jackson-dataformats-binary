@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
 import static java.time.ZoneOffset.UTC;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class IonTimestampZonedDateTimeDeserializerTest {
 
