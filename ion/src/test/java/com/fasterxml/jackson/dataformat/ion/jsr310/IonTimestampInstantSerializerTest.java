@@ -29,8 +29,8 @@ public class IonTimestampInstantSerializerTest {
 
         Instant date = Instant.ofEpochSecond(0L);
         String value = mapper.writeValueAsString(date);
-        assertNotNull("The value should not be null.", value);
-        assertEquals("The value is not correct.", "0.", value);
+        assertNotNull(value, "The value should not be null.");
+        assertEquals("0.", value, "The value is not correct.");
     }
 
     @Test
@@ -42,7 +42,7 @@ public class IonTimestampInstantSerializerTest {
 
         Instant date = Instant.ofEpochSecond(0L);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "0", value);
+        assertEquals("0", value, "The value is not correct.");
     }
 
     @Test
@@ -54,7 +54,7 @@ public class IonTimestampInstantSerializerTest {
 
         Instant date = Instant.ofEpochSecond(123456789L, 183917322);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "123456789.183917322", value);
+        assertEquals("123456789.183917322", value, "The value is not correct.");
     }
 
     @Test
@@ -66,7 +66,7 @@ public class IonTimestampInstantSerializerTest {
 
         Instant date = Instant.ofEpochSecond(123456789L, 183917322);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "123456789183", value);
+        assertEquals("123456789183", value, "The value is not correct.");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class IonTimestampInstantSerializerTest {
         Instant date = Instant.now();
         String value = mapper.writeValueAsString(date);
         //TODO
-        assertEquals("The value is not correct.", TimestampUtils.getFractionalSeconds(date).toString(), value);
+        assertEquals(TimestampUtils.getFractionalSeconds(date).toString(), value, "The value is not correct.");
     }
 
     @Test
@@ -91,7 +91,7 @@ public class IonTimestampInstantSerializerTest {
 
         Instant date = Instant.now();
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", Long.toString(date.toEpochMilli()), value);
+        assertEquals(Long.toString(date.toEpochMilli()), value, "The value is not correct.");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class IonTimestampInstantSerializerTest {
         IonDecimal value = (IonDecimal) mapper.writeValueAsIonValue(date);
         assertEquals(new BigDecimal("123456789.183917322"), value.bigDecimalValue(), "The value is not correct.");
         assertEquals(1, value.getTypeAnnotations().length, "The does does not contain the expected number of annotations.");
-        assertEquals("The does does not contain the expected annotation.", Instant.class.getName(), value.getTypeAnnotations()[0]);
+        assertEquals(Instant.class.getName(), value.getTypeAnnotations()[0], "The does does not contain the expected annotation.");
     }
 
     @Test
@@ -154,7 +154,7 @@ public class IonTimestampInstantSerializerTest {
         IonInt value = (IonInt) mapper.writeValueAsIonValue(date);
         assertEquals(123456789183L, value.longValue(), "The value is not correct.");
         assertEquals(1, value.getTypeAnnotations().length, "The does does not contain the expected number of annotations.");
-        assertEquals("The does does not contain the expected annotation.", Instant.class.getName(), value.getTypeAnnotations()[0]);
+        assertEquals(Instant.class.getName(), value.getTypeAnnotations()[0], "The does does not contain the expected annotation.");
     }
 
     @Test
@@ -168,6 +168,6 @@ public class IonTimestampInstantSerializerTest {
         IonTimestamp value = (IonTimestamp) mapper.writeValueAsIonValue(date);
         assertEquals(TimestampUtils.toTimestamp(date, ZoneOffset.UTC), value.timestampValue(), "The value is not correct.");
         assertEquals(1, value.getTypeAnnotations().length, "The does does not contain the expected number of annotations.");
-        assertEquals("The does does not contain the expected annotation.", Instant.class.getName(), value.getTypeAnnotations()[0]);
+        assertEquals(Instant.class.getName(), value.getTypeAnnotations()[0], "The does does not contain the expected annotation.");
     }
 }

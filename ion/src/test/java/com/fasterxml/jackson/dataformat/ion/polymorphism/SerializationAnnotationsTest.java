@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class SerializationAnnotationsTest {
 
     private static final String SUBCLASS_TYPE_NAME =
@@ -107,10 +109,10 @@ public class SerializationAnnotationsTest {
     }
 
     private static void assertCorrectlyTypedAndFormed(final Subclass expectedSubclass, final BaseClass actualBaseclass) {
-        assertTrue(actualBaseclass instanceof Subclass);
-        assertEquals(expectedSubclass, (Subclass) actualBaseclass);
+        assertInstanceOf(Subclass.class, actualBaseclass);
+        _assertEquals(expectedSubclass, (Subclass) actualBaseclass);
     }
-    private static void assertEquals(Subclass expected, Subclass actual) {
+    private static void _assertEquals(Subclass expected, Subclass actual) {
         assertEquals(expected.someString, actual.someString);
         assertEquals(expected.anInt, actual.anInt);
     }
