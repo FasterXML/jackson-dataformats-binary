@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.cbor.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+// @since 2.12
 public class SimpleValuesTest extends CBORTestBase
 {
     private final CBORFactory CBOR_F = new CBORFactory();

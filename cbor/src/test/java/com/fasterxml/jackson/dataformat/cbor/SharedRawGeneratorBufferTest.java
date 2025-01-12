@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+// for [dataformats-binary#43]
 public class SharedRawGeneratorBufferTest extends CBORTestBase
 {
     public static class RawBean {

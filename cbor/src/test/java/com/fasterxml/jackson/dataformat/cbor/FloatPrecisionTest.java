@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
+// for [jackson-core#730]
 public class FloatPrecisionTest extends CBORTestBase
 {
     // for [jackson-core#730]

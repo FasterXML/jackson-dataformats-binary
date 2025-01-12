@@ -11,6 +11,7 @@ import com.fasterxml.jackson.dataformat.cbor.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+// for [dataformat-binary#93]
 public class UndefinedValueTest extends CBORTestBase
 {
     private final static byte BYTE_UNDEFINED = (byte) 0xF7;

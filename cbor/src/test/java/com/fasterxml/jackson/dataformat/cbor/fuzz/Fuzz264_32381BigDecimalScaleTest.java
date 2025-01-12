@@ -13,6 +13,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// [dataformats-binary#264]
 public class Fuzz264_32381BigDecimalScaleTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();

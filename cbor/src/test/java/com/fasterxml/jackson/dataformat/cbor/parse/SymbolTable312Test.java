@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+// For [dataformats-binary#312]: null handling
 public class SymbolTable312Test extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();

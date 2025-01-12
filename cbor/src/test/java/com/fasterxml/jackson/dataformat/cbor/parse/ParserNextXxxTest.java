@@ -13,6 +13,7 @@ import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// note: copied from test of same name from jackson-dataformat-smile
 public class ParserNextXxxTest extends CBORTestBase
 {
     @Test

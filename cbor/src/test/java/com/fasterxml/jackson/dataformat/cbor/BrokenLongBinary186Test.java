@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+// Mostly for [dataformats-binary#186]: corrupt encoding indicating humongous payload
 public class BrokenLongBinary186Test extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
