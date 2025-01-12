@@ -2,20 +2,19 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.async.NonBlockingByteArrayParser;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Miscellaneous tests for {@link SmileFactory}, and for some aspects
- * of generators and parsers it creates.
- */
 public class SmileFactoryPropertiesTest extends BaseTestForSmile
 {
     private final static String SIMPLE_DOC_AS_JSON = "{\"simple\":[1,true,{}]}";
 
     private final static SmileFactory SMILE_F = new SmileFactory();
+    @Test
     public void testFactoryDefaults() {
         SmileFactory f = new SmileFactory();
 
@@ -30,6 +29,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
                 f.isEnabled(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES));
     }
 
+    @Test
     public void testFactorySerializable() throws Exception
     {
         SmileFactory f = new SmileFactory();
@@ -44,6 +44,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertArrayEquals(doc, docOut);
     }
 
+    @Test
     public void testFactoryCopy() throws Exception
     {
         SmileFactory f2 = SMILE_F.copy();
@@ -53,6 +54,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertNotNull(doc);
     }
 
+    @Test
     public void testVersions() throws Exception
     {
         SmileFactory f = SMILE_F;
@@ -69,6 +71,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testCapabilities() throws Exception
     {
         assertTrue(SMILE_F.canHandleBinaryNatively());
@@ -77,6 +80,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertEquals(SmileGenerator.Feature.class, SMILE_F.getFormatWriteFeatureType());
     }
 
+    @Test
     public void testInabilityToReadChars() throws Exception
     {
         final String EXP = "for character-based";
@@ -100,6 +104,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testInabilityToWriteChars() throws Exception
     {
         try {
@@ -112,6 +117,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     }
 
     // One lesser known feature is the ability to fall back to using JSON...
+    @Test
     public void testFallbackReadFromJson() throws Exception
     {
         SmileFactory f = new SmileFactory();
@@ -122,6 +128,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     }
 
     // One lesser known feature is the ability to fall back to using JSON...
+    @Test
     public void testFallbackWriteAsJson() throws Exception
     {
         SmileFactory f = new SmileFactory();
@@ -135,6 +142,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
         assertEquals("[]", w.toString());
     }
 
+    @Test
     public void testCanonicalization() throws Exception
     {
         try (NonBlockingByteArrayParser parser = new SmileFactory()

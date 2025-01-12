@@ -1,17 +1,20 @@
 package com.fasterxml.jackson.dataformat.smile.gen;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-/* Test based on kimchy's issue (see https://gist.github.com/853232);
- * exhibits an issue with buffer recycling.
- */
 public class TestGeneratorBufferRecycle extends BaseTestForSmile
 {
+    @Test
     public void testMaps() throws Exception
     {
         SmileFactory factory = new SmileFactory();

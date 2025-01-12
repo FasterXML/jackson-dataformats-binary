@@ -1,11 +1,16 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Bigger test to try to do smoke-testing of overall functionality,
@@ -82,6 +87,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 
     private final ObjectMapper JSON_MAPPER = new JsonMapper();
 
+    @Test
     public void testReading() throws Exception
     {
         Citm citm0 = JSON_MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -112,6 +118,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 		assertEquals(1, citm.venueNames.size());
 	}
 
+	@Test
 	public void testRoundTrip() throws Exception
 	{
 		Citm citm0 = JSON_MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -143,7 +150,8 @@ public class BiggerDataParseTest extends BaseTestForSmile
 		assertEquals(citm.venueNames.size(), citm2.venueNames.size());
 	}
 
-	  public void testIssue17BoundaryWithFloat() throws Exception
+	@Test
+	public void testIssue17BoundaryWithFloat() throws Exception
 	  {
 	      _testWithFloats(false);
            _testWithFloats(true);
@@ -168,7 +176,7 @@ public class BiggerDataParseTest extends BaseTestForSmile
 
            for (int i = 0; i < data.length; ++i) {
                if (data[i] != decoded[i]) {
-                   assertEquals("Different value at #"+i, data[i], decoded[i]);
+                   assertEquals(data[i], decoded[i], "Different value at #"+i);
                }
            }
 	  }

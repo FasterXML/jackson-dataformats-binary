@@ -1,14 +1,14 @@
 package com.fasterxml.jackson.dataformat.smile.testutil;
 
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.OutputDecorator;
 
 @SuppressWarnings("serial")
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class PrefixOutputDecorator extends OutputDecorator
 {
     protected final byte[] _prefix;

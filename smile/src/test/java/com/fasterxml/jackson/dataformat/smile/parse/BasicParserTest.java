@@ -2,18 +2,19 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileConstants;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BasicParserTest extends BaseTestForSmile
 {
     // Unit tests for verifying that if header/signature is required,
     // lacking it is fatal
+    @Test
     public void testMandatoryHeader() throws IOException
     {
         // first test failing case
@@ -37,6 +38,7 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testSimple() throws IOException
     {
         byte[] data = _smileDoc("[ true, null, false ]", true);
@@ -69,6 +71,7 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testIntInArray() throws IOException
     {
         byte[] data = _smileDoc("[ 25.0 ]");
@@ -83,6 +86,7 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testArrayWithString() throws IOException
     {
         byte[] data = _smileDoc("[ \"abc\" ]");
@@ -102,6 +106,7 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testEmptyStrings() throws IOException
     {
         // first, empty key
@@ -154,6 +159,7 @@ public class BasicParserTest extends BaseTestForSmile
 
     // Test for ASCII String values longer than 64 bytes; separate
     // since handling differs
+    @Test
     public void testLongAsciiString() throws IOException
     {
         final String DIGITS = "1234567890";
@@ -171,6 +177,7 @@ public class BasicParserTest extends BaseTestForSmile
 
     //Test for non-ASCII String values longer than 64 bytes; separate
     // since handling differs
+    @Test
     public void testLongUnicodeString() throws IOException
     {
         final String DIGITS = "1234567890";
@@ -195,6 +202,7 @@ public class BasicParserTest extends BaseTestForSmile
     // Simple test for encoding where "Unicode" string value is
     // actually ascii (which is fine, encoders need not ensure it is not,
     // it's just not guaranteeing content IS ascii)
+    @Test
     public void testShortAsciiAsUnicodeString() throws IOException
     {
         byte[] data = new byte[] {
@@ -207,6 +215,7 @@ public class BasicParserTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testTrivialObject() throws IOException
     {
         byte[] data = _smileDoc("{\"abc\":13}");
@@ -225,6 +234,7 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testSimpleObject() throws IOException
     {
         byte[] data = _smileDoc("{\"a\":8, \"b\" : [ true ], \"c\" : { }, \"d\":{\"e\":null}}");
@@ -269,6 +279,7 @@ public class BasicParserTest extends BaseTestForSmile
     	p.close();
     }
 
+    @Test
     public void testNestedObject() throws IOException
     {
         byte[] data = _smileDoc("[{\"a\":{\"b\":[1]}}]");
@@ -292,12 +303,14 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testJsonSampleDoc() throws IOException
     {
         byte[] data = _smileDoc(SAMPLE_DOC_JSON_SPEC);
         verifyJsonSpecSampleDoc(_smileParser(data), true);
     }
 
+    @Test
     public void testUnicodeStringValues() throws IOException
     {
         String uc = "\u00f6stl. v. Greenwich \u3333?";
@@ -345,6 +358,7 @@ public class BasicParserTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testUnicodePropertyNames() throws IOException
     {
         String uc = "\u00f6stl. v. Greenwich \u3333";
@@ -372,6 +386,7 @@ public class BasicParserTest extends BaseTestForSmile
 
     // Simple test to verify that byte 0 is not used (an implementation
     // might mistakenly consider it a string value reference)
+    @Test
     public void testInvalidByte() throws IOException
     {
         byte[] data = new byte[] { SmileConstants.TOKEN_LITERAL_START_ARRAY,
@@ -391,6 +406,7 @@ public class BasicParserTest extends BaseTestForSmile
     }
 
     // [JACKSON-629]
+    @Test
     public void testNameBoundary() throws IOException
     {
         SmileFactory f = smileFactory(true, true, false);
@@ -440,6 +456,7 @@ public class BasicParserTest extends BaseTestForSmile
     }
 
     // [JACKSON-640]: Problem with getTextCharacters/Offset/Length
+    @Test
     public void testCharacters() throws IOException
     {
         // ensure we are using both back-ref types
@@ -488,6 +505,7 @@ public class BasicParserTest extends BaseTestForSmile
     }
 
 
+    @Test
     public void testBufferRelease() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

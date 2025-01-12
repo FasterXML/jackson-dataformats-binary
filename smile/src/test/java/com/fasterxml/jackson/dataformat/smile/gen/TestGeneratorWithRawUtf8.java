@@ -1,17 +1,16 @@
 package com.fasterxml.jackson.dataformat.smile.gen;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Test to verify handling of "raw String value" write methods that by-pass
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
  */
 public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 {
+    @Test
     public void testUtf8RawStrings() throws Exception
     {
         // Let's create set of Strings to output; no ctrl chars as we do raw
@@ -63,6 +63,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
      * Unit test for "JsonGenerator.writeUTF8String()", which needs
      * to handle escaping properly
      */
+    @Test
     public void testUtf8StringsWithEscaping() throws Exception
     {
         // Let's create set of Strings to output; do include control chars too:
@@ -97,6 +98,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
      *
      * @author David Yu
      */
+    @Test
     public void testIssue492() throws Exception
     {
         doTestIssue492(false);

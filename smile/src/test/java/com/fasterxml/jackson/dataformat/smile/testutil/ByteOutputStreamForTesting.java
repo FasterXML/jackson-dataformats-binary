@@ -3,10 +3,6 @@ package com.fasterxml.jackson.dataformat.smile.testutil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-/**
- * Helper class for verifying that {@link java.io.OutputStream} is (or is not)
- * closed and/or flushed.
- */
 public class ByteOutputStreamForTesting extends ByteArrayOutputStream
 {
     public int closeCount = 0;

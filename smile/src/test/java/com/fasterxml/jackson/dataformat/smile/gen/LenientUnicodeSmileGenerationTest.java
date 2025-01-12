@@ -2,13 +2,16 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.dataformat.smile.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
 {
@@ -20,6 +23,7 @@ public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
     /**
      * Test that encoding a String containing invalid surrogates fail with an exception
      */
+    @Test
     public void testFailForInvalidSurrogate() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -84,6 +88,7 @@ public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
     /**
      * Test that when the lenient unicode feature is enabled, the replacement character is used to fix invalid sequences
      */
+    @Test
     public void testRecoverInvalidSurrogate1() throws Exception
     {
         // Unmatched first surrogate character
@@ -96,6 +101,7 @@ public class LenientUnicodeSmileGenerationTest extends BaseTestForSmile
         _writeAndVerifyLenientString("x\ude01x", "x\ufffdx");
     }
 
+    @Test
     public void testRecoverInvalidSurrogate2() throws Exception
     {
         _writeAndVerifyLenientString("X\ud83dY", "X\ufffdY");

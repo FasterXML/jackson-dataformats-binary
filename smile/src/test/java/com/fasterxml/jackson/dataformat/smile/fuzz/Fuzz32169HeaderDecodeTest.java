@@ -1,15 +1,19 @@
 package com.fasterxml.jackson.dataformat.smile.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-//For [dataformats-binary#258]
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class Fuzz32169HeaderDecodeTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
     // Payload:
+    @Test
     public void testInvalidHeader() throws Exception
     {
         final byte[] input = new byte[] {

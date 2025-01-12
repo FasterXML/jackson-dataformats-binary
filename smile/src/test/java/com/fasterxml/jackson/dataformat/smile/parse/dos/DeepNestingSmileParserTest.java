@@ -3,17 +3,18 @@ package com.fasterxml.jackson.dataformat.smile.parse.dos;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
-/**
- * Unit tests for deeply nested JSON
- */
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class DeepNestingSmileParserTest extends BaseTestForSmile
 {
+    @Test
     public void testDeeplyNestedObjects() throws Exception
     {
         final int depth = 1500;
@@ -32,6 +33,7 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testDeeplyNestedObjectsWithUnconstrainedMapper() throws Exception
     {
         final int depth = 1500;
@@ -47,6 +49,7 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testDeeplyNestedArrays() throws Exception
     {
         final int depth = 750;
@@ -65,6 +68,7 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testDeeplyNestedArraysWithUnconstrainedMapper() throws Exception
     {
         final int depth = 750;

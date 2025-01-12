@@ -2,33 +2,42 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.nio.charset.StandardCharsets;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class SymbolTable312Test extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testNullHandling1Quad() throws Exception
     {
         _testNullHandling(1);
         _testNullHandling(2);
     }
 
+    @Test
     public void testNullHandling2Quads() throws Exception
     {
         _testNullHandling(5);
         _testNullHandling(6);
     }
 
+    @Test
     public void testNullHandling3Quads() throws Exception
     {
         _testNullHandling(9);
         _testNullHandling(10);
     }
 
+    @Test
     public void testNullHandlingNQuads() throws Exception
     {
         _testNullHandling(13);

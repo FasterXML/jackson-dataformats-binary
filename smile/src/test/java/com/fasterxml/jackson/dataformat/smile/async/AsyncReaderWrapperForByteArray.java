@@ -6,9 +6,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 
-/**
- * Helper class used with async parser
- */
 public class AsyncReaderWrapperForByteArray extends AsyncReaderWrapper
 {
     private final byte[] _doc;

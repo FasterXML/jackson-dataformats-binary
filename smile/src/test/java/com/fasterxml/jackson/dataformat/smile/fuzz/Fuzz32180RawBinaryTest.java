@@ -3,16 +3,17 @@ package com.fasterxml.jackson.dataformat.smile.fuzz;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.io.JsonEOFException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
-// For [dataformats-binary#260]
 public class Fuzz32180RawBinaryTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testInvalidRawBinary() throws Exception
     {
         final byte[] input0 = new byte[] {

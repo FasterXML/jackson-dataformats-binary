@@ -2,16 +2,20 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UnicodeHandlingTest extends BaseTestForSmile
 {
     private final SmileFactory F = smileFactory(false, true, false);
 
+    @Test
     public void testShortUnicodeWithSurrogates() throws IOException
     {
         _testLongUnicodeWithSurrogates(28, false);
@@ -20,6 +24,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         _testLongUnicodeWithSurrogates(230, false);
     }
 
+    @Test
     public void testLongUnicodeWithSurrogates() throws IOException
     {
         _testLongUnicodeWithSurrogates(700, false);

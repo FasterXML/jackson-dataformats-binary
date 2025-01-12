@@ -3,7 +3,9 @@ package perf;
 import java.util.ArrayList;
 import java.util.List;
 
-public class  MediaItem
+import Image;
+
+MediaItem
 {
      public Media media;
      public List<Image> images;

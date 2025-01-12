@@ -1,16 +1,22 @@
 package com.fasterxml.jackson.dataformat.smile.fuzz;
 
-import com.fasterxml.jackson.core.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Fuzz_426_65126IOOBETest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
     // [dataformats-binary#426]
+    @Test
     public void testInvalidIOOBE() throws Exception
     {
         final byte[] input = readResource("/data/clusterfuzz-smile-65126.smile");

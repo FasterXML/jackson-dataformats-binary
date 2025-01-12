@@ -1,18 +1,18 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.*;
 
-/**
- * Unit tests for verifying that symbol handling works as planned, including
- * efficient reuse of names encountered during parsing.
- * Copied and slightly modified version of `ParserSymbolHandlingTest`
- */
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AsyncSharedStringsTest
 	extends AsyncTestBase
 {
@@ -71,6 +71,7 @@ public class AsyncSharedStringsTest
     /**********************************************************
      */
 
+    @Test
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
@@ -112,6 +113,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testSharedStrings() throws IOException
     {
         final int count = 19000;
@@ -127,6 +129,7 @@ public class AsyncSharedStringsTest
         verifyStringValues(shared, count);
     }
 
+    @Test
     public void testSharedStringsInArrays() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -153,6 +156,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testSharedStringsInObject() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -181,6 +185,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testSharedStringsMixed() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -302,6 +307,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -338,6 +344,7 @@ public class AsyncSharedStringsTest
     /**
      * Reproducing [JACKSON-561] (and [JACKSON-562])
      */
+    @Test
     public void testIssue562() throws IOException
     {
         JsonFactory factory = new SmileFactory();
@@ -372,6 +379,7 @@ public class AsyncSharedStringsTest
     /**
      * Verification that [JACKSON-564] was fixed.
      */
+    @Test
     public void testIssue564() throws Exception
     {
         JsonFactory factory = new SmileFactory();
@@ -450,6 +458,7 @@ public class AsyncSharedStringsTest
         parser.close();
     }
 
+    @Test
     public void testCorruptName34() throws Exception
     {
         SmileFactory factory = new SmileFactory();

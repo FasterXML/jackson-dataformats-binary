@@ -1,22 +1,14 @@
 package com.fasterxml.jackson.dataformat.smile.gen;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.testutil.ByteOutputStreamForTesting;
 
-/**
- * Set of basic unit tests that verify aspect of closing a
- * {@link JsonGenerator} instance. This includes both closing
- * of physical resources (target), and logical content
- * (json content tree)
- *<p>
- * Specifically, features
- * <code>JsonGenerator.Feature#AUTO_CLOSE_TARGET</code>
- * and
- * <code>JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT</code>
- * are tested.
- */
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestGeneratorClosing extends BaseTestForSmile
 {
     /*
@@ -30,6 +22,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
      * automatic closing should occur, nor explicit one unless specific
      * forcing method is used.
      */
+    @Test
     public void testNoAutoCloseGenerator() throws Exception
     {
         JsonFactory f = newFactory();
@@ -52,6 +45,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testCloseGenerator() throws Exception
     {
         JsonFactory f = newFactory();
@@ -68,6 +62,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
         assertTrue(output.isClosed());
     }
 
+    @Test
     public void testNoAutoCloseOutputStream() throws Exception
     {
         JsonFactory f = newFactory();
@@ -83,6 +78,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
     }
 
     @SuppressWarnings("resource")
+    @Test
     public void testAutoFlushOrNot() throws Exception
     {
         JsonFactory f = newFactory();

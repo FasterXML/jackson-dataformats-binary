@@ -1,8 +1,13 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
-import com.fasterxml.jackson.databind.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FormatDetectionTest extends BaseTestForSmile
 {
@@ -24,6 +29,7 @@ public class FormatDetectionTest extends BaseTestForSmile
     /**********************************************************
      */
 
+    @Test
     public void testSimple() throws Exception
     {
         final ObjectMapper mapper = new ObjectMapper();

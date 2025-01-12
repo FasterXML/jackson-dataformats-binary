@@ -1,19 +1,20 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.format.DataFormatDetector;
-import com.fasterxml.jackson.core.format.DataFormatMatcher;
-import com.fasterxml.jackson.core.format.MatchStrength;
+import com.fasterxml.jackson.core.format.*;
+import com.fasterxml.jackson.dataformat.smile.*;
 
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SmileDetectionTest extends BaseTestForSmile
 {
 
+    @Test
     public void testSimpleObjectWithHeader() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -38,6 +39,7 @@ public class SmileDetectionTest extends BaseTestForSmile
         jp.close();
     }
 
+    @Test
     public void testSimpleObjectWithoutHeader() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -59,6 +61,7 @@ public class SmileDetectionTest extends BaseTestForSmile
         jp.close();
     }
 
+    @Test
     public void testSimpleArrayWithHeader() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -81,6 +84,7 @@ public class SmileDetectionTest extends BaseTestForSmile
         jp.close();
     }
 
+    @Test
     public void testSimpleArrayWithoutHeader() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -111,6 +115,7 @@ public class SmileDetectionTest extends BaseTestForSmile
      * Let's use 0xFD since it can not be included (except in raw binary;
      * use of which requires header to be present)
      */
+    @Test
     public void testSimpleInvalid() throws Exception
     {
         DataFormatDetector detector = new DataFormatDetector(new SmileFactory());
@@ -128,6 +133,7 @@ public class SmileDetectionTest extends BaseTestForSmile
     /**********************************************************
      */
 
+    @Test
     public void testSmileVsJson() throws IOException
     {
         SmileFactory f = new SmileFactory();
