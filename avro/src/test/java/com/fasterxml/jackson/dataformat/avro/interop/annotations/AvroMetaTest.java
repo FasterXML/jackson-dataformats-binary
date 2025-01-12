@@ -1,16 +1,17 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
-import org.apache.avro.Schema;
-import org.apache.avro.reflect.AvroMeta;
-import org.apache.avro.reflect.AvroSchema;
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
+import org.apache.avro.Schema;
+import org.apache.avro.reflect.AvroMeta;
+import org.apache.avro.reflect.AvroSchema;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class AvroMetaTest extends InteropTestBase
 {
@@ -64,17 +65,17 @@ public class AvroMetaTest extends InteropTestBase
         assertThat(schema.getProp("class-meta")).isEqualTo("class value");
     }
 
-//    @Test(expected = AvroRuntimeException.class)
     @Test
+//    @Test(expected = AvroRuntimeException.class)
     public void testCollidingMeta() throws Exception {
         try {
             schemaFunctor.apply(BadMetaTest.class);
-            fail("Should not pass");
+            Assert.fail("Should not pass");
         // 27-May-2021, tatu: was at some point "AvroRuntimeException", not so with 2.13:
         } catch (InvalidDefinitionException e) {
             String msg = e.getMessage();
             if (!msg.startsWith("Failed to generate")) {
-                fail("Excepted exception message to start with 'Failed to generate', got: ["+msg+"]");
+                Assert.fail("Excepted exception message to start with 'Failed to generate', got: ["+msg+"]");
             }
         }
     }

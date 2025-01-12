@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 

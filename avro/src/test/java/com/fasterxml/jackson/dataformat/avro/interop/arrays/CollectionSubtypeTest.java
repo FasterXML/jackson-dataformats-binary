@@ -2,15 +2,17 @@ package com.fasterxml.jackson.dataformat.avro.interop.arrays;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Assume;
+import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.apacheDeserializer;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Tests collection subtypes such as {@link ArrayList}, {@link LinkedList}, {@link Stack}, {@link Set}, {@link HashSet}, {@link TreeSet},
@@ -65,7 +67,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     @Test
     public void testEnumSet() throws IOException {
         // Bug in apache deserializer, can't handle EnumSet
-        assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
         EnumSet<DummyEnum> original = EnumSet.of(DummyEnum.EAST, DummyEnum.NORTH);
         //
         EnumSet<DummyEnum> result = roundTrip(type(EnumSet.class, DummyEnum.class), original);
@@ -109,7 +111,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     @Test
     public void testSet() throws IOException {
         // Bug in apache deserializer, can't handle Set
-        assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
         Set<Integer> original = new HashSet<>();
         original.add(1234);
         original.add(98768234);

@@ -1,14 +1,14 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import org.apache.avro.reflect.AvroName;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the {@link AvroName @AvroName} annotation

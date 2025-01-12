@@ -1,18 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
-import java.io.IOException;
-
-import org.apache.avro.Schema;
-import org.apache.avro.reflect.AvroSchema;
-import org.apache.avro.reflect.Nullable;
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
+import org.apache.avro.Schema;
+import org.apache.avro.reflect.AvroSchema;
+import org.apache.avro.reflect.Nullable;
+import org.junit.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
 
 /**
  * Tests that {@code @AvroSchema} is handled correctly. Specifically:

@@ -1,9 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.interop.arrays;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
