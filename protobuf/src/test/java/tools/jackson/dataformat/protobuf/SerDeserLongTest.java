@@ -4,13 +4,11 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
-import org.junit.Test;
-
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 public class SerDeserLongTest {
     @Test
-    public void testWeirdLongSerDeser() throws IOException {
+    public void testWeirdLongSerDeser() throws Exception {
         ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(BigNumPair.protobuf_str);
 

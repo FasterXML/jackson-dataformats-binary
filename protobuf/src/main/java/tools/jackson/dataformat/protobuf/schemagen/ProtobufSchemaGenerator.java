@@ -6,6 +6,7 @@ import com.squareup.protoparser.TypeElement;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.jsonFormatVisitors.*;
+
 import tools.jackson.dataformat.protobuf.schema.NativeProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 

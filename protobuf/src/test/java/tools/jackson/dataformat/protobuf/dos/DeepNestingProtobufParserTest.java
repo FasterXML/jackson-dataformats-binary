@@ -5,10 +5,15 @@ import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.protobuf.*;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for deeply nested Documents
@@ -48,6 +53,7 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedObjectsHighLimits() throws Exception
     {
         byte[] doc = genDeepDoc(NESTING_DEEPER);
@@ -56,6 +62,7 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedObjectsLowLimits() throws Exception
     {
         byte[] doc = genDeepDoc(NESTING_DEEPER);
@@ -65,8 +72,8 @@ public class DeepNestingProtobufParserTest extends ProtobufTestBase
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("StreamConstraintsException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "StreamConstraintsException message is as expected?");
         }
     }
 

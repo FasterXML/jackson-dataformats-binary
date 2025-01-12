@@ -1,18 +1,19 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.protobuf.ProtobufMapper;
 import tools.jackson.dataformat.protobuf.ProtobufTestBase;
 import tools.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerator;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SchemaGenTest extends ProtobufTestBase
 {
@@ -73,6 +74,7 @@ public class SchemaGenTest extends ProtobufTestBase
 
 	private final ProtobufMapper MAPPER = new ProtobufMapper();
 
+	@Test
 	public void testWithNestedClass() throws Exception
 	{
 		ProtobufSchema schemaWrapper = MAPPER.generateSchemaFor(WithNestedClass.class);
@@ -82,6 +84,7 @@ public class SchemaGenTest extends ProtobufTestBase
 		// System.out.println(schemaWrapper.getSource().toString());
 	}
 
+	@Test
 	public void testWithIndexAnnotation() throws Exception
 	{
          ProtobufSchema schemaWrapper = MAPPER.generateSchemaFor(WithIndexAnnotation.class);
@@ -97,6 +100,7 @@ public class SchemaGenTest extends ProtobufTestBase
 		assertEquals("b", pMessage.field(4).name);
 	}
 
+	@Test
 	public void testSelfRefPojoGenProtobufSchema() throws Exception {
 	    ProtobufMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
@@ -126,6 +130,7 @@ public class SchemaGenTest extends ProtobufTestBase
 		assertEquals(empl.boss, newEmpl.boss);
 	}
 
+	@Test
 	public void testComplexPojoGenProtobufSchema() throws Exception {
 		ObjectMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
@@ -147,6 +152,7 @@ public class SchemaGenTest extends ProtobufTestBase
 		assertEquals(mediaItem, deserMediaItem);
 	}
 
+	@Test
 	public void testSimplePojoGenProtobufSchema() throws Exception {
 		ObjectMapper mapper = new ProtobufMapper();
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();

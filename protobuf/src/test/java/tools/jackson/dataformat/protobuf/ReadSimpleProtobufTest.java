@@ -3,18 +3,20 @@ package tools.jackson.dataformat.protobuf;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 
-import tools.jackson.core.JsonParser;
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.core.*;
 import tools.jackson.core.JsonParser.NumberType;
 import tools.jackson.core.JsonParser.NumberTypeFP;
-import tools.jackson.core.JsonToken;
-import tools.jackson.core.StreamReadConstraints;
-import tools.jackson.core.StreamReadFeature;
 import tools.jackson.core.exc.StreamConstraintsException;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadSimpleProtobufTest extends ProtobufTestBase
 {
@@ -63,6 +65,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testReadPointIntAsPOJO() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -81,6 +84,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
     }
 
+    @Test
     public void testReadPointIntStreaming() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -114,6 +118,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertNull(p.currentName());
     }
 
+    @Test
     public void testReadPointLong() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_L);
@@ -157,6 +162,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testReadName() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
@@ -176,6 +182,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertEquals(input.last, result.last);
     }
 
+    @Test
     public void testReadBox() throws Exception
     {
         final ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX);
@@ -243,6 +250,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testStringArraySimple() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -312,6 +320,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertNull(p.nextToken());
     }
 
+    @Test
     public void testStringArrayPacked() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS_PACKED);
@@ -332,6 +341,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testStringArrayWithName() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAMED_STRINGS);
@@ -395,6 +405,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
     public void testSearchMessage() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_SEARCH_REQUEST);
@@ -419,6 +430,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertEquals(input.corpus, result.corpus);
     }
 
+    @Test
     public void testSkipUnknown() throws Exception
     {
         // Important: write Point3, read regular Point
@@ -440,6 +452,7 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
     }
 
+    @Test
     public void testStringArraySimpleLowLimit() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -459,8 +472,8 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
             fail("Expected StreamConstraintsException");
         } catch (StreamConstraintsException jme) {
             String message = jme.getMessage();
-            assertTrue("unexpected message: " + message,
-                    message.startsWith("String value length (4) exceeds the maximum allowed"));
+            assertTrue(message.startsWith("String value length (4) exceeds the maximum allowed"),
+                    "unexpected message: " + message);
         }
     }
 }

@@ -1,8 +1,6 @@
 package tools.jackson.dataformat.protobuf;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -11,9 +9,9 @@ import tools.jackson.core.*;
 import tools.jackson.dataformat.protobuf.schema.ProtobufField;
 import tools.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public abstract class ProtobufTestBase extends TestCase
+public abstract class ProtobufTestBase
 {
     /*
     /**********************************************************

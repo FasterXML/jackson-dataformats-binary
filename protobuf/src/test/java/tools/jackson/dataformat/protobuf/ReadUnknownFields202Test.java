@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.core.StreamReadFeature;
@@ -9,7 +11,8 @@ import tools.jackson.databind.MapperFeature;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
-// [dataformats-binary#202]
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class ReadUnknownFields202Test extends ProtobufTestBase
 {
     // [dataformats-binary#202]
@@ -108,6 +111,7 @@ public class ReadUnknownFields202Test extends ProtobufTestBase
      */
 
     // [dataformats-binary#202]
+    @Test
     public void testV1toV0() throws Exception {
         final ProtobufMapper MAPPER = newMapperBuilder()
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)

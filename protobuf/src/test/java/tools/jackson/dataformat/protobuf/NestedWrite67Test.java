@@ -1,9 +1,13 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NestedWrite67Test extends ProtobufTestBase
 {
@@ -36,6 +40,7 @@ public class NestedWrite67Test extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
     public void testIssue67() throws Exception
     {
       ProtobufSchema schema = MAPPER.generateSchemaFor(Level1.class);

@@ -3,14 +3,15 @@ package tools.jackson.dataformat.protobuf.schemagen;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.squareup.protoparser.DataType;
+import com.squareup.protoparser.DataType.ScalarType;
+import com.squareup.protoparser.TypeElement;
+
 import tools.jackson.core.JsonParser.NumberType;
+
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.*;
-
-import com.squareup.protoparser.DataType;
-import com.squareup.protoparser.TypeElement;
-import com.squareup.protoparser.DataType.ScalarType;
 
 public class ProtoBufSchemaVisitor extends JsonFormatVisitorWrapper.Base
     implements TypeElementBuilder

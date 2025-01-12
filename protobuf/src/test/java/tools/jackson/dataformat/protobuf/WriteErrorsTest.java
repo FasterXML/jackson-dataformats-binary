@@ -2,6 +2,8 @@ package tools.jackson.dataformat.protobuf;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.StreamWriteFeature;
 import tools.jackson.core.exc.StreamWriteException;
@@ -10,6 +12,8 @@ import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for generation that trigger exceptions (or would
@@ -29,6 +33,7 @@ public class WriteErrorsTest extends ProtobufTestBase
 
     private final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
+    @Test
     public void testUnknownProperties() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");

@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import java.util.*;
+import java.util.Arrays;
 
 import tools.jackson.core.SerializableString;
 

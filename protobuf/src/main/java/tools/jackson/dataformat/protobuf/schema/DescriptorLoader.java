@@ -1,9 +1,6 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.net.URL;
 
 import tools.jackson.databind.ObjectMapper;

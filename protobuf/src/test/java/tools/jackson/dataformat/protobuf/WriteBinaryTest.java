@@ -1,5 +1,9 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 
@@ -7,7 +11,7 @@ import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.protobuf.schema.*;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WriteBinaryTest extends ProtobufTestBase
 {
@@ -40,6 +44,7 @@ public class WriteBinaryTest extends ProtobufTestBase
 
     private final ObjectMapper MAPPER = new ProtobufMapper();
 
+    @Test
     public void testSimpleBinary() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BINARY);

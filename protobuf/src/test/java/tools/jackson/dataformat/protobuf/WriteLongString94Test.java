@@ -1,8 +1,12 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WriteLongString94Test extends ProtobufTestBase
 {
@@ -21,6 +25,7 @@ public class WriteLongString94Test extends ProtobufTestBase
     final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#94]
+    @Test
     public void testLongerStrings() throws Exception {
         TwoStrings p = new TwoStrings();
         // near 8000, so index out of bounds at 8000

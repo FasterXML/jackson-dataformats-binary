@@ -2,12 +2,16 @@ package tools.jackson.dataformat.protobuf;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FactoryPropertiesTest extends ProtobufTestBase
 {
@@ -21,6 +25,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         POINT_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
     }
 
+    @Test
     public void testProtoFactorySerializable() throws Exception
     {
         byte[] doc = _writeDoc(MAPPER);
@@ -33,6 +38,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         assertNotNull(f2);
     }
 
+    @Test
     public void testVersions() throws Exception
     {
         final Version expV = MAPPER.tokenStreamFactory().version();
@@ -55,6 +61,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
     public void testCapabilities() throws Exception
     {
         assertTrue(PROTO_F.canHandleBinaryNatively());
@@ -62,6 +69,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         assertNull(PROTO_F.getFormatWriteFeatureType());
     }
 
+    @Test
     public void testInabilityToReadChars() throws Exception
     {
         final String EXP = "Cannot create parser for character-based";
@@ -85,6 +93,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testInabilityToWriteChars() throws Exception
     {
         try {
@@ -95,6 +104,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         }
     }
 
+    @Test
     public void testStreamReadCapabilities() throws Exception
     {
         byte[] doc = _writeDoc(MAPPER);

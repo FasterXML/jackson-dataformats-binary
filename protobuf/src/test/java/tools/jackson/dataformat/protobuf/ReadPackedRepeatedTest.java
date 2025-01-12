@@ -1,15 +1,20 @@
 package tools.jackson.dataformat.protobuf;
 
+import java.io.StringReader;
+
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.JsonNode;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
-import java.io.StringReader;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReadPackedRepeatedTest extends ProtobufTestBase
 {
     final ProtobufMapper MAPPER = new ProtobufMapper();
 
+    @Test
     public void testPacked() throws Exception
     {
         final String SCHEMA_STR =

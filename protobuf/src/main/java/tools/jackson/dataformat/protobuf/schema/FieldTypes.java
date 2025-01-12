@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import java.util.*;
+import java.util.EnumMap;
 
 import com.squareup.protoparser.DataType;
 

@@ -1,14 +1,19 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class WriteComplexPojoTest extends ProtobufTestBase
 {
-    final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+    private final ObjectMapper MAPPER = new ProtobufMapper();
 
     /*
     /**********************************************************
@@ -16,6 +21,7 @@ public class WriteComplexPojoTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
     public void testMediaItemSimple() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_MEDIA_ITEM);

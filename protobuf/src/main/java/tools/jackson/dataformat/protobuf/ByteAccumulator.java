@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.protobuf;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Helper object used for buffering content for cases where we need (byte-)length prefixes

@@ -3,11 +3,16 @@ package tools.jackson.dataformat.protobuf;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class WriteBigArrayTest extends ProtobufTestBase
 {
@@ -62,6 +67,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
     public void testStringArraySparseWithLongValues() throws Exception
     {
         final ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
@@ -99,6 +105,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
     }
 
     // and then do something bit more sizable
+    @Test
     public void testStringArraySparseLong() throws Exception
     {
         final int COUNT = 35000;
@@ -126,6 +133,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         assertEquals(bytes.length, ptr);
     }
 
+    @Test
     public void testStringArrayPackedLong() throws Exception
     {
         final int COUNT = 39600;
@@ -159,6 +167,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         assertEquals(bytes.length, ptr);
     }
 
+    @Test
     public void testWrappedStringArray() throws Exception
     {
         final int COUNT = 39600;

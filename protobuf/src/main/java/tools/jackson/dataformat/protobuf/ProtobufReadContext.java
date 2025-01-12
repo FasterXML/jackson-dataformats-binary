@@ -3,6 +3,7 @@ package tools.jackson.dataformat.protobuf;
 import tools.jackson.core.*;
 import tools.jackson.core.io.CharTypes;
 import tools.jackson.core.io.ContentReference;
+
 import tools.jackson.dataformat.protobuf.schema.ProtobufField;
 import tools.jackson.dataformat.protobuf.schema.ProtobufMessage;
 

@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.io.SerializedString;
@@ -9,6 +11,8 @@ import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NextXxxParsingTest extends ProtobufTestBase
 {
@@ -27,6 +31,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
 
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
 
+    @Test
     public void testNextFieldAndText() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -66,6 +71,7 @@ public class NextXxxParsingTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
     public void testNextInt() throws Exception
     {
         ProtobufSchema point3Schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT3);

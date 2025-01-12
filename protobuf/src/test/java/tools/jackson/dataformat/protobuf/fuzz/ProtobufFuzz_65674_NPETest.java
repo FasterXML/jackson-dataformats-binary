@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.protobuf.fuzz;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -8,8 +8,8 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.dataformat.protobuf.*;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ProtobufFuzz_65674_NPETest
 {

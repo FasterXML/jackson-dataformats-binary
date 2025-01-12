@@ -1,11 +1,12 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import java.util.*;
+import java.util.Collection;
+
+import com.squareup.protoparser.FieldElement;
+import com.squareup.protoparser.OptionElement;
 
 import tools.jackson.core.SerializableString;
 import tools.jackson.core.util.InternCache;
-import com.squareup.protoparser.FieldElement;
-import com.squareup.protoparser.OptionElement;
 
 public class ProtobufField
 // sorted in increasing order

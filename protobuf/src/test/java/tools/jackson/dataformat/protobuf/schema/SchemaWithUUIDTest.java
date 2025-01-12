@@ -4,12 +4,14 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.dataformat.protobuf.ProtobufMapper;
 import tools.jackson.dataformat.protobuf.ProtobufTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SchemaWithUUIDTest extends ProtobufTestBase
 {
@@ -43,6 +45,7 @@ public class SchemaWithUUIDTest extends ProtobufTestBase
     private final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#68]
+    @Test
     public void testWithUUID() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(UUIDBean.class);
@@ -61,12 +64,14 @@ public class SchemaWithUUIDTest extends ProtobufTestBase
     }
 
     // [dataformats-binary#68]
+    @Test
     public void testWithShort() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(ShortBean.class);
         assertNotNull(schema);
     }
 
+    @Test
     public void testWithBinary() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(BinaryBean.class);
@@ -82,6 +87,6 @@ public class SchemaWithUUIDTest extends ProtobufTestBase
                 .with(schema)
                 .readValue(proto);
         assertNotNull(result.data);
-        Assert.assertArrayEquals(input.data, result.data);
+        assertArrayEquals(input.data, result.data);
     }
 }

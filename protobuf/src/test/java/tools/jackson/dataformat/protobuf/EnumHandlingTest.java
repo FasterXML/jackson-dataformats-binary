@@ -1,11 +1,16 @@
 package tools.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.type.TypeReference;
 
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class EnumHandlingTest extends ProtobufTestBase
 {
@@ -40,6 +45,7 @@ public class EnumHandlingTest extends ProtobufTestBase
 
     final ProtobufMapper MAPPER = new ProtobufMapper();
 
+    @Test
     public void testBigEnum() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(BigEnumWrapper.class);
@@ -57,6 +63,7 @@ public class EnumHandlingTest extends ProtobufTestBase
         assertEquals(input.value, result.value);
     }
 
+    @Test
     public void testTinyEnum() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(TinyEnumWrapper.class);

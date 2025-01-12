@@ -1,10 +1,6 @@
 package tools.jackson.dataformat.protobuf.schemagen;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import tools.jackson.databind.JavaType;
 

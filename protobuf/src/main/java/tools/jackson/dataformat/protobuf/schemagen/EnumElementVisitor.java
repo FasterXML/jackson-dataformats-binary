@@ -2,12 +2,12 @@ package tools.jackson.dataformat.protobuf.schemagen;
 
 import java.util.Set;
 
+import com.squareup.protoparser.*;
+
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor.Base;
 import com.squareup.protoparser.EnumConstantElement;
-import com.squareup.protoparser.EnumElement;
-import com.squareup.protoparser.TypeElement;
 
 public class EnumElementVisitor extends Base implements TypeElementBuilder {
 

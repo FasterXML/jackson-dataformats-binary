@@ -2,9 +2,13 @@ package tools.jackson.dataformat.protobuf;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.protobuf.schema.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WriteAsMapTest extends ProtobufTestBase
 {
@@ -31,6 +35,7 @@ public class WriteAsMapTest extends ProtobufTestBase
             ;
 
 
+    @Test
     public void testWriteAsMap() throws Exception
     {
         ObjectMapper mapper = new ProtobufMapper();

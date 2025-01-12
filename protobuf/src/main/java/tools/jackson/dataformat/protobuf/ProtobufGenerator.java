@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.protobuf;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -11,11 +12,7 @@ import tools.jackson.core.base.GeneratorBase;
 import tools.jackson.core.io.IOContext;
 
 import tools.jackson.core.util.JacksonFeatureSet;
-import tools.jackson.dataformat.protobuf.schema.FieldType;
-import tools.jackson.dataformat.protobuf.schema.ProtobufField;
-import tools.jackson.dataformat.protobuf.schema.ProtobufMessage;
-import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
-import tools.jackson.dataformat.protobuf.schema.WireType;
+import tools.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufGenerator extends GeneratorBase
 {

@@ -2,8 +2,9 @@ package tools.jackson.dataformat.protobuf.schema;
 
 import java.util.*;
 
-import tools.jackson.core.util.InternCache;
 import com.squareup.protoparser.*;
+
+import tools.jackson.core.util.InternCache;
 
 /**
  * Stateful class needed to properly resolve type definitions of
