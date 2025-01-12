@@ -13,6 +13,10 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Unit tests for generation that trigger exceptions (or would
+ * without suppression).
+ */
 public class WriteErrorsTest extends ProtobufTestBase
 {
     static class Point3D extends Point {

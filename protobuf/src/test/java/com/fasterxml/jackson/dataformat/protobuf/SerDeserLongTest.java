@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+/**
+ * Created by miz on 8/10/16.
+ */
 public class SerDeserLongTest {
     @Test
     public void testWeirdLongSerDeser() throws IOException {
