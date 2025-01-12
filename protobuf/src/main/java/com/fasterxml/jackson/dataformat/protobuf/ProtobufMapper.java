@@ -1,21 +1,14 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.dataformat.protobuf.schema.DescriptorLoader;
-import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 import com.fasterxml.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerator;
 
 public class ProtobufMapper extends ObjectMapper

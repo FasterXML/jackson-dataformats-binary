@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.core.io.CharTypes;
 import com.fasterxml.jackson.core.io.ContentReference;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;

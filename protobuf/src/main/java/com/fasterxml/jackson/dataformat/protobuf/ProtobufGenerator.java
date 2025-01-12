@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -10,11 +11,7 @@ import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.fasterxml.jackson.dataformat.protobuf.schema.FieldType;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
-import com.fasterxml.jackson.dataformat.protobuf.schema.WireType;
+import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufGenerator extends GeneratorBase
 {
