@@ -3,13 +3,7 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.squareup.protoparser.DataType;
-import com.squareup.protoparser.EnumConstantElement;
-import com.squareup.protoparser.EnumElement;
-import com.squareup.protoparser.FieldElement;
-import com.squareup.protoparser.MessageElement;
-import com.squareup.protoparser.OptionElement;
-import com.squareup.protoparser.ProtoFile;
+import com.squareup.protoparser.*;
 
 /**
  * @since 2.9

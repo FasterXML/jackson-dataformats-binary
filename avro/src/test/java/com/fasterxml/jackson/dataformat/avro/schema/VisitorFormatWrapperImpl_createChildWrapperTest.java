@@ -1,9 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
 
 public class VisitorFormatWrapperImpl_createChildWrapperTest {
 

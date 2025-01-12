@@ -1,20 +1,16 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310.ser;
 
+import java.io.IOException;
+import java.time.*;
+import java.time.temporal.Temporal;
+import java.util.function.Function;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
-import java.util.function.Function;
 
 /**
  * Serializer for variants of java.time classes (Instant, OffsetDateTime, ZonedDateTime) into long value.

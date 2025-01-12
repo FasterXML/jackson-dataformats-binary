@@ -3,10 +3,14 @@ package com.fasterxml.jackson.dataformat.protobuf;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 {
@@ -125,6 +129,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     private final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#108]
+    @Test
     public void testMultipleUnknown() throws Exception
     {
         MoreNestedField moreNestedField = new MoreNestedField();
@@ -147,6 +152,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     }
 
     // [dataformats-binary#126]
+    @Test
     public void testCheckEndAfterSkip() throws Exception
     {
         ProtobufMapper mapper = new ProtobufMapper();

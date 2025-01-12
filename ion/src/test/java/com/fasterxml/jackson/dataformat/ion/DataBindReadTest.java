@@ -14,20 +14,16 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import java.io.*;
+import java.io.IOException;
 
-import org.junit.Test;
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonType;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataBindReadTest {
     static class MyBean {

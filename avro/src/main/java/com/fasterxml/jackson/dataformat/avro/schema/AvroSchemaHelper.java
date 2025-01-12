@@ -7,10 +7,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
-import org.apache.avro.JsonProperties;
-import org.apache.avro.Schema;
+import org.apache.avro.*;
 import org.apache.avro.Schema.Parser;
-import org.apache.avro.SchemaParseException;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;

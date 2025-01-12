@@ -1,22 +1,20 @@
 package com.fasterxml.jackson.dataformat.ion.jsr310;
 
-import static java.time.ZoneOffset.UTC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.TimeZone;
 
-import org.junit.Test;
-
 import com.amazon.ion.Timestamp;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+
+import static java.time.ZoneOffset.UTC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class IonTimestampZonedDateTimeDeserializerTest {
 
@@ -47,28 +45,28 @@ public class IonTimestampZonedDateTimeDeserializerTest {
     public void testDeserializationAsFloat01() throws Exception {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(0L), UTC);
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue("0.000000");
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
     public void testDeserializationAsFloat01NonUTCDefault() throws Exception {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(0L), Z1);
         ZonedDateTime actual = READER_Z1_DEFAULT.readValue("0.000000");
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
     public void testDeserializationAsFloat02() throws Exception {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), UTC);
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue("123456789.183917322");
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
     public void testDeserializationAsFloat02NonUTCDefault() throws Exception {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), Z1);
         ZonedDateTime actual = READER_Z1_DEFAULT.readValue("123456789.183917322");
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -76,7 +74,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         Instant now = Instant.now();
         ZonedDateTime expected = ZonedDateTime.ofInstant(now, UTC);
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(TimestampUtils.getFractionalSeconds(now).toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -84,7 +82,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         Instant now = Instant.now();
         ZonedDateTime expected = ZonedDateTime.ofInstant(now, Z1);
         ZonedDateTime actual = READER_Z1_DEFAULT.readValue(TimestampUtils.getFractionalSeconds(now).toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     /*
@@ -100,7 +98,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -110,7 +108,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -120,7 +118,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -130,7 +128,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -142,7 +140,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.getEpochSecond()));
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -154,7 +152,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.getEpochSecond()));
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -164,7 +162,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -174,7 +172,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -184,7 +182,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789422");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -194,7 +192,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789422");
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -206,7 +204,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.toEpochMilli()));
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -218,7 +216,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.toEpochMilli()));
 
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     /*
@@ -232,7 +230,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(0L), UTC);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), expected.getOffset());
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -240,7 +238,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(0L), Z1);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), expected.getOffset());
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -248,7 +246,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), UTC);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), expected.getOffset());
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -256,7 +254,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), Z1);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), expected.getOffset());
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -264,7 +262,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.now(UTC);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), expected.getOffset());
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -272,7 +270,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.now(Z1);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), expected.getOffset());
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -280,7 +278,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.now(UTC);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), null);
         ZonedDateTime actual = READER_UTC_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -288,7 +286,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         ZonedDateTime expected = ZonedDateTime.now(Z1);
         Timestamp timestamp = TimestampUtils.toTimestamp(expected.toInstant(), null);
         ZonedDateTime actual = READER_Z1_DEFAULT.readValue(timestamp.toString());
-        assertEquals("The value is not correct.", expected, actual);
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     /*
@@ -307,8 +305,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\",123456789.183917322]", Temporal.class);
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -322,8 +320,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\",123456789.183917322]", Temporal.class);
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -336,8 +334,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\",123456789]", Temporal.class);
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -351,8 +349,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\",123456789]", Temporal.class);
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -365,8 +363,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\", 123456789422]", Temporal.class);
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -380,8 +378,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
                 .build();
 
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\", 123456789422]", Temporal.class);
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -397,8 +395,8 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\"," + timestamp.toString() + "]",
                 Temporal.class);
 
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 
     @Test
@@ -414,7 +412,7 @@ public class IonTimestampZonedDateTimeDeserializerTest {
         Temporal actual = m.readValue("[\"" + ZonedDateTime.class.getName() + "\"," + timestamp.toString() + "]",
                 Temporal.class);
 
-        assertTrue("The value should be an ZonedDateTime.", actual instanceof ZonedDateTime);
-        assertEquals("The value is not correct.", expected, actual);
+        assertInstanceOf(ZonedDateTime.class, actual, "The value should be an ZonedDateTime.");
+        assertEquals(expected, actual, "The value is not correct.");
     }
 }

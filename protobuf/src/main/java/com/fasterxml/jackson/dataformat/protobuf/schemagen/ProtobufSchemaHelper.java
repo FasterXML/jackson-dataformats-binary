@@ -3,7 +3,8 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JavaType;
 
 public class ProtobufSchemaHelper
 {

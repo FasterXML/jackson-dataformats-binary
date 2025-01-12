@@ -1,11 +1,13 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-import static org.junit.Assert.assertArrayEquals;
-
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SchemaWithIntArray483Test extends ProtobufTestBase
 {
@@ -24,6 +26,7 @@ public class SchemaWithIntArray483Test extends ProtobufTestBase
     private final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#483]: int arrays supported as nested (property) values
+    @Test
     public void testWithWrappedIntArray() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(IntArrayBean.class);
@@ -42,7 +45,7 @@ public class SchemaWithIntArray483Test extends ProtobufTestBase
     }
 
     // [dataformats-binary#483]: cannot support root-level arrays, unfortunately
-    @Ignore("Can't be supported with Protobuf")
+    @Disabled("Can't be supported with Protobuf")
     public void dontTestWithRootIntArray() throws Exception
     {
         ProtobufSchema schema = MAPPER.generateSchemaFor(int[].class);

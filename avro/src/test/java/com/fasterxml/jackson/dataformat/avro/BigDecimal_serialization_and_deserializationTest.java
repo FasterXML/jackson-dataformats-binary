@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.math.BigDecimal;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +26,7 @@ public class BigDecimal_serialization_and_deserializationTest extends AvroTestBa
     }
 
     // By default, BigDecimal is serialized to string
+    @Test
     public void testSerialization_toString() throws Exception {
         // GIVEN
         String schemaString = "{" +
@@ -68,6 +71,7 @@ public class BigDecimal_serialization_and_deserializationTest extends AvroTestBa
         assertThat(result.name).isEqualTo("peter");
     }
 
+    @Test
     public void testSerialization_toBytesWithLogicalTypeDecimal() throws Exception {
         // GIVEN
         String schemaString = "{" +
@@ -118,6 +122,7 @@ public class BigDecimal_serialization_and_deserializationTest extends AvroTestBa
         assertThat(result.name).isEqualTo("peter");
     }
 
+    @Test
     public void testSerialization_toFixedWithLogicalTypeDecimal() throws Exception {
         // GIVEN
         String schemaString = "{" +

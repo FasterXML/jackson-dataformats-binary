@@ -2,11 +2,11 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
+
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
 
 /**
  * Visitor for {@link java.util.UUID} type. When it is created with logicalTypesEnabled enabled,

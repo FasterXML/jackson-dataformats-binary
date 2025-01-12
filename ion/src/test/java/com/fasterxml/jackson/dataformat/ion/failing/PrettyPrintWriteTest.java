@@ -1,10 +1,12 @@
 package com.fasterxml.jackson.dataformat.ion.failing;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // For [dataformats-binary#245]: no pretty-printing for textual format
 public class PrettyPrintWriteTest
@@ -19,7 +21,7 @@ public class PrettyPrintWriteTest
     public void testBasicPrettyPrintTextual() throws Exception
     {
         IonObjectMapper mapper = IonObjectMapper.builderForTextualWriters().build();
-        Assert.assertEquals("{\n  x:1,\n  y:2\n}",
+        assertEquals("{\n  x:1,\n  y:2\n}",
                 mapper.writerWithDefaultPrettyPrinter().writeValueAsString(new Point()));
     }
 
@@ -29,6 +31,6 @@ public class PrettyPrintWriteTest
     {
         IonObjectMapper mapper = IonObjectMapper.builderForBinaryWriters().build();
         byte[] encoded = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(new Point());
-        Assert.assertNotNull(encoded);
+        assertNotNull(encoded);
     }
 }

@@ -19,13 +19,14 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
-import com.amazon.ion.*;
-import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Implementation of {@link JsonParser} that will use an underlying

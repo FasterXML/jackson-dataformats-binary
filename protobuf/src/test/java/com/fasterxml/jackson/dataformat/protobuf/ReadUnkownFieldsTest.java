@@ -1,10 +1,12 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import com.fasterxml.jackson.annotation.*;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.*;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReadUnkownFieldsTest extends ProtobufTestBase
 {
@@ -64,6 +66,7 @@ public class ReadUnkownFieldsTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
     public void testMultipleUnknown() throws Exception
     {
         final ProtobufMapper mapper = newObjectMapper();

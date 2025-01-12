@@ -1,17 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.jsr310;
 
+import java.io.IOException;
+import java.time.*;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
