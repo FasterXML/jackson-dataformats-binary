@@ -1,5 +1,9 @@
 package tools.jackson.dataformat.avro;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 // 23-Aug-2017, tatu: There was some confusion on whether potential ambiguity
 //   might be problematic (compared to actual one) -- this test verifies
 //   it should not be.
@@ -34,6 +38,7 @@ public class AmbiguousUnionWriteTest extends AvroTestBase
 
     private final AvroMapper MAPPER = newMapper();
 
+    @Test
     public void testWriteNoAmbiguity() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(SCHEMA_WITH_AMBIGUITY);

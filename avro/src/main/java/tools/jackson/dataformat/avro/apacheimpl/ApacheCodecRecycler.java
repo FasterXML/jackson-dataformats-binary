@@ -3,7 +3,8 @@ package tools.jackson.dataformat.avro.apacheimpl;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.avro.io.*;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.BinaryEncoder;
 
 import tools.jackson.core.util.RecyclerPool;
 import tools.jackson.core.util.RecyclerPool.WithPool;

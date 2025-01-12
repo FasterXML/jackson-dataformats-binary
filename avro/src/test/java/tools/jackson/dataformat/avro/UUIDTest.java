@@ -3,6 +3,11 @@ package tools.jackson.dataformat.avro;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
 // @since 2.10
 public class UUIDTest extends AvroTestBase
 {
@@ -18,6 +23,7 @@ public class UUIDTest extends AvroTestBase
     // 10-Sep-2019, tatu: as per [dataformats-binary#179], should really serialize
     //   UUID as binary, but due to various complications can not make it work
     //   safely and reliably with 2.10; can only add some foundational support.
+    @Test
     public void testUUIDRoundtrip() throws Exception
     {
         final AvroSchema schema = MAPPER.schemaFor(UUIDWrapper.class);

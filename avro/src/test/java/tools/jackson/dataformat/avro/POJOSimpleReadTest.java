@@ -1,9 +1,8 @@
 package tools.jackson.dataformat.avro;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonParser.NumberType;
@@ -13,10 +12,13 @@ import tools.jackson.core.io.SerializedString;
 
 import tools.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class POJOSimpleReadTest extends AvroTestBase
 {
     private final AvroMapper MAPPER = new AvroMapper();
 
+    @Test
     public void testSimplePojoViaMapper() throws Exception
     {
         Employee empl = _simpleEmployee();
@@ -35,6 +37,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertNull(empl.boss.boss);
     }
 
+    @Test
     public void testSimplePojoViaParser() throws Exception
     {
         Employee empl = _simpleEmployee();
@@ -134,6 +137,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         p.close();
     }
 
+    @Test
     public void testMissingSchema() throws Exception
     {
         Employee empl = _simpleEmployee();

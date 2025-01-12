@@ -1,6 +1,11 @@
 package tools.jackson.dataformat.avro.schemaev;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class EnumEvolutionTest extends AvroTestBase
 {
@@ -30,6 +35,7 @@ public class EnumEvolutionTest extends AvroTestBase
 
     private final AvroMapper MAPPER = new AvroMapper();
 
+    @Test
     public void testSimple() throws Exception
     {
         AvroSchema src = MAPPER.schemaFrom(ENUM_SCHEMA1_JSON);

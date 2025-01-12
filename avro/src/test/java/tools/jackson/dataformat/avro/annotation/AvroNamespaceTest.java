@@ -1,8 +1,7 @@
 package tools.jackson.dataformat.avro.annotation;
 
 import org.apache.avro.Schema;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;

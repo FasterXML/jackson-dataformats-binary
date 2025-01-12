@@ -1,23 +1,12 @@
 package tools.jackson.dataformat.avro.jsr310;
 
+import java.time.*;
+
 import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.dataformat.avro.jsr310.deser.AvroInstantDeserializer;
-import tools.jackson.dataformat.avro.jsr310.deser.AvroLocalDateDeserializer;
-import tools.jackson.dataformat.avro.jsr310.deser.AvroLocalDateTimeDeserializer;
-import tools.jackson.dataformat.avro.jsr310.deser.AvroLocalTimeDeserializer;
-import tools.jackson.dataformat.avro.jsr310.ser.AvroInstantSerializer;
-import tools.jackson.dataformat.avro.jsr310.ser.AvroLocalDateSerializer;
-import tools.jackson.dataformat.avro.jsr310.ser.AvroLocalDateTimeSerializer;
-import tools.jackson.dataformat.avro.jsr310.ser.AvroLocalTimeSerializer;
+import tools.jackson.dataformat.avro.jsr310.deser.*;
+import tools.jackson.dataformat.avro.jsr310.ser.*;
 
 import tools.jackson.dataformat.avro.PackageVersion;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 
 /**
  * A module that installs a collection of serializers and deserializers for java.time classes.

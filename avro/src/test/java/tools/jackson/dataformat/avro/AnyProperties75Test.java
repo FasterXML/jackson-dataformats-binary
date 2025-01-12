@@ -3,8 +3,13 @@ package tools.jackson.dataformat.avro;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // for [dataformats-binary#75] -- not legit, probably,
 // but included for now to see if there's something we
@@ -30,6 +35,7 @@ public class AnyProperties75Test extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testReadWriteIntSequence() throws Exception
     {
         final String SCHEMA_JSON = aposToQuotes("{\n"

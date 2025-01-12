@@ -1,6 +1,6 @@
 package perf;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
 
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;

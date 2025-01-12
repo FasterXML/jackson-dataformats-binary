@@ -1,12 +1,11 @@
 package tools.jackson.dataformat.avro.schema;
 
-import org.junit.Test;
+import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.AvroTestBase;
-
-import org.apache.avro.Schema;
-import org.apache.avro.specific.SpecificData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

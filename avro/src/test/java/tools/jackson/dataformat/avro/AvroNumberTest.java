@@ -3,6 +3,8 @@ package tools.jackson.dataformat.avro;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.JsonParser;
@@ -12,6 +14,8 @@ import tools.jackson.core.JsonParser.NumberTypeFP;
 import tools.jackson.core.io.SerializedString;
 
 import tools.jackson.dataformat.avro.testsupport.LimitingInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AvroNumberTest extends AvroTestBase
 {
@@ -43,6 +47,7 @@ public class AvroNumberTest extends AvroTestBase
     private final AvroMapper MAPPER = new AvroMapper();
     
     // for [dataformat-avro#41]
+    @Test
     public void testNumberType() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFor(NumberWrapper.class);
@@ -56,6 +61,7 @@ public class AvroNumberTest extends AvroTestBase
         assertEquals(Integer.valueOf(17), result.value);
     }
 
+    @Test
     public void testNumberCoercions() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFor(Numbers.class);

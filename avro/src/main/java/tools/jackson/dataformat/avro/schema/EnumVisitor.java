@@ -3,11 +3,11 @@ package tools.jackson.dataformat.avro.schema;
 import java.util.ArrayList;
 import java.util.Set;
 
+import org.apache.avro.Schema;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
-
-import org.apache.avro.Schema;
 
 /**
  * Specific visitor for Java Enum types that are to be exposed as

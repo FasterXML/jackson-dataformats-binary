@@ -1,8 +1,6 @@
 package tools.jackson.dataformat.avro.apacheimpl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
+import java.io.*;
 
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;

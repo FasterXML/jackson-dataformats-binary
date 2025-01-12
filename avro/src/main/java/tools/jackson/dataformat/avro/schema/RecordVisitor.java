@@ -1,8 +1,6 @@
 package tools.jackson.dataformat.avro.schema;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;

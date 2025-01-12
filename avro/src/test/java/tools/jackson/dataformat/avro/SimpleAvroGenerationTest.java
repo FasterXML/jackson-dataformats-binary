@@ -3,7 +3,7 @@ package tools.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -11,6 +11,8 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.StreamWriteFeature;
 
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleAvroGenerationTest extends AvroTestBase
 {
@@ -72,6 +74,7 @@ public class SimpleAvroGenerationTest extends AvroTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimplest() throws Exception
     {
         Employee empl = new Employee();
@@ -96,6 +99,7 @@ public class SimpleAvroGenerationTest extends AvroTestBase
         assertEquals(output.age, empl.age);
     }
 
+    @Test
     public void testBinaryOk() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper(new AvroFactory());
@@ -107,10 +111,11 @@ public class SimpleAvroGenerationTest extends AvroTestBase
         assertNotNull(output);
         assertEquals("Foo", output.name);
         assertNotNull(output.value);
-        Assert.assertArrayEquals(bin.value, output.value);
+        assertArrayEquals(bin.value, output.value);
     }
 
     @SuppressWarnings("resource")
+    @Test
     public void testIgnoringOfUnknownScalar() throws Exception
     {
         ObjectMapper mapper = newMapper();
@@ -137,6 +142,7 @@ public class SimpleAvroGenerationTest extends AvroTestBase
         assertEquals("Bob", output.name);
     }
 
+    @Test
     public void testIgnoringOfUnknownObject() throws Exception
     {
         AvroFactory af = new AvroFactory();

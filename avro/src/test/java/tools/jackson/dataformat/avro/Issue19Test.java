@@ -4,11 +4,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 
 import tools.jackson.core.StreamWriteFeature;
 import tools.jackson.databind.DeserializationFeature;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class Issue19Test extends AvroTestBase
 {
@@ -60,6 +64,7 @@ public class Issue19Test extends AvroTestBase
         }
     }
 
+    @Test
     public void testIssue19() throws Exception
     {
         List<Event> sampleEvents = new ArrayList<>();

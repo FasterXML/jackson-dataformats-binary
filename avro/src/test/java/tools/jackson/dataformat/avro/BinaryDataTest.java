@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.JsonParser;
@@ -11,6 +13,8 @@ import tools.jackson.core.JsonToken;
 
 import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import tools.jackson.dataformat.avro.testsupport.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryDataTest extends AvroTestBase
 {
@@ -30,6 +34,7 @@ public class BinaryDataTest extends AvroTestBase
     private final AvroMapper AVRO_JACKSON_MAPPER = newMapper();
     private final AvroMapper AVRO_APACHE_MAPPER =  newApacheMapper();
 
+    @Test
     public void testAvroSchemaGenerationWithJackson() throws Exception
     {
         _testAvroSchemaGenerationWithJackson(AVRO_JACKSON_MAPPER);

@@ -2,11 +2,11 @@ package tools.jackson.dataformat.avro.schema;
 
 import java.util.Set;
 
-import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
-import tools.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
+
+import tools.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
+import tools.jackson.databind.jsonFormatVisitors.JsonValueFormat;
 
 /**
  * Visitor for {@link java.util.UUID} type. When it is created with logicalTypesEnabled enabled,

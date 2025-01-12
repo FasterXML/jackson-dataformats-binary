@@ -1,9 +1,6 @@
 package tools.jackson.dataformat.avro.deser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;

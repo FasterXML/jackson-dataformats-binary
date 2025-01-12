@@ -1,17 +1,19 @@
 package tools.jackson.dataformat.avro.schema;
 
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.SerializationContext;
 
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.AvroTestBase;
 
-import org.assertj.core.api.Assertions;
-
 public class VisitorFormatWrapperImpl_createChildWrapperTest
-extends AvroTestBase
+    extends AvroTestBase
 {
     private final AvroMapper MAPPER = newMapper();
 
+    @Test
     public void testChildWrapper()
     {
         // GIVEN

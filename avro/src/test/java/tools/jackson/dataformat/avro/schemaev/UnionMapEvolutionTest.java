@@ -1,10 +1,14 @@
 package tools.jackson.dataformat.avro.schemaev;
 
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.AvroSchema;
 import tools.jackson.dataformat.avro.AvroTestBase;
 
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UnionMapEvolutionTest extends AvroTestBase {
 
@@ -65,6 +69,7 @@ public class UnionMapEvolutionTest extends AvroTestBase {
     /**********************************************************
      */
 
+    @Test
     public void testRoundtripToOlderCompatibleSchema() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_V2_ARRAY_JSON);

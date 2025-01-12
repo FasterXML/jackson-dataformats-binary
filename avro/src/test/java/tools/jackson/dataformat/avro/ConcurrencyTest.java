@@ -2,9 +2,13 @@ package tools.jackson.dataformat.avro;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.MappingIterator;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SequenceWriter;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple tests for some testable aspects of concurrent usage.
@@ -25,6 +29,7 @@ public class ConcurrencyTest extends AvroTestBase
 
     // Simple test that creates 2 encoders and uses them in interleaved manner.
     // This should tease out simplest problems with possible encoder reuse.
+    @Test
     public void testMultipleEncoders() throws Exception
     {
         testMultipleEncoders(AVRO_JACKSON_MAPPER);
@@ -51,11 +56,13 @@ public class ConcurrencyTest extends AvroTestBase
         assertEquals(6926, b1.size());
     }
 
+    @Test
     public void testMultipleDecodersBlock() throws Exception {
         _testMultipleDecoders(AVRO_JACKSON_MAPPER, false);
         _testMultipleDecoders(AVRO_APACHE_MAPPER, false);
     }
 
+    @Test
     public void testMultipleDecodersStreaming() throws Exception {
         _testMultipleDecoders(AVRO_JACKSON_MAPPER, true);
         _testMultipleDecoders(AVRO_APACHE_MAPPER, true);

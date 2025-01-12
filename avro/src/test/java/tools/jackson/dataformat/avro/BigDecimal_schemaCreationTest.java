@@ -2,15 +2,16 @@ package tools.jackson.dataformat.avro;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import org.apache.avro.LogicalTypes;
+import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.dataformat.avro.annotation.AvroDecimal;
 import tools.jackson.dataformat.avro.annotation.AvroFixedSize;
 import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;
-import org.apache.avro.LogicalTypes;
-import org.apache.avro.Schema;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,23 +1,28 @@
 package tools.jackson.dataformat.avro.failing;
 
-import tools.jackson.databind.SequenceWriter;
-import tools.jackson.dataformat.avro.*;
-import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+import java.io.*;
+import java.nio.file.Files;
+
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.databind.SequenceWriter;
+import tools.jackson.dataformat.avro.*;
+import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // For [dataformats-binary#319]: not 100% certain test is valid,
 // but there is need for work wrt File-backed Avro content
 public class FileSerialization319Test extends AvroTestBase
 {
     // [dataformats-binary#319]
+    @Test
     public void testFileSerialization() throws Exception
     {
         final Employee employee = new Employee();

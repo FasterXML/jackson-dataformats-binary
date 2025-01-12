@@ -1,45 +1,23 @@
 package tools.jackson.dataformat.avro.schema;
 
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.type.TypeFactory;
+import java.time.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificData;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collection;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.type.TypeFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
 public class DateTimeVisitor_builtAvroSchemaTest {
 
-    @Parameter(0)
-    public Class<?> testClass;
-
-    @Parameter(1)
-    public JsonParser.NumberType givenNumberType;
-
-    @Parameter(2)
-    public Schema.Type expectedAvroType;
-
-    @Parameter(3)
-    public String expectedLogicalType;
-
-    @Parameters(name = "With {0} and number type {1}")
-    public static Collection<?> testData() {
+    public static Collection<Object[]> testData() {
         return Arrays.asList(new Object[][]{
                 // Java type  | given number type, | expected Avro type | expected logicalType
                 {
@@ -76,8 +54,12 @@ public class DateTimeVisitor_builtAvroSchemaTest {
         });
     }
 
-    @Test
-    public void builtAvroSchemaTest() {
+    @ParameterizedTest(name = "With {0} and number type {1}")
+    @MethodSource("testData")
+    public void builtAvroSchemaTest(Class<?> testClass,
+        JsonParser.NumberType givenNumberType, Schema.Type expectedAvroType,
+        String expectedLogicalType)
+    {
         // GIVEN
         final TypeFactory tf = TypeFactory.createDefaultInstance();
         DateTimeVisitor dateTimeVisitor = new DateTimeVisitor(tf.constructSimpleType(testClass, null));

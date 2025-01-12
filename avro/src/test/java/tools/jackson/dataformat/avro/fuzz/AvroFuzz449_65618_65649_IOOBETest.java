@@ -1,15 +1,19 @@
 package tools.jackson.dataformat.avro.fuzz;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
+
 import tools.jackson.databind.ObjectReader;
 
 import tools.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#449]
 public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase

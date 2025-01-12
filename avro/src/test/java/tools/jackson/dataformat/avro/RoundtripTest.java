@@ -1,9 +1,14 @@
 package tools.jackson.dataformat.avro;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteFeature;
 import tools.jackson.core.exc.StreamConstraintsException;
+
 import tools.jackson.databind.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RoundtripTest extends MapTest
 {
@@ -50,6 +55,7 @@ public class RoundtripTest extends MapTest
     /**********************************************************
      */
 
+    @Test
     public void testIssue9() throws Exception
     {
         AvroSchema jsch = getEmployeeSchema();
@@ -60,6 +66,7 @@ public class RoundtripTest extends MapTest
         assertNotNull(avroData);
     }
 
+    @Test
     public void testCharSequences() throws Exception
     {
         _testCharSequences(NATIVE_MAPPER);
@@ -85,6 +92,7 @@ public class RoundtripTest extends MapTest
         assertEquals(input.name, output.name);
     }
 
+    @Test
     public void testCharSequencesLowStringLimit() throws Exception
     {
         AvroFactory factory = AvroFactory.builder()
@@ -107,8 +115,8 @@ public class RoundtripTest extends MapTest
                     .forType(CharSeqBean.class).readValue(avroData);
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
-            assertTrue("unexpected exception message: " + ise.getMessage(),
-                    ise.getMessage().startsWith("String value length (3) exceeds the maximum allowed"));
+            assertTrue(ise.getMessage().startsWith("String value length (3) exceeds the maximum allowed"),
+                    "unexpected exception message: " + ise.getMessage());
         }
     }
 }

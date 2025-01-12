@@ -1,15 +1,9 @@
 package tools.jackson.dataformat.avro.jsr310;
 
-import org.junit.Test;
-
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.AvroSchema;

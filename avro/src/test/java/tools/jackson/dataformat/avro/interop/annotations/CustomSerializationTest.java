@@ -2,6 +2,11 @@ package tools.jackson.dataformat.avro.interop.annotations;
 
 import java.io.IOException;
 import java.util.Objects;
+
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
@@ -10,9 +15,7 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
-import org.junit.Test;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserialize;

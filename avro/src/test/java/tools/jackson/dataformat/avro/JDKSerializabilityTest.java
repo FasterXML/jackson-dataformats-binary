@@ -2,6 +2,8 @@ package tools.jackson.dataformat.avro;
 
 import java.io.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class JDKSerializabilityTest extends AvroTestBase
 {
     public void testNativeMapperWithModule() throws Exception {
@@ -48,8 +50,8 @@ public class JDKSerializabilityTest extends AvroTestBase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(serializedBytes);
         ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream);
         Object deserializedObject = inputStream.readObject();
-        assertTrue("Deserialized object should be an instance of ObjectMapper",
-                deserializedObject instanceof AvroMapper);
+        assertTrue(deserializedObject instanceof AvroMapper,
+                "Deserialized object should be an instance of ObjectMapper");
         return (AvroMapper) deserializedObject;
     }
 

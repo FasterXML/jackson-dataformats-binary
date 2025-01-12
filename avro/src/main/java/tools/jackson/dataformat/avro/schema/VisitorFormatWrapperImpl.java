@@ -2,6 +2,8 @@ package tools.jackson.dataformat.avro.schema;
 
 import java.time.temporal.Temporal;
 
+import org.apache.avro.Schema;
+
 import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.JavaType;
@@ -9,8 +11,6 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.jsonFormatVisitors.*;
 import tools.jackson.dataformat.avro.AvroSchema;
-
-import org.apache.avro.Schema;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper

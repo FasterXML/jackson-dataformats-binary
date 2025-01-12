@@ -8,6 +8,8 @@ import tools.jackson.core.StreamWriteFeature;
 
 import tools.jackson.databind.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MapperConfigTest extends AvroTestBase
 {
     // Use shared mapper here to exercise it by some tests

@@ -1,17 +1,14 @@
 package tools.jackson.dataformat.avro.schema;
 
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
+import java.time.*;
+
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+import tools.jackson.core.JsonParser;
+
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 
 public class DateTimeVisitor extends JsonIntegerFormatVisitor.Base
         implements SchemaBuilder {

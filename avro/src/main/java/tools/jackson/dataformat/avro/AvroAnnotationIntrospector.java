@@ -1,8 +1,6 @@
 package tools.jackson.dataformat.avro;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.apache.avro.reflect.*;
 
@@ -13,9 +11,7 @@ import tools.jackson.core.Version;
 import tools.jackson.databind.AnnotationIntrospector;
 import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.cfg.MapperConfig;
-import tools.jackson.databind.introspect.Annotated;
-import tools.jackson.databind.introspect.AnnotatedConstructor;
-import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.*;
 import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 import tools.jackson.databind.util.ClassUtil;

@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.avro.deser;
 
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 

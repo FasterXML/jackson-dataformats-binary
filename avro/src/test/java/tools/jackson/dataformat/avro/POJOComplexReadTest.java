@@ -4,9 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.avro.testsupport.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class POJOComplexReadTest extends AvroTestBase
 {
@@ -31,7 +36,8 @@ public class POJOComplexReadTest extends AvroTestBase
     /**********************************************************
      */
 
-    public void testRoundtrip()
+    @Test
+    public void testRoundtrip() throws Exception
     {
         final byte[] doc = getStdItemBytes(NATIVE_MAPPER);
         _testRoundtrip(NATIVE_MAPPER, doc);
