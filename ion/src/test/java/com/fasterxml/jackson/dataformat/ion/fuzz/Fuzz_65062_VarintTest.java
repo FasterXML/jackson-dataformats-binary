@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.ion.fuzz;
 import java.io.InputStream;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;

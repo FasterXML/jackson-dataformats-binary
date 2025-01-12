@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.ClassNameIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
 
     IonObjectMapper mapperUnderTest;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupClass() throws IOException {
         ClassA inner = new ClassA();
         inner.value = 42;
@@ -45,7 +45,7 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
         ionValueWithAnnotation = mapper.writeValueAsIonValue(outer);
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         // Important: since Jackson caches type resolving information, we need to create a separate mapper for testing.
         mapperUnderTest = constructIomWithClassNameIdResolver();

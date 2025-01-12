@@ -14,8 +14,8 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import org.junit.Test;
-import org.junit.Before;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -59,7 +59,7 @@ public class IonGeneratorTest {
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final IonFactory factory = new IonFactory();
 

@@ -21,9 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -63,7 +62,7 @@ public class PolymorphicRoundtripTest {
     String preferredTypeId = null; // if asked to resolve from multiple ids, choose this one.
     IonSystem ionSystem = IonSystemBuilder.standard().build();
 
-    @Before
+    @BeforeEach
     public void reset() {
         resolveAllTypes = false;
         preferredTypeId = null;

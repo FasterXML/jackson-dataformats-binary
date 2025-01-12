@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.ion.fuzz;
 import java.io.ByteArrayInputStream;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.ion.*;

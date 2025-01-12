@@ -26,8 +26,8 @@ import com.amazon.ion.system.IonReaderBuilder;
 import com.amazon.ion.system.IonSystemBuilder;
 import com.amazon.ion.system.IonTextWriterBuilder;
 import com.amazon.ion.system.IonWriterBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class DataBindWriteTest {
     IonSystem ion = IonSystemBuilder.standard().build();
     IonDatagram expectedMyBean;
 
-    @Before
+    @BeforeEach
     public void initializeExpectedMyBean() {
         expectedMyBean = ion.newDatagram();
         IonStruct struct = ion.newEmptyStruct();
@@ -61,7 +61,7 @@ public class DataBindWriteTest {
 
     IonDatagram expectedArray;
 
-    @Before
+    @BeforeEach
     public void initializeExpectedArray() {
         expectedArray = ion.newDatagram();
         IonList list = ion.newEmptyList();

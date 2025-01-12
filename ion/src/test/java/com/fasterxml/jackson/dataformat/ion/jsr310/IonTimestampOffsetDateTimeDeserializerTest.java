@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.TimeZone;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.databind.DeserializationFeature;

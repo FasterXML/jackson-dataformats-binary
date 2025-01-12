@@ -17,8 +17,8 @@ package com.fasterxml.jackson.dataformat.ion;
 import java.io.IOException;
 import java.util.Date;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.ion;
 
 import java.util.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

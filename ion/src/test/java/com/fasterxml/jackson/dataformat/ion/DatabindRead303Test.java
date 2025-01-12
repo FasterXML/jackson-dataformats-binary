@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 

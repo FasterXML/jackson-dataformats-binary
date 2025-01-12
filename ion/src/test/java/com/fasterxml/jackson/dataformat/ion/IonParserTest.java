@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadCapability;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
@@ -29,7 +29,7 @@ import com.amazon.ion.system.IonSystemBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("resource")
 public class IonParserTest

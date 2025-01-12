@@ -6,9 +6,9 @@ import com.amazon.ion.util.Equivalence;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.dataformat.ion.IonGenerator;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -32,7 +32,7 @@ public class SerializationAnnotationsTest {
 
     private Subclass subclass;
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.subclass = new Subclass("some value", 42);
     }

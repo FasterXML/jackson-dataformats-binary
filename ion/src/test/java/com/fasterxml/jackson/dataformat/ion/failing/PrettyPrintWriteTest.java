@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.ion.failing;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;

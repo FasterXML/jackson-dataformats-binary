@@ -16,7 +16,7 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import java.io.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.JsonParser;

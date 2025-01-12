@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.dataformat.ion;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.exc.InputCoercionException;
 

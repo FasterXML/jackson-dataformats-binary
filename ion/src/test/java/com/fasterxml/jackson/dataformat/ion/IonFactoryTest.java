@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import com.amazon.ion.IonReader;
 import com.fasterxml.jackson.core.JsonParser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;

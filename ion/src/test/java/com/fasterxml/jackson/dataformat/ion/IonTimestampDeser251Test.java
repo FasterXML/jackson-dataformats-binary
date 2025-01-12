@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.dataformat.ion;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.amazon.ion.Timestamp;
 import com.fasterxml.jackson.annotation.JsonCreator;

@@ -18,9 +18,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonWriter;
@@ -38,7 +37,7 @@ public class GenerateSexpTest {
     private IonSystem ionSystem;
     private IonObjectMapper mapper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.ionSystem = IonSystemBuilder.standard().build();
         this.mapper = IonObjectMapper.builder(ionSystem).build();
