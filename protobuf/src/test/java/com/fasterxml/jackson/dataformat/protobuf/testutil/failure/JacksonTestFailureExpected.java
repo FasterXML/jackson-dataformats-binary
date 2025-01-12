@@ -21,9 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  *     &#64;Test
  *     &#64;JacksonTestFailureExpected
- *     @Test
-    @Test
-    public void testFeatureNotYetImplemented() {
+ *     public void testFeatureNotYetImplemented() {
  *         // Test code that is expected to fail
  *     }
  * }
