@@ -14,6 +14,7 @@ public class SmileFactoryPropertiesTest extends BaseTestForSmile
     private final static String SIMPLE_DOC_AS_JSON = "{\"simple\":[1,true,{}]}";
 
     private final static SmileFactory SMILE_F = new SmileFactory();
+
     @Test
     public void testFactoryDefaults() {
         SmileFactory f = new SmileFactory();
