@@ -17,19 +17,15 @@ package com.fasterxml.jackson.dataformat.ion;
 import java.io.IOException;
 import java.util.Date;
 
+import com.amazon.ion.*;
+import com.amazon.ion.system.IonSystemBuilder;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-
-import com.amazon.ion.IonDatagram;
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.IonWriter;
-import com.amazon.ion.system.IonSystemBuilder;
 
 /**
  * Specialization of {@link ObjectMapper} that will set underlying

@@ -15,8 +15,7 @@
 package com.fasterxml.jackson.dataformat.ion.polymorphism;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
-
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
