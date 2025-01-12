@@ -12,8 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.IonParser.Feature;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PolymorphicTypeAnnotationsTest {
     private static final String SUBCLASS_TYPE_NAME = "subtype";
@@ -56,7 +55,7 @@ public class PolymorphicTypeAnnotationsTest {
 
         Container containerWithBaseClass = mapper.readValue(CONTAINER_WITH_TYPED_OBJECT, Container.class);
 
-        assertTrue(containerWithBaseClass.objectWithType instanceof Subclass);
+        assertInstanceOf(Subclass.class, containerWithBaseClass.objectWithType);
         assertEquals(SUBCLASS_TYPE_NAME, ((Subclass) containerWithBaseClass.objectWithType).base);
     }
 

@@ -79,7 +79,7 @@ public class PolymorphicRoundtripTest {
 
         assertEquals(original.field, deserialized.field);
         assertEquals(original.child.someField, deserialized.child.someField);
-        assertTrue(deserialized.child instanceof ChildBeanSub);
+        assertInstanceOf(ChildBeanSub.class, deserialized.child);
         assertEquals(((ChildBeanSub) original.child).extraField, ((ChildBeanSub) deserialized.child).extraField);
     }
 
@@ -92,7 +92,7 @@ public class PolymorphicRoundtripTest {
         mapper.registerModule(new IonAnnotationModule());
         String serialized = mapper.writeValueAsString(original);
         Object obj = mapper.readValue(serialized, Object.class);
-        assertTrue(obj instanceof Bean);
+        assertInstanceOf(Bean.class, obj);
         Bean deserialized = (Bean) obj;
         assertEquals(original.field, deserialized.field);
         assertEquals(original.child.someField, deserialized.child.someField);
@@ -112,14 +112,14 @@ public class PolymorphicRoundtripTest {
         // to be chosen (and we expect that first id to be the most narrow type, ChildBeanSub).
         Bean deserialized = mapper.readValue(serialized, Bean.class);
 
-        assertEquals(deserialized.child.getClass(), ChildBeanSub.class);
+        assertEquals(ChildBeanSub.class, deserialized.child.getClass());
         assertEquals(((ChildBeanSub) original.child).extraField, ((ChildBeanSub) deserialized.child).extraField);
 
         // second, try deserializing with the wider type (ChildBean). We're losing data (extraField)
         preferredTypeId = getClass().getCanonicalName() + "$ChildBean";
         deserialized = mapper.readValue(serialized, Bean.class);
 
-        assertEquals(deserialized.child.getClass(), ChildBean.class);
+        assertEquals(ChildBean.class, deserialized.child.getClass());
         assertEquals(original.child.someField, deserialized.child.someField);
 
         // third, try deserializing into an Object. The child node should deserialize, but immediately fail mapping.

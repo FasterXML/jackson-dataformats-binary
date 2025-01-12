@@ -62,7 +62,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsFloatEdgeCase01() throws Exception {
         String input = Instant.MAX.getEpochSecond() + ".999999999";
         Instant actual = READER.readValue(input);
-        assertEquals(actual, Instant.MAX);
+        assertEquals(Instant.MAX, actual);
         assertEquals(Instant.MAX.getEpochSecond(), actual.getEpochSecond());
         assertEquals(999999999, actual.getNano());
     }
@@ -74,7 +74,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsFloatEdgeCase02() throws Exception {
         String input = Instant.MIN.getEpochSecond() + ".0";
         Instant actual = READER.readValue(input);
-        assertEquals(actual, Instant.MIN);
+        assertEquals(Instant.MIN, actual);
         assertEquals(Instant.MIN.getEpochSecond(), actual.getEpochSecond());
         assertEquals(0, actual.getNano());
     }

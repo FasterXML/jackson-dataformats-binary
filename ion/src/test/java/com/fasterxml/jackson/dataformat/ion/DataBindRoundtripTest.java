@@ -146,7 +146,7 @@ public class DataBindRoundtripTest
 
         Bean bean = m.readValue(root, Bean.class);
         assertNotNull(bean);
-        assertEquals(bean.a, "test");
+        assertEquals("test", bean.a);
         assertEquals(0.25, bean.b, 0.0);
         assertArrayEquals(new byte[0], bean.data);
         assertTrue(bean.state);
