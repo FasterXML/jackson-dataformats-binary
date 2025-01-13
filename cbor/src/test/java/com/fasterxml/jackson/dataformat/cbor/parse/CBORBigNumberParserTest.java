@@ -4,14 +4,17 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.CBORParser;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import org.junit.jupiter.api.Test;
 
-// tests for [cbor#17]
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.cbor.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class CBORBigNumberParserTest extends CBORTestBase
 {
+    @Test
     public void testBigDecimalShort() throws Exception
     {
         _testBigDecimal(BigDecimal.ONE);
@@ -33,6 +36,7 @@ public class CBORBigNumberParserTest extends CBORTestBase
         _testBigDecimal(bd.negate());
     }
 
+    @Test
     public void testBigDecimalLonger() throws Exception
     {
         // ensure mantissa is beyond long; more than 22 digits or so
@@ -90,6 +94,7 @@ public class CBORBigNumberParserTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testBigInteger() throws Exception
     {
         _testBigInteger(BigInteger.TEN);

@@ -1,21 +1,22 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Basic testing for string reference generation added in 2.15.
  */
 public class StringrefTest extends CBORTestBase
 {
+    @Test
     public void testSimpleObject() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -97,6 +98,7 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.END_ARRAY, parser.nextToken());
     }
 
+    @Test
     public void testSimpleObjectSerializedStrings() throws Exception {
         // SerializableString interface takes different code paths.
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -187,6 +189,7 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.END_ARRAY, parser.nextToken());
     }
 
+    @Test
     public void testStringArray() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -232,6 +235,7 @@ public class StringrefTest extends CBORTestBase
         verifyStringArray(encoded);
     }
 
+    @Test
     public void testStringArrayFromChars() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -277,6 +281,7 @@ public class StringrefTest extends CBORTestBase
         verifyStringArray(encoded);
     }
 
+    @Test
     public void testStringArraySerializedString() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -322,6 +327,7 @@ public class StringrefTest extends CBORTestBase
         verifyStringArray(encoded);
     }
 
+    @Test
     public void testStringArrayUTF8() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -367,6 +373,7 @@ public class StringrefTest extends CBORTestBase
         verifyStringArray(encoded);
     }
 
+    @Test
     public void testStringArrayNextTextValue() throws Exception {
         // nextTextValue() takes a separate code path. Use the expected encoded bytes since there's
         // no special overload we want to test for encoding.
@@ -407,6 +414,7 @@ public class StringrefTest extends CBORTestBase
         verifyNextTextValueRef(ssssStr, parser);
     }
 
+    @Test
     public void testBinaryStringArray() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -487,6 +495,7 @@ public class StringrefTest extends CBORTestBase
         verifyNextTokenBinaryRef(ssssStr, parser);
     }
 
+    @Test
     public void testBinaryStringArrayStream() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = stringrefCborGenerator(bytes);
@@ -567,6 +576,7 @@ public class StringrefTest extends CBORTestBase
         verifyNextTokenBinaryStream("ssss", parser);
     }
 
+    @Test
     public void testNestedNamespaces() throws Exception {
         byte[] nestedNamespaceBytes = new byte[]{
                 (byte) 0xD9, 0x01, 0x00, (byte) 0x85, 0x63, 0x61, 0x61, 0x61, (byte) 0xD8, 0x19,
@@ -595,6 +605,7 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.END_ARRAY, parser.nextToken());
     }
 
+    @Test
     public void testNestedTags() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CBORGenerator gen = new CBORFactory()
@@ -627,6 +638,7 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.END_ARRAY, parser.nextToken());
     }
 
+    @Test
     public void testNestedTagsRounddTrip() throws Exception {
         CBORParser parser = cborParser(_nestedTagBytes);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

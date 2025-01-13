@@ -2,14 +2,20 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UnicodeHandlingTest extends CBORTestBase
 {
     private final CBORFactory F = new CBORFactory();
 
+    @Test
     public void testShortUnicodeWithSurrogates() throws IOException
     {
         _testLongUnicodeWithSurrogates(28, false);
@@ -18,6 +24,7 @@ public class UnicodeHandlingTest extends CBORTestBase
         _testLongUnicodeWithSurrogates(230, false);
     }
 
+    @Test
     public void testLongUnicodeWithSurrogates() throws IOException
     {
         _testLongUnicodeWithSurrogates(900, false);

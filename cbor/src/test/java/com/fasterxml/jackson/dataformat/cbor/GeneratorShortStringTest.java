@@ -2,11 +2,17 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class GeneratorShortStringTest extends CBORTestBase
 {
+    @Test
     public void testEmptyString() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (CBORGenerator gen = cborGenerator(out)) {
@@ -25,6 +31,7 @@ public class GeneratorShortStringTest extends CBORTestBase
         _verifyBytes(out.toByteArray(), CBORConstants.BYTE_EMPTY_STRING);
     }
 
+    @Test
     public void testShortTextAsString() throws Exception {
         for (int len = 1; len <= 23; ++len) {
             final String value = generateAsciiString(len);
@@ -40,6 +47,7 @@ public class GeneratorShortStringTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testShortTextAsCharArray() throws Exception {
         for (int len = 1; len <= 23; ++len) {
             final String value = generateAsciiString(len);
@@ -55,6 +63,7 @@ public class GeneratorShortStringTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testMediumTextAsString() throws Exception {
         for (int len = 24; len <= 255; ++len) {
             final String value = generateAsciiString(len);
@@ -71,6 +80,7 @@ public class GeneratorShortStringTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testMediumTextAsCharArray() throws Exception {
         for (int len = 24; len <= 255; ++len) {
             final String value = generateAsciiString(len);
