@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import com.fasterxml.jackson.dataformat.ion.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,6 +18,7 @@ public class PrettyPrintWriteTest
         public int y = 2;
     }
 
+    @JacksonTestFailureExpected
     @Test
     public void testBasicPrettyPrintTextual() throws Exception
     {
