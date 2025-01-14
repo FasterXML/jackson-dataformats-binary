@@ -63,6 +63,15 @@ abstractions.
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- 14-Jan-2025, joohyukkim: [JSTEP-10] Most tests have been migrated to
+          JUnit5, but except `avro` modules `/interop` tests
+     -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
