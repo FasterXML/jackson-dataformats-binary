@@ -16,11 +16,13 @@ package tools.jackson.dataformat.ion;
 
 import java.io.*;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class SimpleIonReadTest {
     private final IonObjectMapper MAPPER = new IonObjectMapper();

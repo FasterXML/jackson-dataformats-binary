@@ -1,11 +1,13 @@
 package tools.jackson.dataformat.ion;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.databind.SerializationFeature;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // For [dataformats-binary#245]: no pretty-printing for textual format
 public class PrettyPrintWriteTest
@@ -24,17 +26,17 @@ public class PrettyPrintWriteTest
         IonObjectMapper mapper = IonObjectMapper.builder(IonFactory.forTextualWriters()).build();
         String ion = mapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(new Point());
-        Assert.assertEquals(EXP, ion.trim());
+        assertEquals(EXP, ion.trim());
 
         ion = mapper.writer()
                 .with(SerializationFeature.INDENT_OUTPUT)
                 .writeValueAsString(new Point());
-        Assert.assertEquals(EXP, ion.trim());
+        assertEquals(EXP, ion.trim());
 
         // But also no indentation if not requested
         ion = mapper.writer()
                 .writeValueAsString(new Point());
-        Assert.assertEquals("{x:1,y:2}", ion.trim());
+        assertEquals("{x:1,y:2}", ion.trim());
     }
 
     // and with binary format, should simply be no-op
@@ -43,6 +45,6 @@ public class PrettyPrintWriteTest
     {
         IonObjectMapper mapper = IonObjectMapper.builder(IonFactory.forBinaryWriters()).build();
         byte[] encoded = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(new Point());
-        Assert.assertNotNull(encoded);
+        assertNotNull(encoded);
     }
 }
