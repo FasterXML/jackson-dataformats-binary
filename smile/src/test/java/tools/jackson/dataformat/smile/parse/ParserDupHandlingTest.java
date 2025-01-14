@@ -1,13 +1,18 @@
 package tools.jackson.dataformat.smile.parse;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ParserDupHandlingTest extends BaseTestForSmile
 {
-    public void testSimpleDups()
+    @Test
+    public void testSimpleDups() throws Exception
     {
         for (String json : new String[] {
                 "{ \"a\":1, \"a\":2 }",

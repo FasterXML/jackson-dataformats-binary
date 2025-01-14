@@ -1,11 +1,13 @@
 package tools.jackson.dataformat.smile.async;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonToken;
 
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.dataformat.smile.SmileWriteFeature;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StringObjectTest extends AsyncTestBase
 {
@@ -16,15 +18,17 @@ public class StringObjectTest extends AsyncTestBase
             "Unicode-"+UNICODE_3BYTES+"-%s-%s-%s-"+UNICODE_2BYTES+"-%s-%s-%s-"+UNICODE_3BYTES+"-%s-%s-%s",
             STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9);
 
-    public void testBasicFieldsNamesSharedNames() throws IOException {
+    @Test
+    public void testBasicFieldsNamesSharedNames() throws Exception {
         _testBasicFieldsNames(true);
     }
 
-    public void testBasicFieldsNamesNonShared() throws IOException {
+    @Test
+    public void testBasicFieldsNamesNonShared() throws Exception {
         _testBasicFieldsNames(false);
     }
 
-    private void _testBasicFieldsNames(boolean sharedNames) throws IOException
+    private void _testBasicFieldsNames(boolean sharedNames) throws Exception
     {
         final String json = aposToQuotes(String.format("{'%s':'%s','%s':'%s','%s':'%s'}",
             UNICODE_SHORT_NAME, UNICODE_LONG_NAME,
@@ -50,14 +54,14 @@ public class StringObjectTest extends AsyncTestBase
         _testBasicFieldsNames(data, 1, 1);
     }
 
-    private void _testBasicFieldsNames(byte[] data, int offset, int readSize) throws IOException
+    private void _testBasicFieldsNames(byte[] data, int offset, int readSize) throws Exception
     {
         _testBasicFieldsNames2(data, offset, readSize, true);
         _testBasicFieldsNames2(data, offset, readSize, false);
     }
 
     private void _testBasicFieldsNames2(byte[] data, int offset, int readSize, boolean verifyContents)
-        throws IOException
+        throws Exception
     {
         AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, offset);
 

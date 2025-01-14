@@ -5,7 +5,8 @@ import java.io.*;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 
-import tools.jackson.databind.*;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 
 abstract class ReaderTestBase
 {

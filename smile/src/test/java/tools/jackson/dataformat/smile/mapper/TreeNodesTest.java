@@ -1,16 +1,19 @@
 package tools.jackson.dataformat.smile.mapper;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TreeNodesTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = newSmileMapper();
 
+    @Test
     public void testSimple() throws Exception
     {
          // create the serialized JSON with byte array
@@ -32,9 +35,10 @@ public class TreeNodesTest extends BaseTestForSmile
              fail("Expected binary node; got "+datNode.getClass().getName());
          }
          byte[] bytes = datNode.binaryValue();
-         Assert.assertArrayEquals(TEXT_BYTES, bytes);
+         assertArrayEquals(TEXT_BYTES, bytes);
      }
 
+    @Test
     public void testNumbers() throws Exception
     {
         ObjectNode root = MAPPER.createObjectNode();

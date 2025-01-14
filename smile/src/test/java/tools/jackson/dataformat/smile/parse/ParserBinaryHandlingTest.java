@@ -1,18 +1,14 @@
 package tools.jackson.dataformat.smile.parse;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.JsonParser;
-import tools.jackson.core.JsonToken;
-import tools.jackson.core.ObjectWriteContext;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
+import tools.jackson.core.*;
+import tools.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ParserBinaryHandlingTest extends BaseTestForSmile
 {
@@ -23,40 +19,48 @@ public class ParserBinaryHandlingTest extends BaseTestForSmile
         139000
     };
 
+    @Test
     public void testRawAsArray() throws IOException
     {
         _testBinaryAsArray(true);
     }
 
+    @Test
     public void test7BitAsArray() throws IOException
     {
         _testBinaryAsArray(false);
     }
 
     // Added based on [JACKSON-376]
+    @Test
     public void testRawAsObject() throws IOException
     {
         _testBinaryAsObject(true);
     }
 
     // Added based on [JACKSON-376]
+    @Test
     public void test7BitAsObject() throws IOException
     {
         _testBinaryAsObject(false);
     }
 
+    @Test
     public void testRawAsRootValue() throws IOException {
         _testBinaryAsRoot(true);
     }
 
+    @Test
     public void test7BitAsRootValue() throws IOException {
         _testBinaryAsRoot(false);
     }
 
+    @Test
     public void testStreamingRaw() throws IOException {
         _testStreaming(true);
     }
 
+    @Test
     public void testStreamingEncoded() throws IOException {
         _testStreaming(false);
     }

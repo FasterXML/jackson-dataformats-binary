@@ -1,13 +1,16 @@
 package tools.jackson.dataformat.smile.gen;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.core.json.JsonFactory;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
+
+import tools.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class TestGeneratorSymbols extends BaseTestForSmile
 {
@@ -15,6 +18,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
      * Simple test to verify that second reference will not output new String, but
      * rather references one output earlier.
      */
+    @Test
     public void testSharedNameSimple() throws Exception
     {
         // false, no header (or frame marker)
@@ -34,6 +38,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     }
 
     // same as above, but with name >= 64 characters
+    @Test
     public void testSharedNameSimpleLong() throws Exception
     {
         _testSharedNameSimpleLong("ABCD");
@@ -91,17 +96,20 @@ public class TestGeneratorSymbols extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testLongNamesNonShared() throws Exception
     {
         _testLongNames(false);
     }
 
+    @Test
     public void testLongNamesShared() throws Exception
     {
         _testLongNames(true);
     }
 
     // [Issue#8] Test by: M. Tarik Yurt  / mtyurt@gmail.com
+    @Test
     public void testExpandSeenNames() throws Exception
     {
         byte[] data = _smileDoc("{\"a1\":null,\"a2\":null,\"a3\":null,\"a4\":null,\"a5\":null,\"a6\":null,\"a7\":null,\"a8\":null," +
@@ -137,6 +145,7 @@ public class TestGeneratorSymbols extends BaseTestForSmile
     }
 
     // [Issue#8] Test by: M. Tarik Yurt  / mtyurt@gmail.com
+    @Test
     public void testExpandSeenStringValues() throws Exception
     {
         String json = "{\"a1\":\"v1\",\"a2\":\"v2\",\"a3\":\"v3\",\"a4\":\"v4\",\"a5\":\"v5\",\"a6\":\"v6\",\"a7\":\"v7\",\"a8\":\"v8\"," +

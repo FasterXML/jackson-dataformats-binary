@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.smile.constraints;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamConstraintsException;
 
@@ -11,6 +13,8 @@ import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DeeplyNestedSmileReadWriteTest extends BaseTestForSmile
 {
@@ -26,10 +30,12 @@ public class DeeplyNestedSmileReadWriteTest extends BaseTestForSmile
             .build()
             );
 
+    @Test
     public void testDeepNestingArrayRead() throws Exception {
         _testDeepNestingRead(createDeepNestedArrayDoc(13));
     }
 
+    @Test
     public void testDeepNestingObjectRead() throws Exception {
         _testDeepNestingRead(createDeepNestedObjectDoc(13));
     }
@@ -46,10 +52,12 @@ public class DeeplyNestedSmileReadWriteTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testDeepNestingArrayWrite() throws Exception {
         _testDeepNestingWrite(createDeepNestedArrayDoc(13));
     }
 
+    @Test
     public void testDeepNestingObjectWrite() throws Exception {
         _testDeepNestingWrite(createDeepNestedObjectDoc(13));
     }

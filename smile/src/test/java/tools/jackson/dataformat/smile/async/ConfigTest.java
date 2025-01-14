@@ -2,19 +2,25 @@ package tools.jackson.dataformat.smile.async;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.dataformat.smile.SmileFactory;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigTest extends AsyncTestBase
 {
     private final SmileFactory DEFAULT_F = new SmileFactory();
 
+    @Test
     public void testFactoryDefaults() throws IOException
     {
         assertTrue(DEFAULT_F.canParseAsync());
     }
 
+    @Test
     public void testAsyncParerDefaults() throws IOException
     {
         byte[] data = _smileDoc("[ true, false ]", true);

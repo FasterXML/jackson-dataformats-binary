@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.databind.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.Test;
+
 public class RecursiveIgnorePropertiesTest extends BaseTestForSmile
 {
     static class Person {
@@ -19,6 +24,7 @@ public class RecursiveIgnorePropertiesTest extends BaseTestForSmile
 
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testRecursiveForDeser() throws Exception
     {
         byte[] doc = _smileDoc(aposToQuotes("{ 'name': 'admin',\n"
@@ -29,6 +35,7 @@ public class RecursiveIgnorePropertiesTest extends BaseTestForSmile
         assertEquals("admin", result.name);
     }
 
+    @Test
     public void testRecursiveForSer() throws Exception
     {
         Person input = new Person();

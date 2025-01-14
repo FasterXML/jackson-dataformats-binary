@@ -1,15 +1,17 @@
 package tools.jackson.dataformat.smile.parse;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileReadFeature;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
+import tools.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for verifying that symbol handling works as planned, including
@@ -81,6 +83,7 @@ public class ParserSymbolHandlingTest
 
     private final ObjectMapper MAPPER = newSmileMapper();
 
+    @Test
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
@@ -123,6 +126,7 @@ public class ParserSymbolHandlingTest
         p.close();
     }
 
+    @Test
     public void testSharedStrings() throws IOException
     {
         final int count = 19000;
@@ -138,6 +142,7 @@ public class ParserSymbolHandlingTest
         verifyStringValues(shared, count);
     }
 
+    @Test
     public void testSharedStringsInArrays() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
@@ -161,6 +166,7 @@ public class ParserSymbolHandlingTest
         p.close();
     }
 
+    @Test
     public void testSharedStringsInObject() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
@@ -188,6 +194,7 @@ public class ParserSymbolHandlingTest
         p.close();
     }
 
+    @Test
     public void testSharedStringsMixed() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
@@ -308,6 +315,7 @@ public class ParserSymbolHandlingTest
         p.close();
     }
 
+    @Test
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = SmileFactory.builder()
@@ -342,6 +350,7 @@ public class ParserSymbolHandlingTest
         assertEquals(exp, actual);
     }
 
+    @Test
     public void testIssue562() throws IOException
     {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -372,6 +381,7 @@ public class ParserSymbolHandlingTest
         parser.close();
     }
 
+    @Test
     public void testIssue564() throws Exception
     {
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
@@ -448,6 +458,7 @@ public class ParserSymbolHandlingTest
         parser.close();
     }
 
+    @Test
     public void testCorruptName34() throws Exception
     {
         // 65 chars/bytes, and not one less, to trigger it

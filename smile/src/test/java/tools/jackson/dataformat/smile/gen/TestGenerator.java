@@ -2,24 +2,25 @@ package tools.jackson.dataformat.smile.gen;
 
 import static tools.jackson.dataformat.smile.SmileConstants.*;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.JsonParser;
-import tools.jackson.core.JsonToken;
-import tools.jackson.core.ObjectReadContext;
-import tools.jackson.core.ObjectWriteContext;
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.core.*;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestGenerator extends BaseTestForSmile
 {
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
+    @Test
     public void testSimpleLiterals() throws Exception
     {
         // false, no header (or frame marker)
@@ -73,6 +74,7 @@ public class TestGenerator extends BaseTestForSmile
                 TOKEN_LITERAL_NULL, BYTE_MARKER_END_OF_CONTENT);
     }
 
+    @Test
     public void testSimpleArray() throws Exception
     {
     	// First: empty array (2 bytes)
@@ -108,6 +110,7 @@ public class TestGenerator extends BaseTestForSmile
         assertEquals(7, out.toByteArray().length);
     }
 
+    @Test
     public void testShortAscii() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -118,6 +121,7 @@ public class TestGenerator extends BaseTestForSmile
     }
 
 
+    @Test
     public void testTrivialObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -131,6 +135,7 @@ public class TestGenerator extends BaseTestForSmile
         		SmileConstants.TOKEN_LITERAL_END_OBJECT);
     }
 
+    @Test
     public void test2FieldObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -146,6 +151,7 @@ public class TestGenerator extends BaseTestForSmile
         		SmileConstants.TOKEN_LITERAL_END_OBJECT);
     }
 
+    @Test
     public void testAnotherObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -172,6 +178,7 @@ public class TestGenerator extends BaseTestForSmile
     }
 
     // [dataformat-smile#30]: problems with empty string key
+    @Test
     public void testObjectWithEmptyKey() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -240,6 +247,7 @@ public class TestGenerator extends BaseTestForSmile
     /**
      * Test to verify that
      */
+    @Test
     public void testSharedStrings() throws Exception
     {
         // first, no sharing, 2 separate Strings
@@ -253,6 +261,7 @@ public class TestGenerator extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testWithMap() throws Exception
     {
         final SmileFactory smileFactory = SmileFactory.builder()

@@ -1,6 +1,8 @@
 package tools.jackson.dataformat.smile.filter;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.dataformat.smile.*;
@@ -8,8 +10,12 @@ import tools.jackson.dataformat.smile.databind.SmileMapper;
 import tools.jackson.dataformat.smile.testutil.PrefixInputDecorator;
 import tools.jackson.dataformat.smile.testutil.PrefixOutputDecorator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class StreamingDecoratorsTest extends BaseTestForSmile
 {
+    @Test
     public void testInputDecorators() throws Exception
     {
         final byte[] DOC = _smileDoc("42   37");
@@ -26,6 +32,7 @@ public class StreamingDecoratorsTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testOutputDecorators() throws Exception
     {
         final byte[] DOC = _smileDoc(" 137");

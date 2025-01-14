@@ -1,10 +1,15 @@
 package tools.jackson.dataformat.smile;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class SmileUtilTest extends BaseTestForSmile
 {
     /**
      * Verification of helper methods used to handle with zigzag encoding
      */
+    @Test
     public void testZigZagInt()
     {
         // simple encode
@@ -26,6 +31,7 @@ public class SmileUtilTest extends BaseTestForSmile
         assertEquals(Integer.MAX_VALUE, SmileUtil.zigzagDecode(SmileUtil.zigzagEncode(Integer.MAX_VALUE)));
     }
 
+    @Test
     public void testZigZagLong()
     {
         assertEquals(0L, SmileUtil.zigzagEncode(0L));

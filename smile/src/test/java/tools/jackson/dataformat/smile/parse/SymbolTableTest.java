@@ -3,16 +3,19 @@ package tools.jackson.dataformat.smile.parse;
 import java.lang.reflect.Field;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileParserBase;
+
+import tools.jackson.dataformat.smile.*;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SymbolTableTest extends BaseTestForSmile
 {
@@ -29,6 +32,7 @@ public class SymbolTableTest extends BaseTestForSmile
             .build())
             .build();
 
+    @Test
     public void testSimpleDefault() throws Exception
     {
         final SmileMapper vanillaMapper = smileMapper();
@@ -86,6 +90,7 @@ public class SymbolTableTest extends BaseTestForSmile
 
     // [dataformats-binary#252]: should be able to prevent canonicalization
     // Assumption: there is still non-null symbol table, but has "no canonicalization"
+    @Test
     public void testNoCanonicalizeWithMapper() throws Exception
     {
         final byte[] doc = _smileDoc(a2q(
@@ -99,6 +104,7 @@ public class SymbolTableTest extends BaseTestForSmile
     }
 
     // [dataformats-binary#252]: should be able to prevent canonicalization
+    @Test
     public void testSimpleNoCanonicalize() throws Exception
     {
         final String[] fieldNames = new String[] {

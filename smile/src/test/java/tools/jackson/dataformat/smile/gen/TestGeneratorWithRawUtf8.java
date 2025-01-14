@@ -1,17 +1,16 @@
 package tools.jackson.dataformat.smile.gen;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileGenerator;
-import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.*;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test to verify handling of "raw String value" write methods that by-pass
@@ -22,6 +21,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testUtf8RawStrings() throws Exception
     {
         // Let's create set of Strings to output; no ctrl chars as we do raw
@@ -62,6 +62,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
      * Unit test for "JsonGenerator.writeUTF8String()", which needs
      * to handle escaping properly
      */
+    @Test
     public void testUtf8StringsWithEscaping() throws Exception
     {
         // Let's create set of Strings to output; do include control chars too:
@@ -95,6 +96,7 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
      *
      * @author David Yu
      */
+    @Test
     public void testIssue492() throws Exception
     {
         doTestIssue492(false);
@@ -153,11 +155,13 @@ public class TestGeneratorWithRawUtf8 extends BaseTestForSmile
         assertToken(parser.nextToken(), JsonToken.START_OBJECT);
 
         assertToken(parser.nextToken(), JsonToken.PROPERTY_NAME);
-        assertEquals("Should have property with name 'v'", parser.currentName(), "v");
+        assertEquals(parser.currentName(), "v",
+                "Should have property with name 'v'");
         assertToken(parser.nextToken(), JsonToken.START_ARRAY);
 
         assertToken(parser.nextToken(), JsonToken.VALUE_STRING);
-        assertEquals("Should get String value '1'", parser.getString(), "1");
+        assertEquals(parser.getString(), "1",
+                "Should get String value '1'");
 
         assertToken(parser.nextToken(), JsonToken.END_ARRAY);
         assertToken(parser.nextToken(), JsonToken.END_OBJECT);

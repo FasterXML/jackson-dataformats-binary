@@ -1,15 +1,21 @@
 package tools.jackson.dataformat.smile.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamReadException;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SmileFuzz32654ShortUnicodeTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
     // [dataformats-binary#266]
+    @Test
     public void testInvalidShortUnicode() throws Exception
     {
         /*

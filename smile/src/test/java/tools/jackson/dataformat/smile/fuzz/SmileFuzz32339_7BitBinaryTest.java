@@ -3,6 +3,8 @@ package tools.jackson.dataformat.smile.fuzz;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
@@ -13,6 +15,7 @@ public class SmileFuzz32339_7BitBinaryTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // Test with negative length indicator (due to overflow) -- CF-32339
+    @Test
     public void testInvalid7BitBinary() throws Exception
     {
         final byte[] input0 = new byte[] {

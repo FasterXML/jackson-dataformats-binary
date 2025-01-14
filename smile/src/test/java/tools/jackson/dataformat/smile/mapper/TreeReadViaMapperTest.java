@@ -2,11 +2,15 @@ package tools.jackson.dataformat.smile.mapper;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.databind.*;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * This unit test suite tries to verify that ObjectMapper
@@ -17,6 +21,7 @@ public class TreeReadViaMapperTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = newSmileMapper();
 
+    @Test
     public void testSimple() throws Exception
     {
         JsonNode result = MAPPER.readTree(_smileDoc(SAMPLE_DOC_JSON_SPEC));
@@ -80,6 +85,7 @@ public class TreeReadViaMapperTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testMultiple() throws Exception
     {
         JsonParser p = MAPPER.createParser(_smileDoc("12  \"string\" [ 1, 2, 3 ]"));

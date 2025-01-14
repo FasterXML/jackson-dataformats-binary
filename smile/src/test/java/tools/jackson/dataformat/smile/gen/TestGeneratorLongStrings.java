@@ -3,13 +3,18 @@ package tools.jackson.dataformat.smile.gen;
 import java.io.*;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestGeneratorLongStrings extends BaseTestForSmile
 {
     final static int DOC_LEN = 2000000; // 2 meg test doc
 
+    @Test
     public void testLongWithMultiBytes() throws Exception
     {
         ArrayList<String> strings = new ArrayList<String>();

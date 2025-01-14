@@ -1,15 +1,19 @@
 package tools.jackson.dataformat.smile;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 // for [jackson-core#730]
 public class FloatPrecisionTest extends BaseTestForSmile
 {
     // for [jackson-core#730]
+    @Test
     public void testFloatRoundtrips() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

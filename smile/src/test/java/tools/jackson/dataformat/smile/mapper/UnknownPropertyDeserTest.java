@@ -2,6 +2,8 @@ package tools.jackson.dataformat.smile.mapper;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.core.*;
 import tools.jackson.core.type.TypeReference;
@@ -9,6 +11,8 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.deser.DeserializationProblemHandler;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for checking handling of unknown properties
@@ -130,6 +134,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      * By default we should just get an exception if an unknown property
      * is encountered
      */
+    @Test
     public void testUnknownHandlingDefault() throws Exception
     {
         try {
@@ -143,6 +148,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      * Test that verifies that it is possible to ignore unknown properties using
      * {@link DeserializationProblemHandler}.
      */
+    @Test
     public void testUnknownHandlingIgnoreWithHandler() throws Exception
     {
         ObjectMapper mapper = smileMapperBuilder()
@@ -159,6 +165,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      * Test that verifies that it is possible to ignore unknown properties using
      * {@link DeserializationProblemHandler} and an ObjectReader.
      */
+    @Test
     public void testUnknownHandlingIgnoreWithHandlerAndObjectReader() throws Exception
     {
         ObjectMapper mapper = smileMapper();
@@ -174,6 +181,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      * Test for checking that it is also possible to simply suppress
      * error reporting for unknown properties.
      */
+    @Test
     public void testUnknownHandlingIgnoreWithFeature() throws Exception
     {
         ObjectMapper mapper = smileMapperBuilder()
@@ -186,6 +194,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         assertEquals(-1, result._b);
     }
 
+    @Test
     public void testWithClassIgnore() throws Exception
     {
         IgnoreSome result = MAPPER.readValue(
@@ -199,6 +208,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         assertNull(result.c());
     }
 
+    @Test
     public void testClassIgnoreWithMap() throws Exception
     {
         // Let's actually use incompatible types for "a" and "d"; should not matter when ignored
@@ -216,6 +226,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         assertFalse(result.containsKey("d"));
     }
 
+    @Test
     public void testClassWithIgnoreUnknown() throws Exception
     {
         IgnoreUnknown result = MAPPER.readValue(
@@ -228,10 +239,11 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
      * Test that verifies that use of {@link JsonIgnore} will add implicit
      * skipping of matching properties.
      */
+    @Test
     public void testClassWithUnknownAndIgnore() throws Exception
     {
-    	byte[] doc = _smileDoc("{\"a\":1,\"b\":2,\"c\":3 }");
-		// should be ok: "a" and "b" ignored, "c" mapped:
+        byte[] doc = _smileDoc("{\"a\":1,\"b\":2,\"c\":3 }");
+        // should be ok: "a" and "b" ignored, "c" mapped:
         ImplicitIgnores result = MAPPER.readValue(doc,
         		ImplicitIgnores.class);
         assertEquals(3, result.c);
@@ -245,6 +257,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testPropertyIgnoral() throws Exception
     {
         XYZWrapper1 result = MAPPER.readValue(
@@ -254,6 +267,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         assertEquals(3, result.value.z);
     }
 
+    @Test
     public void testPropertyIgnoralWithClass() throws Exception
     {
         XYZWrapper2 result = MAPPER.readValue(_smileDoc("{\"value\":{\"y\":2,\"x\":1,\"z\":3}}"),
@@ -261,6 +275,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         assertEquals(1, result.value.x);
     }
 
+    @Test
     public void testPropertyIgnoralForMap() throws Exception
     {
         MapWithoutX result = MAPPER.readValue(_smileDoc("{\"values\":{\"x\":1,\"y\":2}}"),
@@ -270,6 +285,7 @@ public class UnknownPropertyDeserTest extends BaseTestForSmile
         assertEquals(Integer.valueOf(2), result.values.get("y"));
     }
 
+    @Test
     public void testIssue987() throws Exception
     {
         ObjectMapper mapper = smileMapperBuilder()

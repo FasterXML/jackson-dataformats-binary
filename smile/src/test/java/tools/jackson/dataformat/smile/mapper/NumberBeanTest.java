@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import tools.jackson.core.JsonToken;
@@ -13,6 +15,9 @@ import tools.jackson.core.JsonParser.NumberType;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileGenerator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class NumberBeanTest extends BaseTestForSmile
 {
@@ -49,6 +54,7 @@ public class NumberBeanTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // for [dataformats-binary#31]
+    @Test
     public void testDoubleArrayRoundTrip() throws Exception
     {
         double[][] inputArray = new double[][]{ { 0.25, -1.5 } };
@@ -62,6 +68,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(inputArray[0][1], result.values[0][1]);
     }
 
+    @Test
     public void testNumberTypeRetainingInt() throws Exception
     {
         NumberWrapper result;
@@ -95,6 +102,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(BigInteger.valueOf(-42L), result.nr);
     }
 
+    @Test
     public void testNumberTypeRetainingFP() throws Exception
     {
         NumberWrapper result;
@@ -128,6 +136,7 @@ public class NumberBeanTest extends BaseTestForSmile
         assertEquals(new BigDecimal("0.100"), result.nr);
     }
 
+    @Test
     public void testNumberTypeRetainingBuffering() throws Exception
     {
         ByteArrayOutputStream bytes;
@@ -183,6 +192,7 @@ public class NumberBeanTest extends BaseTestForSmile
     }
 
     // [databind#2784]
+    @Test
     public void testBigDecimalWithBuffering() throws Exception
     {
         final BigDecimal VALUE = new BigDecimal("5.00");

@@ -4,7 +4,8 @@ import tools.jackson.core.JsonToken;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectReader;
-import tools.jackson.dataformat.smile.*;
+
+import tools.jackson.dataformat.smile.BaseTestForSmile;
 
 abstract class AsyncTestBase extends BaseTestForSmile
 {

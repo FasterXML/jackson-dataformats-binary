@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.smile.parse;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -9,9 +9,13 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class UnicodeHandlingTest extends BaseTestForSmile
 {
-    public void testShortUnicodeWithSurrogates() throws IOException
+    @Test
+    public void testShortUnicodeWithSurrogates() throws Exception
     {
         _testLongUnicodeWithSurrogates(28, false);
         _testLongUnicodeWithSurrogates(28, true);
@@ -19,7 +23,8 @@ public class UnicodeHandlingTest extends BaseTestForSmile
         _testLongUnicodeWithSurrogates(230, false);
     }
 
-    public void testLongUnicodeWithSurrogates() throws IOException
+    @Test
+    public void testLongUnicodeWithSurrogates() throws Exception
     {
         _testLongUnicodeWithSurrogates(700, false);
         _testLongUnicodeWithSurrogates(900, true);
@@ -28,7 +33,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
     }
 
     private void _testLongUnicodeWithSurrogates(int length,
-        boolean throttling) throws IOException
+        boolean throttling) throws Exception
     {
         final String SURROGATE_CHARS = "\ud834\udd1e";
         StringBuilder sb = new StringBuilder(length+200);
@@ -81,7 +86,7 @@ public class UnicodeHandlingTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = new ObjectMapper(smileFactory(false, true, false));
 
     @SuppressWarnings("resource")
-    private JsonParser _parser(byte[] data, boolean throttling) throws IOException
+    private JsonParser _parser(byte[] data, boolean throttling) throws Exception
     {
         if (throttling) {
             return MAPPER.createParser(new ThrottledInputStream(data, 3));

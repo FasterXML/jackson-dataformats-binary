@@ -1,16 +1,18 @@
 package tools.jackson.dataformat.smile;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import tools.jackson.databind.ObjectMapper;
 
-// Tests that have to reside in this package, due to access restrictions
+import static org.junit.jupiter.api.Assertions.*;
+
 public class SymbolHandlingTest extends BaseTestForSmile
 {
-    public void testSymbolTable() throws IOException
+    @Test
+    public void testSymbolTable() throws Exception
     {
         ObjectMapper mapper = newSmileMapper();
 

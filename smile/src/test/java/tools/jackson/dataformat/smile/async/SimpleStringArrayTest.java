@@ -3,16 +3,16 @@ package tools.jackson.dataformat.smile.async;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.JsonToken;
-import tools.jackson.core.StreamReadConstraints;
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.ObjectWriter;
 
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileReadFeature;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
+import tools.jackson.dataformat.smile.*;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleStringArrayTest extends AsyncTestBase
 {
@@ -32,6 +32,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         .withFeatures(SmileWriteFeature.CHECK_SHARED_NAMES,
                 SmileWriteFeature.CHECK_SHARED_STRING_VALUES);
 
+    @Test
     public void testShortAsciiStrings() throws IOException
     {
 
@@ -57,6 +58,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(input, data, 1, 1);
     }
 
+    @Test
     public void testShortUnicodeStrings() throws IOException
     {
         final String repeat = "Test: "+UNICODE_2BYTES;
@@ -84,6 +86,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(input, data, 1, 1);
     }
 
+    @Test
     public void testLongAsciiStrings() throws IOException
     {
         final String[] input = new String[] {
@@ -106,6 +109,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(input, data, 1, 1);
     }
 
+    @Test
     public void testLongAsciiStringsLowStringLimit() throws IOException
     {
         final String[] input = new String[] {
@@ -133,11 +137,12 @@ public class SimpleStringArrayTest extends AsyncTestBase
             r.currentText();
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
-            assertTrue("unexpected exception message: " + ise.getMessage(),
-                    ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"));
+            assertTrue(ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"),
+                    "unexpected exception message: " + ise.getMessage());
         }
     }
 
+    @Test
     public void testLongUnicodeStrings() throws IOException
     {
         // ~100 chars for long(er) content

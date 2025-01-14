@@ -3,9 +3,13 @@ package tools.jackson.dataformat.smile.mapper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CaseInsensitiveDeserTest extends BaseTestForSmile
 {
@@ -44,6 +48,7 @@ public class CaseInsensitiveDeserTest extends BaseTestForSmile
             .build();
 
     // [databind#566]
+    @Test
     public void testCaseInsensitiveDeserialization() throws Exception
     {
         byte[] DOC = _smileDoc(aposToQuotes(
@@ -79,6 +84,7 @@ public class CaseInsensitiveDeserTest extends BaseTestForSmile
     }
 
     // [databind#1036]
+    @Test
     public void testCaseInsensitive1036() throws Exception
     {
         byte[] DOC = _smileDoc("{\"ErrorCode\":2,\"DebugMessage\":\"Signature not valid!\"}");
@@ -102,6 +108,7 @@ public class CaseInsensitiveDeserTest extends BaseTestForSmile
     }
 
     // [databind#1438]
+    @Test
     public void testCreatorWithInsensitive() throws Exception
     {
         final byte[] DOC = _smileDoc(aposToQuotes("{'VALUE':3}"));

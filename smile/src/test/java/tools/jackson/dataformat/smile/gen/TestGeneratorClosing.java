@@ -1,10 +1,12 @@
 package tools.jackson.dataformat.smile.gen;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileFactoryBuilder;
+import tools.jackson.dataformat.smile.*;
 import tools.jackson.dataformat.smile.testutil.ByteOutputStreamForTesting;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Set of basic unit tests that verify aspect of closing a
@@ -31,6 +33,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
      * automatic closing should occur, nor explicit one unless specific
      * forcing method is used.
      */
+    @Test
     public void testNoAutoCloseGenerator() throws Exception
     {
         TokenStreamFactory f = newFactory();
@@ -55,6 +58,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testCloseGenerator() throws Exception
     {
         TokenStreamFactory f = newFactoryBuilder()
@@ -72,6 +76,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
         assertTrue(output.isClosed());
     }
 
+    @Test
     public void testNoAutoCloseOutputStream() throws Exception
     {
         TokenStreamFactory f = newFactoryBuilder()
@@ -88,6 +93,7 @@ public class TestGeneratorClosing extends BaseTestForSmile
     }
 
     @SuppressWarnings("resource")
+    @Test
     public void testAutoFlushOrNot() throws Exception
     {
         TokenStreamFactory f = newFactory();

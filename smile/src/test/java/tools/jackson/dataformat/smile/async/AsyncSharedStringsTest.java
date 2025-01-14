@@ -1,7 +1,10 @@
 package tools.jackson.dataformat.smile.async;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.databind.JsonNode;
@@ -9,6 +12,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for verifying that symbol handling works as planned, including
@@ -75,6 +80,7 @@ public class AsyncSharedStringsTest
 
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
@@ -115,6 +121,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testSharedStrings() throws IOException
     {
         final int count = 19000;
@@ -130,6 +137,7 @@ public class AsyncSharedStringsTest
         verifyStringValues(shared, count);
     }
 
+    @Test
     public void testSharedStringsInArrays() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
@@ -155,6 +163,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testSharedStringsInObject() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
@@ -183,6 +192,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testSharedStringsMixed() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream(4000);
@@ -302,6 +312,7 @@ public class AsyncSharedStringsTest
         p.close();
     }
 
+    @Test
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = SmileFactory.builder()
@@ -339,6 +350,7 @@ public class AsyncSharedStringsTest
     /**
      * Reproducing [JACKSON-561] (and [JACKSON-562])
      */
+    @Test
     public void testIssue562() throws IOException
     {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -372,6 +384,7 @@ public class AsyncSharedStringsTest
     /**
      * Verification that [JACKSON-564] was fixed.
      */
+    @Test
     public void testIssue564() throws Exception
     {
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
@@ -448,6 +461,7 @@ public class AsyncSharedStringsTest
         parser.close();
     }
 
+    @Test
     public void testCorruptName34() throws Exception
     {
         // 65 chars/bytes, and not one less, to trigger it

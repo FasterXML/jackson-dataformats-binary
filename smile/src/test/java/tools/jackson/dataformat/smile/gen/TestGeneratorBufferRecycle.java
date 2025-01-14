@@ -1,7 +1,11 @@
 package tools.jackson.dataformat.smile.gen;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 
@@ -13,6 +17,7 @@ import tools.jackson.dataformat.smile.BaseTestForSmile;
  */
 public class TestGeneratorBufferRecycle extends BaseTestForSmile
 {
+    @Test
     public void testMaps() throws Exception
     {
         ObjectMapper mapper = newSmileMapper();

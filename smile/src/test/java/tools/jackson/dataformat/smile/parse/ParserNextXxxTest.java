@@ -1,21 +1,28 @@
 package tools.jackson.dataformat.smile.parse;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.SerializedString;
+
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ParserNextXxxTest extends BaseTestForSmile
 {
+    @Test
     public void testIsNextTokenName() throws Exception
     {
         _testIsNextTokenName1();
         _testIsNextTokenName2();
     }
 
+    @Test
     public void testNextName() throws Exception
     {
         final int TESTROUNDS = 223;
@@ -55,6 +62,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testIssue38() throws Exception
     {
         byte[] DOC = _smileDoc("{\"field\" :\"value\"}", true);
@@ -70,6 +78,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         parser.close();
     }
 
+    @Test
     public void testNextNameWithLongContent() throws Exception
     {
         // do 3 meg thingy
@@ -106,6 +115,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
         parser.close();
     }
 
+    @Test
     public void testNextTextValue() throws Exception
     {
         final SmileFactory f = new SmileFactory();

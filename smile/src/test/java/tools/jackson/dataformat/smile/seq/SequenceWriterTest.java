@@ -2,13 +2,14 @@ package tools.jackson.dataformat.smile.seq;
 
 import java.io.ByteArrayOutputStream;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.MappingIterator;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SequenceWriter;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import tools.jackson.databind.*;
+import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SequenceWriterTest extends BaseTestForSmile
 {
@@ -30,6 +31,7 @@ public class SequenceWriterTest extends BaseTestForSmile
     /**********************************************************
      */
 
+    @Test
     public void testSimpleSeqWrite() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

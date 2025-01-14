@@ -5,6 +5,8 @@ import java.nio.charset.StandardCharsets;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectReader;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class SimpleFailsTest extends AsyncTestBase
 {
     private final ObjectReader READER = _smileReader(true); // require headers

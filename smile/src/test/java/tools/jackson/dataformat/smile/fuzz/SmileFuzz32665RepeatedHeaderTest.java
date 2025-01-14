@@ -2,10 +2,15 @@ package tools.jackson.dataformat.smile.fuzz;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // for [dataformats-binary#268]
 public class SmileFuzz32665RepeatedHeaderTest extends BaseTestForSmile
@@ -13,6 +18,7 @@ public class SmileFuzz32665RepeatedHeaderTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // for [dataformats-binary#268]
+    @Test
     public void testLongRepeatedHeaders() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(16001);

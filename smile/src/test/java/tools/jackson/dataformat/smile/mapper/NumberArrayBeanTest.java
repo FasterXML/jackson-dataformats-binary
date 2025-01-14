@@ -3,6 +3,11 @@ package tools.jackson.dataformat.smile.mapper;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.Test;
+
 public class NumberArrayBeanTest extends BaseTestForSmile
 {
     static class IntsWrapper {
@@ -34,6 +39,7 @@ public class NumberArrayBeanTest extends BaseTestForSmile
 
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testIntArrayRoundTrip() throws Exception
     {
         int[][] inputArray = new int[][]{ { -5, 3 } };
@@ -47,6 +53,7 @@ public class NumberArrayBeanTest extends BaseTestForSmile
         assertEquals(inputArray[0][1], result.values[0][1]);
     }
 
+    @Test
     public void testLongArrayRoundTrip() throws Exception
     {
         long[][] inputArray = new long[][]{ { 3L + Integer.MAX_VALUE, -3L + Integer.MIN_VALUE } };
@@ -61,6 +68,7 @@ public class NumberArrayBeanTest extends BaseTestForSmile
     }
 
     // for [dataformats-binary#31]
+    @Test
     public void testDoubleArrayRoundTrip() throws Exception
     {
         double[][] inputArray = new double[][]{ { 0.25, -1.5 } };

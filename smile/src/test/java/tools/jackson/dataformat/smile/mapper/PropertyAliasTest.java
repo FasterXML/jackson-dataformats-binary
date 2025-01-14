@@ -1,9 +1,14 @@
 package tools.jackson.dataformat.smile.mapper;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class PropertyAliasTest extends BaseTestForSmile
 {
@@ -48,6 +53,7 @@ public class PropertyAliasTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // [databind#1029]
+    @Test
     public void testSimpleAliases() throws Exception
     {
         AliasBean bean;
@@ -74,6 +80,7 @@ public class PropertyAliasTest extends BaseTestForSmile
         assertEquals(37, bean._xyz);
     }
 
+    @Test
     public void testAliasWithPolymorphic() throws Exception
     {
         PolyWrapperForAlias value = MAPPER.readValue(_smileDoc(aposToQuotes(

@@ -2,10 +2,14 @@ package tools.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestGeneratorWithSerializedString extends BaseTestForSmile
 {
@@ -17,6 +21,7 @@ public class TestGeneratorWithSerializedString extends BaseTestForSmile
 
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testSimple()
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

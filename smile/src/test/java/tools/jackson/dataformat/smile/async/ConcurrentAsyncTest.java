@@ -1,9 +1,9 @@
 package tools.jackson.dataformat.smile.async;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.core.async.ByteArrayFeeder;
@@ -14,13 +14,15 @@ import tools.jackson.databind.util.TokenBuffer;
 
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 
-// for [dataformats-binary#384]
 public class ConcurrentAsyncTest extends AsyncTestBase
 {
+    @Test
     public void testConcurrentHandling() throws Exception
     {
         // 19-Jun-2023, tatu: For some reason, TokenBuffer buffering
         //   appears to fail and can't make it work so... skip
+        // 13-Jan-2025, tatu: Looks like bogus `ObjectReadContext` is the problem
+        //  (by... async package maybe?)
         if (true) {
             return;
         }

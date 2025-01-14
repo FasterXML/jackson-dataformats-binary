@@ -3,7 +3,7 @@ package tools.jackson.dataformat.smile.mapper;
 import java.io.*;
 import java.util.*;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -16,10 +16,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileReadFeature;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
+import tools.jackson.dataformat.smile.*;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MapperSimpleReadTest extends BaseTestForSmile
 {
@@ -57,6 +57,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
 
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testBinary() throws IOException
     {
         byte[] input = new byte[] { 1, 2, 3, -1, 8, 0, 42 };
@@ -64,10 +65,11 @@ public class MapperSimpleReadTest extends BaseTestForSmile
         BytesBean result = MAPPER.readValue(smile, BytesBean.class);
 
         assertNotNull(result.bytes);
-        Assert.assertArrayEquals(input, result.bytes);
+        assertArrayEquals(input, result.bytes);
     }
 
     // [dataformats-binary#1711]
+    @Test
     public void testWrappedBinary() throws IOException
     {
         byte[] bytes = {1, 2, 3, 4, 5};
@@ -91,6 +93,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
     }
 
     // UUIDs should be written as binary (starting with 2.3)
+    @Test
     public void testUUIDs() throws IOException
     {
         UUID uuid = UUID.randomUUID();
@@ -109,6 +112,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testWithNestedMaps() throws IOException
     {
         Map<Object,Object> map = new HashMap<Object,Object>();
@@ -126,6 +130,7 @@ public class MapperSimpleReadTest extends BaseTestForSmile
     }
 
     // for [dataformat-smile#26]
+    @Test
     public void testIssue26ArrayOutOfBounds() throws Exception
     {
         byte[] buffer = _generateHugeDoc();
@@ -175,6 +180,8 @@ public class MapperSimpleReadTest extends BaseTestForSmile
     /**********************************************************
      */
 
+    // Test for [dataformats-binary#301]
+    @Test
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         SmileMapper mapperWithHeaders = SmileMapper.builder()

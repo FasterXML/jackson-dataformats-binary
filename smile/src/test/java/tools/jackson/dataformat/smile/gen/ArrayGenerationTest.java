@@ -2,10 +2,15 @@ package tools.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Basic testing for scalar-array write methods added in 2.8.
@@ -14,18 +19,21 @@ public class ArrayGenerationTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = SmileMapper.shared();
 
+    @Test
     public void testIntArray() throws Exception
     {
         _testIntArray(false);
         _testIntArray(true);
     }
 
+    @Test
     public void testLongArray() throws Exception
     {
         _testLongArray(false);
         _testLongArray(true);
     }
 
+    @Test
     public void testDoubleArray() throws Exception
     {
         _testDoubleArray(false);

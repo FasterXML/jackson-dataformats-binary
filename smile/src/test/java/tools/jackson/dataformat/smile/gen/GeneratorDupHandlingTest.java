@@ -2,13 +2,18 @@ package tools.jackson.dataformat.smile.gen;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class GeneratorDupHandlingTest extends BaseTestForSmile
 {
+    @Test
     public void testSimpleDupsEagerlyBytes() {
         _testSimpleDups(false, new SmileFactory());
     }

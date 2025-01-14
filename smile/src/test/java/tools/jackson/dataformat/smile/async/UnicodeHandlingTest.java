@@ -1,13 +1,17 @@
 package tools.jackson.dataformat.smile.async;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonToken;
 import tools.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class UnicodeHandlingTest extends AsyncTestBase
 {
-    public void testShortUnicodeWithSurrogates() throws IOException
+    @Test
+    public void testShortUnicodeWithSurrogates() throws Exception
     {
         final SmileFactory f = smileFactory(false, true, false);
 
@@ -24,7 +28,8 @@ public class UnicodeHandlingTest extends AsyncTestBase
         _testUnicodeWithSurrogates(f, 53, 1);
     }
 
-    public void testLongUnicodeWithSurrogates() throws IOException
+    @Test
+    public void testLongUnicodeWithSurrogates() throws Exception
     {
         SmileFactory f = smileFactory(false, true, false);
 
@@ -42,7 +47,7 @@ public class UnicodeHandlingTest extends AsyncTestBase
     }
 
     private void _testUnicodeWithSurrogates(SmileFactory f,
-            int length, int readSize) throws IOException
+            int length, int readSize) throws Exception
     {
         final String SURROGATE_CHARS = "\ud834\udd1e";
         StringBuilder sb = new StringBuilder(length+200);

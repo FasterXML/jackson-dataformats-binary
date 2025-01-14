@@ -3,8 +3,12 @@ package tools.jackson.dataformat.smile.async;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonToken;
 import tools.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RootValuesTest extends AsyncTestBase
 {
@@ -12,6 +16,7 @@ public class RootValuesTest extends AsyncTestBase
             .enable(SmileReadFeature.REQUIRE_HEADER)
             .build();
 
+    @Test
     public void testSimpleRootSequence() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);

@@ -2,11 +2,15 @@ package tools.jackson.dataformat.smile.dos;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for deeply nested JSON
@@ -24,6 +28,7 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         UNCONSTRAINED_MAPPER = new SmileMapper(smileFactory);
     }
 
+    @Test
     public void testDeeplyNestedObjects() throws Exception
     {
         final int depth = 1500;
@@ -37,11 +42,12 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("StreamConstraintsException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "StreamConstraintsException message is as expected?");
         }
     }
 
+    @Test
     public void testDeeplyNestedObjectsWithUnconstrainedMapper() throws Exception
     {
         final int depth = 1500;
@@ -54,6 +60,7 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testDeeplyNestedArrays() throws Exception
     {
         final int depth = 1500;
@@ -67,11 +74,12 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
         } catch (StreamConstraintsException e) {
             String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
                     StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
-            assertTrue("StreamConstraintsException message is as expected?",
-                    e.getMessage().startsWith(exceptionPrefix));
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "StreamConstraintsException message is as expected?");
         }
     }
 
+    @Test
     public void testDeeplyNestedArraysWithUnconstrainedMapper() throws Exception
     {
         final int depth = 1500;

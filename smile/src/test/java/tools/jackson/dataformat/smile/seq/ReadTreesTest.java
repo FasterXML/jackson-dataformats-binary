@@ -2,8 +2,12 @@ package tools.jackson.dataformat.smile.seq;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadTreesTest extends BaseTestForSmile
 {
@@ -19,6 +23,7 @@ public class ReadTreesTest extends BaseTestForSmile
     /**********************************************************
      */
 
+    @Test
     public void testReadTreeSequence() throws Exception {
         _testReadTreeSequence(true);
         _testReadTreeSequence(false);

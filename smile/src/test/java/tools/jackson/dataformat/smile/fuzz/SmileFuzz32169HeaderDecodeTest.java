@@ -1,8 +1,12 @@
 package tools.jackson.dataformat.smile.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 //For [dataformats-binary#258]
 public class SmileFuzz32169HeaderDecodeTest extends BaseTestForSmile
@@ -10,6 +14,7 @@ public class SmileFuzz32169HeaderDecodeTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // Payload:
+    @Test
     public void testInvalidHeader() throws Exception
     {
         final byte[] input = new byte[] {

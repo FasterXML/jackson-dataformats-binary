@@ -2,28 +2,31 @@ package tools.jackson.dataformat.smile.gen;
 
 import java.io.*;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
+import tools.jackson.dataformat.smile.*;
 import tools.jackson.dataformat.smile.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratorBinaryTest extends BaseTestForSmile
 {
+    @Test
     public void testStreamingBinaryRaw() throws Exception
     {
         _testStreamingBinary(true, false);
         _testStreamingBinary(true, true);
     }
 
+    @Test
     public void testStreamingBinary7Bit() throws Exception
     {
         _testStreamingBinary(false, false);
         _testStreamingBinary(false, true);
     }
 
+    @Test
     public void testBinaryWithoutLength() throws Exception
     {
         JsonGenerator g = _smileGenerator(new ByteArrayOutputStream(), true);
@@ -36,6 +39,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
         g.close();
     }
 
+    @Test
     public void testStreamingBinaryPartly() throws Exception {
         _testStreamingBinaryPartly(false, false);
         _testStreamingBinaryPartly(false, true);
@@ -118,7 +122,7 @@ public class GeneratorBinaryTest extends BaseTestForSmile
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             byte[] b = p.getBinaryValue();
-            Assert.assertArrayEquals(INPUT, b);
+            assertArrayEquals(INPUT, b);
             assertToken(JsonToken.END_ARRAY, p.nextToken());
             p.close();
         }

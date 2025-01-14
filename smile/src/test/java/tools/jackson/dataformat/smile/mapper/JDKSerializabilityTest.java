@@ -3,11 +3,16 @@ package tools.jackson.dataformat.smile.mapper;
 import java.io.*;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class JDKSerializabilityTest extends BaseTestForSmile
 {
+    @Test
     public void testApacheMapperWithModule() throws Exception {
         // very simple validation: should still work wrt serialization
         SmileMapper unfrozenMapper = serializeAndDeserialize(new SmileMapper());
@@ -41,8 +46,8 @@ public class JDKSerializabilityTest extends BaseTestForSmile
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(serializedBytes);
         ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream);
         Object deserializedObject = inputStream.readObject();
-        assertTrue("Deserialized object should be an instance of ObjectMapper",
-                deserializedObject instanceof SmileMapper);
+        assertTrue(deserializedObject instanceof SmileMapper,
+                "Deserialized object should be an instance of ObjectMapper");
         return (SmileMapper) deserializedObject;
     }
 

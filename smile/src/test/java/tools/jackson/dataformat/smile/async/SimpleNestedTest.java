@@ -1,9 +1,11 @@
 package tools.jackson.dataformat.smile.async;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectReader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleNestedTest extends AsyncTestBase
 {
@@ -15,6 +17,7 @@ public class SimpleNestedTest extends AsyncTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testStuffInObject() throws Exception
     {
         byte[] data = _smileDoc(aposToQuotes("{'foobar':[1,2,-999],'other':{'':null} }"), true);
@@ -27,7 +30,7 @@ public class SimpleNestedTest extends AsyncTestBase
         _testStuffInObject(data, 1, 1);
     }
 
-    private void _testStuffInObject(byte[] data, int offset, int readSize) throws IOException
+    private void _testStuffInObject(byte[] data, int offset, int readSize) throws Exception
     {
         AsyncReaderWrapper r = asyncForBytes(READER, readSize, data, offset);
         assertToken(JsonToken.START_OBJECT, r.nextToken());
@@ -64,6 +67,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertNull(r.parser().nextToken());
     }
 
+    @Test
     public void testStuffInArray() throws Exception
     {
         byte[] data = _smileDoc(aposToQuotes("[true,{'extraOrdinary':''},[null],{'extraOrdinary':23}]"), true);
@@ -77,7 +81,7 @@ public class SimpleNestedTest extends AsyncTestBase
         _testStuffInArray(data, 1, 1);
     }
 
-    private void _testStuffInArray(byte[] data, int offset, int readSize) throws IOException
+    private void _testStuffInArray(byte[] data, int offset, int readSize) throws Exception
     {
         AsyncReaderWrapper r = asyncForBytes(READER, readSize, data, offset);
         assertToken(JsonToken.START_ARRAY, r.nextToken());

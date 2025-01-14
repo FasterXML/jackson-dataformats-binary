@@ -1,9 +1,13 @@
 package tools.jackson.dataformat.smile.mapper;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MapperFeaturesTest extends BaseTestForSmile
 {
@@ -18,6 +22,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
      */
 
     // Let's ensure indentation doesn't break anything (should be NOP)
+    @Test
     public void testIndent() throws Exception
     {
         ObjectMapper mapper = SmileMapper.builder(new SmileFactory())

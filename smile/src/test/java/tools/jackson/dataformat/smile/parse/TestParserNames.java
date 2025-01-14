@@ -1,18 +1,26 @@
 package tools.jackson.dataformat.smile.parse;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class TestParserNames extends BaseTestForSmile
 {
+    @Test
     public void testLongNames() throws IOException
     {
         _testWithName(generateName(5000));
     }
 
+    @Test
     public void testJsonBinForLargeObjects() throws Exception
     {
         StringBuilder nameBuf = new StringBuilder("longString");
