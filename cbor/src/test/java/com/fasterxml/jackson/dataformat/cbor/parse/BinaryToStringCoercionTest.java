@@ -2,10 +2,13 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
-// Tests for [dataformat-binary#188], lacking coercions for Binary->String wrt containers
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class BinaryToStringCoercionTest extends CBORTestBase
 {
     static class BinaryListWrapper {
@@ -44,6 +47,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
 
     private final ObjectMapper CBOR_MAPPER = cborMapper();
 
+    @Test
     public void testWithList() throws Exception
     {
         byte[] doc = CBOR_MAPPER.writeValueAsBytes(new BinaryListWrapper());
@@ -52,6 +56,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
         assertEquals(String.class, result.data.get(0).getClass());
     }
 
+    @Test
     public void testWithSet() throws Exception
     {
         byte[] doc = CBOR_MAPPER.writeValueAsBytes(new BinarySetWrapper());
@@ -60,6 +65,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
         assertEquals(String.class, result.data.iterator().next().getClass());
     }
 
+    @Test
     public void testWithMap() throws Exception
     {
         byte[] doc = CBOR_MAPPER.writeValueAsBytes(new BinaryMapWrapper());
@@ -68,6 +74,7 @@ public class BinaryToStringCoercionTest extends CBORTestBase
         assertEquals(String.class, result.data.get("key").getClass());
     }
 
+    @Test
     public void testWithArray() throws Exception
     {
         byte[] doc = CBOR_MAPPER.writeValueAsBytes(new BinaryArrayWrapper());

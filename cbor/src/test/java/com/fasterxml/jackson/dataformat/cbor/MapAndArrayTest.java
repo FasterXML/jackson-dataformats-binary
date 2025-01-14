@@ -3,12 +3,17 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class MapAndArrayTest extends CBORTestBase
 {
     /**
      * Test for verifying complex Array and Map generation with limited and unlimited size
      */
 
+    @Test
     public void testCborBasicMap() throws IOException {
     /*
        {_"Fun": true, "Amt": -2}
@@ -38,6 +43,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("bf6346756ef563416d7421ff"));
     }
 
+    @Test
     public void testCborUnsizedMap() throws IOException {
     /* {_"Fun": true, 1504: -33, 1505: false, 13171233041: 22}
 
@@ -81,6 +87,7 @@ public class MapAndArrayTest extends CBORTestBase
 
 
 
+    @Test
     public void testCborSizedMap() throws IOException {
     /*
         {1504: -33, 1505: false, 1506: "Fun", "Amt": [2, 3], 1507: false}
@@ -131,6 +138,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("A51905e038201905e1f41905E26346756e63416d748202031905E3F4"));
     }
 
+    @Test
     public void testCborSizedMapWithParserTest() throws IOException {
     /*
        {_ 1504:-33, 1505:false, 1506:"Fun", 1507: [_"c", 3, false], 13171233041:false }
@@ -192,6 +200,7 @@ public class MapAndArrayTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testCborUnsizedMapWithArrayAsKey() throws IOException {
 	/*
         {_ "a": 1, "b": [_ 2, 3]}
@@ -216,6 +225,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("bf61610161629f0203ffff"));
     }
 
+    @Test
     public void testCborMultilevelMapWithMultilevelArrays() throws IOException {
 	/*
         { "a": 1, "b": [_ 2, 3], 1501: ["Fun", 44, [_ 45, 46, [ 47, 48]], { "key": {_"complex": 50}, 51: "52"}, 53], 1502: {_54: "value", 55: {56:61, 57:62}}}
@@ -277,6 +287,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("a461610161629f0203ff1905dd856346756e182c9f182d182e82182f1830ffa2636b6579bf67636f6d706c65781832ff183362353218351905debf18366576616c75651837a21838183d1839183eff"));
     }
 
+    @Test
     public void testCborUnsizedMapWithAllInside() throws IOException {
     /*
        {_ 1504: { 2504:-33}, 1505:false, 1506:"Fun", 1507: [_"c", 3, false], 13171233041:false }
@@ -312,6 +323,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("BF1905e0A11909C838201905e1f41905E26346756e1905E39F616303F4FF1B0000000311111111F4FF"));
     }
 
+    @Test
     public void testCborArraysInArray() throws IOException {
 	/*
         [_ 1, [2, 3], [_ 4, 5]]
@@ -339,6 +351,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("9f018202039f0405ffff"));
     }
 
+    @Test
     public void testCborArraysInUnsizedArray() throws IOException {
 	/*
         [_ 1, [2, 3], [_ 4, 5], [6, 7, [_ 8, 8, [1, 1]]], [9, 9], [_ 0, 1] ]
@@ -385,6 +398,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("9f018202039f0405ff8306079f080808820101ff8209099f0001ffff"));
     }
 
+    @Test
     public void testCborArraysInSizedArray() throws IOException {
 	/*
    	    [1, [_2, 3, 4], [_ 4, [5, [_6, 6, 6]]], [7, 8, [_ 9, 10]]]
@@ -428,6 +442,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("84019f020304ff9f0482059f060606ffff8307089f090aff"));
     }
 
+    @Test
     public void testCborSizedArray() throws IOException {
 
 	/*  [ 33, [256, 255, ..., 0], 34 ]
@@ -470,6 +485,7 @@ public class MapAndArrayTest extends CBORTestBase
         assertTrue(hexData.equalsIgnoreCase("8318219901000102030405060708090A0B0C0D0E0F101112131415161718181819181A181B181C181D181E181F1820182118221823182418251826182718281829182A182B182C182D182E182F1830183118321833183418351836183718381839183A183B183C183D183E183F1840184118421843184418451846184718481849184A184B184C184D184E184F1850185118521853185418551856185718581859185A185B185C185D185E185F1860186118621863186418651866186718681869186A186B186C186D186E186F1870187118721873187418751876187718781879187A187B187C187D187E187F1880188118821883188418851886188718881889188A188B188C188D188E188F1890189118921893189418951896189718981899189A189B189C189D189E189F18A018A118A218A318A418A518A618A718A818A918AA18AB18AC18AD18AE18AF18B018B118B218B318B418B518B618B718B818B918BA18BB18BC18BD18BE18BF18C018C118C218C318C418C518C618C718C818C918CA18CB18CC18CD18CE18CF18D018D118D218D318D418D518D618D718D818D918DA18DB18DC18DD18DE18DF18E018E118E218E318E418E518E618E718E818E918EA18EB18EC18ED18EE18EF18F018F118F218F318F418F518F618F718F818F918FA18FB18FC18FD18FE18FF1901001822"));
     }
 
+    @Test
     public void testCborSizedArrayWithMap() throws IOException {
 	/*
         ["a", {_ "b": "c", "d": "e", }]

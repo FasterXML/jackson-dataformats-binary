@@ -3,16 +3,15 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 import java.lang.reflect.Field;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORParser;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SymbolTableTest extends CBORTestBase
 {
@@ -25,6 +24,7 @@ public class SymbolTableTest extends CBORTestBase
             .build())
             .build();
 
+    @Test
     public void testSimpleDefault() throws Exception
     {
         final CBORMapper vanillaMapper = cborMapper();
@@ -82,6 +82,7 @@ public class SymbolTableTest extends CBORTestBase
 
     // [dataformats-binary#253]: should be able to prevent canonicalization
     // Assumption: there is still non-null symbol table, but has "no canonicalization"
+    @Test
     public void testNoCanonicalizeWithMapper() throws Exception
     {
         final byte[] doc = cborDoc(a2q("{ 'x':13, 'y':-999}"));
@@ -93,6 +94,7 @@ public class SymbolTableTest extends CBORTestBase
     }
 
     // [dataformats-binary#252]: should be able to prevent canonicalization
+    @Test
     public void testSimpleNoCanonicalize() throws Exception
     {
         final String[] fieldNames = new String[] {
