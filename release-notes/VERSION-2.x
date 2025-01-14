@@ -27,6 +27,8 @@ Active maintainers:
 #536: (avro) Add Logical Type support for `java.util.UUID`
  (contributed by Michal F)
 #539: (avro) Upgrade `org.apache.avro:avro` dependency to 1.11.4
+#547: (all) JSTEP-10: Unify testing structure/tools
+ (contributed by Joo-Hyuk K)
 
 2.18.3 (not yet released)
 
