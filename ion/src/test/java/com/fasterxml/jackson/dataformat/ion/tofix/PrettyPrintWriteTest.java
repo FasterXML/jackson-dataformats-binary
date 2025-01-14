@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.ion.failing;
+package com.fasterxml.jackson.dataformat.ion.tofix;
 
 import org.junit.jupiter.api.Test;
 
