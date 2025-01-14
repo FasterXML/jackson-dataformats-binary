@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro.failing;
+package tools.jackson.dataformat.avro.tofix;
 
 import java.io.*;
 import java.nio.file.Files;

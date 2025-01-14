@@ -12,7 +12,7 @@
  * language governing permissions and limitations under the License.
  */
 
-package tools.jackson.dataformat.ion.failing;
+package tools.jackson.dataformat.ion.tofix;
 
 import java.io.IOException;
 import java.util.ArrayList;

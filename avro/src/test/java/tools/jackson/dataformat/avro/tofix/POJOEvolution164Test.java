@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro.failing;
+package tools.jackson.dataformat.avro.tofix;
 
 import org.junit.jupiter.api.Test;
 

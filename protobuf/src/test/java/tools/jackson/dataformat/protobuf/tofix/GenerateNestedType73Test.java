@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.protobuf.failing;
+package tools.jackson.dataformat.protobuf.tofix;
 
 import java.io.StringReader;
 
