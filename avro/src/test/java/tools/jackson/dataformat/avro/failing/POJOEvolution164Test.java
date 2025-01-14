@@ -3,6 +3,7 @@ package tools.jackson.dataformat.avro.failing;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.*;
+import tools.jackson.dataformat.avro.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,6 +16,7 @@ public class POJOEvolution164Test extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
+    @JacksonTestFailureExpected
     @Test
     public void testSimpleFieldRemove() throws Exception
     {
