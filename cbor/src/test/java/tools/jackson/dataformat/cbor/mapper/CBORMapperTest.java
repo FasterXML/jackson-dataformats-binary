@@ -1,19 +1,22 @@
 package tools.jackson.dataformat.cbor.mapper;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CBORMapperTest extends CBORTestBase
 {
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Tests for [dataformats-binary#301]
-    /**********************************************************
+    /**********************************************************************
      */
 
+    @Test
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         final int SMALL_INT = 3;
@@ -38,9 +41,9 @@ public class CBORMapperTest extends CBORTestBase
         assertEquals(29, encodedNotMinimal.length);
 
         // And then verify we can read it back, either way
-        Assert.assertArrayEquals(minimalValues, mapperWithMinimal.readValue(encodedMinimal, Object[].class));
-        Assert.assertArrayEquals(values, mapperWithMinimal.readValue(encodedNotMinimal, Object[].class));
-        Assert.assertArrayEquals(minimalValues, mapperFull.readValue(encodedMinimal, Object[].class));
-        Assert.assertArrayEquals(values, mapperFull.readValue(encodedNotMinimal, Object[].class));
+        assertArrayEquals(minimalValues, mapperWithMinimal.readValue(encodedMinimal, Object[].class));
+        assertArrayEquals(values, mapperWithMinimal.readValue(encodedNotMinimal, Object[].class));
+        assertArrayEquals(minimalValues, mapperFull.readValue(encodedMinimal, Object[].class));
+        assertArrayEquals(values, mapperFull.readValue(encodedNotMinimal, Object[].class));
     }
 }

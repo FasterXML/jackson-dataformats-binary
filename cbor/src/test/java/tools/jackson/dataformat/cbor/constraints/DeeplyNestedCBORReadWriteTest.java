@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.cbor.constraints;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamConstraintsException;
 
@@ -10,6 +12,9 @@ import tools.jackson.databind.node.ObjectNode;
 
 import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DeeplyNestedCBORReadWriteTest extends CBORTestBase
 {
@@ -25,10 +30,12 @@ public class DeeplyNestedCBORReadWriteTest extends CBORTestBase
             .build()
             );
 
+    @Test
     public void testDeepNestingArrayRead() throws Exception {
         _testDeepNestingRead(createDeepNestedArrayDoc(13));
     }
 
+    @Test
     public void testDeepNestingObjectRead() throws Exception {
         _testDeepNestingRead(createDeepNestedObjectDoc(13));
     }
@@ -45,10 +52,12 @@ public class DeeplyNestedCBORReadWriteTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testDeepNestingArrayWrite() throws Exception {
         _testDeepNestingWrite(createDeepNestedArrayDoc(13));
     }
 
+    @Test
     public void testDeepNestingObjectWrite() throws Exception {
         _testDeepNestingWrite(createDeepNestedObjectDoc(13));
     }

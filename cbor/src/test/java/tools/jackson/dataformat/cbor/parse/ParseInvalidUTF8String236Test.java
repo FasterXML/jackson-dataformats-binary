@@ -1,14 +1,20 @@
 package tools.jackson.dataformat.cbor.parse;
 
-import tools.jackson.core.*;
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
+
 import tools.jackson.dataformat.cbor.CBORParser;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ParseInvalidUTF8String236Test extends CBORTestBase
 {
     // [dataformats-binary#236]: Original version; broken UTF-8 all around.
     // but gets hit by end-of-input only (since content not validated)
+    @Test
     public void testShortString236Original() throws Exception
     {
         final byte[] input = {0x66, (byte) 0xef, 0x7d, 0x7d, 0xa, 0x2d, (byte) 0xda};
@@ -25,6 +31,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
 
     // Variant where the length would be valid, but the last byte is partial UTF-8
     // code point and no more bytes are available due to end-of-stream
+    @Test
     public void testShortString236EndsWithPartialUTF8AtEndOfStream() throws Exception
     {
         final byte[] input = {0x63, 0x41, 0x2d, (byte) 0xda};
@@ -41,6 +48,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
 
     // Variant where the length would be valid, but the last byte is partial UTF-8
     // code point and the subsequent byte would be a valid continuation byte, but belongs to next data item
+    @Test
     public void testShortString236EndsWithPartialUTF8() throws Exception
     {
         final byte[] input = {0x62, 0x33, (byte) 0xdb, (byte) 0xa0};
@@ -56,6 +64,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
     }
 
     // Variant where the length itself exceeds buffer
+    @Test
     public void testShortString236TruncatedString() throws Exception
     {
         // String with length of 6 bytes claimed; only 5 provided
@@ -71,6 +80,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         }
     }
 
+    @Test
     public void testShortString237InvalidTextValue() throws Exception
     {
         // String with length of 2 bytes, but a few null bytes as fillers to
@@ -102,6 +112,7 @@ public class ParseInvalidUTF8String236Test extends CBORTestBase
         }
     }
 
+    @Test
     public void testShortString237InvalidName() throws Exception
     {
         // Object with 2-byte invalid name

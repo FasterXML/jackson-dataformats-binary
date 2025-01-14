@@ -1,7 +1,10 @@
 package tools.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonGenerator;
 
@@ -9,12 +12,15 @@ import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class GeneratorDeepNestingTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER =  CBORMapper.shared();
 
     // for [dataformats-binary#62]
     @SuppressWarnings("unchecked")
+    @Test
     public void testDeeplyNestedMap() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -62,6 +68,7 @@ public class GeneratorDeepNestingTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedArray() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

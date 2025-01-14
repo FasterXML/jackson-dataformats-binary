@@ -2,14 +2,20 @@ package tools.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.dataformat.cbor.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LenientUnicodeCBORGenerationTest extends CBORTestBase
 {
     /**
      * Test that encoding a String containing invalid surrogates fail with an exception
      */
+    @Test
     public void testFailForInvalidSurrogate() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -69,6 +75,7 @@ public class LenientUnicodeCBORGenerationTest extends CBORTestBase
     /**
      * Test that when the lenient unicode feature is enabled, the replacement character is used to fix invalid sequences
      */
+    @Test
     public void testRecoverInvalidSurrogate1() throws Exception
     {
         ByteArrayOutputStream out;
@@ -109,6 +116,7 @@ public class LenientUnicodeCBORGenerationTest extends CBORTestBase
                 (byte) (CBORConstants.PREFIX_TYPE_TEXT + b.length), b);
     }
 
+    @Test
     public void testRecoverInvalidSurrogate2() throws Exception
     {
         ByteArrayOutputStream out;

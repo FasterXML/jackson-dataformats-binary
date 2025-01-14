@@ -1,6 +1,8 @@
 package tools.jackson.dataformat.cbor.filter;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.dataformat.cbor.*;
@@ -8,8 +10,12 @@ import tools.jackson.dataformat.cbor.databind.CBORMapper;
 import tools.jackson.dataformat.cbor.testutil.PrefixInputDecorator;
 import tools.jackson.dataformat.cbor.testutil.PrefixOutputDecorator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class StreamingDecoratorsTest extends CBORTestBase
 {
+    @Test
     public void testInputDecorators() throws Exception
     {
         final byte[] DOC = cborDoc("42   37");
@@ -26,6 +32,7 @@ public class StreamingDecoratorsTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testOutputDecorators() throws Exception
     {
         final byte[] DOC = cborDoc(" 137");

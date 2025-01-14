@@ -2,12 +2,13 @@ package tools.jackson.dataformat.cbor.parse;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
-import tools.jackson.dataformat.cbor.CBORConstants;
-import tools.jackson.dataformat.cbor.CBORGenerator;
-import tools.jackson.dataformat.cbor.CBORParser;
-import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.dataformat.cbor.*;
 import tools.jackson.dataformat.cbor.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for simple value types.
@@ -17,6 +18,7 @@ public class BasicParserTest extends CBORTestBase
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
+    @Test
     public void testSimpleLiterals() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -50,6 +52,7 @@ public class BasicParserTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testMediumText() throws Exception
     {
         _testMedium(1100);
@@ -80,6 +83,7 @@ public class BasicParserTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testCurrentLocationByteOffset() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
@@ -108,6 +112,7 @@ public class BasicParserTest extends CBORTestBase
         assertEquals(22, p.currentLocation().getByteOffset());
     }
 
+    @Test
     public void testLongNonChunkedText() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -147,6 +152,7 @@ public class BasicParserTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testLongChunkedText() throws Exception
     {
         // First, try with ASCII content
@@ -236,6 +242,7 @@ public class BasicParserTest extends CBORTestBase
                 +Integer.toHexString(actual.charAt(i)));
     }
 
+    @Test
     public void testStringField() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
@@ -266,6 +273,7 @@ public class BasicParserTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNestedObject() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -310,6 +318,7 @@ public class BasicParserTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testBufferRelease() throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

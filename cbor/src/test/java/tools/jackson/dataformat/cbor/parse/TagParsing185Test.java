@@ -1,12 +1,17 @@
 package tools.jackson.dataformat.cbor.parse;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.dataformat.cbor.*;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TagParsing185Test extends CBORTestBase
 {
-    public void testRecursiveTags()
+    @Test
+    public void testRecursiveTags() throws Exception
     {
         _testRecursiveTags(20000);
     }

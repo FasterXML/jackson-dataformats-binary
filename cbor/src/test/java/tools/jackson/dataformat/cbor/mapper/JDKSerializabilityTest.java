@@ -3,11 +3,16 @@ package tools.jackson.dataformat.cbor.mapper;
 import java.io.*;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class JDKSerializabilityTest extends CBORTestBase
 {
+    @Test
     public void testApacheMapperWithModule() throws Exception {
         // very simple validation: should still work wrt serialization
         CBORMapper unfrozenMapper = serializeAndDeserialize(new CBORMapper());
@@ -41,8 +46,8 @@ public class JDKSerializabilityTest extends CBORTestBase
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(serializedBytes);
         ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream);
         Object deserializedObject = inputStream.readObject();
-        assertTrue("Deserialized object should be an instance of ObjectMapper",
-                deserializedObject instanceof CBORMapper);
+        assertTrue(deserializedObject instanceof CBORMapper,
+                "Deserialized object should be an instance of ObjectMapper");
         return (CBORMapper) deserializedObject;
     }
 

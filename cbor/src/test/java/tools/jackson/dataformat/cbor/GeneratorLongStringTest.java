@@ -1,15 +1,21 @@
 package tools.jackson.dataformat.cbor;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.SerializedString;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeneratorLongStringTest extends CBORTestBase
 {
     final static int DOC_LEN = 2000000; // 2 meg test doc
 
+    @Test
     public void testLongWithMultiBytes() throws Exception
     {
         ArrayList<String> strings = new ArrayList<String>();

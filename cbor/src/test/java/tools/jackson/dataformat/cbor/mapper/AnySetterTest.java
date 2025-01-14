@@ -2,11 +2,15 @@ package tools.jackson.dataformat.cbor.mapper;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for verifying that {@link JsonAnySetter} annotation
@@ -199,6 +203,7 @@ public class AnySetterTest extends CBORTestBase
 
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testSimpleMapImitation() throws Exception
     {
         MapImitator mapHolder = MAPPER.readValue(
@@ -215,6 +220,7 @@ public class AnySetterTest extends CBORTestBase
         assertEquals(Integer.valueOf(3), l.get(2));
     }
 
+    @Test
     public void testAnySetterDisable() throws Exception
     {
         try {
@@ -227,6 +233,7 @@ public class AnySetterTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testSimpleTyped() throws Exception
     {
         MapImitatorWithValue mapHolder = MAPPER.readValue(
@@ -243,6 +250,7 @@ public class AnySetterTest extends CBORTestBase
         assertEquals(0, value.length);
     }
 
+    @Test
     public void testIgnored() throws Exception
     {
         ObjectMapper mapper = cborMapperBuilder()
@@ -251,6 +259,7 @@ public class AnySetterTest extends CBORTestBase
         _testIgnorals(mapper);
     }
 
+    @Test
     public void testIgnoredPart2() throws Exception
     {
         ObjectMapper mapper = cborMapperBuilder()
@@ -259,6 +268,7 @@ public class AnySetterTest extends CBORTestBase
         _testIgnorals(mapper);
     }
 
+    @Test
     public void testProblem744() throws Exception
     {
         Bean744 bean = MAPPER.readValue(cborDoc("{\"name\":\"Bob\"}"),
@@ -268,6 +278,7 @@ public class AnySetterTest extends CBORTestBase
         assertEquals("Bob", bean.additionalProperties.get("name"));
     }
 
+    @Test
     public void testPolymorphic() throws Exception
     {
         PolyAnyBean input = new PolyAnyBean();
@@ -285,6 +296,7 @@ public class AnySetterTest extends CBORTestBase
         assertEquals("xyz", ((Impl) ob).value);
     }
 
+    @Test
     public void testJsonAnySetterOnMap() throws Exception {
         JsonAnySetterOnMap result = MAPPER.readValue(cborDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
                 JsonAnySetterOnMap.class);
@@ -293,6 +305,7 @@ public class AnySetterTest extends CBORTestBase
         assertEquals("New Jersey", result.other.get("city"));
     }
 
+    @Test
     public void testJsonAnySetterOnNullMap() throws Exception {
         JsonAnySetterOnNullMap result = MAPPER.readValue(cborDoc("{\"id\":2,\"name\":\"Joe\", \"city\":\"New Jersey\"}"),
                 JsonAnySetterOnNullMap.class);
@@ -304,6 +317,7 @@ public class AnySetterTest extends CBORTestBase
     }
 
     // [databind#1035]
+    @Test
     public void testGenericAnySetter() throws Exception
     {
         ObjectMapper mapper = cborMapper();
@@ -322,8 +336,10 @@ public class AnySetterTest extends CBORTestBase
         assertNotNull(stringGeneric);
         assertEquals(stringGeneric.getStaticallyMappedProperty(), "Test");
         for(Map.Entry<String, Integer> entry : stringGeneric.getDynamicallyMappedProperties().entrySet()) {
-            assertTrue("A key in MyGeneric<String> is not an String.", entry.getKey() instanceof String);
-            assertTrue("A value in MyGeneric<Integer> is not an Integer.", entry.getValue() instanceof Integer);
+            assertTrue(entry.getKey() instanceof String,
+                    "A key in MyGeneric<String> is not an String.");
+            assertTrue(entry.getValue() instanceof Integer,
+                    "A value in MyGeneric<Integer> is not an Integer.");
         }
         assertEquals(stringGeneric.getDynamicallyMappedProperties(), stringGenericMap);
 
@@ -331,9 +347,11 @@ public class AnySetterTest extends CBORTestBase
         assertEquals(integerGeneric.getStaticallyMappedProperty(), "Test2");
         for(Map.Entry<Integer, Integer> entry : integerGeneric.getDynamicallyMappedProperties().entrySet()) {
             Object key = entry.getKey();
-            assertEquals("A key in MyGeneric<Integer> is not an Integer.", Integer.class, key.getClass());
+            assertEquals(Integer.class, key.getClass(),
+                    "A key in MyGeneric<Integer> is not an Integer.");
             Object value = entry.getValue();
-            assertEquals("A value in MyGeneric<Integer> is not an Integer.", Integer.class, value.getClass());
+            assertEquals(Integer.class, value.getClass(),
+                    "A value in MyGeneric<Integer> is not an Integer.");
         }
         assertEquals(integerGeneric.getDynamicallyMappedProperties(), integerGenericMap);
     }

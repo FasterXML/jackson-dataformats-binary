@@ -4,13 +4,16 @@ import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeneratorBinaryTest //extends CBORTestBase
 {
@@ -19,19 +22,24 @@ public class GeneratorBinaryTest //extends CBORTestBase
 
 	private final ObjectMapper MAPPER = CBORMapper.shared();
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
+	@TempDir
+	public File tempFolder;
 
 	private File binaryInputFile;
 	private File cborFile;
 	private File binaryOutputFile;
 
-	@Before
+	@BeforeEach
 	public void before() throws IOException
 	{
-		 binaryInputFile = tempFolder.newFile("sourceData.bin");
-		 cborFile = tempFolder.newFile("cbor.bin");
-		 binaryOutputFile = tempFolder.newFile("outputData.bin");
+		binaryInputFile = new File(tempFolder, "sourceData.bin");
+		binaryInputFile.createNewFile();
+
+		cborFile = new File(tempFolder, "cbor.bin");
+		cborFile.createNewFile();
+
+		binaryOutputFile = new File(tempFolder, "outputData.bin");
+		binaryOutputFile.createNewFile();
 	}
 
 	@Test
@@ -100,12 +108,12 @@ public class GeneratorBinaryTest //extends CBORTestBase
 	    FileInputStream fis1 = new FileInputStream(file1);
 	    FileInputStream fis2 = new FileInputStream(file2);
 
-	    Assert.assertEquals(file1.length(), file2.length());
+	    assertEquals(file1.length(), file2.length());
 
 	    int ch;
 
 	    while ((ch = fis1.read()) >= 0) {
-	        Assert.assertEquals(ch, fis2.read());
+	        assertEquals(ch, fis2.read());
 	    }
 	    fis1.close();
 	    fis2.close();

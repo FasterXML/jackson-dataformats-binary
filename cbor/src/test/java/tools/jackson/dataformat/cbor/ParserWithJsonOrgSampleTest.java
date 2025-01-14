@@ -2,15 +2,21 @@ package tools.jackson.dataformat.cbor;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests that use the json.org sample document.
  */
 public class ParserWithJsonOrgSampleTest extends CBORTestBase
 {
+    @Test
     public void testJsonSampleDoc() throws IOException
     {
         byte[] data = cborDoc(SAMPLE_DOC_JSON_SPEC);
@@ -20,6 +26,7 @@ public class ParserWithJsonOrgSampleTest extends CBORTestBase
         verifyJsonSpecSampleDoc(cborParser(data), false, true);
     }
 
+    @Test
     public void testJsonSampleDocStringref() throws IOException
     {
         CBORMapper cborMapper = new CBORMapper(cborFactoryBuilder()

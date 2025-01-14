@@ -3,12 +3,14 @@ package tools.jackson.dataformat.cbor.parse;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Base64AsBinaryTest extends CBORTestBase
 {
@@ -24,6 +26,7 @@ public class Base64AsBinaryTest extends CBORTestBase
     }
 
     // [dataformats-binary#284]: binary from Base64 encoded
+    @Test
     public void testGetBase64AsBinary() throws Exception
     {
         // First, verify regularly
@@ -42,13 +45,14 @@ public class Base64AsBinaryTest extends CBORTestBase
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             byte[] binary = p.getBinaryValue();
-            Assert.assertArrayEquals(DECODED_BASE64, binary);
+            assertArrayEquals(DECODED_BASE64, binary);
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
         }
     }
 
     // [dataformats-binary#284]: binary from Base64 encoded
+    @Test
     public void testReadBase64AsBinary() throws Exception
     {
         // And further via read
@@ -59,7 +63,7 @@ public class Base64AsBinaryTest extends CBORTestBase
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             int count = p.readBinaryValue(bytes);
             assertEquals(5, count);
-            Assert.assertArrayEquals(DECODED_BASE64, bytes.toByteArray());
+            assertArrayEquals(DECODED_BASE64, bytes.toByteArray());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
         }

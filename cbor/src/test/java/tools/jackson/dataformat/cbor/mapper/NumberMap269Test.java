@@ -1,11 +1,15 @@
 package tools.jackson.dataformat.cbor.mapper;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-// [dataformats-binary#269]
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class NumberMap269Test extends CBORTestBase
 {
     static class TestData269 {
@@ -30,6 +34,7 @@ public class NumberMap269Test extends CBORTestBase
     private final ObjectMapper MAPPER = cborMapper();
 
     // [dataformats-binary#269]
+    @Test
     public void testInt32BoundaryWithMapKey() throws Exception
     {
         // First, with specific reported combo:

@@ -3,12 +3,15 @@ package tools.jackson.dataformat.cbor;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertArrayEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 // for [jackson-core#730]
 public class FloatPrecisionTest extends CBORTestBase
 {
     // for [jackson-core#730]
+    @Test
     public void testFloatRoundtrips() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

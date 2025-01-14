@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 
 import tools.jackson.core.exc.StreamWriteException;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class GeneratorInvalidCallsTest extends CBORTestBase
 {
     public void testInvalidFieldNameInRoot()

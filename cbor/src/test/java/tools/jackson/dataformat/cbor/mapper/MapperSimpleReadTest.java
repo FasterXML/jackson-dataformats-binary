@@ -3,15 +3,20 @@ package tools.jackson.dataformat.cbor.mapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class MapperSimpleReadTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testSimpleArray() throws Exception
     {
         byte[] b = MAPPER.writeValueAsBytes(new int[] { 1, 2, 3, 4});
@@ -22,6 +27,7 @@ public class MapperSimpleReadTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testSimpleObject() throws Exception
     {
         Map<String,Object> input = new LinkedHashMap<String,Object>();

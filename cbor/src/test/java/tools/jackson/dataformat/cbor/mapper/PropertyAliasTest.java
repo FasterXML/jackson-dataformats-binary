@@ -5,6 +5,11 @@ import com.fasterxml.jackson.annotation.*;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.Test;
+
 public class PropertyAliasTest extends CBORTestBase
 {
     static class AliasBean {
@@ -48,6 +53,7 @@ public class PropertyAliasTest extends CBORTestBase
     private final ObjectMapper MAPPER = sharedMapper();
 
     // [databind#1029]
+    @Test
     public void testSimpleAliases() throws Exception
     {
         AliasBean bean;
@@ -74,6 +80,7 @@ public class PropertyAliasTest extends CBORTestBase
         assertEquals(37, bean._xyz);
     }
 
+    @Test
     public void testAliasWithPolymorphic() throws Exception
     {
         PolyWrapperForAlias value = MAPPER.readValue(cborDoc(aposToQuotes(

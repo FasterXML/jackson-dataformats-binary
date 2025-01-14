@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.cbor.mapper;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -8,10 +8,13 @@ import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TreeNodesTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = new ObjectMapper(new CBORFactory());
 
+    @Test
     public void testSimple() throws Exception
     {
          // create the serialized JSON with byte array
@@ -33,9 +36,10 @@ public class TreeNodesTest extends CBORTestBase
              fail("Expected binary node; got "+datNode.getClass().getName());
          }
          byte[] bytes = datNode.binaryValue();
-         Assert.assertArrayEquals(TEXT_BYTES, bytes);
+         assertArrayEquals(TEXT_BYTES, bytes);
      }
 
+    @Test
     public void testNumbers() throws Exception
     {
         ObjectNode root = MAPPER.createObjectNode();

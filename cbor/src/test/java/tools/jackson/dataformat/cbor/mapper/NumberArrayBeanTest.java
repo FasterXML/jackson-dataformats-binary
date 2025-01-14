@@ -1,7 +1,12 @@
 package tools.jackson.dataformat.cbor.mapper;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class NumberArrayBeanTest extends CBORTestBase
 {
@@ -34,6 +39,7 @@ public class NumberArrayBeanTest extends CBORTestBase
 
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testIntArrayRoundTrip() throws Exception
     {
         int[][] inputArray = new int[][]{ { -5, 3 } };
@@ -47,6 +53,7 @@ public class NumberArrayBeanTest extends CBORTestBase
         assertEquals(inputArray[0][1], result.values[0][1]);
     }
 
+    @Test
     public void testLongArrayRoundTrip() throws Exception
     {
         long[][] inputArray = new long[][]{ { 3L + Integer.MAX_VALUE, -3L + Integer.MIN_VALUE } };
@@ -61,6 +68,7 @@ public class NumberArrayBeanTest extends CBORTestBase
     }
 
     // for [dataformats-binary#31]
+    @Test
     public void testDoubleArrayRoundTrip() throws Exception
     {
         double[][] inputArray = new double[][]{ { 0.25, -1.5 } };

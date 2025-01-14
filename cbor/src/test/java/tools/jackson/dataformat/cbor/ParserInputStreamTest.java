@@ -1,20 +1,23 @@
 package tools.jackson.dataformat.cbor;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
+import java.io.*;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.TokenStreamLocation;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class ParserInputStreamTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
     // for [dataformat-cbor#13]
+    @Test
     public void testInpuStream() throws Exception
     {
         byte[] buffer = generateHugeCBOR();
@@ -35,6 +38,7 @@ public class ParserInputStreamTest extends CBORTestBase
         assertNotNull(jsonNode);
     }
 
+    @Test
     public void testInputStreamWithHugeValueThatOverlaps() throws Exception {
         final byte[] buffer = new byte[8002];
         buffer[0] = 0x79; // string length 7996 + 3 init bytes

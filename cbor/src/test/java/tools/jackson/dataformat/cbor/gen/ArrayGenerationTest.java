@@ -2,15 +2,16 @@ package tools.jackson.dataformat.cbor.gen;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 
 import tools.jackson.core.JsonParser.NumberType;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.cbor.CBORGenerator;
-import tools.jackson.dataformat.cbor.CBORParser;
-import tools.jackson.dataformat.cbor.CBORTestBase;
-import tools.jackson.dataformat.cbor.CBORWriteFeature;
+import tools.jackson.dataformat.cbor.*;
 import tools.jackson.dataformat.cbor.databind.CBORMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Basic testing for scalar-array write methods.
@@ -19,21 +20,25 @@ public class ArrayGenerationTest extends CBORTestBase
 {
     private final CBORMapper MAPPER = cborMapper();
 
+    @Test
     public void testIntArray() throws Exception
     {
         _testIntArray();
     }
 
+    @Test
     public void testLongArray() throws Exception
     {
         _testLongArray();
     }
 
+    @Test
     public void testDoubleArray() throws Exception
     {
         _testDoubleArray();
     }
 
+    @Test
     public void testMinimalIntValuesForInt() throws Exception
     {
         // Array with 3 values, with different sizing
@@ -99,6 +104,7 @@ public class ArrayGenerationTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testMinimalIntValuesForLong() throws Exception
     {
         // Array with 2 values that can't be passed as `int`s but DO fit
@@ -157,6 +163,7 @@ public class ArrayGenerationTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testMinimalFloatValuesForDouble() throws Exception
     {
         // Array with 2 values, one that can be represented as a float without losing precision and

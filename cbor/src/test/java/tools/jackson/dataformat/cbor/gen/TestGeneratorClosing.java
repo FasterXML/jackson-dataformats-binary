@@ -1,10 +1,13 @@
 package tools.jackson.dataformat.cbor.gen;
 
 import tools.jackson.core.*;
-import tools.jackson.dataformat.cbor.CBORFactory;
-import tools.jackson.dataformat.cbor.CBORFactoryBuilder;
-import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import org.junit.jupiter.api.Test;
+
+import tools.jackson.dataformat.cbor.*;
 import tools.jackson.dataformat.cbor.testutil.ByteOutputStreamForTesting;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Set of basic unit tests that verify aspect of closing a
@@ -31,6 +34,7 @@ public class TestGeneratorClosing extends CBORTestBase
      * automatic closing should occur, nor explicit one unless specific
      * forcing method is used.
      */
+    @Test
     public void testNoAutoCloseGenerator() throws Exception
     {
         TokenStreamFactory f = cborFactory();
@@ -54,6 +58,7 @@ public class TestGeneratorClosing extends CBORTestBase
         }
     }
 
+    @Test
     public void testCloseGenerator() throws Exception
     {
         TokenStreamFactory f = newFactoryBuilder()
@@ -71,6 +76,7 @@ public class TestGeneratorClosing extends CBORTestBase
         assertTrue(output.isClosed());
     }
 
+    @Test
     public void testNoAutoCloseOutputStream() throws Exception
     {
         TokenStreamFactory f = newFactoryBuilder()
@@ -87,6 +93,7 @@ public class TestGeneratorClosing extends CBORTestBase
     }
 
     @SuppressWarnings("resource")
+    @Test
     public void testAutoFlushOrNot() throws Exception
     {
         TokenStreamFactory f = cborFactory();

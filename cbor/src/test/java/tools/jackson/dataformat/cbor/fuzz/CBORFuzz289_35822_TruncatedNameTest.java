@@ -1,10 +1,16 @@
 package tools.jackson.dataformat.cbor.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
+
 import tools.jackson.databind.ObjectMapper;
+
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CBORFuzz289_35822_TruncatedNameTest extends CBORTestBase
 {
@@ -13,6 +19,7 @@ public class CBORFuzz289_35822_TruncatedNameTest extends CBORTestBase
     // As per https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=35822
     // ArrayIndexOutOfBoundsException when 2 out of 3 bytes available before
     // end-of-input
+    @Test
     public void testInvalidSplitUtf8Unit() throws Exception
     {
         final byte[] input = new byte[] {

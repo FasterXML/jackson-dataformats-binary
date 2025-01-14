@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.cbor.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
@@ -7,11 +9,14 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class CBORFuzz272_32722_ChunkedTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
     // [dataformats-binary#272]
+    @Test
     public void testChunkedWithUTF8_4Bytes() throws Exception
     {
         final byte[] input = new byte[] {

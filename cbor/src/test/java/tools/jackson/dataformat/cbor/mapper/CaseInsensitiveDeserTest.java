@@ -7,6 +7,10 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
 public class CaseInsensitiveDeserTest extends CBORTestBase
 {
     // [databind#1036]
@@ -44,6 +48,7 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
             .build();
 
     // [databind#566]
+    @Test
     public void testCaseInsensitiveDeserialization() throws Exception
     {
         byte[] DOC = cborDoc(aposToQuotes(
@@ -79,6 +84,7 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
     }
 
     // [databind#1036]
+    @Test
     public void testCaseInsensitive1036() throws Exception
     {
         byte[] DOC = cborDoc("{\"ErrorCode\":2,\"DebugMessage\":\"Signature not valid!\"}");
@@ -102,6 +108,7 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
     }
 
     // [databind#1438]
+    @Test
     public void testCreatorWithInsensitive() throws Exception
     {
         final byte[] CBOR = cborDoc(aposToQuotes("{'VALUE':3}"));

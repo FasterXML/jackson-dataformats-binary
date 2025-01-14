@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import tools.jackson.core.JsonToken;
@@ -12,10 +14,9 @@ import tools.jackson.core.JsonParser.NumberType;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
-import tools.jackson.dataformat.cbor.CBORGenerator;
-import tools.jackson.dataformat.cbor.CBORParser;
-import tools.jackson.dataformat.cbor.CBORTestBase;
-import tools.jackson.dataformat.cbor.CBORWriteFeature;
+import tools.jackson.dataformat.cbor.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumberBeanTest extends CBORTestBase
 {
@@ -58,6 +59,7 @@ public class NumberBeanTest extends CBORTestBase
 
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testIntRoundTrip() throws Exception
     {
         for (int i : new int[] { 0, 1, -1,
@@ -71,6 +73,7 @@ public class NumberBeanTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testLongRoundTrip() throws Exception
     {
         for (long v : new long[] { 0, 1, -1,
@@ -102,6 +105,7 @@ public class NumberBeanTest extends CBORTestBase
     }
 
     // for [dataformats-binary#32] coercion of Float into Double
+    @Test
     public void testUntypedWithFloat() throws Exception
     {
         Object[] input = new Object[] { Float.valueOf(0.5f) };
@@ -112,6 +116,7 @@ public class NumberBeanTest extends CBORTestBase
         assertEquals(input[0], result[0]);
     }
 
+    @Test
     public void testNumberTypeRetainingInt() throws Exception
     {
         NumberWrapper result;
@@ -145,6 +150,7 @@ public class NumberBeanTest extends CBORTestBase
         assertEquals(BigInteger.valueOf(-42L), result.nr);
     }
 
+    @Test
     public void testNumberTypeRetainingFP() throws Exception
     {
         NumberWrapper result;
@@ -178,6 +184,7 @@ public class NumberBeanTest extends CBORTestBase
         assertEquals(new BigDecimal("0.100"), result.nr);
     }
 
+    @Test
     public void testNumberTypeRetainingBuffering() throws Exception
     {
         ByteArrayOutputStream bytes;
@@ -236,6 +243,7 @@ public class NumberBeanTest extends CBORTestBase
     }
 
     // [databind#2784]
+    @Test
     public void testBigDecimalWithBuffering() throws Exception
     {
         final BigDecimal VALUE = new BigDecimal("5.00");

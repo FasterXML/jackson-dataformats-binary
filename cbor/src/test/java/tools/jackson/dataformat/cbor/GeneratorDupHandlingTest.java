@@ -1,12 +1,19 @@
 package tools.jackson.dataformat.cbor;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamWriteException;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class GeneratorDupHandlingTest extends CBORTestBase
 {
+    @Test
     public void testSimpleDupsEagerlyBytes() throws Exception {
         _testSimpleDups(false, new CBORFactory());
     }

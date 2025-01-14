@@ -2,11 +2,16 @@ package tools.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
 
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // Mostly for [dataformats-binary#186]: corrupt encoding indicating humongous payload
 public class BrokenLongBinary186Test extends CBORTestBase
@@ -20,12 +25,14 @@ public class BrokenLongBinary186Test extends CBORTestBase
      */
 
     // [dataformats-binary#186]
+    @Test
     public void testCorruptVeryLongBinary() throws Exception {
         // Let's do about 2 GB to likely trigger failure
         _testCorruptLong(1_999_999_999, 95000);
     }
 
     // [dataformats-binary#186]
+    @Test
     public void testCorruptQuiteLongBinary() throws Exception {
         // Value below limit for chunked handling
         _testCorruptLong(CBORParser.LONGEST_NON_CHUNKED_BINARY >> 1, 37);
@@ -51,6 +58,7 @@ public class BrokenLongBinary186Test extends CBORTestBase
      */
 
     // [dataformats-binary#186]
+    @Test
     public void testQuiteLongStreaming() throws Exception
     {
         // Can try bit shorter here, like 500 megs

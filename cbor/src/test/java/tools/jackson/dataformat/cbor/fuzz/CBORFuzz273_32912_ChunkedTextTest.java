@@ -1,10 +1,15 @@
 package tools.jackson.dataformat.cbor.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CBORFuzz273_32912_ChunkedTextTest extends CBORTestBase
 {
@@ -12,6 +17,7 @@ public class CBORFuzz273_32912_ChunkedTextTest extends CBORTestBase
 
     // [dataformats-binary#273]
     // (see https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=32912)
+    @Test
     public void testChunkedWithUTF8_4Bytes_v2() throws Exception
     {
         final byte[] input = new byte[] {

@@ -1,10 +1,11 @@
 package tools.jackson.dataformat.cbor.mapper;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -15,6 +16,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.BinaryNode;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryReadTest extends CBORTestBase
 {
@@ -46,6 +49,7 @@ public class BinaryReadTest extends CBORTestBase
 
     private final ObjectMapper MAPPER = cborMapper();
 
+    @Test
     public void testSmallBinaryValues() throws Exception {
         _testBinary(0);
         _testBinary(1);
@@ -53,12 +57,14 @@ public class BinaryReadTest extends CBORTestBase
         _testBinary(100);
     }
 
+    @Test
     public void testMediumBinaryValues() throws Exception {
         _testBinary(500);
         _testBinary(1500);
         _testBinary(8900);
     }
 
+    @Test
     public void testLargeBinaryValues() throws Exception {
         _testBinary(99000);
         _testBinary(299000);
@@ -66,6 +72,7 @@ public class BinaryReadTest extends CBORTestBase
     }
 
     // And then one test just to ensure no state corruption occurs
+    @Test
     public void testMultipleBinaryFields() throws Exception
     {
         byte[] inputBytes = new byte[900];
@@ -76,9 +83,9 @@ public class BinaryReadTest extends CBORTestBase
         byte[] raw = MAPPER.writeValueAsBytes(input);
 
         Bytes3 result = MAPPER.readValue(raw, Bytes3.class);
-        Assert.assertArrayEquals(input.bytes1, result.bytes1);
-        Assert.assertArrayEquals(input.bytes2, result.bytes2);
-        Assert.assertArrayEquals(input.bytes3, result.bytes3);
+        assertArrayEquals(input.bytes1, result.bytes1);
+        assertArrayEquals(input.bytes2, result.bytes2);
+        assertArrayEquals(input.bytes3, result.bytes3);
     }
 
     public void _testBinary(int size) throws Exception
@@ -89,14 +96,14 @@ public class BinaryReadTest extends CBORTestBase
         byte[] raw = MAPPER.writeValueAsBytes(input);
         byte[] b2 = MAPPER.readValue(raw, byte[].class);
         assertNotNull(b2);
-        Assert.assertArrayEquals(input, b2);
+        assertArrayEquals(input, b2);
 
         // then as POJO member
         raw = MAPPER.writeValueAsBytes(new Bytes(input));
         Bytes bytes = MAPPER.readValue(raw, Bytes.class);
         assertNotNull(bytes);
         assertNotNull(bytes.bytes);
-        Assert.assertArrayEquals(input, bytes.bytes);
+        assertArrayEquals(input, bytes.bytes);
 
         // then using incremental access method
         raw = MAPPER.writeValueAsBytes(input);
@@ -108,7 +115,7 @@ public class BinaryReadTest extends CBORTestBase
         assertEquals(input.length, p.readBinaryValue(bout));
         assertEquals(input.length, bout.size());
         b2 = bout.toByteArray();
-        Assert.assertArrayEquals(input, b2);
+        assertArrayEquals(input, b2);
         assertNull(p.nextToken());
         p.close();
         in.close();
@@ -130,7 +137,7 @@ public class BinaryReadTest extends CBORTestBase
         assertNotNull(n);
         assertTrue(n.isBinary());
         BinaryNode bn = (BinaryNode) n;
-        Assert.assertArrayEquals(input, bn.binaryValue());
+        assertArrayEquals(input, bn.binaryValue());
 
         _testBinaryInArray(size);
     }
@@ -145,8 +152,8 @@ public class BinaryReadTest extends CBORTestBase
                 ByteArrays.class);
         assertNotNull(result.arrays);
         assertEquals(2, result.arrays.size());
-        Assert.assertArrayEquals(b1, result.arrays.get(0));
-        Assert.assertArrayEquals(b2, result.arrays.get(1));
+        assertArrayEquals(b1, result.arrays.get(0));
+        assertArrayEquals(b2, result.arrays.get(1));
 
         // and once more, now as JsonNode
         JsonNode n = MAPPER.readTree(doc);
@@ -157,11 +164,11 @@ public class BinaryReadTest extends CBORTestBase
 
         JsonNode bin = n2.get(0);
         assertTrue(bin.isBinary());
-        Assert.assertArrayEquals(b1, ((BinaryNode) bin).binaryValue());
+        assertArrayEquals(b1, ((BinaryNode) bin).binaryValue());
 
         bin = n2.get(1);
         assertTrue(bin.isBinary());
-        Assert.assertArrayEquals(b2, ((BinaryNode) bin).binaryValue());
+        assertArrayEquals(b2, ((BinaryNode) bin).binaryValue());
     }
 
     private byte[] _bytes(int size, int offset) {

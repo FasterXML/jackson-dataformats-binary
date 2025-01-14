@@ -1,15 +1,21 @@
 package tools.jackson.dataformat.cbor.parse;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonParser.NumberType;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
+
 import tools.jackson.dataformat.cbor.CBORConstants;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
-// @since 2.12
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class SimpleValuesTest extends CBORTestBase
 {
+    @Test
     public void testTinySimpleValues() throws Exception
     {
         // Values 0..19 are unassigned, valid to encounter
@@ -25,6 +31,7 @@ public class SimpleValuesTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testValidByteLengthMinimalValues() throws Exception {
         // Values 32..255 are unassigned, valid to encounter
         for (int v = 32; v <= 255; ++v) {
@@ -38,8 +45,8 @@ public class SimpleValuesTest extends CBORTestBase
         }
     }
 
-    public void testInvalidByteLengthMinimalValues()
-    {
+    @Test
+    public void testInvalidByteLengthMinimalValues() throws Exception {
         // Values 0..31 are invalid for variant that takes 2 bytes...
         for (int v = 0; v <= 31; ++v) {
             byte[] doc = { (byte) (CBORConstants.PREFIX_TYPE_MISC + 24), (byte) v };

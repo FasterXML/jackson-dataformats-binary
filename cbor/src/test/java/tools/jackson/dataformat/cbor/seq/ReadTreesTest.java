@@ -2,12 +2,16 @@ package tools.jackson.dataformat.cbor.seq;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadTreesTest extends CBORTestBase
 {
@@ -23,6 +27,7 @@ public class ReadTreesTest extends CBORTestBase
     /**********************************************************
      */
 
+    @Test
     public void testReadTreeSequence() throws Exception
     {
         final byte[] INPUT = concat(
@@ -66,6 +71,7 @@ public class ReadTreesTest extends CBORTestBase
     /**********************************************************
      */
 
+    @Test
     public void testReadTreeSequenceLowStringLimit() throws Exception
     {
         final byte[] INPUT = concat(
@@ -84,8 +90,8 @@ public class ReadTreesTest extends CBORTestBase
                 it.nextValue();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException ise) {
-                assertTrue("unexpected exception message: " + ise.getMessage(),
-                        ise.getMessage().startsWith("String value length (2) exceeds the maximum allowed"));
+                assertTrue(ise.getMessage().startsWith("String value length (2) exceeds the maximum allowed"),
+                        "unexpected exception message: " + ise.getMessage());
             }
         }
     }

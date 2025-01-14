@@ -1,11 +1,15 @@
 package tools.jackson.dataformat.cbor.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CBORFuzz_35979_StringValueTest extends CBORTestBase
 {
@@ -18,6 +22,7 @@ public class CBORFuzz_35979_StringValueTest extends CBORTestBase
     // which indicates multi-byte UTF-8 character; decoder does not verify
     // there are more bytes available. If at end of buffer, hits ArrayIndex;
     // otherwise would return corrupt character with data past content end
+    @Test
     public void testInvalidTextValueWithBrokenUTF8() throws Exception
     {
         final byte[] input = readResource("/data/clusterfuzz-cbor-35979.cbor");

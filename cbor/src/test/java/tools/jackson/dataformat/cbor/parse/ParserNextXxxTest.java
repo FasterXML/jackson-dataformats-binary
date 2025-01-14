@@ -3,20 +3,26 @@ package tools.jackson.dataformat.cbor.parse;
 import java.io.*;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 // note: copied from test of same name from jackson-dataformat-smile
 public class ParserNextXxxTest extends CBORTestBase
 {
+    @Test
     public void testIsNextTokenName() throws Exception
     {
         _testIsNextTokenName1();
         _testIsNextTokenName2();
     }
 
+    @Test
     public void testNextName() throws Exception
     {
         final int TESTROUNDS = 223;
@@ -57,6 +63,7 @@ public class ParserNextXxxTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testIssue38() throws Exception
     {
         byte[] DOC = cborDoc("{\"field\" :\"value\"}");
@@ -72,6 +79,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNextNameWithLongContent() throws Exception
     {
         // do 3 meg thingy
@@ -108,6 +116,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNextValuesMisc() throws Exception
     {
         byte[] DOC = cborDoc("{\"field\" :\"value\", \"array\" : [ \"foo\", true ] }");
@@ -137,6 +146,7 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    @Test
     public void testNextTextValue() throws Exception
     {
         _testNextTextValue("ascii");

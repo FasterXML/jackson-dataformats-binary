@@ -1,12 +1,19 @@
 package tools.jackson.dataformat.cbor.parse;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ParserDupHandlingTest extends CBORTestBase
 {
+    @Test
     public void testSimpleDups()
     {
         for (String json : new String[] {

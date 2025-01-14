@@ -2,7 +2,10 @@ package tools.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.annotation.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import tools.jackson.core.*;
 import tools.jackson.databind.ObjectMapper;
@@ -24,6 +27,7 @@ public class SharedRawGeneratorBufferTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testSharedBuffersWithRaw() throws Exception
     {
         String data = "{\"x\":\"" + generate(5000) + "\"}";
