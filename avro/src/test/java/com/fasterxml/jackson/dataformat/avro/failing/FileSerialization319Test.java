@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+import com.fasterxml.jackson.dataformat.avro.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class FileSerialization319Test extends AvroTestBase
 {
     // [dataformats-binary#319]
+    @JacksonTestFailureExpected
     @Test
     public void testFileSerialization() throws Exception
     {
