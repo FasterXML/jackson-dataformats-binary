@@ -6,8 +6,8 @@ import java.net.URL;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
-import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.ContentReference;
+import com.fasterxml.jackson.core.io.IOContext;
 
 /**
  * Factory used for constructing {@link CBORParser} and {@link CBORGenerator}

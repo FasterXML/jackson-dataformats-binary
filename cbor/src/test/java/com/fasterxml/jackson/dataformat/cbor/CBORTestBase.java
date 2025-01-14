@@ -1,19 +1,16 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.junit.Assert;
-
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public abstract class CBORTestBase
-    extends junit.framework.TestCase
 {
     /*
     /**********************************************************
@@ -161,14 +158,14 @@ public abstract class CBORTestBase
     }
 
     protected void _verifyBytes(byte[] actBytes, byte... expBytes) {
-        Assert.assertArrayEquals(expBytes, actBytes);
+        assertArrayEquals(expBytes, actBytes);
     }
 
     protected void _verifyBytes(byte[] actBytes, byte exp1, byte[] expRest) {
         byte[] expBytes = new byte[expRest.length+1];
         System.arraycopy(expRest, 0, expBytes, 1, expRest.length);
         expBytes[0] = exp1;
-        Assert.assertArrayEquals(expBytes, actBytes);
+        assertArrayEquals(expBytes, actBytes);
     }
 
     protected void _verifyBytes(byte[] actBytes, byte exp1, byte exp2, byte[] expRest) {
@@ -176,7 +173,7 @@ public abstract class CBORTestBase
         System.arraycopy(expRest, 0, expBytes, 2, expRest.length);
         expBytes[0] = exp1;
         expBytes[1] = exp2;
-        Assert.assertArrayEquals(expBytes, actBytes);
+        assertArrayEquals(expBytes, actBytes);
     }
 
     protected void _verifyBytes(byte[] actBytes, byte exp1, byte exp2, byte exp3, byte[] expRest) {
@@ -185,7 +182,7 @@ public abstract class CBORTestBase
         expBytes[0] = exp1;
         expBytes[1] = exp2;
         expBytes[2] = exp3;
-        Assert.assertArrayEquals(expBytes, actBytes);
+        assertArrayEquals(expBytes, actBytes);
     }
 
     /**
@@ -204,7 +201,7 @@ public abstract class CBORTestBase
         if (str.length() !=  actLen) {
             fail("Internal problem (p.token == "+p.getCurrentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
         }
-        assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
+        assertEquals(str, str2, "String access via getText(), getTextXxx() must be the same");
 
         return str;
     }

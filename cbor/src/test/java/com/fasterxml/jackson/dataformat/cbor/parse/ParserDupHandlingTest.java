@@ -1,11 +1,16 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ParserDupHandlingTest extends CBORTestBase
 {
+    @Test
     public void testSimpleDups() throws Exception
     {
         for (String json : new String[] {

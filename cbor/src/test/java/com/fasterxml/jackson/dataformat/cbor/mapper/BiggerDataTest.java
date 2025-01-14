@@ -2,10 +2,15 @@ package com.fasterxml.jackson.dataformat.cbor.mapper;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Bigger test to try to do smoke-testing of overall functionality,
@@ -82,6 +87,7 @@ public class BiggerDataTest extends CBORTestBase
 
 	final ObjectMapper MAPPER = new ObjectMapper();
 
+	@Test
 	public void testReading() throws Exception
 	{
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -112,6 +118,7 @@ public class BiggerDataTest extends CBORTestBase
 		assertEquals(1, citm.venueNames.size());
 	}
 
+	@Test
 	public void testRoundTrip() throws Exception
 	{
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -140,6 +147,7 @@ public class BiggerDataTest extends CBORTestBase
 		assertEquals(citm.venueNames.size(), citm2.venueNames.size());
 	}
 
+	@Test
 	public void testRoundTripStringref() throws Exception
 	{
 		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
