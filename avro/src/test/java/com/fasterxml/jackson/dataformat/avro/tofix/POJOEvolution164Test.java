@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.failing;
+package com.fasterxml.jackson.dataformat.avro.tofix;
 
 import org.junit.jupiter.api.Test;
 
