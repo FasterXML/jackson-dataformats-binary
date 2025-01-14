@@ -1,25 +1,24 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BinaryNode;
-
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryReadTest extends BaseTestForSmile
 {
@@ -59,6 +58,7 @@ public class BinaryReadTest extends BaseTestForSmile
                 .build()
             ).build();
 
+    @Test
     public void testSmallBinaryValues() throws Exception {
         _testSmallBinaryValues(MAPPER_7BITS);
         _testSmallBinaryValues(MAPPER_RAW);
@@ -71,6 +71,7 @@ public class BinaryReadTest extends BaseTestForSmile
         _testBinary(mapper, 100);
     }
 
+    @Test
     public void testMediumBinaryValues() throws Exception {
         _testMediumBinaryValues(MAPPER_7BITS);
         _testMediumBinaryValues(MAPPER_RAW);
@@ -82,6 +83,7 @@ public class BinaryReadTest extends BaseTestForSmile
         _testBinary(mapper, 8900);
     }
 
+    @Test
     public void testLargeBinaryValues() throws Exception {
         _testLargeBinaryValues(MAPPER_7BITS);
         _testLargeBinaryValues(MAPPER_RAW);
@@ -95,6 +97,7 @@ public class BinaryReadTest extends BaseTestForSmile
     }
 
     // And then one test just to ensure no state corruption occurs
+    @Test
     public void testMultipleBinaryFields() throws Exception
     {
         _testMultipleBinaryFields(MAPPER_7BITS);
@@ -111,12 +114,13 @@ public class BinaryReadTest extends BaseTestForSmile
         byte[] raw = mapper.writeValueAsBytes(input);
 
         Bytes3 result = mapper.readValue(raw, Bytes3.class);
-        Assert.assertArrayEquals(input.bytes1, result.bytes1);
-        Assert.assertArrayEquals(input.bytes2, result.bytes2);
-        Assert.assertArrayEquals(input.bytes3, result.bytes3);
+        assertArrayEquals(input.bytes1, result.bytes1);
+        assertArrayEquals(input.bytes2, result.bytes2);
+        assertArrayEquals(input.bytes3, result.bytes3);
     }
 
     // Let's also verify handling of truncated (invalid) binary values
+    @Test
     public void testTruncatedBinaryValues() throws Exception {
         _testTruncatedBinaryValues(MAPPER_7BITS);
         _testTruncatedBinaryValues(MAPPER_RAW);
@@ -153,14 +157,14 @@ public class BinaryReadTest extends BaseTestForSmile
         byte[] raw = mapper.writeValueAsBytes(input);
         byte[] b2 = mapper.readValue(raw, byte[].class);
         assertNotNull(b2);
-        Assert.assertArrayEquals(input, b2);
+        assertArrayEquals(input, b2);
 
         // then as POJO member
         raw = mapper.writeValueAsBytes(new Bytes(input));
         Bytes bytes = mapper.readValue(raw, Bytes.class);
         assertNotNull(bytes);
         assertNotNull(bytes.bytes);
-        Assert.assertArrayEquals(input, bytes.bytes);
+        assertArrayEquals(input, bytes.bytes);
 
         // then using incremental access method
         raw = mapper.writeValueAsBytes(input);
@@ -172,7 +176,7 @@ public class BinaryReadTest extends BaseTestForSmile
         assertEquals(input.length, p.readBinaryValue(bout));
         assertEquals(input.length, bout.size());
         b2 = bout.toByteArray();
-        Assert.assertArrayEquals(input, b2);
+        assertArrayEquals(input, b2);
         assertNull(p.nextToken());
         p.close();
         in.close();
@@ -194,7 +198,7 @@ public class BinaryReadTest extends BaseTestForSmile
         assertNotNull(n);
         assertTrue(n.isBinary());
         BinaryNode bn = (BinaryNode) n;
-        Assert.assertArrayEquals(input, bn.binaryValue());
+        assertArrayEquals(input, bn.binaryValue());
 
         _testBinaryInArray(mapper, size);
     }
@@ -209,8 +213,8 @@ public class BinaryReadTest extends BaseTestForSmile
                 ByteArrays.class);
         assertNotNull(result.arrays);
         assertEquals(2, result.arrays.size());
-        Assert.assertArrayEquals(b1, result.arrays.get(0));
-        Assert.assertArrayEquals(b2, result.arrays.get(1));
+        assertArrayEquals(b1, result.arrays.get(0));
+        assertArrayEquals(b2, result.arrays.get(1));
 
         // and once more, now as JsonNode
         JsonNode n = mapper.readTree(doc);
@@ -221,11 +225,11 @@ public class BinaryReadTest extends BaseTestForSmile
 
         JsonNode bin = n2.get(0);
         assertTrue(bin.isBinary());
-        Assert.assertArrayEquals(b1, ((BinaryNode) bin).binaryValue());
+        assertArrayEquals(b1, ((BinaryNode) bin).binaryValue());
 
         bin = n2.get(1);
         assertTrue(bin.isBinary());
-        Assert.assertArrayEquals(b2, ((BinaryNode) bin).binaryValue());
+        assertArrayEquals(b2, ((BinaryNode) bin).binaryValue());
     }
 
     private byte[] _bytes(int size, int offset) {

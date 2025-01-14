@@ -4,12 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleObjectTest extends AsyncTestBase
 {
@@ -38,6 +40,7 @@ public class SimpleObjectTest extends AsyncTestBase
 
     private final static String UNICODE_SHORT_NAME = "Unicode"+UNICODE_3BYTES+"RlzOk";
 
+    @Test
     public void testBooleans() throws IOException
     {
         final SmileFactory f = F_REQ_HEADERS;
@@ -124,6 +127,7 @@ public class SimpleObjectTest extends AsyncTestBase
     private final double NUMBER_EXP_D = 1024798.125;
     private final BigDecimal NUMBER_EXP_BD = new BigDecimal("1243565768679065.1247305834");
 
+    @Test
     public void testNumbers() throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);

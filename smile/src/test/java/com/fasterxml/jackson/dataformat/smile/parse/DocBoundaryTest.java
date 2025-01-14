@@ -1,12 +1,14 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Unit tests for verifying that multiple document output and document
@@ -15,26 +17,31 @@ import com.fasterxml.jackson.dataformat.smile.SmileParser;
 public class DocBoundaryTest
     extends BaseTestForSmile
 {
+    @Test
     public void testNoHeadersNoEndMarker() throws Exception
     {
         _verifyMultiDoc(false, false);
     }
 
+    @Test
     public void testHeadersNoEndMarker() throws Exception
     {
         _verifyMultiDoc(true, false);
     }
 
+    @Test
     public void testEndMarkerNoHeader() throws Exception
     {
         _verifyMultiDoc(false, true);
     }
 
+    @Test
     public void testHeaderAndEndMarker() throws Exception
     {
         _verifyMultiDoc(true, true);
     }
 
+    @Test
     public void testExtraHeader() throws Exception
     {
         // also; sprinkling headers can be used to segment document

@@ -1,20 +1,23 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.InputCoercionException;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SmileNumberParsingTest
     extends BaseTestForSmile
 {
+    @Test
     public void testIntsMedium() throws IOException
     {
         byte[] data = _smileDoc("255");
@@ -49,6 +52,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testMinMaxInts() throws IOException
     {
         byte[] data = _smileDoc(String.valueOf(Integer.MAX_VALUE));
@@ -67,6 +71,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testIntsInObjectSkipping() throws IOException
     {
     	byte[] data = _smileDoc("{\"a\":200,\"b\":200}");
@@ -84,6 +89,7 @@ public class SmileNumberParsingTest
      p.close();
     }
 
+    @Test
     public void testBorderLongs() throws IOException
     {
         long l = (long) Integer.MIN_VALUE - 1L;
@@ -126,6 +132,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testLongs() throws IOException
     {
         long l = Long.MAX_VALUE;
@@ -161,6 +168,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testArrayWithInts() throws IOException
     {
         byte[] data = _smileDoc("[ 1, 0, -1, 255, -999, "
@@ -205,6 +213,7 @@ public class SmileNumberParsingTest
     	p.close();
     }
 
+    @Test
     public void testFloats() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -230,6 +239,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testDoubles() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -255,6 +265,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testArrayWithDoubles() throws IOException
     {
         final double[] values = new double[] {
@@ -291,6 +302,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testObjectWithDoubles() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -328,6 +340,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testBigInteger() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -360,6 +373,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testBigDecimal() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -393,6 +407,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testVeryBigDecimal() throws IOException
     {
         final int len = 10000;
@@ -413,12 +428,13 @@ public class SmileNumberParsingTest
                 p.getNumberType();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException nfe) {
-                assertTrue("unexpected exception message: " + nfe.getMessage(),
-                        nfe.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"));
+                assertTrue(nfe.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"),
+                        "unexpected exception message: " + nfe.getMessage());
             }
         }
     }
 
+    @Test
     public void testVeryBigDecimalWithUnlimitedNumLength() throws IOException
     {
         final int len = 10000;
@@ -449,6 +465,7 @@ public class SmileNumberParsingTest
         }
     }
 
+    @Test
     public void testMixedAccessForInts() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -519,6 +536,7 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    @Test
     public void testMixedAccessForFloats() throws IOException
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();

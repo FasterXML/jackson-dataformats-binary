@@ -2,10 +2,12 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StringObjectTest extends AsyncTestBase
 {
@@ -16,10 +18,12 @@ public class StringObjectTest extends AsyncTestBase
             "Unicode-"+UNICODE_3BYTES+"-%s-%s-%s-"+UNICODE_2BYTES+"-%s-%s-%s-"+UNICODE_3BYTES+"-%s-%s-%s",
             STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9, STR0_9);
 
+    @Test
     public void testBasicFieldsNamesSharedNames() throws IOException {
         _testBasicFieldsNames(true);
     }
 
+    @Test
     public void testBasicFieldsNamesNonShared() throws IOException {
         _testBasicFieldsNames(false);
     }
