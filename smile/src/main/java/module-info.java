@@ -1,4 +1,6 @@
-module tools.jackson.dataformat.smile {
+// Smile Main artifact Module descriptor
+module tools.jackson.dataformat.smile
+{
     requires tools.jackson.core;
     requires tools.jackson.databind;
 

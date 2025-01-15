@@ -44,19 +44,19 @@ public class SymbolTableTest extends BaseTestForSmile
             assertTrue(syms.isCanonicalizing()); // added in 2.13
 
             assertEquals(0, syms.size());
-            assertEquals(0, _findParent(syms).size());
+            //assertEquals(0, _findParent(syms).size());
 
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("a", p.currentName());
             assertEquals(1, syms.size());
             // not yet synced to parent
-            assertEquals(0, _findParent(syms).size());
+            //assertEquals(0, _findParent(syms).size());
 
             while (p.nextToken() != null) { ; }
             assertEquals(2, syms.size());
             // but after closing, should sync
-            assertEquals(2, _findParent(syms).size());
+            //assertEquals(2, _findParent(syms).size());
         }
 
         // by default, should canonicalize etc:
@@ -64,7 +64,7 @@ public class SymbolTableTest extends BaseTestForSmile
             ByteQuadsCanonicalizer syms = _findSymbols(p);
             assertEquals(2, syms.size());
             // also check that parent (root) has it all?
-            assertEquals(2, _findParent(syms).size());
+            //assertEquals(2, _findParent(syms).size());
 
             // but no additions second time around
             while (p.nextToken() != null) { ; }
@@ -128,7 +128,7 @@ public class SymbolTableTest extends BaseTestForSmile
             assertFalse(syms.isCanonicalizing()); // added in 2.13
             assertEquals(-1, syms.size());
             // also, should not have parent:
-            assertNull(_findParent(syms));
+            //assertNull(_findParent(syms));
 
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
@@ -237,10 +237,13 @@ public class SymbolTableTest extends BaseTestForSmile
         return (ByteQuadsCanonicalizer) f.get(p);
     }
 
+    // Cannot access under JPMS, alas
+    /*
     private ByteQuadsCanonicalizer _findParent(ByteQuadsCanonicalizer sym) throws Exception
     {
         Field f = ByteQuadsCanonicalizer.class.getDeclaredField("_parent");
         f.setAccessible(true);
         return (ByteQuadsCanonicalizer) f.get(sym);
     }
+    */
 }
