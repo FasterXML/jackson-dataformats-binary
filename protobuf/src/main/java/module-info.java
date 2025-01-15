@@ -1,6 +1,10 @@
-module tools.jackson.dataformat.protobuf {
+// Protobuf Main artifact Module descriptor
+module tools.jackson.dataformat.protobuf
+{
     requires tools.jackson.core;
     requires tools.jackson.databind;
+
+    requires protoparser;
 
     exports tools.jackson.dataformat.protobuf;
 // No, should not expose shaded
