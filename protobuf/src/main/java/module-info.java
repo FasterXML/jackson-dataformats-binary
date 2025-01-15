@@ -4,13 +4,15 @@ module tools.jackson.dataformat.protobuf
     requires tools.jackson.core;
     requires tools.jackson.databind;
 
+    // No module-info nor Automatic-Module-Name; relies on jar name:
     requires protoparser;
 
     exports tools.jackson.dataformat.protobuf;
-// No, should not expose shaded
-//    exports tools.jackson.dataformat.protobuf.protoparser.protoparser;
     exports tools.jackson.dataformat.protobuf.schema;
     exports tools.jackson.dataformat.protobuf.schemagen;
+
+    // Need to "opens" to allow reading resource `descriptor.proto`
+    opens tools.jackson.dataformat.protobuf.schema;
 
     provides tools.jackson.core.TokenStreamFactory with
         tools.jackson.dataformat.protobuf.ProtobufFactory;

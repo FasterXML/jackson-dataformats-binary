@@ -3,6 +3,7 @@ package tools.jackson.dataformat.protobuf.schema;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 import com.squareup.protoparser.ProtoFile;
 import com.squareup.protoparser.ProtoParser;
@@ -40,7 +41,7 @@ public class ProtobufSchemaLoader
      */
 
     public ProtobufSchema load(URL url) throws IOException {
-        return loadNative(url).forFirstType();
+        return loadNative(Objects.requireNonNull(url)).forFirstType();
     }
 
     /**
@@ -48,11 +49,11 @@ public class ProtobufSchemaLoader
      *   the root value to read/write
      */
     public ProtobufSchema load(URL url, String rootTypeName) throws IOException {
-        return loadNative(url).forType(rootTypeName);
+        return loadNative(Objects.requireNonNull(url)).forType(rootTypeName);
     }
 
     public ProtobufSchema load(File f) throws IOException {
-        return loadNative(f).forFirstType();
+        return loadNative(Objects.requireNonNull(f)).forFirstType();
     }
 
     /**
@@ -60,7 +61,7 @@ public class ProtobufSchemaLoader
      *   the root value to read/write
      */
     public ProtobufSchema load(File f, String rootTypeName) throws IOException {
-        return loadNative(f).forType(rootTypeName);
+        return loadNative(Objects.requireNonNull(f)).forType(rootTypeName);
     }
 
     /**
@@ -69,7 +70,7 @@ public class ProtobufSchemaLoader
      * Note that given {@link InputStream} will be closed before method returns.
      */
     public ProtobufSchema load(InputStream in) throws IOException {
-        return loadNative(in, true).forFirstType();
+        return loadNative(Objects.requireNonNull(in), true).forFirstType();
     }
 
     /**
@@ -77,7 +78,7 @@ public class ProtobufSchemaLoader
      *   the root value to read/write
      */
     public ProtobufSchema load(InputStream in, String rootTypeName) throws IOException {
-        return loadNative(in, true).forType(rootTypeName);
+        return loadNative(Objects.requireNonNull(in), true).forType(rootTypeName);
     }
 
     /**
@@ -86,7 +87,7 @@ public class ProtobufSchemaLoader
      * Note that given {@link Reader} will be closed before method returns.
      */
     public ProtobufSchema load(Reader r) throws IOException {
-        return loadNative(r, true).forFirstType();
+        return loadNative(Objects.requireNonNull(r), true).forFirstType();
     }
 
     /**
@@ -94,7 +95,7 @@ public class ProtobufSchemaLoader
      *   the root value to read/write
      */
     public ProtobufSchema load(Reader r, String rootTypeName) throws IOException {
-        return loadNative(r, true).forType(rootTypeName);
+        return loadNative(Objects.requireNonNull(r), true).forType(rootTypeName);
     }
 
     /**
@@ -120,22 +121,27 @@ public class ProtobufSchemaLoader
      */
 
     public NativeProtobufSchema loadNative(File f) throws IOException {
+        Objects.requireNonNull(f);
         return NativeProtobufSchema.construct(_loadNative(f));
     }
 
     public NativeProtobufSchema loadNative(URL url) throws IOException {
+        Objects.requireNonNull(url);
         return NativeProtobufSchema.construct(_loadNative(url));
     }
 
     public NativeProtobufSchema parseNative(String schema) throws IOException {
+        Objects.requireNonNull(schema);
         return NativeProtobufSchema.construct(_loadNative(schema));
     }
 
     public NativeProtobufSchema loadNative(InputStream in, boolean close) throws IOException {
+        Objects.requireNonNull(in);
         return NativeProtobufSchema.construct(_loadNative(in, close));
     }
 
     protected NativeProtobufSchema loadNative(Reader r, boolean close) throws IOException {
+        Objects.requireNonNull(r);
         return NativeProtobufSchema.construct(_loadNative(r, close));
     }
 

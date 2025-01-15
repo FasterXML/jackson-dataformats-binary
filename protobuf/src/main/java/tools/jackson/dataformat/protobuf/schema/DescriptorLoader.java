@@ -15,7 +15,8 @@ import tools.jackson.dataformat.protobuf.ProtobufMapper;
  */
 public class DescriptorLoader
 {
-    protected final static String DESCRIPTOR_PROTO = "/descriptor.proto";
+    protected final static String DESCRIPTOR_PROTO = "/tools/jackson/dataformat/protobuf/schema/descriptor.proto";
+    //protected final static String DESCRIPTOR_PROTO = "descriptor.proto";
 
     /**
      * Fully configured reader for {@link FileDescriptorSet} objects.
@@ -38,13 +39,20 @@ public class DescriptorLoader
     }
 
     /**
-     * @param mapper {@link ObjectMapper} that can reader protoc content.
+     * @param mapper {@link ObjectMapper} that can read protoc content.
      */
     public static DescriptorLoader construct(ObjectMapper mapper,
             ProtobufSchemaLoader schemaLoader) throws IOException
     {
         ProtobufSchema schema;
-        try (InputStream in = DescriptorLoader.class.getResourceAsStream(DESCRIPTOR_PROTO)) {
+        final Class<?> ctxt = DescriptorLoader.class;
+        final String resourceName = DESCRIPTOR_PROTO;
+        try (InputStream in = ctxt.getResourceAsStream(resourceName)) {
+            if (in == null) {
+                throw new IllegalStateException(String.format(
+                        "Can not find resource `%s` within context '%s'",
+                        resourceName, ctxt.getName()));
+            }
             schema = schemaLoader.load(in, "FileDescriptorSet");
         }
         return new DescriptorLoader(mapper.readerFor(FileDescriptorSet.class)
