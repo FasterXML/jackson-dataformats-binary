@@ -57,10 +57,18 @@
   </properties>
 
   <dependencies>
-    <!-- all dataformats extend core so just include here -->
+    <!-- all dataformats extend core and databind, annotations; include here -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
     <dependency>
       <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
     </dependency>
 
     <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5 -->

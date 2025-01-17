@@ -38,17 +38,6 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>tools.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-
-    <!-- annotations for testing -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 
   <build>

@@ -41,20 +41,6 @@ tree model)
       <version>1.11.9</version>
     </dependency>
 
-    <!-- Extends Jackson core, databind -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>tools.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>tools.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-
     <!-- will come from parent pom for later versions -->
     <dependency>
       <groupId>org.hamcrest</groupId>

@@ -34,16 +34,8 @@ abstractions.
   </properties>
 
   <dependencies>
-    <!--  Hmmh. Need annotations for introspection... -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-    <!--  and databind for Avro Schema generation... -->
-    <dependency>
-      <groupId>tools.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
+    <!-- Core deps from parent -->
+
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
