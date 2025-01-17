@@ -28,7 +28,6 @@ public class DescriptorLoaderTest extends ProtobufTestBase
         }
     }
 
-
     static class Other
     {
         public int f;
@@ -68,7 +67,7 @@ public class DescriptorLoaderTest extends ProtobufTestBase
         // Deserialize the bytes using the descriptor
         // load main.desc descriptor file.  This file was created by protoc - o main.desc main.proto other.proto
         FileDescriptorSet fds;
-        try (InputStream in = this.getClass().getResourceAsStream("/main.desc")) {
+        try (InputStream in = this.getClass().getResourceAsStream("/test/main.desc")) {
             fds = MAPPER.loadDescriptorSet(in);
         }
         ProtobufSchema schema2 = fds.schemaFor("Main");

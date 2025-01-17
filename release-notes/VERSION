@@ -29,4 +29,6 @@ implementations)
   `SmileGenerator.Feature` as `SmileWriteFeature`
 #543: (avro) Enable "logical types" support in `AvroSchemaGenerator`
   by default (3.0)
+#557: Change 3.0 to use `module-info.java` directly [JSTEP-11]
 - Minimum Java baseline: Java 17
+- (protobuf) Remove shading of `protoparser` dependency

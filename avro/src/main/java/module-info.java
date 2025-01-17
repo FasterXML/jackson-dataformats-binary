@@ -1,12 +1,11 @@
-module tools.jackson.dataformat.avro {
+// Avro Main artifact Module descriptor
+module tools.jackson.dataformat.avro
+{
     requires transitive com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
     requires tools.jackson.databind;
 
-    // silly avro Apache impl, its deps:
-    requires static avro;
-    requires static jackson.core.asl;
-    requires static jackson.mapper.asl;
+    requires org.apache.avro;
 
     exports tools.jackson.dataformat.avro;
     exports tools.jackson.dataformat.avro.annotation;

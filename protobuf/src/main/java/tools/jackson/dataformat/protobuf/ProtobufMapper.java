@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import tools.jackson.core.Version;
@@ -34,6 +35,13 @@ public class ProtobufMapper extends ObjectMapper
             super(f);
         }
 
+        /**
+         * NOTE: while technically public, not intended for external use
+         * (since {@code StateImpl} is not public type)
+         *
+         * @param state State to restore to initialize constructed Builder
+         */
+        @SuppressWarnings("exports")
         public Builder(StateImpl state) {
             super(state);
         }
@@ -209,15 +217,15 @@ public class ProtobufMapper extends ObjectMapper
      */
 
     public FileDescriptorSet loadDescriptorSet(URL src) throws IOException {
-        return descriptorLoader().load(src);
+        return descriptorLoader().load(Objects.requireNonNull(src));
     }
 
     public FileDescriptorSet loadDescriptorSet(File src) throws IOException {
-        return descriptorLoader().load(src);
+        return descriptorLoader().load(Objects.requireNonNull(src));
     }
 
     public FileDescriptorSet loadDescriptorSet(InputStream src) throws IOException {
-        return descriptorLoader().load(src);
+        return descriptorLoader().load(Objects.requireNonNull(src));
     }
 
     /**

@@ -318,7 +318,7 @@ public abstract class ProtobufTestBase
 
     // // // POJOs for "JVM-serializers" case
 
-    protected static class  MediaItem
+    public static class  MediaItem
     {
          public Media media;
          public List<Image> images;
@@ -375,9 +375,9 @@ public abstract class ProtobufTestBase
          }
     }
 
-    enum Size { SMALL, LARGE };
+    public enum Size { SMALL, LARGE };
 
-    static class Image
+    public static class Image
     {
         public Image() { }
         public Image(String uri, String title, int w, int h, Size s) {
@@ -410,9 +410,9 @@ public abstract class ProtobufTestBase
         }
     }
 
-    enum Player { JAVA, FLASH; }
+    public enum Player { JAVA, FLASH; }
 
-    static class Media {
+    public static class Media {
 
         public String uri;
         public String title;        // Can be unset.

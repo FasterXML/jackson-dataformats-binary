@@ -1,17 +1,17 @@
-// Generated 15-Mar-2019 using Moditect maven plugin
-module tools.jackson.dataformat.ion {
-    requires transitive com.fasterxml.jackson.annotation;
+// Ion Main artifact Module descriptor
+module tools.jackson.dataformat.ion
+{
     requires tools.jackson.core;
     requires tools.jackson.databind;
-
-    requires static ion.java;
-
     requires java.sql;
+
+    // ion-java has no explicit module-info; but automatic name is:
+    requires com.amazon.ion;
 
     exports tools.jackson.dataformat.ion;
     exports tools.jackson.dataformat.ion.ionvalue;
+    exports tools.jackson.dataformat.ion.jsr310;
     exports tools.jackson.dataformat.ion.polymorphism;
-    exports tools.jackson.dataformat.ion.util;
 
     provides tools.jackson.core.TokenStreamFactory with
         tools.jackson.dataformat.ion.IonFactory;

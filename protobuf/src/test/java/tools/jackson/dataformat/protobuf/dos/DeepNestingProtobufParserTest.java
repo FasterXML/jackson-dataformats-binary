@@ -20,11 +20,11 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class DeepNestingProtobufParserTest extends ProtobufTestBase
 {
-    static class Node {
+    public static class Node {
         public int id;
         public Node next;
 
-        protected Node() { }
+        public Node() { }
         public Node(int id, Node next) {
             this.id = id;
             this.next = next;
