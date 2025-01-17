@@ -2,6 +2,7 @@ package tools.jackson.dataformat.protobuf.schema;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Objects;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectReader;
@@ -67,12 +68,12 @@ public class DescriptorLoader
 
     public FileDescriptorSet load(URL src) throws IOException
     {
-        return _reader.readValue(src);
+        return _reader.readValue(Objects.requireNonNull(src));
     }
 
     public FileDescriptorSet load(File src) throws IOException
     {
-        return _reader.readValue(src);
+        return _reader.readValue(Objects.requireNonNull(src));
     }
 
     /**
@@ -80,7 +81,7 @@ public class DescriptorLoader
      */
     public FileDescriptorSet load(InputStream in) throws IOException
     {
-        return _reader.readValue(in);
+        return _reader.readValue(Objects.requireNonNull(in));
     }
 
     /**
@@ -88,6 +89,6 @@ public class DescriptorLoader
      */
     public FileDescriptorSet load(Reader r) throws IOException
     {
-        return _reader.readValue(r);
+        return _reader.readValue(Objects.requireNonNull(r));
     }
 }

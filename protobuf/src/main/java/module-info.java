@@ -1,8 +1,8 @@
 // Protobuf Main artifact Module descriptor
 module tools.jackson.dataformat.protobuf
 {
-    requires tools.jackson.core;
-    requires tools.jackson.databind;
+    requires transitive tools.jackson.core;
+    requires transitive tools.jackson.databind;
 
     // No module-info nor Automatic-Module-Name; relies on jar name:
     requires protoparser;
