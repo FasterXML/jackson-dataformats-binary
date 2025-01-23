@@ -10,8 +10,6 @@ import tools.jackson.core.util.BufferRecycler;
 
 import tools.jackson.databind.*;
 
-import tools.jackson.dataformat.smile.databind.SmileMapper;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class BaseTestForSmile

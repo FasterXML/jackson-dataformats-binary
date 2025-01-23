@@ -10,8 +10,6 @@ import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.ObjectMapper;
 
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeneratorDeepNestingTest extends CBORTestBase

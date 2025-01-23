@@ -12,7 +12,6 @@ import tools.jackson.core.exc.InputCoercionException;
 import tools.jackson.core.exc.StreamConstraintsException;
 
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -2,9 +2,9 @@ package tools.jackson.dataformat.cbor.mapper;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.dataformat.cbor.CBORMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.CBORWriteFeature;
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 

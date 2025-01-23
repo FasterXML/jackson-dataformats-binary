@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 import tools.jackson.dataformat.smile.testutil.PrefixInputDecorator;
 import tools.jackson.dataformat.smile.testutil.PrefixOutputDecorator;
 

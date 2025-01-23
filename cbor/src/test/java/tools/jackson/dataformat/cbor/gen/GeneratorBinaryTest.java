@@ -11,7 +11,7 @@ import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
+import tools.jackson.dataformat.cbor.CBORMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

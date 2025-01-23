@@ -17,7 +17,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 

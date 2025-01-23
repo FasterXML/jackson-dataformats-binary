@@ -33,3 +33,5 @@ implementations)
 - Minimum Java baseline: Java 17
 - (protobuf) Remove shading of `protoparser` dependency (and change
   Maven packaging type to "jar" from "bundle")
+- (cbor, smile) Move `CBORMapper` and `SmileMapper` into main-level
+  Java package from under `MAIN.databind`

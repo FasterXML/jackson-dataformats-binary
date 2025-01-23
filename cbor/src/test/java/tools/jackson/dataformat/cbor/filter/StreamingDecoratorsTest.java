@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
 import tools.jackson.dataformat.cbor.*;
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
 import tools.jackson.dataformat.cbor.testutil.PrefixInputDecorator;
 import tools.jackson.dataformat.cbor.testutil.PrefixOutputDecorator;
 

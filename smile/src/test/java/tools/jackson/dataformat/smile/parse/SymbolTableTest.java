@@ -13,7 +13,6 @@ import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 

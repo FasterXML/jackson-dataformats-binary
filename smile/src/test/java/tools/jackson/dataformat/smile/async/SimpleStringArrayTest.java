@@ -10,7 +10,6 @@ import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.ObjectWriter;
 
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
