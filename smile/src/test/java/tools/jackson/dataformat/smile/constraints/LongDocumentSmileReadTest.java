@@ -11,7 +11,7 @@ import tools.jackson.core.exc.StreamConstraintsException;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
+import tools.jackson.dataformat.smile.SmileMapper;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
 import static org.junit.jupiter.api.Assertions.*;

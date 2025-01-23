@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.smile.databind;
+package tools.jackson.dataformat.smile;
 
 import tools.jackson.core.Version;
 
@@ -6,9 +6,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperBuilderState;
 import tools.jackson.dataformat.smile.PackageVersion;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileReadFeature;
-import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 /**
  * Specialized {@link ObjectMapper} to use with Smile format backend.

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.*;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
+import tools.jackson.dataformat.smile.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

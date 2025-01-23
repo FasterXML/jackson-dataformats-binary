@@ -16,7 +16,6 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.BinaryNode;
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 import tools.jackson.dataformat.smile.testutil.ThrottledInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,13 +1,10 @@
-package tools.jackson.dataformat.cbor.databind;
+package tools.jackson.dataformat.cbor;
 
 import tools.jackson.core.Version;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperBuilderState;
-
-import tools.jackson.dataformat.cbor.CBORFactory;
-import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import tools.jackson.dataformat.cbor.PackageVersion;
 
 /**

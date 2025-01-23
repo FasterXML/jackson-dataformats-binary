@@ -9,7 +9,6 @@ import tools.jackson.core.*;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 import tools.jackson.dataformat.cbor.*;
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 

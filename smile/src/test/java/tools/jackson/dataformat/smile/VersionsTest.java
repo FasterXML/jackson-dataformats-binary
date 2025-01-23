@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.Versioned;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

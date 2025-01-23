@@ -11,8 +11,7 @@ import tools.jackson.core.type.TypeReference;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.util.TokenBuffer;
-
-import tools.jackson.dataformat.smile.databind.SmileMapper;
+import tools.jackson.dataformat.smile.SmileMapper;
 
 public class ConcurrentAsyncTest extends AsyncTestBase
 {

@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.cbor.CBORMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 import tools.jackson.dataformat.cbor.CBORWriteFeature;
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

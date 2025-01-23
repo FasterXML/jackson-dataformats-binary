@@ -11,8 +11,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.json.JsonMapper;
 
-import tools.jackson.dataformat.cbor.databind.CBORMapper;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class CBORTestBase

@@ -8,7 +8,6 @@ import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamWriteException;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.dataformat.smile.*;
-import tools.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
