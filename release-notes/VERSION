@@ -30,8 +30,8 @@ implementations)
 #543: (avro) Enable "logical types" support in `AvroSchemaGenerator`
   by default (3.0)
 #557: Change 3.0 to use `module-info.java` directly [JSTEP-11]
+#559 (cbor, smile) Move `CBORMapper` and `SmileMapper` into main-level
+  Java package from under `MAIN.databind`
 - Minimum Java baseline: Java 17
 - (protobuf) Remove shading of `protoparser` dependency (and change
   Maven packaging type to "jar" from "bundle")
-- (cbor, smile) Move `CBORMapper` and `SmileMapper` into main-level
-  Java package from under `MAIN.databind`
