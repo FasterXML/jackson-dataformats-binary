@@ -16,7 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTest extends AvroTestBase
 {
-    private final AvroMapper MAPPER = getMapper();
+    // 30-Jan-2025, tatu: With 3.0 and `DeserializationFeature.FAIL_ON_TRAILING_TOKENS`
+    //  default, need to turn it off for this test.
+    private final AvroMapper MAPPER = mapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+            .build();
 
     // Simple test for a single array
     @Test

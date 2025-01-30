@@ -305,6 +305,10 @@ public abstract class AvroTestBase
         return new AvroMapper();
     }
 
+    protected static AvroMapper.Builder mapperBuilder() {
+        return AvroMapper.builder();
+    }
+
     protected static AvroMapper newApacheMapper() {
         return new AvroMapper(AvroFactory.builderWithApacheDecoder().build());
     }
