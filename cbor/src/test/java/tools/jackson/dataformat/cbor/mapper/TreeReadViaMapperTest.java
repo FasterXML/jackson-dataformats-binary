@@ -88,25 +88,29 @@ public class TreeReadViaMapperTest extends CBORTestBase
     @Test
     public void testMultiple() throws Exception
     {
-        JsonParser p = MAPPER.createParser(cborDoc("12  \"string\" [ 1, 2, 3 ]"));
-        JsonNode result = MAPPER.readTree(p);
+        ObjectMapper mapper = cborMapperBuilder()
+                .disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+                .build();
+        
+        JsonParser p = mapper.createParser(cborDoc("12  \"string\" [ 1, 2, 3 ]"));
+        JsonNode result = mapper.readTree(p);
 
         assertTrue(result.isIntegralNumber());
         assertTrue(result.isInt());
         assertFalse(result.isString());
         assertEquals(12, result.intValue());
 
-        result = MAPPER.readTree(p);
+        result = mapper.readTree(p);
         assertTrue(result.isString());
         assertFalse(result.isIntegralNumber());
         assertFalse(result.isInt());
         assertEquals("string", result.stringValue());
 
-        result = MAPPER.readTree(p);
+        result = mapper.readTree(p);
         assertTrue(result.isArray());
         assertEquals(3, result.size());
 
-        assertNull(MAPPER.readTree(p));
+        assertNull(mapper.readTree(p));
         p.close();
     }
 
