@@ -39,14 +39,14 @@ public class ReadSimpleProtobufTest extends ProtobufTestBase
             +"}\n"
     ;
 
-    static class Strings {
+    public static class Strings {
         public String[] values;
 
         public Strings() { }
         public Strings(String... v) { values = v; }
     }
 
-    static class NamedStrings {
+    public static class NamedStrings {
         public String name;
         public String[] values;
 

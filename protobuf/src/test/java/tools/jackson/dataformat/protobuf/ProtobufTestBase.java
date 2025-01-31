@@ -19,12 +19,12 @@ public abstract class ProtobufTestBase
     /**********************************************************
      */
 
-    enum Corpus {
+    public enum Corpus {
         UNIVERSAL,
         WEB;
     }
 
-    static class SearchRequest {
+    public static class SearchRequest {
         public String query;
         public int page_number, result_per_page;
         public Corpus corpus;
@@ -151,11 +151,11 @@ public abstract class ProtobufTestBase
      */
 
     @JsonPropertyOrder({ "x", "y"})
-    static class Point {
+    public static class Point {
         public int x;
         public int y;
 
-        protected Point() { }
+        public Point() { }
 
         public Point(int x, int y) {
             this.x = x;
@@ -177,7 +177,7 @@ public abstract class ProtobufTestBase
     }
 
     @JsonPropertyOrder({ "x", "y", "z" })
-    static class Point3 {
+    public static class Point3 {
         public int x, y, z;
 
         protected Point3() { }
@@ -202,7 +202,7 @@ public abstract class ProtobufTestBase
         }
     }
 
-    static class PointL {
+    public static class PointL {
         public long x;
         public long y;
 
@@ -227,7 +227,7 @@ public abstract class ProtobufTestBase
         }
     }
 
-    static class OptionalValue {
+    public static class OptionalValue {
         public boolean present;
         public String value;
 
@@ -255,7 +255,7 @@ public abstract class ProtobufTestBase
         }
     }
 
-    static class PointD {
+    public static class PointD {
         public double x;
         public double y;
 
@@ -281,7 +281,7 @@ public abstract class ProtobufTestBase
     }
 
     @JsonPropertyOrder({ "topLeft", "bottomRight"})
-    static class Box {
+    public static class Box {
         public Point topLeft, bottomRight;
 
         public Box() { }
@@ -301,7 +301,7 @@ public abstract class ProtobufTestBase
     }
 
     @JsonPropertyOrder({ "first", "last"})
-    static class Name {
+    public static class Name {
         public String first, last;
 
         public Name() { }
