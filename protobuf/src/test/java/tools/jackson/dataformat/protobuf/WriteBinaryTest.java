@@ -24,7 +24,7 @@ public class WriteBinaryTest extends ProtobufTestBase
     ;
 
     @JsonPropertyOrder({ "id", "trailer", "data"})
-    static class Binary {
+    public static class Binary {
         public int id, trailer;
         public byte[] data;
 

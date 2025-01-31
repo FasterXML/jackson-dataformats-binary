@@ -35,7 +35,7 @@ public class WriteArrayTest extends ProtobufTestBase
           +PROTOC_POINT;
     ;
 
-    static class StringArray {
+    public static class StringArray {
         public String[] values;
 
         public StringArray(String... v) {
@@ -43,7 +43,7 @@ public class WriteArrayTest extends ProtobufTestBase
         }
     }
 
-    static class PointArray {
+    public static class PointArray {
         public Point[] points;
 
         public PointArray(Point... p) {
@@ -51,7 +51,7 @@ public class WriteArrayTest extends ProtobufTestBase
         }
     }
 
-    final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     final ProtobufSchema SPARSE_STRING_SCHEMA;
     final ProtobufSchema PACKED_STRING_SCHEMA;

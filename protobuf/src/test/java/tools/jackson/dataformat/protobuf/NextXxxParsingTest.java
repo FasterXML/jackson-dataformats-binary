@@ -22,14 +22,14 @@ public class NextXxxParsingTest extends ProtobufTestBase
             +"}\n"
     ;
 
-    static class Strings {
+    public static class Strings {
         public String[] values;
 
         public Strings() { }
         public Strings(String... v) { values = v; }
     }
 
-    final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+    final ObjectMapper MAPPER = newObjectMapper();
 
     @Test
     public void testNextFieldAndText() throws Exception

@@ -14,26 +14,26 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class EnumHandlingTest extends ProtobufTestBase
 {
-    enum TinyEnum {
+    public enum TinyEnum {
         X;
     }
 
-    enum BigEnum {
+    public enum BigEnum {
         A, B, C, D, E,
         F, G, H, I, J;
     }
 
-    static class TinyEnumWrapper {
+    public static class TinyEnumWrapper {
         public TinyEnum value;
 
-        TinyEnumWrapper() { }
+        public TinyEnumWrapper() { }
         public TinyEnumWrapper(TinyEnum v) { value = v; }
     }
 
-    static class BigEnumWrapper {
+    public static class BigEnumWrapper {
         public BigEnum value;
 
-        BigEnumWrapper() { }
+        public BigEnumWrapper() { }
         public BigEnumWrapper(BigEnum v) { value = v; }
     }
 
@@ -43,7 +43,7 @@ public class EnumHandlingTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    final ProtobufMapper MAPPER = new ProtobufMapper();
+    final ProtobufMapper MAPPER = newObjectMapper();
 
     @Test
     public void testBigEnum() throws Exception

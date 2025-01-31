@@ -180,7 +180,7 @@ public abstract class ProtobufTestBase
     public static class Point3 {
         public int x, y, z;
 
-        protected Point3() { }
+        public Point3() { }
 
         public Point3(int x, int y, int z) {
             this.x = x;
@@ -206,7 +206,7 @@ public abstract class ProtobufTestBase
         public long x;
         public long y;
 
-        protected PointL() { }
+        public PointL() { }
 
         public PointL(long x, long y) {
             this.x = x;
@@ -231,7 +231,7 @@ public abstract class ProtobufTestBase
         public boolean present;
         public String value;
 
-        protected OptionalValue() { }
+        public OptionalValue() { }
         public OptionalValue(boolean p, String v) {
             present = p;
             value = v;
@@ -259,7 +259,7 @@ public abstract class ProtobufTestBase
         public double x;
         public double y;
 
-        protected PointD() { }
+        public PointD() { }
 
         public PointD(double x, double y) {
             this.x = x;

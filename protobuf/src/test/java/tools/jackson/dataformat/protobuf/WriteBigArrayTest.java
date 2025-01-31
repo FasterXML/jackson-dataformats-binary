@@ -40,7 +40,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         PACKED_STRING_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_STRING_ARRAY_PACKED);
     }
 
-    static class StringArray {
+    public static class StringArray {
         public String[] values;
 
         public StringArray() { }
@@ -51,7 +51,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
         public int size() { return values.length; }
     }
 
-    static class StringArrayWrapper
+    public static class StringArrayWrapper
     {
         public StringArray values;
 

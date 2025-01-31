@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReadUnkownFieldsTest extends ProtobufTestBase
 {
-    static class OneField {
+    public static class OneField {
         @JsonProperty(value = "f3", index = 3)
         public int f3;
     }
 
-    static class ThreeField {
+    public static class ThreeField {
 
         @JsonProperty(value = "f1", index = 1)
         private int f1;

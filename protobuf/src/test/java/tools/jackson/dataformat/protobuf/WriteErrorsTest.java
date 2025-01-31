@@ -21,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class WriteErrorsTest extends ProtobufTestBase
 {
-    static class Point3D extends Point {
+    public static class Point3D extends Point {
         public int z;
 
-        protected Point3D() { }
+        public Point3D() { }
         public Point3D(int x, int y, int z) {
             super(x, y);
             this.z = z;

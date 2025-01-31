@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ReadUnknownFields202Test extends ProtobufTestBase
 {
     // [dataformats-binary#202]
-    static class TestMessageV0
+    public static class TestMessageV0
     {
         @JsonProperty(required = true, index = 1)
-        private String id;
+        protected String id;
         @JsonProperty(required = false, index = 2)
-        private String plant;
+        protected String plant;
 
         public TestMessageV0() { }
 
@@ -39,20 +39,20 @@ public class ReadUnknownFields202Test extends ProtobufTestBase
         }
     }
 
-    static class TestMessageV1
+    public static class TestMessageV1
     {
         @JsonProperty(required = true, index = 1)
-        private String id;
+        protected String id;
         @JsonProperty(required = false, index = 2)
-        private String plant;
+        protected String plant;
         @JsonProperty(required = false, index = 3)
-        private Double length;
+        protected Double length;
         @JsonProperty(required = false, index = 4)
-        private Double width;
+        protected Double width;
         @JsonProperty(required = false, index = 5)
-        private String descr;
+        protected String descr;
         @JsonProperty(required = false, index = 6)
-        private String source;
+        protected String source;
 
         public TestMessageV1() { }
 

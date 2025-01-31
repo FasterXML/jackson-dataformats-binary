@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WriteSimpleTest extends ProtobufTestBase
 {
-    static class Point3D extends Point {
+    public static class Point3D extends Point {
         public int z;
 
         public Point3D(int x, int y, int z) {
@@ -39,11 +39,11 @@ public class WriteSimpleTest extends ProtobufTestBase
     ;
 
     @JsonPropertyOrder({ "id", "point" })
-    static class IdPoints {
+    public static class IdPoints {
         public int id;
         public List<Point> points;
 
-        protected IdPoints() { }
+        public IdPoints() { }
 
         public IdPoints(int id, int x, int y) {
             this.id = id;
@@ -64,7 +64,7 @@ public class WriteSimpleTest extends ProtobufTestBase
         }
     }
 
-    private final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     /*
     /**********************************************************

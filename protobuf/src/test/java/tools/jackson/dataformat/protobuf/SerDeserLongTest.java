@@ -6,8 +6,24 @@ import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class SerDeserLongTest extends ProtobufTestBase
 {
+    @JsonPropertyOrder({ "long1", "long2" })
+    public static class BigNumPair {
+        public static final String protobuf_str =
+                "message BigNumPair {\n"
+                        + " required int64 long1 = 1;\n"
+                        + " required int64 long2 = 2;\n"
+                        + "}\n";
+
+        public long long1;
+        public long long2;
+    }
+
     @Test
     public void testWeirdLongSerDeser() throws Exception {
         ObjectMapper mapper = newObjectMapper();
@@ -21,7 +37,7 @@ public class SerDeserLongTest extends ProtobufTestBase
 
         BigNumPair parsed = mapper.readerFor(BigNumPair.class).with(schema).readValue(encoded);
 
-        assert parsed.long1 == bnp.long1;
-        assert parsed.long2 == bnp.long2;
+        assertEquals(bnp.long1, parsed.long1);
+        assertEquals(bnp.long2, parsed.long2);
     }
 }

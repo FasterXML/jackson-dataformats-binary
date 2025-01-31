@@ -36,7 +36,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
                       "optional string a = 1;\n" + //
                       "}\n"; //
 
-    static class TestObject {
+    public static class TestObject {
        String a;
        TestSub b;
 
@@ -59,7 +59,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
 
     // ordering would be needed prior to fix for [#59]
     //@com.fasterxml.jackson.annotation.JsonPropertyOrder({"d", "b", "c"})
-    static class TestSub {
+    public static class TestSub {
         String b;
         String c;
         TestSubSub d;
@@ -103,7 +103,7 @@ public class RoundtripNestedMessageTest extends ProtobufTestBase
 
     // [dataformats-binary#135]: endless END_OBJECT at end of doc
     @JsonPropertyOrder({ "name", "age", "emails", "boss" })
-    static class Employee135 {
+    public static class Employee135 {
         public int age;
 
         public String[] emails;
