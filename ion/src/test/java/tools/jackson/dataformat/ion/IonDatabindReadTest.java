@@ -20,17 +20,19 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import tools.jackson.databind.DeserializationFeature;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DataBindReadTest {
-    static class MyBean {
+public class IonDatabindReadTest {
+    public static class MyBean {
         public String a;
         public int b;
         @JsonIgnore public Object ignore;
         public byte[] blob;
     }
 
-    static class BeanToo { }
+    public static class BeanToo { }
 
     @Test
     public void testSimple() throws Exception
@@ -98,7 +100,9 @@ public class DataBindReadTest {
     @Test
     public void testMultipleReads() throws Exception
     {
-        IonObjectMapper m = new IonObjectMapper();
+        IonObjectMapper m = IonObjectMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+                .build();
         IonSystem ion = IonSystemBuilder.standard().build();
 
         IonReader reader = ion.newReader("[foo, bar, baz]");
