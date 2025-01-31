@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WriteComplexPojoTest extends ProtobufTestBase
 {
-    private final ObjectMapper MAPPER = new ProtobufMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     /*
     /**********************************************************

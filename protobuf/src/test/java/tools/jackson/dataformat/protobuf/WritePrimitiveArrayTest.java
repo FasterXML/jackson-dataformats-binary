@@ -76,46 +76,46 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
             +" repeated float values = 1 [packed=true];\n"
             +"}\n";
 
-    static class IntArray {
+    public static class IntArray {
         public int[] values;
 
-        protected IntArray() { }
+        public IntArray() { }
         public IntArray(int... v) {
             values = v;
         }
     }
 
-    static class LongArray {
+    public static class LongArray {
         public long[] values;
 
-        protected LongArray() { }
+        public LongArray() { }
         public LongArray(long... v) {
             values = v;
         }
     }
 
-    static class DoubleArray {
+    public static class DoubleArray {
         public double[] values;
 
-        protected DoubleArray() { }
+        public DoubleArray() { }
         public DoubleArray(double... v) {
             values = v;
         }
     }
 
-    static class FloatArray {
+    public static class FloatArray {
         public float[] values;
 
-        protected FloatArray() { }
+        public FloatArray() { }
         public FloatArray(float... v) {
             values = v;
         }
     }
 
-    static class StringArray {
+    public static class StringArray {
         public String[] values;
 
-        protected StringArray() { }
+        public StringArray() { }
         public StringArray(String... v) {
             values = v;
         }

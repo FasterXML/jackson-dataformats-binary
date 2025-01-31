@@ -6,10 +6,11 @@ import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
 import org.junit.jupiter.api.Test;
 
-public class SerDeserLongTest {
+public class SerDeserLongTest extends ProtobufTestBase
+{
     @Test
     public void testWeirdLongSerDeser() throws Exception {
-        ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
+        ObjectMapper mapper = newObjectMapper();
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(BigNumPair.protobuf_str);
 
         BigNumPair bnp = new BigNumPair();

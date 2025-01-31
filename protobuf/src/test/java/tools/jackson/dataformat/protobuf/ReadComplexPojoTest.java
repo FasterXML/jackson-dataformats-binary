@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ReadComplexPojoTest extends ProtobufTestBase
 {
     @JsonPropertyOrder({ "b", "i", "l", "d" })
-    static class PojoWithArrays {
+    public static class PojoWithArrays {
         public boolean[] b;
 
         public int[] i;
@@ -27,7 +27,7 @@ public class ReadComplexPojoTest extends ProtobufTestBase
 
         public double[] d;
 
-        protected PojoWithArrays() { }
+        public PojoWithArrays() { }
 
         public PojoWithArrays(boolean[] b,
                 int[] i, long[] l, double[] d) {
