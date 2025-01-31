@@ -15,7 +15,7 @@ public class WriteAsMapTest extends ProtobufTestBase
     final static String PROTOC =
             "package tutorial;\n"
 +"message Person {\n"
-+" required string name = 1;\n"
++"  required string name = 1;\n"
 +"  required int32 id = 2;\n"
 +"  optional string email = 3;\n"
 +"  enum PhoneType {\n"
