@@ -495,7 +495,7 @@ public class ProtobufParser extends ParserMinimalBase
         System.out.println("nextToken(): state="+_state+", ptr="+_inputPtr);
         JsonToken t = nextTokenX();
         if (t == JsonToken.PROPERTY_NAME) {
-            System.out.print(" Field name: "+currentName());
+            System.out.print(" Name: "+currentName());
         } else if (t == JsonToken.VALUE_NUMBER_INT) {
             System.out.print(" Int: "+getIntValue());
         } else if (t == JsonToken.VALUE_STRING) {
