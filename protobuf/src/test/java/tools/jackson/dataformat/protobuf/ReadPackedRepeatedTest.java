@@ -44,14 +44,14 @@ public class ReadPackedRepeatedTest extends ProtobufTestBase
             + "        repeated uint32 f = 1;\n"
             + "}";
 
-        Map<String, Object> input = Map.of("f", new int[] { 1, 2 });
+        Map<String, Object> input = Map.of("f", new int[] { 100, 200 });
 
         ProtobufSchema schema = MAPPER.schemaLoader().load(new StringReader(SCHEMA_STR));
         byte[] encoded = MAPPER.writer(schema).writeValueAsBytes(input);
         JsonNode t = MAPPER.readerFor(JsonNode.class).with(schema).readValue(encoded);
 
         assertEquals(2, t.get("f").size());
-        assertEquals(1, t.get("f").get(0).asInt());
-        assertEquals(2, t.get("f").get(1).asInt());
+        assertEquals(100, t.get("f").get(0).asInt());
+        assertEquals(200, t.get("f").get(1).asInt());
     }
 }
