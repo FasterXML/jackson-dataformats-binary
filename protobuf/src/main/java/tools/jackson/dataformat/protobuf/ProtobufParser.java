@@ -492,21 +492,22 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public JsonToken nextToken() throws JacksonException
     {
+        System.out.println("nextToken(): state="+_state+", ptr="+_inputPtr);
         JsonToken t = nextTokenX();
         if (t == JsonToken.PROPERTY_NAME) {
-            System.out.print("Field name: "+currentName());
+            System.out.print(" Field name: "+currentName());
         } else if (t == JsonToken.VALUE_NUMBER_INT) {
-            System.out.print("Int: "+getIntValue());
+            System.out.print(" Int: "+getIntValue());
         } else if (t == JsonToken.VALUE_STRING) {
-            System.out.print("String: '"+getText()+"'");
+            System.out.print(" String: '"+getString()+"'");
         } else {
-            System.out.print("Next: "+t);
+            System.out.print(" Next: "+t);
         }
         System.out.println(" (state now: "+_state+", ptr "+_inputPtr+")");
         return t;
     }
 
-    public JsonToken nextTokenX() throws JacksonException {
+    public JsonToken nextTokenX() throws JacksonException
     */
 
     @Override
@@ -1041,6 +1042,7 @@ public class ProtobufParser extends ParserMinimalBase
             return name;
         }
         if (_state == STATE_MESSAGE_END) {
+            close(); // sets state to STATE_CLOSED
             _updateToken(JsonToken.END_OBJECT);
             return null;
         }
@@ -1126,6 +1128,7 @@ public class ProtobufParser extends ParserMinimalBase
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_MESSAGE_END) {
+            close(); // sets state to STATE_CLOSED
             _updateToken(JsonToken.END_OBJECT);
             return false;
         }
@@ -1215,6 +1218,7 @@ public class ProtobufParser extends ParserMinimalBase
             return matcher.matchName(name);
         }
         if (_state == STATE_MESSAGE_END) {
+            close(); // sets state to STATE_CLOSED
             _updateToken(JsonToken.END_OBJECT);
             return PropertyNameMatcher.MATCH_END_OBJECT;
         }
@@ -1236,7 +1240,7 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************************
-    /* Public API, traversal, optimized: nextFieldName()
+    /* Public API, traversal, optimized: nextName()
     /**********************************************************************
      */
 
