@@ -1,17 +1,15 @@
 package com.fasterxml.jackson.dataformat.ion.jsr310;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.Temporal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class IonTimestampOffsetDateTimeSerializerTest {
 
@@ -33,7 +31,7 @@ public class IonTimestampOffsetDateTimeSerializerTest {
 
         OffsetDateTime date = OffsetDateTime.ofInstant(Instant.ofEpochSecond(0L), Z1);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "0.", value);
+        assertEquals("0.", value, "The value is not correct.");
     }
 
     @Test
@@ -45,7 +43,7 @@ public class IonTimestampOffsetDateTimeSerializerTest {
 
         OffsetDateTime date = OffsetDateTime.ofInstant(Instant.ofEpochSecond(0L), Z1);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "0", value);
+        assertEquals("0", value, "The value is not correct.");
     }
 
     @Test
@@ -57,7 +55,7 @@ public class IonTimestampOffsetDateTimeSerializerTest {
 
         OffsetDateTime date = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), Z2);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "123456789.183917322", value);
+        assertEquals("123456789.183917322", value, "The value is not correct.");
     }
 
     @Test
@@ -69,7 +67,7 @@ public class IonTimestampOffsetDateTimeSerializerTest {
 
         OffsetDateTime date = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), Z2);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", "123456789183", value);
+        assertEquals("123456789183", value, "The value is not correct.");
     }
 
     @Test
@@ -81,7 +79,7 @@ public class IonTimestampOffsetDateTimeSerializerTest {
 
         OffsetDateTime date = OffsetDateTime.now(Z3);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", TimestampUtils.getFractionalSeconds(date.toInstant()).toString(), value);
+        assertEquals(TimestampUtils.getFractionalSeconds(date.toInstant()).toString(), value, "The value is not correct.");
     }
 
     @Test
@@ -93,7 +91,7 @@ public class IonTimestampOffsetDateTimeSerializerTest {
 
         OffsetDateTime date = OffsetDateTime.now(Z3);
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.", Long.toString(date.toInstant().toEpochMilli()), value);
+        assertEquals(Long.toString(date.toInstant().toEpochMilli()), value, "The value is not correct.");
     }
 
     @Test
@@ -104,8 +102,8 @@ public class IonTimestampOffsetDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.",
-                TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
+        assertEquals(TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value,
+                "The value is not correct.");
     }
 
     @Test
@@ -116,8 +114,8 @@ public class IonTimestampOffsetDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.",
-                TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
+        assertEquals(TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value,
+                "The value is not correct.");
     }
 
     @Test
@@ -128,8 +126,8 @@ public class IonTimestampOffsetDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.",
-                TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
+        assertEquals(TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value,
+                "The value is not correct.");
     }
 
     @Test
@@ -142,8 +140,8 @@ public class IonTimestampOffsetDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.",
-                "'" + OffsetDateTime.class.getName() + "'::123456789.183917322", value);
+        assertEquals("'" + OffsetDateTime.class.getName() + "'::123456789.183917322", value,
+                "The value is not correct.");
     }
 
     @Test
@@ -156,8 +154,8 @@ public class IonTimestampOffsetDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertEquals("The value is not correct.",
-                "'" + OffsetDateTime.class.getName() + "'::123456789183", value);
+        assertEquals("'" + OffsetDateTime.class.getName() + "'::123456789183", value,
+                "The value is not correct.");
     }
 
     @Test
@@ -169,8 +167,9 @@ public class IonTimestampOffsetDateTimeSerializerTest {
                 .build();
 
         String value = mapper.writeValueAsString(date);
-        assertNotNull("The value should not be null.", value);
-        assertEquals("The value is not correct.","'" + OffsetDateTime.class.getName() + "'::"
-                + TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value);
+        assertNotNull(value, "The value should not be null.");
+        assertEquals("'" + OffsetDateTime.class.getName() + "'::"
+                + TimestampUtils.toTimestamp(date.toInstant(), date.getOffset()).toString(), value,
+                "The value is not correct.");
     }
 }

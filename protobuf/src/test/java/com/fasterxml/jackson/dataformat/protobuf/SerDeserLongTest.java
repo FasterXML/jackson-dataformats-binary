@@ -1,19 +1,29 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
-import org.junit.Test;
 
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Created by miz on 8/10/16.
- */
-public class SerDeserLongTest {
+public class SerDeserLongTest extends ProtobufTestBase
+{
+    public static class BigNumPair {
+        public static final String protobuf_str =
+                "message BigNumPair {\n"
+                        + " required int64 long1 = 1;\n"
+                        + " required int64 long2 = 2;\n"
+                        + "}\n";
+
+        public long long1;
+        public long long2;
+    }
+    
     @Test
-    public void testWeirdLongSerDeser() throws IOException {
-        ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
+    public void testWeirdLongSerDeser() throws Exception {
+        ObjectMapper mapper = newObjectMapper();
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(BigNumPair.protobuf_str);
 
         BigNumPair bnp = new BigNumPair();
@@ -24,7 +34,7 @@ public class SerDeserLongTest {
 
         BigNumPair parsed = mapper.readerFor(BigNumPair.class).with(schema).readValue(encoded);
 
-        assert parsed.long1 == bnp.long1;
-        assert parsed.long2 == bnp.long2;
+        assertEquals(bnp.long1, parsed.long1);
+        assertEquals(bnp.long2, parsed.long2);
     }
 }

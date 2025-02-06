@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.avro.Schema;
 

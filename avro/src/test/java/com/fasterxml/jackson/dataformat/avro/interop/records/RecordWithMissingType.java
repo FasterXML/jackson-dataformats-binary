@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.avro.Schema;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getJacksonSchema;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserialize;
-import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonSerialize;
+import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.*;
 import static com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase.type;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RecordWithMissingType {

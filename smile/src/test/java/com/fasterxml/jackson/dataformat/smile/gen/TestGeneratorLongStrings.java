@@ -3,15 +3,18 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestGeneratorLongStrings extends BaseTestForSmile
 {
     final static int DOC_LEN = 2000000; // 2 meg test doc
 
+    @Test
     public void testLongWithMultiBytes() throws Exception
     {
         SmileFactory f = new SmileFactory();

@@ -1,18 +1,16 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
-public abstract class ProtobufTestBase extends TestCase
+public abstract class ProtobufTestBase
 {
     /*
     /**********************************************************

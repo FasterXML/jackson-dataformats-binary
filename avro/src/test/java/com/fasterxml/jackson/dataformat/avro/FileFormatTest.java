@@ -5,12 +5,17 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // for [dataformats-binary#15]
 public class FileFormatTest extends AvroTestBase
 {
+    @Test
     public void testFileFormatOutput() throws Exception
     {
         _testFileFormatOutput(true);

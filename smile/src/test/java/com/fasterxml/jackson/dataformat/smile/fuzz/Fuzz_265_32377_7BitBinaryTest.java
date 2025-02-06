@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.fuzz;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.io.JsonEOFException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
@@ -13,6 +15,7 @@ public class Fuzz_265_32377_7BitBinaryTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // Test with maximum declared payload size -- CF-32377
+    @Test
     public void testInvalid7BitBinary() throws Exception
     {
         final byte[] input0 = new byte[] {

@@ -2,20 +2,23 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import com.fasterxml.jackson.core.*;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTest extends AvroTestBase
 {
     private final AvroMapper MAPPER = getMapper();
 
     // Simple test for a single array
+    @Test
     public void testRootStringArray() throws Exception
     {
         AvroSchema schema = getStringArraySchema();
@@ -43,6 +46,7 @@ public class ArrayTest extends AvroTestBase
     }
 
     // And more complex: sequence of (String) arrays
+    @Test
     public void testStringArraySequence() throws Exception
     {
         AvroSchema schema = getStringArraySchema();
@@ -95,6 +99,7 @@ public class ArrayTest extends AvroTestBase
     }
 
     // And the ultimate case of sequence of arrays of records
+    @Test
     public void testEmployeeArraySequence() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(EMPLOYEE_ARRAY_SCHEMA_JSON);

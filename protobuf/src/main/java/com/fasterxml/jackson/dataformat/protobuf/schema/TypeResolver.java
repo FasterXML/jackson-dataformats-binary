@@ -2,8 +2,9 @@ package com.fasterxml.jackson.dataformat.protobuf.schema;
 
 import java.util.*;
 
-import com.fasterxml.jackson.core.util.InternCache;
 import com.squareup.protoparser.*;
+
+import com.fasterxml.jackson.core.util.InternCache;
 
 /**
  * Stateful class needed to properly resolve type definitions of

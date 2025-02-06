@@ -2,8 +2,12 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple tests for some testable aspects of concurrent usage.
@@ -23,6 +27,7 @@ public class ConcurrencyTest extends AvroTestBase
 
     // Simple test that creates 2 encoders and uses them in interleaved manner.
     // This should tease out simplest problems with possible encoder reuse.
+    @Test
     public void testMultipleEncoders() throws Exception
     {
         ByteArrayOutputStream b1 = new ByteArrayOutputStream();
@@ -43,10 +48,12 @@ public class ConcurrencyTest extends AvroTestBase
         assertEquals(6926, b1.size());
     }
 
+    @Test
     public void testMultipleDecodersBlock() throws Exception {
         _testMultipleDecoders(false);
     }
 
+    @Test
     public void testMultipleDecodersStreaming() throws Exception {
         _testMultipleDecoders(true);
     }

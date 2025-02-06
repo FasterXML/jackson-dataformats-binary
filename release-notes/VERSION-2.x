@@ -14,6 +14,22 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.19.0 (not yet released)
+
+#308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java `BigDecimal`)
+ (reported by Idan S)
+ (fix contributed by Michal F)
+#422: Avro generation failed with enums containing values with special characters
+ (reported by @pfr-enedis)
+#535: (avro) AvroSchemaGenerator: logicalType(s) never set for non-date classes
+ (reported by Cormac R)
+ (fix contributed by Michal F)
+#536: (avro) Add Logical Type support for `java.util.UUID`
+ (contributed by Michal F)
+#539: (avro) Upgrade `org.apache.avro:avro` dependency to 1.11.4
+#547: (all) JSTEP-10: Unify testing structure/tools
+ (contributed by Joo-Hyuk K)
+
 2.18.3 (not yet released)
 
 #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
@@ -25,7 +41,7 @@ No changes since 2.18.1
 
 2.18.1 (28-Oct-2024)
 
-#518: Should not read past end for CBOR string values
+#518: (cbor) Should not read past end for CBOR string values
  (contributed by Knut W)
 
 2.18.0 (26-Sep-2024)

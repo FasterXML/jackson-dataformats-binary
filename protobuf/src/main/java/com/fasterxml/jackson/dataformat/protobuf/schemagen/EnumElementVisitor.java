@@ -2,12 +2,11 @@ package com.fasterxml.jackson.dataformat.protobuf.schemagen;
 
 import java.util.Set;
 
+import com.squareup.protoparser.*;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor.Base;
-import com.squareup.protoparser.EnumConstantElement;
-import com.squareup.protoparser.EnumElement;
-import com.squareup.protoparser.TypeElement;
 
 public class EnumElementVisitor extends Base implements TypeElementBuilder {
 

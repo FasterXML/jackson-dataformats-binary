@@ -3,8 +3,13 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.smile.*;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RootValuesTest extends AsyncTestBase
 {
@@ -13,6 +18,7 @@ public class RootValuesTest extends AsyncTestBase
         F_REQ_HEADERS.enable(SmileParser.Feature.REQUIRE_HEADER);
     }
 
+    @Test
     public void testSimpleRootSequence() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(100);

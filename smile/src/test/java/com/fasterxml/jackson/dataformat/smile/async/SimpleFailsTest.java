@@ -2,9 +2,13 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SimpleFailsTest extends AsyncTestBase
 {
@@ -19,6 +23,7 @@ public class SimpleFailsTest extends AsyncTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testHeaderFailWithSmile() throws IOException
     {
         byte[] data = _smileDoc("[ true, false ]", false);
@@ -40,6 +45,7 @@ public class SimpleFailsTest extends AsyncTestBase
         }
     }
 
+    @Test
     public void testHeaderFailWithJSON() throws IOException
     {
         byte[] data = "[ true ]".getBytes("UTF-8");

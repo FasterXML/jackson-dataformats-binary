@@ -1,8 +1,10 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.format.InputAccessor;
 import com.fasterxml.jackson.core.format.MatchStrength;
 import com.fasterxml.jackson.core.io.IOContext;

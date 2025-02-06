@@ -1,12 +1,15 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleBinaryParseTest extends AsyncTestBase
 {
@@ -23,26 +26,32 @@ public class SimpleBinaryParseTest extends AsyncTestBase
         139000
     };
 
+    @Test
     public void testRawAsRootValue() throws IOException {
         _testBinaryAsRoot(F_RAW);
     }
 
+    @Test
     public void testRawAsArray() throws IOException {
         _testBinaryAsArray(F_RAW);
     }
 
+    @Test
     public void testRawAsObject() throws IOException {
         _testBinaryAsObject(F_RAW);
     }
 
+    @Test
     public void test7BitAsArray() throws IOException {
         _testBinaryAsArray(F_7BIT);
     }
 
+    @Test
     public void test7BitAsObject() throws IOException {
         _testBinaryAsObject(F_7BIT);
     }
 
+    @Test
     public void test7BitAsRootValue() throws IOException {
         _testBinaryAsRoot(F_7BIT);
     }

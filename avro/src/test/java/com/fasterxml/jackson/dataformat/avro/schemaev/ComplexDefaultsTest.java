@@ -1,9 +1,14 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ComplexDefaultsTest extends AvroTestBase
 {
@@ -118,6 +123,7 @@ public class ComplexDefaultsTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testRecordDefaults() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_V1_JSON);
@@ -146,6 +152,7 @@ public class ComplexDefaultsTest extends AvroTestBase
         assertEquals("foobar", result.data.value);
     }
 
+    @Test
     public void testMapDefaults() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_V1_JSON);
@@ -166,6 +173,7 @@ public class ComplexDefaultsTest extends AvroTestBase
         assertEquals("oobar", result.data.get("b"));
     }
 
+    @Test
     public void testListDefaults() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_V1_JSON);

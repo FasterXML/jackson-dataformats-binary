@@ -1,15 +1,17 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Random;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for verifying that symbol handling works as planned, including
@@ -80,6 +82,7 @@ public class ParserSymbolHandlingTest
      */
 
 
+    @Test
     public void testSharedNames() throws IOException
     {
         final int COUNT = 19000;
@@ -121,6 +124,7 @@ public class ParserSymbolHandlingTest
         jp.close();
     }
 
+    @Test
     public void testSharedStrings() throws IOException
     {
         final int count = 19000;
@@ -136,6 +140,7 @@ public class ParserSymbolHandlingTest
         verifyStringValues(shared, count);
     }
 
+    @Test
     public void testSharedStringsInArrays() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -162,6 +167,7 @@ public class ParserSymbolHandlingTest
         jp.close();
     }
 
+    @Test
     public void testSharedStringsInObject() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -190,6 +196,7 @@ public class ParserSymbolHandlingTest
         jp.close();
     }
 
+    @Test
     public void testSharedStringsMixed() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -311,6 +318,7 @@ public class ParserSymbolHandlingTest
         jp.close();
     }
 
+    @Test
     public void testDataBindingAndShared() throws IOException
     {
         SmileFactory f = new SmileFactory();
@@ -347,6 +355,7 @@ public class ParserSymbolHandlingTest
     /**
      * Reproducing [JACKSON-561] (and [JACKSON-562])
      */
+    @Test
     public void testIssue562() throws IOException
     {
         JsonFactory factory = new SmileFactory();
@@ -381,6 +390,7 @@ public class ParserSymbolHandlingTest
     /**
      * Verification that [JACKSON-564] was fixed.
      */
+    @Test
     public void testIssue564() throws Exception
     {
         JsonFactory factory = new SmileFactory();
@@ -459,6 +469,7 @@ public class ParserSymbolHandlingTest
         parser.close();
     }
 
+    @Test
     public void testCorruptName34() throws Exception
     {
         SmileFactory factory = new SmileFactory();

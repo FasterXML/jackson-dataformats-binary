@@ -1,8 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.fuzz;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class AvroFuzzTestUtil
 {

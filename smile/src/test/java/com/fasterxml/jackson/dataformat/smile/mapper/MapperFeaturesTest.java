@@ -2,9 +2,15 @@ package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.*;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 public class MapperFeaturesTest extends BaseTestForSmile
 {
@@ -18,6 +24,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
     /**********************************************************
      */
     // Let's ensure indentation doesn't break anything (should be NOP)
+    @Test
     public void testIndent() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper(new SmileFactory());
@@ -30,6 +37,7 @@ public class MapperFeaturesTest extends BaseTestForSmile
         assertEquals(42, result.value);
     }
 
+    @Test
     public void testCopy() throws IOException
     {
         ObjectMapper mapper1 = smileMapper();

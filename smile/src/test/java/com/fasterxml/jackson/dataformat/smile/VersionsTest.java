@@ -1,14 +1,17 @@
 package com.fasterxml.jackson.dataformat.smile;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.Versioned;
 
-/**
- * Tests to verify [JACKSON-278]
- */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class VersionsTest extends BaseTestForSmile
 {
+    @Test
     public void testMapperVersions() throws IOException
     {
         SmileFactory f = new SmileFactory();

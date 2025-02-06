@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.fasterxml.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>2.18.3-SNAPSHOT</version>
+    <version>2.19.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-avro</artifactId>
   <name>Jackson dataformat: Avro</name>
@@ -47,7 +47,7 @@ abstractions.
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
-      <version>1.11.3</version>
+      <version>1.11.4</version>
     </dependency>
 
     <!-- and for testing we need logback -->
@@ -61,6 +61,15 @@ abstractions.
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- 14-Jan-2025, joohyukkim: [JSTEP-10] Most tests have been migrated to
+          JUnit5, but except `avro` modules `/interop` tests
+     -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

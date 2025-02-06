@@ -3,8 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonToken;
-
-import com.fasterxml.jackson.dataformat.smile.*;
+import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 abstract class AsyncTestBase extends BaseTestForSmile
 {

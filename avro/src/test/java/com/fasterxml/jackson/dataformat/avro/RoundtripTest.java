@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RoundtripTest extends MapTest
 {
@@ -49,6 +53,7 @@ public class RoundtripTest extends MapTest
     /**********************************************************
      */
 
+    @Test
     public void testIssue9() throws Exception
     {
         AvroSchema jsch = getEmployeeSchema();
@@ -61,6 +66,7 @@ public class RoundtripTest extends MapTest
         assertNotNull(avroData);
     }
 
+    @Test
     public void testCharSequences() throws Exception
     {
         ObjectMapper mapper = AvroMapper.builder()
@@ -83,6 +89,7 @@ public class RoundtripTest extends MapTest
         assertEquals(input.name, output.name);
     }
 
+    @Test
     public void testCharSequencesLowStringLimit() throws Exception
     {
         AvroFactory factory = AvroFactory.builder()
@@ -105,8 +112,8 @@ public class RoundtripTest extends MapTest
                     .forType(CharSeqBean.class).readValue(avroData);
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
-            assertTrue("unexpected exception message: " + ise.getMessage(),
-                    ise.getMessage().startsWith("String value length (3) exceeds the maximum allowed"));
+            assertTrue(ise.getMessage().startsWith("String value length (3) exceeds the maximum allowed"),
+                    "unexpected exception message: " + ise.getMessage());
         }
     }
 }

@@ -3,12 +3,17 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class EnumTest extends AvroTestBase
 {
@@ -55,6 +60,7 @@ public class EnumTest extends AvroTestBase
 
     private final AvroMapper MAPPER = newMapper();
 
+    @Test
     public void test_avroSchemaWithEnum_fromEnumValueToEnumValue() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);
@@ -74,6 +80,7 @@ public class EnumTest extends AvroTestBase
         assertEquals(Gender.F, output.gender);
     }
 
+    @Test
     public void test_avroSchemaWithEnum_fromStringValueToEnumValue() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(ENUM_SCHEMA_JSON);
@@ -91,6 +98,7 @@ public class EnumTest extends AvroTestBase
         assertEquals(Gender.F, output.gender);
     }
 
+    @Test
     public void test_avroSchemaWithString_fromEnumValueToEnumValue() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(STRING_SCHEMA_JSON);
@@ -124,6 +132,7 @@ public class EnumTest extends AvroTestBase
     }
 
     // Not sure this test makes sense
+    @Test
     public void test_avroSchemaWithString_fromStringValueToEnumValue() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(STRING_SCHEMA_JSON);

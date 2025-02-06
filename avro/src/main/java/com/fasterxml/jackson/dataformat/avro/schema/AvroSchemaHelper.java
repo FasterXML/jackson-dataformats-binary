@@ -7,8 +7,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
-import org.apache.avro.JsonProperties;
-import org.apache.avro.Schema;
+import org.apache.avro.*;
 import org.apache.avro.Schema.Parser;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Stringable;
@@ -265,22 +264,39 @@ public abstract class AvroSchemaHelper
     /**
      * Constructs a new enum schema
      *
+     * @param intr Introspector to use to find default enum value
      * @param bean Enum type to use for name / description / namespace
      * @param values List of enum names
+     *
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
-    public static Schema createEnumSchema(BeanDescription bean, List<String> values,
-            AnnotationIntrospector intr) {
+    public static Schema createEnumSchema(AnnotationIntrospector intr,
+            BeanDescription bean, List<String> values)
+    {
         final JavaType enumType = bean.getType();
         @SuppressWarnings("unchecked")
         Class<Enum<?>> rawEnumClass = (Class<Enum<?>>) enumType.getRawClass();
-        Enum<?> defaultEnumValue = intr.findDefaultEnumValue(bean.getClassInfo(),
+        final Enum<?> defaultEnumValue = intr.findDefaultEnumValue(bean.getClassInfo(),
                 rawEnumClass.getEnumConstants());
-        return addAlias(Schema.createEnum(
-            getName(enumType),
-            bean.findClassDescription(),
-            getNamespace(enumType, bean.getClassInfo()), values, defaultEnumValue != null ? defaultEnumValue.toString() : null
-        ), bean);
+        final String namespace = getNamespace(enumType, bean.getClassInfo());
+        final Schema avroSchema;
+        try {
+            avroSchema = Schema.createEnum(
+                getName(enumType),
+                bean.findClassDescription(),
+                namespace,
+                values,
+                defaultEnumValue != null ? defaultEnumValue.toString() : null);
+        } catch (SchemaParseException spe) {
+            final String msg = String.format("Problem generating Avro `Schema` for Enum type %s: %s",
+                    ClassUtil.getTypeDescription(enumType), spe.getMessage());
+
+            // 05-Jan-2025, tatu: SHOULD be able to throw like so but
+            //   `SchemaBuilder` does not expose checked exceptions so need to
+            // throw InvalidDefinitionException.from((JsonParser) null, msg);
+            throw new IllegalArgumentException(msg, spe);
+        }
+        return addAlias(avroSchema, bean);
     }
 
     /**
@@ -291,7 +307,7 @@ public abstract class AvroSchemaHelper
      * @since 2.11
      */
     public static Schema createUUIDSchema() {
-        return Schema.createFixed("UUID", "", "java.util", 16);
+        return Schema.createFixed("UUID", null, "java.util", 16);
     }
 
     /**

@@ -1,17 +1,17 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificData;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
-import org.apache.avro.Schema;
-import org.apache.avro.specific.SpecificData;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class Enum_schemaCreationTest extends AvroTestBase {
-
+public class Enum_schemaCreationTest extends AvroTestBase
+{
     static enum NumbersEnum {
     	ONE, TWO, THREE
     }

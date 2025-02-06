@@ -3,10 +3,14 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class POJOComplexReadTest extends AvroTestBase
 {
@@ -30,6 +34,7 @@ public class POJOComplexReadTest extends AvroTestBase
     /**********************************************************
      */
 
+    @Test
     public void testRoundtrip() throws Exception
     {
         byte[] avro = getStdItemBytes();

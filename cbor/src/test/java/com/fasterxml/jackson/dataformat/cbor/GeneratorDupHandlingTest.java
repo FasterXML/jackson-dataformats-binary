@@ -1,17 +1,25 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class GeneratorDupHandlingTest extends CBORTestBase
 {
+    @Test
     public void testSimpleDupsEagerlyBytes() throws Exception {
         _testSimpleDups(false, new JsonFactory());
     }
 
     // Testing ability to enable checking after construction of
     // generator, not just via JsonFactory
+    @Test
     public void testSimpleDupsLazilyBytes() throws Exception {
         final JsonFactory f = new JsonFactory();
         assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));

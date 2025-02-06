@@ -2,21 +2,34 @@ package com.fasterxml.jackson.dataformat.avro.schema;
 
 import java.time.temporal.Temporal;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.avro.Schema;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.*;
-
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
-
-import org.apache.avro.Schema;
 
 public class VisitorFormatWrapperImpl
     implements JsonFormatVisitorWrapper
 {
+    /**
+     * Default value for {@link #_logicalTypesEnabled}: for Jackson 2.x
+     * {@code false} for backwards-compatibility; will be changed to
+     * {@code true} in 3.0.
+     *
+     * @since 2.19
+     */
+    public static final boolean DEFAULT_LOGICAL_TYPES_ENABLED = false;
+
+    /**
+     * Default value for {@link #_writeEnumAsString}: {@code false} as of
+     * Jackson 2.19 and later.
+     *
+     * @since 2.19
+     */
+    public static final boolean DEFAULT_ENUM_AS_STRING = false;
+
     protected SerializerProvider _provider;
 
     protected final DefinedSchemas _schemas;
@@ -24,12 +37,12 @@ public class VisitorFormatWrapperImpl
     /**
      * @since 2.13
      */
-    protected boolean _logicalTypesEnabled = false;
+    protected boolean _logicalTypesEnabled = DEFAULT_LOGICAL_TYPES_ENABLED;
 
     /**
      * @since 2.18
      */
-    protected boolean _writeEnumAsString = false;
+    protected boolean _writeEnumAsString = DEFAULT_ENUM_AS_STRING;
 
     /**
      * Visitor used for resolving actual Schema, if structured type
@@ -53,11 +66,11 @@ public class VisitorFormatWrapperImpl
         _provider = p;
     }
 
-
     protected VisitorFormatWrapperImpl(VisitorFormatWrapperImpl src) {
         this._schemas = src._schemas;
         this._provider = src._provider;
         this._logicalTypesEnabled = src._logicalTypesEnabled;
+        this._writeEnumAsString = src._writeEnumAsString;
     }
 
     /**
@@ -210,6 +223,12 @@ public class VisitorFormatWrapperImpl
         //   as native Avro Enums, or as Avro Strings:
         if (type.isEnumType() && !isWriteEnumAsStringEnabled()) {
             EnumVisitor v = new EnumVisitor(_provider, _schemas, type);
+            _builder = v;
+            return v;
+        }
+
+        if (type.hasRawClass(java.util.UUID.class)) {
+            UUIDVisitor v = new UUIDVisitor(this._logicalTypesEnabled);
             _builder = v;
             return v;
         }
