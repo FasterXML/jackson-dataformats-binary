@@ -363,6 +363,11 @@ Knut Wannheden (@knutwannheden)
  * Contributed #518: Should not read past end for CBOR string values
   (2.18.1)
 
+Steven Fackler (@sfackler)
+ * Reported #300: (smile) Floats are encoded with sign extension while
+   doubles without
+  (2.19.0)
+
 Idan Sheinberg (@sheinbergon)
  * Reported #308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java
    `BigDecimal`)
