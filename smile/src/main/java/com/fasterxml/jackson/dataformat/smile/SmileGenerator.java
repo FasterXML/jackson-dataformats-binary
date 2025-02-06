@@ -1726,13 +1726,13 @@ public class SmileGenerator
         int i = Float.floatToRawIntBits(f);
         _outputBuffer[_outputTail++] = TOKEN_BYTE_FLOAT_32;
         _outputBuffer[_outputTail+4] = (byte) (i & 0x7F);
-        i >>= 7;
+        i >>>= 7;
         _outputBuffer[_outputTail+3] = (byte) (i & 0x7F);
-        i >>= 7;
+        i >>>= 7;
         _outputBuffer[_outputTail+2] = (byte) (i & 0x7F);
-        i >>= 7;
+        i >>>= 7;
         _outputBuffer[_outputTail+1] = (byte) (i & 0x7F);
-        i >>= 7;
+        i >>>= 7;
         _outputBuffer[_outputTail] = (byte) (i & 0x7F);
         _outputTail += 5;
     }
