@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 public class EnumTest extends AvroTestBase
@@ -36,6 +38,19 @@ public class EnumTest extends AvroTestBase
 
     protected static class EmployeeStr {
         public String gender;
+    }
+
+    protected enum ABC {
+        A,
+        B,
+        @JsonEnumDefaultValue
+        C; 
+    }
+
+    protected static class ABCDefaultClass {
+        public String name;
+        @JsonProperty(required = true)
+        public ABC abc;
     }
 
     private final AvroMapper MAPPER = newMapper();

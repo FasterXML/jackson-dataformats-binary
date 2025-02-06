@@ -9,8 +9,6 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,7 +78,7 @@ public abstract class AvroTestBase extends TestCase
     /**********************************************************
      */
 
-    protected static class PointLong
+    public static class PointLong
     {
         public long x, y;
 
@@ -92,7 +90,7 @@ public abstract class AvroTestBase extends TestCase
         }
     }
 
-    protected static class PointDouble
+    public static class PointDouble
     {
         public double x, y;
 
@@ -104,7 +102,6 @@ public abstract class AvroTestBase extends TestCase
         }
     }
 
-    // public because needed by "AvroAliasTest"
     public static class Employee
     {
         public Employee() { }
@@ -127,7 +124,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     @JsonPropertyOrder({"content", "images"})
-    protected static class MediaItem
+    static class MediaItem
     {
         private MediaContent _content;
         private List<Image> _images;
@@ -154,7 +151,7 @@ public abstract class AvroTestBase extends TestCase
 
     @JsonPropertyOrder(alphabetic=true, value = {
             "uri","title","width","height","format","duration","size","bitrate","persons","player","copyright"})
-    protected static class MediaContent
+    static class MediaContent
     {
         public enum Player { JAVA, FLASH;  }
 
@@ -219,7 +216,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     @JsonPropertyOrder({"uri","title","width","height","size"})
-    protected static class Image
+    static class Image
     {
         private String _uri;
         private String _title;
@@ -252,19 +249,6 @@ public abstract class AvroTestBase extends TestCase
 
     // public because needed by "AvroAliasTest"
     public enum Size { SMALL, LARGE; }
-
-    protected enum ABC {
-		A, 
-		B, 
-		@JsonEnumDefaultValue
-		C; 
-    }
-
-    protected static class ABCDefaultClass {
-        public String name;
-        @JsonProperty(required = true)
-        public ABC abc;
-    }
 
     /*
     /**********************************************************
