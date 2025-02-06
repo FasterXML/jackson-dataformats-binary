@@ -1,11 +1,13 @@
 package tools.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.smile.*;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SmileGeneratorNumbersTest
@@ -146,7 +148,12 @@ public class SmileGeneratorNumbersTest
         byte[] encoded = out.toByteArray();
         assertEquals(6, encoded.length);
         assertEquals(0x28, encoded[0]); // type byte, float
-    }
+
+        // From 0x80 0x00 0x00 0x00 (spread over 5 x 7bits)
+        assertArrayEquals(new byte[] {
+                0x08, 0x00, 0x00, 0x00, 0x00
+        }, Arrays.copyOfRange(encoded, 1, encoded.length));
+}
 
     // [dataformats-binary#300]
     @Test
@@ -159,6 +166,12 @@ public class SmileGeneratorNumbersTest
         byte[] encoded = out.toByteArray();
         assertEquals(11, encoded.length);
         assertEquals(0x29, encoded[0]); // type byte, double
+        // From 0x80 0x00 0x00 0x00 ... 0x00 (spread over 10 x 7 bits)
+
+        assertArrayEquals(new byte[] {
+                0x01, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00
+        }, Arrays.copyOfRange(encoded, 1, encoded.length));
     }
 
     // #16: Problems with 'Stringified' numbers
