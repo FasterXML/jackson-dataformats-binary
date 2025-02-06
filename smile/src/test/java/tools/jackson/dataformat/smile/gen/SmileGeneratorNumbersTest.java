@@ -8,7 +8,7 @@ import tools.jackson.dataformat.smile.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestGeneratorNumbers
+public class SmileGeneratorNumbersTest
     extends BaseTestForSmile
 {
     @Test
@@ -118,9 +118,9 @@ public class TestGeneratorNumbers
     {
         // float length is fixed, 6 bytes
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = _smileGenerator(out, false);
-        gen.writeNumber(0.125f);
-        gen.close();
+        try (SmileGenerator gen = _smileGenerator(out, false)) {
+            gen.writeNumber(0.125f);
+        }
         assertEquals(6, out.toByteArray().length);
     }
 
@@ -129,10 +129,36 @@ public class TestGeneratorNumbers
     {
         // double length is fixed, 11 bytes
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        SmileGenerator gen = _smileGenerator(out, false);
-        gen.writeNumber(0.125);
-        gen.close();
+        try (SmileGenerator gen = _smileGenerator(out, false)) {
+            gen.writeNumber(0.125);
+        }
         assertEquals(11, out.toByteArray().length);
+    }
+
+    // [dataformats-binary#300]
+    @Test
+    public void testFloatUnusedBits() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = _smileGenerator(out, false)) {
+            gen.writeNumber(-0f);
+        }
+        byte[] encoded = out.toByteArray();
+        assertEquals(6, encoded.length);
+        assertEquals(0x28, encoded[0]); // type byte, float
+    }
+
+    // [dataformats-binary#300]
+    @Test
+    public void testDoubleUnusedBits() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = _smileGenerator(out, false)) {
+            gen.writeNumber(-0d);
+        }
+        byte[] encoded = out.toByteArray();
+        assertEquals(11, encoded.length);
+        assertEquals(0x29, encoded[0]); // type byte, double
     }
 
     // #16: Problems with 'Stringified' numbers
