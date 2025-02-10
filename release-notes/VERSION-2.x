@@ -16,6 +16,8 @@ Active maintainers:
 
 2.19.0 (not yet released)
 
+#300: (smile) Floats are encoded with sign extension while doubles without
+ (reported by Steven F)
 #308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java `BigDecimal`)
  (reported by Idan S)
  (fix contributed by Michal F)
