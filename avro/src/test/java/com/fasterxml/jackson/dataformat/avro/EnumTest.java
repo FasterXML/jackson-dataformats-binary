@@ -151,6 +151,7 @@ public class EnumTest extends AvroTestBase
     }
 
     // [dataformats-binary#388]: Default value for enums with class
+    @Test
     public void testClassEnumWithDefault() throws Exception
     {
         AvroSchemaGenerator gen = new AvroSchemaGenerator();
