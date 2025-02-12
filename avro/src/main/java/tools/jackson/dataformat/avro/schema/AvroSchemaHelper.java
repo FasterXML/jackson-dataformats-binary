@@ -254,17 +254,23 @@ public abstract class AvroSchemaHelper
      * Constructs a new enum schema
      *
      * @param values List of enum names
+     *
      * @return An {@link org.apache.avro.Schema.Type#ENUM ENUM} schema.
      */
     public static Schema createEnumSchema(MapperConfig<?> config, JavaType enumType,
             AnnotatedClass annotations, List<String> values) {
+        final AnnotationIntrospector intr = config.getAnnotationIntrospector();
+        Class<Enum<?>> rawEnumClass = (Class<Enum<?>>) enumType.getRawClass();
+        final Enum<?> defaultEnumValue = intr.findDefaultEnumValue(config, annotations,
+                rawEnumClass.getEnumConstants());
         final Schema avroSchema;
         try {
             avroSchema = Schema.createEnum(
                     getTypeName(enumType),
                     config.getAnnotationIntrospector().findClassDescription(config, annotations),
                     getNamespace(enumType, annotations),
-                    values);
+                    values,
+                    defaultEnumValue != null ? defaultEnumValue.toString() : null);
         } catch (SchemaParseException spe) {
             final String msg = String.format("Problem generating Avro `Schema` for Enum type %s: %s",
                     ClassUtil.getTypeDescription(enumType), spe.getMessage());

@@ -1,6 +1,17 @@
 package tools.jackson.dataformat.avro;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+
+import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
+
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,6 +44,19 @@ public class EnumTest extends AvroTestBase
 
     protected static class EmployeeStr {
         public String gender;
+    }
+
+    protected enum ABC {
+        A,
+        B,
+        @JsonEnumDefaultValue
+        C; 
+    }
+
+    protected static class ABCDefaultClass {
+        public String name;
+        @JsonProperty(required = true)
+        public ABC abc;
     }
 
     private final AvroMapper MAPPER = newMapper();
@@ -127,4 +151,35 @@ public class EnumTest extends AvroTestBase
         assertEquals(Gender.F, output.gender);
     }
 
+    // [dataformats-binary#388]: Default value for enums with class
+    @Test
+    public void testClassEnumWithDefault() throws Exception
+    {
+        AvroSchemaGenerator gen = new AvroSchemaGenerator();
+
+        MAPPER.acceptJsonFormatVisitor(ABCDefaultClass.class, gen);
+        AvroSchema schema = gen.getGeneratedSchema();
+        assertNotNull(schema);
+
+        String json = schema.getAvroSchema().toString(true);
+        assertNotNull(json);
+
+        // And read it back too just for fun
+        AvroSchema s2 = MAPPER.schemaFrom(json);
+        assertNotNull(s2);
+
+        Schema avroSchema = s2.getAvroSchema();
+
+        // String name, int value
+        assertEquals(Type.RECORD, avroSchema.getType());
+        Schema.Field f = avroSchema.getField("abc");
+        assertNotNull(f);
+        assertEquals("abc", f.name());
+
+        assertEquals(Type.ENUM, f.schema().getType());
+        assertEquals(ABC.C.toString(), f.schema().getEnumDefault());
+        assertEquals(Stream.of(ABC.values())
+                               .map(ABC::name)
+                               .collect(Collectors.toList()), f.schema().getEnumSymbols());
+    }   
 }

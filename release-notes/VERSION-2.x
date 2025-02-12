@@ -21,6 +21,9 @@ Active maintainers:
 #308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java `BigDecimal`)
  (reported by Idan S)
  (fix contributed by Michal F)
+#388: (avro) `@JsonEnumDefaultValue` not supported when using AvroMapper
+  to generate schema from Java class
+ (requested by @Sonic-Rage)
 #422: Avro generation failed with enums containing values with special characters
  (reported by @pfr-enedis)
 #535: (avro) AvroSchemaGenerator: logicalType(s) never set for non-date classes
