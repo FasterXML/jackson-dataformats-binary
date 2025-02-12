@@ -244,6 +244,7 @@ public abstract class AvroTestBase
       public void setSize(Size s) { _size = s; }
     }
 
+    // public because needed by "AvroAliasTest"
     public enum Size { SMALL, LARGE; }
 
     /*

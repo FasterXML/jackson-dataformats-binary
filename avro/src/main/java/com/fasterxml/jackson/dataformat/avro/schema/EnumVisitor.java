@@ -41,7 +41,8 @@ public class EnumVisitor extends JsonStringFormatVisitor.Base
         }
 
         BeanDescription bean = _provider.getConfig().introspectClassAnnotations(_type);
-        Schema schema = AvroSchemaHelper.createEnumSchema(bean, new ArrayList<>(_enums));
+        Schema schema = AvroSchemaHelper.createEnumSchema(_provider.getAnnotationIntrospector(),
+                bean, new ArrayList<>(_enums));
         _schemas.addSchema(_type, schema);
         return schema;
     }
