@@ -1,12 +1,11 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +18,8 @@ public class NumberReadTest extends BaseTestForSmile {
     }
 
     static class DecimalHolder4917 {
-        public BigDecimal value;
+        @JsonValue
+        BigDecimal value;
 
         private DecimalHolder4917(BigDecimal value) {
             this.value = value;

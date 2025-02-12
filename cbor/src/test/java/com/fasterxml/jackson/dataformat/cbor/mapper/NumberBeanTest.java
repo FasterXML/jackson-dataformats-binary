@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +55,8 @@ public class NumberBeanTest extends CBORTestBase
     }
 
     static class DecimalHolder4917 {
-        public BigDecimal value;
+        @JsonValue
+        BigDecimal value;
 
         private DecimalHolder4917(BigDecimal value) {
             this.value = value;
@@ -65,7 +67,6 @@ public class NumberBeanTest extends CBORTestBase
             return new DecimalHolder4917(value);
         }
     }
-
 
     /*
     /**********************************************************
@@ -286,6 +287,7 @@ public class NumberBeanTest extends CBORTestBase
         value.decimalHolder = DecimalHolder4917.of(new BigDecimal(bd));
         value.number = d;
         final byte[] data = MAPPER.writeValueAsBytes(value);
+
         final DeserializationIssue4917 result = MAPPER.readValue(
                 data, DeserializationIssue4917.class);
         assertEquals(value.decimalHolder.value, result.decimalHolder.value);
