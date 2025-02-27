@@ -21,7 +21,7 @@ public class AvroSchemaHelperTest
 		assertEquals(NODE_FACTORY.nullNode(), objectToJsonNode(JsonProperties.NULL_VALUE));
 		assertEquals(NODE_FACTORY.booleanNode(true), objectToJsonNode(true));
 		assertEquals(NODE_FACTORY.booleanNode(false), objectToJsonNode(false));
-		assertEquals(NODE_FACTORY.textNode("foo"), objectToJsonNode("foo"));
+		assertEquals(NODE_FACTORY.stringNode("foo"), objectToJsonNode("foo"));
 	}
 
 	@Test
@@ -30,6 +30,6 @@ public class AvroSchemaHelperTest
 		assertEquals(JsonProperties.NULL_VALUE, jsonNodeToObject(NODE_FACTORY.nullNode()));
 		assertEquals(true, jsonNodeToObject(NODE_FACTORY.booleanNode(true)));
 		assertEquals(false, jsonNodeToObject(NODE_FACTORY.booleanNode(false)));
-		assertEquals("foo", jsonNodeToObject(NODE_FACTORY.textNode("foo")));
+		assertEquals("foo", jsonNodeToObject(NODE_FACTORY.stringNode("foo")));
 	}
 }
