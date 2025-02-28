@@ -109,10 +109,16 @@ abstractions.
       <!-- 19-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
              will have to use `moduleInfoFile` as anything else requires JDK 9+
         -->      
-      <plugin>
-	<groupId>org.moditect</groupId>
-	<artifactId>moditect-maven-plugin</artifactId>
-      </plugin>
+     <plugin>
+	   <groupId>org.moditect</groupId>
+	   <artifactId>moditect-maven-plugin</artifactId>
+     </plugin>
+     <!-- 05-Jul-2020, tatu: Add generation of Gradle Module Metadata -->
+     <!-- 28-Feb-2025, jjohannes: Apply plugin last as it has to be the last of all 'package phase' plugins -->
+     <plugin>
+       <groupId>org.gradlex</groupId>
+       <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+     </plugin>
    </plugins>
   </build>
 
