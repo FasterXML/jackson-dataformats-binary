@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.3 (not yet released)
+2.18.3 (28-Feb-2025)
 
 #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
  (fix contributed by John H)
