@@ -14,7 +14,7 @@ implementations)
 === Releases ===
 ------------------------------------------------------------------------
 
-3.0.0 (not yet released)
+3.0.0-rc1 (07-Mar-2025)
 
 #145: (avro) Add `AvroGenerator.Feature.ADD_NULL_AS_DEFAULT_VALUE_IN_SCHEMA` for
   adding default `null` in generated schema
