@@ -5,7 +5,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Stack;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
@@ -13,7 +15,9 @@ import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.core.json.DupDetector;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
-import com.fasterxml.jackson.core.util.*;
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+import com.fasterxml.jackson.core.util.TextBuffer;
 
 import static com.fasterxml.jackson.dataformat.cbor.CBORConstants.*;
 
@@ -327,6 +331,11 @@ public class CBORParser extends ParserMinimalBase
      * Type byte of the current token
      */
     protected int _typeByte;
+
+    /**
+     * A pointer to know where to write text when we share an output buffer across methods
+     */
+    protected int _sharedOutBufferPtr;
 
     /**
      * Type to keep track of a list of string references. A depth is stored to know when to pop the
@@ -2289,10 +2298,9 @@ public class CBORParser extends ParserMinimalBase
 
         if ((available >= len)
                 // if not, could we read? NOTE: we do not require it, just attempt to read
-                    || ((_inputBuffer.length >= len)
-                            && _tryToLoadToHaveAtLeast(len))) {
-                _finishShortText(len);
-                return;
+                || _tryToLoadToHaveAtLeast(len)) {
+            _finishShortText(len);
+            return;
         }
         // If not enough space, need handling similar to chunked
         _finishLongText(len);
@@ -2331,11 +2339,9 @@ public class CBORParser extends ParserMinimalBase
         //    due to inputBuffer never being even close to that big).
 
         final int available = _inputEnd - _inputPtr;
-
         if ((available >= len)
             // if not, could we read? NOTE: we do not require it, just attempt to read
-                || ((_inputBuffer.length >= len)
-                        && _tryToLoadToHaveAtLeast(len))) {
+                || _tryToLoadToHaveAtLeast(len)) {
             return _finishShortText(len);
         }
         // If not enough space, need handling similar to chunked
@@ -2364,19 +2370,22 @@ public class CBORParser extends ParserMinimalBase
 
         // Let's actually do a tight loop for ASCII first:
         final int end = _inputPtr;
-
-        int i;
-        while ((i = inputBuf[inPtr]) >= 0) {
+        int i = 0;
+        while (inPtr < end && i >= 0) {
+            i = inputBuf[inPtr++];
             outBuf[outPtr++] = (char) i;
-            if (++inPtr == end) {
-                String str = _textBuffer.setCurrentAndReturn(outPtr);
-                if (stringRefs != null) {
-                    stringRefs.stringRefs.add(str);
-                    _sharedString = str;
-                }
-                return str;
-            }
         }
+        if (inPtr == end && i >= 0) {
+            String str = _textBuffer.setCurrentAndReturn(outPtr);
+            if (stringRefs != null) {
+                stringRefs.stringRefs.add(str);
+                _sharedString = str;
+            }
+            return str;
+        }
+        // Correct extra increments
+        outPtr -= 1;
+        inPtr -= 1;
         final int[] codes = UTF8_UNIT_CODES;
         do {
             i = inputBuf[inPtr++] & 0xFF;
@@ -2443,10 +2452,17 @@ public class CBORParser extends ParserMinimalBase
 
     private final String _finishLongText(int len) throws IOException
     {
-        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-        int outPtr = 0;
-        final int[] codes = UTF8_UNIT_CODES;
+        StringRefList stringRefs = null;
+        if (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
+            stringRefs = _stringRefs.peek();
+        }
+        // First a tight loop for ASCII.
+        len = _finishLongTextAscii(len);
+        char[] outBuf = _textBuffer.getBufferWithoutReset();
+        int outPtr = _sharedOutBufferPtr;
         int outEnd = outBuf.length;
+        final int[] codes = UTF8_UNIT_CODES;
 
         while (--len >= 0) {
             int c = _nextByte() & 0xFF;
@@ -2500,12 +2516,50 @@ public class CBORParser extends ParserMinimalBase
             outBuf[outPtr++] = (char) c;
         }
         String str = _textBuffer.setCurrentAndReturn(outPtr);
-        if (!_stringRefs.empty() &&
-                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
-            _stringRefs.peek().stringRefs.add(str);
+        if (stringRefs != null) {
+            stringRefs.stringRefs.add(str);
             _sharedString = str;
         }
         return str;
+    }
+
+    /**
+     * Consumes as many ascii chars as possible in a tight loop. Returns the amount of bytes remaining.
+     */
+    private final int _finishLongTextAscii(int len) throws IOException
+    {
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        final byte[] input = _inputBuffer;
+        _sharedOutBufferPtr = 0;
+        while (len > 0) {
+            // load as much input as possible
+            int size = Math.min(len, Math.min(outBuf.length, input.length));
+            if (!_tryToLoadToHaveAtLeast(size)) {
+                _sharedOutBufferPtr = 0;
+                return len;
+            }
+            int outEnd = size;
+            int outPtr = 0;
+            int inPtr = _inputPtr;
+            int i = 0;
+            // Tight loop to copy into the output buffer, bail if a non-ascii char is found
+            while (outPtr < outEnd && i >= 0) {
+                i = input[inPtr++];
+                outBuf[outPtr++] = (char) i;
+            }
+            // Found a non-ascii char, correct pointers and return to the caller.
+            if (i < 0) {
+                _inputPtr = inPtr - 1;
+                _sharedOutBufferPtr = outPtr - 1;
+                return len - _sharedOutBufferPtr;
+            }
+            _inputPtr = inPtr;
+            if (outPtr >= outBuf.length) {
+                outBuf = _textBuffer.finishCurrentSegment();
+            }
+            len -= size;
+        }
+        return len;
     }
 
     private final void _finishChunkedText() throws IOException
@@ -2532,7 +2586,6 @@ public class CBORParser extends ParserMinimalBase
                         }
                         break;
                     }
-                    _chunkLeft = len;
                     int end = _inputPtr + len;
                     if (end <= _inputEnd) { // all within buffer
                         _chunkLeft = 0;
@@ -2541,19 +2594,22 @@ public class CBORParser extends ParserMinimalBase
                         _chunkLeft = (end - _inputEnd);
                         _chunkEnd = _inputEnd;
                     }
+                    // start of a new chunk
+                    // First a tight loop for ASCII.
+                    _sharedOutBufferPtr = outPtr;
+                    if (_finishChunkedTextAscii()) {
+                        // chunk fully consumed, let's get the next one
+                        outBuf = _textBuffer.getBufferWithoutReset();
+                        outPtr = _sharedOutBufferPtr;
+                        outEnd = outBuf.length;
+                        continue;
+                    }
+                    outBuf = _textBuffer.getBufferWithoutReset();
+                    outEnd = outBuf.length;
+                    outPtr = _sharedOutBufferPtr;
                 }
                 // besides of which just need to ensure there's content
-                if (_inputPtr >= _inputEnd) { // end of buffer, but not necessarily chunk
-                    loadMoreGuaranteed();
-                    int end = _inputPtr + _chunkLeft;
-                    if (end <= _inputEnd) { // all within buffer
-                        _chunkLeft = 0;
-                        _chunkEnd = end;
-                    } else { // stretches beyond
-                        _chunkLeft = (end - _inputEnd);
-                        _chunkEnd = _inputEnd;
-                    }
-                }
+                _loadMoreForChunkIfNeeded();
             }
             int c = input[_inputPtr++] & 0xFF;
             int code = codes[c];
@@ -2563,9 +2619,9 @@ public class CBORParser extends ParserMinimalBase
             }
 
             switch (code) {
-            case 0:
-                break;
-            case 1: // 2-byte UTF
+                case 0:
+                    break;
+                case 1: // 2-byte UTF
                 {
                     int d = _nextChunkedByte();
                     if ((d & 0xC0) != 0x080) {
@@ -2574,24 +2630,24 @@ public class CBORParser extends ParserMinimalBase
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
                 }
                 break;
-            case 2: // 3-byte UTF
-                c = _decodeChunkedUTF8_3(c);
-                break;
-            case 3: // 4-byte UTF
-                c = _decodeChunkedUTF8_4(c);
-                // Let's add first part right away:
-                if (outPtr >= outBuf.length) {
-                    outBuf = _textBuffer.finishCurrentSegment();
-                    outPtr = 0;
-                    outEnd = outBuf.length;
-                }
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
-                c = 0xDC00 | (c & 0x3FF);
-                // And let the other char output down below
-                break;
-            default:
-                // Is this good enough error message?
-                _reportInvalidInitial(c);
+                case 2: // 3-byte UTF
+                    c = _decodeChunkedUTF8_3(c);
+                    break;
+                case 3: // 4-byte UTF
+                    c = _decodeChunkedUTF8_4(c);
+                    // Let's add first part right away:
+                    if (outPtr >= outBuf.length) {
+                        outBuf = _textBuffer.finishCurrentSegment();
+                        outPtr = 0;
+                        outEnd = outBuf.length;
+                    }
+                    outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
+                    c = 0xDC00 | (c & 0x3FF);
+                    // And let the other char output down below
+                    break;
+                default:
+                    // Is this good enough error message?
+                    _reportInvalidInitial(c);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2602,7 +2658,74 @@ public class CBORParser extends ParserMinimalBase
             // Ok, let's add char to output:
             outBuf[outPtr++] = (char) c;
         }
+
         _textBuffer.setCurrentLength(outPtr);
+    }
+
+    /**
+     * Reads in a tight loop ASCII text until a non-ASCII char is found. If any, then it returns false to signal the
+     * caller that the chunk wasn't finished. The caller will keep adding to the _outBuf at the _outPtr position to
+     * finish the current text buffer segment
+     */
+    private final boolean _finishChunkedTextAscii() throws IOException
+    {
+        final byte[] input = _inputBuffer;
+        int outPtr = _sharedOutBufferPtr;
+        char[] outBuf = _textBuffer.getBufferWithoutReset();
+        int outEnd = outBuf.length;
+        while (true) {
+            // besides of which just need to ensure there's content
+            _loadMoreForChunkIfNeeded();
+
+            // Find the size of the loop
+            int inSize =  _chunkEnd - _inputPtr;
+            int outSize = outEnd - outPtr;
+            int inputPtr = _inputPtr;
+            int inputPtrEnd = _inputPtr + Math.min(inSize, outSize);
+            int i = 0;
+            // loop with copying what we can.
+            while (inputPtr < inputPtrEnd && i >= 0) {
+                i = input[inputPtr++];
+                char val = (char) i;
+                outBuf[outPtr++] = val;
+            }
+            _inputPtr = inputPtr;
+
+            if (i < 0) {
+                // Found a non-ascii char, correct pointers and return to the caller.
+                outPtr -= 1;
+                _inputPtr -= 1;
+                _sharedOutBufferPtr = outPtr;
+                // return false to signal this to the calling code to allow the multi-byte code-path to kick.
+                return false;
+            }
+            // Need more room?
+            if (outPtr >= outEnd) {
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+                outEnd = outBuf.length;
+            }
+            if (_inputPtr < _chunkEnd || _chunkLeft > 0) {
+                continue;
+            }
+            _sharedOutBufferPtr = outPtr;
+            return true;
+        }
+    }
+
+    private final void _loadMoreForChunkIfNeeded() throws IOException
+    {
+        if (_inputPtr >= _inputEnd) { // end of buffer, but not necessarily chunk
+            loadMoreGuaranteed();
+            int end = _inputPtr + _chunkLeft;
+            if (end <= _inputEnd) { // all within buffer
+                _chunkLeft = 0;
+                _chunkEnd = end;
+            } else { // stretches beyond
+                _chunkLeft = (end - _inputEnd);
+                _chunkEnd = _inputEnd;
+            }
+        }
     }
 
     private final int _nextByte() throws IOException {
@@ -3714,6 +3837,10 @@ expType, type, ch));
     {
         // No input stream, no leading (either we are closed, or have non-stream input source)
         if (_inputStream == null) {
+            return false;
+        }
+        // The code below assumes this is true, so we check it here.
+        if (_inputBuffer.length < minAvailable)  {
             return false;
         }
         // Need to move remaining data in front?
