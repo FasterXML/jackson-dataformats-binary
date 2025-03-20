@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.ion;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.InputCoercionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -72,4 +74,15 @@ public class IonNumberOverflowTest
         }
     }
 
+    // [dataformats-binary#569]: incorrect overflow fail for long values (from BigInteger)
+    @Test
+    public void testLongAsBigIntegerSize() throws Exception {
+        // Note: Values: Long.MAX_VALUE through Long.MAX_VALUE -7 are considered LONG by Ion.  
+        BigInteger bigIntLongValue = new BigInteger(Long.MAX_VALUE + "").subtract(BigInteger.TEN);
+        IonParser bigIntLongParser = (IonParser) new IonFactory().createParser(bigIntLongValue.toString());
+        assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntLongParser.nextToken());
+        assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntLongParser.getNumberType());
+        assertEquals(JsonParser.NumberTypeFP.UNKNOWN, bigIntLongParser.getNumberTypeFP());
+        assertEquals(bigIntLongValue.longValue(), bigIntLongParser.getLongValue());
+    }    
 }

@@ -413,8 +413,8 @@ public class IonParser
         try {
             if (this.getNumberType() == NumberType.BIG_INTEGER) {
                 BigInteger bigInteger = _reader.bigIntegerValue();
-                if (BI_MIN_INT.compareTo(bigInteger) > 0 || BI_MAX_INT.compareTo(bigInteger) < 0) {
-                    this.reportOverflowLong();
+                if (BI_MIN_LONG.compareTo(bigInteger) > 0 || BI_MAX_LONG.compareTo(bigInteger) < 0) {
+                    reportOverflowLong();
                 }
                 return bigInteger.longValue();
             } else {
