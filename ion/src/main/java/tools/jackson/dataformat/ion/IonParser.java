@@ -328,7 +328,7 @@ public class IonParser
         try {
             if (getNumberType() == NumberType.BIG_INTEGER) {
                 BigInteger bigInteger = _reader.bigIntegerValue();
-                if (BI_MIN_INT.compareTo(bigInteger) > 0 || BI_MAX_INT.compareTo(bigInteger) < 0) {
+                if (BI_MIN_LONG.compareTo(bigInteger) > 0 || BI_MAX_LONG.compareTo(bigInteger) < 0) {
                     _reportOverflowLong();
                 }
                 return bigInteger.longValue();
