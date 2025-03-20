@@ -16,6 +16,9 @@ Active maintainers:
 
 2.18.4 (not yet released)
 
+#569: (ion) `IonParser` fails to parse some `long` values saying
+  they are out of range when they are not
+ (reported, fix suggested by @seadbrane)
 - (ion) Upgrade `ion-java` to 1.11.10 (from 1.11.9)
 
 2.18.3 (28-Feb-2025)
