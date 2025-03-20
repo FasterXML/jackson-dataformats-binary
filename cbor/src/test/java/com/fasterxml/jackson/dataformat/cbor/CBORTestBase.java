@@ -216,6 +216,10 @@ public abstract class CBORTestBase
         return generateUnicodeString(length, new Random(length));
     }
 
+    protected static String generateUnicodeStringWithAsciiPrefix(int asciiPrefixLen, int length) {
+        return generateUnicodeStringWithAsciiPrefix(asciiPrefixLen, length, new Random(length));
+    }
+
     protected static String generateUnicodeString(int length, Random rnd)
     {
         StringBuilder sw = new StringBuilder(length+10);
@@ -236,6 +240,31 @@ public abstract class CBORTestBase
             default:
                 sw.append((char) (65536 + rnd.nextInt() & 0x3FFF));
                 break;
+            }
+        } while (sw.length() < length);
+        return sw.toString();
+    }
+
+    protected static String generateUnicodeStringWithAsciiPrefix(int asciiLength, int length, Random rnd)
+    {
+        StringBuilder sw = new StringBuilder(length+10);
+        // add a prefix of ascii chars
+        int num = asciiLength;
+        while (--num >= 0) {
+            sw.append((char) ('A' + (num % 32)));
+        }
+        do {
+            // Then a unicode char of 2, 3 or 4 bytes long
+            switch (rnd.nextInt() % 3) {
+                case 0:
+                    sw.append((char) (256 + rnd.nextInt() & 511));
+                    break;
+                case 1:
+                    sw.append((char) (2048 + rnd.nextInt() & 4095));
+                    break;
+                default:
+                    sw.append((char) (65536 + rnd.nextInt() & 0x3FFF));
+                    break;
             }
         } while (sw.length() < length);
         return sw.toString();
