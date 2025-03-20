@@ -78,7 +78,7 @@ public class IonNumberOverflowTest
     @Test
     public void testLongAsBigIntegerSize() throws Exception {
         // Note: Values: Long.MAX_VALUE through Long.MAX_VALUE -7 are considered LONG by Ion.  
-        BigInteger bigIntLongValue = new BigInteger(Long.MAX_VALUE + "").subtract(new BigInteger("10"));
+        BigInteger bigIntLongValue = new BigInteger(Long.MAX_VALUE + "").subtract(BigInteger.TEN);
         IonParser bigIntLongParser = (IonParser) new IonFactory().createParser(bigIntLongValue.toString());
         assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntLongParser.nextToken());
         assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntLongParser.getNumberType());
