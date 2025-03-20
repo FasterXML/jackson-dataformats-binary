@@ -21,6 +21,9 @@ Active maintainers:
 #308: (avro) Incorrect serialization for `LogicalType.Decimal` (Java `BigDecimal`)
  (reported by Idan S)
  (fix contributed by Michal F)
+#388: (avro) `@JsonEnumDefaultValue` not supported when using AvroMapper
+  to generate schema from Java class
+ (requested by @Sonic-Rage)
 #422: Avro generation failed with enums containing values with special characters
  (reported by @pfr-enedis)
 #535: (avro) AvroSchemaGenerator: logicalType(s) never set for non-date classes
@@ -32,7 +35,14 @@ Active maintainers:
 #547: (all) JSTEP-10: Unify testing structure/tools
  (contributed by Joo-Hyuk K)
 
-2.18.3 (not yet released)
+2.18.4 (not yet released)
+
+#569: (ion) `IonParser` fails to parse some `long` values saying
+  they are out of range when they are not
+ (reported, fix suggested by @seadbrane)
+- (ion) Upgrade `ion-java` to 1.11.10 (from 1.11.9)
+
+2.18.3 (28-Feb-2025)
 
 #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug
  (fix contributed by John H)
