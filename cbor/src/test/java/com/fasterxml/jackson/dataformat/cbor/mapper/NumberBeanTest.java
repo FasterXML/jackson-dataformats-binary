@@ -49,6 +49,7 @@ public class NumberBeanTest extends CBORTestBase
         public BigDecimalHolder2784 holder;
     }
 
+    // for [databind#4917]
     static class DeserializationIssue4917 {
         public DecimalHolder4917 decimalHolder;
         public double number;
@@ -293,5 +294,4 @@ public class NumberBeanTest extends CBORTestBase
         assertEquals(value.decimalHolder.value, result.decimalHolder.value);
         assertEquals(value.number, result.number);
     }
-
 }
