@@ -107,7 +107,7 @@ public class IonAnnotationTypeDeserializerWithClassNameAnnotationTest {
         @Override
         protected TypeIdResolver defaultIdResolver(MapperConfig<?> config, JavaType baseType,
                 PolymorphicTypeValidator ptv) {
-            return new ClassNameIdResolver(baseType, ptv);
+            return new ClassNameIdResolver(baseType, null, ptv);
         }
     }
 

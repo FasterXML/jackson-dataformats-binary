@@ -122,7 +122,7 @@ public class PolymorphicRoundtripTest
             if (null != preferredTypeId) {
                 return new MultipleClassNameIdResolver(baseType,ptv);
             } else {
-                return new ClassNameIdResolver(baseType, ptv);
+                return new ClassNameIdResolver(baseType, null, ptv);
             }
         }
     }
@@ -132,7 +132,7 @@ public class PolymorphicRoundtripTest
         private static final long serialVersionUID = 1L;
 
         MultipleClassNameIdResolver(JavaType baseType, PolymorphicTypeValidator ptv) {
-            super(baseType, ptv);
+            super(baseType, null, ptv);
         }
 
         @Override
@@ -429,7 +429,7 @@ public class PolymorphicRoundtripTest
                         config.getPolymorphicTypeValidator());
             } else {
                 return new ClassNameIdResolver(baseType, config.getTypeFactory(),
-                        config.getPolymorphicTypeValidator());
+                        null, config.getPolymorphicTypeValidator());
             }
         }
     }
@@ -440,7 +440,7 @@ public class PolymorphicRoundtripTest
 
         MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory,
                 PolymorphicTypeValidator ptv) {
-            super(baseType, typeFactory, ptv);
+            super(baseType, typeFactory, null, ptv);
         }
 
         @Override

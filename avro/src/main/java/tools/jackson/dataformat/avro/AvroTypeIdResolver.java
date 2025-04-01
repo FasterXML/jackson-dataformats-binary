@@ -19,30 +19,17 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
 {
     private static final long serialVersionUID = 3L;
 
-    private final Map<String, Class<?>> _idTypes = new HashMap<>();
-
-    // 04-Jan-2021, tatu: Not sure why this is being kept around, not used as of
-    //    2.12; commenting out may be removed from 2.13
-//    private final Map<Class<?>, String> _typeIds = new HashMap<>();
+    private final Map<String, Class<?>> _idTypes;
 
     public AvroTypeIdResolver(JavaType baseType,
             PolymorphicTypeValidator stv, Collection<NamedType> subTypes) {
-        this(baseType, stv);
+        super(baseType, subTypes, stv);
+        _idTypes = new HashMap<>();
         if (subTypes != null) {
             for (NamedType namedType : subTypes) {
-                registerSubtype(namedType.getType(), namedType.getName());
+                _idTypes.put(namedType.getName(), namedType.getType());
             }
         }
-    }
-
-    public AvroTypeIdResolver(JavaType baseType, PolymorphicTypeValidator stv) {
-        super(baseType, stv);
-    }
-
-    @Override
-    public void registerSubtype(Class<?> type, String name) {
-        _idTypes.put(name, type);
-//        _typeIds.put(type, name);
     }
 
     @Override
