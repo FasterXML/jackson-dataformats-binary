@@ -35,6 +35,13 @@ Active maintainers:
 #547: (all) JSTEP-10: Unify testing structure/tools
  (contributed by Joo-Hyuk K)
 
+2.18.4 (not yet released)
+
+#569: (ion) `IonParser` fails to parse some `long` values saying
+  they are out of range when they are not
+ (reported, fix suggested by @seadbrane)
+- (ion) Upgrade `ion-java` to 1.11.10 (from 1.11.9)
+
 2.18.3 (28-Feb-2025)
 
 #541: (cbor, protobuf, smile) `SmileParser.getValueAsString()` FIELD_NAME bug

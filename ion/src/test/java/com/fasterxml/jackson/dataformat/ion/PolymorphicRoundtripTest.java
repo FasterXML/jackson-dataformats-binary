@@ -292,7 +292,7 @@ public class PolymorphicRoundtripTest {
                         config.getPolymorphicTypeValidator());
             } else {
                 return new ClassNameIdResolver(baseType, config.getTypeFactory(),
-                        config.getPolymorphicTypeValidator());
+                        null, config.getPolymorphicTypeValidator());
             }
         }
     }
@@ -303,7 +303,7 @@ public class PolymorphicRoundtripTest {
 
         MultipleClassNameIdResolver(JavaType baseType, TypeFactory typeFactory,
                 PolymorphicTypeValidator ptv) {
-            super(baseType, typeFactory, ptv);
+            super(baseType, typeFactory, null, ptv);
         }
 
         @Override

@@ -6,7 +6,9 @@ import java.math.BigInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +47,26 @@ public class NumberBeanTest extends CBORTestBase
     static class NestedBigDecimalHolder2784 {
         @JsonUnwrapped
         public BigDecimalHolder2784 holder;
+    }
+
+    // for [databind#4917]
+    static class DeserializationIssue4917 {
+        public DecimalHolder4917 decimalHolder;
+        public double number;
+    }
+
+    static class DecimalHolder4917 {
+        @JsonValue
+        BigDecimal value;
+
+        private DecimalHolder4917(BigDecimal value) {
+            this.value = value;
+        }
+
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        static DecimalHolder4917 of(BigDecimal value) {
+            return new DecimalHolder4917(value);
+        }
     }
 
     /*
@@ -255,5 +277,21 @@ public class NumberBeanTest extends CBORTestBase
         NestedBigDecimalHolder2784 result = MAPPER.readValue(bytes.toByteArray(),
                 NestedBigDecimalHolder2784.class);
         assertEquals(VALUE, result.holder.value);
+    }
+
+    // [databind#4917]
+    @Test
+    public void testIssue4917() throws Exception {
+        final String bd = "100.00";
+        final double d = 50.0;
+        final DeserializationIssue4917 value = new DeserializationIssue4917();
+        value.decimalHolder = DecimalHolder4917.of(new BigDecimal(bd));
+        value.number = d;
+        final byte[] data = MAPPER.writeValueAsBytes(value);
+
+        final DeserializationIssue4917 result = MAPPER.readValue(
+                data, DeserializationIssue4917.class);
+        assertEquals(value.decimalHolder.value, result.decimalHolder.value);
+        assertEquals(value.number, result.number);
     }
 }

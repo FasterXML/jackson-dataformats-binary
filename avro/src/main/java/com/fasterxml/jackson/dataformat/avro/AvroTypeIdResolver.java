@@ -29,25 +29,24 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
 
     public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
             PolymorphicTypeValidator ptv,
-            Collection<NamedType> subTypes) {
-        this(baseType, typeFactory, ptv);
+            Collection<NamedType> subTypes)
+    {
+        super(baseType, typeFactory, subTypes, ptv);
         if (subTypes != null) {
             for (NamedType namedType : subTypes) {
-                registerSubtype(namedType.getType(), namedType.getName());
+                //registerSubtype(namedType.getType(), namedType.getName());
+                _idTypes.put(namedType.getName(), namedType.getType());
             }
         }
     }
 
-    public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
-            PolymorphicTypeValidator ptv) {
-        super(baseType, typeFactory, ptv);
-    }
-
+    /*// Not used as of Jackson 2.19
     @Override
     public void registerSubtype(Class<?> type, String name) {
         _idTypes.put(name, type);
 //        _typeIds.put(type, name);
     }
+    */
 
     @Override
     protected JavaType _typeFromId(String id, DatabindContext ctxt) throws IOException {
