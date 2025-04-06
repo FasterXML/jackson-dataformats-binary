@@ -333,11 +333,6 @@ public class CBORParser extends ParserMinimalBase
     protected int _typeByte;
 
     /**
-     * A pointer to know where to write text when we share an output buffer across methods
-     */
-    protected int _sharedOutBufferPtr;
-
-    /**
      * Type to keep track of a list of string references. A depth is stored to know when to pop the
      * references off the stack for nested namespaces.
      *
@@ -2460,7 +2455,7 @@ public class CBORParser extends ParserMinimalBase
         // First a tight loop for ASCII.
         len = _finishLongTextAscii(len);
         char[] outBuf = _textBuffer.getBufferWithoutReset();
-        int outPtr = _sharedOutBufferPtr;
+        int outPtr = _textBuffer.getCurrentSegmentSize();
         int outEnd = outBuf.length;
         final int[] codes = UTF8_UNIT_CODES;
 
@@ -2530,12 +2525,10 @@ public class CBORParser extends ParserMinimalBase
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final byte[] input = _inputBuffer;
-        _sharedOutBufferPtr = 0;
         while (len > 0) {
             // load as much input as possible
             int size = Math.min(len, Math.min(outBuf.length, input.length));
             if (!_tryToLoadToHaveAtLeast(size)) {
-                _sharedOutBufferPtr = 0;
                 return len;
             }
             int outEnd = size;
@@ -2549,9 +2542,10 @@ public class CBORParser extends ParserMinimalBase
             }
             // Found a non-ascii char, correct pointers and return to the caller.
             if (i < 0) {
+                --outPtr;
                 _inputPtr = inPtr - 1;
-                _sharedOutBufferPtr = outPtr - 1;
-                return len - _sharedOutBufferPtr;
+                _textBuffer.setCurrentLength(outPtr);
+                return len - outPtr;
             }
             _inputPtr = inPtr;
             if (outPtr >= outBuf.length) {
@@ -2596,17 +2590,17 @@ public class CBORParser extends ParserMinimalBase
                     }
                     // start of a new chunk
                     // First a tight loop for ASCII.
-                    _sharedOutBufferPtr = outPtr;
+                    _textBuffer.setCurrentLength(outPtr);
                     if (_finishChunkedTextAscii()) {
                         // chunk fully consumed, let's get the next one
                         outBuf = _textBuffer.getBufferWithoutReset();
-                        outPtr = _sharedOutBufferPtr;
+                        outPtr = _textBuffer.getCurrentSegmentSize();
                         outEnd = outBuf.length;
                         continue;
                     }
                     outBuf = _textBuffer.getBufferWithoutReset();
+                    outPtr = _textBuffer.getCurrentSegmentSize();
                     outEnd = outBuf.length;
-                    outPtr = _sharedOutBufferPtr;
                 }
                 // besides of which just need to ensure there's content
                 _loadMoreForChunkIfNeeded();
@@ -2670,7 +2664,7 @@ public class CBORParser extends ParserMinimalBase
     private final boolean _finishChunkedTextAscii() throws IOException
     {
         final byte[] input = _inputBuffer;
-        int outPtr = _sharedOutBufferPtr;
+        int outPtr = _textBuffer.getCurrentSegmentSize();
         char[] outBuf = _textBuffer.getBufferWithoutReset();
         int outEnd = outBuf.length;
         while (true) {
@@ -2693,9 +2687,8 @@ public class CBORParser extends ParserMinimalBase
 
             if (i < 0) {
                 // Found a non-ascii char, correct pointers and return to the caller.
-                outPtr -= 1;
                 _inputPtr -= 1;
-                _sharedOutBufferPtr = outPtr;
+                _textBuffer.setCurrentLength(outPtr - 1);
                 // return false to signal this to the calling code to allow the multi-byte code-path to kick.
                 return false;
             }
@@ -2708,7 +2701,7 @@ public class CBORParser extends ParserMinimalBase
             if (_inputPtr < _chunkEnd || _chunkLeft > 0) {
                 continue;
             }
-            _sharedOutBufferPtr = outPtr;
+            _textBuffer.setCurrentLength(outPtr);
             return true;
         }
     }
