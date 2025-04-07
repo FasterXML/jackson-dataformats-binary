@@ -34,6 +34,8 @@ Active maintainers:
 #539: (avro) Upgrade `org.apache.avro:avro` dependency to 1.11.4
 #547: (all) JSTEP-10: Unify testing structure/tools
  (contributed by Joo-Hyuk K)
+#568: Improve ASCII decoding performance for `CBORParser`
+ (contributed by Manuel S)
 
 2.18.4 (not yet released)
 

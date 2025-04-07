@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.cbor.parse;
 
 import java.io.*;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -62,12 +63,28 @@ public class BasicParserTest extends CBORTestBase
         _testMedium(3900);
     }
 
-    private void _testMedium(int len) throws Exception
+    @Test
+    public void testMediumText2() throws Exception
+    {
+        for (int prefix : Arrays.asList(197, 198, 199, 200, 201, 497, 499, 500, 501)) {
+            _testMedium(prefix, 1300);
+            _testMedium(prefix, 1900);
+            _testMedium(prefix, 2300);
+            _testMedium(prefix, 3900);
+        }
+    }
+
+    private void _testMedium(int len) throws Exception {
+        _testMedium(0, len);
+    }
+
+    private void _testMedium(int asciiPrefixLen, int len) throws Exception
     {
         // First, use size that should fit in output buffer, but
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator gen = cborGenerator(out);
-        final String MEDIUM = generateUnicodeString(len);
+        final String MEDIUM = asciiPrefixLen == 0 ?
+                generateUnicodeString(len) : generateUnicodeStringWithAsciiPrefix(asciiPrefixLen, len);
         gen.writeString(MEDIUM);
         gen.close();
 
@@ -163,6 +180,16 @@ public class BasicParserTest extends CBORTestBase
         _testLongChunkedText(sb.toString());
         // Second, with actual variable byte-length Unicode
         _testLongChunkedText(generateUnicodeString(21000));
+    }
+
+    @Test
+    public void testLongChunkedText2() throws Exception
+    {
+        // The text buffer starting size is 200 bytes, let's cycle around that
+        // amount to verify the tight ascii loop.
+        for (int prefix = 194; prefix < 202; ++prefix) {
+            _testLongChunkedText(generateUnicodeStringWithAsciiPrefix(prefix, 21000));
+        }
     }
 
     @SuppressWarnings("resource")
