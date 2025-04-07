@@ -377,3 +377,7 @@ Cormac Redmond (@credmond)
  * Reported #535: (avro) AvroSchemaGenerator: logicalType(s) never set for
    non-Date classes
   (2.19.0)
+
+Manuel Sugawara (@sugmanue)
+ * Contributed #568: Improve ASCII decoding performance for `CBORParser`
+  (2.19.0)
