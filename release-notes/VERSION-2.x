@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.19.0 (not yet released)
+2.19.0-rc2 (07-Apr-2025)
 
 #300: (smile) Floats are encoded with sign extension while doubles without
  (reported by Steven F)
