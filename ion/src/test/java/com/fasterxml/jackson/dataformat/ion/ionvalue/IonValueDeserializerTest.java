@@ -1,15 +1,23 @@
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import java.io.IOException;
-import java.util.*;
-
-import com.amazon.ion.*;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
+import com.amazon.ion.IonStruct;
 import com.amazon.ion.system.IonSystemBuilder;
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import com.fasterxml.jackson.dataformat.ion.IonParser;
+
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import org.junit.jupiter.api.Test;
 
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,7 +73,7 @@ public class IonValueDeserializerTest {
     }
 
     private static final IonSystem SYSTEM = IonSystemBuilder.standard().build();
-    private static final IonValueMapper ION_VALUE_MAPPER = new IonValueMapper(SYSTEM, SNAKE_CASE);
+    private final IonValueMapper ION_VALUE_MAPPER = new IonValueMapper(SYSTEM, SNAKE_CASE);
 
     @Test
     public void shouldBeAbleToDeserialize() throws Exception {
@@ -92,23 +100,49 @@ public class IonValueDeserializerTest {
     }
 
     @Test
+    public void shouldBeAbleToDeserializeNullToIonNull() throws Exception {
+        String ion = "{c:null}";
+        verifyNullDeserialization(ion, SYSTEM.newNull());
+        ION_VALUE_MAPPER.disable(IonParser.Feature.READ_NULL_AS_IONVALUE);
+        verifyNullDeserialization(ion, null);
+    }
+
+    @Test
     public void shouldBeAbleToDeserializeNullList() throws Exception {
-        IonValue ion = ion("{c:null.list}");
-
-        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
-
-        assertEquals(1, data.getAllData().size());
-        assertEquals(SYSTEM.newNullList(), data.getAllData().get("c"));
+        String ion = "{c:null.list}";
+        verifyNullDeserialization(ion, SYSTEM.newNullList());
+        ION_VALUE_MAPPER.disable(IonParser.Feature.READ_NULL_AS_IONVALUE);
+        verifyNullDeserialization(ion, SYSTEM.newNullList());
     }
 
     @Test
     public void shouldBeAbleToDeserializeNullStruct() throws Exception {
-        IonValue ion = ion("{c:null.struct}");
+        String ion = "{c:null.struct}";
+        verifyNullDeserialization(ion, SYSTEM.newNullStruct());
+        ION_VALUE_MAPPER.disable(IonParser.Feature.READ_NULL_AS_IONVALUE);
+        verifyNullDeserialization(ion, SYSTEM.newNullStruct());
+    }
 
-        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
+    @Test
+    public void shouldBeAbleToDeserializeNullSexp() throws Exception {
+        String ion = "{c:null.sexp}";
+        verifyNullDeserialization(ion, SYSTEM.newNullSexp());
+        ION_VALUE_MAPPER.disable(IonParser.Feature.READ_NULL_AS_IONVALUE);
+        verifyNullDeserialization(ion, SYSTEM.newNullSexp());
+    }
+
+    private void verifyNullDeserialization(String ionString, IonValue expected) throws Exception {
+
+        IonValueData data = ION_VALUE_MAPPER.readValue(ionString, IonValueData.class);
 
         assertEquals(1, data.getAllData().size());
-        assertEquals(SYSTEM.newNullStruct(), data.getAllData().get("c"));
+        assertEquals(expected, data.getAllData().get("c"));
+
+        IonValue ion = ion(ionString);
+        data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
+
+        assertEquals(1, data.getAllData().size());
+        assertEquals(expected, data.getAllData().get("c"));
     }
 
     @Test
@@ -162,7 +196,17 @@ public class IonValueDeserializerTest {
 
         IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
         StringData result = ION_VALUE_MAPPER.parse(data, StringData.class);
+        assertEquals(source, result);
+    }
 
+    @Test
+    public void shouldBeAbleToSerializeAndDeserializeStringDataAsString() throws Exception {
+        StringData source = new StringData();
+        source.put("a", "1");
+        source.put("b", null);
+
+        String data = ION_VALUE_MAPPER.writeValueAsString(source);
+        StringData result = ION_VALUE_MAPPER.readValue(data, StringData.class);
         assertEquals(source, result);
     }
 

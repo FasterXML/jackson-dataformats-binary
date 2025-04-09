@@ -53,6 +53,18 @@ public class IonParser
          * @since 2.12.3
          */
         USE_NATIVE_TYPE_ID(true),
+        /**
+         * Whether to convert "null" to an IonValueNull (true);
+         * or leave as a java null (false) when deserializing.
+         *<p>
+         * Enabled by default for backwards compatibility as that has been the behavior
+         * of `jackson-dataformat-ion` since 2.13.
+         *
+         * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
+         *
+         * @since 2.19.0
+         */
+        READ_NULL_AS_IONVALUE(true),
         ;
 
         final boolean _defaultState;
@@ -563,6 +575,12 @@ public class IonParser
         writer.writeValue(_reader);
         IonValue v = l.get(0);
         v.removeFromContainer();
+
+        if (v.isNullValue() && !Feature.READ_NULL_AS_IONVALUE.enabledIn(_formatFeatures)) {
+            if (_valueToken == JsonToken.VALUE_NULL && !IonType.isContainer(v.getType())) {
+                return null;
+            }
+        }
         return v;
     }
 
