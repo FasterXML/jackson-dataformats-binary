@@ -10,8 +10,8 @@ import com.amazon.ion.Timestamp;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -166,7 +166,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsInt01Nanoseconds() throws Exception {
         Instant expected = Instant.ofEpochSecond(0L);
         Instant actual = READER
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -176,7 +176,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsInt02Nanoseconds() throws Exception {
         Instant expected = Instant.ofEpochSecond(123456789L);
         Instant actual = READER
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -186,7 +186,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsInt03Nanoseconds() throws Exception {
         Instant expected = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant actual = READER
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(expected.getEpochSecond()));
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -196,7 +196,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsInt01Milliseconds() throws Exception {
         Instant expected = Instant.ofEpochSecond(0L);
         Instant actual = READER
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -206,7 +206,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsInt02Milliseconds() throws Exception {
         Instant expected = Instant.ofEpochSecond(123456789L, 422000000);
         Instant actual = READER
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789422");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -216,7 +216,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationAsInt03Milliseconds() throws Exception {
         Instant expected = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         Instant actual = READER
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(expected.toEpochMilli()));
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -262,7 +262,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationWithTypeInfo01() throws Exception {
         Instant expected = Instant.ofEpochSecond(123456789L, 183917322);
         IonObjectMapper m = newMapperBuilder()
-                .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -275,7 +275,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationWithTypeInfo02() throws Exception {
         Instant expected = Instant.ofEpochSecond(123456789L, 0);
         IonObjectMapper m = newMapperBuilder()
-                .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -288,7 +288,7 @@ public class IonTimestampInstantDeserializerTest {
     public void testDeserializationWithTypeInfo03() throws Exception {
         Instant expected = Instant.ofEpochSecond(123456789L, 422000000);
         IonObjectMapper m = newMapperBuilder()
-                .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .disable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 

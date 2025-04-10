@@ -5,7 +5,6 @@ import tools.jackson.core.Version;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperBuilderState;
-import tools.jackson.dataformat.cbor.PackageVersion;
 
 /**
  * Specialized {@link ObjectMapper} to use with CBOR format backend.

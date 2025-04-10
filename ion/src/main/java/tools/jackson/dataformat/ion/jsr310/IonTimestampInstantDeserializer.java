@@ -15,8 +15,8 @@ import tools.jackson.core.JsonParser;
 
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.deser.std.StdScalarDeserializer;
 
 /**
@@ -94,7 +94,7 @@ public class IonTimestampInstantDeserializer<T extends Temporal> extends StdScal
     }
 
     private T fromLong(long longValue, ZoneId defaultZoneId, DeserializationContext context) {
-        if(context.isEnabled(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)){
+        if(context.isEnabled(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)){
             return fromInstant.apply(Instant.ofEpochSecond(longValue, 0), defaultZoneId);
         }
         return fromInstant.apply(Instant.ofEpochMilli(longValue), defaultZoneId);

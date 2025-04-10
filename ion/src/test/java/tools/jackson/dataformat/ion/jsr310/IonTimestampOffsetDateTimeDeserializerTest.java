@@ -9,9 +9,8 @@ import com.amazon.ion.Timestamp;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectReader;
-
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
 import static java.time.ZoneOffset.UTC;
@@ -97,7 +96,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt01Nanoseconds() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(0L), UTC);
         OffsetDateTime actual = READER_UTC_DEFAULT
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -107,7 +106,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt01NanosecondsNonUTCDefault() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(0L), Z1);
         OffsetDateTime actual = READER_Z1_DEFAULT
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -117,7 +116,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt02Nanoseconds() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L), UTC);
         OffsetDateTime actual = READER_UTC_DEFAULT
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -127,7 +126,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt02NanosecondsNonUTCDefault() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L), Z1);
         OffsetDateTime actual = READER_Z1_DEFAULT
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -138,7 +137,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         Instant now = Instant.now();
         OffsetDateTime expected = OffsetDateTime.ofInstant(now, UTC).truncatedTo(ChronoUnit.SECONDS);
         OffsetDateTime actual = READER_UTC_DEFAULT
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.getEpochSecond()));
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -149,7 +148,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         Instant now = Instant.now();
         OffsetDateTime expected = OffsetDateTime.ofInstant(now, Z1).truncatedTo(ChronoUnit.SECONDS);
         OffsetDateTime actual = READER_Z1_DEFAULT
-                .with(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .with(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.getEpochSecond()));
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -159,7 +158,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt01Milliseconds() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(0L), UTC);
         OffsetDateTime actual = READER_UTC_DEFAULT
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -169,7 +168,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt01MillisecondsNonUTCDefault() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(0L), Z1);
         OffsetDateTime actual = READER_Z1_DEFAULT
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("0");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -179,7 +178,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt02Milliseconds() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 422000000), UTC);
         OffsetDateTime actual = READER_UTC_DEFAULT
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789422");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -189,7 +188,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
     public void testDeserializationAsInt02MillisecondsNonUTCDefault() throws Exception {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 422000000), Z1);
         OffsetDateTime actual = READER_Z1_DEFAULT
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue("123456789422");
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -200,7 +199,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         Instant now = Instant.now();
         OffsetDateTime expected = OffsetDateTime.ofInstant(now, UTC).truncatedTo(ChronoUnit.MILLIS);
         OffsetDateTime actual = READER_UTC_DEFAULT
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.toEpochMilli()));
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -211,7 +210,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         Instant now = Instant.now();
         OffsetDateTime expected = OffsetDateTime.ofInstant(now, Z1).truncatedTo(ChronoUnit.MILLIS);
         OffsetDateTime actual = READER_Z1_DEFAULT
-                .without(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .without(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .readValue(Long.toString(now.toEpochMilli()));
 
         assertEquals(expected, actual, "The value is not correct.");
@@ -298,7 +297,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 183917322), UTC);
 
         IonObjectMapper m = newMapperBuilder()
-                .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -313,7 +312,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
 
         IonObjectMapper m = newMapperBuilder()
                 .defaultTimeZone(TimeZone.getTimeZone(Z1))
-                .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -327,7 +326,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 0), UTC);
 
         IonObjectMapper m = newMapperBuilder()
-                .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -342,7 +341,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
 
         IonObjectMapper m = newMapperBuilder()
                 .defaultTimeZone(TimeZone.getTimeZone(Z1))
-                .enable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -356,7 +355,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
         OffsetDateTime expected = OffsetDateTime.ofInstant(Instant.ofEpochSecond(123456789L, 422000000), UTC);
 
         IonObjectMapper m = newMapperBuilder()
-                .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .disable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
@@ -371,7 +370,7 @@ public class IonTimestampOffsetDateTimeDeserializerTest {
 
         IonObjectMapper m = newMapperBuilder()
                 .defaultTimeZone(TimeZone.getTimeZone(Z1))
-                .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .disable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Temporal.class, MockObjectConfiguration.class)
                 .build();
 
