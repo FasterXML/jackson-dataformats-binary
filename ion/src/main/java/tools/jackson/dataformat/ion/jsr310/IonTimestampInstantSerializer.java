@@ -12,6 +12,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 import tools.jackson.dataformat.ion.IonGenerator;
 
@@ -88,7 +89,7 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
         throws JacksonException
     {
         final Instant instant = getInstant.apply(value);
-        if (provider.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+        if (provider.isEnabled(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)) {
             if (shouldWriteTimestampsAsNanos(provider)) {
                 gen.writeNumber(TimestampUtils.getFractionalSeconds(instant));
             } else {
@@ -116,7 +117,7 @@ public class IonTimestampInstantSerializer<T extends Temporal> extends StdScalar
         if (Boolean.FALSE.equals(writeDateTimestampsAsNanosOverride)) {
             return false;
         }
-        return provider.isEnabled(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        return provider.isEnabled(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 || Boolean.TRUE.equals(writeDateTimestampsAsNanosOverride);
     }
 

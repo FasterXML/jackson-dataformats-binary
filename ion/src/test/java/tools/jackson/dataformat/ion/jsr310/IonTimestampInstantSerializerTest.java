@@ -7,7 +7,7 @@ import java.time.ZoneOffset;
 import com.amazon.ion.*;
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.dataformat.ion.IonObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,8 +23,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsTimestamp01Nanoseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
 
         Instant date = Instant.ofEpochSecond(0L);
@@ -36,8 +36,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsTimestamp01Milliseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
 
         Instant date = Instant.ofEpochSecond(0L);
@@ -48,8 +48,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsTimestamp02Nanoseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
 
         Instant date = Instant.ofEpochSecond(123456789L, 183917322);
@@ -60,8 +60,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsTimestamp02Milliseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
 
         Instant date = Instant.ofEpochSecond(123456789L, 183917322);
@@ -72,8 +72,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsTimestamp03Nanoseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
 
         Instant date = Instant.now();
@@ -85,8 +85,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsTimestamp03Milliseconds() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .build();
 
         Instant date = Instant.now();
@@ -97,7 +97,7 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsString01() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
 
         Instant date = Instant.ofEpochSecond(0L);
@@ -108,7 +108,7 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsString02() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
 
         Instant date = Instant.ofEpochSecond(123456789L, 183917322);
@@ -119,7 +119,7 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationAsString03() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
 
         Instant date = Instant.now();
@@ -130,8 +130,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationWithTypeInfo01() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .enable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Instant.class, MockObjectConfiguration.class)
                 .build();
 
@@ -145,8 +145,8 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationWithTypeInfo02() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
                 .addMixIn(Instant.class, MockObjectConfiguration.class)
                 .build();
 
@@ -160,7 +160,7 @@ public class IonTimestampInstantSerializerTest {
     @Test
     public void testSerializationWithTypeInfo03() throws Exception {
         IonObjectMapper mapper = newMapperBuilder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .addMixIn(Instant.class, MockObjectConfiguration.class)
                 .build();
 

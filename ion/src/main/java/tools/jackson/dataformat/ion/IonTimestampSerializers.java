@@ -19,7 +19,7 @@ import java.util.TimeZone;
 
 import tools.jackson.core.JsonGenerator;
 
-import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdScalarSerializer;
 
@@ -38,7 +38,7 @@ public class IonTimestampSerializers {
         public void serialize(java.util.Date date, JsonGenerator jsonGenerator, SerializationContext ctxt)
         {
             // Still respect writing dates as millis if desired
-            if (ctxt.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+            if (ctxt.isEnabled(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)) {
                 jsonGenerator.writeNumber(date.getTime());
             } else {
                 Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -58,7 +58,7 @@ public class IonTimestampSerializers {
         public void serialize(java.sql.Date date, JsonGenerator jsonGenerator, SerializationContext ctxt)
         {
             // Still respect writing dates as millis if desired
-            if (ctxt.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+            if (ctxt.isEnabled(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)) {
                 jsonGenerator.writeNumber(date.getTime());
             } else {
                 Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
