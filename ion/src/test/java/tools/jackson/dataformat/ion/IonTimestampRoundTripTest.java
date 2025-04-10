@@ -20,7 +20,7 @@ import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +33,7 @@ public class IonTimestampRoundTripTest {
     {
         Date date = new Date();
         IonObjectMapper m = IonObjectMapper.builder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
 
         String val = m.writeValueAsString(date);
@@ -53,7 +53,7 @@ public class IonTimestampRoundTripTest {
     {
         Date date = new Date();
         IonObjectMapper m = IonObjectMapper.builder()
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
 
         String val = m.writeValueAsString(date);
@@ -69,7 +69,7 @@ public class IonTimestampRoundTripTest {
         Date date = new Date();
         JsonMapper nonJoiMillis = new JsonMapper();
         JsonMapper nonJoiM = JsonMapper.builder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
         IonObjectMapper joiM = new IonObjectMapper();
 

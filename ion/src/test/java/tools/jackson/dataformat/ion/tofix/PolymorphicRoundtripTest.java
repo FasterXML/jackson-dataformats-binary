@@ -29,6 +29,7 @@ import tools.jackson.core.Version;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonTypeResolver;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 import tools.jackson.databind.jsontype.TypeIdResolver;
@@ -271,7 +272,7 @@ public class PolymorphicRoundtripTest
         resolveAllTypes = true;
         ObjectMapper mapper = IonObjectMapper.builder()
                 .addModule(new IonAnnotationModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
@@ -293,7 +294,7 @@ public class PolymorphicRoundtripTest
         resolveAllTypes = true;
         ObjectMapper ionDateMapper = IonObjectMapper.builder()
                 .addModule(new IonAnnotationModule())
-                .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
         long etime = 1449191916000L;
         java.util.Date uDate = new java.util.Date(etime);
@@ -321,7 +322,7 @@ public class PolymorphicRoundtripTest
                 new ChildBeanSub("child_field", "extra_field", uDate, sDate, null));
 
         IonObjectMapper mapper = IonObjectMapper.builder()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .addModule(new IonAnnotationModule())
                 .build();
         // roundtrip
