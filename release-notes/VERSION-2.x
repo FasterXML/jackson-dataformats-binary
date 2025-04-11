@@ -14,6 +14,9 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+#571: Unable to deserialize a pojo with IonStruct
+ (reported, fix contributed by Josh C)
+
 2.19.0-rc2 (07-Apr-2025)
 
 #300: (smile) Floats are encoded with sign extension while doubles without
