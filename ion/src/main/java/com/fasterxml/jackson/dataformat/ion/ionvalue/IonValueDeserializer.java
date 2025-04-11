@@ -16,21 +16,40 @@ package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
 import java.io.IOException;
 
-import com.amazon.ion.*;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
+import com.amazon.ion.*;
 
 /**
  * Deserializer that knows how to deserialize an IonValue.
  */
-class IonValueDeserializer extends JsonDeserializer<IonValue> {
+class IonValueDeserializer extends JsonDeserializer<IonValue> implements ContextualDeserializer {
+
+    private final JavaType _targetType;
+
+    public IonValueDeserializer() {
+        this._targetType = null;
+    }
+
+    public IonValueDeserializer(JavaType targetType) {
+        this._targetType = targetType;
+    }
+
+    @Override
+    public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+        JavaType contextualType = (property != null)
+            ? property.getType()
+            : ctxt.getContextualType(); // fallback
+        return new IonValueDeserializer(contextualType);
+    }
 
     @Override
     public IonValue deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+
         Object embeddedObject = jp.getEmbeddedObject();
         if (embeddedObject instanceof IonValue) {
             return (IonValue) embeddedObject;
@@ -62,15 +81,32 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> {
                 if (embeddedObj instanceof IonValue) {
                     IonValue iv = (IonValue) embeddedObj;
                     if (iv.isNullValue()) {
+                        if (IonType.isContainer(iv.getType())) {
+                            return iv;
+                        }
+                        IonType containerType = getIonContainerType();
+                        if (containerType != null) {
+                            IonSystem ionSystem = ((IonParser) parser).getIonSystem();
+                            return ionSystem.newNull(containerType);
+                        }
                         return iv;
                     }
                 }
             }
-
             return super.getNullValue(ctxt);
         } catch (IOException e) {
             throw JsonMappingException.from(ctxt, e.toString());
         }
+    }
+
+    private IonType getIonContainerType() {
+        if (_targetType != null) {
+            Class<?> clazz = _targetType.getRawClass();
+            if (IonStruct.class.isAssignableFrom(clazz)) return IonType.STRUCT;
+            if (IonList.class.isAssignableFrom(clazz)) return IonType.LIST;
+            if (IonSexp.class.isAssignableFrom(clazz)) return IonType.SEXP;
+        }
+        return null;
     }
 
     @Override
