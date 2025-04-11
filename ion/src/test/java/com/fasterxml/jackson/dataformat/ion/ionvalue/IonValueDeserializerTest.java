@@ -1,28 +1,25 @@
 package com.fasterxml.jackson.dataformat.ion.ionvalue;
 
-import com.amazon.ion.IonList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.IonStruct;
+
+import org.junit.jupiter.api.Test;
+
 import com.amazon.ion.system.IonSystemBuilder;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
 
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import org.junit.jupiter.api.Test;
-
-import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -76,8 +73,10 @@ public class IonValueDeserializerTest {
     }
 
     private static final IonSystem SYSTEM = IonSystemBuilder.standard().build();
-    private static final IonValueMapper ION_VALUE_MAPPER = new IonValueMapper(SYSTEM, SNAKE_CASE);
-    private static final IonValueMapper ION_MAPPER_READ_NULL_DISABLED = (IonValueMapper) new IonValueMapper(SYSTEM, SNAKE_CASE).disable(IonParser.Feature.READ_NULL_AS_IONVALUE);
+    private static final IonValueMapper ION_VALUE_MAPPER
+        = new IonValueMapper(SYSTEM, PropertyNamingStrategies.SNAKE_CASE);
+    private static final IonValueMapper ION_MAPPER_READ_NULL_DISABLED
+        = (IonValueMapper) new IonValueMapper(SYSTEM, PropertyNamingStrategies.SNAKE_CASE).disable(IonParser.Feature.READ_NULL_AS_IONVALUE);
 
     @Test
     public void shouldBeAbleToDeserialize() throws Exception {
@@ -242,7 +241,7 @@ public class IonValueDeserializerTest {
     }
 
     @Test
-    public void testWithMissingProperty() throws IOException
+    public void testWithMissingProperty() throws Exception
     {
         IonSystem ionSystem = IonSystemBuilder.standard().build();
         IonObjectMapper ionObjectMapper = IonObjectMapper.builder(ionSystem)
