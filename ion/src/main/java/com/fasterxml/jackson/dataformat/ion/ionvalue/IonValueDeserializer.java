@@ -18,36 +18,25 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonParser;
-import com.amazon.ion.IonContainer;
-import com.amazon.ion.IonList;
-import com.amazon.ion.IonSexp;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonType;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.Timestamp;
+import com.amazon.ion.*;
 
 /**
  * Deserializer that knows how to deserialize an IonValue.
  */
 class IonValueDeserializer extends JsonDeserializer<IonValue> implements ContextualDeserializer {
 
-    private final JavaType targetType;
+    private final JavaType _targetType;
 
     public IonValueDeserializer() {
-        this.targetType = null;
+        this._targetType = null;
     }
 
     public IonValueDeserializer(JavaType targetType) {
-        this.targetType = targetType;
+        this._targetType = targetType;
     }
 
     @Override
@@ -111,8 +100,8 @@ class IonValueDeserializer extends JsonDeserializer<IonValue> implements Context
     }
 
     private IonType getIonContainerType() {
-        if (targetType != null) {
-            Class<?> clazz = targetType.getRawClass();
+        if (_targetType != null) {
+            Class<?> clazz = _targetType.getRawClass();
             if (IonStruct.class.isAssignableFrom(clazz)) return IonType.STRUCT;
             if (IonList.class.isAssignableFrom(clazz)) return IonType.LIST;
             if (IonSexp.class.isAssignableFrom(clazz)) return IonType.SEXP;
