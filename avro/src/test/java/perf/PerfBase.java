@@ -12,6 +12,7 @@ import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 
 import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.EnumFeature;
 import tools.jackson.dataformat.avro.AvroMapper;
 import tools.jackson.dataformat.avro.AvroSchema;
 
@@ -114,7 +115,7 @@ abstract class PerfBase
     protected PerfBase()
     {
         avroMapper = AvroMapper.builder()
-                .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
+                .enable(EnumFeature.WRITE_ENUMS_USING_INDEX)
                 .build();
         itemSchema = itemSchema();
         itemReader = avroMapper

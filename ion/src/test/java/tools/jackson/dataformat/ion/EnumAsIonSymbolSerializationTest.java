@@ -21,6 +21,7 @@ import com.amazon.ion.system.IonSystemBuilder;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.EnumFeature;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -62,7 +63,7 @@ public class EnumAsIonSymbolSerializationTest
                 ? IonObjectMapper.builderForTextualWriters(ION_SYSTEM)
                 : IonObjectMapper.builderForBinaryWriters(ION_SYSTEM);
 
-        return builder.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, usingToString)
+        return builder.configure(EnumFeature.WRITE_ENUMS_USING_TO_STRING, usingToString)
                 .addModule(new EnumAsIonSymbolModule())
                 .build();
     }

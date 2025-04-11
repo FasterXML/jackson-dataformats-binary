@@ -42,7 +42,7 @@ public class EnumAsIonSymbolSerializer extends StdScalarSerializer<Enum<?>>
     @Override
     public void serialize(Enum<?> value, JsonGenerator g, SerializationContext provider) {
         if (g instanceof IonGenerator) {
-            String valueString = provider.isEnabled(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+            String valueString = provider.isEnabled(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
                 ? value.toString()
                 : value.name();
 
