@@ -15,6 +15,7 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.util.AccessPattern;
 import tools.jackson.dataformat.ion.IonFactory;
 import tools.jackson.dataformat.ion.IonObjectMapper;
+import tools.jackson.dataformat.ion.IonReadFeature;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -73,6 +74,11 @@ public class IonValueDeserializerTest {
             .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
             .build();
 
+    private static final IonObjectMapper ION_MAPPER_READ_NULL_DISABLED = IonObjectMapper.builder(ionF)
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .disable(IonReadFeature.READ_NULL_AS_IONVALUE)
+            .build();
+
     @Test
     public void shouldBeAbleToDeserialize() throws Exception {
         IonValue ion = ion("{a:1, b:2, c:3}");
@@ -98,23 +104,47 @@ public class IonValueDeserializerTest {
     }
 
     @Test
-    public void shouldBeAbleToDeserializeNullList() throws Exception {
-        IonValue ion = ion("{c:null.list}");
-
-        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
-
-        assertEquals(1, data.getAllData().size());
-        assertEquals(SYSTEM.newNullList(), data.getAllData().get("c"));
+    public void shouldBeAbleToDeserializeNullToIonNull() throws Exception {
+        verifyNullDeserialization("{c:null}", SYSTEM.newNull(), null);
     }
 
     @Test
-    public void shouldBeAbleToDeserializeNullStruct() throws Exception {
-        IonValue ion = ion("{c:null.struct}");
+    public void shouldBeAbleToDeserializeNullList() throws Exception {
+        verifyNullDeserialization("{c:null.list}", SYSTEM.newNullList());
+    }
 
-        IonValueData data = ION_VALUE_MAPPER.readValue(ion, IonValueData.class);
+
+
+    @Test
+    public void shouldBeAbleToDeserializeNullStruct() throws Exception {
+        verifyNullDeserialization("{c:null.struct}", SYSTEM.newNullStruct());
+    }
+
+    @Test
+    public void shouldBeAbleToDeserializeNullSexp() throws Exception {
+        verifyNullDeserialization("{c:null.sexp}", SYSTEM.newNullSexp());
+    }
+
+    private void verifyNullDeserialization(String ionString, IonValue expected) throws Exception {
+         verifyNullDeserialization(ionString, expected, expected);
+    }
+
+    private void verifyNullDeserialization(String ionString, IonValue expected, IonValue expectedReadNullDisabled) throws Exception {
+        verifyNullDeserialization(ION_VALUE_MAPPER, ionString, expected);
+        verifyNullDeserialization(ION_MAPPER_READ_NULL_DISABLED, ionString, expectedReadNullDisabled);
+    }
+
+    private void verifyNullDeserialization(IonObjectMapper mapper, String ionString, IonValue expected) throws Exception {
+        IonValueData data = mapper.readValue(ionString, IonValueData.class);
 
         assertEquals(1, data.getAllData().size());
-        assertEquals(SYSTEM.newNullStruct(), data.getAllData().get("c"));
+        assertEquals(expected, data.getAllData().get("c"));
+
+        IonValue ion = ion(ionString);
+        data = mapper.readValue(ion, IonValueData.class);
+
+        assertEquals(1, data.getAllData().size());
+        assertEquals(expected, data.getAllData().get("c"));
     }
 
     @Test
@@ -161,6 +191,27 @@ public class IonValueDeserializerTest {
     }
 
     @Test
+    public void shouldBeAbleToSerializeAndDeserializeIonValueDataWithIncludeNonNull() throws Exception {
+        IonValueData source = new IonValueData();
+        source.put("a", SYSTEM.newInt(1));
+        source.put("b", SYSTEM.newNull());
+        source.put("c", null);
+        IonObjectMapper mapper = ION_VALUE_MAPPER
+                .rebuild()
+                .changeDefaultPropertyInclusion(
+                        incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL)
+                                .withContentInclusion(JsonInclude.Include.NON_NULL))
+                .build();
+
+        String data = mapper.writeValueAsString(source);
+        assertEquals("{a:1,b:null}", data);
+        // Now remove the null element for the comparison below.
+        source.getAllData().remove("c");
+        IonValueData result = mapper.readValue(data, IonValueData.class);
+        assertEquals(source, result);
+    }
+
+    @Test
     public void shouldBeAbleToSerializeAndDeserializeStringData() throws Exception {
         StringData source = new StringData();
         source.put("a", "1");
@@ -168,7 +219,17 @@ public class IonValueDeserializerTest {
 
         IonValue data = ION_VALUE_MAPPER.writeValueAsIonValue(source);
         StringData result = ION_VALUE_MAPPER.readValue(data, StringData.class);
+        assertEquals(source, result);
+    }
 
+    @Test
+    public void shouldBeAbleToSerializeAndDeserializeStringDataAsString() throws Exception {
+        StringData source = new StringData();
+        source.put("a", "1");
+        source.put("b", null);
+
+        String data = ION_VALUE_MAPPER.writeValueAsString(source);
+        StringData result = ION_VALUE_MAPPER.readValue(data, StringData.class);
         assertEquals(source, result);
     }
 

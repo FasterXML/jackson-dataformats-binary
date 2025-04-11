@@ -488,6 +488,17 @@ public class IonParser
         }
         IonValue v = l.get(0);
         v.removeFromContainer();
+
+        if (!IonReadFeature.READ_NULL_AS_IONVALUE.enabledIn(_formatFeatures)) {
+            // 2025-04-11, seadbrane: The default is to read 'null' as an Ion Null object.
+            // However, there is no way to determine from the serialized ion data if a 'null'
+            // was an IonNullValue or a 'null' container type such as IonNullStruct or IonNullList.
+            // So if READ_NULL_AS_IONVALUE is disabled, then return 'null' if the _valueToken
+            // is 'null' and the Ion value read is not container type already.
+            if (v.isNullValue() && _valueToken == JsonToken.VALUE_NULL && !IonType.isContainer(v.getType())) {
+                return null;
+            }
+        }
         return v;
     }
 

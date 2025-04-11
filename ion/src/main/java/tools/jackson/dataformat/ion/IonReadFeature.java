@@ -10,6 +10,19 @@ import tools.jackson.core.FormatFeature;
 public enum IonReadFeature implements FormatFeature
 {
     /**
+     * Whether to convert "null" to an IonValueNull (true);
+     * or leave as a java null (false) when deserializing.
+     *<p>
+     * Enabled by default for backwards compatibility as that has been the behavior
+     * of `jackson-dataformat-ion` since 2.13.
+     *
+     * @see <a href="https://amzn.github.io/ion-docs/docs/spec.html#annot">The Ion Specification</a>
+     *
+     * @since 2.19.0
+     */
+    READ_NULL_AS_IONVALUE(true),
+
+    /**
      * Whether to expect Ion native Type Id construct for indicating type (true);
      * or "generic" type property (false) when deserializing.
      *<p>

@@ -381,3 +381,7 @@ Cormac Redmond (@credmond)
 Manuel Sugawara (@sugmanue)
  * Contributed #568: Improve ASCII decoding performance for `CBORParser`
   (2.19.0)
+
+Josh Curry (@seadbrane)
+ * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
+  (2.19.0)
