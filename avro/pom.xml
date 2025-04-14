@@ -9,7 +9,7 @@
   <parent>
     <groupId>tools.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>3.0.0-rc3</version>
+    <version>3.0.0-rc4-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-avro</artifactId>
   <name>Jackson dataformat: Avro</name>
