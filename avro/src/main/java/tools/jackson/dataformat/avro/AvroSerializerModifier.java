@@ -7,7 +7,6 @@ import org.apache.avro.specific.SpecificRecordBase;
 
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.SerializationConfig;
-import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 
@@ -24,14 +23,13 @@ public class AvroSerializerModifier
 
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
-            BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties)
+            BeanDescription.Supplier beanDescRef, List<BeanPropertyWriter> beanProperties)
     {
-        AnnotatedClass ac = beanDesc.getClassInfo();
         // Couple of ways to determine if it's generated class: main alternative
         // would be to look for annotation `AvroGenerated` but check for base
         // class seems simpler and as robust:
 
-        if (SpecificRecordBase.class.isAssignableFrom(ac.getRawType())) {
+        if (SpecificRecordBase.class.isAssignableFrom(beanDescRef.getBeanClass())) {
             Iterator<BeanPropertyWriter> it = beanProperties.iterator();
             while (it.hasNext()) {
                 BeanPropertyWriter prop = it.next();
