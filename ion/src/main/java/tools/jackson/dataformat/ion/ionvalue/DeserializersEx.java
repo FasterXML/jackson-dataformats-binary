@@ -30,23 +30,24 @@ class DeserializersEx extends SimpleDeserializers
 
     @Override
     public ValueDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config,
-            BeanDescription beanDesc)
+            BeanDescription.Supplier beanDescRef)
     {
         if (IonValue.class.isAssignableFrom(type.getRawClass())) {
             return ION_VALUE_DESERIALIZER;
         }
-        return super.findBeanDeserializer(type, config, beanDesc);
+        return super.findBeanDeserializer(type, config, beanDescRef);
     }
 
     @Override
     public ValueDeserializer<?>
-            findCollectionDeserializer(CollectionType type, DeserializationConfig config, BeanDescription beanDesc,
+            findCollectionDeserializer(CollectionType type, DeserializationConfig config,
+                    BeanDescription.Supplier beanDescRef,
                     TypeDeserializer elementTypeDeserializer, ValueDeserializer<?> elementDeserializer)
     {
         if (IonContainer.class.isAssignableFrom(type.getRawClass())) {
             return ION_VALUE_DESERIALIZER;
         }
-        return super.findCollectionDeserializer(type, config, beanDesc,
+        return super.findCollectionDeserializer(type, config, beanDescRef,
                 elementTypeDeserializer, elementDeserializer);
     }
 }
