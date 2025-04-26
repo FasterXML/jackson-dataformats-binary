@@ -31,15 +31,13 @@ public class CBORParser extends ParserMinimalBase
 //        BOGUS(false)
 
         /**
-         * Feature that determines how binary tagged negative BigInteger values are decoded in CBOR format.
+         * Feature that determines how binary tagged negative BigInteger values are
+         * decoded.
          *
-         * When enabled (true)
-         * Follows RFC 8949 specification for negative BigIntegers
-         * Ensures proper decoding of negative values (e.g., [0xC3, 0x41, 0x00] is decoded -1)
+         * When enabled, Ensures proper encoding of negative values
+         * (e.g., [0xC3, 0x41, 0x00] is decoded -1)
          *
-         * When disabled (false):
-         * Uses legacy incorrect decoding behavior
-         * Maintains backwards compatibility with existing implementations
+         * When disabled, Maintains backwards compatibility with existing implementations
          * (e.g., [0xC3, 0x41, 0x00] is decoded 0)
          *
          * The default value is false for backwards compatibility.
