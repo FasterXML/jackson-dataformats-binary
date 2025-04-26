@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
+import java.math.BigInteger;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CBORMapperTest extends CBORTestBase
@@ -54,4 +56,28 @@ public class CBORMapperTest extends CBORTestBase
         assertNotSame(src, m2);
         assertSame(streamingF, m2.tokenStreamFactory());
     }
+
+    // [dataformats-binary#431]
+    @Test
+    public void testNegativeBigInteger() throws Exception {
+        byte[] encodedNegativeOne = {
+                (byte) 0xC3,  // tag 3 (negative big integer)
+                (byte) 0x41,  // byte string, length 1
+                (byte) 0x00   // value 0 (become -1 after decoding)
+        };
+
+        // Test correct decoding
+        CBORMapper mapper1 = CBORMapper.builder()
+                .enable(CBORParser.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING)
+                .build();
+        assertEquals(BigInteger.valueOf(-1),
+                mapper1.readValue(encodedNegativeOne, BigInteger.class));
+
+
+        // Test incorrect decoding for compatibility
+        CBORMapper mapper2 = cborMapper();
+        assertEquals(BigInteger.ZERO,
+                mapper2.readValue(encodedNegativeOne, BigInteger.class));
+    }
+
 }

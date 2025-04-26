@@ -29,6 +29,24 @@ public class CBORParser extends ParserMinimalBase
     public enum Feature implements FormatFeature
     {
 //        BOGUS(false)
+
+        /**
+         * Feature that determines how binary tagged negative BigInteger values are decoded in CBOR format.
+         *
+         * When enabled (true)
+         * Follows RFC 8949 specification for negative BigIntegers
+         * Ensures proper decoding of negative values (e.g., [0xC3, 0x41, 0x00] is decoded -1)
+         *
+         * When disabled (false):
+         * Uses legacy incorrect decoding behavior
+         * Maintains backwards compatibility with existing implementations
+         * (e.g., [0xC3, 0x41, 0x00] is decoded 0)
+         *
+         * The default value is false for backwards compatibility.
+         *
+         * @since 2.19.1
+         */
+        CORRECT_CBOR_NEGATIVE_BIGINT_DECODING(false)
         ;
 
         final boolean _defaultState;
@@ -515,6 +533,7 @@ public class CBORParser extends ParserMinimalBase
             boolean bufferRecyclable)
     {
         super(parserFeatures, ctxt.streamReadConstraints());
+        _formatFeatures = cborFeatures;
         _ioContext = ctxt;
         _objectCodec = codec;
         _symbols = sym;
@@ -561,12 +580,22 @@ public class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
-//    public JsonParser overrideStdFeatures(int values, int mask)
+    /**
+     * Bit flag composed of bits that indicate which
+     * {@link CBORParser.Feature}s are enabled.
+     *<p>
+     */
+    protected int _formatFeatures;
 
     @Override
-    public int getFormatFeatures() {
-        // No parser features, yet
-        return 0;
+    public final JsonParser overrideFormatFeatures(int values, int mask) {
+        _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
+        return this;
+    }
+
+    @Override
+    public final int getFormatFeatures() {
+        return _formatFeatures;
     }
 
     @Override // since 2.12
@@ -1123,11 +1152,20 @@ public class CBORParser extends ParserMinimalBase
             _numberBigInt = BigInteger.ZERO;
         } else {
             _streamReadConstraints.validateIntegerLength(_binaryValue.length);
-            BigInteger nr = new BigInteger(_binaryValue);
-            if (neg) {
-                nr = nr.negate();
+
+            if (Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING.enabledIn(_formatFeatures)) {
+                BigInteger nr = new BigInteger(1, _binaryValue);
+                if (neg) {
+                    nr = BigInteger.ONE.negate().subtract(nr); // -1 - n
+                }
+                _numberBigInt = nr;
+            } else {
+                BigInteger nr = new BigInteger(_binaryValue);
+                if (neg) {
+                    nr = nr.negate();
+                }
+                _numberBigInt = nr;
             }
-            _numberBigInt = nr;
         }
         _numTypesValid = NR_BIGINT;
         _tagValues.clear();

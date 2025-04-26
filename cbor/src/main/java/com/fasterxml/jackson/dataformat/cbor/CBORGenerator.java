@@ -115,6 +115,23 @@ public class CBORGenerator extends GeneratorBase
          * @since 2.15
          */
         WRITE_MINIMAL_DOUBLES(false),
+
+        /**
+         * Feature that determines how binary tagged negative BigInteger values are
+         * encoded.
+         *
+         * When enabled, Ensures proper encoding of negative values
+         * (e.g., -1 is encoded [0xC3, 0x41, 0x00])
+         *
+         * When disabled, Maintains backwards compatibility with existing implementations
+         * (e.g., -1 is encoded [0xC3, 0x41, 0x01])
+         *
+         * The default value is false for backwards compatibility.
+         *
+         * @since 2.19.1
+         */
+
+        CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING(false)
         ;
 
         protected final boolean _defaultState;
@@ -1217,7 +1234,11 @@ public class CBORGenerator extends GeneratorBase
          */
         if (v.signum() < 0) {
             _writeByte(BYTE_TAG_BIGNUM_NEG);
-            v = v.negate();
+            if (isEnabled(CBORGenerator.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING)) {
+                v = BigInteger.ONE.negate().subtract(v);
+            } else {
+                v = v.negate();
+            }
         } else {
             _writeByte(BYTE_TAG_BIGNUM_POS);
         }
