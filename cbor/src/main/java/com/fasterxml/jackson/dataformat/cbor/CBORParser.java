@@ -1151,19 +1151,15 @@ public class CBORParser extends ParserMinimalBase
         } else {
             _streamReadConstraints.validateIntegerLength(_binaryValue.length);
 
-            if (Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING.enabledIn(_formatFeatures)) {
-                BigInteger nr = new BigInteger(1, _binaryValue);
-                if (neg) {
-                    nr = BigInteger.ONE.negate().subtract(nr); // -1 - n
-                }
-                _numberBigInt = nr;
-            } else {
                 BigInteger nr = new BigInteger(_binaryValue);
                 if (neg) {
-                    nr = nr.negate();
+                    if (Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING.enabledIn(_formatFeatures)) {
+                        nr = BigInteger.ONE.negate().subtract(new BigInteger(1, _binaryValue));
+                    } else {
+                        nr = nr.negate();
+                    }
                 }
                 _numberBigInt = nr;
-            }
         }
         _numTypesValid = NR_BIGINT;
         _tagValues.clear();
