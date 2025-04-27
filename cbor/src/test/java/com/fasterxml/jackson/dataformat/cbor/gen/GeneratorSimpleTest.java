@@ -322,7 +322,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     @Test
     public void testNgeativeBigIntegerEncoding() throws Exception {
         BigInteger negativeBigInteger = new BigInteger("-340282366920938463463374607431768211456");
-        // correct encoding: https://cbor.me/?bytes=c350ffffffffffffffffffffffffffffffff
+        // correct encoding: https://cbor.me/?bytes=c35100ffffffffffffffffffffffffffffffff
         byte[] expectedBytes = {
                 (byte) 0xC3,
                 (byte) 0x51,
