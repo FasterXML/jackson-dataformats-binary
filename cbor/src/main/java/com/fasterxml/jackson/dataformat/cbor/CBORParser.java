@@ -42,7 +42,7 @@ public class CBORParser extends ParserMinimalBase
          *
          * The default value is false for backwards compatibility.
          *
-         * @since 2.19.1
+         * @since 2.20.0
          */
         CORRECT_CBOR_NEGATIVE_BIGINT_DECODING(false)
         ;

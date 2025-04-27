@@ -37,7 +37,7 @@ public class CBORMapper extends ObjectMapper
          */
 
         /**
-         * @since 2.19.1
+         * @since 2.20.0
          */
         public Builder enable(CBORParser.Feature... features) {
             for (CBORParser.Feature f : features) {
@@ -47,7 +47,7 @@ public class CBORMapper extends ObjectMapper
         }
 
         /**
-         * @since 2.19.1
+         * @since 2.20.0
          */
         public Builder disable(CBORParser.Feature... features) {
             for (CBORParser.Feature f : features) {
@@ -57,7 +57,7 @@ public class CBORMapper extends ObjectMapper
         }
 
         /**
-         * @since 2.19.1
+         * @since 2.20.0
          */
         public Builder configure(CBORParser.Feature f, boolean state)
         {
