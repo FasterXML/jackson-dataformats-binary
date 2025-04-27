@@ -298,7 +298,7 @@ public class GeneratorSimpleTest extends CBORTestBase
 
     @Test
     public void testZeroBigIntegerEncoding() throws Exception {
-        BigInteger minusOne = BigInteger.valueOf(0);
+        BigInteger zero = BigInteger.valueOf(0);
         byte[] expectedBytes = {
                 (byte) 0xC2,  // tag 2 (positive bignum)
                 (byte) 0x41,   // byte string, 1 byte
@@ -309,7 +309,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         CBORFactory factory = new CBORFactory();
         CBORGenerator gen1 = factory.createGenerator(correctOut);
         gen1.enable(CBORGenerator.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING);
-        gen1.writeNumber(minusOne);
+        gen1.writeNumber(zero);
         gen1.close();
 
         byte[] result = correctOut.toByteArray();
