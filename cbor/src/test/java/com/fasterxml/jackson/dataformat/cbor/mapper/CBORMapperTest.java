@@ -119,4 +119,42 @@ public class CBORMapperTest extends CBORTestBase
         assertEquals(new BigInteger("-340282366920938463463374607431768211455"),
                 mapper2.readValue(encodedNegative, BigInteger.class));
     }
+
+    // [dataformats-binary#431]
+    @Test
+    public void testNegativeBigIntegerWithoutLeadingZero() throws Exception {
+        byte[] encodedNegative = {
+                (byte) 0xC3,
+                (byte) 0x50,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF
+        };
+
+        // Test correct decoding
+        CBORMapper mapper1 = CBORMapper.builder()
+                .enable(CBORParser.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING)
+                .build();
+        assertEquals(new BigInteger("-340282366920938463463374607431768211456"),
+                mapper1.readValue(encodedNegative, BigInteger.class));
+
+
+        // Test incorrect decoding for compatibility
+        CBORMapper mapper2 = cborMapper();
+        assertEquals(BigInteger.ONE,
+                mapper2.readValue(encodedNegative, BigInteger.class));
+    }
 }
