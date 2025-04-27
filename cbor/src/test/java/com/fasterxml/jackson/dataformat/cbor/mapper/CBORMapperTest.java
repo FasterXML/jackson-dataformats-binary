@@ -84,10 +84,11 @@ public class CBORMapperTest extends CBORTestBase
     // [dataformats-binary#431]
     @Test
     public void testNegativeBigInteger() throws Exception {
+        // correct encoding: https://cbor.me/?bytes=c35100ffffffffffffffffffffffffffffffff
         byte[] encodedNegative = {
                 (byte) 0xC3,
                 (byte) 0x51,
-                (byte) 0x00,
+                (byte) 0x00, // leading zero
                 (byte) 0xFF,
                 (byte) 0xFF,
                 (byte) 0xFF,
@@ -123,6 +124,7 @@ public class CBORMapperTest extends CBORTestBase
     // [dataformats-binary#431]
     @Test
     public void testNegativeBigIntegerWithoutLeadingZero() throws Exception {
+        // correct encoding: https://cbor.me/?bytes=c350ffffffffffffffffffffffffffffffff
         byte[] encodedNegative = {
                 (byte) 0xC3,
                 (byte) 0x50,
