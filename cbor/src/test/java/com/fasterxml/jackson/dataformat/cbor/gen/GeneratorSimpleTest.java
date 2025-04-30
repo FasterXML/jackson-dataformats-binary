@@ -273,7 +273,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
         CBORFactory factory = new CBORFactory();
         CBORGenerator gen1 = factory.createGenerator(correctOut);
-        gen1.enable(CBORGenerator.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING);
+        gen1.enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING);
         gen1.writeNumber(minusOne);
         gen1.close();
 
@@ -308,7 +308,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
         CBORFactory factory = new CBORFactory();
         CBORGenerator gen1 = factory.createGenerator(correctOut);
-        gen1.enable(CBORGenerator.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING);
+        gen1.enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING);
         gen1.writeNumber(zero);
         gen1.close();
 
@@ -349,7 +349,7 @@ public class GeneratorSimpleTest extends CBORTestBase
         ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
         CBORFactory factory = new CBORFactory();
         CBORGenerator gen1 = factory.createGenerator(correctOut);
-        gen1.enable(CBORGenerator.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING);
+        gen1.enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING);
         gen1.writeNumber(negativeBigInteger);
         gen1.close();
 

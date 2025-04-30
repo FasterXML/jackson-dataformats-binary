@@ -385,3 +385,12 @@ Manuel Sugawara (@sugmanue)
 Josh Curry (@seadbrane)
  * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
   (2.19.0)
+
+Brian Gruber (@bgruber)
+ * Reported #431: (cbor) Negative `BigInteger` values not encoded/decoded correctly
+  (2.20.0)
+
+Fawzi Essam (@iifawzi)
+ * Contributed fix for #431: (cbor) Negative `BigInteger` values not encoded/decoded
+   correctly
+  (2.20.0)

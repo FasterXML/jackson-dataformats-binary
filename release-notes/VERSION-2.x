@@ -16,6 +16,9 @@ Active maintainers:
 
 2.20.0 (not yet released)
 
+#431: (cbor) Negative `BigInteger` values not encoded/decoded correctly
+ (reported by Brian G)
+ (fix contributed by Fawzi E) 
 - Generate SBOMs [JSTEP-14]
 
 2.19.0 (24-Apr-2025)

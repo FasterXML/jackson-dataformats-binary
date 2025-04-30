@@ -119,19 +119,16 @@ public class CBORGenerator extends GeneratorBase
         /**
          * Feature that determines how binary tagged negative BigInteger values are
          * encoded.
-         *
-         * When enabled, Ensures proper encoding of negative values
-         * (e.g., -1 is encoded [0xC3, 0x41, 0x00])
-         *
-         * When disabled, Maintains backwards compatibility with existing implementations
-         * (e.g., -1 is encoded [0xC3, 0x41, 0x01])
-         *
-         * The default value is false for backwards compatibility.
+         * When enabled, ensures proper encoding of negative values
+         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x00])}
+         * When disabled, maintains backwards compatibility with existing implementations
+         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x01])}
+         *<p>
+         * Default value is {@code false} for backwards-compatibility.
          *
          * @since 2.20.0
          */
-
-        CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING(false)
+        ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false)
         ;
 
         protected final boolean _defaultState;
@@ -1227,14 +1224,13 @@ public class CBORGenerator extends GeneratorBase
     // Main write method isolated so that it can be called directly
     // in cases where that is needed (to encode BigDecimal)
     protected void _write(BigInteger v) throws IOException {
-        /*
-         * Supported by using type tags, as per spec: major type for tag '6'; 5
+        /* Supported by using type tags, as per spec: major type for tag '6'; 5
          * LSB either 2 for positive bignum or 3 for negative bignum. And then
          * byte sequence that encode variable length integer.
          */
         if (v.signum() < 0) {
             _writeByte(BYTE_TAG_BIGNUM_NEG);
-            if (isEnabled(CBORGenerator.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_ENCODING)) {
+            if (isEnabled(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)) {
                 v = BigInteger.ONE.negate().subtract(v);
             } else {
                 v = v.negate();

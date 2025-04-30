@@ -28,23 +28,21 @@ public class CBORParser extends ParserMinimalBase
      */
     public enum Feature implements FormatFeature
     {
-//        BOGUS(false)
-
         /**
          * Feature that determines how binary tagged negative BigInteger values are
          * decoded.
          *
-         * When enabled, Ensures proper encoding of negative values
-         * (e.g., [0xC3, 0x41, 0x00] is decoded -1)
+         * When enabled, ensures proper encoding of negative values
+         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded -1)
          *
-         * When disabled, Maintains backwards compatibility with existing implementations
-         * (e.g., [0xC3, 0x41, 0x00] is decoded 0)
+         * When disabled, maintains backwards compatibility with existing implementations
+         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded 0)
          *
-         * The default value is false for backwards compatibility.
+         * The default value is {@code false} for backwards compatibility.
          *
          * @since 2.20.0
          */
-        CORRECT_CBOR_NEGATIVE_BIGINT_DECODING(false)
+        DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false)
         ;
 
         final boolean _defaultState;
@@ -163,6 +161,9 @@ public class CBORParser extends ParserMinimalBase
 
     private final static int[] UTF8_UNIT_CODES = CBORConstants.sUtf8UnitLengths;
 
+    // @since 2.20
+    private final static BigInteger BI_MINUS_ONE = BigInteger.ONE.negate();
+
     // Constants for handling of 16-bit "mini-floats"
     private final static double MATH_POW_2_10 = Math.pow(2, 10);
     private final static double MATH_POW_2_NEG14 = Math.pow(2, -14);
@@ -181,6 +182,14 @@ public class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
+    /**
+     * Bit flag composed of bits that indicate which
+     * {@link CBORParser.Feature}s are enabled.
+     *<p>
+     * @since 2.20
+     */
+    protected int _formatFeatures;
+    
     /**
      * Codec used for data binding when (if) requested.
      */
@@ -577,13 +586,6 @@ public class CBORParser extends ParserMinimalBase
     /* Configuration
     /**********************************************************
      */
-
-    /**
-     * Bit flag composed of bits that indicate which
-     * {@link CBORParser.Feature}s are enabled.
-     *<p>
-     */
-    protected int _formatFeatures;
 
     @Override
     public final JsonParser overrideFormatFeatures(int values, int mask) {
@@ -1150,16 +1152,17 @@ public class CBORParser extends ParserMinimalBase
             _numberBigInt = BigInteger.ZERO;
         } else {
             _streamReadConstraints.validateIntegerLength(_binaryValue.length);
-
-                BigInteger nr = new BigInteger(_binaryValue);
-                if (neg) {
-                    if (Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING.enabledIn(_formatFeatures)) {
-                        nr = BigInteger.ONE.negate().subtract(new BigInteger(1, _binaryValue));
-                    } else {
-                        nr = nr.negate();
-                    }
+            final BigInteger nr;
+            if (neg) {
+                if (Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING.enabledIn(_formatFeatures)) {
+                    nr = BI_MINUS_ONE.subtract(new BigInteger(1, _binaryValue));
+                } else {
+                    nr = new BigInteger(_binaryValue).negate();
                 }
-                _numberBigInt = nr;
+            } else {
+                nr = new BigInteger(_binaryValue);
+            }
+            _numberBigInt = nr;
         }
         _numTypesValid = NR_BIGINT;
         _tagValues.clear();
