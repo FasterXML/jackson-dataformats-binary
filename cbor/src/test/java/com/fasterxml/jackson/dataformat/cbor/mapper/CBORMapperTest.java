@@ -68,14 +68,15 @@ public class CBORMapperTest extends CBORTestBase
 
         // Test correct decoding
         CBORMapper mapper1 = CBORMapper.builder()
-                .enable(CBORParser.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING)
+                .enable(CBORParser.Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
                 .build();
         assertEquals(BigInteger.valueOf(-1),
                 mapper1.readValue(encodedNegativeOne, BigInteger.class));
 
-
         // Test incorrect decoding for compatibility
-        CBORMapper mapper2 = cborMapper();
+        CBORMapper mapper2 = CBORMapper.builder()
+                .disable(CBORParser.Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
         assertEquals(BigInteger.ZERO,
                 mapper2.readValue(encodedNegativeOne, BigInteger.class));
     }
@@ -109,14 +110,16 @@ public class CBORMapperTest extends CBORTestBase
 
         // Test correct decoding
         CBORMapper mapper1 = CBORMapper.builder()
-                .enable(CBORParser.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING)
+                .enable(CBORParser.Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
                 .build();
         assertEquals(new BigInteger("-340282366920938463463374607431768211456"),
                 mapper1.readValue(encodedNegative, BigInteger.class));
 
 
         // Test incorrect decoding for compatibility
-        CBORMapper mapper2 = cborMapper();
+        CBORMapper mapper2 = CBORMapper.builder()
+                .disable(CBORParser.Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
         assertEquals(new BigInteger("-340282366920938463463374607431768211455"),
                 mapper2.readValue(encodedNegative, BigInteger.class));
     }
@@ -148,14 +151,16 @@ public class CBORMapperTest extends CBORTestBase
 
         // Test correct decoding
         CBORMapper mapper1 = CBORMapper.builder()
-                .enable(CBORParser.Feature.CORRECT_CBOR_NEGATIVE_BIGINT_DECODING)
+                .enable(CBORParser.Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
                 .build();
         assertEquals(new BigInteger("-340282366920938463463374607431768211456"),
                 mapper1.readValue(encodedNegative, BigInteger.class));
 
 
         // Test incorrect decoding for compatibility
-        CBORMapper mapper2 = cborMapper();
+        CBORMapper mapper2 = CBORMapper.builder()
+                .disable(CBORParser.Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
         assertEquals(BigInteger.ONE,
                 mapper2.readValue(encodedNegative, BigInteger.class));
     }

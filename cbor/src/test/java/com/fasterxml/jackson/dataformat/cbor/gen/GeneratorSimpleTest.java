@@ -262,7 +262,8 @@ public class GeneratorSimpleTest extends CBORTestBase
     // [dataformats-binary#431]
     // [https://datatracker.ietf.org/doc/html/rfc8949#section-3.4.3]
     @Test
-    public void testSimpleBigIntegerEncoding() throws Exception {
+    public void testSimpleBigIntegerEncoding() throws Exception
+    {
         BigInteger minusOne = BigInteger.valueOf(-1);
         byte[] expectedBytes = {
                 (byte) 0xC3,  // tag 3 (negative bignum)
@@ -270,12 +271,13 @@ public class GeneratorSimpleTest extends CBORTestBase
         };
 
         // Test correct encoding
+        CBORFactory factory = CBORFactory.builder()
+                .enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
         ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen1 = factory.createGenerator(correctOut);
-        gen1.enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING);
-        gen1.writeNumber(minusOne);
-        gen1.close();
+        try (CBORGenerator gen1 = factory.createGenerator(correctOut)) {
+            gen1.writeNumber(minusOne);
+        }
 
         byte[] result1 = correctOut.toByteArray();
         assertEquals(3, result1.length);
@@ -285,9 +287,12 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         // Test incorrect encoding for compatibility
         ByteArrayOutputStream incorrectOut = new ByteArrayOutputStream();
-        CBORGenerator gen2 = cborGenerator(incorrectOut);
-        gen2.writeNumber(minusOne);
-        gen2.close();
+        factory = CBORFactory.builder()
+                .disable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen2 = factory.createGenerator(incorrectOut)) {
+            gen2.writeNumber(minusOne);
+        }
 
         byte[] result2 = incorrectOut.toByteArray();
         assertEquals(3, result2.length);
@@ -296,6 +301,8 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0x01, result2[2]);
     }
 
+    // [dataformats-binary#431]
+    // [https://datatracker.ietf.org/doc/html/rfc8949#section-3.4.3]
     @Test
     public void testZeroBigIntegerEncoding() throws Exception {
         BigInteger zero = BigInteger.valueOf(0);
@@ -306,11 +313,12 @@ public class GeneratorSimpleTest extends CBORTestBase
         };
 
         ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen1 = factory.createGenerator(correctOut);
-        gen1.enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING);
-        gen1.writeNumber(zero);
-        gen1.close();
+        CBORFactory factory = CBORFactory.builder()
+                .enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen1 = factory.createGenerator(correctOut)) {
+            gen1.writeNumber(zero);
+        }
 
         byte[] result = correctOut.toByteArray();
         assertEquals(3, result.length);
@@ -320,7 +328,7 @@ public class GeneratorSimpleTest extends CBORTestBase
     // [dataformats-binary#431]
     // [https://datatracker.ietf.org/doc/html/rfc8949#section-3.4.3]
     @Test
-    public void testNgeativeBigIntegerEncoding() throws Exception {
+    public void testNegativeBigIntegerEncoding() throws Exception {
         BigInteger negativeBigInteger = new BigInteger("-340282366920938463463374607431768211456");
         // correct encoding: https://cbor.me/?bytes=c35100ffffffffffffffffffffffffffffffff
         byte[] expectedBytes = {
@@ -347,15 +355,14 @@ public class GeneratorSimpleTest extends CBORTestBase
 
         // Test correct encoding
         ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
-        CBORFactory factory = new CBORFactory();
-        CBORGenerator gen1 = factory.createGenerator(correctOut);
-        gen1.enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING);
-        gen1.writeNumber(negativeBigInteger);
-        gen1.close();
-
+        CBORFactory factory = CBORFactory.builder()
+                .enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen1 = factory.createGenerator(correctOut)) {
+            gen1.writeNumber(negativeBigInteger);
+        }
         byte[] result1 = correctOut.toByteArray();
         assertArrayEquals(expectedBytes, result1);
-
 
         // Test incorrect encoding for compatibility
         // incorrect encoding: https://cbor.me/?bytes=c3510100000000000000000000000000000000
@@ -381,9 +388,12 @@ public class GeneratorSimpleTest extends CBORTestBase
                 (byte) 0x00,
         };
         ByteArrayOutputStream incorrectOut = new ByteArrayOutputStream();
-        CBORGenerator gen2 = cborGenerator(incorrectOut);
-        gen2.writeNumber(negativeBigInteger);
-        gen2.close();
+        factory = CBORFactory.builder()
+                .disable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen2 = factory.createGenerator(incorrectOut)) {
+            gen2.writeNumber(negativeBigInteger);
+        }
 
         byte[] result2 = incorrectOut.toByteArray();
         assertEquals(19, result2.length);

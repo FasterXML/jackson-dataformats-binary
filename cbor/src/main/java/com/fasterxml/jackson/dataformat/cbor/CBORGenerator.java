@@ -25,6 +25,9 @@ public class CBORGenerator extends GeneratorBase
 {
     private final static int[] NO_INTS = new int[0];
 
+    // @since 2.20
+    private final static BigInteger BI_MINUS_ONE = BigInteger.ONE.negate();
+
     /**
      * Let's ensure that we have big enough output buffer because of safety
      * margins we need for UTF-8 encoding.
@@ -118,15 +121,20 @@ public class CBORGenerator extends GeneratorBase
 
         /**
          * Feature that determines how binary tagged negative BigInteger values are
-         * encoded.
-         * When enabled, ensures proper encoding of negative values
-         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x00])}
+         * encoded: either using CBOR standard encoding logic (as per spec),
+         * or using legacy Jackson encoding logic (encoding up to Jackson 2.19).
+         * When enabled, uses CBOR standard specified encoding of negative values
+         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x00]}).
          * When disabled, maintains backwards compatibility with existing implementations
-         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x01])}
+         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x01]}) and uses legacy Jackson encoding.
+         *<p>
+         * Note that there is the counterpart
+         * {@link CBORParser.Feature#DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING}
+         * for encoding.
          *<p>
          * Default value is {@code false} for backwards-compatibility.
          *
-         * @since 2.20.0
+         * @since 2.20
          */
         ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false)
         ;
@@ -1231,7 +1239,7 @@ public class CBORGenerator extends GeneratorBase
         if (v.signum() < 0) {
             _writeByte(BYTE_TAG_BIGNUM_NEG);
             if (isEnabled(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)) {
-                v = BigInteger.ONE.negate().subtract(v);
+                v = BI_MINUS_ONE.subtract(v);
             } else {
                 v = v.negate();
             }

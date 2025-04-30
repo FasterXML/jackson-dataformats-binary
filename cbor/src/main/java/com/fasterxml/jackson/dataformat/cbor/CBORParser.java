@@ -30,17 +30,20 @@ public class CBORParser extends ParserMinimalBase
     {
         /**
          * Feature that determines how binary tagged negative BigInteger values are
-         * decoded.
-         *
+         * decoded: either assuming CBOR standard encoding logic (as per spec),
+         * or the legacy Jackson encoding logic (encoding up to Jackson 2.19).
          * When enabled, ensures proper encoding of negative values
-         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded -1)
-         *
+         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded as -1)
          * When disabled, maintains backwards compatibility with existing implementations
-         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded 0)
-         *
+         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded as 0).
+         *<p>
+         * Note that there is the counterpart
+         * {@link CBORGenerator.Feature#ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING}
+         * for encoding.
+         *<p>
          * The default value is {@code false} for backwards compatibility.
          *
-         * @since 2.20.0
+         * @since 2.20
          */
         DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false)
         ;
