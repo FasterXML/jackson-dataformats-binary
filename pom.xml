@@ -35,7 +35,7 @@
     <connection>scm:git:git@github.com:FasterXML/jackson-dataformats-binary.git</connection>
     <developerConnection>scm:git:git@github.com:FasterXML/jackson-dataformats-binary.git</developerConnection>
     <url>https://github.com/FasterXML/jackson-dataformats-binary</url>
-    <tag>jackson-dataformats-binary-2.19.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <issueManagement>
     <url>https://github.com/FasterXML/jackson-dataformats-binary/issues</url>
@@ -90,18 +90,17 @@
   <build>
     <pluginManagement>
       <plugins>
-	<plugin>
-	  <!-- Inherited from oss-base. Generate PackageVersion.java.-->
+	   <plugin>
+	     <!-- Inherited from oss-base. Generate PackageVersion.java.-->
           <groupId>com.google.code.maven-replacer-plugin</groupId>
           <artifactId>replacer</artifactId>
-	  <executions>
+	     <executions>
             <execution>
               <id>process-packageVersion</id>
               <phase>generate-sources</phase>
             </execution>
           </executions>
-	</plugin>
-
+	   </plugin>
       </plugins>
     </pluginManagement>
   </build>
