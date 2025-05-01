@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.*;
-import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
@@ -124,21 +123,14 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Test methods
-    /**********************************************************
+    /**********************************************************************
      */
 
-    // 30-Apr-2025, tatu: Looks like we have a bug of some kind, exposed
-    //   by change to `MapperFeature.DEFAULT_VIEW_INCLUSION` defaults
-    //   (changed to `false`) but probably not caused by the change
+    private final ProtobufMapper MAPPER = newObjectMapper();
 
-//    private final ProtobufMapper MAPPER = newObjectMapper();
-    private final ProtobufMapper MAPPER = newMapperBuilder()
-            .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-            .build();
-
-    // [dataformats-binary#108]
+    // [dataformats-binary#108], [dataformats-binary#584]
     @Test
     public void testMultipleUnknown() throws Exception
     {
@@ -159,9 +151,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 
         //System.err.println("-> "+MAPPER.valueToTree(protoR.readValue(doc)).toPrettyString());
 
-        // 30-Apr-2025, tatu: First, iterate over tokens
-        //   ... alas, does not actually 
-        /*
+        // 30-Apr-2025, tatu: [dataformats-binary#584]: First, iterate over tokens
         try (JsonParser p = protoR.createParser(doc)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
@@ -176,9 +166,8 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
         }
-        */
         
-        // and only then use databinding
+        // and only then test databinding
 
         LessNestedField lesser = protoR.readValue(doc);
 
