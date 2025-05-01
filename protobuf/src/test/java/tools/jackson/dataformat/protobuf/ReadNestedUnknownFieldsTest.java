@@ -190,7 +190,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 
         OuterV2 v2Expected = new OuterV2();
         v2Expected.embed = embedV2;
-        v2Expected.state="state";
+        v2Expected.state = "state";
 
         // serialize type with extra field
         byte[] doc = mapper.writer(schemaV2).writeValueAsBytes(v2Expected);

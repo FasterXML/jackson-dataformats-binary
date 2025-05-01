@@ -679,12 +679,12 @@ public class ProtobufParser extends ParserMinimalBase
         if (_currentField != null) {
             if ((f = _currentField.nextOrThisIf(id)) == null) {
                 if ((f = _currentMessage.field(id)) == null) {
-                    return _skipUnknownField(id, wireType);
+                    return _skipUnknownField(id, wireType, false);
                 }
             }
         } else {
             if ((f = _currentMessage.field(id)) == null) {
-                return _skipUnknownField(id, wireType);
+                return _skipUnknownField(id, wireType, false);
             }
         }
         _streamReadContext.setCurrentName(f.name);
@@ -715,12 +715,12 @@ public class ProtobufParser extends ParserMinimalBase
         if (_currentField != null) {
             if ((f = _currentField.nextOrThisIf(id)) == null) {
                 if ((f = _currentMessage.field(id)) == null) {
-                    return _skipUnknownField(id, wireType);
+                    return _skipUnknownField(id, wireType, true);
                 }
             }
         } else {
             if ((f = _currentMessage.field(id)) == null) {
-                return _skipUnknownField(id, wireType);
+                return _skipUnknownField(id, wireType, true);
             }
         }
 
@@ -729,7 +729,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         // Note: may be null; if so, value needs to be skipped
         if (f == null) {
-            return _skipUnknownField(id, wireType);
+            return _skipUnknownField(id, wireType, true);
         }
         _streamReadContext.setCurrentName(f.name);
         if (!f.isValidFor(wireType)) {
@@ -891,8 +891,10 @@ public class ProtobufParser extends ParserMinimalBase
         return type;
     }
 
-    private JsonToken _skipUnknownField(int tag, int wireType) throws JacksonException
+    private JsonToken _skipUnknownField(int tag, int wireType, boolean nestedField) throws JacksonException
     {
+//System.out.println(" _skipUnknownField(tag="+tag+", wireType="+wireType+")");
+
         // First: is this even allowed?
         if (!isEnabled(StreamReadFeature.IGNORE_UNDEFINED)) {
             _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `JsonParser.Feature.IGNORE_UNDEFINED` disabled",
@@ -905,7 +907,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_checkEnd()) { // updates _parsingContext
                 return _updateToken(JsonToken.END_OBJECT);
             }
-            if (_state == STATE_NESTED_KEY) {
+            if (nestedField) {
                 if (_inputPtr >= _inputEnd) {
                     loadMoreGuaranteed();
                 }
@@ -924,7 +926,14 @@ public class ProtobufParser extends ParserMinimalBase
                 continue;
             }
             _streamReadContext.setCurrentName(_currentField.name);
-            _state = STATE_ROOT_VALUE;
+
+            // 30-Apr-2025, tatu: [dataformats-binary#584] may be called for root and nested
+            if (nestedField) {
+                _state = STATE_NESTED_VALUE;
+            } else {
+                _state = STATE_ROOT_VALUE;
+            }
+
             // otherwise quickly validate compatibility
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
@@ -980,7 +989,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                if (_skipUnknownField(id, wireType) != JsonToken.PROPERTY_NAME) {
+                if (_skipUnknownField(id, wireType, false) != JsonToken.PROPERTY_NAME) {
                     return null;
                 }
                 // sub-optimal as skip method already set it, but:
@@ -1017,7 +1026,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                if (_skipUnknownField(id, wireType) != JsonToken.PROPERTY_NAME) {
+                if (_skipUnknownField(id, wireType, true) != JsonToken.PROPERTY_NAME) {
                     return null;
                 }
                 // sub-optimal as skip method already set it, but:
@@ -1068,7 +1077,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                _skipUnknownField(id, wireType);
+                _skipUnknownField(id, wireType, false);
                 // may or may not match, but let caller figure it out
                 return false;
             }
@@ -1104,7 +1113,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                _skipUnknownField(id, wireType);
+                _skipUnknownField(id, wireType, true);
                 // may or may not match, but let caller figure it out
                 return false;
             }
@@ -1154,7 +1163,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                JsonToken t = _skipUnknownField(id, wireType);
+                JsonToken t = _skipUnknownField(id, wireType, false);
                 if (t != JsonToken.PROPERTY_NAME) {
                     return (t == JsonToken.END_OBJECT)
                             ? PropertyNameMatcher.MATCH_END_OBJECT : PropertyNameMatcher.MATCH_ODD_TOKEN;
@@ -1192,7 +1201,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                JsonToken t = _skipUnknownField(id, wireType);
+                JsonToken t = _skipUnknownField(id, wireType, true);
                 if (t != JsonToken.PROPERTY_NAME) {
                     return (t == JsonToken.END_OBJECT)
                             ? PropertyNameMatcher.MATCH_END_OBJECT : PropertyNameMatcher.MATCH_ODD_TOKEN;
