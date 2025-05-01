@@ -8,11 +8,12 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import tools.jackson.core.StreamReadFeature;
-
+import tools.jackson.core.*;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectReader;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 {
@@ -128,7 +129,14 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     /**********************************************************
      */
 
-    private final ProtobufMapper MAPPER = newObjectMapper();
+    // 30-Apr-2025, tatu: Looks like we have a bug of some kind, exposed
+    //   by change to `MapperFeature.DEFAULT_VIEW_INCLUSION` defaults
+    //   (changed to `false`) but probably not caused by the change
+
+//    private final ProtobufMapper MAPPER = newObjectMapper();
+    private final ProtobufMapper MAPPER = newMapperBuilder()
+            .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+            .build();
 
     // [dataformats-binary#108]
     @Test
@@ -140,15 +148,39 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
         nestedTwoField.setNested2(2);
         moreNestedField.setF1(nestedTwoField);
 
-        byte[] in = MAPPER.writerFor(MoreNestedField.class)
+        byte[] doc = MAPPER.writerFor(MoreNestedField.class)
                 .with(MAPPER.generateSchemaFor(MoreNestedField.class))
                 .writeValueAsBytes(moreNestedField);
-
-        LessNestedField lesser = MAPPER.readerFor(LessNestedField.class)
-                .with(MAPPER.generateSchemaFor(LessNestedField.class))
+        final ProtobufSchema schema = MAPPER.generateSchemaFor(LessNestedField.class);
+        final ObjectReader protoR = MAPPER.readerFor(LessNestedField.class)
+                .with(schema)
                 // important: skip through unknown
-                .with(StreamReadFeature.IGNORE_UNDEFINED)
-                .readValue(in);
+                .with(StreamReadFeature.IGNORE_UNDEFINED);
+
+        //System.err.println("-> "+MAPPER.valueToTree(protoR.readValue(doc)).toPrettyString());
+
+        // 30-Apr-2025, tatu: First, iterate over tokens
+        //   ... alas, does not actually 
+        /*
+        try (JsonParser p = protoR.createParser(doc)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+            assertEquals("f1", p.currentName());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+            assertEquals("nested2", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(2, p.getIntValue());
+
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.nextToken());
+        }
+        */
+        
+        // and only then use databinding
+
+        LessNestedField lesser = protoR.readValue(doc);
 
         assertEquals(moreNestedField.getF1().getNested2(), lesser.getF1().getNested2());
     }
