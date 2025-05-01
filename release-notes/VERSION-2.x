@@ -19,6 +19,7 @@ Active maintainers:
 #569: (ion) `IonParser` fails to parse some `long` values saying
   they are out of range when they are not
  (reported, fix suggested by @seadbrane)
+#584: (protobuf) Missing `JsonToken.END_OBJECT` for nested Protobuf Objects
 - (ion) Upgrade `ion-java` to 1.11.10 (from 1.11.9)
 
 2.18.3 (28-Feb-2025)

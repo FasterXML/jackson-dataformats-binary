@@ -6,6 +6,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
@@ -124,7 +126,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 
     private final ProtobufMapper MAPPER = new ProtobufMapper();
 
-    // [dataformats-binary#108]
+    // [dataformats-binary#108], [dataformats-binary#584]
     public void testMultipleUnknown() throws Exception
     {
         MoreNestedField moreNestedField = new MoreNestedField();
@@ -133,15 +135,36 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
         nestedTwoField.setNested2(2);
         moreNestedField.setF1(nestedTwoField);
 
-        byte[] in = MAPPER.writerFor(MoreNestedField.class)
+        byte[] doc = MAPPER.writerFor(MoreNestedField.class)
                 .with(MAPPER.generateSchemaFor(MoreNestedField.class))
                 .writeValueAsBytes(moreNestedField);
+        final ProtobufSchema schema = MAPPER.generateSchemaFor(LessNestedField.class);
+        final ObjectReader protoR = MAPPER.readerFor(LessNestedField.class)
+                .with(schema)
+                // important: skip through unknown
+                .with(JsonParser.Feature.IGNORE_UNDEFINED);
 
+        // 30-Apr-2025, tatu: [dataformats-binary#584]: First, iterate over tokens
+        try (JsonParser p = protoR.createParser(doc)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("f1", p.currentName());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("nested2", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(2, p.getIntValue());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.nextToken());
+        }
+
+        // and only then test databinding
         LessNestedField lesser = MAPPER.readerFor(LessNestedField.class)
                 .with(MAPPER.generateSchemaFor(LessNestedField.class))
                 // important: skip through unknown
                 .with(JsonParser.Feature.IGNORE_UNDEFINED)
-                .readValue(in);
+                .readValue(doc);
 
         assertEquals(moreNestedField.getF1().getNested2(), lesser.getF1().getNested2());
     }

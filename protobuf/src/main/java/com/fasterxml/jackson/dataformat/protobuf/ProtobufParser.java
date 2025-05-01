@@ -971,7 +971,12 @@ public class ProtobufParser extends ParserMinimalBase
                 continue;
             }
             _parsingContext.setCurrentName(_currentField.name);
-            _state = STATE_ROOT_VALUE;
+            // 30-Apr-2025, tatu: [dataformats-binary#584] may be called for root and nested
+            if (_state == STATE_NESTED_KEY) {
+                _state = STATE_NESTED_VALUE;
+            } else {
+                _state = STATE_ROOT_VALUE;
+            }
             // otherwise quickly validate compatibility
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
