@@ -113,6 +113,8 @@ public final class CBORConstants
 
     public final static int INT_BREAK = 0xFF;
 
+    public final static int SIMPLE_VALUE_UNDEFINED = 0xF7;
+
     /*
     /**********************************************************
     /* Basic UTF-8 decode/encode table

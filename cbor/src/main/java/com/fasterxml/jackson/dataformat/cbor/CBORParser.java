@@ -45,7 +45,23 @@ public class CBORParser extends ParserMinimalBase
          *
          * @since 2.20
          */
-        DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false)
+        DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false),
+
+        /**
+         * Feature that determines how an ` undefined ` value (0xF7) is decoded.
+         *
+         * <p>
+         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with a
+         * value of {@code null}, allowing the caller to distinguish `undefined` from actual
+         * {@link JsonToken#VALUE_NULL}.
+         *<p>
+         * When disabled (default, for backwards compatibility), `undefined` value is
+         * reported as {@link JsonToken#VALUE_NULL}, maintaining legacy behavior from Jackson 2.9.6 to 2.19.
+         *<p>
+         *
+         * @since 2.20
+         */
+        HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT(false)
         ;
 
         final boolean _defaultState;
@@ -1915,6 +1931,20 @@ public class CBORParser extends ParserMinimalBase
         return _binaryValue;
     }
 
+    /**
+     * Checking whether the current token represents an `undefined` value (0xF7).
+     * <p>
+     * This method allows distinguishing between real {@code null} and `undefined`,
+     * even if {@link CBORParser.Feature#HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT} is disabled
+     * and the token is reported as {@link JsonToken#VALUE_NULL}.
+     *
+     * @return {@code true} if current token is an `undefined`, {@code false} otherwise
+     * @since 2.20
+     */
+    public boolean isUndefined() {
+        return (_inputBuffer[_inputPtr - 1] & 0xFF) == SIMPLE_VALUE_UNDEFINED;
+    }
+
     /*
     /**********************************************************
     /* Numeric accessors of public API
@@ -3656,13 +3686,22 @@ expType, type, ch));
      * Helper method to encapsulate details of handling of mysterious `undefined` value
      * that is allowed to be used as something encoder could not handle (as per spec),
      * whatever the heck that should be.
-     * Current definition for 2.9 is that we will be return {@link JsonToken#VALUE_NULL}, but
-     * for later versions it is likely that we will alternatively allow decoding as
-     * {@link JsonToken#VALUE_EMBEDDED_OBJECT} with "embedded value" of `null`.
+     *
+     * <p>
+     * For backward compatibility with Jackson 2.9.6 to 2.19, this value is decoded
+     * as {@link JsonToken#VALUE_NULL} by default.
+     * <p>
+     *
+     * since 2.20 If {@link CBORParser.Feature#HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT} is enabled,
+     * the value will instead be decoded as {@link JsonToken#VALUE_EMBEDDED_OBJECT}
+     * with an embedded value of {@code null}.
      *
      * @since 2.9.6
      */
-    protected JsonToken _decodeUndefinedValue() throws IOException {
+    protected JsonToken _decodeUndefinedValue() {
+        if (CBORParser.Feature.HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            return JsonToken.VALUE_EMBEDDED_OBJECT;
+        }
         return JsonToken.VALUE_NULL;
     }
 
