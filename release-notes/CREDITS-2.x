@@ -391,6 +391,9 @@ Brian Gruber (@bgruber)
   (2.20.0)
 
 Fawzi Essam (@iifawzi)
+ * Contributed implementation of #137: (cbor) Allow exposing CBOR "undefined" value as
+  `JsonToken.VALUE_EMBEDDED_OBJECT`; with embedded value of `null`
+  (2.20.0)
  * Contributed fix for #431: (cbor) Negative `BigInteger` values not encoded/decoded
    correctly
   (2.20.0)
