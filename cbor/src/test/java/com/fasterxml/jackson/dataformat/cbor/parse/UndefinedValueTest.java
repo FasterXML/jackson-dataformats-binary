@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // for [dataformat-binary#93]
 public class UndefinedValueTest extends CBORTestBase
 {
-    private final static byte BYTE_UNDEFINED = (byte) 0xF7;
+    private final static byte BYTE_UNDEFINED = (byte) CBORConstants.SIMPLE_VALUE_UNDEFINED;
 
     private final CBORFactory CBOR_F = cborFactory();
 

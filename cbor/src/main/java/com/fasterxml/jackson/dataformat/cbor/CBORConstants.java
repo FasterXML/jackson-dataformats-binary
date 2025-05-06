@@ -113,6 +113,11 @@ public final class CBORConstants
 
     public final static int INT_BREAK = 0xFF;
 
+    /**
+     * Marker for "undefined" value in CBOR spec.
+     *
+     * @since 2.20
+     */
     public final static int SIMPLE_VALUE_UNDEFINED = 0xF7;
 
     /*

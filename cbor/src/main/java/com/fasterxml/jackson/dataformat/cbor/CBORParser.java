@@ -49,15 +49,13 @@ public class CBORParser extends ParserMinimalBase
 
         /**
          * Feature that determines how an ` undefined ` value (0xF7) is decoded.
-         *
          * <p>
          * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with a
          * value of {@code null}, allowing the caller to distinguish `undefined` from actual
          * {@link JsonToken#VALUE_NULL}.
          *<p>
          * When disabled (default, for backwards compatibility), `undefined` value is
-         * reported as {@link JsonToken#VALUE_NULL}, maintaining legacy behavior from Jackson 2.9.6 to 2.19.
-         *<p>
+         * reported as {@link JsonToken#VALUE_NULL}, maintaining legacy behavior from Jackson 2.10 to 2.19.
          *
          * @since 2.20
          */
@@ -1943,7 +1941,7 @@ public class CBORParser extends ParserMinimalBase
      * @since 2.20
      */
     public boolean isUndefined() {
-        if ((_currToken == JsonToken.VALUE_NULL) || (_currToken == JsonToken.VALUE_NULL)) {
+        if ((_currToken == JsonToken.VALUE_NULL) || (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT)) {
             return (_inputBuffer != null)
                     && (_inputBuffer[_inputPtr - 1] & 0xFF) == SIMPLE_VALUE_UNDEFINED;
         }
