@@ -1470,12 +1470,11 @@ public class CBORParser extends ParserMinimalBase
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            _numTypesValid = NR_UNKNOWN;
+            clearRetainedValues();
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
-            _binaryValue = null;
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
@@ -1530,12 +1529,11 @@ public class CBORParser extends ParserMinimalBase
     public String nextFieldName() throws IOException
     {
         if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            _numTypesValid = NR_UNKNOWN;
+            clearRetainedValues();
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
-            _binaryValue = null;
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
