@@ -48,14 +48,14 @@ public class CBORParser extends ParserMinimalBase
         DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false),
 
         /**
-         * Feature that determines how an ` undefined ` value (0xF7) is decoded.
+         * Feature that determines how an {@code undefined} value ({@code 0xF7}) is decoded.
          * <p>
          * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with a
-         * value of {@code null}, allowing the caller to distinguish `undefined` from actual
+         * value of {@code null}, allowing the caller to distinguish {@code undefined} from actual
          * {@link JsonToken#VALUE_NULL}.
-         *<p>
-         * When disabled (default, for backwards compatibility), `undefined` value is
-         * reported as {@link JsonToken#VALUE_NULL}, maintaining legacy behavior from Jackson 2.10 to 2.19.
+         * When disabled (default, for backwards compatibility), {@code undefined} value is
+         * reported as {@link JsonToken#VALUE_NULL}, maintaining legacy behavior
+         * in use up to Jackson 2.19.
          *
          * @since 2.20
          */
