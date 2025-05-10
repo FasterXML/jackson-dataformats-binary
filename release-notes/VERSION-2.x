@@ -18,7 +18,7 @@ Active maintainers:
 
 #137: (cbor) Allow exposing CBOR "undefined" value as `JsonToken.VALUE_EMBEDDED_OBJECT`;
   with embedded value of `null`
- (implementation contributed by Fawzi E)   
+ (implementation contributed by Fawzi E)
 #431: (cbor) Negative `BigInteger` values not encoded/decoded correctly
  (reported by Brian G)
  (fix contributed by Fawzi E) 
