@@ -3732,9 +3732,10 @@ expType, type, ch));
      * Helper method that deals with details of decoding unallocated "simple values"
      * and exposing them as expected token.
      * <p>
-     * As of Jackson 2.12, simple values are exposed as
-     * {@link JsonToken#VALUE_NUMBER_INT}s,
-     * but in later versions this is planned to be changed to separate value type.
+     * Starting with Jackson 2.20, this behavior can be changed by enabling the
+     * {@link com.fasterxml.jackson.dataformat.cbor.CBORParser.Feature#HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT}
+     * feature, in which case simple values are returned as {@link JsonToken#VALUE_EMBEDDED_OBJECT} with an
+     * embedded {@link CBORSimpleValue} instance.
      *
      * @since 2.12
      */
