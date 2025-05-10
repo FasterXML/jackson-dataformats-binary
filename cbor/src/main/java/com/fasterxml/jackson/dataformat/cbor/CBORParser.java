@@ -59,7 +59,21 @@ public class CBORParser extends ParserMinimalBase
          *
          * @since 2.20
          */
-        HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT(false)
+        HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT(false),
+
+
+        /**
+         * Feature that determines how a CBOR "simple value" of major type 7 is decoded.
+         * <p>
+         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with an embedded value
+         * of type {@link CBORSimpleValue}, allowing the caller to distinguish these values from actual {@link JsonToken#VALUE_NUMBER_INT}.
+         * <p>
+         * When disabled (the default, for backwards compatibility), simple values are returned as {@link JsonToken#VALUE_NUMBER_INT},
+         * from Jackson 2.10 to 2.19.
+         *
+         * @since 2.20
+         */
+        HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT(false)
         ;
 
         final boolean _defaultState;
@@ -206,7 +220,7 @@ public class CBORParser extends ParserMinimalBase
      * @since 2.20
      */
     protected int _formatFeatures;
-    
+
     /**
      * Codec used for data binding when (if) requested.
      */
@@ -540,6 +554,9 @@ public class CBORParser extends ParserMinimalBase
     protected float _numberFloat;
     protected double _numberDouble;
 
+    protected CBORSimpleValue _simpleValue;
+
+
     // And then object types
 
     protected BigInteger _numberBigInt;
@@ -823,9 +840,9 @@ public class CBORParser extends ParserMinimalBase
             _skipIncomplete();
         }
         _tokenInputTotal = _currInputProcessed + _inputPtr;
-        // also: clear any data retained so far
-        _numTypesValid = NR_UNKNOWN;
-        _binaryValue = null;
+
+        // also: clear any data retained so far.
+        clearRetainedValues();
 
         // First: need to keep track of lengths of defined-length Arrays and
         // Objects (to materialize END_ARRAY/END_OBJECT as necessary);
@@ -1843,6 +1860,9 @@ public class CBORParser extends ParserMinimalBase
             _finishToken();
         }
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
+            if (_simpleValue != null) {
+                return _simpleValue;
+            }
             return _binaryValue;
         }
         return null;
@@ -3723,27 +3743,37 @@ expType, type, ch));
             _invalidToken(ch);
         }
         if (lowBits < 24) {
-            _numberInt = lowBits;
+            if (Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+                _simpleValue = new CBORSimpleValue(lowBits);
+            } else {
+                _numberInt = lowBits;
+            }
         } else { // need another byte
             if (_inputPtr >= _inputEnd) {
                 loadMoreGuaranteed();
             }
-            _numberInt = _inputBuffer[_inputPtr++] & 0xFF;
+
             // As per CBOR spec, values below 32 not allowed to avoid
             // confusion (as well as guarantee uniqueness of encoding)
-            if (_numberInt < 32) {
+            int value = _inputBuffer[_inputPtr++] & 0xFF;
+            if (value < 32) {
                 throw _constructError("Invalid second byte for simple value: 0x"
-                        +Integer.toHexString(_numberInt)+" (only values 0x20 - 0xFF allowed)");
+                        +Integer.toHexString(value)+" (only values 0x20 - 0xFF allowed)");
+            }
+
+            if (Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+                _simpleValue = new CBORSimpleValue(value);
+            } else {
+                _numberInt = value;
             }
         }
 
-        // 25-Nov-2020, tatu: Although ideally we should report these
-        //    as `JsonToken.VALUE_EMBEDDED_OBJECT`, due to late addition
-        //    of handling in 2.12, simple value in 2.12 will be reported
-        //    as simple ints.
+        if (Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            return JsonToken.VALUE_EMBEDDED_OBJECT;
+        }
 
         _numTypesValid = NR_INT;
-        return (JsonToken.VALUE_NUMBER_INT);
+        return JsonToken.VALUE_NUMBER_INT;
     }
 
     /*
@@ -4099,5 +4129,11 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     private void createChildObjectContext(final int len) throws IOException {
         _streamReadContext = _streamReadContext.createChildObjectContext(len);
         _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
+    }
+
+    private void clearRetainedValues() {
+        _numTypesValid = NR_UNKNOWN;
+        _binaryValue = null;
+        _simpleValue = null;
     }
 }
