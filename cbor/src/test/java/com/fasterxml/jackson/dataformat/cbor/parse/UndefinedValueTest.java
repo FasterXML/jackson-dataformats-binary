@@ -32,7 +32,7 @@ public class UndefinedValueTest extends CBORTestBase
     @Test
     public void testUndefinedLiteralAsEmbeddedObject() throws Exception {
         CBORFactory f = CBORFactory.builder()
-                .enable(CBORParser.Feature.HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT)
+                .enable(CBORParser.Feature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
                 .build();
         CBORParser p = cborParser(f, new byte[] { BYTE_UNDEFINED });
 
@@ -62,7 +62,7 @@ public class UndefinedValueTest extends CBORTestBase
     @Test
     public void testUndefinedInArrayAsEmbeddedObject() throws Exception {
         CBORFactory f = CBORFactory.builder()
-                .enable(CBORParser.Feature.HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT)
+                .enable(CBORParser.Feature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
                 .build();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -108,7 +108,7 @@ public class UndefinedValueTest extends CBORTestBase
     @Test
     public void testUndefinedInObjectAsEmbeddedObject() throws Exception {
         CBORFactory f = CBORFactory.builder()
-                .enable(CBORParser.Feature.HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT)
+                .enable(CBORParser.Feature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
                 .build();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

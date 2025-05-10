@@ -48,36 +48,37 @@ public class CBORParser extends ParserMinimalBase
         DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false),
 
         /**
-         * Feature that determines how an {@code undefined} value ({@code 0xF7}) is decoded.
+         * Feature that determines how an {@code undefined} value ({@code 0xF7}) is exposed
+         * by parser.
          * <p>
-         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with a
-         * value of {@code null}, allowing the caller to distinguish {@code undefined} from actual
+         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
+         * a value of {@code null}, allowing the caller to distinguish {@code undefined} from actual
          * {@link JsonToken#VALUE_NULL}.
-         * When disabled (default, for backwards compatibility), {@code undefined} value is
-         * reported as {@link JsonToken#VALUE_NULL}, maintaining legacy behavior
-         * in use up to Jackson 2.19.
+         * When disabled {@code undefined} value is reported as {@link JsonToken#VALUE_NULL}.
+         *<p>
+         * The default value is {@code false} for backwards compatibility (with versions prior to 2.20).
          *
          * @since 2.20
          */
-        HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT(false),
-
+        READ_UNDEFINED_AS_EMBEDDED_OBJECT(false),
 
         /**
-         * Feature that determines how a CBOR "simple value" of major type 7 is decoded.
+         * Feature that determines how a CBOR "simple value" of major type 7 is exposed by parser.
          * <p>
-         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with an embedded value
-         * of type {@link CBORSimpleValue}, allowing the caller to distinguish these values from actual {@link JsonToken#VALUE_NUMBER_INT}.
-         * <p>
-         * When disabled (the default, for backwards compatibility), simple values are returned as {@link JsonToken#VALUE_NUMBER_INT},
-         * from Jackson 2.10 to 2.19.
+         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
+         * an embedded value of type {@link CBORSimpleValue}, allowing the caller to distinguish
+         * these values from actual {@link JsonToken#VALUE_NUMBER_INT}s.
+         * When disabled, simple values are returned as {@link JsonToken#VALUE_NUMBER_INT}.
+         *<p>
+         * The default value is {@code false} for backwards compatibility (with versions prior to 2.20).
          *
          * @since 2.20
          */
-        HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT(false)
+        READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT(false)
         ;
 
-        final boolean _defaultState;
-        final int _mask;
+        private final boolean _defaultState;
+        private final int _mask;
 
         /**
          * Method that calculates bit set (flags) of all features that
@@ -1953,7 +1954,7 @@ public class CBORParser extends ParserMinimalBase
      * Checking whether the current token represents an `undefined` value (0xF7).
      * <p>
      * This method allows distinguishing between real {@code null} and `undefined`,
-     * even if {@link CBORParser.Feature#HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT} is disabled
+     * even if {@link CBORParser.Feature#READ_UNDEFINED_AS_EMBEDDED_OBJECT} is disabled
      * and the token is reported as {@link JsonToken#VALUE_NULL}.
      *
      * @return {@code true} if current token is an `undefined`, {@code false} otherwise
@@ -3714,14 +3715,14 @@ expType, type, ch));
      * as {@link JsonToken#VALUE_NULL} by default.
      * <p>
      *
-     * since 2.20 If {@link CBORParser.Feature#HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT} is enabled,
+     * since 2.20 If {@link CBORParser.Feature#READ_UNDEFINED_AS_EMBEDDED_OBJECT} is enabled,
      * the value will instead be decoded as {@link JsonToken#VALUE_EMBEDDED_OBJECT}
      * with an embedded value of {@code null}.
      *
      * @since 2.10
      */
     protected JsonToken _decodeUndefinedValue() {
-        if (Feature.HANDLE_UNDEFINED_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+        if (Feature.READ_UNDEFINED_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
             _binaryValue = null; // should be clear but just in case
             return JsonToken.VALUE_EMBEDDED_OBJECT;
         }
@@ -3733,7 +3734,7 @@ expType, type, ch));
      * and exposing them as expected token.
      * <p>
      * Starting with Jackson 2.20, this behavior can be changed by enabling the
-     * {@link com.fasterxml.jackson.dataformat.cbor.CBORParser.Feature#HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT}
+     * {@link com.fasterxml.jackson.dataformat.cbor.CBORParser.Feature#READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT}
      * feature, in which case simple values are returned as {@link JsonToken#VALUE_EMBEDDED_OBJECT} with an
      * embedded {@link CBORSimpleValue} instance.
      *
@@ -3744,7 +3745,7 @@ expType, type, ch));
             _invalidToken(ch);
         }
         if (lowBits < 24) {
-            if (Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            if (Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
                 _simpleValue = new CBORSimpleValue(lowBits);
             } else {
                 _numberInt = lowBits;
@@ -3762,14 +3763,14 @@ expType, type, ch));
                         +Integer.toHexString(value)+" (only values 0x20 - 0xFF allowed)");
             }
 
-            if (Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            if (Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
                 _simpleValue = new CBORSimpleValue(value);
             } else {
                 _numberInt = value;
             }
         }
 
-        if (Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+        if (Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
             return JsonToken.VALUE_EMBEDDED_OBJECT;
         }
 

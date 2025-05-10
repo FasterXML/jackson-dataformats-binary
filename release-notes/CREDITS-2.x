@@ -397,3 +397,7 @@ Fawzi Essam (@iifawzi)
  * Contributed fix for #431: (cbor) Negative `BigInteger` values not encoded/decoded
    correctly
   (2.20.0)
+ * Contributed implementation of #587: (cbor) Allow exposing CBOR Simple values as
+   `JsonToken.VALUE_EMBEDDED_OBJECT` with a feature flag
+  (2.20.0)
+

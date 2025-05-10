@@ -34,7 +34,7 @@ public class SimpleValuesTest extends CBORTestBase
     public void testTinySimpleValuesAsEmbeddedObjectWhenEnabled() throws Exception
     {
         CBORFactory f = CBORFactory.builder()
-                .enable(CBORParser.Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT)
+                .enable(CBORParser.Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT)
                 .build();
         // Values 0..19 are unassigned, valid to encounter
         for (int v = 0; v <= 19; ++v) {
@@ -65,7 +65,7 @@ public class SimpleValuesTest extends CBORTestBase
     public void testValidByteLengthMinimalValuesAsEmbeddedObjectWhenEnabled() throws Exception {
         // Values 32..255 are unassigned, valid to encounter
         CBORFactory f = CBORFactory.builder()
-                .enable(CBORParser.Feature.HANDLE_SIMPLE_VALUES_AS_EMBEDDED_OBJECT)
+                .enable(CBORParser.Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT)
                 .build();
         for (int v = 32; v <= 255; ++v) {
             byte[] doc = { (byte) (CBORConstants.PREFIX_TYPE_MISC + 24), (byte) v };
