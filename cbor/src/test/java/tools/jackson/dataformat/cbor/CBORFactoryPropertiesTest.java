@@ -21,6 +21,18 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
     private final static CBORFactory CBOR_F = new CBORFactory();
 
     @Test
+    public void testFactoryDefaults() {
+        CBORFactory f = new CBORFactory();
+
+        assertEquals(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING.enabledByDefault(),
+                f.isEnabled(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING));
+        assertEquals(CBORReadFeature.READ_UNDEFINED_AS_EMBEDDED_OBJECT.enabledByDefault(),
+                f.isEnabled(CBORReadFeature.READ_UNDEFINED_AS_EMBEDDED_OBJECT));
+        assertEquals(CBORReadFeature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledByDefault(),
+                f.isEnabled(CBORReadFeature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT));
+    }
+
+    @Test
     public void testCBORFactorySerializable() throws Exception
     {
         CBORFactory f = new CBORFactory();

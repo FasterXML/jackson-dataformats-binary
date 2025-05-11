@@ -17,11 +17,14 @@ public class SimpleValuesTest extends CBORTestBase
     @Test
     public void testTinySimpleValues() throws Exception
     {
+        CBORFactory f = CBORFactory.builder()
+                .disable(CBORReadFeature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT)
+                .build();
         // Values 0..19 are unassigned, valid to encounter
         for (int v = 0; v <= 19; ++v) {
             byte[] doc = new byte[1];
             doc[0] = (byte) (CBORConstants.PREFIX_TYPE_MISC + v);
-            try (JsonParser p = cborParser(doc)) {
+            try (JsonParser p = cborParser(f, doc)) {
                 assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
                 // exposes as `int`, fwtw
                 assertEquals(NumberType.INT, p.getNumberType());
@@ -33,14 +36,11 @@ public class SimpleValuesTest extends CBORTestBase
     @Test
     public void testTinySimpleValuesAsEmbeddedObjectWhenEnabled() throws Exception
     {
-        CBORFactory f = CBORFactory.builder()
-                .enable(CBORReadFeature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT)
-                .build();
         // Values 0..19 are unassigned, valid to encounter
         for (int v = 0; v <= 19; ++v) {
             byte[] doc = new byte[1];
             doc[0] = (byte) (CBORConstants.PREFIX_TYPE_MISC + v);
-            try (CBORParser p = cborParser(f, doc)) {
+            try (CBORParser p = cborParser(doc)) {
                 assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
                 assertEquals(new CBORSimpleValue(v), p.getEmbeddedObject());
             }
@@ -49,10 +49,13 @@ public class SimpleValuesTest extends CBORTestBase
 
     @Test
     public void testValidByteLengthMinimalValues() throws Exception {
+        CBORFactory f = CBORFactory.builder()
+                .disable(CBORReadFeature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT)
+                .build();
         // Values 32..255 are unassigned, valid to encounter
         for (int v = 32; v <= 255; ++v) {
             byte[] doc = { (byte) (CBORConstants.PREFIX_TYPE_MISC + 24), (byte) v };
-            try (JsonParser p = cborParser(doc)) {
+            try (JsonParser p = cborParser(f, doc)) {
                 assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
                 // exposes as `int`, fwtw
                 assertEquals(NumberType.INT, p.getNumberType());
@@ -64,12 +67,9 @@ public class SimpleValuesTest extends CBORTestBase
     @Test
     public void testValidByteLengthMinimalValuesAsEmbeddedObjectWhenEnabled() throws Exception {
         // Values 32..255 are unassigned, valid to encounter
-        CBORFactory f = CBORFactory.builder()
-                .enable(CBORReadFeature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT)
-                .build();
         for (int v = 32; v <= 255; ++v) {
             byte[] doc = { (byte) (CBORConstants.PREFIX_TYPE_MISC + 24), (byte) v };
-            try (CBORParser p = cborParser(f, doc)) {
+            try (CBORParser p = cborParser( doc)) {
                 assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
                 assertEquals(new CBORSimpleValue(v), p.getEmbeddedObject());
             }

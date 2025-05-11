@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.dataformat.cbor.*;
 import tools.jackson.dataformat.cbor.CBORGenerator;
@@ -19,12 +18,14 @@ public class UndefinedValueTest extends CBORTestBase
 {
     private final static byte BYTE_UNDEFINED = (byte) CBORConstants.SIMPLE_VALUE_UNDEFINED;
 
-    private final CBORFactory CBOR_F = cborFactory();
+    private final CBORFactory CBOR_F = CBORFactory.builder()
+            .disable(CBORReadFeature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
+            .build();
 
     @Test
     public void testUndefinedLiteralStreaming() throws Exception
     {
-        try (CBORParser p = cborParser(new byte[] { BYTE_UNDEFINED })) {
+        try (CBORParser p = cborParser(CBOR_F, new byte[] { BYTE_UNDEFINED })) {
             assertEquals(JsonToken.VALUE_NULL, p.nextToken());
             assertTrue(p.isUndefined());
             assertNull(p.nextToken());
@@ -34,10 +35,7 @@ public class UndefinedValueTest extends CBORTestBase
     // @since 2.20 [jackson-dataformats-binary/137]
     @Test
     public void testUndefinedLiteralAsEmbeddedObject() throws Exception {
-        CBORFactory f = CBORFactory.builder()
-                .enable(CBORReadFeature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
-                .build();
-        CBORParser p = cborParser(f, new byte[] { BYTE_UNDEFINED });
+        CBORParser p = cborParser(new byte[] { BYTE_UNDEFINED });
 
         assertEquals(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         assertTrue(p.isUndefined());
@@ -64,15 +62,11 @@ public class UndefinedValueTest extends CBORTestBase
     // @since 2.20 [jackson-dataformats-binary/137]
     @Test
     public void testUndefinedInArrayAsEmbeddedObject() throws Exception {
-        CBORFactory f = CBORFactory.builder()
-                .enable(CBORReadFeature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
-                .build();
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(CBORConstants.BYTE_ARRAY_INDEFINITE);
         out.write(BYTE_UNDEFINED);
         out.write(CBORConstants.BYTE_BREAK);
-        CBORParser p = cborParser(f, out.toByteArray());
+        CBORParser p = cborParser(out.toByteArray());
         assertEquals(JsonToken.START_ARRAY, p.nextToken());
         assertEquals(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
         assertTrue(p.isUndefined());
@@ -110,10 +104,6 @@ public class UndefinedValueTest extends CBORTestBase
     // @since 2.20 [jackson-dataformats-binary/137]
     @Test
     public void testUndefinedInObjectAsEmbeddedObject() throws Exception {
-        CBORFactory f = CBORFactory.builder()
-                .enable(CBORReadFeature.READ_UNDEFINED_AS_EMBEDDED_OBJECT)
-                .build();
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator g = cborGenerator(out);
         g.writeStartObject();
@@ -126,7 +116,7 @@ public class UndefinedValueTest extends CBORTestBase
         // assume we use end marker for Object, so
         doc[doc.length - 2] = BYTE_UNDEFINED;
 
-        try (CBORParser p = cborParser(f, doc)) {
+        try (CBORParser p = cborParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("bar", p.currentName());

@@ -87,7 +87,7 @@ public class CBORFactory
         super(StreamReadConstraints.defaults(),
                 StreamWriteConstraints.defaults(),
                 ErrorReportConfiguration.defaults(),
-                0,
+                DEFAULT_CBOR_PARSER_FEATURE_FLAGS,
                 DEFAULT_CBOR_GENERATOR_FEATURE_FLAGS);
     }
 
@@ -189,6 +189,13 @@ public class CBORFactory
     @Override
     public Class<CBORWriteFeature> getFormatWriteFeatureType() {
         return CBORWriteFeature.class;
+    }
+
+    /**
+     * Checked whether specified parser feature is enabled.
+     */
+    public final boolean isEnabled(CBORReadFeature f) {
+        return f.enabledIn(_formatReadFeatures);
     }
 
     /**
