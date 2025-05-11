@@ -16,7 +16,7 @@ public enum CBORReadFeature implements FormatFeature
      * or the legacy Jackson encoding logic (encoding up to Jackson 2.19).
      * When enabled, ensures proper encoding of negative values
      * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded as -1)
-     * When disabled, maintains similar behavior to versions prior to 3.0.
+     * When disabled, maintains compatible behavior to versions prior to 3.0.
      * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded as 0).
      *<p>
      * Note that there is the counterpart
@@ -34,7 +34,8 @@ public enum CBORReadFeature implements FormatFeature
      * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
      * a value of {@code null}, allowing the caller to distinguish {@code undefined} from actual
      * {@link JsonToken#VALUE_NULL}.
-     * When disabled {@code undefined} value is reported as {@link JsonToken#VALUE_NULL} similar to versions prior to 3.0.
+     * When disabled {@code undefined} value is reported as {@link JsonToken#VALUE_NULL}
+     * maintaining compatible behavior with versions prior to 3.0.
      *<p>
      * The default value is {@code true}.
      */
@@ -46,7 +47,8 @@ public enum CBORReadFeature implements FormatFeature
      * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
      * an embedded value of type {@link CBORSimpleValue}, allowing the caller to distinguish
      * these values from actual {@link JsonToken#VALUE_NUMBER_INT}s.
-     * When disabled, simple values are returned as {@link JsonToken#VALUE_NUMBER_INT} similar to versions prior to 3.0.
+     * When disabled, simple values are returned as {@link JsonToken#VALUE_NUMBER_INT}
+     * maintaining compatible behavior with versions prior to 3.0.
      *<p>
      * The default value is {@code true}.
      */
