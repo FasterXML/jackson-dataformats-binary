@@ -192,7 +192,7 @@ public class CBORFactory
     }
 
     /**
-     * Checked whether specified parser feature is enabled.
+     * Check whether a specified parser feature is enabled.
      */
     public final boolean isEnabled(CBORReadFeature f) {
         return f.enabledIn(_formatReadFeatures);
