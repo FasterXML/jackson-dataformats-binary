@@ -1865,7 +1865,7 @@ public class CBORParser extends ParserMinimalBase
         if (_tokenIncomplete) {
             _finishToken();
         }
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
             if (_simpleValue != null) {
                 return _simpleValue;
             }
@@ -1958,11 +1958,11 @@ public class CBORParser extends ParserMinimalBase
     /**
      * Checking whether the current token represents an `undefined` value (0xF7).
      * <p>
-     * This method allows distinguishing between real {@code null} and `undefined`,
+     * This method allows distinguishing between real {@code null} and {@code undefined},
      * even if {@link CBORParser.Feature#READ_UNDEFINED_AS_EMBEDDED_OBJECT} is disabled
      * and the token is reported as {@link JsonToken#VALUE_NULL}.
      *
-     * @return {@code true} if current token is an `undefined`, {@code false} otherwise
+     * @return {@code true} if current token is an {@code undefined}, {@code false} otherwise
      *
      * @since 2.20
      */
@@ -3739,7 +3739,7 @@ expType, type, ch));
      * and exposing them as expected token.
      * <p>
      * Starting with Jackson 2.20, this behavior can be changed by enabling the
-     * {@link com.fasterxml.jackson.dataformat.cbor.CBORParser.Feature#READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT}
+     * {@link CBORParser.Feature#READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT}
      * feature, in which case simple values are returned as {@link JsonToken#VALUE_EMBEDDED_OBJECT} with an
      * embedded {@link CBORSimpleValue} instance.
      *
@@ -3749,8 +3749,9 @@ expType, type, ch));
         if (lowBits > 24) {
             _invalidToken(ch);
         }
+        final boolean simpleAsEmbedded = Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures);
         if (lowBits < 24) {
-            if (Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            if (simpleAsEmbedded) {
                 _simpleValue = new CBORSimpleValue(lowBits);
             } else {
                 _numberInt = lowBits;
@@ -3768,14 +3769,14 @@ expType, type, ch));
                         +Integer.toHexString(value)+" (only values 0x20 - 0xFF allowed)");
             }
 
-            if (Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            if (simpleAsEmbedded) {
                 _simpleValue = new CBORSimpleValue(value);
             } else {
                 _numberInt = value;
             }
         }
 
-        if (Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+        if (simpleAsEmbedded) {
             return JsonToken.VALUE_EMBEDDED_OBJECT;
         }
 
