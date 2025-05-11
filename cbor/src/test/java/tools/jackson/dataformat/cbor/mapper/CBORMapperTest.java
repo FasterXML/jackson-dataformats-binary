@@ -60,9 +60,7 @@ public class CBORMapperTest extends CBORTestBase
         };
 
         // Test correct decoding
-        CBORMapper mapper1 = CBORMapper.builder()
-                .enable(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
-                .build();
+        CBORMapper mapper1 = CBORMapper.builder().build();
         assertEquals(BigInteger.valueOf(-1),
                 mapper1.readValue(encodedNegativeOne, BigInteger.class));
 
@@ -102,9 +100,7 @@ public class CBORMapperTest extends CBORTestBase
         };
 
         // Test correct decoding
-        CBORMapper mapper1 = CBORMapper.builder()
-                .enable(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
-                .build();
+        CBORMapper mapper1 = CBORMapper.builder().build();
         assertEquals(new BigInteger("-340282366920938463463374607431768211456"),
                 mapper1.readValue(encodedNegative, BigInteger.class));
 
@@ -143,9 +139,7 @@ public class CBORMapperTest extends CBORTestBase
         };
 
         // Test correct decoding
-        CBORMapper mapper1 = CBORMapper.builder()
-                .enable(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
-                .build();
+        CBORMapper mapper1 = CBORMapper.builder().build();
         assertEquals(new BigInteger("-340282366920938463463374607431768211456"),
                 mapper1.readValue(encodedNegative, BigInteger.class));
 
