@@ -378,6 +378,14 @@ public class CBORParser extends ParserMinimalBase
     protected TagList _tagValues = new TagList();
 
     /**
+     * When major type 7 value is encountered and exposed as {@link JsonToken#VALUE_EMBEDDED_OBJECT},
+     * the value will be stored here.
+     *
+     * @since 2.20
+     */
+    protected CBORSimpleValue _simpleValue;
+    
+    /**
      * Flag that indicates that the current token has not yet
      * been fully processed, and needs to be finished for
      * some access (or skipped to obtain the next token)
@@ -554,9 +562,6 @@ public class CBORParser extends ParserMinimalBase
     protected long _numberLong;
     protected float _numberFloat;
     protected double _numberDouble;
-
-    protected CBORSimpleValue _simpleValue;
-
 
     // And then object types
 
@@ -842,7 +847,7 @@ public class CBORParser extends ParserMinimalBase
         }
         _tokenInputTotal = _currInputProcessed + _inputPtr;
 
-        // also: clear any data retained so far.
+        // also: clear any data retained for previous token
         clearRetainedValues();
 
         // First: need to keep track of lengths of defined-length Arrays and
@@ -1470,11 +1475,12 @@ public class CBORParser extends ParserMinimalBase
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            clearRetainedValues();
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
+            // need to clear retained values for previous token
+            clearRetainedValues();
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
@@ -1522,18 +1528,19 @@ public class CBORParser extends ParserMinimalBase
             }
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
+        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(currentName());
     }
 
     @Override
     public String nextFieldName() throws IOException
     {
         if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            clearRetainedValues();
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
+            // need to clear retained values for previous token
+            clearRetainedValues();
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
@@ -4131,6 +4138,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
     }
 
+    // @since 2.20
     private void clearRetainedValues() {
         _numTypesValid = NR_UNKNOWN;
         _binaryValue = null;
