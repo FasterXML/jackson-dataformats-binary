@@ -14,14 +14,16 @@ implementations)
 === Releases ===
 ------------------------------------------------------------------------
 
+3.0.0-rc5 (not yet released)
+
+#582: Change defaults for `CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING`
+  and `CBORWriteFeature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING` to `true` (enabled)
+ (contributed by by Fawzi E)
+#591: Change `CBOR` Features defaults for 3.0
+ (contributed by by Fawzi E)
+
 3.0.0-rc4 (10-May-2025)
-
-No changes since rc3
-
 3.0.0-rc3 (13-Apr-2025)
-
-- Branch rename "master" -> "3.x" [JSTEP-12]
-
 3.0.0-rc2 (28-Mar-2025)
 
 No changes since rc1.

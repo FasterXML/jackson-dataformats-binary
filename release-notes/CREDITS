@@ -6,3 +6,15 @@ binary data formats module, version 3.x
 
 Tatu Saloranta, tatu.saloranta@iki.fi: author
 
+--------------------------------------------------------------------------------
+Credits for individual projects, since 3.0.0
+--------------------------------------------------------------------------------
+
+Fawzi Essam (@iifawzi)
+
+* Contributed #582: Change defaults for `CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING`
+  and `CBORWriteFeature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING` to `true` (enabled)
+ (3.0.0)
+* Contribited #591: Change `CBOR` Features defaults for 3.0
+ (3.0.0)
+
