@@ -179,12 +179,10 @@ public class CBORFactory
         return false; // no (mandatory) FormatSchema for cbor
     }
 
-    // No Reader features yet for CBOR
-    /*@Override
+    @Override
     public Class<CBORReadFeature> getFormatReadFeatureType() {
         return CBORReadFeature.class;
     }
-    */
 
     @Override
     public Class<CBORWriteFeature> getFormatWriteFeatureType() {
@@ -192,16 +190,16 @@ public class CBORFactory
     }
 
     /**
-     * Check whether a specified parser feature is enabled.
+     * Check whether specified CBOR-specific stream read feature is enabled.
      */
-    public final boolean isEnabled(CBORReadFeature f) {
+    public boolean isEnabled(CBORReadFeature f) {
         return f.enabledIn(_formatReadFeatures);
     }
 
     /**
-     * Check whether specified generator feature is enabled.
+     * Check whether specified CBOR-specific stream write feature is enabled.
      */
-    public final boolean isEnabled(CBORWriteFeature f) {
+    public boolean isEnabled(CBORWriteFeature f) {
         return f.enabledIn(_formatWriteFeatures);
     }
 
