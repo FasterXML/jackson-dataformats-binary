@@ -23,7 +23,7 @@ public enum CBORReadFeature implements FormatFeature
      * {@link CBORWriteFeature#ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING}
      * for encoding.
      *<p>
-     * The default value is {@code true}.
+     * The default value is {@code true} in Jackson 3.x (was {@code false} in Jackson 2.x).
      */
     DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(true),
 
@@ -34,10 +34,9 @@ public enum CBORReadFeature implements FormatFeature
      * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
      * a value of {@code null}, allowing the caller to distinguish {@code undefined} from actual
      * {@link JsonToken#VALUE_NULL}.
-     * When disabled {@code undefined} value is reported as {@link JsonToken#VALUE_NULL}
-     * maintaining compatible behavior with versions prior to 3.0.
+     * When disabled, {@code undefined} value is reported as simple {@link JsonToken#VALUE_NULL}.
      *<p>
-     * The default value is {@code true}.
+     * The default value is {@code true} in Jackson 3.x (was {@code false} in Jackson 2.x).
      */
     READ_UNDEFINED_AS_EMBEDDED_OBJECT(true),
 
@@ -47,10 +46,9 @@ public enum CBORReadFeature implements FormatFeature
      * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
      * an embedded value of type {@link CBORSimpleValue}, allowing the caller to distinguish
      * these values from actual {@link JsonToken#VALUE_NUMBER_INT}s.
-     * When disabled, simple values are returned as {@link JsonToken#VALUE_NUMBER_INT}
-     * maintaining compatible behavior with versions prior to 3.0.
+     * When disabled, simple values are returned as {@link JsonToken#VALUE_NUMBER_INT}s.
      *<p>
-     * The default value is {@code true}.
+     * The default value is {@code true} in Jackson 3.x (was {@code false} in Jackson 2.x).
      */
     READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT(true)
     ;

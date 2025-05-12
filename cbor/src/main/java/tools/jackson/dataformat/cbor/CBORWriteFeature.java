@@ -68,14 +68,14 @@ public enum CBORWriteFeature implements FormatFeature
      * or using legacy Jackson encoding logic (encoding up to Jackson 2.19).
      * When enabled, uses CBOR standard specified encoding of negative values
      * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x00]}).
-     * When disabled, maintains similar behavior to versions prior to 3.0.
+     * When disabled, maintains behavior of versions prior to 3.0.
      * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x01]}) and uses legacy Jackson encoding.
      *<p>
      * Note that there is the counterpart
      * {@link CBORReadFeature#DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING}
      * for encoding.
      *<p>
-     * Default value is {@code true}.
+     * The default value is {@code true} in Jackson 3.x (was {@code false} in Jackson 2.x).
      */
     ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(true),
 
