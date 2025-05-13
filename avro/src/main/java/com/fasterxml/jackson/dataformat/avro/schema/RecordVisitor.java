@@ -31,6 +31,33 @@ public class RecordVisitor
      */
     protected final boolean _overridden;
 
+    /**
+     * When Avro schema for this JavaType ({@code _type}) results in UNION of multiple Avro types, _typeSchema keeps track
+     * which Avro type in the UNION represents this JavaType ({@code _type}) so that fields of this JavaType can be set to the right Avro type by {@code builtAvroSchema()}.
+     *
+     * Example:
+     * <pre>
+     *   @JsonSubTypes({
+     *     @JsonSubTypes.Type(value = Apple.class),
+     *     @JsonSubTypes.Type(value = Pear.class) })
+     *   class Fruit {}
+     *
+     *   class Apple extends Fruit {}
+     *   class Orange extends Fruit {}
+     * </pre>
+     * When _type = Fruit.class
+     * Then
+     * _avroSchema if Fruit.class is union of Fruit record, Apple record and Orange record schemas: [
+     *     { name: Fruit, type: record, field: [..] }, <--- _typeSchema points here
+     *     { name: Apple, type: record, field: [..] },
+     *     { name: Orange, type: record, field: [..]}
+     *   ]
+     * _typeSchema points to Fruit.class without subtypes record schema
+     *
+     * FIXME: When _thisSchema is not null, then _overridden must be true, therefore (_overridden == true) can be replaced with (_thisSchema != null),
+     * but it might be considered API change cause _overridden has protected access modifier.
+     */
+    private Schema _typeSchema;
     protected Schema _avroSchema;
 
     protected List<Schema.Field> _fields = new ArrayList<>();
@@ -42,31 +69,44 @@ public class RecordVisitor
         _visitorWrapper = visitorWrapper;
         // Check if the schema for this record is overridden
         BeanDescription bean = getProvider().getConfig().introspectDirectClassAnnotations(_type);
-        List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
         AvroSchema ann = bean.getClassInfo().getAnnotation(AvroSchema.class);
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
             _overridden = true;
-        } else if (subTypes != null && !subTypes.isEmpty()) {
-            List<Schema> unionSchemas = new ArrayList<>();
-            try {
-                for (NamedType subType : subTypes) {
-                    JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
-                    VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
-                    ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
-                    unionSchemas.add(visitor.getAvroSchema());
-                }
-                _avroSchema = Schema.createUnion(unionSchemas);
-                _overridden = true;
-            } catch (JsonMappingException jme) {
-                throw new RuntimeException("Failed to build schema", jme);
-            }
         } else {
-            _avroSchema = AvroSchemaHelper.initializeRecordSchema(bean);
+            // If Avro schema for this _type results in UNION I want to know Avro type where to assign fields
+            _typeSchema = AvroSchemaHelper.initializeRecordSchema(bean);
+            _avroSchema = _typeSchema;
             _overridden = false;
             AvroMeta meta = bean.getClassInfo().getAnnotation(AvroMeta.class);
             if (meta != null) {
                 _avroSchema.addProp(meta.key(), meta.value());
+            }
+
+            List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
+            if (subTypes != null && !subTypes.isEmpty()) {
+                List<Schema> unionSchemas = new ArrayList<>();
+                // Initialize with this schema
+                if (_type.isConcrete()) {
+                    unionSchemas.add(_typeSchema);
+                }
+                try {
+                    for (NamedType subType : subTypes) {
+                        JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
+                        VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
+                        ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
+                        Schema subTypeSchema = visitor.getAvroSchema();
+                        // If subType schema is also UNION, include all its types into this union
+                        if (subTypeSchema.getType() == Type.UNION) {
+                            unionSchemas.addAll(subTypeSchema.getTypes());
+                        } else {
+                            unionSchemas.add(subTypeSchema);
+                        }
+                    }
+                    _avroSchema = Schema.createUnion(unionSchemas);
+                } catch (JsonMappingException jme) {
+                    throw new RuntimeException("Failed to build schema", jme);
+                }
             }
         }
         _visitorWrapper.getSchemas().addSchema(type, _avroSchema);
@@ -76,7 +116,7 @@ public class RecordVisitor
     public Schema builtAvroSchema() {
         if (!_overridden) {
             // Assumption now is that we are done, so let's assign fields
-            _avroSchema.setFields(_fields);
+            _typeSchema.setFields(_fields);
         }
         return _avroSchema;
     }
