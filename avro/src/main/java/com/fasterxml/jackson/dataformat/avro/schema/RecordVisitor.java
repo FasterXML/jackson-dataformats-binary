@@ -85,25 +85,56 @@ public class RecordVisitor
 
             List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
             if (subTypes != null && !subTypes.isEmpty()) {
-                List<Schema> unionSchemas = new ArrayList<>();
-                // Initialize with this schema
-                if (_type.isConcrete()) {
-                    unionSchemas.add(_typeSchema);
-                }
+
+                // At this point calculating hashCode for _typeSchema fails with NPE because RecordSchema.fields is NULL
+                // (see org.apache.avro.Schema.RecordSchema#computeHash).
+                // Therefore, _typeSchema must be added into union at very end, or unionSchemas must not be HashSet (or any
+                // other type calling hashCode() for equality check).
+                Set<Schema> unionSchemas = new HashSet<>();
+                // ArrayList<Schema> unionSchemas = new ArrayList<>();
+
+                // IdentityHashMap is used because it is using reference-equality.
+                // Set<Schema> unionSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
+
+                // Initialize with this schema is
+                // if (_type.isConcrete()) {
+                //   unionSchemas.add(_typeSchema);
+                // }
+
                 try {
                     for (NamedType subType : subTypes) {
                         JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
                         VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
                         ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
                         Schema subTypeSchema = visitor.getAvroSchema();
-                        // If subType schema is also UNION, include all its types into this union
+                        // Add subType schema into this union, unless it is already there.
+                        // When subType schema is itself a union, include all its types into this union
                         if (subTypeSchema.getType() == Type.UNION) {
+//                            subTypeSchema.getTypes().stream()
+//                                    .filter(unionElement -> !unionSchemas.contains(unionElement))
+//                                    .forEach(unionSchemas::add);
+                            // or
+//                            for( Schema unionElement: subTypeSchema.getTypes()) {
+//                                if (unionSchemas.contains(unionElement)) {
+//                                    continue;
+//                                }
+//                                unionSchemas.add(unionElement);
+//                            }
                             unionSchemas.addAll(subTypeSchema.getTypes());
                         } else {
+//                            if (!unionSchemas.contains(subTypeSchema)) {
+//                                unionSchemas.add(subTypeSchema);
+//                            }
                             unionSchemas.add(subTypeSchema);
                         }
                     }
-                    _avroSchema = Schema.createUnion(unionSchemas);
+
+                    ArrayList<Schema> unionList = new ArrayList<>(unionSchemas);
+                    // add _type schema into union
+                    if (_type.isConcrete()) {
+                        unionList.add(_typeSchema);
+                    }
+                    _avroSchema = Schema.createUnion(unionList);
                 } catch (JsonMappingException jme) {
                     throw new RuntimeException("Failed to build schema", jme);
                 }
