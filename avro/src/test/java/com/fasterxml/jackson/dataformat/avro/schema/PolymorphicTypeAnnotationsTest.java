@@ -153,4 +153,46 @@ public class PolymorphicTypeAnnotationsTest {
                 boatSchema, submarineSchema);
     }
 
+    // Helium is twice in subtypes hierarchy, once as ElementInterface subtype and second time as subtype
+    // of AbstractGas subtype. This situation may result in
+    // "Failed to generate `AvroSchema` for  ...., problem: (AvroRuntimeException) Duplicate in union:com.fasterxml...PolymorphicTypeAnnotationsTest.Helium"
+    // error.
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = AbstractGas.class),
+            @JsonSubTypes.Type(value = Helium.class),
+    })
+    private interface ElementInterface {
+    }
+
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = Helium.class),
+            @JsonSubTypes.Type(value = Oxygen.class),
+    })
+    static abstract class AbstractGas implements ElementInterface {
+        public int atomicMass;
+    }
+
+    private static class Helium extends AbstractGas {
+    }
+
+    private static class Oxygen extends AbstractGas {
+    }
+
+    @Test
+    public void class_is_referenced_twice_in_hierarchy_test() throws JsonMappingException {
+        // GIVEN
+        final Schema heliumSchema = MAPPER.schemaFor(Helium.class).getAvroSchema();
+        final Schema oxygenSchema = MAPPER.schemaFor(Oxygen.class).getAvroSchema();
+
+        // WHEN
+        Schema actualSchema = MAPPER.schemaFor(ElementInterface.class).getAvroSchema();
+
+        System.out.println("ElementInterface schema:\n" + actualSchema.toString(true));
+
+        // THEN
+        assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
+        // ElementInterface and AbstractGas are not concrete classes they are not expected to be among types in union
+        assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(heliumSchema, oxygenSchema);
+    }
+
 }
