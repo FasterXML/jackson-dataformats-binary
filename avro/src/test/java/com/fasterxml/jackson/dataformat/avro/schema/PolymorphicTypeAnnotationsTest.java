@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PolymorphicTypeAnnotationsTest {
 
     private static final AvroMapper MAPPER = AvroMapper.builder().build();
-    // it is easier maintain string schema representation when namespace is constant, rather than being inferend from this class package name
+    // it is easier maintain string schema representation when namespace is constant, rather than being inferred from this class package name
     private static final String TEST_NAMESPACE = "test";
 
     @JsonSubTypes({
@@ -28,11 +28,11 @@ public class PolymorphicTypeAnnotationsTest {
         public int legs;
     }
 
-    static class Cat extends AbstractMammal {
+    private static class Cat extends AbstractMammal {
         public String color;
     }
 
-    static class Dog extends AbstractMammal {
+    private static class Dog extends AbstractMammal {
         public int size;
     }
 
@@ -58,17 +58,17 @@ public class PolymorphicTypeAnnotationsTest {
             @JsonSubTypes.Type(value = Pear.class),
     })
     @AvroNamespace(TEST_NAMESPACE) // @AvroNamespace makes it easier to create schema string representation
-    static class Fruit {
+    private static class Fruit {
         public boolean eatable;
     }
 
     private static final String FRUIT_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Fruit\",\"namespace\":\"test\",\"fields\":[{\"name\":\"eatable\",\"type\":\"boolean\"}]}";
 
-    static class Apple extends Fruit {
+    private static class Apple extends Fruit {
         public String color;
     }
 
-    static class Pear extends Fruit {
+    private static class Pear extends Fruit {
         public int seeds;
     }
 
