@@ -48,13 +48,13 @@ public class RecordVisitor
      * When _type = Fruit.class
      * Then
      * _avroSchema if Fruit.class is union of Fruit record, Apple record and Orange record schemas: [
-     *     { name: Fruit, type: record, field: [..] }, <--- _typeSchema points here
-     *     { name: Apple, type: record, field: [..] },
-     *     { name: Orange, type: record, field: [..]}
+     *     { name: Fruit, type: record, fields: [..] }, <--- _typeSchema points here
+     *     { name: Apple, type: record, fields: [..] },
+     *     { name: Orange, type: record, fields: [..]}
      *   ]
      * _typeSchema points to Fruit.class without subtypes record schema
      *
-     * FIXME: When _thisSchema is not null, then _overridden must be true, therefore (_overridden == true) can be replaced with (_thisSchema != null),
+     * FIXME: When _typeSchema is not null, then _overridden must be true, therefore (_overridden == true) can be replaced with (_typeSchema != null),
      * but it might be considered API change cause _overridden has protected access modifier.
      */
     private Schema _typeSchema;
@@ -108,7 +108,7 @@ public class RecordVisitor
                         ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));
                         Schema subTypeSchema = visitor.getAvroSchema();
                         // Add subType schema into this union, unless it is already there.
-                        // When subType schema is itself a union, include all its types into this union
+                        // When subType schema is union itself, include each its type into this union if not there already
                         if (subTypeSchema.getType() == Type.UNION) {
 //                            subTypeSchema.getTypes().stream()
 //                                    .filter(unionElement -> !unionSchemas.contains(unionElement))
