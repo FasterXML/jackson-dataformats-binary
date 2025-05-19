@@ -74,7 +74,7 @@ public class PolymorphicTypeAnnotationsTest {
     }
 
     @Test
-    public void subclasses_of_concrete_class_test() throws IOException {
+    public void jsonSubTypes_on_concrete_class_test() throws IOException {
         // GIVEN
         final Schema fruitItselfSchema = MAPPER.schemaFrom(FRUIT_ITSELF_SCHEMA_STR).getAvroSchema();
         final Schema appleSchema = MAPPER.schemaFor(Apple.class).getAvroSchema();
@@ -131,7 +131,7 @@ public class PolymorphicTypeAnnotationsTest {
     }
 
     @Test
-    public void subclasses_of_subclasses_test() throws IOException {
+    public void jsonSubTypes_of_jsonSubTypes_test() throws IOException {
         // GIVEN
         final Schema vehicleItselfSchema = MAPPER.schemaFrom(VEHICLE_ITSELF_SCHEMA_STR).getAvroSchema();
         final Schema landVehicleItselfSchema = MAPPER.schemaFrom(LAND_VEHICLE_ITSELF_SCHEMA_STR).getAvroSchema();
