@@ -85,17 +85,26 @@ public class RecordVisitor
 
             List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
             if (subTypes != null && !subTypes.isEmpty()) {
+                // alreadySeenClasses prevents subType processing in endless loop
+                Set<Class<?>> alreadySeenClasses = new HashSet<>();
+                alreadySeenClasses.add(_type.getRawClass());
+
                 // At this point calculating hashCode for _typeSchema fails with NPE because RecordSchema.fields is NULL
                 // see org.apache.avro.Schema.RecordSchema#computeHash.
                 // Therefore, unionSchemas must not be HashSet (or any other type using hashCode() for equality check).
+                // Set ensures that each subType schema is once in resulting union.
                 // IdentityHashMap is used because it is using reference-equality.
                 Set<Schema> unionSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
                 // Initialize with this schema
                 if (_type.isConcrete()) {
                     unionSchemas.add(_typeSchema);
                 }
+
                 try {
                     for (NamedType subType : subTypes) {
+                        if (!alreadySeenClasses.add(subType.getType())) {
+                            continue;
+                        }
                         JsonSerializer<?> ser = getProvider().findValueSerializer(subType.getType());
                         VisitorFormatWrapperImpl visitor = _visitorWrapper.createChildWrapper();
                         ser.acceptJsonFormatVisitor(visitor, getProvider().getTypeFactory().constructType(subType.getType()));

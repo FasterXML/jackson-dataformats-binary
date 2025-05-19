@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 import org.apache.avro.Schema;
+import org.apache.avro.reflect.Union;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -193,6 +194,103 @@ public class PolymorphicTypeAnnotationsTest {
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
         // ElementInterface and AbstractGas are not concrete classes they are not expected to be among types in union
         assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(heliumSchema, oxygenSchema);
+    }
+
+    @JsonSubTypes({
+            // Base class being explicitly in @JsonSubTypes led to StackOverflowError exception.
+            @JsonSubTypes.Type(value = Image.class),
+            @JsonSubTypes.Type(value = Jpeg.class),
+            @JsonSubTypes.Type(value = Png.class),
+    })
+    @AvroNamespace(TEST_NAMESPACE) // @AvroNamespace makes it easier to create schema string representation
+    private static class Image {
+    }
+
+    private static final String IMAGE_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Image\",\"namespace\":\"test\",\"fields\":[]}";
+
+    private static class Jpeg extends Image {
+    }
+
+    private static class Png extends Image {
+    }
+
+    @Test
+    public void base_class_explicitly_in_JsonSubTypes_annotation_test() throws IOException {
+        // GIVEN
+        final Schema imageItselfSchema = MAPPER.schemaFrom(IMAGE_ITSELF_SCHEMA_STR).getAvroSchema();
+        final Schema jpegSchema = MAPPER.schemaFor(Jpeg.class).getAvroSchema();
+        final Schema pngSchema = MAPPER.schemaFor(Png.class).getAvroSchema();
+
+        // WHEN
+        Schema actualSchema = MAPPER.schemaFor(Image.class).getAvroSchema();
+
+        System.out.println("Image schema:\n" + actualSchema.toString(true));
+
+        // THEN
+        assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
+        assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(imageItselfSchema, jpegSchema, pngSchema);
+    }
+    
+    @Union({
+            // Base class being explicitly in @Union led to StackOverflowError exception.
+            Sport.class,
+            Football.class, Basketball.class})
+    @AvroNamespace(TEST_NAMESPACE) // @AvroNamespace makes it easier to create schema string representation
+    private static class Sport {
+    }
+
+    private static final String SPORT_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Sport\",\"namespace\":\"test\",\"fields\":[]}";
+
+    private static class Football extends Sport {
+    }
+
+    private static class Basketball extends Sport {
+    }
+
+    @Test
+    public void base_class_explicitly_in_Union_annotation_test() throws IOException {
+        // GIVEN
+        final Schema sportItselfSchema = MAPPER.schemaFrom(SPORT_ITSELF_SCHEMA_STR).getAvroSchema();
+        final Schema footballSchema = MAPPER.schemaFor(Football.class).getAvroSchema();
+        final Schema basketballSchema = MAPPER.schemaFor(Basketball.class).getAvroSchema();
+
+        // WHEN
+        Schema actualSchema = MAPPER.schemaFor(Sport.class).getAvroSchema();
+
+        System.out.println("Sport schema:\n" + actualSchema.toString(true));
+
+        // THEN
+        assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
+        assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(sportItselfSchema, footballSchema, basketballSchema);
+    }
+
+    @Union({
+            // Interface being explicitly in @Union led to StackOverflowError exception.
+            DocumentInterface.class,
+            Word.class, Excel.class})
+    private interface DocumentInterface {
+    }
+
+    private static class Word implements DocumentInterface {
+    }
+
+    private static class Excel implements DocumentInterface {
+    }
+
+    @Test
+    public void interface_explicitly_in_Union_annotation_test() throws IOException {
+        // GIVEN
+        final Schema wordSchema = MAPPER.schemaFor(Word.class).getAvroSchema();
+        final Schema excelSchema = MAPPER.schemaFor(Excel.class).getAvroSchema();
+
+        // WHEN
+        Schema actualSchema = MAPPER.schemaFor(DocumentInterface.class).getAvroSchema();
+
+        System.out.println("Document schema:\n" + actualSchema.toString(true));
+
+        // THEN
+        assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
+        assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(wordSchema, excelSchema);
     }
 
 }
