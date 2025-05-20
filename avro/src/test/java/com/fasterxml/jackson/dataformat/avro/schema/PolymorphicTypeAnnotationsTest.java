@@ -1,14 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
-import org.apache.avro.Schema;
-import org.apache.avro.reflect.Union;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
+
+import org.apache.avro.Schema;
+import org.apache.avro.reflect.Union;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,23 +21,23 @@ public class PolymorphicTypeAnnotationsTest {
             @JsonSubTypes.Type(value = Cat.class),
             @JsonSubTypes.Type(value = Dog.class),
     })
-    private interface AnimalInterface {
+    interface AnimalInterface {
     }
 
-    private static abstract class AbstractMammal implements AnimalInterface {
+    static abstract class AbstractMammal implements AnimalInterface {
         public int legs;
     }
 
-    private static class Cat extends AbstractMammal {
+    static class Cat extends AbstractMammal {
         public String color;
     }
 
-    private static class Dog extends AbstractMammal {
+    static class Dog extends AbstractMammal {
         public int size;
     }
 
     @Test
-    public void subclasses_of_interface_test() throws JsonMappingException {
+    public void subclasses_of_interface_test() throws Exception {
         // GIVEN
         final Schema catSchema = MAPPER.schemaFor(Cat.class).getAvroSchema();
         final Schema dogSchema = MAPPER.schemaFor(Dog.class).getAvroSchema();
@@ -46,7 +45,7 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(AnimalInterface.class).getAvroSchema();
 
-        System.out.println("Animal schema:\n" + actualSchema.toString(true));
+        // System.out.println("Animal schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -59,22 +58,22 @@ public class PolymorphicTypeAnnotationsTest {
             @JsonSubTypes.Type(value = Pear.class),
     })
     @AvroNamespace(TEST_NAMESPACE) // @AvroNamespace makes it easier to create schema string representation
-    private static class Fruit {
+    static class Fruit {
         public boolean eatable;
     }
 
     private static final String FRUIT_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Fruit\",\"namespace\":\"test\",\"fields\":[{\"name\":\"eatable\",\"type\":\"boolean\"}]}";
 
-    private static class Apple extends Fruit {
+    static class Apple extends Fruit {
         public String color;
     }
 
-    private static class Pear extends Fruit {
+    static class Pear extends Fruit {
         public int seeds;
     }
 
     @Test
-    public void jsonSubTypes_on_concrete_class_test() throws IOException {
+    public void jsonSubTypes_on_concrete_class_test() throws Exception {
         // GIVEN
         final Schema fruitItselfSchema = MAPPER.schemaFrom(FRUIT_ITSELF_SCHEMA_STR).getAvroSchema();
         final Schema appleSchema = MAPPER.schemaFor(Apple.class).getAvroSchema();
@@ -83,7 +82,7 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Fruit.class).getAvroSchema();
 
-        System.out.println("Fruit schema:\n" + actualSchema.toString(true));
+        // System.out.println("Fruit schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -95,7 +94,7 @@ public class PolymorphicTypeAnnotationsTest {
             @JsonSubTypes.Type(value = AbstractWaterVehicle.class),
     })
     @AvroNamespace(TEST_NAMESPACE)
-    private static class Vehicle {
+    static class Vehicle {
     }
 
     private static final String VEHICLE_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Vehicle\",\"namespace\":\"test\",\"fields\":[]}";
@@ -105,33 +104,33 @@ public class PolymorphicTypeAnnotationsTest {
             @JsonSubTypes.Type(value = MotorCycle.class),
     })
     @AvroNamespace(TEST_NAMESPACE)
-    private static class LandVehicle extends Vehicle {
+    static class LandVehicle extends Vehicle {
     }
 
     private static final String LAND_VEHICLE_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"LandVehicle\",\"namespace\":\"test\",\"fields\":[]}";
 
-    private static class Car extends LandVehicle {
+    static class Car extends LandVehicle {
     }
 
-    private static class MotorCycle extends LandVehicle {
+    static class MotorCycle extends LandVehicle {
     }
 
     @JsonSubTypes({
             @JsonSubTypes.Type(value = Boat.class),
             @JsonSubTypes.Type(value = Submarine.class),
     })
-    private static abstract class AbstractWaterVehicle extends Vehicle {
+    static abstract class AbstractWaterVehicle extends Vehicle {
         public int propellers;
     }
 
-    private static class Boat extends AbstractWaterVehicle {
+    static class Boat extends AbstractWaterVehicle {
     }
 
-    private static class Submarine extends AbstractWaterVehicle {
+    static class Submarine extends AbstractWaterVehicle {
     }
 
     @Test
-    public void jsonSubTypes_of_jsonSubTypes_test() throws IOException {
+    public void jsonSubTypes_of_jsonSubTypes_test() throws Exception {
         // GIVEN
         final Schema vehicleItselfSchema = MAPPER.schemaFrom(VEHICLE_ITSELF_SCHEMA_STR).getAvroSchema();
         final Schema landVehicleItselfSchema = MAPPER.schemaFrom(LAND_VEHICLE_ITSELF_SCHEMA_STR).getAvroSchema();
@@ -143,7 +142,7 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Vehicle.class).getAvroSchema();
 
-        System.out.println("Vehicle schema:\n" + actualSchema.toString(true));
+        // System.out.println("Vehicle schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -180,7 +179,7 @@ public class PolymorphicTypeAnnotationsTest {
     }
 
     @Test
-    public void class_is_referenced_twice_in_hierarchy_test() throws JsonMappingException {
+    public void class_is_referenced_twice_in_hierarchy_test() throws Exception {
         // GIVEN
         final Schema heliumSchema = MAPPER.schemaFor(Helium.class).getAvroSchema();
         final Schema oxygenSchema = MAPPER.schemaFor(Oxygen.class).getAvroSchema();
@@ -188,7 +187,7 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(ElementInterface.class).getAvroSchema();
 
-        System.out.println("ElementInterface schema:\n" + actualSchema.toString(true));
+        // System.out.println("ElementInterface schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -203,19 +202,19 @@ public class PolymorphicTypeAnnotationsTest {
             @JsonSubTypes.Type(value = Png.class),
     })
     @AvroNamespace(TEST_NAMESPACE) // @AvroNamespace makes it easier to create schema string representation
-    private static class Image {
+    static class Image {
     }
 
     private static final String IMAGE_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Image\",\"namespace\":\"test\",\"fields\":[]}";
 
-    private static class Jpeg extends Image {
+    static class Jpeg extends Image {
     }
 
-    private static class Png extends Image {
+    static class Png extends Image {
     }
 
     @Test
-    public void base_class_explicitly_in_JsonSubTypes_annotation_test() throws IOException {
+    public void base_class_explicitly_in_JsonSubTypes_annotation_test() throws Exception {
         // GIVEN
         final Schema imageItselfSchema = MAPPER.schemaFrom(IMAGE_ITSELF_SCHEMA_STR).getAvroSchema();
         final Schema jpegSchema = MAPPER.schemaFor(Jpeg.class).getAvroSchema();
@@ -224,7 +223,7 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Image.class).getAvroSchema();
 
-        System.out.println("Image schema:\n" + actualSchema.toString(true));
+        // System.out.println("Image schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -236,19 +235,19 @@ public class PolymorphicTypeAnnotationsTest {
             Sport.class,
             Football.class, Basketball.class})
     @AvroNamespace(TEST_NAMESPACE) // @AvroNamespace makes it easier to create schema string representation
-    private static class Sport {
+    static class Sport {
     }
 
     private static final String SPORT_ITSELF_SCHEMA_STR = "{\"type\":\"record\",\"name\":\"Sport\",\"namespace\":\"test\",\"fields\":[]}";
 
-    private static class Football extends Sport {
+    static class Football extends Sport {
     }
 
-    private static class Basketball extends Sport {
+    static class Basketball extends Sport {
     }
 
     @Test
-    public void base_class_explicitly_in_Union_annotation_test() throws IOException {
+    public void base_class_explicitly_in_Union_annotation_test() throws Exception {
         // GIVEN
         final Schema sportItselfSchema = MAPPER.schemaFrom(SPORT_ITSELF_SCHEMA_STR).getAvroSchema();
         final Schema footballSchema = MAPPER.schemaFor(Football.class).getAvroSchema();
@@ -257,7 +256,7 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Sport.class).getAvroSchema();
 
-        System.out.println("Sport schema:\n" + actualSchema.toString(true));
+        //System.out.println("Sport schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -268,17 +267,17 @@ public class PolymorphicTypeAnnotationsTest {
             // Interface being explicitly in @Union led to StackOverflowError exception.
             DocumentInterface.class,
             Word.class, Excel.class})
-    private interface DocumentInterface {
+    interface DocumentInterface {
     }
 
-    private static class Word implements DocumentInterface {
+    static class Word implements DocumentInterface {
     }
 
-    private static class Excel implements DocumentInterface {
+    static class Excel implements DocumentInterface {
     }
 
     @Test
-    public void interface_explicitly_in_Union_annotation_test() throws IOException {
+    public void interface_explicitly_in_Union_annotation_test() throws Exception {
         // GIVEN
         final Schema wordSchema = MAPPER.schemaFor(Word.class).getAvroSchema();
         final Schema excelSchema = MAPPER.schemaFor(Excel.class).getAvroSchema();
@@ -286,11 +285,10 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(DocumentInterface.class).getAvroSchema();
 
-        System.out.println("Document schema:\n" + actualSchema.toString(true));
+        //System.out.println("Document schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
         assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(wordSchema, excelSchema);
     }
-
 }

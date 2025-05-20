@@ -26,15 +26,16 @@ public class RecordVisitor
     protected final VisitorFormatWrapperImpl _visitorWrapper;
 
     /**
-     * Tracks if the schema for this record has been overridden (by an annotation or other means), and calls to the {@code property} and
-     * {@code optionalProperty} methods should be ignored.
+     * Tracks if the schema for this record has been overridden (by an annotation or other means),
+     * and calls to the {@code property} and {@code optionalProperty} methods should be ignored.
      */
     protected final boolean _overridden;
 
     /**
-     * When Avro schema for this JavaType ({@code _type}) results in UNION of multiple Avro types, _typeSchema keeps track
-     * which Avro type in the UNION represents this JavaType ({@code _type}) so that fields of this JavaType can be set to the right Avro type by {@code builtAvroSchema()}.
-     *
+     * When Avro schema for this JavaType ({@code _type}) results in UNION of multiple Avro types,
+     * _typeSchema keeps track of which Avro type in the UNION represents this JavaType ({@code _type})
+     * so that fields of this JavaType can be set to the right Avro type by {@code builtAvroSchema()}.
+     *<br>
      * Example:
      * <pre>
      *   @JsonSubTypes({
@@ -45,7 +46,7 @@ public class RecordVisitor
      *   class Apple extends Fruit {}
      *   class Orange extends Fruit {}
      * </pre>
-     * When _type = Fruit.class
+     * When {@code _type = Fruit.class}
      * Then
      * _avroSchema if Fruit.class is union of Fruit record, Apple record and Orange record schemas: [
      *     { name: Fruit, type: record, fields: [..] }, <--- _typeSchema points here
@@ -56,10 +57,15 @@ public class RecordVisitor
      *
      * FIXME: When _typeSchema is not null, then _overridden must be true, therefore (_overridden == true) can be replaced with (_typeSchema != null),
      * but it might be considered API change cause _overridden has protected access modifier.
+     *
+     * @since 2.19.1
      */
-    private Schema _typeSchema;
+    private final Schema _typeSchema;
+
+    // !!! 19-May-2025: TODO: make final in 2.20
     protected Schema _avroSchema;
 
+    // !!! 19-May-2025: TODO: make final in 2.20
     protected List<Schema.Field> _fields = new ArrayList<>();
 
     public RecordVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
@@ -73,6 +79,7 @@ public class RecordVisitor
         if (ann != null) {
             _avroSchema = AvroSchemaHelper.parseJsonSchema(ann.value());
             _overridden = true;
+            _typeSchema = null;
         } else {
             // If Avro schema for this _type results in UNION I want to know Avro type where to assign fields
             _typeSchema = AvroSchemaHelper.initializeRecordSchema(bean);
@@ -89,12 +96,14 @@ public class RecordVisitor
                 Set<Class<?>> alreadySeenClasses = new HashSet<>();
                 alreadySeenClasses.add(_type.getRawClass());
 
-                // At this point calculating hashCode for _typeSchema fails with NPE because RecordSchema.fields is NULL
-                // see org.apache.avro.Schema.RecordSchema#computeHash.
-                // Therefore, unionSchemas must not be HashSet (or any other type using hashCode() for equality check).
+                // At this point calculating hashCode for _typeSchema fails with
+                // NPE because RecordSchema.fields is NULL
+                // (see org.apache.avro.Schema.RecordSchema#computeHash).
+                // Therefore, unionSchemas must not be HashSet (or any other type
+                // using hashCode() for equality check).
                 // Set ensures that each subType schema is once in resulting union.
                 // IdentityHashMap is used because it is using reference-equality.
-                Set<Schema> unionSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
+                final Set<Schema> unionSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
                 // Initialize with this schema
                 if (_type.isConcrete()) {
                     unionSchemas.add(_typeSchema);
