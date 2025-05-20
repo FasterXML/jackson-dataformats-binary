@@ -82,8 +82,8 @@ public class RecordVisitor
             _typeSchema = null;
         } else {
             // If Avro schema for this _type results in UNION I want to know Avro type where to assign fields
-            _typeSchema = AvroSchemaHelper.initializeRecordSchema(bean);
-            _avroSchema = _typeSchema;
+            _avroSchema = AvroSchemaHelper.initializeRecordSchema(bean);
+            _typeSchema = _avroSchema;
             _overridden = false;
             AvroMeta meta = bean.getClassInfo().getAnnotation(AvroMeta.class);
             if (meta != null) {
@@ -128,7 +128,7 @@ public class RecordVisitor
                     }
                     _avroSchema = Schema.createUnion(new ArrayList<>(unionSchemas));
                 } catch (JsonMappingException jme) {
-                    throw new RuntimeException("Failed to build schema", jme);
+                    throw new RuntimeJsonMappingException("Failed to build schema", jme);
                 }
             }
         }
