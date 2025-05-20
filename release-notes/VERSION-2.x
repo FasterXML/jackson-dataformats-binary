@@ -18,6 +18,12 @@ Active maintainers:
 
 -
 
+2.19.1 (not yet released)
+
+#589: AvroSchema: Does not include base class for records with subclasses
+ (reported by Rafael W)
+ (fix contributed by Michal F)
+
 2.19.0 (24-Apr-2025)
 
 #300: (smile) Floats are encoded with sign extension while doubles without

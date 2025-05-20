@@ -232,6 +232,9 @@ Michal Foksa (MichalFoksa@github)
  (2.19.0)
 * Contributed #536: (avro) Add Logical Type support for `java.util.UUID`
  (2.19.0)
+* Contributed fix for #589: AvroSchema: Does not include base class for records
+  with subclasses
+ (2.19.1)
 
 Hunter Herman (hherman1@github)
 
@@ -385,3 +388,9 @@ Manuel Sugawara (@sugmanue)
 Josh Curry (@seadbrane)
  * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
   (2.19.0)
+
+Rafael Winterhalter (@raphw)
+ * Reported #589: AvroSchema: Does not include base class for records
+   with subclasses
+  (2.19.1)
+
