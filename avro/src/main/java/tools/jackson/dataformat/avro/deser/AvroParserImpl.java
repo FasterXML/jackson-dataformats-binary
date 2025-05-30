@@ -322,7 +322,7 @@ public abstract class AvroParserImpl
     {
         // Int or float?
         if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
-            _reportError("Current token ("+currentToken()+") not numeric, cannot use numeric value accessors");
+            throw _constructReadException("Current token (%s) not numeric, cannot use numeric value accessors", _currToken);
         }
     }
 
@@ -334,7 +334,7 @@ public abstract class AvroParserImpl
             // Let's verify it's lossless conversion by simple roundtrip
             int result = (int) _numberLong;
             if (((long) result) != _numberLong) {
-                _reportError("Numeric value ("+getString()+") out of range of int");
+                _reportError("Numeric value ("+getString()+") out of range of `int`");
             }
             _numberInt = result;
         } else if ((_numTypesValid & NR_BIGINT) != 0) {

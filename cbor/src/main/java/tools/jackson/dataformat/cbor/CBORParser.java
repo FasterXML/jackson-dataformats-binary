@@ -2145,7 +2145,8 @@ public class CBORParser extends ParserBase
     {
         // Int or float?
         if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
-            _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
+            throw _constructReadException("Current token (%s) not numeric, cannot use numeric value accessors",
+                    _currToken);
         }
     }
 
