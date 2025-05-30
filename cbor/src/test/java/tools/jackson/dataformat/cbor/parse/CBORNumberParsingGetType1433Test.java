@@ -3,13 +3,11 @@ package tools.jackson.dataformat.cbor.parse;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
-import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class CBORNumberParsingGetType1433Test
     extends CBORTestBase
@@ -59,12 +57,8 @@ public class CBORNumberParsingGetType1433Test
 
     private void _verifyGetNumberTypeFail(JsonParser p, String token) throws Exception
     {
-        try {
-            p.getNumberType();
-            fail("Should not pass");
-        } catch (StreamReadException e) {
-            verifyException(e, "Current token ("+token+") not numeric, can not use numeric");
-        }
+        // In 2.x got exception; in 3.x null
+        assertNull(p.getNumberType());
     }
 
     private CBORFactory jsonFactory() {

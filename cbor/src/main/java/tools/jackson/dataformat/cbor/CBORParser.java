@@ -2011,7 +2011,7 @@ public class CBORParser extends ParserBase
     public Number getNumberValue() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
-            _checkNumericValue(NR_UNKNOWN); // will also check event type
+            _checkNumericValue(); // will also check event type
         }
         // Separate types for int types
         if (_currToken == JsonToken.VALUE_NUMBER_INT) {
@@ -2050,9 +2050,6 @@ public class CBORParser extends ParserBase
     @Override
     public NumberType getNumberType() throws JacksonException
     {
-        if (_numTypesValid == NR_UNKNOWN) {
-            _checkNumericValue(NR_UNKNOWN); // will also check event type
-        }
         if (_currToken == JsonToken.VALUE_NUMBER_INT) {
             if ((_numTypesValid & NR_INT) != 0) {
                 return NumberType.INT;
@@ -2062,23 +2059,25 @@ public class CBORParser extends ParserBase
             }
             return NumberType.BIG_INTEGER;
         }
-
         /* And then floating point types. Here optimal type
          * needs to be big decimal, to avoid losing any data?
          * However... using BD is slow, so let's allow returning
          * double as type if no explicit call has been made to access
          * data as BD?
          */
-        if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            return NumberType.BIG_DECIMAL;
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+                return NumberType.BIG_DECIMAL;
+            }
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return NumberType.DOUBLE;
+            }
+            return NumberType.FLOAT;
         }
-        if ((_numTypesValid & NR_DOUBLE) != 0) {
-            return NumberType.DOUBLE;
-        }
-        return NumberType.FLOAT;
+        return null;
     }
 
-    @Override // since 2.17
+    @Override
     public NumberTypeFP getNumberTypeFP() throws JacksonException
     {
         if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
@@ -2106,11 +2105,9 @@ public class CBORParser extends ParserBase
     {
         if ((_numTypesValid & NR_FLOAT) == 0) {
             if (_numTypesValid == NR_UNKNOWN) {
-                _checkNumericValue(NR_FLOAT);
+                _checkNumericValue();
             }
-            if ((_numTypesValid & NR_FLOAT) == 0) {
-                convertNumberToFloat();
-            }
+            convertNumberToFloat();
         }
         // Bounds/range checks would be tricky here, so let's not bother even trying...
         /*
@@ -2144,13 +2141,12 @@ public class CBORParser extends ParserBase
     /**********************************************************************
      */
 
-    protected void _checkNumericValue(int expType) throws JacksonException
+    protected void _checkNumericValue() throws JacksonException
     {
         // Int or float?
-        if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            return;
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            _reportError("Current token ("+_currToken+") not numeric, can not use numeric value accessors");
         }
-        _reportError("Current token ("+currentToken()+") not numeric, can not use numeric value accessors");
     }
 
     @Override // due to addition of Float as type
