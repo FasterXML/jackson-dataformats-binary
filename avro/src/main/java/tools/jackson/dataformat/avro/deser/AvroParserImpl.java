@@ -209,6 +209,10 @@ public abstract class AvroParserImpl
     @Override
     public final Number getNumberValue() throws JacksonException
     {
+        if (_numTypesValid == NR_UNKNOWN) {
+            _checkNumericValue(); // will also check event type
+        }
+
         // Separate types for int types
         if (_currToken == JsonToken.VALUE_NUMBER_INT) {
             if ((_numTypesValid & NR_INT) != 0) {
@@ -226,20 +230,16 @@ public abstract class AvroParserImpl
 
         // And then floating point types. But here optimal type
         // needs to be big decimal, to avoid losing any data?
-        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-                return _numberBigDecimal;
-            }
-            if ((_numTypesValid & NR_DOUBLE) != 0) {
-                return _numberDouble;
-            }
-            if ((_numTypesValid & NR_FLOAT) == 0) { // sanity check
-                _throwInternal();
-            }
-            return _numberFloat;
+        if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+            return _numberBigDecimal;
         }
-
-        return null;
+        if ((_numTypesValid & NR_DOUBLE) != 0) {
+            return _numberDouble;
+        }
+        if ((_numTypesValid & NR_FLOAT) == 0) { // sanity check
+            _throwInternal();
+        }
+        return _numberFloat;
     }
 
     @Override // @since 2.12 -- for (most?) binary formats exactness guaranteed anyway
@@ -250,9 +250,6 @@ public abstract class AvroParserImpl
     @Override
     public final NumberType getNumberType() throws JacksonException
     {
-        if (_numTypesValid == NR_UNKNOWN) {
-            _checkNumericValue(); // will also check event type
-        }
         if (_currToken == JsonToken.VALUE_NUMBER_INT) {
             if ((_numTypesValid & NR_INT) != 0) {
                 return NumberType.INT;
@@ -266,13 +263,17 @@ public abstract class AvroParserImpl
         // And then floating point types. Here optimal type should be big decimal,
         // to avoid losing any data? However... using BD is slow, so let's allow returning
         // double as type if no explicit call has been made to access data as BD?
-        if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
-            return NumberType.BIG_DECIMAL;
+        if (_currToken == JsonToken.VALUE_NUMBER_FLOAT) {
+            if ((_numTypesValid & NR_BIGDECIMAL) != 0) {
+                return NumberType.BIG_DECIMAL;
+            }
+            if ((_numTypesValid & NR_DOUBLE) != 0) {
+                return NumberType.DOUBLE;
+            }
+            return NumberType.FLOAT;
         }
-        if ((_numTypesValid & NR_DOUBLE) != 0) {
-            return NumberType.DOUBLE;
-        }
-        return NumberType.FLOAT;
+
+        return null;
     }
 
     @Override // since 2.17
