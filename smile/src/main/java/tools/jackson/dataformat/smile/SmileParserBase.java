@@ -253,8 +253,22 @@ public abstract class SmileParserBase extends ParserMinimalBase
     @Override
     protected abstract void _closeInput() throws JacksonException;
 
+    /**
+     * Method called to complete parsing of a numeric value: will throw
+     * {@link StreamReadException} if current token is not numeric.
+     *
+     * @throws StreamReadException if current token is not numeric
+     */
     protected abstract void _parseNumericValue() throws JacksonException;
 
+    /**
+     * Similar to {@link #_parseNumericValue()}, but will not throw exception
+     * if the current token is not a numeric value.
+     *
+     * @return {@code true} if current token is numeric; {@code false} otherwise
+     */
+    protected abstract boolean _parseNumericValueIfNumber() throws JacksonException;
+    
 //  public abstract int releaseBuffered(OutputStream out) throws JacksonException;
 //  public abstract Object getInputSource();
 
@@ -391,7 +405,9 @@ public abstract class SmileParserBase extends ParserMinimalBase
     public final NumberType getNumberType() throws JacksonException
     {
         if (_numTypesValid == NR_UNKNOWN) {
-            _parseNumericValue(); // will also check event type
+            if (!_parseNumericValueIfNumber()) {
+                return null;
+            }
         }
         return _numberType;
     }

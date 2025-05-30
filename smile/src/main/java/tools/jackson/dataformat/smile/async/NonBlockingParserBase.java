@@ -210,10 +210,16 @@ public abstract class NonBlockingParserBase
     // in future
     @Override
     protected void _parseNumericValue() throws JacksonException {
-        if (_currToken == JsonToken.VALUE_NUMBER_INT || _currToken == JsonToken.VALUE_NUMBER_FLOAT) {
-            return;
+        if (_currToken != JsonToken.VALUE_NUMBER_INT && _currToken != JsonToken.VALUE_NUMBER_FLOAT) {
+            _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
         }
-        _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
+    }
+
+    @Override
+    protected boolean _parseNumericValueIfNumber() throws JacksonException
+    {
+        // No incomplete values so just return
+        return false;
     }
 
     /*

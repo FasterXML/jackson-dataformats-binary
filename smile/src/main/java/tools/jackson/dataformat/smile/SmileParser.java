@@ -2264,6 +2264,21 @@ _typeAsInt);
         throw _constructReadException("Current token (%s) not numeric, cannot use numeric value accessors", _currToken);
     }
 
+    @Override
+    protected boolean _parseNumericValueIfNumber() throws JacksonException
+    {
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            int tb = _typeAsInt;
+             // ensure we got a numeric type with value that is lazily parsed
+            if ((tb >> 5) == 1) {
+                _finishNumberToken(tb);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /*
     @Override // since 2.6
     protected int _parseIntValue() throws JacksonException
