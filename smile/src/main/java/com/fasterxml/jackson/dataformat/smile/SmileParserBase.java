@@ -397,6 +397,8 @@ public abstract class SmileParserBase extends ParserMinimalBase
             _closed = true;
             _inputEnd = 0;
             _symbols.release();
+            // 30-May-2025, tatu: was missing before 2.20
+            _currToken = null;
             try {
                 _closeInput();
             } finally {

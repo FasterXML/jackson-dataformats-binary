@@ -20,6 +20,7 @@ import java.math.BigInteger;
 
 import com.amazon.ion.*;
 import com.amazon.ion.system.IonSystemBuilder;
+
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
@@ -36,6 +37,10 @@ public class IonParserTest
         Integer intValue = Integer.MAX_VALUE;
         IonValue ionInt = ion.newInt(intValue);
         IonParser intParser = new IonFactory().createParser(ionInt);
+
+        // initially no current token so:
+        _verifyGetNumberTypeFail(intParser, "null");
+        
         assertEquals(JsonToken.VALUE_NUMBER_INT, intParser.nextToken());
         assertEquals(JsonParser.NumberType.INT, intParser.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
@@ -44,14 +49,17 @@ public class IonParserTest
         Long longValue = Long.MAX_VALUE;
         IonValue ionLong = ion.newInt(longValue);
         IonParser longParser = new IonFactory().createParser(ionLong);
+        _verifyGetNumberTypeFail(longParser, "null");
         assertEquals(JsonToken.VALUE_NUMBER_INT, longParser.nextToken());
         assertEquals(JsonParser.NumberType.LONG, longParser.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
         assertEquals(longValue, longParser.getNumberValue());
+        assertNull(longParser.nextToken());
 
         BigInteger bigIntValue = new BigInteger(Long.MAX_VALUE + "1");
         IonValue ionBigInt = ion.newInt(bigIntValue);
         IonParser bigIntParser = new IonFactory().createParser(ionBigInt);
+        _verifyGetNumberTypeFail(bigIntParser, "null");
         assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntParser.nextToken());
         assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntParser.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, intParser.getNumberTypeFP());
@@ -60,6 +68,7 @@ public class IonParserTest
         Double decimalValue = Double.MAX_VALUE;
         IonValue ionDecimal = ion.newDecimal(decimalValue);
         IonParser decimalParser = new IonFactory().createParser(ionDecimal);
+        _verifyGetNumberTypeFail(decimalParser, "null");
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, decimalParser.nextToken());
         assertEquals(JsonParser.NumberType.BIG_DECIMAL, decimalParser.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, decimalParser.getNumberTypeFP());
@@ -68,6 +77,7 @@ public class IonParserTest
         Double floatValue = Double.MAX_VALUE;
         IonValue ionFloat = ion.newFloat(floatValue);
         IonParser floatParser = new IonFactory().createParser(ionFloat);
+        _verifyGetNumberTypeFail(floatParser, "null");
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, floatParser.nextToken());
         assertEquals(JsonParser.NumberType.DOUBLE, floatParser.getNumberType());
         // [dataformats-binary#490]: float coerces to double
@@ -77,6 +87,7 @@ public class IonParserTest
         BigDecimal bigDecimalValue = new BigDecimal(Double.MAX_VALUE + "1");
         IonValue ionBigDecimal = ion.newDecimal(bigDecimalValue);
         IonParser bigDecimalParser = new IonFactory().createParser(ionBigDecimal);
+        _verifyGetNumberTypeFail(bigDecimalParser, "null");
         assertEquals(JsonToken.VALUE_NUMBER_FLOAT, bigDecimalParser.nextToken());
         assertEquals(JsonParser.NumberType.BIG_DECIMAL, bigDecimalParser.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.BIG_DECIMAL, bigDecimalParser.getNumberTypeFP());
@@ -139,9 +150,11 @@ public class IonParserTest
             IonFactory f = new IonFactory();
             try (IonParser parser = (IonParser) f.createParser("[  12, true ) ]")) {
                 assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+                _verifyGetNumberTypeFail(parser, "START_ARRAY");
                 assertEquals(JsonToken.VALUE_NUMBER_INT, parser.nextValue());
                 assertEquals(12, parser.getIntValue());
                 assertEquals(JsonToken.VALUE_TRUE, parser.nextValue());
+                _verifyGetNumberTypeFail(parser, "VALUE_TRUE");
                 parser.nextValue();
             }
         });
@@ -192,5 +205,17 @@ public class IonParserTest
                 parser.getTypeAnnotations(); // Should encounter unknown symbol and fail
             }
         });
+    }
+
+    // 30-May-2025, tatu: NOTE: IonParser implements `JsonParser.getNumberType()` way
+    //  documented before 2.19 ("null for non-numeric types") unlike all other backends
+    //  (which throws StreamReadException). In 2.19.1 Javadocs were updated to reflect
+    //  actual behavior, so in theory IonParser is non-compliant. However, for compatibility
+    //  reasons we'll let that be.
+    //  Further, as per [jackson-core#1434], Jackson 3.0 will actually change definition
+    //  to NOT throw an exception but return null -- what Ion already does.
+    private void _verifyGetNumberTypeFail(JsonParser p, String token) throws Exception
+    {
+        assertNull(p.getNumberType());
     }
 }

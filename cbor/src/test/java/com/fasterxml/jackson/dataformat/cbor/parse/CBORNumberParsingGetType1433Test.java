@@ -51,8 +51,6 @@ public class CBORNumberParsingGetType1433Test
         _verifyGetNumberTypeFail(p, "VALUE_TRUE");
         assertToken(JsonToken.END_ARRAY, p.nextToken());
         _verifyGetNumberTypeFail(p, "END_ARRAY");
-        assertNull(p.nextToken());
-        _verifyGetNumberTypeFail(p, "null");
         p.close();
         _verifyGetNumberTypeFail(p, "null");
     }
