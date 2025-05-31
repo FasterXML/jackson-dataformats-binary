@@ -770,7 +770,9 @@ public class CBORParser extends ParserMinimalBase
             _closed = true;
             _symbols.release();
             // 30-May-2025, tatu: was missing before 2.20
-            _currToken = null;
+            if (JsonParser.Feature.CLEAR_CURRENT_TOKEN_ON_CLOSE.enabledIn(_features)) {
+                _currToken = null;
+            }
             try {
                 _closeInput();
             } finally {
