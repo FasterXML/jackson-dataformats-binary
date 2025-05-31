@@ -92,7 +92,7 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(6, bytes.length);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
 
         _verifyGetNumberTypeFail(p, "null");

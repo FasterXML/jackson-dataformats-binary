@@ -448,6 +448,10 @@ public class ProtobufParser extends ParserMinimalBase
         _state = STATE_CLOSED;
         if (!_closed) {
             _closed = true;
+            // 30-May-2025, tatu: was missing before 2.20
+            if (JsonParser.Feature.CLEAR_CURRENT_TOKEN_ON_CLOSE.enabledIn(_features)) {
+                _currToken = null;
+            }
             try {
                 _closeInput();
             } finally {
@@ -461,6 +465,12 @@ public class ProtobufParser extends ParserMinimalBase
                 _parsingContext = _parsingContext.getParent();
             }
             _parsingContext.setCurrentName(null);
+        } else {
+            // 31-May-2025, tatu: To work around [dataformats-binary#598],
+            //   need to forcibly clear current token even in this case
+            if (JsonParser.Feature.CLEAR_CURRENT_TOKEN_ON_CLOSE.enabledIn(_features)) {
+                _currToken = null;
+            }
         }
     }
 
