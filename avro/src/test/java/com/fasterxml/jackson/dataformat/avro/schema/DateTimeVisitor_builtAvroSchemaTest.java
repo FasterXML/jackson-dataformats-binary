@@ -68,8 +68,6 @@ public class DateTimeVisitor_builtAvroSchemaTest {
         // WHEN
         Schema actualSchema = dateTimeVisitor.builtAvroSchema();
 
-//        System.out.println(testClass.getName() + " schema:\n" + actualSchema.toString(true));
-
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(expectedAvroType);
         assertThat(actualSchema.getProp(LogicalType.LOGICAL_TYPE_PROP)).isEqualTo(expectedLogicalType);
