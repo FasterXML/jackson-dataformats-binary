@@ -62,11 +62,9 @@ public class RecordVisitor
      */
     private final Schema _typeSchema;
 
-    // !!! 19-May-2025: TODO: make final in 2.20
-    protected Schema _avroSchema;
+    protected final Schema _avroSchema;
 
-    // !!! 19-May-2025: TODO: make final in 2.20
-    protected List<Schema.Field> _fields = new ArrayList<>();
+    protected final List<Schema.Field> _fields = new ArrayList<>();
 
     public RecordVisitor(SerializerProvider p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
     {
@@ -82,12 +80,11 @@ public class RecordVisitor
             _typeSchema = null;
         } else {
             // If Avro schema for this _type results in UNION I want to know Avro type where to assign fields
-            _avroSchema = AvroSchemaHelper.initializeRecordSchema(bean);
-            _typeSchema = _avroSchema;
+            _typeSchema = AvroSchemaHelper.initializeRecordSchema(bean);
             _overridden = false;
             AvroMeta meta = bean.getClassInfo().getAnnotation(AvroMeta.class);
             if (meta != null) {
-                _avroSchema.addProp(meta.key(), meta.value());
+                _typeSchema.addProp(meta.key(), meta.value());
             }
 
             List<NamedType> subTypes = getProvider().getAnnotationIntrospector().findSubtypes(bean.getClassInfo());
@@ -126,10 +123,12 @@ public class RecordVisitor
                             unionSchemas.add(subTypeSchema);
                         }
                     }
-                    _avroSchema = Schema.createUnion(new ArrayList<>(unionSchemas));
                 } catch (JsonMappingException jme) {
                     throw new RuntimeJsonMappingException("Failed to build schema", jme);
                 }
+                _avroSchema = Schema.createUnion(new ArrayList<>(unionSchemas));
+            } else {
+                _avroSchema = _typeSchema;
             }
         }
         _visitorWrapper.getSchemas().addSchema(type, _avroSchema);
