@@ -1,16 +1,15 @@
 package com.fasterxml.jackson.dataformat.cbor.gen;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.*;
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -182,6 +181,98 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
     @Test
+    public void testUnsignedIntValues() throws Exception
+    {
+        // uint32 max
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator gen = cborGenerator(out);
+        gen.writeNumberUnsigned(-1);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT32_ELEMENTS),
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF);
+
+        // Min int
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(Integer.MIN_VALUE);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT32_ELEMENTS),
+                (byte) 0x80,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00);
+
+        // Truncated to 2 bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1000);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT16_ELEMENTS),
+                (byte) 0x03,
+                (byte) 0xE8);
+
+        // Truncated to 1 byte
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(100);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x64);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(25);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x19);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(24);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x18);
+
+        // Truncated to not take any extra bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(23);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x17);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(10);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x0A);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x01);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(0);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x00);
+    }
+
+    @Test
     public void testLongValues() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -199,6 +290,119 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0, b[1]);
         assertEquals(0, b[2]);
         assertEquals(0, b[3]);
+    }
+
+    @Test
+    public void testUnsignedLongValues() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator gen = cborGenerator(out);
+
+        // uint64 max
+        gen.writeNumberUnsigned(-1L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT64_ELEMENTS),
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF);
+
+        // Min long
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(Long.MIN_VALUE);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT64_ELEMENTS),
+                (byte) 0x80,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00);
+
+        // Truncated to 4 bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1000000L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT32_ELEMENTS),
+                (byte) 0x00,
+                (byte) 0x0F,
+                (byte) 0x42,
+                (byte) 0x40);
+
+        // Truncated to 2 bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1000L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT16_ELEMENTS),
+                (byte) 0x03,
+                (byte) 0xE8);
+
+        // Truncated to 1 byte
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(100L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x64);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(25L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x19);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(24L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x18);
+
+        // Truncated to not take any extra bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(23L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x17);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(10L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x0A);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x01);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(0L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x00);
     }
 
     @Test
