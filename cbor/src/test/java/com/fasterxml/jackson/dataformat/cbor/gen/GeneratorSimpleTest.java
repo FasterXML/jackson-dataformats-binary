@@ -1,15 +1,16 @@
 package com.fasterxml.jackson.dataformat.cbor.gen;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.*;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
