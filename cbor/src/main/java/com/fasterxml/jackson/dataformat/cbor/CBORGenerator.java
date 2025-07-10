@@ -1150,6 +1150,7 @@ public class CBORGenerator extends GeneratorBase
      * @param i Number value to write
      * @throws IOException if there is either an underlying I/O problem or encoding
      *                     issue at format layer
+     * @since 2.20
      */
     public void writeNumberUnsigned(int i) throws IOException {
         _verifyValueWrite("write number unsigned");
@@ -1205,6 +1206,7 @@ public class CBORGenerator extends GeneratorBase
      * @param l Number value to write
      * @throws IOException if there is either an underlying I/O problem or encoding
      *                     issue at format layer
+     * @since 2.20
      */
     public void writeNumberUnsigned(long l) throws IOException {
         if (_cfgMinimalInts && l >= 0 && l < 0x100000000L) {
