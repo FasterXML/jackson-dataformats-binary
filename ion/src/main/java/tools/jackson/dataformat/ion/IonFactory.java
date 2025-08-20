@@ -15,7 +15,6 @@
 package tools.jackson.dataformat.ion;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.Path;
 
 import tools.jackson.core.*;
@@ -263,16 +262,6 @@ public class IonFactory
     {
         final InputStream in = _pathInputStream(p);
         IOContext ioCtxt = _createContext(_createContentReference(p), true);
-        return _createParser(readCtxt, ioCtxt,
-                _decorate(ioCtxt, in));
-    }
-
-    @Deprecated // since 2.20
-    @Override
-    public JsonParser createParser(ObjectReadContext readCtxt, URL url) {
-        // true, since we create InputStream from URL
-        InputStream in = _optimizedStreamFromURL(url);
-        IOContext ioCtxt = _createContext(_createContentReference(url), true);
         return _createParser(readCtxt, ioCtxt,
                 _decorate(ioCtxt, in));
     }
