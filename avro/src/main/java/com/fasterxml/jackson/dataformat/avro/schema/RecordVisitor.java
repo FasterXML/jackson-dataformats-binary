@@ -98,9 +98,8 @@ public class RecordVisitor
                 // (see org.apache.avro.Schema.RecordSchema#computeHash).
                 // Therefore, unionSchemas must not be HashSet (or any other type
                 // using hashCode() for equality check).
-                // Set ensures that each subType schema is once in resulting union.
-                // IdentityHashMap is used because it is using reference-equality.
-                final Set<Schema> unionSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
+                // ArrayList ensures that ordering of subTypes is preserved.
+                final List<Schema> unionSchemas = new ArrayList<>();
                 // Initialize with this schema
                 if (_type.isConcrete()) {
                     unionSchemas.add(_typeSchema);
@@ -126,12 +125,26 @@ public class RecordVisitor
                 } catch (JsonMappingException jme) {
                     throw new RuntimeJsonMappingException("Failed to build schema", jme);
                 }
-                _avroSchema = Schema.createUnion(new ArrayList<>(unionSchemas));
+                _avroSchema = Schema.createUnion(deduplicateByReference(unionSchemas));
             } else {
                 _avroSchema = _typeSchema;
             }
         }
         _visitorWrapper.getSchemas().addSchema(type, _avroSchema);
+    }
+
+    private static List<Schema> deduplicateByReference(List<Schema> schemas) {
+        final List<Schema> result = new ArrayList<>();
+        // Set based on IdentityHashMap is used because we need to deduplicate by reference.
+        final Set<Schema> seenSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        for(Schema s : schemas) {
+            if(!seenSchemas.contains(s)) {
+                seenSchemas.add(s);        // marks as seen by reference
+                result.add(s);             // preserve order
+            }
+        }
+        return result;
     }
 
     @Override
