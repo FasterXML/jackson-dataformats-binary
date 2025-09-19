@@ -139,8 +139,7 @@ public class RecordVisitor
         final Set<Schema> seenSchemas = Collections.newSetFromMap(new IdentityHashMap<>());
 
         for(Schema s : schemas) {
-            if(!seenSchemas.contains(s)) {
-                seenSchemas.add(s);        // marks as seen by reference
+            if(seenSchemas.add(s)) {
                 result.add(s);             // preserve order
             }
         }
