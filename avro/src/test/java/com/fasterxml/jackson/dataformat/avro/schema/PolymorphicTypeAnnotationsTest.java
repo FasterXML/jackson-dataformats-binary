@@ -264,9 +264,17 @@ public class PolymorphicTypeAnnotationsTest {
     }
 
     @Union({
-            // Interface being explicitly in @Union led to StackOverflowError exception.
-            DocumentInterface.class,
-            Word.class, Excel.class})
+      // Interface being explicitly in @Union led to StackOverflowError exception.
+      DocumentInterface.class,
+      // We added a bunch of implementations to test deterministic ordering of the schemas' subtypes ordering.
+      Word.class,
+      Excel.class,
+      Pdf.class,
+      PowerPoint.class,
+      TextDocument.class,
+      Markdown.class,
+      HtmlDocument.class
+    })
     interface DocumentInterface {
     }
 
@@ -276,11 +284,32 @@ public class PolymorphicTypeAnnotationsTest {
     static class Excel implements DocumentInterface {
     }
 
+    static class Pdf implements DocumentInterface {
+    }
+
+    static class PowerPoint implements DocumentInterface {
+    }
+
+    static class TextDocument implements DocumentInterface {
+    }
+
+    static class Markdown implements DocumentInterface {
+    }
+
+    static class HtmlDocument implements DocumentInterface {
+    }
+
+
     @Test
     public void interface_explicitly_in_Union_annotation_test() throws Exception {
         // GIVEN
         final Schema wordSchema = MAPPER.schemaFor(Word.class).getAvroSchema();
         final Schema excelSchema = MAPPER.schemaFor(Excel.class).getAvroSchema();
+        final Schema pdfSchema = MAPPER.schemaFor(Pdf.class).getAvroSchema();
+        final Schema powerPointSchema = MAPPER.schemaFor(PowerPoint.class).getAvroSchema();
+        final Schema textSchema = MAPPER.schemaFor(TextDocument.class).getAvroSchema();
+        final Schema markdownSchema = MAPPER.schemaFor(Markdown.class).getAvroSchema();
+        final Schema htmlSchema = MAPPER.schemaFor(HtmlDocument.class).getAvroSchema();
 
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(DocumentInterface.class).getAvroSchema();
@@ -289,6 +318,16 @@ public class PolymorphicTypeAnnotationsTest {
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
-        assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(wordSchema, excelSchema);
+
+        // Deterministic order: exactly as declared in @Union (excluding the interface).
+        assertThat(actualSchema.getTypes()).containsExactly(
+          wordSchema,
+          excelSchema,
+          pdfSchema,
+          powerPointSchema,
+          textSchema,
+          markdownSchema,
+          htmlSchema
+        );
     }
 }
