@@ -2525,14 +2525,14 @@ public class CBORParser extends ParserMinimalBase
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final byte[] input = _inputBuffer;
+        int outPtr = 0;
         while (len > 0) {
             // load as much input as possible
             int size = Math.min(len, Math.min(outBuf.length, input.length));
             if (!_tryToLoadToHaveAtLeast(size)) {
                 return len;
             }
-            int outEnd = size;
-            int outPtr = 0;
+            int outEnd = size + outPtr;
             int inPtr = _inputPtr;
             int i = 0;
             // Tight loop to copy into the output buffer, bail if a non-ascii char is found
@@ -2550,9 +2550,11 @@ public class CBORParser extends ParserMinimalBase
             _inputPtr = inPtr;
             if (outPtr >= outBuf.length) {
                 outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
             }
             len -= size;
         }
+        _textBuffer.setCurrentLength(outPtr);
         return len;
     }
 
