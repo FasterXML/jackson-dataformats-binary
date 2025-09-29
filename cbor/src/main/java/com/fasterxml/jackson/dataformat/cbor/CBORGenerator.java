@@ -25,6 +25,9 @@ public class CBORGenerator extends GeneratorBase
 {
     private final static int[] NO_INTS = new int[0];
 
+    // @since 2.20
+    private final static BigInteger BI_MINUS_ONE = BigInteger.ONE.negate();
+
     /**
      * Let's ensure that we have big enough output buffer because of safety
      * margins we need for UTF-8 encoding.
@@ -115,6 +118,25 @@ public class CBORGenerator extends GeneratorBase
          * @since 2.15
          */
         WRITE_MINIMAL_DOUBLES(false),
+
+        /**
+         * Feature that determines how binary tagged negative BigInteger values are
+         * encoded: either using CBOR standard encoding logic (as per spec),
+         * or using legacy Jackson encoding logic (encoding up to Jackson 2.19).
+         * When enabled, uses CBOR standard specified encoding of negative values
+         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x00]}).
+         * When disabled, maintains backwards compatibility with existing implementations
+         * (e.g., -1 is encoded {@code [0xC3, 0x41, 0x01]}) and uses legacy Jackson encoding.
+         *<p>
+         * Note that there is the counterpart
+         * {@link CBORParser.Feature#DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING}
+         * for encoding.
+         *<p>
+         * Default value is {@code false} for backwards-compatibility.
+         *
+         * @since 2.20
+         */
+        ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false)
         ;
 
         protected final boolean _defaultState;
@@ -1120,6 +1142,21 @@ public class CBORGenerator extends GeneratorBase
         _writeByte(BYTE_NULL);
     }
 
+    /**
+     * Method for outputting given value as an unsigned integer.
+     * Can be called in any context where a value is expected
+     * (Array value, Object field value, root-level value).
+     *
+     * @param i Number value to write
+     * @throws IOException if there is either an underlying I/O problem or encoding
+     *                     issue at format layer
+     * @since 2.20
+     */
+    public void writeNumberUnsigned(int i) throws IOException {
+        _verifyValueWrite("write number unsigned");
+        _writeIntMinimal(PREFIX_TYPE_INT_POS, i);
+    }
+
     @Override
     public void writeNumber(int i) throws IOException {
         _verifyValueWrite("write number");
@@ -1159,6 +1196,34 @@ public class CBORGenerator extends GeneratorBase
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
         _outputBuffer[_outputTail++] = b0;
+    }
+
+    /**
+     * Method for outputting given value as an unsigned integer.
+     * Can be called in any context where a value is expected
+     * (Array value, Object field value, root-level value).
+     *
+     * @param l Number value to write
+     * @throws IOException if there is either an underlying I/O problem or encoding
+     *                     issue at format layer
+     * @since 2.20
+     */
+    public void writeNumberUnsigned(long l) throws IOException {
+        if (_cfgMinimalInts && l >= 0 && l < 0x100000000L) {
+            writeNumberUnsigned((int) l);
+            return;
+        }
+        _verifyValueWrite("write number unsigned");
+        _ensureRoomForOutput(9);
+        _outputBuffer[_outputTail++] = (byte) (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
+        _outputBuffer[_outputTail++] = (byte) (l >> 56);
+        _outputBuffer[_outputTail++] = (byte) (l >> 48);
+        _outputBuffer[_outputTail++] = (byte) (l >> 40);
+        _outputBuffer[_outputTail++] = (byte) (l >> 32);
+        _outputBuffer[_outputTail++] = (byte) (l >> 24);
+        _outputBuffer[_outputTail++] = (byte) (l >> 16);
+        _outputBuffer[_outputTail++] = (byte) (l >> 8);
+        _outputBuffer[_outputTail++] = (byte) l;
     }
 
     @Override
@@ -1210,14 +1275,17 @@ public class CBORGenerator extends GeneratorBase
     // Main write method isolated so that it can be called directly
     // in cases where that is needed (to encode BigDecimal)
     protected void _write(BigInteger v) throws IOException {
-        /*
-         * Supported by using type tags, as per spec: major type for tag '6'; 5
+        /* Supported by using type tags, as per spec: major type for tag '6'; 5
          * LSB either 2 for positive bignum or 3 for negative bignum. And then
          * byte sequence that encode variable length integer.
          */
         if (v.signum() < 0) {
             _writeByte(BYTE_TAG_BIGNUM_NEG);
-            v = v.negate();
+            if (isEnabled(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)) {
+                v = BI_MINUS_ONE.subtract(v);
+            } else {
+                v = v.negate();
+            }
         } else {
             _writeByte(BYTE_TAG_BIGNUM_POS);
         }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
@@ -91,10 +92,13 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(6, bytes.length);
 
         // actually let's also try via streaming parser
-        JsonParser p = MAPPER.getFactory().createParser(bytes);
+        JsonParser p = MAPPER.createParser(bytes);
         p.setSchema(schema);
+
+        _verifyGetNumberTypeFail(p, "null");
         assertToken(JsonToken.START_OBJECT, p.nextToken());
         assertNull(p.currentName());
+        _verifyGetNumberTypeFail(p, "START_OBJECT");
         assertToken(JsonToken.FIELD_NAME, p.nextToken());
         assertEquals("x", p.currentName());
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -109,8 +113,10 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, p.getIntValue());
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         assertNull(p.currentName());
+        _verifyGetNumberTypeFail(p, "END_OBJECT");
         p.close();
         assertNull(p.currentName());
+        _verifyGetNumberTypeFail(p, "null");
     }
 
     @Test
@@ -467,6 +473,16 @@ public class ReadSimpleTest extends ProtobufTestBase
             String message = jme.getMessage();
             assertTrue(message.startsWith("String value length (4) exceeds the maximum allowed"),
                     "unexpected message: " + message);
+        }
+    }
+
+    private void _verifyGetNumberTypeFail(JsonParser p, String token) throws Exception
+    {
+        try {
+            p.getNumberType();
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Current token ("+token+") not numeric, can not use numeric");
         }
     }
 }

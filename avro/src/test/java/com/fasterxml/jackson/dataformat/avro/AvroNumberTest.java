@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.avro.testsupport.LimitingInputStream;
@@ -69,8 +70,12 @@ public class AvroNumberTest extends AvroTestBase
         byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
         JsonParser p = MAPPER.getFactory()
                 .createParser(LimitingInputStream.wrap(bytes, 42));
+
         p.setSchema(schema);
+
+        _verifyGetNumberTypeFail(p, "null");
         assertToken(JsonToken.START_OBJECT, p.nextToken());
+        _verifyGetNumberTypeFail(p, "START_OBJECT");
 
         assertTrue(p.nextFieldName(new SerializedString("i")));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -122,6 +127,19 @@ public class AvroNumberTest extends AvroTestBase
         assertEquals(Double.valueOf(input.d), p.getNumberValue());
 
         assertToken(JsonToken.END_OBJECT, p.nextToken());
+        _verifyGetNumberTypeFail(p, "END_OBJECT");
         p.close();
+
+        _verifyGetNumberTypeFail(p, "null");
+    }
+
+    private void _verifyGetNumberTypeFail(JsonParser p, String token) throws Exception
+    {
+        try {
+            p.getNumberType();
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Current token ("+token+") not numeric, can not use numeric");
+        }
     }
 }

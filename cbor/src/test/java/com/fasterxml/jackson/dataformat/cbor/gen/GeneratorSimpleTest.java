@@ -182,6 +182,98 @@ public class GeneratorSimpleTest extends CBORTestBase
     }
 
     @Test
+    public void testUnsignedIntValues() throws Exception
+    {
+        // uint32 max
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator gen = cborGenerator(out);
+        gen.writeNumberUnsigned(-1);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT32_ELEMENTS),
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF);
+
+        // Min int
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(Integer.MIN_VALUE);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT32_ELEMENTS),
+                (byte) 0x80,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00);
+
+        // Truncated to 2 bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1000);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT16_ELEMENTS),
+                (byte) 0x03,
+                (byte) 0xE8);
+
+        // Truncated to 1 byte
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(100);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x64);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(25);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x19);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(24);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x18);
+
+        // Truncated to not take any extra bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(23);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x17);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(10);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x0A);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x01);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(0);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x00);
+    }
+
+    @Test
     public void testLongValues() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -199,6 +291,119 @@ public class GeneratorSimpleTest extends CBORTestBase
         assertEquals(0, b[1]);
         assertEquals(0, b[2]);
         assertEquals(0, b[3]);
+    }
+
+    @Test
+    public void testUnsignedLongValues() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CBORGenerator gen = cborGenerator(out);
+
+        // uint64 max
+        gen.writeNumberUnsigned(-1L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT64_ELEMENTS),
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF);
+
+        // Min long
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(Long.MIN_VALUE);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT64_ELEMENTS),
+                (byte) 0x80,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00);
+
+        // Truncated to 4 bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1000000L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT32_ELEMENTS),
+                (byte) 0x00,
+                (byte) 0x0F,
+                (byte) 0x42,
+                (byte) 0x40);
+
+        // Truncated to 2 bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1000L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT16_ELEMENTS),
+                (byte) 0x03,
+                (byte) 0xE8);
+
+        // Truncated to 1 byte
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(100L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x64);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(25L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x19);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(24L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) (CBORConstants.PREFIX_TYPE_INT_POS + CBORConstants.SUFFIX_UINT8_ELEMENTS),
+                (byte) 0x18);
+
+        // Truncated to not take any extra bytes
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(23L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x17);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(10L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x0A);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(1L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x01);
+
+        out = new ByteArrayOutputStream();
+        gen = cborGenerator(out);
+        gen.writeNumberUnsigned(0L);
+        gen.close();
+        _verifyBytes(out.toByteArray(),
+                (byte) 0x00);
     }
 
     @Test
@@ -257,6 +462,147 @@ public class GeneratorSimpleTest extends CBORTestBase
         };
         assertEquals(spec.length, b.length);
         assertArrayEquals(spec, b);
+    }
+
+    // [dataformats-binary#431]
+    // [https://datatracker.ietf.org/doc/html/rfc8949#section-3.4.3]
+    @Test
+    public void testSimpleBigIntegerEncoding() throws Exception
+    {
+        BigInteger minusOne = BigInteger.valueOf(-1);
+        byte[] expectedBytes = {
+                (byte) 0xC3,  // tag 3 (negative bignum)
+                (byte) 0x41   // byte string, length 1
+        };
+
+        // Test correct encoding
+        CBORFactory factory = CBORFactory.builder()
+                .enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
+        try (CBORGenerator gen1 = factory.createGenerator(correctOut)) {
+            gen1.writeNumber(minusOne);
+        }
+
+        byte[] result1 = correctOut.toByteArray();
+        assertEquals(3, result1.length);
+        assertEquals(expectedBytes[0], result1[0]);
+        assertEquals(expectedBytes[1], result1[1]);
+        assertEquals(0x00, result1[2]);
+
+        // Test incorrect encoding for compatibility
+        ByteArrayOutputStream incorrectOut = new ByteArrayOutputStream();
+        factory = CBORFactory.builder()
+                .disable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen2 = factory.createGenerator(incorrectOut)) {
+            gen2.writeNumber(minusOne);
+        }
+
+        byte[] result2 = incorrectOut.toByteArray();
+        assertEquals(3, result2.length);
+        assertEquals(expectedBytes[0], result2[0]);
+        assertEquals(expectedBytes[1], result2[1]);
+        assertEquals(0x01, result2[2]);
+    }
+
+    // [dataformats-binary#431]
+    // [https://datatracker.ietf.org/doc/html/rfc8949#section-3.4.3]
+    @Test
+    public void testZeroBigIntegerEncoding() throws Exception {
+        BigInteger zero = BigInteger.valueOf(0);
+        byte[] expectedBytes = {
+                (byte) 0xC2,  // tag 2 (positive bignum)
+                (byte) 0x41,   // byte string, 1 byte
+                (byte) 0x00,   // 0
+        };
+
+        ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
+        CBORFactory factory = CBORFactory.builder()
+                .enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen1 = factory.createGenerator(correctOut)) {
+            gen1.writeNumber(zero);
+        }
+
+        byte[] result = correctOut.toByteArray();
+        assertEquals(3, result.length);
+        assertArrayEquals(expectedBytes, result);
+    }
+
+    // [dataformats-binary#431]
+    // [https://datatracker.ietf.org/doc/html/rfc8949#section-3.4.3]
+    @Test
+    public void testNegativeBigIntegerEncoding() throws Exception {
+        BigInteger negativeBigInteger = new BigInteger("-340282366920938463463374607431768211456");
+        // correct encoding: https://cbor.me/?bytes=c35100ffffffffffffffffffffffffffffffff
+        byte[] expectedBytes = {
+                (byte) 0xC3,
+                (byte) 0x51,
+                (byte) 0x00,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF,
+                (byte) 0xFF
+        };
+
+        // Test correct encoding
+        ByteArrayOutputStream correctOut = new ByteArrayOutputStream();
+        CBORFactory factory = CBORFactory.builder()
+                .enable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen1 = factory.createGenerator(correctOut)) {
+            gen1.writeNumber(negativeBigInteger);
+        }
+        byte[] result1 = correctOut.toByteArray();
+        assertArrayEquals(expectedBytes, result1);
+
+        // Test incorrect encoding for compatibility
+        // incorrect encoding: https://cbor.me/?bytes=c3510100000000000000000000000000000000
+        byte[] legacyExpectedBytes = {
+                (byte) 0xC3,
+                (byte) 0x51,
+                (byte) 0x01,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+        };
+        ByteArrayOutputStream incorrectOut = new ByteArrayOutputStream();
+        factory = CBORFactory.builder()
+                .disable(CBORGenerator.Feature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING)
+                .build();
+        try (CBORGenerator gen2 = factory.createGenerator(incorrectOut)) {
+            gen2.writeNumber(negativeBigInteger);
+        }
+
+        byte[] result2 = incorrectOut.toByteArray();
+        assertEquals(19, result2.length);
+        assertArrayEquals(legacyExpectedBytes, result2);
     }
 
     @Test

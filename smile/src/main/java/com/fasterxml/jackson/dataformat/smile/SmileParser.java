@@ -1975,16 +1975,16 @@ versionBits));
     @Override
     protected void _parseNumericValue() throws IOException
     {
-        if (!_tokenIncomplete) {
-            _reportError("Internal error: number token (%s) decoded, no value set", _currToken);
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            int tb = _typeAsInt;
+    	        // ensure we got a numeric type with value that is lazily parsed
+            if ((tb >> 5) == 1) {
+                _finishNumberToken(tb);
+                return;
+            }
         }
-        _tokenIncomplete = false;
-        int tb = _typeAsInt;
-	        // ensure we got a numeric type with value that is lazily parsed
-        if ((tb >> 5) != 1) {
-            _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
-        }
-        _finishNumberToken(tb);
+        _reportError("Current token (%s) not numeric, can not use numeric value accessors", _currToken);
     }
 
     /*

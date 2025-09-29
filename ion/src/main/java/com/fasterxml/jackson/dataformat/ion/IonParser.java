@@ -254,6 +254,10 @@ public class IonParser
     @Override
     public void close() throws IOException {
         if (!_closed) {
+            // 30-May-2025, tatu: was missing before 2.20
+            if (JsonParser.Feature.CLEAR_CURRENT_TOKEN_ON_CLOSE.enabledIn(_features)) {
+                _currToken = null;
+            }
             // should only close if manage the resource
             if (_ioContext.isResourceManaged()) {
                 Object src = _ioContext.contentReference().getRawContent();
@@ -448,6 +452,10 @@ public class IonParser
         }
     }
 
+    // NOTE: Ion implementation follows original (up to 2.19) JsonParser Javadocs
+    // behavior (if non-number, return `null`), which is different from other
+    // backends (if non-number, throw exception). But since 3.0 will switch to
+    // "return null for non-numbers", Ion behavior is retained in 2.20+.
     @Override
     public NumberType getNumberType() throws IOException
     {

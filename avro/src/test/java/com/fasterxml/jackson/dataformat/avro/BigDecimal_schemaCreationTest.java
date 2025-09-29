@@ -39,8 +39,6 @@ public class BigDecimal_schemaCreationTest extends AvroTestBase {
         // because logical types are disabled by default.
         final Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
 
-        System.out.println(BigDecimalWithAvroDecimalAnnotationWrapper.class.getSimpleName() + " schema:" + actualSchema.toString(true));
-
         // THEN
         assertThat(actualSchema.getField("bigDecimalValue")).isNotNull();
         Schema bigDecimalValue = actualSchema.getField("bigDecimalValue").schema();
@@ -58,8 +56,6 @@ public class BigDecimal_schemaCreationTest extends AvroTestBase {
         // WHEN
         MAPPER.acceptJsonFormatVisitor(BigDecimalWithAvroDecimalAnnotationWrapper.class, gen);
         final Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
-
-        System.out.println(BigDecimalWithAvroDecimalAnnotationWrapper.class.getSimpleName() + " schema:" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getField("bigDecimalValue")).isNotNull();
@@ -89,8 +85,6 @@ public class BigDecimal_schemaCreationTest extends AvroTestBase {
         // WHEN
         MAPPER.acceptJsonFormatVisitor(BigDecimalWithAvroDecimalAnnotationToFixedWrapper.class, gen);
         final Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
-
-        System.out.println(BigDecimalWithAvroDecimalAnnotationToFixedWrapper.class.getSimpleName() + " schema:" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getField("bigDecimalValue")).isNotNull();

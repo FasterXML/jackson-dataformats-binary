@@ -214,7 +214,7 @@ public class SmileNumberParsingTest
     }
 
     @Test
-    public void testFloats() throws IOException
+    public void testFloats() throws Exception
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         SmileGenerator g = smileGenerator(bo, false);
@@ -240,7 +240,7 @@ public class SmileNumberParsingTest
     }
 
     @Test
-    public void testDoubles() throws IOException
+    public void testDoubles() throws Exception
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         SmileGenerator g = smileGenerator(bo, false);
@@ -265,6 +265,38 @@ public class SmileNumberParsingTest
         p.close();
     }
 
+    // [dataformats-binary#608]
+    @Test
+    public void testFloat32FromSpecEncoding() throws Exception {
+        final float f32 = 29.9510f;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = smileGenerator(out, false)) {
+            gen.writeNumber(f32);
+        }
+        try (SmileParser p = _smileParser(out.toByteArray())) {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(JsonParser.NumberType.FLOAT, p.getNumberType());
+            assertEquals(f32, p.getFloatValue());
+            assertNull(p.nextToken());
+        }
+    }
+
+    // [dataformats-binary#608]
+    @Test
+    public void testDouble64FromSpecEncoding() throws Exception {
+        final double d64 = -29.9510;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = smileGenerator(out, false)) {
+            gen.writeNumber(d64);
+        }
+        try (SmileParser p = _smileParser(out.toByteArray())) {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(JsonParser.NumberType.DOUBLE, p.getNumberType());
+            assertEquals(d64, p.getDoubleValue());
+            assertNull(p.nextToken());
+        }
+    }
+    
     @Test
     public void testArrayWithDoubles() throws IOException
     {

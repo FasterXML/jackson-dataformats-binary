@@ -28,11 +28,57 @@ public class CBORParser extends ParserMinimalBase
      */
     public enum Feature implements FormatFeature
     {
-//        BOGUS(false)
+        /**
+         * Feature that determines how binary tagged negative BigInteger values are
+         * decoded: either assuming CBOR standard encoding logic (as per spec),
+         * or the legacy Jackson encoding logic (encoding up to Jackson 2.19).
+         * When enabled, ensures proper encoding of negative values
+         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded as -1)
+         * When disabled, maintains backwards compatibility with existing implementations
+         * (e.g., {@code [0xC3, 0x41, 0x00]} is decoded as 0).
+         *<p>
+         * Note that there is the counterpart
+         * {@link CBORGenerator.Feature#ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING}
+         * for encoding.
+         *<p>
+         * The default value is {@code false} for backwards compatibility.
+         *
+         * @since 2.20
+         */
+        DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING(false),
+
+        /**
+         * Feature that determines how an {@code undefined} value ({@code 0xF7}) is exposed
+         * by parser.
+         * <p>
+         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
+         * a value of {@code null}, allowing the caller to distinguish {@code undefined} from actual
+         * {@link JsonToken#VALUE_NULL}.
+         * When disabled {@code undefined} value is reported as {@link JsonToken#VALUE_NULL}.
+         *<p>
+         * The default value is {@code false} for backwards compatibility (with versions prior to 2.20).
+         *
+         * @since 2.20
+         */
+        READ_UNDEFINED_AS_EMBEDDED_OBJECT(false),
+
+        /**
+         * Feature that determines how a CBOR "simple value" of major type 7 is exposed by parser.
+         * <p>
+         * When enabled, the parser returns {@link JsonToken#VALUE_EMBEDDED_OBJECT} with
+         * an embedded value of type {@link CBORSimpleValue}, allowing the caller to distinguish
+         * these values from actual {@link JsonToken#VALUE_NUMBER_INT}s.
+         * When disabled, simple values are returned as {@link JsonToken#VALUE_NUMBER_INT}.
+         *<p>
+         * The default value is {@code false} for backwards compatibility (with versions prior to 2.20).
+         *
+         * @since 2.20
+         */
+        READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT(false)
         ;
 
-        final boolean _defaultState;
-        final int _mask;
+        private final boolean _defaultState;
+        private final int _mask;
 
         /**
          * Method that calculates bit set (flags) of all features that
@@ -147,6 +193,9 @@ public class CBORParser extends ParserMinimalBase
 
     private final static int[] UTF8_UNIT_CODES = CBORConstants.sUtf8UnitLengths;
 
+    // @since 2.20
+    private final static BigInteger BI_MINUS_ONE = BigInteger.ONE.negate();
+
     // Constants for handling of 16-bit "mini-floats"
     private final static double MATH_POW_2_10 = Math.pow(2, 10);
     private final static double MATH_POW_2_NEG14 = Math.pow(2, -14);
@@ -164,6 +213,14 @@ public class CBORParser extends ParserMinimalBase
     /* Configuration
     /**********************************************************
      */
+
+    /**
+     * Bit flag composed of bits that indicate which
+     * {@link CBORParser.Feature}s are enabled.
+     *<p>
+     * @since 2.20
+     */
+    protected int _formatFeatures;
 
     /**
      * Codec used for data binding when (if) requested.
@@ -320,6 +377,14 @@ public class CBORParser extends ParserMinimalBase
      */
     protected TagList _tagValues = new TagList();
 
+    /**
+     * When major type 7 value is encountered and exposed as {@link JsonToken#VALUE_EMBEDDED_OBJECT},
+     * the value will be stored here.
+     *
+     * @since 2.20
+     */
+    protected CBORSimpleValue _simpleValue;
+    
     /**
      * Flag that indicates that the current token has not yet
      * been fully processed, and needs to be finished for
@@ -515,6 +580,7 @@ public class CBORParser extends ParserMinimalBase
             boolean bufferRecyclable)
     {
         super(parserFeatures, ctxt.streamReadConstraints());
+        _formatFeatures = cborFeatures;
         _ioContext = ctxt;
         _objectCodec = codec;
         _symbols = sym;
@@ -561,12 +627,15 @@ public class CBORParser extends ParserMinimalBase
     /**********************************************************
      */
 
-//    public JsonParser overrideStdFeatures(int values, int mask)
+    @Override
+    public final JsonParser overrideFormatFeatures(int values, int mask) {
+        _formatFeatures = (_formatFeatures & ~mask) | (values & mask);
+        return this;
+    }
 
     @Override
-    public int getFormatFeatures() {
-        // No parser features, yet
-        return 0;
+    public final int getFormatFeatures() {
+        return _formatFeatures;
     }
 
     @Override // since 2.12
@@ -700,6 +769,10 @@ public class CBORParser extends ParserMinimalBase
         if (!_closed) {
             _closed = true;
             _symbols.release();
+            // 30-May-2025, tatu: was missing before 2.20
+            if (JsonParser.Feature.CLEAR_CURRENT_TOKEN_ON_CLOSE.enabledIn(_features)) {
+                _currToken = null;
+            }
             try {
                 _closeInput();
             } finally {
@@ -777,9 +850,9 @@ public class CBORParser extends ParserMinimalBase
             _skipIncomplete();
         }
         _tokenInputTotal = _currInputProcessed + _inputPtr;
-        // also: clear any data retained so far
-        _numTypesValid = NR_UNKNOWN;
-        _binaryValue = null;
+
+        // also: clear any data retained for previous token
+        _clearRetainedValues();
 
         // First: need to keep track of lengths of defined-length Arrays and
         // Objects (to materialize END_ARRAY/END_OBJECT as necessary);
@@ -1123,9 +1196,15 @@ public class CBORParser extends ParserMinimalBase
             _numberBigInt = BigInteger.ZERO;
         } else {
             _streamReadConstraints.validateIntegerLength(_binaryValue.length);
-            BigInteger nr = new BigInteger(_binaryValue);
+            final BigInteger nr;
             if (neg) {
-                nr = nr.negate();
+                if (Feature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING.enabledIn(_formatFeatures)) {
+                    nr = BI_MINUS_ONE.subtract(new BigInteger(1, _binaryValue));
+                } else {
+                    nr = new BigInteger(_binaryValue).negate();
+                }
+            } else {
+                nr = new BigInteger(_binaryValue);
             }
             _numberBigInt = nr;
         }
@@ -1400,12 +1479,12 @@ public class CBORParser extends ParserMinimalBase
     {
         // Two parsing modes; can only succeed if expecting field name, so handle that first:
         if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
-            _binaryValue = null;
+            // need to clear retained values for previous token
+            _clearRetainedValues();
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
@@ -1453,19 +1532,19 @@ public class CBORParser extends ParserMinimalBase
             }
         }
         // otherwise just fall back to default handling; should occur rarely
-        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
+        return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(currentName());
     }
 
     @Override
     public String nextFieldName() throws IOException
     {
         if (_streamReadContext.inObject() && _currToken != JsonToken.FIELD_NAME) {
-            _numTypesValid = NR_UNKNOWN;
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
             _tokenInputTotal = _currInputProcessed + _inputPtr;
-            _binaryValue = null;
+            // need to clear retained values for previous token
+            _clearRetainedValues();
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
@@ -1790,7 +1869,10 @@ public class CBORParser extends ParserMinimalBase
         if (_tokenIncomplete) {
             _finishToken();
         }
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT ) {
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
+            if (_simpleValue != null) {
+                return _simpleValue;
+            }
             return _binaryValue;
         }
         return null;
@@ -1875,6 +1957,25 @@ public class CBORParser extends ParserMinimalBase
             _binaryValue = builder.toByteArray();
         }
         return _binaryValue;
+    }
+
+    /**
+     * Checking whether the current token represents an `undefined` value (0xF7).
+     * <p>
+     * This method allows distinguishing between real {@code null} and {@code undefined},
+     * even if {@link CBORParser.Feature#READ_UNDEFINED_AS_EMBEDDED_OBJECT} is disabled
+     * and the token is reported as {@link JsonToken#VALUE_NULL}.
+     *
+     * @return {@code true} if current token is an {@code undefined}, {@code false} otherwise
+     *
+     * @since 2.20
+     */
+    public boolean isUndefined() {
+        if ((_currToken == JsonToken.VALUE_NULL) || (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT)) {
+            return (_inputBuffer != null)
+                    && (_inputBuffer[_inputPtr - 1] & 0xFF) == SIMPLE_VALUE_UNDEFINED;
+        }
+        return false;
     }
 
     /*
@@ -3620,13 +3721,22 @@ expType, type, ch));
      * Helper method to encapsulate details of handling of mysterious `undefined` value
      * that is allowed to be used as something encoder could not handle (as per spec),
      * whatever the heck that should be.
-     * Current definition for 2.9 is that we will be return {@link JsonToken#VALUE_NULL}, but
-     * for later versions it is likely that we will alternatively allow decoding as
-     * {@link JsonToken#VALUE_EMBEDDED_OBJECT} with "embedded value" of `null`.
+     * <p>
+     * For backward compatibility with Jackson 2.10 to 2.19, this value is decoded
+     * as {@link JsonToken#VALUE_NULL} by default.
+     * <p>
      *
-     * @since 2.9.6
+     * since 2.20 If {@link CBORParser.Feature#READ_UNDEFINED_AS_EMBEDDED_OBJECT} is enabled,
+     * the value will instead be decoded as {@link JsonToken#VALUE_EMBEDDED_OBJECT}
+     * with an embedded value of {@code null}.
+     *
+     * @since 2.10
      */
-    protected JsonToken _decodeUndefinedValue() throws IOException {
+    protected JsonToken _decodeUndefinedValue() {
+        if (Feature.READ_UNDEFINED_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures)) {
+            _binaryValue = null; // should be clear but just in case
+            return JsonToken.VALUE_EMBEDDED_OBJECT;
+        }
         return JsonToken.VALUE_NULL;
     }
 
@@ -3634,9 +3744,10 @@ expType, type, ch));
      * Helper method that deals with details of decoding unallocated "simple values"
      * and exposing them as expected token.
      * <p>
-     * As of Jackson 2.12, simple values are exposed as
-     * {@link JsonToken#VALUE_NUMBER_INT}s,
-     * but in later versions this is planned to be changed to separate value type.
+     * Starting with Jackson 2.20, this behavior can be changed by enabling the
+     * {@link CBORParser.Feature#READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT}
+     * feature, in which case simple values are returned as {@link JsonToken#VALUE_EMBEDDED_OBJECT} with an
+     * embedded {@link CBORSimpleValue} instance.
      *
      * @since 2.12
      */
@@ -3644,28 +3755,39 @@ expType, type, ch));
         if (lowBits > 24) {
             _invalidToken(ch);
         }
+        final boolean simpleAsEmbedded = Feature.READ_SIMPLE_VALUE_AS_EMBEDDED_OBJECT.enabledIn(_formatFeatures);
         if (lowBits < 24) {
-            _numberInt = lowBits;
+            if (simpleAsEmbedded) {
+                _simpleValue = new CBORSimpleValue(lowBits);
+            } else {
+                _numberInt = lowBits;
+            }
         } else { // need another byte
             if (_inputPtr >= _inputEnd) {
                 loadMoreGuaranteed();
             }
-            _numberInt = _inputBuffer[_inputPtr++] & 0xFF;
+
             // As per CBOR spec, values below 32 not allowed to avoid
             // confusion (as well as guarantee uniqueness of encoding)
-            if (_numberInt < 32) {
+            int value = _inputBuffer[_inputPtr++] & 0xFF;
+            if (value < 32) {
                 throw _constructError("Invalid second byte for simple value: 0x"
-                        +Integer.toHexString(_numberInt)+" (only values 0x20 - 0xFF allowed)");
+                        +Integer.toHexString(value)+" (only values 0x20 - 0xFF allowed)");
+            }
+
+            if (simpleAsEmbedded) {
+                _simpleValue = new CBORSimpleValue(value);
+            } else {
+                _numberInt = value;
             }
         }
 
-        // 25-Nov-2020, tatu: Although ideally we should report these
-        //    as `JsonToken.VALUE_EMBEDDED_OBJECT`, due to late addition
-        //    of handling in 2.12, simple value in 2.12 will be reported
-        //    as simple ints.
+        if (simpleAsEmbedded) {
+            return JsonToken.VALUE_EMBEDDED_OBJECT;
+        }
 
         _numTypesValid = NR_INT;
-        return (JsonToken.VALUE_NUMBER_INT);
+        return JsonToken.VALUE_NUMBER_INT;
     }
 
     /*
@@ -4021,5 +4143,12 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     private void createChildObjectContext(final int len) throws IOException {
         _streamReadContext = _streamReadContext.createChildObjectContext(len);
         _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
+    }
+
+    // @since 2.20
+    protected void _clearRetainedValues() {
+        _numTypesValid = NR_UNKNOWN;
+        _binaryValue = null;
+        _simpleValue = null;
     }
 }

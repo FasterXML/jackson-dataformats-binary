@@ -14,9 +14,34 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.20.0 (not yet released)
+2.21.0 (not yet released)
 
-No changes since 2.19
+No changes since 2.20
+
+2.20.1 (not yet released)
+
+#601: Jackson subtype Avro schema unions are non-deterministic and therefore
+  incompatible with each other
+ (reported by Raphael W)
+ (fix by Vincent E)
+
+2.20.0 (28-Aug-2025)
+
+#137: (cbor) Allow exposing CBOR "undefined" value as `JsonToken.VALUE_EMBEDDED_OBJECT`;
+  with embedded value of `null`
+ (implementation contributed by Fawzi E)
+#431: (cbor) Negative `BigInteger` values not encoded/decoded correctly
+ (reported by Brian G)
+ (fix contributed by Fawzi E) 
+#587: (cbor) Allow exposing CBOR Simple values as `JsonToken.VALUE_EMBEDDED_OBJECT`
+  with a feature flag
+ (implementation contributed by Fawzi E)   
+#600: (avro) Make RecordVisitor _avroSchema and _fields properties final
+ (contributed by Michal F)
+#603 (cbor) Add support for writing unsigned numbers to CBOR
+ (contributed by Oleg K)
+- Fixes wrt [core#1438] (ParserBase.close() not resetting current token)
+- Generate SBOMs [JSTEP-14]
 
 2.19.3 (not yet released)
 

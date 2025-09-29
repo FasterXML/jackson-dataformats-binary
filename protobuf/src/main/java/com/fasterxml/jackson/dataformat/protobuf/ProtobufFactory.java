@@ -155,6 +155,7 @@ public class ProtobufFactory extends JsonFactory
         return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
+    @Deprecated // since 2.20
     @Override
     public ProtobufParser createParser(URL url) throws IOException {
         final IOContext ctxt = _createContext(_createContentReference(url), true);

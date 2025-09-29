@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SmileDetectionTest extends BaseTestForSmile
 {
-
     @Test
     public void testSimpleObjectWithHeader() throws IOException
     {

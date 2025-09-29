@@ -313,6 +313,7 @@ public class CBORFactory extends JsonFactory
         return _createParser(_decorate(new FileInputStream(f), ctxt), ctxt);
     }
 
+    @Deprecated // since 2.20
     @Override
     public CBORParser createParser(URL url) throws IOException {
         IOContext ctxt = _createContext(_createContentReference(url), true);

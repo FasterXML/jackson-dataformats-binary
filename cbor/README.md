@@ -32,7 +32,7 @@ To use this extension on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.dataformat</groupId>
   <artifactId>jackson-dataformat-cbor</artifactId>
-  <version>2.16.0</version>
+  <version>2.20.0</version>
 </dependency>
 ```
 
@@ -41,7 +41,7 @@ To use this extension on Maven-based projects, use following dependency:
 ## Usage
 
 Basic usage is by using `CBORFactory` in places where you would usually use `JsonFactory`
-(or `CBORFactory` instead `JsonMapper`/`ObjectMapper`)
+(or `CBORMapper` instead `JsonMapper`/`ObjectMapper`)
 
 ```java
 ObjectMapper mapper = new CBORMapper();

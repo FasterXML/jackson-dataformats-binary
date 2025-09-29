@@ -153,7 +153,7 @@ public class SmileGeneratorNumbersTest
         assertArrayEquals(new byte[] {
                 0x08, 0x00, 0x00, 0x00, 0x00
         }, Arrays.copyOfRange(encoded, 1, encoded.length));
-}
+    }
 
     // [dataformats-binary#300]
     @Test
@@ -201,5 +201,47 @@ public class SmileGeneratorNumbersTest
         gen.writeNumber("-50.00000000125");
         gen.close();
         assertEquals(10, out.toByteArray().length);
+    }
+
+    // [dataformats-binary#608]
+    @Test
+    public void testFloat32FromSpecEncoding() throws Exception
+    {
+        final float f32 = 29.9510f;
+        assertEquals(0x41ef9ba6, Float.floatToIntBits(f32));
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = smileGenerator(out, false)) {
+            gen.writeNumber(f32);
+        }
+        byte[] encoded = out.toByteArray();
+        assertEquals(6, encoded.length);
+        assertEquals(0x28, encoded[0]); // type byte, float
+
+        // From 0x80 0x00 0x00 0x00 (spread over 5 x 7bits)
+        assertArrayEquals(new byte[] {
+                0x04, 0x0f, 0x3e, 0x37, 0x26
+        }, Arrays.copyOfRange(encoded, 1, encoded.length));
+    }
+
+    // [dataformats-binary#608]
+    @Test
+    public void testDouble64FromSpecEncoding() throws Exception
+    {
+        final double d64 = -29.9510;
+        assertEquals(0xc03df374bc6a7efaL, Double.doubleToLongBits(d64));
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = smileGenerator(out, false)) {
+            gen.writeNumber(d64);
+        }
+        byte[] encoded = out.toByteArray();
+        assertEquals(11, encoded.length);
+        assertEquals(0x29, encoded[0]); // type byte, float
+
+        // From 0x80 0x00 0x00 0x00 (spread over 5 x 7bits)
+        assertArrayEquals(new byte[] {
+                0x01, 0x40, 0x1e, 0x7c, 0x6e, 0x4b, 0x63, 0x29, 0x7d, 0x7a
+        }, Arrays.copyOfRange(encoded, 1, encoded.length));
     }
 }

@@ -348,6 +348,7 @@ public class AvroFactory extends JsonFactory
     }
 
     @Override
+    @Deprecated // since 2.20
     public AvroParser createParser(URL url) throws IOException {
         final IOContext ctxt = _createContext(_createContentReference(url), true);
         return _createParser(_decorate(_optimizedStreamFromURL(url), ctxt), ctxt);

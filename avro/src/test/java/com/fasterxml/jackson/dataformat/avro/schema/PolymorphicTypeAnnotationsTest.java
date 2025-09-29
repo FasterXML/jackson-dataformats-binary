@@ -45,8 +45,6 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(AnimalInterface.class).getAvroSchema();
 
-        // System.out.println("Animal schema:\n" + actualSchema.toString(true));
-
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
         // Because AnimalInterface is interface and AbstractMammal is abstract, they are not expected to be among types in union
@@ -81,8 +79,6 @@ public class PolymorphicTypeAnnotationsTest {
 
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Fruit.class).getAvroSchema();
-
-        // System.out.println("Fruit schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
@@ -142,8 +138,6 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Vehicle.class).getAvroSchema();
 
-        // System.out.println("Vehicle schema:\n" + actualSchema.toString(true));
-
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
         assertThat(actualSchema.getTypes()).containsExactlyInAnyOrder(
@@ -187,8 +181,6 @@ public class PolymorphicTypeAnnotationsTest {
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(ElementInterface.class).getAvroSchema();
 
-        // System.out.println("ElementInterface schema:\n" + actualSchema.toString(true));
-
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
         // ElementInterface and AbstractGas are not concrete classes they are not expected to be among types in union
@@ -222,8 +214,6 @@ public class PolymorphicTypeAnnotationsTest {
 
         // WHEN
         Schema actualSchema = MAPPER.schemaFor(Image.class).getAvroSchema();
-
-        // System.out.println("Image schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo(Schema.Type.UNION);
