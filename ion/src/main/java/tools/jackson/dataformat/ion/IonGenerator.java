@@ -64,13 +64,6 @@ public class IonGenerator
      */
     protected final Closeable _destination;
 
-    /**
-     * Object that handles pretty-printing (usually additional
-     * white space to make results more human-readable) during
-     * output. If null, no pretty-printing is done.
-     */
-    protected PrettyPrinter _cfgPrettyPrinter;
-
     /*
     /**********************************************************************
     /* State
@@ -193,6 +186,17 @@ public class IonGenerator
     @Override
     public JacksonFeatureSet<StreamWriteCapability> streamWriteCapabilities() {
         return DEFAULT_BINARY_WRITE_CAPABILITIES;
+    }
+
+    /*
+    /**********************************************************************
+    /* Config access
+    /**********************************************************************
+     */
+
+    @Override
+    public PrettyPrinter getPrettyPrinter() {
+        return null;
     }
 
     /*
@@ -520,32 +524,32 @@ public class IonGenerator
         //   (Ion impl must do pretty-printing), so
         /*
         // Only additional work needed if we are pretty-printing
-        if (_cfgPrettyPrinter != null) {
+        if (_prettyPrinter != null) {
             // If we have a pretty printer, it knows what to do:
             switch (status) {
             case JsonWriteContext.STATUS_OK_AFTER_COMMA: // array
-                _cfgPrettyPrinter.writeArrayValueSeparator(this);
+                _prettyPrinter.writeArrayValueSeparator(this);
                 break;
             case JsonWriteContext.STATUS_OK_AFTER_COLON:
-                _cfgPrettyPrinter.writeObjectFieldValueSeparator(this);
+                _prettyPrinter.writeObjectFieldValueSeparator(this);
                 break;
             case JsonWriteContext.STATUS_OK_AFTER_SPACE:
-                _cfgPrettyPrinter.writeRootValueSeparator(this);
+                _prettyPrinter.writeRootValueSeparator(this);
                 break;
             case IonWriteContext.STATUS_OK_AFTER_SEXP_SEPARATOR:
                 // Special handling of sexp value separators can be added later. Root value
                 // separator will be whitespace which is sufficient to separate sexp values
-                _cfgPrettyPrinter.writeRootValueSeparator(this);
+                _prettyPrinter.writeRootValueSeparator(this);
                 break;
             case JsonWriteContext.STATUS_OK_AS_IS:
                 // First entry, but of which context?
                 if (_outputContext.inArray()) {
-                    _cfgPrettyPrinter.beforeArrayValues(this);
+                    _prettyPrinter.beforeArrayValues(this);
                 } else if (_outputContext.inObject()) {
-                    _cfgPrettyPrinter.beforeObjectEntries(this);
+                    _prettyPrinter.beforeObjectEntries(this);
                 } else if(((IonWriteContext) _writeContext).inSexp()) {
                     // Format sexps like arrays
-                    _cfgPrettyPrinter.beforeArrayValues(this);
+                    _prettyPrinter.beforeArrayValues(this);
                 }
                 break;
             default:

@@ -275,6 +275,11 @@ public class CBORGenerator extends GeneratorBase
         return _outputTail;
     }
 
+    @Override
+    public PrettyPrinter getPrettyPrinter() {
+        return null;
+    }
+    
     /*
     /**********************************************************************
     /* Overridden methods, output context (and related)

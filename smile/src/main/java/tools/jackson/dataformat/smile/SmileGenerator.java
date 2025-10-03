@@ -306,6 +306,11 @@ public class SmileGenerator
         return _outputTail;
     }
 
+    @Override
+    public PrettyPrinter getPrettyPrinter() {
+        return null;
+    }
+
     /*
     /**********************************************************************
     /* Overridden methods, output context (and related)

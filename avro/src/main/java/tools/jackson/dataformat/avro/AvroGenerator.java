@@ -153,7 +153,13 @@ public class AvroGenerator extends GeneratorBase
         return -1;
     }
 
-    @Override public AvroSchema getSchema() {
+    @Override
+    public PrettyPrinter getPrettyPrinter() {
+        return null;
+    }
+
+    @Override
+    public AvroSchema getSchema() {
         return _rootSchema;
     }
 
