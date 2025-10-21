@@ -1,6 +1,6 @@
 package tools.jackson.dataformat.ion.ionvalue;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
-        private final Map<String, T> map = new HashMap<>();
+        private final Map<String, T> map = new LinkedHashMap<>();
 
         protected Data() { }
 
@@ -202,7 +202,6 @@ public class IonValueDeserializerTest {
                         incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL)
                                 .withContentInclusion(JsonInclude.Include.NON_NULL))
                 .build();
-
         String data = mapper.writeValueAsString(source);
         assertEquals("{a:1,b:null}", data);
         // Now remove the null element for the comparison below.
