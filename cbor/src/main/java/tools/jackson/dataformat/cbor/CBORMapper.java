@@ -174,6 +174,20 @@ public class CBORMapper extends ObjectMapper
     }
 
     /*
+    /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    public boolean isEnabled(CBORReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
+    }
+
+    public boolean isEnabled(CBORWriteFeature f) {
+        return _serializationConfig.hasFormatFeature(f);
+    }
+
+    /*
     /**********************************************************
     /* Helper class(es)
     /**********************************************************
