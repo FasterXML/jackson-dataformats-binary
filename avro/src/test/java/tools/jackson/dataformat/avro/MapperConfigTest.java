@@ -2,6 +2,8 @@ package tools.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.FormatSchema;
 import tools.jackson.core.StreamReadCapability;
 import tools.jackson.core.StreamWriteFeature;
@@ -28,6 +30,7 @@ public class MapperConfigTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFactoryDefaults() throws Exception
     {
         assertTrue(MAPPER.tokenStreamFactory().isEnabled(AvroReadFeature.AVRO_BUFFERING));
@@ -38,25 +41,29 @@ public class MapperConfigTest extends AvroTestBase
         assertFalse(MAPPER.tokenStreamFactory().canUseSchema(BOGUS_SCHEMA));
     }
 
+    @Test
     public void testParserDefaults() throws Exception
     {
-        AvroParser p = (AvroParser) MAPPER.createParser(new byte[0]);
-        assertTrue(p.isEnabled(AvroReadFeature.AVRO_BUFFERING));
-        p.close();
+        try (AvroParser p = (AvroParser) MAPPER.createParser(new byte[0])) {
+            assertTrue(p.isEnabled(AvroReadFeature.AVRO_BUFFERING));
+        }
 
         AvroMapper mapper = AvroMapper.builder()
                 .disable(AvroReadFeature.AVRO_BUFFERING)
                 .build();
-        p = (AvroParser) mapper.createParser(new byte[0]);
-        assertFalse(p.isEnabled(AvroReadFeature.AVRO_BUFFERING));
+        try (AvroParser p = (AvroParser) mapper.createParser(new byte[0])) {
+            assertFalse(p.isEnabled(AvroReadFeature.AVRO_BUFFERING));
+    
+            // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
+            //    default set
+            assertTrue(p.streamReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+        }
 
-        // 15-Jan-2021, tatu: 2.14 added this setting, not enabled in
-        //    default set
-        assertTrue(p.streamReadCapabilities().isEnabled(StreamReadCapability.EXACT_FLOATS));
+        // [dataformats-binary#619]
+        assertTrue(MAPPER.isEnabled(AvroReadFeature.AVRO_BUFFERING));
+}
 
-        p.close();
-    }
-
+    @Test
     public void testGeneratorDefaults() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -76,6 +83,9 @@ public class MapperConfigTest extends AvroTestBase
                 .createGenerator(bytes);
         assertFalse(g.isEnabled(AvroWriteFeature.AVRO_BUFFERING));
         g.close();
+
+        // [dataformats-binary#619]
+        assertFalse(MAPPER.isEnabled(AvroWriteFeature.AVRO_FILE_OUTPUT));
     }
 
     /*
@@ -84,6 +94,7 @@ public class MapperConfigTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testDefaultSettingsWithAvroMapper()
     {
         AvroMapper mapper = new AvroMapper();

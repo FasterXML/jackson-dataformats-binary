@@ -18,3 +18,8 @@ Fawzi Essam (@iifawzi)
 * Contribited #591: Change `CBOR` Features defaults for 3.0
  (3.0.0)
 
+Andy Wilkinson (@wilkinsona)
+
+* Requested #619: (avro, cbor) Add `isEnabled()` methods for format-specific features (like
+  `CBORReadFeature` and `CBORWriteFeature`) to mappers
+ (3.1.0)
