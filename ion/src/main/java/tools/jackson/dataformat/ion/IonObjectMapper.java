@@ -27,6 +27,7 @@ import tools.jackson.databind.cfg.MapperBuilderState;
 import tools.jackson.databind.deser.DeserializationContextExt;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.SerializationContextExt;
+
 import tools.jackson.dataformat.ion.ionvalue.IonValueModule;
 
 import com.amazon.ion.IonDatagram;
@@ -275,6 +276,21 @@ public class IonObjectMapper extends ObjectMapper
     public IonFactory tokenStreamFactory() {
         return (IonFactory) _streamFactory;
     }
+
+    /*
+    /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    public boolean isEnabled(IonReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
+    }
+
+    public boolean isEnabled(IonWriteFeature f) {
+        return _serializationConfig.hasFormatFeature(f);
+    }
+
 
     /*
     /************************************************************************

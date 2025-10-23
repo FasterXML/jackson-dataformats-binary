@@ -16,7 +16,7 @@ implementations)
 
 3.1.0 (not yet released)
 
-#619: (avro, cbor) Add `isEnabled()` methods for format-specific features (like
+#619: (avro, cbor, ion) Add `isEnabled()` methods for format-specific features (like
   `CBORReadFeature` and `CBORWriteFeature`) to mappers
  (requested by Andy W)
 
