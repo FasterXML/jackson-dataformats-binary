@@ -81,7 +81,8 @@ public class IonNumberOverflowTest
         IonParser bigIntLongParser = (IonParser) new IonFactory().createParser(ObjectReadContext.empty(),
                 bigIntLongValue.toString());
         assertEquals(JsonToken.VALUE_NUMBER_INT, bigIntLongParser.nextToken());
-        assertEquals(JsonParser.NumberType.BIG_INTEGER, bigIntLongParser.getNumberType());
+        // Ion 1.11.11+ changed behavior: values that fit in long are now classified as LONG
+        assertEquals(JsonParser.NumberType.LONG, bigIntLongParser.getNumberType());
         assertEquals(JsonParser.NumberTypeFP.UNKNOWN, bigIntLongParser.getNumberTypeFP());
         assertEquals(bigIntLongValue.longValue(), bigIntLongParser.getLongValue());
     }    
