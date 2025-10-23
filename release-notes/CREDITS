@@ -15,11 +15,11 @@ Fawzi Essam (@iifawzi)
 * Contributed #582: Change defaults for `CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING`
   and `CBORWriteFeature.ENCODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING` to `true` (enabled)
  (3.0.0)
-* Contribited #591: Change `CBOR` Features defaults for 3.0
+* Contributed #591: Change `CBOR` Features defaults for 3.0
  (3.0.0)
 
 Andy Wilkinson (@wilkinsona)
 
-* Requested #619: (avro, cbor) Add `isEnabled()` methods for format-specific features (like
-  `CBORReadFeature` and `CBORWriteFeature`) to mappers
+* Requested #619: (avro, cbor, ion, smile) Add `isEnabled()` methods for format-specific features
+  (like `CBORReadFeature` and `CBORWriteFeature`) to mappers
  (3.1.0)

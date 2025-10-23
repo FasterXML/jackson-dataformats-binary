@@ -3,15 +3,15 @@ package tools.jackson.dataformat.smile.mapper;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.*;
-import tools.jackson.dataformat.smile.BaseTestForSmile;
-import tools.jackson.dataformat.smile.SmileFactory;
-import tools.jackson.dataformat.smile.SmileMapper;
+
+import tools.jackson.dataformat.smile.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MapperFeaturesTest extends BaseTestForSmile
 {
-    static class Bean {
+    public static class Bean {
         public int value;
     }
 
@@ -34,5 +34,13 @@ public class MapperFeaturesTest extends BaseTestForSmile
         byte[] smile = mapper.writeValueAsBytes(bean);
         Bean result = mapper.readValue(smile, 0, smile.length, Bean.class);
         assertEquals(42, result.value);
+    }
+
+    // [dataformats-binary#619]
+    @Test
+    void testFormatFeatureDefaults() {
+        SmileMapper mapper = SmileMapper.shared();
+        assertTrue(mapper.isEnabled(SmileReadFeature.REQUIRE_HEADER));
+        assertTrue(mapper.isEnabled(SmileWriteFeature.WRITE_HEADER));
     }
 }
