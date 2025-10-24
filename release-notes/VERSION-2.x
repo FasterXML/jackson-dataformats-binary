@@ -16,7 +16,8 @@ Active maintainers:
 
 2.21.0 (not yet released)
 
-No changes since 2.20
+#623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
+ (requested by @Shaurya0108)
 
 2.20.1 (not yet released)
 

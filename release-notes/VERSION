@@ -19,6 +19,8 @@ implementations)
 #619: (avro, cbor, ion, smile) Add `isEnabled()` methods for format-specific features
   (like `CBORReadFeature` and `CBORWriteFeature`) to mappers
  (requested by Andy W)
+#623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
+ (requested by @Shaurya0108)
 
 3.0.1 (21-Oct-2025)
 
