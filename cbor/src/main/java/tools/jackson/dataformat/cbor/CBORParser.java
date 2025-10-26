@@ -2434,8 +2434,11 @@ public class CBORParser extends ParserBase
             i = inputBuf[inPtr++];
             outBuf[outPtr++] = (char) i;
         }
-        if (inPtr == end && i >= 0) {
-            String str = _textBuffer.setCurrentAndReturn(outPtr);
+        if (inPtr == end && i >= 0) { // all ASCII
+            // 25-Oct-2025: [dataformats-binary#624] Minor optimization: can directly
+            //    construct String; faster in JDK 17+
+            //String str = _textBuffer.setCurrentAndReturn(outPtr);
+            String str = _textBuffer.resetWithASCII(inputBuf, inPtr-len, len);
             if (stringRefs != null) {
                 stringRefs.stringRefs.add(str);
                 _sharedString = str;
