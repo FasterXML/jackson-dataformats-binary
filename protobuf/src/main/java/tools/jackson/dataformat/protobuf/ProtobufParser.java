@@ -54,9 +54,14 @@ public class ProtobufParser extends ParserMinimalBase
     // State after either reaching end-of-input, or getting explicitly closed
     private final static int STATE_CLOSED = 12;
 
+    // State after returning END_OBJECT for root level, before closing
+    // (added for issue #598 to separate END_OBJECT return from close())
+    //
+    // @since 3.1
+    private final static int STATE_ROOT_END = 13;
+
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
 
-    // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> PROTOBUF_READ_CAPABILITIES
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
@@ -539,7 +544,8 @@ public class ProtobufParser extends ParserMinimalBase
             // end-of-input?
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _streamReadContext.setCurrentName(null);
                     return _updateToken(JsonToken.END_OBJECT);
                 }
             }
@@ -634,8 +640,13 @@ public class ProtobufParser extends ParserMinimalBase
             return _updateToken(_readNextValue(_currentField.type, STATE_NESTED_KEY));
 
         case STATE_MESSAGE_END: // occurs if we end with array
-            close(); // sets state to STATE_CLOSED
+            _state = STATE_ROOT_END;
+            _streamReadContext.setCurrentName(null);
             return _updateToken(JsonToken.END_OBJECT);
+
+        case STATE_ROOT_END: // returned END_OBJECT, now close on next call
+            close(); // sets state to STATE_CLOSED
+            return null;
 
         case STATE_CLOSED:
             return null;
@@ -913,7 +924,8 @@ public class ProtobufParser extends ParserMinimalBase
                 }
             } else if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _streamReadContext.setCurrentName(null);
                     return _updateToken(JsonToken.END_OBJECT);
                 }
             }
@@ -976,7 +988,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _streamReadContext.setCurrentName(null);
                     _updateToken(JsonToken.END_OBJECT);
                     return null;
                 }
@@ -1051,7 +1064,8 @@ public class ProtobufParser extends ParserMinimalBase
             return name;
         }
         if (_state == STATE_MESSAGE_END) {
-            close(); // sets state to STATE_CLOSED
+            _state = STATE_ROOT_END;
+            _streamReadContext.setCurrentName(null);
             _updateToken(JsonToken.END_OBJECT);
             return null;
         }
@@ -1064,7 +1078,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _streamReadContext.setCurrentName(null);
                     _updateToken(JsonToken.END_OBJECT);
                     return false;
                 }
@@ -1137,7 +1152,8 @@ public class ProtobufParser extends ParserMinimalBase
             return name.equals(sstr.getValue());
         }
         if (_state == STATE_MESSAGE_END) {
-            close(); // sets state to STATE_CLOSED
+            _state = STATE_ROOT_END;
+            _streamReadContext.setCurrentName(null);
             _updateToken(JsonToken.END_OBJECT);
             return false;
         }
@@ -1150,7 +1166,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _streamReadContext.setCurrentName(null);
                     _updateToken(JsonToken.END_OBJECT);
                     return PropertyNameMatcher.MATCH_END_OBJECT;
                 }
@@ -1227,7 +1244,8 @@ public class ProtobufParser extends ParserMinimalBase
             return matcher.matchName(name);
         }
         if (_state == STATE_MESSAGE_END) {
-            close(); // sets state to STATE_CLOSED
+            _state = STATE_ROOT_END;
+            _streamReadContext.setCurrentName(null);
             _updateToken(JsonToken.END_OBJECT);
             return PropertyNameMatcher.MATCH_END_OBJECT;
         }

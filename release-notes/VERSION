@@ -16,6 +16,8 @@ implementations)
 
 3.1.0 (not yet released)
 
+#598: (protobuf) Protobuf parser state handling wrong for implicit close (END_OBJECT)
+ (fix by @cowtowncoder, w/ Claude code)
 #619: (avro, cbor, ion, smile) Add `isEnabled()` methods for format-specific features
   (like `CBORReadFeature` and `CBORWriteFeature`) to mappers
  (requested by Andy W)
