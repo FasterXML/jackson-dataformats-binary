@@ -56,11 +56,12 @@ public class ProtobufParser extends ParserMinimalBase
 
     // State after returning END_OBJECT for root level, before closing
     // (added for issue #598 to separate END_OBJECT return from close())
+    //
+    // @since 3.1
     private final static int STATE_ROOT_END = 13;
 
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
 
-    // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> PROTOBUF_READ_CAPABILITIES
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
