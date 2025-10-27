@@ -1,12 +1,9 @@
-package com.fasterxml.jackson.dataformat.cbor.tofix;
+package com.fasterxml.jackson.dataformat.cbor;
 
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.fasterxml.jackson.dataformat.cbor.*;
-import com.fasterxml.jackson.dataformat.cbor.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -27,7 +24,6 @@ public class StringRef599Test extends CBORTestBase
     }
 
     // [dataformats-binary#599]
-    @JacksonTestFailureExpected
     @Test
     public void testDupsWithStringRef() throws Exception
     {

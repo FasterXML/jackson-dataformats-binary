@@ -422,3 +422,7 @@ Vincent Eigenberger (@beseder1)
  * Contributed fix for #601: Jackson subtype Avro schema unions are non-deterministic
    and therefore incompatible with each other
   (2.20.1)
+
+Yohei Kishimoto (@morokosi)
+ * Reported #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+  (2.21.0)

@@ -16,6 +16,8 @@ Active maintainers:
 
 2.21.0 (not yet released)
 
+#599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ (reported by Yohei K)
 #623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
  (requested by @Shaurya0108)
 
