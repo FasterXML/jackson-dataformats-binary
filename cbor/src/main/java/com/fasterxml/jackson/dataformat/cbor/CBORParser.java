@@ -3418,43 +3418,18 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         // [dataformats-binary#599]: If we are in a stringref namespace, we need to
         // actually read and store the string/bytes value instead of just skipping it,
         // so that later string references can find it.
+        // The finish methods will determine if the value should be added to the
+        // reference table based on shouldReferenceString().
         if (!_stringRefs.empty()) {
-            final int lowBits = _typeByte & 0x1F;
-            final int len = _decodeExplicitLength(lowBits);
-
             if (type == CBORConstants.MAJOR_TYPE_TEXT) {
-                // For text, need to read the string to potentially store as reference
-                if (len >= 0) {
-                    // Non-chunked text
-                    if (shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
-                        // Need to actually read and store the string
-                        String str = _finishTextToken(_typeByte);
-                        // _finishTextToken already handles adding to stringRefs
-                        return;
-                    }
-                    // No need to store, can skip
-                } else {
-                    // Chunked text - must read to potentially store
-                    // Note: chunked strings may still need to be stored if large enough
-                    String str = _finishTextToken(_typeByte);
-                    return;
-                }
+                // Need to actually read the text (which may add to stringRefs)
+                _finishTextToken(_typeByte);
             } else {
-                // For bytes, similar logic
-                if (len >= 0) {
-                    if (shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
-                        // Need to actually read and store the bytes
-                        byte[] b = _finishBytes(len);
-                        // _finishBytes already handles adding to stringRefs
-                        return;
-                    }
-                    // No need to store, can skip
-                } else {
-                    // Chunked bytes
-                    byte[] b = _finishChunkedBytes();
-                    return;
-                }
+                // For bytes: decode length then read (which may add to stringRefs)
+                int len = _decodeExplicitLength(_typeByte & 0x1F);
+                _finishBytes(len);
             }
+            return;
         }
 
         // Standard skip logic when not in stringref namespace
