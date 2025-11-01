@@ -390,6 +390,8 @@ Manuel Sugawara (@sugmanue)
 Josh Curry (@seadbrane)
  * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
   (2.19.0)
+ * Reported #628: Uncommon parent pom dependency configuration in Jackson 2.20/3.0
+  (2.21.0)
 
 Rafael Winterhalter (@raphw)
  * Reported #589: AvroSchema: Does not include base class for records

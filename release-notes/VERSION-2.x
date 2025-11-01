@@ -20,6 +20,8 @@ Active maintainers:
  (reported by Yohei K)
 #623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
  (requested by @Shaurya0108)
+#628: Uncommon parent pom dependency configuration in Jackson 2.20/3.0
+ (reported by Josh C)
 
 2.20.1 (30-Oct-2025)
 

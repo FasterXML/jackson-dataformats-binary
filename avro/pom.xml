@@ -34,16 +34,21 @@ abstractions.
   </properties>
 
   <dependencies>
-    <!--  Hmmh. Need annotations for introspection... -->
+    <!-- Depend on Jackson core components -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
-    <!--  and databind for Avro Schema generation... -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
+
+    <!-- Also on Apache Avro codec for some encoding/decoding -->
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>

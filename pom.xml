@@ -57,10 +57,7 @@
 
   <dependencies>
     <!-- all dataformats extend core so just include here -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
+    <!-- 01-Nov-2025, tatu: [dataformats-binary#628] No more-->
 
     <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5 -->
     <dependency>

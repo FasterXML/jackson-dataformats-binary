@@ -34,10 +34,11 @@ tree model)
   </properties>
 
   <dependencies>
-
-    <!-- 08-Oct-2018, tatu: for 2.10 we have `SmileMapper` which needs databind;
-       but only added as full dependency in 2.11
-      -->
+    <!-- We depend on Jackson core components; annotations optionally/for tests -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>

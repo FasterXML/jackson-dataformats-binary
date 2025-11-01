@@ -39,26 +39,27 @@ abstractions.
   </properties>
 
   <dependencies>
+    <!-- We depend on Jackson core components; annotations optionally/for tests -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <!-- for testing we need annotations -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- uses protostuff libs for parsing, generation -->
     <dependency>
       <groupId>com.squareup</groupId>
       <artifactId>protoparser</artifactId>
       <version>4.0.3</version>
-    </dependency>
-
-    <!-- Hmmh. Need databind for schema generation, convenience ProtobufMapper.
-         And starting with 2.10(.4), there is only explicit mapper:
-      -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-
-    <!-- and for testing, JUnit is needed; as well as annotations -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 
