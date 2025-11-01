@@ -23,6 +23,9 @@ implementations)
  (requested by Andy W)
 #623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
  (requested by @Shaurya0108)
+#628: (avro, cbor, ion, protobuf, smile)  Uncommon parent pom dependency
+ configuration in Jackson 2.20/3.0
+ (reported by Josh C)
 #629: (ion) Unnecessary `IOException` in `IonObjectMapper` method signatures
  (fix contributed by Michael L)
 

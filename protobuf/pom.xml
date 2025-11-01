@@ -36,6 +36,23 @@ abstractions.
   </properties>
 
   <dependencies>
+    <!--  We depend on Jackson core components; annotations optionally/for tests -->
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- for testing we need annotations -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- uses protostuff libs for parsing, generation -->
     <dependency>
       <groupId>com.squareup</groupId>
