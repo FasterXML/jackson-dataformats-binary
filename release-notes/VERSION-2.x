@@ -22,6 +22,7 @@ Active maintainers:
  (requested by @Shaurya0108)
 #628: Uncommon parent pom dependency configuration in Jackson 2.20/3.0
  (reported by Josh C)
+- (avro) Upgrade `avro` lib dep to 1.11.5 (from 1.11.4)
 
 2.20.1 (30-Oct-2025)
 
