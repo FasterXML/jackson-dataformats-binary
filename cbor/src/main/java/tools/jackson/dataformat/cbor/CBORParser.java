@@ -2592,7 +2592,7 @@ public class CBORParser extends ParserBase
         int outPtr = 0;
         while (len > 0) {
             // load as much input as possible
-            int size = Math.min(len, Math.min(outBuf.length, input.length));
+            int size = Math.min(len, Math.min((outBuf.length - outPtr), input.length));
             if (!_tryToLoadToHaveAtLeast(size)) {
                 return len;
             }
