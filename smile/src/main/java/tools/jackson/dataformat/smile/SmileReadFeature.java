@@ -14,6 +14,8 @@ public enum SmileReadFeature implements FormatFeature
      * or optional. If enabled, it means that only input that starts with the header
      * is accepted as valid; if disabled, header is optional. In latter case,
      * settings for content are assumed to be defaults.
+     *<p>
+     * Feature is enabled by default.
      */
     REQUIRE_HEADER(true)
     ;

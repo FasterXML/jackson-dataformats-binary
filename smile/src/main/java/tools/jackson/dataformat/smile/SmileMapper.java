@@ -175,6 +175,20 @@ public class SmileMapper extends ObjectMapper
 
     /*
     /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    public boolean isEnabled(SmileReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
+    }
+
+    public boolean isEnabled(SmileWriteFeature f) {
+        return _serializationConfig.hasFormatFeature(f);
+    }
+
+    /*
+    /**********************************************************************
     /* Helper class(es)
     /**********************************************************************
      */

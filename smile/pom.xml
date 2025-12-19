@@ -9,7 +9,7 @@
   <parent>
     <groupId>tools.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-smile</artifactId>
   <name>Jackson dataformat: Smile</name>
@@ -34,6 +34,22 @@ tree model)
   </properties>
 
   <dependencies>
+    <!--  We depend on Jackson core components; annotations optionally/for tests -->
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- for testing we need annotations -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>

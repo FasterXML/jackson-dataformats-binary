@@ -17,9 +17,10 @@ package tools.jackson.dataformat.ion;
 import java.io.IOException;
 import java.util.Date;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.Version;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.core.type.TypeReference;
-
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
@@ -277,6 +278,21 @@ public class IonObjectMapper extends ObjectMapper
     }
 
     /*
+    /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    public boolean isEnabled(IonReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
+    }
+
+    public boolean isEnabled(IonWriteFeature f) {
+        return _serializationConfig.hasFormatFeature(f);
+    }
+
+
+    /*
     /************************************************************************
     /* Additional convenience factory methods for parsers, generators
     /************************************************************************
@@ -319,7 +335,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying reader
      */
     @SuppressWarnings("unchecked")
-    public <T> T readValue(IonReader r, Class<T> valueType) throws IOException {
+    public <T> T readValue(IonReader r, Class<T> valueType) throws JacksonException {
         DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueType));
@@ -332,7 +348,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying reader
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws IOException {
+    public <T> T readValue(IonReader r, TypeReference valueTypeRef) throws JacksonException {
         DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r),
                 _typeFactory.constructType(valueTypeRef));
@@ -345,7 +361,7 @@ public class IonObjectMapper extends ObjectMapper
      * Note: method does not close the underlying reader
      */
     @SuppressWarnings("unchecked")
-    public <T> T readValue(IonReader r, JavaType valueType) throws IOException {
+    public <T> T readValue(IonReader r, JavaType valueType) throws JacksonException {
         DeserializationContextExt ctxt = _deserializationContext();
         return (T)_readMapAndClose(ctxt, tokenStreamFactory().createParser(ctxt, r), valueType);
     }
@@ -354,7 +370,7 @@ public class IonObjectMapper extends ObjectMapper
      * Convenience method for converting Ion value into given value type.
      */
     @SuppressWarnings("unchecked")
-    public <T> T readValue(IonValue value, Class<T> valueType) throws IOException {
+    public <T> T readValue(IonValue value, Class<T> valueType) throws JacksonException {
         if (value == null) {
             return null;
         }
@@ -367,7 +383,7 @@ public class IonObjectMapper extends ObjectMapper
      * Convenience method for converting Ion value into given value type.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public <T> T readValue(IonValue value, TypeReference valueTypeRef) throws IOException {
+    public <T> T readValue(IonValue value, TypeReference valueTypeRef) throws JacksonException {
         if (value == null) {
             return null;
         }
@@ -380,7 +396,7 @@ public class IonObjectMapper extends ObjectMapper
      * Convenience method for converting Ion value into given value type.
      */
     @SuppressWarnings("unchecked")
-    public <T> T readValue(IonValue value, JavaType valueType) throws IOException  {
+    public <T> T readValue(IonValue value, JavaType valueType) throws JacksonException  {
         if (value == null) {
             return null;
         }
@@ -394,7 +410,7 @@ public class IonObjectMapper extends ObjectMapper
      *<p>
      * Note: method does not close the underlying writer explicitly
      */
-    public void writeValue(IonWriter w, Object value) throws IOException {
+    public void writeValue(IonWriter w, Object value) throws JacksonException {
         SerializationContextExt prov = _serializationContext();
         _configAndWriteValue(prov,
                 tokenStreamFactory().createGenerator(prov, w), value);
@@ -403,7 +419,7 @@ public class IonObjectMapper extends ObjectMapper
     /**
      * Method that can be used to map any Java value to an IonValue.
      */
-    public IonValue writeValueAsIonValue(Object value) throws IOException
+    public IonValue writeValueAsIonValue(Object value) throws JacksonException
     {
         // 04-Jan-2017, tatu: Bit of incompatiblity wrt 2.x handling: should this result in
         //   Java `null`, or Ion null marker? For now, choose latter
@@ -420,6 +436,8 @@ public class IonObjectMapper extends ObjectMapper
             IonValue result = container.get(0);
             result.removeFromContainer();
             return result;
+        } catch (IOException e) {
+            throw JacksonIOException.construct(e);
         }
     }
 

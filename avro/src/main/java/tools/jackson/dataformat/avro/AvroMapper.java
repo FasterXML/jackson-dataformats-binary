@@ -207,6 +207,20 @@ public class AvroMapper extends ObjectMapper
 
     /*
     /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    public boolean isEnabled(AvroReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
+    }
+
+    public boolean isEnabled(AvroWriteFeature f) {
+        return _serializationConfig.hasFormatFeature(f);
+    }
+
+    /*
+    /**********************************************************************
     /* Schema introspection
     /**********************************************************************
      */

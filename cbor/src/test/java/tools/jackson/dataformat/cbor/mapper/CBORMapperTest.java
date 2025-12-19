@@ -151,4 +151,12 @@ public class CBORMapperTest extends CBORTestBase
         assertEquals(BigInteger.ONE,
                 mapper2.readValue(encodedNegative, BigInteger.class));
     }
+
+    // [dataformats-binary#619]
+    @Test
+    void testFormatFeatureDefaults() {
+        CBORMapper mapper = CBORMapper.shared();
+        assertTrue(mapper.isEnabled(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING));
+        assertTrue(mapper.isEnabled(CBORWriteFeature.WRITE_MINIMAL_INTS));
+    }
 }

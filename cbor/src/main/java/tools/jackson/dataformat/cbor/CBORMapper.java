@@ -110,9 +110,9 @@ public class CBORMapper extends ObjectMapper
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public CBORMapper() {
@@ -171,6 +171,20 @@ public class CBORMapper extends ObjectMapper
     @Override
     public CBORFactory tokenStreamFactory() {
         return (CBORFactory) _streamFactory;
+    }
+
+    /*
+    /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    public boolean isEnabled(CBORReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
+    }
+
+    public boolean isEnabled(CBORWriteFeature f) {
+        return _serializationConfig.hasFormatFeature(f);
     }
 
     /*

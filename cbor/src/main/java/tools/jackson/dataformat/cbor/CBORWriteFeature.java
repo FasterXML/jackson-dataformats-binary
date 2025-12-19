@@ -15,6 +15,9 @@ public enum CBORWriteFeature implements FormatFeature
      * representation that is enough to retain value; if false, will use
      * length indicated by argument type (4-byte for <code>int</code>,
      * 8-byte for <code>long</code> and so on).
+     *<p>
+     * Default value is {@code true} meaning that minimal representation is used
+     * when encoding.
      */
     WRITE_MINIMAL_INTS(true),
 
