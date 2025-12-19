@@ -17,19 +17,27 @@ public class ParseLongAsciiTextTest extends CBORTestBase
 
     @Test
     public void testLongNonChunkedAsciiText() throws Exception {
-        try (CBORParser p = CBOR_F.createParser(this.getClass().getResourceAsStream("/data/macbeth-snippet-non-chunked.cbor"))) {
-            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-            String expected = new String(readResource("/data/macbeth-snippet.txt"), "UTF-8");
-            assertEquals(expected, p.getText());
+        // run several times to allow the internal buffers
+        // to grow
+        for (int x = 0; x < 3 ; x++) {
+            try (CBORParser p = CBOR_F.createParser(this.getClass().getResourceAsStream("/data/macbeth-snippet-non-chunked.cbor"))) {
+                assertEquals(JsonToken.VALUE_STRING, p.nextToken());
+                String expected = new String(readResource("/data/macbeth-snippet.txt"), "UTF-8");
+                assertEquals(expected, p.getText());
+            }
         }
     }
 
     @Test
     public void testLongChunkedAsciiText() throws Exception {
-        try (CBORParser p = CBOR_F.createParser(this.getClass().getResourceAsStream("/data/macbeth-snippet-chunked.cbor"))) {
-            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-            String expected = new String(readResource("/data/macbeth-snippet.txt"), StandardCharsets.UTF_8);
-            assertEquals(expected, p.getText());
+        // run several times to allow the internal buffers
+        // to grow
+        for (int x = 0; x < 3 ; x++) {
+            try (CBORParser p = CBOR_F.createParser(this.getClass().getResourceAsStream("/data/macbeth-snippet-chunked.cbor"))) {
+                assertEquals(JsonToken.VALUE_STRING, p.nextToken());
+                String expected = new String(readResource("/data/macbeth-snippet.txt"), StandardCharsets.UTF_8);
+                assertEquals(expected, p.getText());
+            }
         }
     }
 }
