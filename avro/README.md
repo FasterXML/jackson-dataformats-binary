@@ -53,7 +53,7 @@ String SCHEMA_JSON = "{\n"
         +" {\"name\": \"emails\", \"type\": {\"type\": \"array\", \"items\": \"string\"}},\n"
         +" {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
         +"]}";
-Schema raw = new Schema.Parser().setValidate(true).parse(SCHEMA_JSON);
+Schema raw = new Schema.Parser().parse(SCHEMA_JSON);
 AvroSchema schema = new AvroSchema(raw);
 ```
 

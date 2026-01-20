@@ -16,6 +16,7 @@ implementations)
 
 3.1.0 (not yet released)
 
+#514: (avro) Update to Avro 1.12.1 (Jackson 3.x only)
 #598: (protobuf) Protobuf parser state handling wrong for implicit close (END_OBJECT)
  (fix by @cowtowncoder, w/ Claude code)
 #619: (avro, cbor, ion, smile) Add `isEnabled()` methods for format-specific features

@@ -281,8 +281,7 @@ public class AvroMapper extends ObjectMapper
     public AvroSchema schemaFrom(InputStream in) throws IOException
     {
         try {
-            return new AvroSchema(new Schema.Parser().setValidate(true)
-                    .parse(in));
+            return new AvroSchema(new Schema.Parser().parse(in));
         } finally {
             in.close();
         }
@@ -296,8 +295,7 @@ public class AvroMapper extends ObjectMapper
      */
     public AvroSchema schemaFrom(String schemaAsString) throws IOException
     {
-        return new AvroSchema(new Schema.Parser().setValidate(true)
-                .parse(schemaAsString));
+        return new AvroSchema(new Schema.Parser().parse(schemaAsString));
     }
 
     /**
@@ -308,8 +306,7 @@ public class AvroMapper extends ObjectMapper
      */
     public AvroSchema schemaFrom(File schemaFile) throws IOException
     {
-        return new AvroSchema(new Schema.Parser().setValidate(true)
-                .parse(schemaFile));
+        return new AvroSchema(new Schema.Parser().parse(schemaFile));
     }
 
     /*
