@@ -137,7 +137,7 @@ abstract class PerfBase
     }
 
     protected static AvroSchema itemSchema() {
-        return new AvroSchema(new Schema.Parser().setValidate(true).parse(JVM_SERIALIZERS_SCHEMA_STR));
+        return new AvroSchema(new Schema.Parser().parse(JVM_SERIALIZERS_SCHEMA_STR));
     }
 
     protected static MediaItem buildItem()

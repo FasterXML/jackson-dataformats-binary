@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.1 (not yet released)
+
+#645: (avro) Remove use of Avro `Schema.Parser().setValidate()` to allow
+  use of Avro core 1.12.1 (2.x)
+
 2.21.0 (18-Jan-2026)
 
 #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
