@@ -458,6 +458,8 @@ public class SmileFactory extends JsonFactory
     @Override
     protected SmileParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
     {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return new SmileParserBootstrapper(ctxt, data, offset, len).constructParser(
                 _factoryFeatures, _parserFeatures, _smileParserFeatures,
                 _objectCodec, _byteSymbolCanonicalizer);

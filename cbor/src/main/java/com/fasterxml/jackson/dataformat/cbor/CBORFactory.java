@@ -425,6 +425,8 @@ public class CBORFactory extends JsonFactory
     @Override
     protected CBORParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
     {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return new CBORParserBootstrapper(ctxt, data, offset, len).constructParser(
                 _factoryFeatures, _parserFeatures, _formatParserFeatures,
                 _objectCodec, _byteSymbolCanonicalizer);

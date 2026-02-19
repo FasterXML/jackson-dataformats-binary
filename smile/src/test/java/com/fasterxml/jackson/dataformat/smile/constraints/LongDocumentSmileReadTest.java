@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
@@ -17,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LongDocumentSmileReadTest extends BaseTestForSmile
 {
-    private final ObjectMapper MAPPER_VANILLA = new SmileMapper();
+    private final SmileMapper MAPPER_VANILLA = new SmileMapper();
 
-    private final ObjectMapper MAPPER_CONSTRAINED = new SmileMapper(
+    private final SmileMapper MAPPER_CONSTRAINED = new SmileMapper(
             SmileFactory.builder()
             // limit to 100kB doc reads
                 .streamReadConstraints(StreamReadConstraints.builder()
@@ -32,13 +31,20 @@ public class LongDocumentSmileReadTest extends BaseTestForSmile
     {
         // Need a bit longer than minimum since checking is approximate, not exact
         byte[] doc = createBigDoc(60_000);
-        // Must read from `InputStream` as validation is during "loadMore()":
-        try (JsonParser p = MAPPER_CONSTRAINED.createParser(new ByteArrayInputStream(doc))) {
+        _testLongDocumentConstraint(doc, true);
+        // [dataformats-binary#649] fixed buffer too
+        _testLongDocumentConstraint(doc, false);
+    }
+
+    private void _testLongDocumentConstraint(byte[] doc, boolean stream) throws Exception
+    {
+        try (JsonParser p = stream
+                ? MAPPER_CONSTRAINED.createParser(new ByteArrayInputStream(doc))
+                : MAPPER_CONSTRAINED.createParser(doc, 0, doc.length)) {
             while (p.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
             final String msg = e.getMessage();
-
             assertTrue(msg.contains("Document length ("));
             assertTrue(msg.contains("exceeds the maximum allowed (50000"));
         }
