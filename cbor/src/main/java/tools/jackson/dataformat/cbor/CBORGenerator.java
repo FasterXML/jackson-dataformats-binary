@@ -530,7 +530,7 @@ public class CBORGenerator extends GeneratorBase
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
-        _verifyValueWrite("write int array");
+        _verifyValueWrite("write long array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         for (int i = offset, end = offset+length; i < end; ++i) {
             _writeLongNoCheck(array[i]);
@@ -543,7 +543,7 @@ public class CBORGenerator extends GeneratorBase
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
-        _verifyValueWrite("write int array");
+        _verifyValueWrite("write double array");
         _writeLengthMarker(PREFIX_TYPE_ARRAY, length);
         if (_cfgMinimalDoubles) {
             for (int i = offset, end = offset+length; i < end; ++i) {
