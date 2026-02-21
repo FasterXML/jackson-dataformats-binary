@@ -485,9 +485,10 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             int maxLeft = 9;
             int b;
             do {
-                b = _nextByteGuaranteed();
+                b = buf[ptr++];
             } while ((--maxLeft > 0) && (b < 0));
             if (b < 0) {
+                _inputPtr = ptr;
                 _reportInvalidNegative(b);
             }
         }
