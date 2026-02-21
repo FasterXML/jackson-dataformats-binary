@@ -119,7 +119,7 @@ jobs:
             delta = pr - base
             if (delta > 0) printf "📈 +%.2f%%", delta
             else if (delta < 0) printf "📉 %.2f%%", delta
-            else printf "="
+            else printf "= 0.00%%"
           }'
         }
 
