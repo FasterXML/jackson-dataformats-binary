@@ -88,6 +88,12 @@ public class IonParser
         // No DupDetector in use (yet?)
         _streamReadContext = SimpleStreamReadContext.createRootContext(-1, -1, null);
         _system = system;
+        // [dataformats-binary#436]: If IonReader is already positioned at a value,
+        // initialize current token to reflect that state
+        IonType type = r.getType();
+        if (type != null) {
+            _updateToken(_tokenFromType(type));
+        }
     }
 
     @Override

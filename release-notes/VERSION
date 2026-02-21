@@ -18,6 +18,9 @@ implementations)
 
 #73: (protobuf) Cannot resolve inner types in protoc definitions
  (reported by Kenji N)
+ (fix by @cowtowncoder, w/ Claude code)
+#436: (ion) `IonFactory.createParser(IonReader)` does not initialize state
+ (fix by @cowtowncoder, w/ Claude code)
 #649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
   when creating parser with fixed buffer
 
