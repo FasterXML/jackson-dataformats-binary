@@ -16,6 +16,8 @@ implementations)
 
 3.1.0 (not yet released)
 
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
 #649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
   when creating parser with fixed buffer
 

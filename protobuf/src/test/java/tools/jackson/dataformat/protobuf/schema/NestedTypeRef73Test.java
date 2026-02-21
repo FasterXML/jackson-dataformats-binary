@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.protobuf.tofix;
+package tools.jackson.dataformat.protobuf.schema;
 
 import java.io.StringReader;
 
@@ -6,25 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.protobuf.ProtobufMapper;
 import tools.jackson.dataformat.protobuf.ProtobufTestBase;
-import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
-import tools.jackson.dataformat.protobuf.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class GenerateNestedType73Test extends ProtobufTestBase
+// [dataformats-binary#73]
+public class NestedTypeRef73Test extends ProtobufTestBase
 {
-    /*
-    /**********************************************************
-    /* Test methods
-    /**********************************************************
-     */
-
     final ProtobufMapper MAPPER = new ProtobufMapper();
 
-    // [dataformats-binary#68]
-    @JacksonTestFailureExpected
+    // [dataformats-binary#73]: dot-notation reference to a nested message type
     @Test
-    public void testNestedTypes() throws Exception
+    public void testNestedTypeRefViaRootType() throws Exception
     {
         final String SCHEMA_STR =
 "        package mypackage;\n"
