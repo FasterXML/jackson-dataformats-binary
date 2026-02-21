@@ -11,6 +11,7 @@ on:
     - "release-notes/*"
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -51,12 +52,126 @@ jobs:
         # MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
       run: ./mvnw -B -q -ff -DskipTests -ntp source:jar deploy
     - name: Generate code coverage
-      if: ${{ matrix.release_build && github.event_name != 'pull_request' }}
-      run: ./mvnw -B -q -ff -ntp test
+      if: ${{ matrix.release_build }}
+      run: ./mvnw -B -q -ff -ntp test jacoco:report
     - name: Publish code coverage
       if: ${{ matrix.release_build && github.event_name != 'pull_request' }}
       uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./target/site/jacoco/jacoco.xml
+        files: cbor/target/site/jacoco/jacoco.xml,smile/target/site/jacoco/jacoco.xml,avro/target/site/jacoco/jacoco.xml,protobuf/target/site/jacoco/jacoco.xml,ion/target/site/jacoco/jacoco.xml
         flags: unittests
+    - name: Upload coverage report as artifact
+      if: ${{ matrix.release_build && github.event_name != 'pull_request' && github.repository == 'FasterXML/jackson-dataformats-binary' }}
+      uses: actions/upload-artifact@v6
+      with:
+        name: jacoco-report
+        path: '**/target/site/jacoco/jacoco.csv'
+        retention-days: 30
+    - name: Download base branch coverage
+      if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
+      uses: dawidd6/action-download-artifact@v13
+      continue-on-error: true
+      with:
+        workflow: main.yml
+        branch: ${{ github.event.pull_request.base.ref }}
+        name: jacoco-report
+        path: base-coverage/
+    - name: Generate coverage summary
+      if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
+      id: jacoco
+      uses: cicirello/jacoco-badge-generator@v2.12.1
+      with:
+        jacoco-csv-file: >
+          cbor/target/site/jacoco/jacoco.csv
+          smile/target/site/jacoco/jacoco.csv
+          avro/target/site/jacoco/jacoco.csv
+          protobuf/target/site/jacoco/jacoco.csv
+          ion/target/site/jacoco/jacoco.csv
+        generate-coverage-badge: false
+        generate-branches-badge: false
+        generate-summary: true
+    - name: Generate coverage comment
+      if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
+      run: |
+        parse_coverage() {
+          local col_missed=$1 col_covered=$2
+          shift 2
+          awk -F',' -v m="$col_missed" -v c="$col_covered" \
+            'FNR>1 { total_missed += $m; total_covered += $c }
+             END { if (total_missed + total_covered > 0)
+                     printf "%.2f", (total_covered * 100.0) / (total_missed + total_covered) }' "$@"
+        }
+
+        badge_color() {
+          awk -v pct="$1" 'BEGIN{
+            if (pct >= 90) print "brightgreen"
+            else if (pct >= 80) print "green"
+            else if (pct >= 70) print "yellowgreen"
+            else if (pct >= 60) print "yellow"
+            else if (pct >= 50) print "orange"
+            else print "red"
+          }'
+        }
+
+        compute_delta() {
+          awk -v pr="$1" -v base="$2" 'BEGIN{
+            delta = pr - base
+            if (delta > 0) printf "📈 +%.2f%%", delta
+            else if (delta < 0) printf "📉 %.2f%%", delta
+            else printf "="
+          }'
+        }
+
+        PR_CSV_FILES="cbor/target/site/jacoco/jacoco.csv \
+          smile/target/site/jacoco/jacoco.csv \
+          avro/target/site/jacoco/jacoco.csv \
+          protobuf/target/site/jacoco/jacoco.csv \
+          ion/target/site/jacoco/jacoco.csv"
+
+        PR_COVERAGE=$(parse_coverage 4 5 $PR_CSV_FILES)
+        PR_BRANCHES=$(parse_coverage 6 7 $PR_CSV_FILES)
+
+        COV_COLOR=$(badge_color "$PR_COVERAGE")
+        BR_COLOR=$(badge_color "$PR_BRANCHES")
+
+        COV_BADGE="![${PR_COVERAGE}%](https://img.shields.io/badge/instructions-${PR_COVERAGE}%25-${COV_COLOR})"
+        BR_BADGE="![${PR_BRANCHES}%](https://img.shields.io/badge/branches-${PR_BRANCHES}%25-${BR_COLOR})"
+
+        BASE_CSV_FILES=$(find base-coverage -name "jacoco.csv" 2>/dev/null | tr '\n' ' ')
+
+        if [ -n "$BASE_CSV_FILES" ]; then
+          BASE_COVERAGE=$(parse_coverage 4 5 $BASE_CSV_FILES)
+          BASE_BRANCHES=$(parse_coverage 6 7 $BASE_CSV_FILES)
+          COVERAGE_DELTA=$(compute_delta "$PR_COVERAGE" "$BASE_COVERAGE")
+          BRANCHES_DELTA=$(compute_delta "$PR_BRANCHES" "$BASE_BRANCHES")
+          TABLE_HEADER="| Coverage Type | Coverage | Change |"
+          TABLE_SEP="|---|---|---|"
+          TABLE_COV="| :memo: Instructions | ${COV_BADGE} | ${COVERAGE_DELTA} |"
+          TABLE_BR="| :twisted_rightwards_arrows: Branches | ${BR_BADGE} | ${BRANCHES_DELTA} |"
+        else
+          TABLE_HEADER="| Coverage Type | Coverage |"
+          TABLE_SEP="|---|---|"
+          TABLE_COV="| :memo: Instructions | ${COV_BADGE} |"
+          TABLE_BR="| :twisted_rightwards_arrows: Branches | ${BR_BADGE} |"
+        fi
+
+        {
+          echo '## :test_tube: Code Coverage Report'
+          echo ''
+          echo "$TABLE_HEADER"
+          echo "$TABLE_SEP"
+          echo "$TABLE_COV"
+          echo "$TABLE_BR"
+        } > comment-body.txt
+
+        echo "${{ github.event.pull_request.number }}" > pr-number.txt
+    - name: Upload PR comment artifact
+      if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
+      uses: actions/upload-artifact@v6
+      with:
+        name: pr-coverage-comment
+        path: |
+          pr-number.txt
+          comment-body.txt
+        retention-days: 1
