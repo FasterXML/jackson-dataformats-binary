@@ -22,7 +22,7 @@ jobs:
         name: pr-coverage-comment
         path: pr-coverage-comment/
     - name: Post or update PR comment
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           const fs = require('fs');
