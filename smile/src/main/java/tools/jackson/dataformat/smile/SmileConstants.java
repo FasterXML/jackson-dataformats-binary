@@ -91,7 +91,9 @@ public final class SmileConstants
      * JSON documents. 0xFF makes sense here since it is also used
      * as end marker for Web Sockets.
      */
-    public final static byte BYTE_MARKER_END_OF_CONTENT = (byte) 0xFF;
+    public final static int INT_MARKER_END_OF_CONTENT = 0xFF;
+
+    public final static byte BYTE_MARKER_END_OF_CONTENT = (byte) INT_MARKER_END_OF_CONTENT;
 
     /*
     /**********************************************************
@@ -207,7 +209,8 @@ public final class SmileConstants
     // And then structured literals
 
     public final static byte TOKEN_LITERAL_START_ARRAY = (byte) 0xF8;
-    public final static byte TOKEN_LITERAL_END_ARRAY = (byte) 0xF9;
+    public final static int INT_TOKEN_LITERAL_END_ARRAY = 0xF9;
+    public final static byte TOKEN_LITERAL_END_ARRAY = (byte) INT_TOKEN_LITERAL_END_ARRAY;
     public final static byte TOKEN_LITERAL_START_OBJECT = (byte) 0xFA;
     public final static byte TOKEN_LITERAL_END_OBJECT = (byte) 0xFB;
 

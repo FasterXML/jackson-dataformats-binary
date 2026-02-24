@@ -393,9 +393,9 @@ versionBits);
         // Skip for end-of-array marker (0xF9), end-of-content marker (0xFF) and Smile
         // header indicator byte (':'/0x3A) which signals document boundary, not value.
         if (!_streamReadContext.inObject()
-                && ch != (SmileConstants.TOKEN_LITERAL_END_ARRAY & 0xFF)
-                && ch != (SmileConstants.BYTE_MARKER_END_OF_CONTENT & 0xFF)
-                && ch != (SmileConstants.HEADER_BYTE_1 & 0xFF)) {
+                && ch != SmileConstants.INT_TOKEN_LITERAL_END_ARRAY
+                && ch != SmileConstants.INT_MARKER_END_OF_CONTENT
+                && ch != SmileConstants.HEADER_BYTE_1) { // HEADER_BYTE_1 = ':' (0x3A), positive byte
             _streamReadContext.valueRead();
         }
         switch (ch >> 5) {

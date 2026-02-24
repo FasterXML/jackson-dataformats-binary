@@ -422,9 +422,9 @@ public class NonBlockingByteArrayParser
         // (things like streamReadContext().toString(), streamReadContext().getEntryCount()).
         // Skip for END_ARRAY (0xF9), end-of-content (0xFF) and Smile header byte (0x3A).
         if (!_streamReadContext.inObject()
-                && (ch & 0xFF) != (SmileConstants.TOKEN_LITERAL_END_ARRAY & 0xFF)
-                && (ch & 0xFF) != (SmileConstants.BYTE_MARKER_END_OF_CONTENT & 0xFF)
-                && (ch & 0xFF) != (SmileConstants.HEADER_BYTE_1 & 0xFF)) {
+                && ch != SmileConstants.INT_TOKEN_LITERAL_END_ARRAY
+                && ch != SmileConstants.INT_MARKER_END_OF_CONTENT
+                && ch != SmileConstants.HEADER_BYTE_1) { // HEADER_BYTE_1 = ':' (0x3A), positive byte
             _streamReadContext.valueRead();
         }
         main_switch:
