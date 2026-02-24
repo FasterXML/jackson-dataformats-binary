@@ -418,6 +418,15 @@ public class NonBlockingByteArrayParser
      */
     private final JsonToken _startValue(int ch) throws JacksonException
     {
+        // For non-object contexts (array, root), update entry count for context queries
+        // (things like streamReadContext().toString(), streamReadContext().getEntryCount()).
+        // Skip for END_ARRAY (0xF9), end-of-content (0xFF) and Smile header byte (0x3A).
+        if (!_streamReadContext.inObject()
+                && (ch & 0xFF) != (SmileConstants.TOKEN_LITERAL_END_ARRAY & 0xFF)
+                && (ch & 0xFF) != (SmileConstants.BYTE_MARKER_END_OF_CONTENT & 0xFF)
+                && (ch & 0xFF) != (SmileConstants.HEADER_BYTE_1 & 0xFF)) {
+            _streamReadContext.valueRead();
+        }
         main_switch:
         switch ((ch >> 5) & 0x7) {
         case 0: // short shared string value reference

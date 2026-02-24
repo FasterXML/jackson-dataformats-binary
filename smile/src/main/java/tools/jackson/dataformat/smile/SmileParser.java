@@ -388,6 +388,16 @@ versionBits);
         }
         final int ch = _inputBuffer[_inputPtr++] & 0xFF;
         _typeAsInt = ch;
+        // For non-object contexts (array, root), update entry count for context queries
+        // (things like streamReadContext().toString(), streamReadContext().getEntryCount()).
+        // Skip for end-of-array marker (0xF9), end-of-content marker (0xFF) and Smile
+        // header indicator byte (':'/0x3A) which signals document boundary, not value.
+        if (!_streamReadContext.inObject()
+                && ch != (SmileConstants.TOKEN_LITERAL_END_ARRAY & 0xFF)
+                && ch != (SmileConstants.BYTE_MARKER_END_OF_CONTENT & 0xFF)
+                && ch != (SmileConstants.HEADER_BYTE_1 & 0xFF)) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 5) {
         case 0: // short shared string value reference
             if (ch != 0) { // 0x0 is invalid
