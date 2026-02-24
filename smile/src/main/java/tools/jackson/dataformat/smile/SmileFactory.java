@@ -241,6 +241,8 @@ public class SmileFactory
     protected JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             byte[] data, int offset, int len)
     {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return new SmileParserBootstrapper(ioCtxt, data, offset, len)
             .constructParser(readCtxt, _factoryFeatures,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),

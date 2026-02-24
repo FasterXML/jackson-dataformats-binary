@@ -106,7 +106,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
             if (isNested(type)) {
                 if (!_nestedTypes.contains(type)) { // create nested type
                     _nestedTypes.add(type);
-                    ProtoBufSchemaVisitor builder = acceptTypeElement(_provider, type,
+                    ProtoBufSchemaVisitor builder = acceptTypeElement(getContext(), type,
                             _definedTypeElementBuilders, true);
                     DataType scalarType = builder.getSimpleType();
                     if (scalarType != null){
@@ -115,7 +115,7 @@ public class MessageElementVisitor extends JsonObjectFormatVisitor.Base
                     _builder.addType(builder.build());
                 }
             } else { // track non-nested types to generate them later
-                ProtoBufSchemaVisitor builder = acceptTypeElement(_provider, type,
+                ProtoBufSchemaVisitor builder = acceptTypeElement(getContext(), type,
                         _definedTypeElementBuilders, false);
                 DataType scalarType = builder.getSimpleType();
                 if (scalarType != null){

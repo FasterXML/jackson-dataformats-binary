@@ -9,7 +9,7 @@
   <parent>
     <groupId>tools.jackson.dataformat</groupId>
     <artifactId>jackson-dataformats-binary</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>3.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-dataformat-ion</artifactId>
   <name>Jackson dataformat: Ion</name>
@@ -34,6 +34,20 @@ tree model)
   </properties>
 
   <dependencies>
+    <!-- Depend on Jackson core components -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
     <!-- actual decoding by core streaming Ion lib -->
     <dependency>
       <groupId>com.amazon.ion</groupId>

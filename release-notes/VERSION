@@ -14,8 +14,18 @@ implementations)
 === Releases ===
 ------------------------------------------------------------------------
 
-3.1.0 (not yet released)
+3.1.1 (not yet released)
 
+#387: Avro generator should enforce `StreamWriteConstraints.maxNestingDepth`
+
+3.1.0 (23-Feb-2026)
+
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
+ (fix by @cowtowncoder, w/ Claude code)
+#436: (ion) `IonFactory.createParser(IonReader)` does not initialize state
+ (fix by @cowtowncoder, w/ Claude code)
+#514: (avro) Update to Avro 1.12.1 (Jackson 3.x only)
 #598: (protobuf) Protobuf parser state handling wrong for implicit close (END_OBJECT)
  (fix by @cowtowncoder, w/ Claude code)
 #619: (avro, cbor, ion, smile) Add `isEnabled()` methods for format-specific features
@@ -23,7 +33,24 @@ implementations)
  (requested by Andy W)
 #623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
  (requested by @Shaurya0108)
+#628: (avro, cbor, ion, protobuf, smile)  Uncommon parent pom dependency
+ configuration in Jackson 2.20/3.0
+ (reported by Josh C)
+#629: (ion) Unnecessary `IOException` in `IonObjectMapper` method signatures
+ (fix contributed by Michael L)
+#649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
+  when creating parser with fixed buffer
 
+3.0.4 (not yet released)
+
+#640: (cbor) CBOR throws ArrayIndexOutOfBoundsException with long ASCII text
+ (reported, fix contributed by Manuel S)
+
+3.0.3 (28-Nov-2025)
+
+- (avro) Upgrade `avro` lib dep to 1.11.5 (from 1.11.4)
+
+3.0.2 (07-Nov-2025)
 3.0.1 (21-Oct-2025)
 
 No changes since 3.0.0

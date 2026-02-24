@@ -20,5 +20,4 @@ module tools.jackson.dataformat.protobuf
     opens tools.jackson.dataformat.protobuf.schema;
     opens tools.jackson.dataformat.protobuf.testutil;
     opens tools.jackson.dataformat.protobuf.testutil.failure;
-    opens tools.jackson.dataformat.protobuf.tofix;
 }

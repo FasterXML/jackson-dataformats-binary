@@ -19,7 +19,8 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
 
     protected JavaType _keyType;
 
-    public MapVisitor(SerializationContext p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
+    public MapVisitor(SerializationContext p, JavaType type,
+            VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;
@@ -32,7 +33,7 @@ public class MapVisitor extends JsonMapFormatVisitor.Base
         if (_valueSchema == null) {
             throw new IllegalStateException("Missing value type for "+_type);
         }
-        AnnotatedClass ac = _provider.introspectClassAnnotations(_keyType);
+        AnnotatedClass ac = getContext().introspectClassAnnotations(_keyType);
         if (AvroSchemaHelper.isStringable(ac)) {
             return AvroSchemaHelper.stringableKeyMapSchema(_type, _keyType, _valueSchema);
         }

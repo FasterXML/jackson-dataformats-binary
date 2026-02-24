@@ -23,7 +23,8 @@ public class ArrayVisitor
 
     protected Schema _elementSchema;
 
-    public ArrayVisitor(SerializationContext p, JavaType type, VisitorFormatWrapperImpl visitorWrapper)
+    public ArrayVisitor(SerializationContext p, JavaType type,
+            VisitorFormatWrapperImpl visitorWrapper)
     {
         super(p);
         _type = type;

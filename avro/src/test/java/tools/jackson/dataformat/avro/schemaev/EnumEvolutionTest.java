@@ -33,7 +33,7 @@ public class EnumEvolutionTest extends AvroTestBase
         public Gender gender;
     }
 
-    private final AvroMapper MAPPER = new AvroMapper();
+    private final AvroMapper MAPPER = newMapper();
 
     @Test
     public void testSimple() throws Exception

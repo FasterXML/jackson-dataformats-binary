@@ -2,84 +2,46 @@ package tools.jackson.dataformat.avro.dos;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 
 import tools.jackson.dataformat.avro.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Simple unit tests to verify that we fail gracefully if you attempt to serialize
- * data that is cyclic (eg a list that contains itself).
+ * Simple unit test to verify that we fail gracefully if you attempt to serialize
+ * data that is directly cyclic (eg a list that contains itself).
  */
 public class CyclicAvroDataSerTest extends AvroTestBase
 {
-
-    public static class Bean
+    public static class LinkedBean
     {
-        Bean _next;
+        LinkedBean _next;
         final String _name;
 
-        public Bean(Bean next, String name) {
+        public LinkedBean(LinkedBean next, String name) {
             _next = next;
             _name = name;
         }
 
-        public Bean getNext() { return _next; }
+        public LinkedBean getNext() { return _next; }
         public String getName() { return _name; }
 
-        public void assignNext(Bean n) { _next = n; }
+        public void assignNext(LinkedBean n) { _next = n; }
     }
 
     private final AvroMapper MAPPER = getMapper();
 
-    // Unlike default depth of 1000 for other formats, use lower (400) here
-    // because we cannot actually generate 1000 levels due to Avro codec's
-    // limitations
-    private final AvroMapper MAPPER_400;
-    {
-        AvroFactory f = AvroFactory.builder()
-                .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(400).build())
-                .build();
-        MAPPER_400 = new AvroMapper(f);
-    }
-
     @Test
     public void testDirectCyclic() throws Exception {
-        Bean bean = new Bean(null, "123");
+        LinkedBean bean = new LinkedBean(null, "123");
         bean.assignNext(bean);
         try {
-            AvroSchema schema = MAPPER.schemaFor(Bean.class);
+            AvroSchema schema = MAPPER.schemaFor(LinkedBean.class);
             MAPPER.writer(schema).writeValueAsBytes(bean);
             fail("expected InvalidDefinitionException");
-        } catch (InvalidDefinitionException idex) {
-            assertTrue(idex.getMessage().startsWith("Direct self-reference leading to cycle"),
-                    "InvalidDefinitionException message is as expected?");
-        }
-    }
-
-    // With 2.16 also test looser loops, wrt new limits
-    @Test
-    public void testLooserCyclic() throws Exception
-    {
-        Bean beanRoot = new Bean(null, "123");
-        Bean bean2 = new Bean(beanRoot, "456");
-        beanRoot.assignNext(bean2);
-
-        // 12-Jul-2023, tatu: Alas, won't work -- Avro serialization by-passes many
-        //    checks. Needs more work in future
-
-        if (false) {
-            try {
-                AvroSchema schema = MAPPER_400.schemaFor(Bean.class);
-                MAPPER_400.writer(schema).writeValueAsBytes(beanRoot);
-                fail("expected InvalidDefinitionException");
-            } catch (InvalidDefinitionException idex) {
-                assertTrue(idex.getMessage().startsWith("Direct self-reference leading to cycle"),
-                        "InvalidDefinitionException message is as expected?");
-            }
+        } catch (InvalidDefinitionException e) {
+            verifyException(e, "Direct self-reference leading to cycle");
         }
     }
 }

@@ -57,7 +57,7 @@ public class EnumSchema422Test extends AvroTestBase
         MAPPER.acceptJsonFormatVisitor(Wrapper422.class, gen);
 
         org.apache.avro.Schema avroSchema = gen.getGeneratedSchema().getAvroSchema();
-        String avroSchemaInJSON = avroSchema.toString(true);
+        String avroSchemaInJSON = asJSON(avroSchema);
         assertNotNull(avroSchemaInJSON);
     }
 }

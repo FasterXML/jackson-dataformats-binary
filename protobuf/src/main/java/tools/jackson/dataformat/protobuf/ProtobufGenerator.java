@@ -993,8 +993,8 @@ public class ProtobufGenerator extends GeneratorBase
 
     protected void _reportEnumError(Object enumValue) throws JacksonException
     {
-        _reportErrorF("No Enum '%s' found for property '%s'; valid values = %s"
-                +_currField.getEnumValues(), _currField.name, enumValue);
+        _reportErrorF("No Enum '%s' found for property '%s'; valid values = %s",
+                enumValue, _currField.name, _currField.getEnumValues());
     }
 
     /*

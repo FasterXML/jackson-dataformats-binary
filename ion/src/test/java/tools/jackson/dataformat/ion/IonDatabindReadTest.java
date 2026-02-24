@@ -96,6 +96,11 @@ public class IonDatabindReadTest {
      * Test reading IonValues from a reader where the values aren't at the
      * top level, making sure that no tokens are dropped and that the reader
      * is left open.
+     * <p>
+     * After fix for [dataformats-binary#436], createParser(IonReader) initializes
+     * the parser's current token from the reader's current position. Callers must
+     * therefore explicitly advance the reader (via reader.next()) to the desired
+     * value before each readValue() call.
      */
     @Test
     public void testMultipleReads() throws Exception
@@ -108,8 +113,13 @@ public class IonDatabindReadTest {
         IonReader reader = ion.newReader("[foo, bar, baz]");
         assertEquals(IonType.LIST, reader.next());
         reader.stepIn();
+        // Must advance reader to each element before calling readValue(),
+        // since createParser(IonReader) now initializes from the reader's current position
+        assertEquals(IonType.SYMBOL, reader.next());
         assertEquals("foo", m.readValue(reader, String.class));
+        assertEquals(IonType.SYMBOL, reader.next());
         assertEquals("bar", m.readValue(reader, String.class));
+        assertEquals(IonType.SYMBOL, reader.next());
         assertEquals("baz", m.readValue(reader, String.class));
         reader.stepOut();
         reader.close();

@@ -1,13 +1,13 @@
-package tools.jackson.dataformat.avro.tofix;
+package tools.jackson.dataformat.avro.schemaev;
 
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.*;
-import tools.jackson.dataformat.avro.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class POJOEvolution164Test extends AvroTestBase
+// [dataformats-binary#164]
+public class FieldRemoval164Test extends AvroTestBase
 {
     static class MyClass {
         public String stringField;
@@ -16,7 +16,7 @@ public class POJOEvolution164Test extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
-    @JacksonTestFailureExpected
+    // [dataformats-binary#164]
     @Test
     public void testSimpleFieldRemove() throws Exception
     {
@@ -46,8 +46,11 @@ public class POJOEvolution164Test extends AvroTestBase
                 "  ]\n" +
                 "}";
 
-        final AvroSchema readerSchema = MAPPER.schemaFrom(READER_SCHEMA_SRC);
         final AvroSchema writerSchema = MAPPER.schemaFrom(WRITER_SCHEMA_SRC);
+        final AvroSchema readerSchema = MAPPER.schemaFrom(READER_SCHEMA_SRC);
+        // Must use combined schema that knows both writer (for data layout) and
+        // reader (for desired output) schemas, to properly skip removed fields
+        final AvroSchema combinedSchema = writerSchema.withReaderSchema(readerSchema);
 
         MyClass aClass = new MyClass();
         aClass.stringField = "String value";
@@ -56,8 +59,8 @@ public class POJOEvolution164Test extends AvroTestBase
                 .with(writerSchema)
                 .writeValueAsBytes(aClass);
         MyClass result = MAPPER.readerFor(MyClass.class)
-                .with(readerSchema)
+                .with(combinedSchema)
                 .readValue(avro);
         assertEquals(aClass.stringField, result.stringField);
-      }
+    }
 }

@@ -18,6 +18,7 @@ module tools.jackson.dataformat.avro
 
     opens tools.jackson.dataformat.avro;
     opens tools.jackson.dataformat.avro.annotation;
+    opens tools.jackson.dataformat.avro.constraints;
     opens tools.jackson.dataformat.avro.dos;
     opens tools.jackson.dataformat.avro.fuzz;
     opens tools.jackson.dataformat.avro.gen;

@@ -2595,7 +2595,7 @@ public class CBORParser extends ParserBase
         int outPtr = 0;
         while (len > 0) {
             // load as much input as possible
-            int size = Math.min(len, Math.min(outBuf.length, input.length));
+            int size = Math.min(len, Math.min((outBuf.length - outPtr), input.length));
             if (!_tryToLoadToHaveAtLeast(size)) {
                 return len;
             }
@@ -3381,6 +3381,25 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 && type != CBORConstants.MAJOR_TYPE_BYTES) {
             _throwInternal();
         }
+
+        // [dataformats-binary#599]: If we are in a stringref namespace, we need to
+        // actually read and store the string/bytes value instead of just skipping it,
+        // so that later string references can find it.
+        // The finish methods will determine if the value should be added to the
+        // reference table based on shouldReferenceString().
+        if (!_stringRefs.empty()) {
+            if (type == CBORConstants.MAJOR_TYPE_TEXT) {
+                // Need to actually read the text (which may add to stringRefs)
+                _finishTextToken(_typeByte);
+            } else {
+                // For bytes: decode length then read (which may add to stringRefs)
+                int len = _decodeExplicitLength(_typeByte & 0x1F);
+                _finishBytes(len);
+            }
+            return;
+        }
+
+        // Standard skip logic when not in stringref namespace
         final int lowBits = _typeByte & 0x1F;
         if (lowBits <= 23) {
             if (lowBits > 0) {

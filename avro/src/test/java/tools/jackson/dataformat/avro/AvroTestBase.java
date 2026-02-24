@@ -354,6 +354,14 @@ public abstract class AvroTestBase
         return json.replace("'", "\"");
     }
 
+    protected static String asJSON(AvroSchema sch) {
+        return asJSON(sch.getAvroSchema());
+    }
+
+    protected static String asJSON(org.apache.avro.Schema avroSchema) {
+        return avroSchema.toString(true);
+    }
+
     /*
     /**********************************************************
     /* Text generation

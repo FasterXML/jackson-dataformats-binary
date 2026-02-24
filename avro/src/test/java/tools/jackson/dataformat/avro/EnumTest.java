@@ -161,7 +161,7 @@ public class EnumTest extends AvroTestBase
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
-        String json = schema.getAvroSchema().toString(true);
+        String json = asJSON(schema);
         assertNotNull(json);
 
         // And read it back too just for fun

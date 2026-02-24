@@ -20,22 +20,30 @@ public class ParseLongAsciiTextTest extends CBORTestBase
     @Test
     public void testLongNonChunkedAsciiText() throws Exception
     {
-        try (JsonParser p = CBOR_F.createParser(ObjectReadContext.empty(),
-                this.getClass().getResourceAsStream("/data/macbeth-snippet-non-chunked.cbor"))) {
-            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-            String expected = new String(readResource("/data/macbeth-snippet.txt"), "UTF-8");
-            assertEquals(expected, p.getString());
+        // run several times to allow the internal buffers
+        // to grow
+        for (int x = 0; x < 3 ; x++) {
+            try (JsonParser p = CBOR_F.createParser(ObjectReadContext.empty(),
+                    this.getClass().getResourceAsStream("/data/macbeth-snippet-non-chunked.cbor"))) {
+                assertEquals(JsonToken.VALUE_STRING, p.nextToken());
+                String expected = new String(readResource("/data/macbeth-snippet.txt"), "UTF-8");
+                assertEquals(expected, p.getString());
+            }
         }
     }
 
     @Test
     public void testLongChunkedAsciiText() throws Exception
     {
-        try (JsonParser p = CBOR_F.createParser(ObjectReadContext.empty(),
-                this.getClass().getResourceAsStream("/data/macbeth-snippet-chunked.cbor"))) {
-            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-            String expected = new String(readResource("/data/macbeth-snippet.txt"), StandardCharsets.UTF_8);
-            assertEquals(expected, p.getString());
+        // run several times to allow the internal buffers
+        // to grow
+        for (int x = 0; x < 3 ; x++) {
+            try (JsonParser p = CBOR_F.createParser(ObjectReadContext.empty(),
+                    this.getClass().getResourceAsStream("/data/macbeth-snippet-chunked.cbor"))) {
+                assertEquals(JsonToken.VALUE_STRING, p.nextToken());
+                String expected = new String(readResource("/data/macbeth-snippet.txt"), StandardCharsets.UTF_8);
+                assertEquals(expected, p.getString());
+            }
         }
     }
 }

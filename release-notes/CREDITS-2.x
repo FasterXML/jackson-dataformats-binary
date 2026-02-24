@@ -386,10 +386,15 @@ Manuel Sugawara (@sugmanue)
   (2.19.0)
  * Contributed fix for #616: CBOR text gets truncated on decoding
   (2.19.3)
+ * Conribued fix for #640: (cbor) CBOR throws ArrayIndexOutOfBoundsException
+   with long ASCII text
+  (2.20.2)
 
 Josh Curry (@seadbrane)
  * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
   (2.19.0)
+ * Reported #628: Uncommon parent pom dependency configuration in Jackson 2.20/3.0
+  (2.21.0)
 
 Rafael Winterhalter (@raphw)
  * Reported #589: AvroSchema: Does not include base class for records
@@ -422,3 +427,7 @@ Vincent Eigenberger (@beseder1)
  * Contributed fix for #601: Jackson subtype Avro schema unions are non-deterministic
    and therefore incompatible with each other
   (2.20.1)
+
+Yohei Kishimoto (@morokosi)
+ * Reported #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+  (2.21.0)

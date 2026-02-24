@@ -4,13 +4,17 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
 import com.amazon.ion.IonReader;
+import com.amazon.ion.IonSystem;
+import com.amazon.ion.system.IonSystemBuilder;
 
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IonFactoryTest {
@@ -57,6 +61,48 @@ public class IonFactoryTest {
         // and is closed automatically in IonParser.close().
         assertResourceManaged(false, parser(f -> f.createParser(EMPTY_READ_CTXT,
                 f.getIonSystem().newReader(BINARY_INT_0))));
+    }
+
+    // [dataformats-binary#436]: createParser(IonReader) should initialize state
+    // if the reader is already positioned at a value
+    @Test
+    public void createParserFromPositionedIonReader() throws Exception {
+        IonSystem ion = IonSystemBuilder.standard().build();
+        IonFactory f = new IonFactory();
+
+        // Case 1: unpositioned reader -> currentToken() should be null
+        IonReader unpositioned = ion.newReader(BINARY_INT_0);
+        try (IonParser p = f.createParser(EMPTY_READ_CTXT, unpositioned)) {
+            assertNull(p.currentToken(),
+                "Unpositioned reader: currentToken() should be null before nextToken()");
+        }
+
+        // Case 2: reader already positioned at an int value
+        IonReader positionedAtInt = ion.newReader(BINARY_INT_0);
+        positionedAtInt.next(); // advance to int 0
+        try (IonParser p = f.createParser(EMPTY_READ_CTXT, positionedAtInt)) {
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.currentToken(),
+                "Pre-positioned reader (INT): currentToken() should reflect reader state");
+            assertEquals(0, p.getIntValue());
+        }
+
+        // Case 3: reader already positioned at start of a struct
+        IonReader positionedAtStruct = ion.newReader("{a:1,b:true}");
+        positionedAtStruct.next(); // advance to struct
+        try (IonParser p = f.createParser(EMPTY_READ_CTXT, positionedAtStruct)) {
+            assertEquals(JsonToken.START_OBJECT, p.currentToken(),
+                "Pre-positioned reader (STRUCT): currentToken() should be START_OBJECT");
+            // Verify we can still read the full struct content via nextToken()
+            assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
+            assertEquals("a", p.currentName());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(1, p.getIntValue());
+            assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
+            assertEquals("b", p.currentName());
+            assertEquals(JsonToken.VALUE_TRUE, p.nextToken());
+            assertEquals(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.nextToken());
+        }
     }
 
     private void assertResourceManaged(boolean expectResourceManaged, ThrowingSupplier<IonParser> supplier)

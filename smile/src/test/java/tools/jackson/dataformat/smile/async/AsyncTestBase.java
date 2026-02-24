@@ -7,7 +7,7 @@ import tools.jackson.databind.ObjectReader;
 
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 
-abstract class AsyncTestBase extends BaseTestForSmile
+public abstract class AsyncTestBase extends BaseTestForSmile
 {
     final static String SPACES = "                ";
 

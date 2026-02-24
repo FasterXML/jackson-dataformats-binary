@@ -223,7 +223,31 @@ public class TypeResolver
         if (nativeMt != null) {
             return new ProtobufField(nativeField, resolve(this, nativeMt));
         }
-        return null;
+        // [dataformats-binary#73] Handle dot-notation references to nested message types
+        // (e.g. "OuterType.InnerType")
+        return _findDottedType(nativeField, typeStr);
+    }
+
+    /**
+     * Try to resolve a dot-notation type reference (e.g. {@code "OuterType.InnerType"})
+     * by navigating the message type hierarchy declared at this scope level.
+     */
+    private ProtobufField _findDottedType(FieldElement nativeField, String typeStr)
+    {
+        int dotIx = typeStr.indexOf('.');
+        if (dotIx <= 0) {
+            return null;
+        }
+        String outerName = typeStr.substring(0, dotIx);
+        String innerPath = typeStr.substring(dotIx + 1);
+        MessageElement outerMsg = _declaredMessageTypes.get(outerName);
+        if (outerMsg == null) {
+            return null;
+        }
+        // Create a resolver in the context of the outer type and recursively
+        // resolve the remaining path (handles arbitrary nesting depth)
+        TypeResolver outerResolver = TypeResolver.construct(this, outerName, outerMsg.nestedElements());
+        return outerResolver._findAndResolve(nativeField, innerPath);
     }
 
     private StringBuilder _knownEnums(StringBuilder sb) {

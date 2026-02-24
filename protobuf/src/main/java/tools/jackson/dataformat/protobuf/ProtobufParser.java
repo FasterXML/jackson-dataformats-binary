@@ -570,6 +570,12 @@ public class ProtobufParser extends ParserMinimalBase
 
             int len = _decodeLength();
             int newEnd = _inputPtr + len;
+            // Guard against integer overflow: _inputPtr and len are both non-negative,
+            // so a result smaller than _inputPtr means the sum wrapped.
+            if (newEnd < _inputPtr) {
+                _reportErrorF("Packed array length overflows for field '%s': ptr=%d, len=%d",
+                        _currentField.name, _inputPtr, len);
+            }
 
             // First: validate that we do not extend past end offset of enclosing message
             if (!_streamReadContext.inRoot()) {
@@ -881,6 +887,12 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentMessage = msg;
                 int len = _decodeLength();
                 int newEnd = _inputPtr + len;
+                // Guard against integer overflow: _inputPtr and len are both non-negative,
+                // so a result smaller than _inputPtr means the sum wrapped.
+                if (newEnd < _inputPtr) {
+                    _reportErrorF("Message length overflows for field '%s': ptr=%d, len=%d",
+                            _currentField.name, _inputPtr, len);
+                }
 
                 // First: validate that we do not extend past end offset of enclosing message
                 if (newEnd > _currentEndOffset) {

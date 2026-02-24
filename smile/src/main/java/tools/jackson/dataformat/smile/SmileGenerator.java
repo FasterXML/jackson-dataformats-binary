@@ -558,7 +558,7 @@ public class SmileGenerator
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
-        _verifyValueWrite("write int array");
+        _verifyValueWrite("write long array");
 
         _writeByte(TOKEN_LITERAL_START_ARRAY);
         int ptr = _outputTail;
@@ -582,7 +582,7 @@ public class SmileGenerator
     {
         _verifyOffsets(array.length, offset, length);
         // short-cut, do not create child array context etc
-        _verifyValueWrite("write int array");
+        _verifyValueWrite("write double array");
 
         _writeByte(TOKEN_LITERAL_START_ARRAY);
         int ptr = _outputTail;

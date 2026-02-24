@@ -1,16 +1,15 @@
-package tools.jackson.dataformat.cbor.tofix;
+package tools.jackson.dataformat.cbor;
 
 import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.dataformat.cbor.*;
-import tools.jackson.dataformat.cbor.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.Test;
 
 public class StringRef599Test extends CBORTestBase
 {
@@ -27,7 +26,6 @@ public class StringRef599Test extends CBORTestBase
     }
 
     // [dataformats-binary#599]
-    @JacksonTestFailureExpected
     @Test
     public void testDupsWithStringRef() throws Exception
     {

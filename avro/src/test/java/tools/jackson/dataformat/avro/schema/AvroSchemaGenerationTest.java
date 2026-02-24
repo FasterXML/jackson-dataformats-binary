@@ -110,7 +110,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
-        String json = schema.getAvroSchema().toString(true);
+        String json = asJSON(schema);
         assertNotNull(json);
 
         // And read it back too just for fun
@@ -138,7 +138,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
-        String json = schema.getAvroSchema().toString(true);
+        String json = asJSON(schema);
         assertNotNull(json);
         AvroSchema s2 = MAPPER.schemaFrom(json);
         assertNotNull(s2);
@@ -170,7 +170,7 @@ public class AvroSchemaGenerationTest extends AvroTestBase
         AvroSchema schema = gen.getGeneratedSchema();
         assertNotNull(schema);
 
-        String json = schema.getAvroSchema().toString(true);
+        String json = asJSON(schema);
         assertNotNull(json);
         AvroSchema s2 = MAPPER.schemaFrom(json);
         assertNotNull(s2);

@@ -176,6 +176,18 @@ public abstract class CBORTestBase
 
     /*
     /**********************************************************************
+    /* Parser construction
+    /**********************************************************************
+     */
+
+    protected JsonParser createParserUsingStream(TokenStreamFactory f, byte[] input)
+        throws IOException
+    {
+        return f.createParser(new ByteArrayInputStream(input));
+    }
+
+    /*
+    /**********************************************************************
     /* Additional assertion methods
     /**********************************************************************
      */

@@ -315,6 +315,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeStartArray() throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildArrayContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _complete = false;
         return this;
     }
@@ -322,6 +323,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeStartArray(Object currValue) throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _complete = false;
         return this;
     }
@@ -329,6 +331,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeStartArray(Object currValue, int len) throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildArrayContext(currValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _complete = false;
         return this;
     }
@@ -349,6 +352,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeStartObject() throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildObjectContext(null);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _complete = false;
         return this;
     }
@@ -356,6 +360,7 @@ public class AvroGenerator extends GeneratorBase
     @Override
     public JsonGenerator writeStartObject(Object forValue) throws JacksonException {
         _streamWriteContext = _streamWriteContext.createChildObjectContext(forValue);
+        streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
         _complete = false;
         return this;
     }

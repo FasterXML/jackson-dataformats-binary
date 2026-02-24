@@ -645,7 +645,7 @@ public abstract class ScalarDecoder
 
             @Override
             public void skipValue(AvroParserImpl parser) throws IOException {
-                parser.skipFloat();
+                parser.skipBytesDecimal();
             }
         }
     }

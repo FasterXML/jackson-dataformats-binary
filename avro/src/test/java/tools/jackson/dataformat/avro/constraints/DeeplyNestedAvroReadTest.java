@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro.dos;
+package tools.jackson.dataformat.avro.constraints;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Unit tests for deeply nested Documents
  */
-public class DeepNestingAvroParserTest extends AvroTestBase
+public class DeeplyNestedAvroReadTest extends AvroTestBase
 {
     protected final String NODE_SCHEMA_JSON = "{\n"
             +"\"type\": \"record\",\n"

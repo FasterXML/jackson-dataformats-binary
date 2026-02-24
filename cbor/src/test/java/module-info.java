@@ -24,5 +24,5 @@ module tools.jackson.dataformat.cbor
     opens tools.jackson.dataformat.cbor.seq;
     opens tools.jackson.dataformat.cbor.testutil;
     opens tools.jackson.dataformat.cbor.testutil.failure;
-    opens tools.jackson.dataformat.cbor.tofix;
+    //opens tools.jackson.dataformat.cbor.tofix;
 }

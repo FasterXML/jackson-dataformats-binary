@@ -14,19 +14,45 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.0 (not yet released)
+2.22.0 (not yet released)
 
+No changes since 2.21
+
+2.21.1 (22-Feb-2026)
+
+#645: (avro) Remove use of Avro `Schema.Parser().setValidate()` to allow
+  use of Avro core 1.12.1 (2.x)
+#649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
+  when creating parser with fixed buffer
+#651: (smile) Ensure Smile backend supports `StreamReadConstraints.maxTokenCount`
+#652: (cbor) Ensure CBOR backend supports `StreamReadConstraints.maxTokenCount`
+
+2.21.0 (18-Jan-2026)
+
+#599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ (reported by Yohei K)
 #623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
  (requested by @Shaurya0108)
+#628: Uncommon parent pom dependency configuration in Jackson 2.20/3.0
+ (reported by Josh C)
+- (avro) Upgrade `avro` lib dep to 1.11.5 (from 1.11.4)
 
-2.20.1 (not yet released)
+2.20.2 (19-Jan-2026)
 
+#640: (cbor) CBOR throws ArrayIndexOutOfBoundsException with long ASCII text
+ (reported, fix contributed by Manuel S)
+
+2.20.1 (30-Oct-2025)
+
+#599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ (reported by Yohei K)
 #601: Jackson subtype Avro schema unions are non-deterministic and therefore
   incompatible with each other
  (reported by Raphael W)
  (fix by Vincent E)
 #616: CBOR text gets truncated on decoding
  (reported, fix contributed by Manuel S)
+#623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
 
 2.20.0 (28-Aug-2025)
 
@@ -46,14 +72,19 @@ Active maintainers:
 - Fixes wrt [core#1438] (ParserBase.close() not resetting current token)
 - Generate SBOMs [JSTEP-14]
 
-2.19.3 (not yet released)
+2.19.4 (29-Oct-2025)
+2.19.3 (29-Oct-2025)
 
+#599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ (reported by Yohei K)
 #601: Jackson subtype Avro schema unions are non-deterministic and therefore
   incompatible with each other
  (reported by Raphael W)
  (fix by Vincent E)
 #616: CBOR text gets truncated on decoding
  (reported, fix contributed by Manuel S)
+#623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
+ (requested by @Shaurya0108)
 
 2.19.2 (18-Jul-2025)
 
@@ -89,6 +120,23 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.6 (22-Feb-2026)
+
+#645: (avro) Remove use of Avro `Schema.Parser().setValidate()` to allow
+  use of Avro core 1.12.1 (2.x)
+#649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
+  when creating parser with fixed buffer
+#651: (smile) Ensure Smile backend supports `StreamReadConstraints.maxTokenCount`
+#652: (cbor) Ensure CBOR backend supports `StreamReadConstraints.maxTokenCount`
+- Minor fix to `ProtobufGenerator._reportEnumError()` helper method
+
+2.18.5 (27-Oct-2025)
+
+#599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ (reported by Yohei K)
+#623: (ion) Upgrade `ion-java` dep to 1.11.11 (from 1.11.10)
+ (requested by @Shaurya0108)
 
 2.18.4 (06-May-2025)
 
