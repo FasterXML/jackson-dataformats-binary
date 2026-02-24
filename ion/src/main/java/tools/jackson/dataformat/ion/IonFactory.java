@@ -513,7 +513,7 @@ public class IonFactory
         // 18-Feb-2021, tatu: [dataformats-binary#245] pretty-printing.
         //   note: Cannot really make use of Jackson PP, just rely on Ion default
         //   (for now?)
-        if (writeCtxt.hasPrettyPrinter()) {
+        if (writeCtxt.getPrettyPrinter() != null) {
             return IonTextWriterBuilder.pretty().build(w);
         }
         return _system.newTextWriter(w);

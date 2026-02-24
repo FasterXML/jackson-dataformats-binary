@@ -33,8 +33,15 @@ public class PrettyPrintWriteTest
                 .writeValueAsString(new Point());
         assertEquals(EXP, ion.trim());
 
+        mapper = mapper.rebuild()
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .build();
+        ion = mapper.writeValueAsString(new Point());
+        assertEquals(EXP, ion.trim());
+
         // But also no indentation if not requested
         ion = mapper.writer()
+                .without(SerializationFeature.INDENT_OUTPUT)
                 .writeValueAsString(new Point());
         assertEquals("{x:1,y:2}", ion.trim());
     }
