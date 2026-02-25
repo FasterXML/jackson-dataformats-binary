@@ -18,22 +18,23 @@ public class IonPrettyPrintWriteTest
         public int y = 2;
     }
 
+    private final IonObjectMapper TEXTUAL_MAPPER = IonObjectMapper.builder(IonFactory.forTextualWriters()).build();
+
     @Test
-    public void testBasicPrettyPrintTextual() throws Exception
+    public void prettyPrintTextual() throws Exception
     {
         final String EXP = "{\n  x:1,\n  y:2\n}";
 
-        IonObjectMapper mapper = IonObjectMapper.builder(IonFactory.forTextualWriters()).build();
-        String ion = mapper.writerWithDefaultPrettyPrinter()
+        String ion = TEXTUAL_MAPPER.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(new Point());
         assertEquals(EXP, ion.trim());
 
-        ion = mapper.writer()
+        ion = TEXTUAL_MAPPER.writer()
                 .with(SerializationFeature.INDENT_OUTPUT)
                 .writeValueAsString(new Point());
         assertEquals(EXP, ion.trim());
 
-        mapper = mapper.rebuild()
+        IonObjectMapper mapper = TEXTUAL_MAPPER.rebuild()
                 .enable(SerializationFeature.INDENT_OUTPUT)
                 .build();
         ion = mapper.writeValueAsString(new Point());
@@ -48,7 +49,7 @@ public class IonPrettyPrintWriteTest
 
     // and with binary format, should simply be no-op
     @Test
-    public void testIgnorePrettyPrintForBinary() throws Exception
+    public void prettyPrintIgnoredForBinary() throws Exception
     {
         IonObjectMapper mapper = IonObjectMapper.builder(IonFactory.forBinaryWriters()).build();
         byte[] encoded = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(new Point());
