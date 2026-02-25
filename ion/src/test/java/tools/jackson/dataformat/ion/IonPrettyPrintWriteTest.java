@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // For [dataformats-binary#245]: no pretty-printing for textual format
-public class PrettyPrintWriteTest
+public class IonPrettyPrintWriteTest
 {
     @JsonPropertyOrder({ "x", "y" })
     static class Point {

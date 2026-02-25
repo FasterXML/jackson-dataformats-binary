@@ -482,9 +482,9 @@ public class IonFactory
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             OutputStream out, JsonEncoding enc, boolean isManaged)
      {
-        IonWriter ion;
         IOContext ioCtxt = _createContext(_createContentReference(out), isManaged);
-        Closeable dst; // not necessarily same as 'out'...
+        final IonWriter ion;
+        final Closeable dst; // not necessarily same as 'out'...
 
         // Binary writers are simpler: no alternate encodings
         if (_cfgBinaryWriters) {
@@ -513,7 +513,7 @@ public class IonFactory
         // 18-Feb-2021, tatu: [dataformats-binary#245] pretty-printing.
         //   note: Cannot really make use of Jackson PP, just rely on Ion default
         //   (for now?)
-        if (writeCtxt.getPrettyPrinter() != null) {
+        if (writeCtxt.hasPrettyPrinter()) {
             return IonTextWriterBuilder.pretty().build(w);
         }
         return _system.newTextWriter(w);
