@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.cbor;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,19 @@ public class StringRef599Test extends CBORTestBase
     public void testDupsWithStringRef() throws Exception
     {
         _testStringRef(REF_MAPPER);
+    }
+
+    // [dataformats-binary#669]: STRINGREF enabled via mapper builder (not factory builder)
+    @Test
+    public void testDupsWithStringRefViaMapperBuilder() throws Exception
+    {
+        ObjectMapper mapper = CBORMapper.builder()
+                .enable(CBORWriteFeature.STRINGREF)
+                .build();
+        List<?> original = Arrays.asList("foo", "foo");
+        byte[] cbor = mapper.writeValueAsBytes(original);
+        List<?> deserialized = mapper.readValue(cbor, List.class);
+        assertEquals(original, deserialized);
     }
 
     private void _testStringRef(ObjectMapper mapper) throws Exception

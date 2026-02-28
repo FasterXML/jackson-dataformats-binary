@@ -33,3 +33,9 @@ Michael Liedtke (@mcliedtke)
 
 * Contributed #629: (ion) Unnecessary `IOException` in `IonObjectMapper` method signatures
  (3.1.0)
+
+Klaus Meinhardt (@ajafff)
+
+* Reported #669: STRINGREF String reference outside of a namespace
+ (3.1.1)
+
