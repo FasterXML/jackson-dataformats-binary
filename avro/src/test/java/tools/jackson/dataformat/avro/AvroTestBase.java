@@ -289,7 +289,7 @@ public abstract class AvroTestBase
     protected AvroSchema parseSchema(AvroMapper mapper, String schemaAsJson) {
         try {
             return getMapper().schemaFrom(aposToQuotes(schemaAsJson));
-        } catch (IOException e) {
+        } catch (Exception e) {
             fail("Could not parse Avro Schema from: "+schemaAsJson+", problem: "+e);
             return null;
         }
