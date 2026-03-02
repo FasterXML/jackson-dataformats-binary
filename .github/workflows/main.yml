@@ -63,7 +63,7 @@ jobs:
         flags: unittests
     - name: Upload coverage report as artifact
       if: ${{ matrix.release_build && github.event_name != 'pull_request' && github.repository == 'FasterXML/jackson-dataformats-binary' }}
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: jacoco-report
         path: '**/target/site/jacoco/jacoco.csv'
@@ -168,7 +168,7 @@ jobs:
         echo "${{ github.event.pull_request.number }}" > pr-number.txt
     - name: Upload PR comment artifact
       if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: pr-coverage-comment
         path: |
