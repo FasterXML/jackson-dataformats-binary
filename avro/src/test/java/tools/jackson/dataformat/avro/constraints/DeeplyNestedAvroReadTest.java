@@ -56,14 +56,7 @@ public class DeeplyNestedAvroReadTest extends AvroTestBase
         MAPPER_400 = new AvroMapper(f);
     }
 
-    private final AvroSchema NODE_SCHEMA;
-    {
-        try {
-            NODE_SCHEMA = DEFAULT_MAPPER.schemaFrom(NODE_SCHEMA_JSON);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private final AvroSchema NODE_SCHEMA = DEFAULT_MAPPER.schemaFrom(NODE_SCHEMA_JSON);
 
     @Test
     public void testDeeplyNestedObjectsHighLimits() throws Exception
