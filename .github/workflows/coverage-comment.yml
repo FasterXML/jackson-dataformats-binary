@@ -15,7 +15,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
     - name: Download PR comment artifact
-      uses: dawidd6/action-download-artifact@v15
+      uses: dawidd6/action-download-artifact@v16
       with:
         workflow: main.yml
         run_id: ${{ github.event.workflow_run.id }}
