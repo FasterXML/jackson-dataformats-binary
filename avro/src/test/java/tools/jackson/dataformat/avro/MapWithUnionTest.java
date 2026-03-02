@@ -1,7 +1,6 @@
 package tools.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MapWithUnionTest extends AvroTestBase
 {
-    protected final String MAP_WITH_UNION_SCHEMA_JSON = aposToQuotes(
+    protected final String MAP_WITH_UNION_SCHEMA_JSON = a2q(
             "{"
             +"'name': 'Map',\n"
             +"'type': 'map',\n"
@@ -25,7 +24,7 @@ public class MapWithUnionTest extends AvroTestBase
             +"}\n");
 
     // for [dataformats-binary#39]
-    final static String MAP_CONTAINER_SCHEMA_JSON = aposToQuotes("{\n"
+    final static String MAP_CONTAINER_SCHEMA_JSON = a2q("{\n"
             +" 'namespace': 'com.salesforce.conduit.avro',\n"
             +" 'type': 'record',\n"
             +" 'name': 'MapContainer',\n"
@@ -105,7 +104,7 @@ public class MapWithUnionTest extends AvroTestBase
     }
 
     @Test
-    public void testMapContainerWithNested() throws IOException
+    public void testMapContainerWithNested() throws Exception
     {
         Map<String,Object> map = new LinkedHashMap<>();
         map.put("hello", "world");

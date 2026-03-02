@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ComplexDefaultsTest extends AvroTestBase
 {
-    static String SCHEMA_V1_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_V1_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'RootType',\n"+
             " 'fields':[\n"+
@@ -22,7 +22,7 @@ public class ComplexDefaultsTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_V2_JSON_RECORD = aposToQuotes("{\n"+
+    static String SCHEMA_V2_JSON_RECORD = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'RootType',\n"+
             " 'fields':[\n"+
@@ -42,7 +42,7 @@ public class ComplexDefaultsTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_V2_JSON_MAP = aposToQuotes("{\n"+
+    static String SCHEMA_V2_JSON_MAP = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'RootType',\n"+
             " 'fields':[\n"+
@@ -59,7 +59,7 @@ public class ComplexDefaultsTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_V2_JSON_LIST = aposToQuotes("{\n"+
+    static String SCHEMA_V2_JSON_LIST = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'RootType',\n"+
             " 'fields':[\n"+

@@ -17,7 +17,7 @@ public class ScalarTest extends AvroTestBase
     public void testRootString() throws Exception
     {
         final String INPUT = "Something or other";
-        AvroSchema schema = MAPPER.schemaFrom(quote("string"));
+        AvroSchema schema = MAPPER.schemaFrom(q("string"));
         byte[] avro = MAPPER.writerFor(String.class)
                 .with(schema)
                 .writeValueAsBytes(INPUT);
@@ -41,7 +41,7 @@ public class ScalarTest extends AvroTestBase
     public void testRootInt() throws Exception
     {
         Integer inputValue = Integer.valueOf(0xE134567);
-        AvroSchema schema = MAPPER.schemaFrom(quote("int"));
+        AvroSchema schema = MAPPER.schemaFrom(q("int"));
         byte[] avro = MAPPER.writer(schema)
                 .writeValueAsBytes(inputValue);
         ObjectReader r = MAPPER.readerFor(Integer.class)
@@ -164,7 +164,7 @@ public class ScalarTest extends AvroTestBase
     @Test
     public void testRootBoolean() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(quote("boolean"));
+        AvroSchema schema = MAPPER.schemaFrom(q("boolean"));
         byte[] avro = MAPPER.writer(schema)
                 .writeValueAsBytes(Boolean.TRUE);
         Boolean result = MAPPER.readerFor(Boolean.class)

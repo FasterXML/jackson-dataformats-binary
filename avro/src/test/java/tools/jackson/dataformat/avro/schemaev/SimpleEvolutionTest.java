@@ -18,7 +18,7 @@ public class SimpleEvolutionTest extends AvroTestBase
     // NOTE! Avro requires named types to match; this is why type names
     //   are identical despite differences in field composition...
 
-    static String SCHEMA_X_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_X_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
@@ -26,7 +26,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_XY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XY_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
@@ -35,7 +35,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_XYZ_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XYZ_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
@@ -45,7 +45,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_XYZ_RENAMED_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XYZ_RENAMED_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint2',\n"+
             " 'fields':[\n"+
@@ -56,7 +56,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             "}\n");
 
     // and one with X + T and an Array
-    static String SCHEMA_XAY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XAY_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
@@ -70,7 +70,7 @@ public class SimpleEvolutionTest extends AvroTestBase
             "}\n");
 
     // then one with X + T and an Array
-    static String SCHEMA_XBY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XBY_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'EvolvingPoint',\n"+
             " 'fields':[\n"+
