@@ -9,7 +9,7 @@ import org.apache.avro.Schema;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.Version;
-
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.*;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperBuilderState;
@@ -277,13 +277,16 @@ public class AvroMapper extends ObjectMapper
      * and once done (successfully or not), closing the stream.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
+     *<p>
+     * NOTE: up until 3.1, was declared to throw {@link IOException}; removed
+     * in 3.2
      */
-    public AvroSchema schemaFrom(InputStream in) throws IOException
+    public AvroSchema schemaFrom(InputStream in0)
     {
-        try {
+        try (InputStream in = in0) {
             return new AvroSchema(new Schema.Parser().parse(in));
-        } finally {
-            in.close();
+        } catch (IOException e) {
+            throw JacksonIOException.construct(e);
         }
     }
 
@@ -292,8 +295,11 @@ public class AvroMapper extends ObjectMapper
      * encoded JSON representation.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
+     *<p>
+     * NOTE: up until 3.1, was declared to throw {@link IOException}; removed
+     * in 3.2
      */
-    public AvroSchema schemaFrom(String schemaAsString) throws IOException
+    public AvroSchema schemaFrom(String schemaAsString)
     {
         return new AvroSchema(new Schema.Parser().parse(schemaAsString));
     }
@@ -303,10 +309,17 @@ public class AvroMapper extends ObjectMapper
      * encoded JSON representation.
      *<p>
      * Resulting schema object does not use separate reader/writer schemas.
+     *<p>
+     * NOTE: up until 3.1, was declared to throw {@link IOException}; removed
+     * in 3.2
      */
-    public AvroSchema schemaFrom(File schemaFile) throws IOException
+    public AvroSchema schemaFrom(File schemaFile)
     {
-        return new AvroSchema(new Schema.Parser().parse(schemaFile));
+        try {
+            return new AvroSchema(new Schema.Parser().parse(schemaFile));
+        } catch (IOException e) {
+            throw JacksonIOException.construct(e);
+        }
     }
 
     /*

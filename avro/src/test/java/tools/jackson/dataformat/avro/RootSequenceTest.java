@@ -22,7 +22,7 @@ public class RootSequenceTest extends AvroTestBase
     @Test
     public void testReadWriteIntSequence() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(quote("int"));
+        AvroSchema schema = MAPPER.schemaFrom(q("int"));
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
 
         // First: write a sequence of 3 root-level ints
@@ -50,7 +50,7 @@ public class RootSequenceTest extends AvroTestBase
     @Test
     public void testReadWriteStringSequence() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(quote("string"));
+        AvroSchema schema = MAPPER.schemaFrom(q("string"));
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);
 
         // First: write a sequence of 3 root-level Strings

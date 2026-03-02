@@ -207,7 +207,8 @@ public abstract class BaseTestForSmile
     protected JsonParser createParserUsingStream(TokenStreamFactory f, byte[] input)
         throws IOException
     {
-        return f.createParser(new ByteArrayInputStream(input));
+        return f.createParser(ObjectReadContext.empty(),
+                new ByteArrayInputStream(input));
     }
 
     /*
