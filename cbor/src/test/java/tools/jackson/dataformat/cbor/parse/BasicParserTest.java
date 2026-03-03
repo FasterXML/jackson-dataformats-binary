@@ -23,6 +23,7 @@ public class BasicParserTest extends CBORTestBase
     public void testSimpleLiterals() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+
         JsonGenerator gen = cborGenerator(out);
         gen.writeBoolean(true);
         assertEquals("/", gen.streamWriteContext().toString());
@@ -246,7 +247,6 @@ public class BasicParserTest extends CBORTestBase
         assertEquals(input, actual);
         p.close();
 
-        // one more thing: with 2.8 we have new `getText()` variant
         p = cborParser(new ByteArrayInputStream(b));
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
         StringWriter w = new StringWriter();
