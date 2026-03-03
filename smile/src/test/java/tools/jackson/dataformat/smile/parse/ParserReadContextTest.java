@@ -3,7 +3,7 @@ package tools.jackson.dataformat.smile.parse;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
-
+import tools.jackson.core.io.SerializedString;
 import tools.jackson.databind.*;
 
 import tools.jackson.dataformat.smile.BaseTestForSmile;
@@ -84,7 +84,7 @@ public class ParserReadContextTest extends BaseTestForSmile
         assertEquals(0, ctxt.getCurrentIndex());
         assertEquals(1, ctxt.getEntryCount());
 
-        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals("key2", p.nextName());
         verifyFieldName(p, "key2");
         ctxt = p.streamReadContext();
         assertEquals(1, ctxt.getCurrentIndex());
@@ -96,7 +96,7 @@ public class ParserReadContextTest extends BaseTestForSmile
         assertEquals(2, ctxt.getEntryCount());
         assertEquals("key2", ctxt.currentName());
 
-        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertTrue(p.nextName(new SerializedString("key3")));
         verifyFieldName(p, "key3");
         assertEquals(2, ctxt.getCurrentIndex());
         assertEquals(3, ctxt.getEntryCount());

@@ -632,6 +632,11 @@ versionBits);
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
         // is this needed?
         _typeAsInt = ch;
+        // [dataformats-binary#674] Update context index for property entries
+        //   (but not for END_OBJECT marker 0xFB)
+        if (ch != 0xFB) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 6) {
         case 0: // misc, including end marker
             switch (ch) {
@@ -749,6 +754,7 @@ _typeAsInt);
                         _updateToken(JsonToken.PROPERTY_NAME);
                         _inputPtr = ptr;
                         _streamReadContext.setCurrentName("");
+                        _streamReadContext.valueRead(); // [dataformats-binary#674]
                         return (byteLen == 0);
                     case 0x30: // long shared
                     case 0x31:
@@ -763,6 +769,7 @@ _typeAsInt);
                             _streamReadContext.setCurrentName(name);
                             _inputPtr = ptr;
                             _updateToken(JsonToken.PROPERTY_NAME);
+                            _streamReadContext.valueRead(); // [dataformats-binary#674]
                             return name.equals(str.getValue());
                         }
                     //case 0x34: // long ASCII/Unicode name; let's not even try...
@@ -778,6 +785,7 @@ _typeAsInt);
                         _streamReadContext.setCurrentName(name);
                         _inputPtr = ptr;
                         _updateToken(JsonToken.PROPERTY_NAME);
+                        _streamReadContext.valueRead(); // [dataformats-binary#674]
                         return name.equals(str.getValue());
                     }
                 case 2: // short ASCII
@@ -800,6 +808,7 @@ _typeAsInt);
                             }
                             _streamReadContext.setCurrentName(name);
                             _updateToken(JsonToken.PROPERTY_NAME);
+                            _streamReadContext.valueRead(); // [dataformats-binary#674]
                             return true;
                         }
                     }
@@ -838,6 +847,7 @@ _typeAsInt);
                             }
                             _streamReadContext.setCurrentName(name);
                             _updateToken(JsonToken.PROPERTY_NAME);
+                            _streamReadContext.valueRead(); // [dataformats-binary#674]
                             return true;
                         }
                     }
@@ -873,6 +883,11 @@ _typeAsInt);
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
         // is this needed?
         _typeAsInt = ch;
+        // [dataformats-binary#674] Update context index for property entries
+        //   (but not for END_OBJECT marker 0xFB)
+        if (ch != 0xFB) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 6) {
         case 0: // misc, including end marker
             switch (ch) {
