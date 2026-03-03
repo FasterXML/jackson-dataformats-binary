@@ -1,6 +1,5 @@
 package tools.jackson.dataformat.smile.parse;
 
-
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
