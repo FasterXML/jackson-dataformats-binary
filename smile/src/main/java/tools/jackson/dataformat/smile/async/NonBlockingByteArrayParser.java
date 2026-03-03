@@ -118,11 +118,12 @@ public class NonBlockingByteArrayParser
      * implementation
      */
 
-//    public boolean nextFieldName(SerializableString str) throws JacksonException
-//    public String nextTextValue() throws JacksonException
-//    public int nextIntValue(int defaultValue) throws JacksonException
-//    public long nextLongValue(long defaultValue) throws JacksonException
-//    public Boolean nextBooleanValue() throws JacksonException
+//    public String nextName()
+//    public boolean nextName(SerializableString str)
+//    public String nextTextValue()
+//    public int nextIntValue(int defaultValue)
+//    public long nextLongValue(long defaultValue)
+//    public Boolean nextBooleanValue()
 
     @Override
     public int releaseBuffered(OutputStream out) throws JacksonException {
