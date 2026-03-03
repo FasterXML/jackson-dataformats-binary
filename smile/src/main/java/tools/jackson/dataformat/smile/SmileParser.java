@@ -682,9 +682,7 @@ versionBits);
             {
                 if (ch > 0x37) {
                     if (ch == 0x3B) {
-                        if (!_streamReadContext.inObject()) {
-                            _reportMismatchedEndMarker('}', ']');
-                        }
+                        // Must be in Object context, no need to check
                         _streamReadContext = _streamReadContext.getParent();
                         _updateToken(JsonToken.END_OBJECT);
                         return null;
@@ -1733,9 +1731,7 @@ _typeAsInt);
             {
                 if (ch > 0x37) {
                     if (ch == 0x3B) {
-                        if (!_streamReadContext.inObject()) {
-                            _reportMismatchedEndMarker('}', ']');
-                        }
+                        // Must be in Object context, no need to check
                         _streamReadContext = _streamReadContext.getParent();
                         return JsonToken.END_OBJECT;
                     }
