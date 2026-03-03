@@ -378,8 +378,13 @@ versionBits);
         // also: clear any data retained so far
         _binaryValue = null;
         // Two main modes: values, and property names.
-        if ((_currToken != JsonToken.PROPERTY_NAME) && _streamReadContext.inObject()) {
-            return _updateToken(_handlePropertyName());
+        final boolean inObject = _streamReadContext.inObject();
+        if ((_currToken != JsonToken.PROPERTY_NAME) && inObject) {
+            JsonToken t = _handlePropertyName();
+            if (t == JsonToken.PROPERTY_NAME) {
+                _streamReadContext.valueRead();
+            }
+            return _updateToken(t);
         }
         if (_inputPtr >= _inputEnd) {
             if (!_loadMore()) {
@@ -388,6 +393,12 @@ versionBits);
         }
         final int ch = _inputBuffer[_inputPtr++] & 0xFF;
         _typeAsInt = ch;
+        // 17-Feb-2026, tatu: [dataformats-binary#674] Need to update context index
+        //   for non-Object contexts (Array, root)
+        //   NOTE: should we worry about end markers etc?
+        if (!inObject) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 5) {
         case 0: // short shared string value reference
             if (ch != 0) { // 0x0 is invalid
