@@ -10,6 +10,13 @@ import tools.jackson.dataformat.cbor.CBORTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Basic tests for `JsonParser.streamReadContext()` handling
+ * wrt. current index, entry count (binary content won't have
+ * line/column number).
+ *
+ * @since 3.2
+ */
 public class ParserReadContextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
