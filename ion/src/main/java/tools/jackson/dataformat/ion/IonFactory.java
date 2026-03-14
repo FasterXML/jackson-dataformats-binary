@@ -482,9 +482,9 @@ public class IonFactory
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             OutputStream out, JsonEncoding enc, boolean isManaged)
      {
-        IonWriter ion;
         IOContext ioCtxt = _createContext(_createContentReference(out), isManaged);
-        Closeable dst; // not necessarily same as 'out'...
+        final IonWriter ion;
+        final Closeable dst; // not necessarily same as 'out'...
 
         // Binary writers are simpler: no alternate encodings
         if (_cfgBinaryWriters) {

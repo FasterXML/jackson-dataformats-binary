@@ -4,12 +4,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.core.JsonParser;
-import tools.jackson.core.JsonToken;
-import tools.jackson.core.ObjectReadContext;
-import tools.jackson.dataformat.cbor.CBORFactory;
-import tools.jackson.dataformat.cbor.CBORParser;
-import tools.jackson.dataformat.cbor.CBORTestBase;
+import tools.jackson.core.*;
+import tools.jackson.dataformat.cbor.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -13,7 +13,7 @@ public class ArrayEvolutionTest extends AvroTestBase
     // NOTE! Avro requires names of record types to match; this is why type names
     //   are identical despite differences in field composition...
 
-    static String SCHEMA_X_ARRAY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_X_ARRAY_JSON = a2q("{\n"+
             "'name': 'XArray',\n"+
             "'type': 'array',\n"+
             "'items': {\n"+
@@ -23,7 +23,7 @@ public class ArrayEvolutionTest extends AvroTestBase
             "    { 'name':'x', 'type':'int' }\n"+
             " ]}}");
 
-    static String SCHEMA_XY_ARRAY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XY_ARRAY_JSON = a2q("{\n"+
             "'name': 'XYArray',\n"+
             "'type': 'array',\n"+
             "'items': {\n"+
@@ -34,7 +34,7 @@ public class ArrayEvolutionTest extends AvroTestBase
             "    { 'name':'y', 'type':'int' }\n"+
             " ]}}");
 
-    static String SCHEMA_XYZ_ARRAY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_XYZ_ARRAY_JSON = a2q("{\n"+
             "'name': 'XYZArray',\n"+
             "'type': 'array',\n"+
             "'items': {\n"+

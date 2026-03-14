@@ -118,11 +118,12 @@ public class NonBlockingByteArrayParser
      * implementation
      */
 
-//    public boolean nextFieldName(SerializableString str) throws JacksonException
-//    public String nextTextValue() throws JacksonException
-//    public int nextIntValue(int defaultValue) throws JacksonException
-//    public long nextLongValue(long defaultValue) throws JacksonException
-//    public Boolean nextBooleanValue() throws JacksonException
+//    public String nextName()
+//    public boolean nextName(SerializableString str)
+//    public String nextTextValue()
+//    public int nextIntValue(int defaultValue)
+//    public long nextLongValue(long defaultValue)
+//    public Boolean nextBooleanValue()
 
     @Override
     public int releaseBuffered(OutputStream out) throws JacksonException {
@@ -418,6 +419,13 @@ public class NonBlockingByteArrayParser
      */
     private final JsonToken _startValue(int ch) throws JacksonException
     {
+        // [dataformats-binary#674] Update context index for non-Object contexts
+        //   (Array, root).
+        //  Q? Structural markers (END_ARRAY 0xF9, EOF 0xFF)?
+        if (!_streamReadContext.inObject()) {
+            // && (ch & 0xFF) != 0xF9 && (ch & 0xFF) != 0xFF) {
+            _streamReadContext.valueRead();
+        }
         main_switch:
         switch ((ch >> 5) & 0x7) {
         case 0: // short shared string value reference
@@ -531,6 +539,11 @@ public class NonBlockingByteArrayParser
      */
     protected final JsonToken _startFieldName(int ch) throws JacksonException
     {
+        // [dataformats-binary#674] Update context index for property entries
+        //   (but not for END_OBJECT marker 0xFB)
+        if ((ch & 0xFF) != 0xFB) {
+            _streamReadContext.valueRead();
+        }
         switch ((ch >> 6) & 3) {
         case 0: // misc, including end marker
             switch (ch) {

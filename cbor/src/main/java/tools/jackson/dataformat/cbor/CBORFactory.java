@@ -269,10 +269,10 @@ public class CBORFactory
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 out);
-        if (CBORWriteFeature.WRITE_TYPE_HEADER.enabledIn(_formatWriteFeatures)) {
+        if (gen.isEnabled(CBORWriteFeature.WRITE_TYPE_HEADER)) {
             gen.writeTag(CBORConstants.TAG_ID_SELF_DESCRIBE);
         }
-        if (CBORWriteFeature.STRINGREF.enabledIn(_formatWriteFeatures)) {
+        if (gen.isEnabled(CBORWriteFeature.STRINGREF)) {
             gen.writeTag(CBORConstants.TAG_ID_STRINGREF_NAMESPACE);
         }
         return gen;

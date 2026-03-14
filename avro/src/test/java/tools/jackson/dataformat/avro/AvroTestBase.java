@@ -40,7 +40,7 @@ public abstract class AvroTestBase
             +" {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
             +"]}";
 
-    protected final String EMPLOYEE_ARRAY_SCHEMA_JSON = aposToQuotes(
+    protected final String EMPLOYEE_ARRAY_SCHEMA_JSON = a2q(
             "{"
             +"'name': 'EmployeeArray',\n"
             +"'type': 'array',\n"
@@ -288,8 +288,8 @@ public abstract class AvroTestBase
 
     protected AvroSchema parseSchema(AvroMapper mapper, String schemaAsJson) {
         try {
-            return getMapper().schemaFrom(aposToQuotes(schemaAsJson));
-        } catch (IOException e) {
+            return getMapper().schemaFrom(a2q(schemaAsJson));
+        } catch (Exception e) {
             fail("Could not parse Avro Schema from: "+schemaAsJson+", problem: "+e);
             return null;
         }
@@ -346,12 +346,22 @@ public abstract class AvroTestBase
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
     }
 
-    protected static String quote(String str) {
-        return "\""+str+"\"";
+    protected static String a2q(String json) {
+        return json.replace("'", "\"");
     }
 
+    protected static String q(String str) {
+        return "\""+str+"\"";
+    }
+    
+    @Deprecated // @since 3.2
+    protected static String quote(String str) {
+        return q(str);
+    }
+
+    @Deprecated // @since 3.2
     protected static String aposToQuotes(String json) {
-        return json.replace("'", "\"");
+        return a2q(json);
     }
 
     protected static String asJSON(AvroSchema sch) {

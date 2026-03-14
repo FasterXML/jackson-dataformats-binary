@@ -378,8 +378,13 @@ versionBits);
         // also: clear any data retained so far
         _binaryValue = null;
         // Two main modes: values, and property names.
-        if ((_currToken != JsonToken.PROPERTY_NAME) && _streamReadContext.inObject()) {
-            return _updateToken(_handlePropertyName());
+        final boolean inObject = _streamReadContext.inObject();
+        if ((_currToken != JsonToken.PROPERTY_NAME) && inObject) {
+            JsonToken t = _handlePropertyName();
+            if (t == JsonToken.PROPERTY_NAME) {
+                _streamReadContext.valueRead();
+            }
+            return _updateToken(t);
         }
         if (_inputPtr >= _inputEnd) {
             if (!_loadMore()) {
@@ -388,6 +393,12 @@ versionBits);
         }
         final int ch = _inputBuffer[_inputPtr++] & 0xFF;
         _typeAsInt = ch;
+        // 17-Feb-2026, tatu: [dataformats-binary#674] Need to update context index
+        //   for non-Object contexts (Array, root)
+        //   NOTE: should we worry about end markers etc?
+        if (!inObject) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 5) {
         case 0: // short shared string value reference
             if (ch != 0) { // 0x0 is invalid
@@ -621,6 +632,11 @@ versionBits);
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
         // is this needed?
         _typeAsInt = ch;
+        // [dataformats-binary#674] Update context index for property entries
+        //   (but not for END_OBJECT marker 0xFB)
+        if (ch != 0xFB) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 6) {
         case 0: // misc, including end marker
             switch (ch) {
@@ -682,9 +698,7 @@ versionBits);
             {
                 if (ch > 0x37) {
                     if (ch == 0x3B) {
-                        if (!_streamReadContext.inObject()) {
-                            _reportMismatchedEndMarker('}', ']');
-                        }
+                        // Must be in Object context, no need to check
                         _streamReadContext = _streamReadContext.getParent();
                         _updateToken(JsonToken.END_OBJECT);
                         return null;
@@ -740,6 +754,7 @@ _typeAsInt);
                         _updateToken(JsonToken.PROPERTY_NAME);
                         _inputPtr = ptr;
                         _streamReadContext.setCurrentName("");
+                        _streamReadContext.valueRead(); // [dataformats-binary#674]
                         return (byteLen == 0);
                     case 0x30: // long shared
                     case 0x31:
@@ -754,6 +769,7 @@ _typeAsInt);
                             _streamReadContext.setCurrentName(name);
                             _inputPtr = ptr;
                             _updateToken(JsonToken.PROPERTY_NAME);
+                            _streamReadContext.valueRead(); // [dataformats-binary#674]
                             return name.equals(str.getValue());
                         }
                     //case 0x34: // long ASCII/Unicode name; let's not even try...
@@ -769,6 +785,7 @@ _typeAsInt);
                         _streamReadContext.setCurrentName(name);
                         _inputPtr = ptr;
                         _updateToken(JsonToken.PROPERTY_NAME);
+                        _streamReadContext.valueRead(); // [dataformats-binary#674]
                         return name.equals(str.getValue());
                     }
                 case 2: // short ASCII
@@ -791,6 +808,7 @@ _typeAsInt);
                             }
                             _streamReadContext.setCurrentName(name);
                             _updateToken(JsonToken.PROPERTY_NAME);
+                            _streamReadContext.valueRead(); // [dataformats-binary#674]
                             return true;
                         }
                     }
@@ -829,6 +847,7 @@ _typeAsInt);
                             }
                             _streamReadContext.setCurrentName(name);
                             _updateToken(JsonToken.PROPERTY_NAME);
+                            _streamReadContext.valueRead(); // [dataformats-binary#674]
                             return true;
                         }
                     }
@@ -864,6 +883,11 @@ _typeAsInt);
         int ch = _inputBuffer[_inputPtr++] & 0xFF;
         // is this needed?
         _typeAsInt = ch;
+        // [dataformats-binary#674] Update context index for property entries
+        //   (but not for END_OBJECT marker 0xFB)
+        if (ch != 0xFB) {
+            _streamReadContext.valueRead();
+        }
         switch (ch >> 6) {
         case 0: // misc, including end marker
             switch (ch) {
@@ -1733,9 +1757,7 @@ _typeAsInt);
             {
                 if (ch > 0x37) {
                     if (ch == 0x3B) {
-                        if (!_streamReadContext.inObject()) {
-                            _reportMismatchedEndMarker('}', ']');
-                        }
+                        // Must be in Object context, no need to check
                         _streamReadContext = _streamReadContext.getParent();
                         return JsonToken.END_OBJECT;
                     }
