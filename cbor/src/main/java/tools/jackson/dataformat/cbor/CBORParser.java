@@ -345,6 +345,12 @@ public class CBORParser extends ParserBase
         return CBOR_READ_CAPABILITIES;
     }
 
+    // @since 3.2
+    @Override
+    public boolean willInternPropertyNames() {
+        return _symbols.willInternStrings();
+    }
+
     /*
     /**********************************************************************
     /* Extended API

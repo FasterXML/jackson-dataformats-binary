@@ -94,6 +94,13 @@ public abstract class AvroParser extends ParserBase
         return AVRO_READ_CAPABILITIES;
     }
 
+    // @since 3.2
+    // Avro property names are interned via InternCache in AvroFieldReader
+    @Override
+    public boolean willInternPropertyNames() {
+        return true;
+    }
+
     /*
     /**********************************************************************
     /* ParserBase method impls

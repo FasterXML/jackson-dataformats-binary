@@ -240,6 +240,12 @@ public abstract class SmileParserBase extends ParserMinimalBase
         return SMILE_READ_CAPABILITIES;
     }
 
+    // @since 3.2
+    @Override
+    public boolean willInternPropertyNames() {
+        return _symbols.willInternStrings();
+    }
+
     public final boolean mayContainRawBinary() {
         return _mayContainRawBinary;
     }
