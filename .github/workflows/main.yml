@@ -77,20 +77,6 @@ jobs:
         branch: ${{ github.event.pull_request.base.ref }}
         name: jacoco-report
         path: base-coverage/
-    - name: Generate coverage summary
-      if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
-      id: jacoco
-      uses: cicirello/jacoco-badge-generator@v2.12.1
-      with:
-        jacoco-csv-file: >
-          cbor/target/site/jacoco/jacoco.csv
-          smile/target/site/jacoco/jacoco.csv
-          avro/target/site/jacoco/jacoco.csv
-          protobuf/target/site/jacoco/jacoco.csv
-          ion/target/site/jacoco/jacoco.csv
-        generate-coverage-badge: false
-        generate-branches-badge: false
-        generate-summary: true
     - name: Generate coverage comment
       if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
       run: |
