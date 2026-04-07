@@ -2646,7 +2646,10 @@ public class CBORParser extends ParserMinimalBase
                 --outPtr;
                 _inputPtr = inPtr - 1;
                 _textBuffer.setCurrentLength(outPtr);
-                return len - outPtr;
+                // `len` was already decremented for all previous iterations; subtract only
+                // the bytes consumed in THIS iteration (= _inputPtr, since _tryToLoadToHaveAtLeast
+                // always resets _inputPtr to 0 before the inner loop).
+                return len - _inputPtr;
             }
             _inputPtr = inPtr;
             if (outPtr >= outBuf.length) {
