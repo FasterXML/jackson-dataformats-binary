@@ -56,7 +56,7 @@ jobs:
       run: ./mvnw -B -q -ff -ntp test jacoco:report
     - name: Publish code coverage
       if: ${{ matrix.release_build && github.event_name != 'pull_request' }}
-      uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+      uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: cbor/target/site/jacoco/jacoco.xml,smile/target/site/jacoco/jacoco.xml,avro/target/site/jacoco/jacoco.xml,protobuf/target/site/jacoco/jacoco.xml,ion/target/site/jacoco/jacoco.xml
@@ -70,27 +70,13 @@ jobs:
         retention-days: 30
     - name: Download base branch coverage
       if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
-      uses: dawidd6/action-download-artifact@v16
+      uses: dawidd6/action-download-artifact@v20
       continue-on-error: true
       with:
         workflow: main.yml
         branch: ${{ github.event.pull_request.base.ref }}
         name: jacoco-report
         path: base-coverage/
-    - name: Generate coverage summary
-      if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
-      id: jacoco
-      uses: cicirello/jacoco-badge-generator@v2.12.1
-      with:
-        jacoco-csv-file: >
-          cbor/target/site/jacoco/jacoco.csv
-          smile/target/site/jacoco/jacoco.csv
-          avro/target/site/jacoco/jacoco.csv
-          protobuf/target/site/jacoco/jacoco.csv
-          ion/target/site/jacoco/jacoco.csv
-        generate-coverage-badge: false
-        generate-branches-badge: false
-        generate-summary: true
     - name: Generate coverage comment
       if: ${{ matrix.release_build && github.event_name == 'pull_request' }}
       run: |

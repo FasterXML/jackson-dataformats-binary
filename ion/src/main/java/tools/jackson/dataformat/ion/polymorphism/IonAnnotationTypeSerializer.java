@@ -25,12 +25,13 @@ import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.jsontype.impl.TypeSerializerBase;
 
 /**
- * This is a {@link TypeSerializer} that places typing metadata in Ion type annotations. It requires that the underlying
- * {@link JsonGenerator} is actually a {@link tools.jackson.dataformat.ion.IonGenerator}.
+ * This is a {@link TypeSerializer} that places typing metadata in Ion type annotations.
+ * It requires that the underlying {@link JsonGenerator} is actually
+ * a {@link tools.jackson.dataformat.ion.IonGenerator}.
  *<p>
- * Type serializers are responsible for handling the preamble and postamble of values, in addition to any possible
- * typing metadata (probably because type metadata can affect the pre/postamble content) -- in other words, once a
- * {@link TypeSerializer} gets involved, serializers skip normal pre/postambles and assume the TypeSerializer will do it
+ * Type serializers are responsible for handling the pre-amble and post-amble of values, in addition to any possible
+ * typing metadata (probably because type metadata can affect the pre-/post-amble content) -- in other words, once a
+ * {@link TypeSerializer} gets involved, serializers skip normal pre-/post-ambles and assume the TypeSerializer will do it
  * instead. This is why we have to do more than write type metadata in our writeTypePrefix/Suffix* implementations.
  *
  * @see MultipleTypeIdResolver
@@ -40,7 +41,7 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
 //    private final TypeIdResolver typeIdResolver;
 
     IonAnnotationTypeSerializer(TypeIdResolver typeIdResolver) {
-        super(typeIdResolver, null);
+        super(typeIdResolver, null, null);
     }
 
     @Override

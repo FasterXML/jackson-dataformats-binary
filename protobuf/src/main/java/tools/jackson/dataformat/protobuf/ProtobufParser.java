@@ -328,6 +328,13 @@ public class ProtobufParser extends ParserMinimalBase
         return PROTOBUF_READ_CAPABILITIES;
     }
 
+    // @since 3.2
+    // Protobuf property names are interned via InternCache at schema construction
+    @Override
+    public boolean willInternPropertyNames() {
+        return true;
+    }
+
     /*
     /**********************************************************************
     /* Abstract impls, overrides: input handling

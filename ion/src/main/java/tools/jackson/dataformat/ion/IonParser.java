@@ -145,6 +145,13 @@ public class IonParser
         return ION_READ_CAPABILITIES;
     }
 
+    // @since 3.2
+    // Ion format does not intern property names
+    @Override
+    public boolean willInternPropertyNames() {
+        return false;
+    }
+
     /*
     /**********************************************************************
     /* JsonParser implementation: input state handling
