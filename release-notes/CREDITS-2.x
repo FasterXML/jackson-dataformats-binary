@@ -429,5 +429,10 @@ Vincent Eigenberger (@beseder1)
   (2.20.1)
 
 Yohei Kishimoto (@morokosi)
- * Reported #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ * Reported #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored propertie
   (2.21.0)
+
+Halil İbrahim Şener (@hisener)
+ * Fixed #686: `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
+  segment > I/O buffer, leaving non-ASCII byte unconsumed
+  (2.21.3)

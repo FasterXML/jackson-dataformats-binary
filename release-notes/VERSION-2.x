@@ -14,6 +14,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.3 (not yet released)
+
+#686: `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
+  segment > I/O buffer, leaving non-ASCII byte unconsumed
+ (fixed by Halil İbrahim Ş)
+
 2.21.2 (20-Mar-2026)
 
 No changes since 2.21.1.

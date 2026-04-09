@@ -13,7 +13,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 // For [dataformats-binary#686]
-public class CBORFinishLongTextAsciiBugTest
+public class CBORLongAsciiRead686Test
 {
     // TextBuffer segment sizes grow 1.5× per flip, starting at 200 chars (MIN=500):
     //     S0=200, S1=500, S2=750, S3=1125, S4=1687, S5=2530, S6=3795, S7=5692, S8=8538
