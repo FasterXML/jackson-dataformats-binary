@@ -1,11 +1,14 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -161,6 +164,50 @@ public class AsciiTextCornerCasesTest extends CBORTestBase
                         "Mismatch on iteration " + i + " (buffer regrowth issue?)");
             }
             assertEquals(JsonToken.END_ARRAY, p.nextToken());
+        }
+    }
+
+    /**
+     * Targeted test for the top-of-loop exit in _finishChunkedTextAscii:
+     * the final ASCII byte of the chunk sits exactly at the I/O buffer
+     * boundary so that, on the iteration after the chunk's bytes are fully
+     * consumed, both _inputPtr >= _chunkEnd and _chunkLeft == 0 hold
+     * simultaneously and the method must return without peeking past the
+     * window (the break byte 0xFF lives in the next buffer fill).
+     */
+    @Test
+    public void testChunkedTextEndsAtIOBufferBoundary() throws Exception
+    {
+        // Default CBORParser I/O buffer size is 8000 bytes.
+        // Layout (total = 8001 bytes):
+        //   [0]       0x7F            indefinite-length text
+        //   [1..3]    0x79 HH LL      chunk header (2-byte length)
+        //   [4..7999] payload         exactly fills the first I/O read
+        //   [8000]    0xFF            break byte (next I/O read)
+        final int payloadLen = IO_BUF - 4;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bos.write(0x7F);
+        bos.write(0x79);
+        bos.write((payloadLen >> 8) & 0xFF);
+        bos.write(payloadLen & 0xFF);
+        byte[] payload = new byte[payloadLen];
+        Arrays.fill(payload, (byte) 'A');
+        bos.write(payload);
+        bos.write(0xFF);
+        byte[] cbor = bos.toByteArray();
+        assertEquals(IO_BUF + 1, cbor.length);
+
+        CBORFactory f = cborFactory();
+        // Plain ByteArrayInputStream: first read fills exactly IO_BUF bytes,
+        // setting _chunkEnd == _inputEnd == IO_BUF and _chunkLeft == 0.
+        try (CBORParser p = cborParser(f, new ByteArrayInputStream(cbor))) {
+            assertEquals(JsonToken.VALUE_STRING, p.nextToken());
+            String text = p.getText();
+            assertEquals(payloadLen, text.length());
+            for (int i = 0; i < payloadLen; i++) {
+                assertEquals('A', text.charAt(i),
+                        "mismatch at index " + i);
+            }
         }
     }
 

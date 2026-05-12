@@ -7,7 +7,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.core.io.JsonEOFException;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
@@ -16,16 +16,15 @@ import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test for missing setCurrentLength on the early-return path in _finishLongTextAscii
- * when _tryToLoadToHaveAtLeast returns false (stream ends prematurely).
+ * Tests guarding the early-return path in _finishLongTextAscii when
+ * _tryToLoadToHaveAtLeast returns false (stream ends prematurely).
  *
- * The bug exists in the code (outPtr > 0 but setCurrentLength not called), but in
- * practice it's masked because the caller _finishLongText then tries to read the
- * remaining bytes via _nextByte() which throws on EOF before the corrupted TextBuffer
- * is ever converted to a String.
- *
- * These tests document the behavior and verify correctness on both truncated and
- * valid long ASCII input via throttled streams.
+ * That path now syncs the TextBuffer via setCurrentLength(outPtr) so the buffer
+ * never holds partially-written state that could be exposed as a String. In
+ * practice EOF is reported by the caller (_finishLongText reads remaining bytes
+ * via _nextByte() and throws on EOF) before any partial text could be
+ * materialized, but the sync makes the invariant local to _finishLongTextAscii
+ * rather than relying on caller behavior.
  */
 public class TruncatedLongAsciiTextTest extends CBORTestBase
 {
@@ -44,7 +43,12 @@ public class TruncatedLongAsciiTextTest extends CBORTestBase
 
         try (CBORParser p = cborParser(f, new ThrottledInputStream(cbor, 2000))) {
             assertEquals(JsonToken.VALUE_STRING, p.nextToken());
-            assertThrows(StreamReadException.class, () -> p.getText());
+            JsonEOFException e = assertThrows(JsonEOFException.class, () -> p.getText());
+            // Must surface as EOF rather than silently returning a partial String;
+            // also guards against a regression where the truncated TextBuffer is
+            // converted to a String before EOF is detected.
+            assertTrue(e.getMessage().contains("end-of-input"),
+                    "Unexpected message: " + e.getMessage());
         }
     }
 
