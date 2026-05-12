@@ -14,9 +14,14 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.4 (not yet released)
+
+#691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths in CBORParser
+ (contributed by Manuel S)
+
 2.21.3 (28-Apr-2026)
 
-#686: `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
+#686: (cbor) `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
   segment > I/O buffer, leaving non-ASCII byte unconsumed
  (fixed by Halil İbrahim Ş)
 

@@ -386,9 +386,12 @@ Manuel Sugawara (@sugmanue)
   (2.19.0)
  * Contributed fix for #616: CBOR text gets truncated on decoding
   (2.19.3)
- * Conribued fix for #640: (cbor) CBOR throws ArrayIndexOutOfBoundsException
+ * Contributed fix for #640: (cbor) CBOR throws ArrayIndexOutOfBoundsException
    with long ASCII text
   (2.20.2)
+ * Contributed #691: (cbor) Add parameterized tests covering all ASCII-optimization
+   exit paths in CBORParser
+  (2.21.4)
 
 Josh Curry (@seadbrane)
  * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
