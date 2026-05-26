@@ -439,3 +439,9 @@ Halil İbrahim Şener (@hisener)
  * Fixed #686: `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
   segment > I/O buffer, leaving non-ASCII byte unconsumed
   (2.21.3)
+
+Shanchao Li (@tonghuaroot)
+
+* Reported #693: (avro) Incomplete number length validation in Avro
+  decoder (for `BigDecimal`)
+ (2.21.4)

@@ -589,6 +589,9 @@ public abstract class AvroParserImpl
     // @since 2.19
     public JsonToken decodeBytesDecimal(int scale) throws IOException {
         decodeBytes();
+        // Enforce maxNumberLength against raw 2's-complement payload length,
+        // matching Smile's _finishBigDecimal which uses raw.length as the unit.
+        streamReadConstraints().validateFPLength(_binaryValue.length);
         _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
         _numTypesValid = NR_BIGDECIMAL;
         return JsonToken.VALUE_NUMBER_FLOAT;
@@ -602,6 +605,7 @@ public abstract class AvroParserImpl
     // @since 2.19
     public JsonToken decodeFixedDecimal(int scale, int size) throws IOException {
         decodeFixed(size);
+        streamReadConstraints().validateFPLength(_binaryValue.length);
         _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
         _numTypesValid = NR_BIGDECIMAL;
         return JsonToken.VALUE_NUMBER_FLOAT;
