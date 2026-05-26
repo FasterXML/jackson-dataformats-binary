@@ -100,6 +100,23 @@ public class AvroDecimalLengthLimitTest extends AvroTestBase
         }
     }
 
+    // Empty bytes-decimal payload must decode to zero rather than blow up on
+    // BigInteger(new byte[0]) (matches SmileParser._finishBigDecimal handling).
+    @Test
+    public void testBytesDecimalEmptyPayloadDecodesToZero() throws Exception
+    {
+        // Avro: single record with one `bytes` field, value = length-prefix 0
+        // (zig-zag varint 0 = 0x00), no payload bytes follow.
+        byte[] doc = new byte[] { 0x00 };
+
+        try (JsonParser p = DEFAULT_MAPPER.reader().with(BYTES_DECIMAL_SCHEMA).createParser(doc)) {
+            assertEquals(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(BigDecimal.ZERO, p.getDecimalValue());
+        }
+    }
+
     @Test
     public void testDefaultLimitAllowsTypicalDecimals() throws Exception
     {
