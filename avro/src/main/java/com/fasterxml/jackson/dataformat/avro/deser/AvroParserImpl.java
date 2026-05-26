@@ -590,7 +590,7 @@ public abstract class AvroParserImpl
     public JsonToken decodeBytesDecimal(int scale) throws IOException {
         decodeBytes();
         // Enforce maxNumberLength against raw 2's-complement payload length,
-        // matching Smile's _finishBigDecimal which uses raw.length as the unit.
+        // matching CBOR/Smile codecs handling which also uses raw byte length.
         streamReadConstraints().validateFPLength(_binaryValue.length);
         _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
         _numTypesValid = NR_BIGDECIMAL;

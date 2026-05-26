@@ -18,7 +18,6 @@ import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that {@link StreamReadConstraints#getMaxNumberLength()} is enforced
@@ -30,74 +29,77 @@ public class AvroDecimalLengthLimitTest extends AvroTestBase
 {
     private final AvroMapper DEFAULT_MAPPER = new AvroMapper();
 
-    // Strict limit: 4 bytes of unscaled magnitude (≈ 9-10 decimal digits)
+    // Strict limit: 20 bytes of unscaled magnitude (≈ 48 decimal digits)
     private final AvroMapper STRICT_MAPPER;
     {
         AvroFactory f = AvroFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder()
-                        .maxNumberLength(4).build())
+                        .maxNumberLength(20).build())
                 .build();
         STRICT_MAPPER = new AvroMapper(f);
     }
 
-    private final String BYTES_DECIMAL_SCHEMA =
-            "{\"type\":\"record\",\"name\":\"D\",\"fields\":[{"
-            + "\"name\":\"v\",\"type\":{"
-            + "\"type\":\"bytes\",\"logicalType\":\"decimal\","
-            + "\"precision\":40,\"scale\":2}}]}";
-
-    private final String FIXED_DECIMAL_SCHEMA =
-            "{\"type\":\"record\",\"name\":\"D\",\"fields\":[{"
-            + "\"name\":\"v\",\"type\":{"
-            + "\"type\":\"fixed\",\"name\":\"F\",\"size\":16,"
-            + "\"logicalType\":\"decimal\","
-            + "\"precision\":38,\"scale\":2}}]}";
+    private final AvroSchema BYTES_DECIMAL_SCHEMA;
+    private final AvroSchema FIXED_DECIMAL_SCHEMA;
+    {
+        try {
+            BYTES_DECIMAL_SCHEMA = DEFAULT_MAPPER.schemaFrom(
+                    "{\"type\":\"record\",\"name\":\"D\",\"fields\":[{"
+                    + "\"name\":\"v\",\"type\":{"
+                    + "\"type\":\"bytes\",\"logicalType\":\"decimal\","
+                    + "\"precision\":100,\"scale\":2}}]}");
+            FIXED_DECIMAL_SCHEMA = DEFAULT_MAPPER.schemaFrom(
+                    "{\"type\":\"record\",\"name\":\"D\",\"fields\":[{"
+                    + "\"name\":\"v\",\"type\":{"
+                    + "\"type\":\"fixed\",\"name\":\"F\",\"size\":24,"
+                    + "\"logicalType\":\"decimal\","
+                    + "\"precision\":56,\"scale\":2}}]}");
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Test
     public void testBytesDecimalLargePayloadTripsLimit() throws Exception
     {
-        // Unscaled value with ~32 digits -> 14 bytes, well above limit of 4
-        BigDecimal big = new BigDecimal("12345678901234567890123456789012.34");
+        // Unscaled value with ~62 digits -> ~26 bytes, above limit of 20
+        BigDecimal big = new BigDecimal(
+                "123456789012345678901234567890123456789012345678901234567890.12");
         byte[] doc = encodeBytesDecimal(big);
-        AvroSchema schema = DEFAULT_MAPPER.schemaFrom(BYTES_DECIMAL_SCHEMA);
 
-        try (JsonParser p = STRICT_MAPPER.reader().with(schema).createParser(doc)) {
+        try (JsonParser p = STRICT_MAPPER.reader().with(BYTES_DECIMAL_SCHEMA).createParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             assertEquals(JsonToken.FIELD_NAME, p.nextToken());
             StreamConstraintsException e = assertThrows(StreamConstraintsException.class,
                     () -> p.nextToken());
-            assertTrue(e.getMessage().contains("Number value length"),
-                    "unexpected: " + e.getMessage());
+            verifyException(e, "Number value length");
         }
     }
 
     @Test
     public void testFixedDecimalLargePayloadTripsLimit() throws Exception
     {
-        // fixed size 16 bytes -> always 16 bytes of payload, exceeds limit of 4
+        // fixed size 24 bytes -> always 24 bytes of payload, exceeds limit of 20
         BigDecimal big = new BigDecimal("100.00");
         byte[] doc = encodeFixedDecimal(big);
-        AvroSchema schema = DEFAULT_MAPPER.schemaFrom(FIXED_DECIMAL_SCHEMA);
 
-        try (JsonParser p = STRICT_MAPPER.reader().with(schema).createParser(doc)) {
+        try (JsonParser p = STRICT_MAPPER.reader().with(FIXED_DECIMAL_SCHEMA).createParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             assertEquals(JsonToken.FIELD_NAME, p.nextToken());
             StreamConstraintsException e = assertThrows(StreamConstraintsException.class,
                     () -> p.nextToken());
-            assertTrue(e.getMessage().contains("Number value length"),
-                    "unexpected: " + e.getMessage());
+            verifyException(e, "Number value length");
         }
     }
 
     @Test
     public void testBytesDecimalSmallPayloadPasses() throws Exception
     {
-        // Unscaled 4220 fits in 2 bytes -> below limit of 4
+        // Unscaled 4220 fits in 2 bytes -> well below limit of 20
         BigDecimal small = new BigDecimal("42.20");
         byte[] doc = encodeBytesDecimal(small);
-        AvroSchema schema = DEFAULT_MAPPER.schemaFrom(BYTES_DECIMAL_SCHEMA);
 
-        try (JsonParser p = STRICT_MAPPER.reader().with(schema).createParser(doc)) {
+        try (JsonParser p = STRICT_MAPPER.reader().with(BYTES_DECIMAL_SCHEMA).createParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             assertEquals(JsonToken.FIELD_NAME, p.nextToken());
             assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -110,9 +112,8 @@ public class AvroDecimalLengthLimitTest extends AvroTestBase
     {
         BigDecimal v = new BigDecimal("12345678901234567890.42");
         byte[] doc = encodeBytesDecimal(v);
-        AvroSchema schema = DEFAULT_MAPPER.schemaFrom(BYTES_DECIMAL_SCHEMA);
 
-        try (JsonParser p = DEFAULT_MAPPER.reader().with(schema).createParser(doc)) {
+        try (JsonParser p = DEFAULT_MAPPER.reader().with(BYTES_DECIMAL_SCHEMA).createParser(doc)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             assertEquals(JsonToken.FIELD_NAME, p.nextToken());
             assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
@@ -121,16 +122,14 @@ public class AvroDecimalLengthLimitTest extends AvroTestBase
     }
 
     private byte[] encodeBytesDecimal(BigDecimal v) throws Exception {
-        AvroSchema schema = DEFAULT_MAPPER.schemaFrom(BYTES_DECIMAL_SCHEMA);
         Map<String, Object> m = new HashMap<>();
         m.put("v", v);
-        return DEFAULT_MAPPER.writer(schema).writeValueAsBytes(m);
+        return DEFAULT_MAPPER.writer(BYTES_DECIMAL_SCHEMA).writeValueAsBytes(m);
     }
 
     private byte[] encodeFixedDecimal(BigDecimal v) throws Exception {
-        AvroSchema schema = DEFAULT_MAPPER.schemaFrom(FIXED_DECIMAL_SCHEMA);
         Map<String, Object> m = new HashMap<>();
         m.put("v", v);
-        return DEFAULT_MAPPER.writer(schema).writeValueAsBytes(m);
+        return DEFAULT_MAPPER.writer(FIXED_DECIMAL_SCHEMA).writeValueAsBytes(m);
     }
 }
