@@ -15,13 +15,16 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
     - name: Download PR comment artifact
+      id: download
       uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
       with:
         workflow: main.yml
         run_id: ${{ github.event.workflow_run.id }}
         name: pr-coverage-comment
         path: pr-coverage-comment/
+        if_no_artifact_found: warn
     - name: Post or update PR comment
+      if: steps.download.outputs.found_artifact == 'true'
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         script: |
