@@ -349,9 +349,13 @@ Joachim Lous (@jlous)
   (2.18.0)
 
 Robert Noack (@mr-robert)
- * Reported #509: IonValueMapper.builder() not implemented, does not register modules
+ * Reported #509: (ion) IonValueMapper.builder() not implemented, does not register modules
   (2.18.0)
 
 Knut Wannheden (@knutwannheden)
- * Contributed #518: Should not read past end for CBOR string values
+ * Contributed #518: (cbor) Should not read past end for CBOR string values
   (2.18.1)
+
+Shanchao Li (@tonghuaroot)
+ * Reported #696: (ion) Incomplete number length validation in Ion decoder
+  (2.18.8)

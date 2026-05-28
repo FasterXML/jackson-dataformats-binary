@@ -14,6 +14,13 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.8 (not yet released)
+
+#696: (ion) Incomplete number length validation in Ion decoder
+  (for `BigDecimal` and/or `BigInteger`)
+ (reported by @tonghuaroot)
+ (fix by @cowtowncoder, w/ Claude code)
+
 2.18.7 (24-Apr-2026)
 
 No changes since 2.18.6
