@@ -107,7 +107,7 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
-2.18.8 (not yet released)
+2.18.8 (28-Mar-2026)
 
 #696: (ion) Incomplete number length validation in Ion decoder
   (for `BigDecimal` and/or `BigInteger`)
