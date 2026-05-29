@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.4 (not yet released)
+2.21.4 (28-May-2026)
 
 #691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths in CBORParser
  (contributed by Manuel S)
