@@ -18,6 +18,12 @@ implementations)
 
 No changes since 3.1
 
+3.1.5 (not yet released)
+
+#700: (cbor, smile) `META-INF/services/tools.jackson.databind.ObjectMapper`
+  references wrong class name (`...databind.CBORMapper` / `...databind.SmileMapper`)
+ (reported by Juan F)
+
 3.1.4 (29-May-2026)
 
 #691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths

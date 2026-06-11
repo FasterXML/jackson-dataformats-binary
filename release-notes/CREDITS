@@ -44,3 +44,9 @@ Shanchao Li (@tonghuaroot)
 * Reported #693: (avro) Incomplete number length validation in Avro
   decoder (for `BigDecimal`)
  (3.1.4)
+
+Juan Farré (@jafarre-bi)
+
+* Reported #700: (cbor, smile) `META-INF/services/tools.jackson.databind.ObjectMapper`
+  references wrong class name (`...databind.CBORMapper` / `...databind.SmileMapper`)
+ (3.1.5)
