@@ -1,11 +1,9 @@
 package tools.jackson.dataformat.cbor;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,41 +13,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // [dataformats-binary#700]: SPI file referenced wrong class name
 // (`...cbor.databind.CBORMapper` instead of `...cbor.CBORMapper`),
-// causing `ServiceConfigurationError` from `ServiceLoader`.
+// causing `ServiceConfigurationError` from `ServiceLoader` for classpath
+// (non-modular) usage.
+//
+// NOTE: the SPI file only governs classpath usage; modular usage is covered by
+// the `provides` directive in `module-info.java`. Since the test harness runs on
+// the module path (where the module's own resources are not reachable), this test
+// validates the source SPI file content directly instead of via `ServiceLoader`.
 public class ServiceLoader700Test extends CBORTestBase
 {
-    private final static String SERVICE_FILE =
-            "META-INF/services/tools.jackson.databind.ObjectMapper";
+    private final static File SERVICE_FILE = new File(
+            "src/main/resources/META-INF/services/tools.jackson.databind.ObjectMapper");
 
     @Test
     public void testServiceFileClassNamesResolve() throws Exception
     {
+        assertTrue(SERVICE_FILE.exists(), "Missing SPI file: " + SERVICE_FILE.getAbsolutePath());
         boolean foundCBORMapper = false;
-        // Enumerate every copy of the SPI file on the path (cbor, smile, etc.)...
-        Enumeration<URL> resources = getClass().getClassLoader().getResources(SERVICE_FILE);
-        assertTrue(resources.hasMoreElements(),
-                "Should find at least one `" + SERVICE_FILE + "` resource");
-        while (resources.hasMoreElements()) {
-            URL url = resources.nextElement();
-            System.err.println("DEBUG url=" + url);
-            try (InputStream in = url.openStream()) {
-                BufferedReader r = new BufferedReader(
-                        new InputStreamReader(in, StandardCharsets.UTF_8));
-                String line;
-                while ((line = r.readLine()) != null) {
-                    System.err.println("DEBUG line=" + line);
-                    line = line.trim();
-                    if (line.isEmpty() || line.startsWith("#")) {
-                        continue;
-                    }
-                    // Every class named in any SPI file must resolve to an `ObjectMapper`...
-                    Class<?> cls = Class.forName(line);
-                    assertTrue(ObjectMapper.class.isAssignableFrom(cls),
-                            "Class `" + line + "` (from " + url + ") is not an `ObjectMapper` subtype");
-                    if (cls == CBORMapper.class) {
-                        foundCBORMapper = true;
-                    }
-                }
+        List<String> lines = Files.readAllLines(SERVICE_FILE.toPath(), StandardCharsets.UTF_8);
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+            // Class named in SPI file must actually exist and be an `ObjectMapper`...
+            Class<?> cls = Class.forName(line);
+            assertTrue(ObjectMapper.class.isAssignableFrom(cls),
+                    "Class `" + line + "` is not an `ObjectMapper` subtype");
+            if (cls == CBORMapper.class) {
+                foundCBORMapper = true;
             }
         }
         assertTrue(foundCBORMapper,
