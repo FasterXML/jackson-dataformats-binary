@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.5 (not yet released)
+
+#598: (protobuf) Protobuf parser state handling wrong for implicit close
+  (END_OBJECT)
+
 2.21.4 (28-May-2026)
 
 #691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths in CBORParser

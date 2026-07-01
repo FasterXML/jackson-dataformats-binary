@@ -51,6 +51,10 @@ public class ProtobufParser extends ParserMinimalBase
     // State after either reaching end-of-input, or getting explicitly closed
     private final static int STATE_CLOSED = 12;
 
+    // State after returning END_OBJECT for root level, before closing
+    // (added for [dataformats-binary#598] to separate END_OBJECT return from close())
+    private final static int STATE_ROOT_END = 13;
+
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
 
     // @since 2.14
@@ -592,7 +596,8 @@ public class ProtobufParser extends ParserMinimalBase
             // end-of-input?
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _parsingContext.setCurrentName(null);
                     return _updateToken(JsonToken.END_OBJECT);
                 }
             }
@@ -617,6 +622,12 @@ public class ProtobufParser extends ParserMinimalBase
 
             int len = _decodeLength();
             int newEnd = _inputPtr + len;
+            // Guard against integer overflow: _inputPtr and len are both non-negative,
+            // so a result smaller than _inputPtr means the sum wrapped.
+            if (newEnd < _inputPtr) {
+                _reportErrorF("Packed array length overflows for field '%s': ptr=%d, len=%d",
+                        _currentField.name, _inputPtr, len);
+            }
 
             // First: validate that we do not extend past end offset of enclosing message
             if (!_parsingContext.inRoot()) {
@@ -687,8 +698,13 @@ public class ProtobufParser extends ParserMinimalBase
             return _updateToken(_readNextValue(_currentField.type, STATE_NESTED_KEY));
 
         case STATE_MESSAGE_END: // occurs if we end with array
-            close(); // sets state to STATE_CLOSED
+            _state = STATE_ROOT_END;
+            _parsingContext.setCurrentName(null);
             return _updateToken(JsonToken.END_OBJECT);
+
+        case STATE_ROOT_END: // returned END_OBJECT, now close on next call
+            close(); // sets state to STATE_CLOSED
+            return null;
 
         case STATE_CLOSED:
             return null;
@@ -923,6 +939,12 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentMessage = msg;
                 int len = _decodeLength();
                 int newEnd = _inputPtr + len;
+                // Guard against integer overflow: _inputPtr and len are both non-negative,
+                // so a result smaller than _inputPtr means the sum wrapped.
+                if (newEnd < _inputPtr) {
+                    _reportErrorF("Message length overflows for field '%s': ptr=%d, len=%d",
+                            _currentField.name, _inputPtr, len);
+                }
 
                 // First: validate that we do not extend past end offset of enclosing message
                 if (newEnd > _currentEndOffset) {
@@ -964,7 +986,8 @@ public class ProtobufParser extends ParserMinimalBase
                 }
             } else if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _parsingContext.setCurrentName(null);
                     return _updateToken(JsonToken.END_OBJECT);
                 }
             }
@@ -1025,7 +1048,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _parsingContext.setCurrentName(null);
                     _updateToken(JsonToken.END_OBJECT);
                     return false;
                 }
@@ -1106,7 +1130,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    close();
+                    _state = STATE_ROOT_END;
+                    _parsingContext.setCurrentName(null);
                     _updateToken(JsonToken.END_OBJECT);
                     return null;
                 }
