@@ -18,6 +18,8 @@ Active maintainers:
 
 #134: (protobuf) Repeated fields incorrectly decoded for proto3 schemas
   (reported by @vogt31337)
+- (protobuf) Fields declared inside a `oneof` block were silently dropped
+  during schema resolution (found while investigating #134)
 
 2.21.4 (28-May-2026)
 

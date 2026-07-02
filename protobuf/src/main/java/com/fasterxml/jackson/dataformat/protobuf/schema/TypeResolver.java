@@ -142,6 +142,17 @@ public class TypeResolver
     protected ProtobufMessage _resolve(MessageElement rawType)
     {
         List<FieldElement> rawFields = rawType.fields();
+        List<OneOfElement> oneOfs = rawType.oneOfs();
+        // 01-Jul-2026, tatu: [dataformats-binary#134] Fields declared inside a
+        //   `oneof` block live in a separate list from regular fields and were
+        //   silently dropped during resolution; merge them in so they're not lost.
+        if (!oneOfs.isEmpty()) {
+            List<FieldElement> merged = new ArrayList<FieldElement>(rawFields);
+            for (OneOfElement oneOf : oneOfs) {
+                merged.addAll(oneOf.fields());
+            }
+            rawFields = merged;
+        }
         ProtobufField[] resolvedFields = new ProtobufField[rawFields.size()];
 
         ProtobufMessage message = new ProtobufMessage(rawType.name(), resolvedFields);
