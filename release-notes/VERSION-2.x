@@ -20,6 +20,9 @@ Active maintainers:
   (reported by @vogt31337)
 - (protobuf) Fields declared inside a `oneof` block were silently dropped
   during schema resolution (found while investigating #134)
+- (protobuf) `FileDescriptorSet`-based schema loading crashed on proto3
+  descriptor sets due to a syntax-string/enum-constant mismatch
+  (found while investigating #134)
 
 2.21.4 (28-May-2026)
 
