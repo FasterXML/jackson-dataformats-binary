@@ -40,12 +40,21 @@ public class TypeResolver
      */
     private Map<String,ProtobufMessage> _resolvedMessageTypes;
 
+    /**
+     * Whether enclosing schema (single .proto file) uses proto3 syntax: affects
+     * default "packed" setting for repeated scalar/enum fields.
+     *
+     * @since 2.23 [dataformats-binary#134]
+     */
+    private final boolean _isProto3;
+
     protected TypeResolver(TypeResolver p, String name, Map<String,MessageElement> declaredMsgs,
-            Map<String,ProtobufEnum> enums)
+            Map<String,ProtobufEnum> enums, boolean isProto3)
     {
         _parent = p;
         _contextName = name;
         _enumTypes = enums;
+        _isProto3 = isProto3;
         if (declaredMsgs == null) {
             declaredMsgs = Collections.emptyMap();
         }
@@ -58,21 +67,29 @@ public class TypeResolver
      * types it depends on.
      */
     public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType) {
-        final TypeResolver rootR  = construct(null, null, nativeTypes);
+        return resolve(nativeTypes, rawType, false);
+    }
+
+    /**
+     * @since 2.23 [dataformats-binary#134]
+     */
+    public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType,
+            boolean isProto3) {
+        final TypeResolver rootR  = construct(null, null, nativeTypes, isProto3);
         // Important: parent context for "root types", but child context for nested; further,
         // resolution happens in "child" context to allow proper referencing
-        return TypeResolver.construct(rootR, rawType.name(), rawType.nestedElements())
+        return TypeResolver.construct(rootR, rawType.name(), rawType.nestedElements(), isProto3)
                 ._resolve(rawType);
     }
 
     protected ProtobufMessage resolve(TypeResolver parent, MessageElement rawType)
     {
-        return TypeResolver.construct(this, rawType.name(), rawType.nestedElements())
+        return TypeResolver.construct(this, rawType.name(), rawType.nestedElements(), _isProto3)
                 ._resolve(rawType);
     }
 
     protected static TypeResolver construct(TypeResolver parent, String localName,
-            Collection<TypeElement> nativeTypes)
+            Collection<TypeElement> nativeTypes, boolean isProto3)
     {
         Map<String,MessageElement> declaredMsgs = null;
         Map<String,ProtobufEnum> declaredEnums = new LinkedHashMap<>();
@@ -92,7 +109,7 @@ public class TypeResolver
                 }
             } // no other known types?
         }
-        return new TypeResolver(parent, localName, declaredMsgs, declaredEnums);
+        return new TypeResolver(parent, localName, declaredMsgs, declaredEnums, isProto3);
     }
 
     protected void addEnumType(String name, ProtobufEnum enumType) {
@@ -142,7 +159,7 @@ public class TypeResolver
             ProtobufField pbf;
 
             if (type != null) { // simple type
-                pbf = new ProtobufField(f, type);
+                pbf = new ProtobufField(f, type, _isProto3);
             } else if (fieldType instanceof DataType.NamedType) {
                 final String typeStr = ((DataType.NamedType) fieldType).name();
 
@@ -260,7 +277,7 @@ public class TypeResolver
         }
         ProtobufEnum et = _enumTypes.get(typeStr);
         if (et != null) {
-            return new ProtobufField(nativeField, et);
+            return new ProtobufField(nativeField, et, _isProto3);
         }
         return null;
     }

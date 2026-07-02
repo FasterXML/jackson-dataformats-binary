@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.5 (not yet released)
+
+#134: (protobuf) Repeated fields incorrectly decoded for proto3 schemas
+  (reported by @vogt31337)
+
 2.21.4 (28-May-2026)
 
 #691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths in CBORParser

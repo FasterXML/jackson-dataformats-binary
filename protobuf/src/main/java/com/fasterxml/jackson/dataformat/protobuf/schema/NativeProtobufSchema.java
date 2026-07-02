@@ -15,17 +15,27 @@ public class NativeProtobufSchema
     protected final String _name;
     protected final Collection<TypeElement> _nativeTypes;
 
+    /**
+     * @since 2.23 [dataformats-binary#134]
+     */
+    protected final boolean _isProto3;
+
     protected volatile String[] _messageNames;
 
     protected NativeProtobufSchema(ProtoFile input)
     {
-        this(input.filePath(), input.typeElements());
+        this(input.filePath(), input.typeElements(), input.syntax() == ProtoFile.Syntax.PROTO_3);
     }
 
-    protected NativeProtobufSchema(String name, Collection<TypeElement> types)
+    protected NativeProtobufSchema(String name, Collection<TypeElement> types) {
+        this(name, types, false);
+    }
+
+    protected NativeProtobufSchema(String name, Collection<TypeElement> types, boolean isProto3)
     {
         _name = name;
         _nativeTypes = types;
+        _isProto3 = isProto3;
     }
 
     public static NativeProtobufSchema construct(ProtoFile input) {
@@ -64,7 +74,7 @@ public class NativeProtobufSchema
                     +"') has no message type with name '"+messageTypeName+"': known types: "
                     +getMessageNames());
         }
-        return new ProtobufSchema(this, TypeResolver.resolve(_nativeTypes, msg));
+        return new ProtobufSchema(this, TypeResolver.resolve(_nativeTypes, msg, _isProto3));
     }
 
     /**
@@ -78,7 +88,7 @@ public class NativeProtobufSchema
             throw new IllegalArgumentException("Protobuf schema definition (name '"+_name
                     +"') contains no message type definitions");
         }
-        return new ProtobufSchema(this, TypeResolver.resolve(_nativeTypes, msg));
+        return new ProtobufSchema(this, TypeResolver.resolve(_nativeTypes, msg, _isProto3));
     }
 
     public List<String> getMessageNames() {
