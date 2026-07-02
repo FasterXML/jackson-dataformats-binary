@@ -16,7 +16,7 @@ public class NativeProtobufSchema
     protected final Collection<TypeElement> _nativeTypes;
 
     /**
-     * @since 2.23 [dataformats-binary#134]
+     * @since 2.21.5 [dataformats-binary#134]
      */
     protected final boolean _isProto3;
 

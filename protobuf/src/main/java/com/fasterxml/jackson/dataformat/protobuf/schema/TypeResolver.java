@@ -44,7 +44,7 @@ public class TypeResolver
      * Whether enclosing schema (single .proto file) uses proto3 syntax: affects
      * default "packed" setting for repeated scalar/enum fields.
      *
-     * @since 2.23 [dataformats-binary#134]
+     * @since 2.21.5 [dataformats-binary#134]
      */
     private final boolean _isProto3;
 
@@ -71,7 +71,7 @@ public class TypeResolver
     }
 
     /**
-     * @since 2.23 [dataformats-binary#134]
+     * @since 2.21.5 [dataformats-binary#134]
      */
     public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType,
             boolean isProto3) {
