@@ -763,7 +763,10 @@ public class ProtobufParser extends ParserMinimalBase
         }
         // array?
         if (f.repeated) {
-            if (f.packed) {
+            // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
+            //   the actual wire type, not just the schema's declared `packed` flag:
+            //   proto3 permits either encoding for repeated scalar/enum fields.
+            if (f.isPackedInWire(wireType)) {
                 _state = STATE_ARRAY_START_PACKED;
             } else {
                 _state = STATE_ARRAY_START;
@@ -807,7 +810,10 @@ public class ProtobufParser extends ParserMinimalBase
 
         // array?
         if (f.repeated) {
-            if (f.packed) {
+            // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
+            //   the actual wire type, not just the schema's declared `packed` flag:
+            //   proto3 permits either encoding for repeated scalar/enum fields.
+            if (f.isPackedInWire(wireType)) {
                 _state = STATE_ARRAY_START_PACKED;
             } else {
                 _state = STATE_ARRAY_START;
@@ -1074,7 +1080,10 @@ public class ProtobufParser extends ParserMinimalBase
 
             // array?
             if (_currentField.repeated) {
-                if (_currentField.packed) {
+                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
+                //   the actual wire type, not just the schema's declared `packed` flag:
+                //   proto3 permits either encoding for repeated scalar/enum fields.
+                if (_currentField.isPackedInWire(wireType)) {
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
@@ -1110,7 +1119,10 @@ public class ProtobufParser extends ParserMinimalBase
 
             // array?
             if (_currentField.repeated) {
-                if (_currentField.packed) {
+                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
+                //   the actual wire type, not just the schema's declared `packed` flag:
+                //   proto3 permits either encoding for repeated scalar/enum fields.
+                if (_currentField.isPackedInWire(wireType)) {
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
@@ -1159,7 +1171,10 @@ public class ProtobufParser extends ParserMinimalBase
 
             // array?
             if (_currentField.repeated) {
-                if (_currentField.packed) {
+                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
+                //   the actual wire type, not just the schema's declared `packed` flag:
+                //   proto3 permits either encoding for repeated scalar/enum fields.
+                if (_currentField.isPackedInWire(wireType)) {
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
@@ -1198,7 +1213,10 @@ public class ProtobufParser extends ParserMinimalBase
 
             // array?
             if (_currentField.repeated) {
-                if (_currentField.packed) {
+                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
+                //   the actual wire type, not just the schema's declared `packed` flag:
+                //   proto3 permits either encoding for repeated scalar/enum fields.
+                if (_currentField.isPackedInWire(wireType)) {
                     _state = STATE_ARRAY_START_PACKED;
                 } else {
                     _state = STATE_ARRAY_START;
