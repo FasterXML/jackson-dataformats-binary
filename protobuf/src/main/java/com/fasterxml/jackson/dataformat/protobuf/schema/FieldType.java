@@ -59,6 +59,15 @@ public enum FieldType
 
     public int getWireType() { return _wireType; }
 
+    /**
+     * Whether fields of this type may use "packed" encoding when repeated
+     * (per protobuf spec, only scalar numeric/enum/boolean types can be packed;
+     * length-delimited types like String/Bytes/Message cannot).
+     */
+    public boolean isPackable() {
+        return _wireType != WireType.LENGTH_PREFIXED;
+    }
+
     public boolean usesZigZag() {
         return (this == VINT32_Z) || (this == VINT64_Z);
     }
