@@ -226,7 +226,34 @@ public class ProtobufField
     public final boolean isValidFor(int typeTag) {
         return (typeTag == wireType)
                 // 13-Apr-2017, tatu: to fix [dataformats-binary#76]
-                || (packed && repeated && typeTag == WireType.LENGTH_PREFIXED);
+                // 03-Jul-2026, tatu: [dataformats-binary#134] A repeated scalar/enum
+                //   field may arrive packed (LENGTH_PREFIXED) regardless of the schema's
+                //   declared `packed` flag -- proto3 permits either encoding on the wire,
+                //   so tolerance must key off the type, not the schema default.
+                || (repeated && type.isPackable() && typeTag == WireType.LENGTH_PREFIXED);
+    }
+
+    /**
+     * Accessor for deciding whether an incoming, repeated field should be read
+     * using "packed" (single length-prefixed block) encoding.
+     *<p>
+     * For genuinely packable types (scalar numeric/enum/boolean) the native
+     * unpacked wire type differs from {@code LENGTH_PREFIXED}, so the actual wire
+     * type is unambiguous and authoritative: proto3 permits either encoding on the
+     * wire regardless of the schema's declared {@code packed} flag.
+     *<p>
+     * For non-packable types (String/Bytes/Message) a single element and a
+     * jackson-style "packed" block are <b>both</b> {@code LENGTH_PREFIXED}, so the
+     * wire type cannot distinguish them; there we must fall back to the schema's
+     * declared {@code packed} flag.
+     *
+     * @since 2.21.5 [dataformats-binary#134]
+     */
+    public final boolean isPackedInWire(int typeTag) {
+        if (type.isPackable()) {
+            return repeated && (typeTag == WireType.LENGTH_PREFIXED);
+        }
+        return packed;
     }
 
     @Override
