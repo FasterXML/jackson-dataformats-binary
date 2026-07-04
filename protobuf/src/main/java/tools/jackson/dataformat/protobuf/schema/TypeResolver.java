@@ -64,21 +64,11 @@ public class TypeResolver
     }
 
     /**
-     * Main entry method for public API, for resolving specific root-level type and other
-     * types it depends on.
-     *
-     * @deprecated Since 3.2
-     */
-    @Deprecated
-    public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType) {
-        return resolve(nativeTypes, rawType, false);
-    }
-
-    /**
      * @since 3.1.5 [dataformats-binary#134]
      */
     public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType,
-            boolean isProto3) {
+            boolean isProto3)
+    {
         final TypeResolver rootR  = construct(null, null, nativeTypes, isProto3);
         // Important: parent context for "root types", but child context for nested; further,
         // resolution happens in "child" context to allow proper referencing
