@@ -20,6 +20,8 @@ No changes since 3.1
 
 3.1.5 (not yet released)
 
+#134: (protobuf) `oneof` fields and some repeated fields incorrectly decoded for proto3 schemas
+  (reported by @vogt31337)
 #700: (cbor, smile) `META-INF/services/tools.jackson.databind.ObjectMapper`
   references wrong class name (`...databind.CBORMapper` / `...databind.SmileMapper`)
  (reported by Juan F)

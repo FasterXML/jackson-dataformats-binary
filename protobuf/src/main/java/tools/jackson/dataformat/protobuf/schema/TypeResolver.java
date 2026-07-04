@@ -40,12 +40,22 @@ public class TypeResolver
      */
     private Map<String,ProtobufMessage> _resolvedMessageTypes;
 
-    protected TypeResolver(TypeResolver p, String name, Map<String,MessageElement> declaredMsgs,
-            Map<String,ProtobufEnum> enums)
+    /**
+     * Whether enclosing schema (single .proto file) uses proto3 syntax: affects
+     * default "packed" setting for repeated scalar/enum fields.
+     *
+     * @since 2.21.5 [dataformats-binary#134]
+     */
+    private final boolean _isProto3;
+
+    protected TypeResolver(TypeResolver p, String name,
+            Map<String,MessageElement> declaredMsgs,
+            Map<String,ProtobufEnum> enums, boolean isProto3)
     {
         _parent = p;
         _contextName = name;
         _enumTypes = enums;
+        _isProto3 = isProto3;
         if (declaredMsgs == null) {
             declaredMsgs = Collections.emptyMap();
         }
@@ -56,23 +66,34 @@ public class TypeResolver
     /**
      * Main entry method for public API, for resolving specific root-level type and other
      * types it depends on.
+     *
+     * @deprecated Since 3.2
      */
+    @Deprecated
     public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType) {
-        final TypeResolver rootR  = construct(null, null, nativeTypes);
+        return resolve(nativeTypes, rawType, false);
+    }
+
+    /**
+     * @since 3.1.5 [dataformats-binary#134]
+     */
+    public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType,
+            boolean isProto3) {
+        final TypeResolver rootR  = construct(null, null, nativeTypes, isProto3);
         // Important: parent context for "root types", but child context for nested; further,
         // resolution happens in "child" context to allow proper referencing
-        return TypeResolver.construct(rootR, rawType.name(), rawType.nestedElements())
+        return TypeResolver.construct(rootR, rawType.name(), rawType.nestedElements(), isProto3)
                 ._resolve(rawType);
     }
 
     protected ProtobufMessage resolve(TypeResolver parent, MessageElement rawType)
     {
-        return TypeResolver.construct(this, rawType.name(), rawType.nestedElements())
+        return TypeResolver.construct(this, rawType.name(), rawType.nestedElements(), _isProto3)
                 ._resolve(rawType);
     }
 
     protected static TypeResolver construct(TypeResolver parent, String localName,
-            Collection<TypeElement> nativeTypes)
+            Collection<TypeElement> nativeTypes, boolean isProto3)
     {
         Map<String,MessageElement> declaredMsgs = null;
         Map<String,ProtobufEnum> declaredEnums = new LinkedHashMap<>();
@@ -92,7 +113,7 @@ public class TypeResolver
                 }
             } // no other known types?
         }
-        return new TypeResolver(parent, localName, declaredMsgs, declaredEnums);
+        return new TypeResolver(parent, localName, declaredMsgs, declaredEnums, isProto3);
     }
 
     protected void addEnumType(String name, ProtobufEnum enumType) {
@@ -125,6 +146,17 @@ public class TypeResolver
     protected ProtobufMessage _resolve(MessageElement rawType)
     {
         List<FieldElement> rawFields = rawType.fields();
+        List<OneOfElement> oneOfs = rawType.oneOfs();
+        // 01-Jul-2026, tatu: [dataformats-binary#134] Fields declared inside a
+        //   `oneof` block live in a separate list from regular fields and were
+        //   silently dropped during resolution; merge them in so they're not lost.
+        if (!oneOfs.isEmpty()) {
+            List<FieldElement> merged = new ArrayList<FieldElement>(rawFields);
+            for (OneOfElement oneOf : oneOfs) {
+                merged.addAll(oneOf.fields());
+            }
+            rawFields = merged;
+        }
         ProtobufField[] resolvedFields = new ProtobufField[rawFields.size()];
 
         ProtobufMessage message = new ProtobufMessage(rawType.name(), resolvedFields);
@@ -142,7 +174,7 @@ public class TypeResolver
             ProtobufField pbf;
 
             if (type != null) { // simple type
-                pbf = new ProtobufField(f, type);
+                pbf = new ProtobufField(f, type, _isProto3);
             } else if (fieldType instanceof DataType.NamedType) {
                 final String typeStr = ((DataType.NamedType) fieldType).name();
 
@@ -246,7 +278,7 @@ public class TypeResolver
         }
         // Create a resolver in the context of the outer type and recursively
         // resolve the remaining path (handles arbitrary nesting depth)
-        TypeResolver outerResolver = TypeResolver.construct(this, outerName, outerMsg.nestedElements());
+        TypeResolver outerResolver = TypeResolver.construct(this, outerName, outerMsg.nestedElements(), _isProto3);
         return outerResolver._findAndResolve(nativeField, innerPath);
     }
 
@@ -284,7 +316,7 @@ public class TypeResolver
         }
         ProtobufEnum et = _enumTypes.get(typeStr);
         if (et != null) {
-            return new ProtobufField(nativeField, et);
+            return new ProtobufField(nativeField, et, _isProto3);
         }
         return null;
     }
