@@ -62,23 +62,36 @@ public class ProtobufField
     public final boolean isStdEnum;
 
     public ProtobufField(FieldElement nativeField, FieldType type) {
-        this(nativeField, type, null, null);
+        this(nativeField, type, false);
+    }
+
+    /**
+     * @param isProto3 Whether enclosing schema uses proto3 syntax: affects default
+     *    "packed" setting for repeated scalar fields when not explicitly specified
+     *    (proto3 defaults to packed, proto2 to unpacked)
+     */
+    public ProtobufField(FieldElement nativeField, FieldType type, boolean isProto3) {
+        this(nativeField, type, null, null, isProto3);
     }
 
     public ProtobufField(FieldElement nativeField, ProtobufMessage msg) {
-        this(nativeField, FieldType.MESSAGE, msg, null);
+        this(nativeField, FieldType.MESSAGE, msg, null, false);
     }
 
     public ProtobufField(FieldElement nativeField, ProtobufEnum et) {
-        this(nativeField, FieldType.ENUM, null, et);
+        this(nativeField, FieldType.ENUM, null, et, false);
+    }
+
+    public ProtobufField(FieldElement nativeField, ProtobufEnum et, boolean isProto3) {
+        this(nativeField, FieldType.ENUM, null, et, isProto3);
     }
 
     public static ProtobufField unknownField() {
-        return new ProtobufField(null, FieldType.MESSAGE, null, null);
+        return new ProtobufField(null, FieldType.MESSAGE, null, null, false);
     }
 
     protected ProtobufField(FieldElement nativeField, FieldType type,
-            ProtobufMessage msg, ProtobufEnum et)
+            ProtobufMessage msg, ProtobufEnum et, boolean isProto3)
     {
         this.type = type;
         wireType = type.getWireType();
@@ -118,8 +131,15 @@ public class ProtobufField
              *   we can't use 'isPacked()' in 3.1.5 (and probably deprecated has same issue);
              *   let's add a temporary workaround.
              */
-            packed = _findBooleanOption(nativeField, "packed");
-            deprecated = _findBooleanOption(nativeField, "deprecated");
+            Boolean explicitPacked = _findBooleanOptionValue(nativeField, "packed");
+            if (explicitPacked != null) {
+                packed = explicitPacked.booleanValue();
+            } else {
+                // 01-Jul-2026: [dataformats-binary#134] proto3 defaults repeated
+                //   scalar/enum fields to packed encoding unless overridden
+                packed = repeated && isProto3 && type.isPackable();
+            }
+            deprecated = Boolean.TRUE.equals(_findBooleanOptionValue(nativeField, "deprecated"));
 
             // 13-Apr-2017, tatu: [databind#79] Need to write length-prefixed for packed arrays
             if (repeated && packed) {
@@ -132,18 +152,18 @@ public class ProtobufField
         isObject = (type == FieldType.MESSAGE);
     }
 
-    private static boolean _findBooleanOption(FieldElement f, String key)
+    private static Boolean _findBooleanOptionValue(FieldElement f, String key)
     {
         for (OptionElement opt : f.options()) {
             if (key.equals(opt.name())) {
                 Object val = opt.value();
                 if (val instanceof Boolean) {
-                    return ((Boolean) val).booleanValue();
+                    return (Boolean) val;
                 }
-                return "true".equals(String.valueOf(val).trim());
+                return Boolean.valueOf("true".equals(String.valueOf(val).trim()));
             }
         }
-        return false;
+        return null;
     }
 
     public void assignMessageType(ProtobufMessage msgType) {

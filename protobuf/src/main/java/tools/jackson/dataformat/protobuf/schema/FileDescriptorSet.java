@@ -136,10 +136,14 @@ public class FileDescriptorSet
 
         public ProtoFile.Syntax getSyntax()
         {
-            if (syntax == null) {
-                return ProtoFile.Syntax.PROTO_2;
+            // 01-Jul-2026, tatu: [dataformats-binary#134] Real `FileDescriptorProto.syntax`
+            //   values (as written by protoc) are lowercase ("proto2"/"proto3"), but the
+            //   enum constants are PROTO_2/PROTO_3: `valueOf(syntax)` would throw for any
+            //   proto3-origin descriptor set.
+            if ("proto3".equals(syntax)) {
+                return ProtoFile.Syntax.PROTO_3;
             }
-            return ProtoFile.Syntax.valueOf(syntax);
+            return ProtoFile.Syntax.PROTO_2;
         }
 
         public void setPackage(String p) { _package = p; }
