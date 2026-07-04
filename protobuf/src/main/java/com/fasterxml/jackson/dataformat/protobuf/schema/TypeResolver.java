@@ -48,7 +48,8 @@ public class TypeResolver
      */
     private final boolean _isProto3;
 
-    protected TypeResolver(TypeResolver p, String name, Map<String,MessageElement> declaredMsgs,
+    protected TypeResolver(TypeResolver p, String name,
+            Map<String,MessageElement> declaredMsgs,
             Map<String,ProtobufEnum> enums, boolean isProto3)
     {
         _parent = p;
@@ -65,7 +66,10 @@ public class TypeResolver
     /**
      * Main entry method for public API, for resolving specific root-level type and other
      * types it depends on.
+     *
+     * @deprecated Since 2.22
      */
+    @Deprecated
     public static ProtobufMessage resolve(Collection<TypeElement> nativeTypes, MessageElement rawType) {
         return resolve(nativeTypes, rawType, false);
     }
