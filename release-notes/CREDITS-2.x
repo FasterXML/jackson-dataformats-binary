@@ -19,6 +19,8 @@ Kenji Noguchi (knoguchi@github)
 
 * Reported #70 (protobuf), contributed fix: Can't deserialize packed repeated field
  (2.8.9)
+* Reported #73: (protobuf) Cannot resolve inner types in protoc definitions
+ (2.21.5)
 
 marsqing@github
 
