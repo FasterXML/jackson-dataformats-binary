@@ -18,6 +18,8 @@ Active maintainers:
 
 #73: (protobuf) Cannot resolve inner types in protoc definitions
  (reported by Kenji N)
+#134: (protobuf) `oneof` fields and some repeated fields incorrectly decoded for proto3 schemas
+  (reported by @vogt31337)
 #598: (protobuf) Protobuf parser state handling wrong for implicit close
   (END_OBJECT)
 
