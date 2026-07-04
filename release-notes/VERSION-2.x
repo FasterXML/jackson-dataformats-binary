@@ -14,11 +14,30 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.22.0 (not yet released)
+2.23.0 (not yet released)
+
+No changes since 2.22
+
+2.22.1 (not yet released)
+
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
+#598: (protobuf) Protobuf parser state handling wrong for implicit close
+  (END_OBJECT)
+
+
+2.22.0 (31-May-2026)
 
 No changes since 2.21
 
-2.21.4 (not yet released)
+2.21.5 (not yet released)
+
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
+#598: (protobuf) Protobuf parser state handling wrong for implicit close
+  (END_OBJECT)
+
+2.21.4 (28-May-2026)
 
 #691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths in CBORParser
  (contributed by Manuel S)
@@ -147,7 +166,7 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
-2.18.8 (not yet released)
+2.18.8 (28-Mar-2026)
 
 #696: (ion) Incomplete number length validation in Ion decoder
   (for `BigDecimal` and/or `BigInteger`)
