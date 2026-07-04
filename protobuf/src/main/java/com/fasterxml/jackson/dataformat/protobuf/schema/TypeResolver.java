@@ -274,7 +274,7 @@ public class TypeResolver
         }
         // Create a resolver in the context of the outer type and recursively
         // resolve the remaining path (handles arbitrary nesting depth)
-        TypeResolver outerResolver = TypeResolver.construct(this, outerName, outerMsg.nestedElements());
+        TypeResolver outerResolver = TypeResolver.construct(this, outerName, outerMsg.nestedElements(), _isProto3);
         return outerResolver._findAndResolve(nativeField, innerPath);
     }
 
