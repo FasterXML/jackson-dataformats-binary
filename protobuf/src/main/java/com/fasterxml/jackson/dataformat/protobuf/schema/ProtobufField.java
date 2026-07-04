@@ -232,6 +232,6 @@ public class ProtobufField
 
     @Override
     public int compareTo(ProtobufField other) {
-        return id - other.id;
+        return Integer.compare(id, other.id);
     }
 }

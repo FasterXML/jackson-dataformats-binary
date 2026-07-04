@@ -16,13 +16,12 @@ Active maintainers:
 
 2.21.5 (not yet released)
 
-#134: (protobuf) Repeated fields incorrectly decoded for proto3 schemas
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
+#134: (protobuf) `oneof` fields and some repeated fields incorrectly decoded for proto3 schemas
   (reported by @vogt31337)
-- (protobuf) Fields declared inside a `oneof` block were silently dropped
-  during schema resolution (found while investigating #134)
-- (protobuf) `FileDescriptorSet`-based schema loading crashed on proto3
-  descriptor sets due to a syntax-string/enum-constant mismatch
-  (found while investigating #134)
+#598: (protobuf) Protobuf parser state handling wrong for implicit close
+  (END_OBJECT)
 
 2.21.4 (28-May-2026)
 
