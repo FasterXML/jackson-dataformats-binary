@@ -18,7 +18,7 @@ Active maintainers:
 
 No changes since 2.22
 
-2.22.1 (not yet released)
+2.22.1 (07-Jul-2026)
 
 #73: (protobuf) Cannot resolve inner types in protoc definitions
  (reported by Kenji N)
