@@ -25,12 +25,11 @@ No changes since 2.22
 #598: (protobuf) Protobuf parser state handling wrong for implicit close
   (END_OBJECT)
 
-
 2.22.0 (31-May-2026)
 
 No changes since 2.21
 
-2.21.5 (not yet released)
+2.21.5 (06-Jul-2026)
 
 #73: (protobuf) Cannot resolve inner types in protoc definitions
  (reported by Kenji N)
