@@ -14,6 +14,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.9 (07-Jul-2026)
+
+No changes since 2.18.8
+
 2.18.8 (28-Mar-2026)
 
 #696: (ion) Incomplete number length validation in Ion decoder
