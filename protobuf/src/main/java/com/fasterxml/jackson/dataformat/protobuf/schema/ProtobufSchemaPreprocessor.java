@@ -1,8 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -81,10 +80,11 @@ class ProtobufSchemaPreprocessor
     }
 
     private String _process() {
-        // Stack of "is the enclosing block a message/extend body?" flags; the
-        // file level (bottom) is not, so it starts as false.
-        final Deque<Boolean> inFieldBody = new ArrayDeque<Boolean>();
-        inFieldBody.push(Boolean.FALSE);
+        // One bit per brace-nesting level: bit N is set when the block at depth
+        // N is a message/extend body (where label-less fields may appear). The
+        // file level (depth 0) is never a field body.
+        final BitSet inFieldBody = new BitSet();
+        int depth = 0;
         // Whether the block opened by the NEXT '{' will be a message/extend body
         boolean pendingFieldBody = false;
         boolean atStmtStart = true;
@@ -114,7 +114,8 @@ class ProtobufSchemaPreprocessor
             if (c == '{') {
                 _out.append(c);
                 _ptr++;
-                inFieldBody.push(pendingFieldBody);
+                inFieldBody.set(depth, pendingFieldBody);
+                depth++;
                 pendingFieldBody = false;
                 atStmtStart = true;
                 continue;
@@ -122,8 +123,8 @@ class ProtobufSchemaPreprocessor
             if (c == '}') {
                 _out.append(c);
                 _ptr++;
-                if (inFieldBody.size() > 1) {
-                    inFieldBody.pop();
+                if (depth > 0) {
+                    depth--;
                 }
                 pendingFieldBody = false;
                 atStmtStart = true;
@@ -142,7 +143,7 @@ class ProtobufSchemaPreprocessor
                 final String word = _readWord();
                 pendingFieldBody = "message".equals(word) || "extend".equals(word);
 
-                if (inFieldBody.peek().booleanValue()) {
+                if (depth > 0 && inFieldBody.get(depth - 1)) {
                     if ("map".equals(word)) {
                         throw new IllegalArgumentException(String.format(
                                 "Unsupported proto3 `map` field at line %d: `map` type is not yet"
