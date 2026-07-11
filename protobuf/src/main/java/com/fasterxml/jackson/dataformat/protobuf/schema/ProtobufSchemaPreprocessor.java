@@ -106,6 +106,11 @@ class ProtobufSchemaPreprocessor
                 atStmtStart = false;
                 continue;
             }
+            if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+                _out.append(c);
+                _ptr++;
+                continue;
+            }
             if (c == '{') {
                 _out.append(c);
                 _ptr++;
