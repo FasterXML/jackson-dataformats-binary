@@ -174,6 +174,24 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
         }
     }
 
+    // `map` is valid (and label-less) in proto2 too, so the same clear error
+    // must be raised there -- not protoparser's cryptic "unexpected label: map"
+    @Test
+    public void testProto2MapFieldClearError() throws Exception
+    {
+        final String proto = "syntax = \"proto2\";\n"
+                + "message Msg {\n"
+                + "  map<string, int32> counts = 1;\n"
+                + "}\n";
+        try {
+            ProtobufSchemaLoader.std.parse(proto);
+            fail("Should not pass: map fields are not yet supported");
+        } catch (IllegalArgumentException e) {
+            verifyException(e, "map");
+            verifyException(e, "not yet supported");
+        }
+    }
+
     // End-to-end: label-less proto3 schema must encode and decode correctly
     @Test
     public void testLabellessRoundTrip() throws Exception

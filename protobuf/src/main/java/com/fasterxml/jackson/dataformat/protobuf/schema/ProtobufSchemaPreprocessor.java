@@ -37,6 +37,9 @@ import java.util.regex.Pattern;
  * NOTE: {@code map<K,V>} fields are recognized here only to fail with a clear
  * error message; full map support is not yet implemented (see
  * <a href="https://github.com/FasterXML/jackson-dataformats-binary/issues/708">#708</a>).
+ * Maps are valid in both {@code proto2} and {@code proto3}, and are label-less
+ * in both, so this clear error is raised regardless of the declared syntax --
+ * even though label injection itself only applies to {@code proto3}.
  *
  * @since 2.21.6
  */
@@ -60,23 +63,35 @@ class ProtobufSchemaPreprocessor
     private final int _end;
     private final StringBuilder _out;
 
+    /** Whether the schema uses {@code proto3} syntax (governs label injection). */
+    private final boolean _isProto3;
+
     private int _ptr;
 
-    private ProtobufSchemaPreprocessor(String schema) {
+    private ProtobufSchemaPreprocessor(String schema, boolean isProto3) {
         _data = schema.toCharArray();
         _end = _data.length;
         _out = new StringBuilder(_data.length + 32);
+        _isProto3 = isProto3;
     }
 
     /**
      * Rewrites given schema so that {@code proto3} label-less fields parse with
-     * the bundled parser. Non-{@code proto3} schemas are returned unchanged.
+     * the bundled parser, and so that (label-less) {@code map<K,V>} fields fail
+     * with a clear error in either syntax. Schemas needing neither are returned
+     * unchanged.
      */
     public static String preprocess(String schema) {
-        if (schema == null || !PROTO3_SYNTAX.matcher(schema).find()) {
+        if (schema == null) {
             return schema;
         }
-        return new ProtobufSchemaPreprocessor(schema)._process();
+        boolean isProto3 = PROTO3_SYNTAX.matcher(schema).find();
+        // Only proto3 needs label injection; but a `map` field may need the clear
+        // error in either syntax, so scan if the schema mentions "map" at all.
+        if (!isProto3 && schema.indexOf("map") < 0) {
+            return schema;
+        }
+        return new ProtobufSchemaPreprocessor(schema, isProto3)._process();
     }
 
     private String _process() {
@@ -144,14 +159,18 @@ class ProtobufSchemaPreprocessor
                 pendingFieldBody = "message".equals(word) || "extend".equals(word);
 
                 if (depth > 0 && inFieldBody.get(depth - 1)) {
+                    // `map` fields are label-less in both proto2 and proto3, so
+                    // flag them regardless of the declared syntax
                     if ("map".equals(word)) {
                         throw new IllegalArgumentException(String.format(
-                                "Unsupported proto3 `map` field at line %d: `map` type is not yet"
+                                "Unsupported `map` field at line %d: `map` type is not yet"
                                 + " supported by jackson-dataformats-binary (see"
                                 + " https://github.com/FasterXML/jackson-dataformats-binary/issues/708)",
                                 _lineNumber()));
                     }
-                    if (!NON_FIELD_KEYWORDS.contains(word)) {
+                    // Label injection only applies to proto3 (proto2 requires
+                    // explicit labels, so a label-less field there is a real error)
+                    if (_isProto3 && !NON_FIELD_KEYWORDS.contains(word)) {
                         // Label-less field: inject synthetic label
                         _out.append("optional ");
                     }
