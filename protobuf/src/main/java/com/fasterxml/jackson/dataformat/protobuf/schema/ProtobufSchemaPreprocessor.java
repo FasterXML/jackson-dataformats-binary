@@ -34,12 +34,12 @@ import java.util.regex.Pattern;
  * parser), {@code enum} constants, options, {@code reserved}, etc. -- are left
  * untouched.
  *<p>
- * NOTE: {@code map<K,V>} fields are recognized here only to fail with a clear
- * error message; full map support is not yet implemented (see
- * <a href="https://github.com/FasterXML/jackson-dataformats-binary/issues/708">#708</a>).
- * Maps are valid in both {@code proto2} and {@code proto3}, and are label-less
- * in both, so this clear error is raised regardless of the declared syntax --
- * even though label injection itself only applies to {@code proto3}.
+ * NOTE: {@code map<K,V>} fields are also label-less (in both {@code proto2} and
+ * {@code proto3}), so a synthetic label is injected for them as well, purely so
+ * they parse. Actually rejecting them -- full map support is not yet implemented
+ * (see <a href="https://github.com/FasterXML/jackson-dataformats-binary/issues/708">#708</a>)
+ * -- is a semantic concern handled downstream during type resolution
+ * ({@link TypeResolver}), not here.
  *
  * @since 2.21.6
  */
@@ -159,19 +159,14 @@ class ProtobufSchemaPreprocessor
                 pendingFieldBody = "message".equals(word) || "extend".equals(word);
 
                 if (depth > 0 && inFieldBody.get(depth - 1)) {
-                    // `map` fields are label-less in both proto2 and proto3, so
-                    // flag them regardless of the declared syntax
-                    if ("map".equals(word)) {
-                        throw new IllegalArgumentException(String.format(
-                                "Unsupported `map` field at line %d: `map` type is not yet"
-                                + " supported by jackson-dataformats-binary (see"
-                                + " https://github.com/FasterXML/jackson-dataformats-binary/issues/708)",
-                                _lineNumber()));
-                    }
-                    // Label injection only applies to proto3 (proto2 requires
-                    // explicit labels, so a label-less field there is a real error)
-                    if (_isProto3 && !NON_FIELD_KEYWORDS.contains(word)) {
-                        // Label-less field: inject synthetic label
+                    // A `map` field is always label-less (in both proto2 and proto3);
+                    // other label-less fields occur only in proto3 (proto2 requires
+                    // explicit labels, so a label-less field there is a genuine error).
+                    // Injecting a label lets the field parse; `map` fields are then
+                    // rejected downstream during type resolution (see #708).
+                    boolean labelless = "map".equals(word)
+                            || (_isProto3 && !NON_FIELD_KEYWORDS.contains(word));
+                    if (labelless) {
                         _out.append("optional ");
                     }
                 }
@@ -227,16 +222,6 @@ class ProtobufSchemaPreprocessor
             _ptr++;
         }
         return new String(_data, start, _ptr - start);
-    }
-
-    private int _lineNumber() {
-        int line = 1;
-        for (int i = 0, end = Math.min(_ptr, _end); i < end; ++i) {
-            if (_data[i] == '\n') {
-                ++line;
-            }
-        }
-        return line;
     }
 
     private static boolean _isWordStart(char c) {
