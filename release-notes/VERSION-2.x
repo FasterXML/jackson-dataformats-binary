@@ -18,6 +18,8 @@ Active maintainers:
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
  (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
 
 2.21.5 (06-Jul-2026)
 

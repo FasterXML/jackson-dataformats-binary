@@ -1885,8 +1885,8 @@ public class ProtobufGenerator extends GeneratorBase
         if (_currField == UNKNOWN_FIELD) {
             return;
         }
-        _reportErrorF("Can not write `string` value for '%s' (type %s)",
-                _currField.name, _currField.type);
+        _reportErrorF("Can not write `%s` value for '%s' (type %s)",
+                typeStr, _currField.name, _currField.type);
     }
 
     private void _reportErrorF(String format, Object... args) throws JsonGenerationException {
