@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for generation that trigger exceptions (or would
@@ -68,5 +69,55 @@ public class WriteErrorsTest extends ProtobufTestBase
         Point3D result = MAPPER.readerFor(Point3D.class).with(schema)
                 .readValue(b);
         assertEquals(290, result.x);
+    }
+
+    // [dataformats-binary#715]: error must name the value type actually written,
+    // not always report `string`
+    @Test
+    public void testWrongWireTypeNamesActualType() throws Exception
+    {
+        // "Point" declares `x` as an int32, so any non-integral value is a mismatch
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
+
+        _verifyWrongWireType(schema, "double", new ValueWriter() {
+            @Override
+            public void write(JsonGenerator g) throws Exception {
+                g.writeNumber(0.25);
+            }
+        });
+        _verifyWrongWireType(schema, "binary", new ValueWriter() {
+            @Override
+            public void write(JsonGenerator g) throws Exception {
+                g.writeBinary(new byte[] { 1, 2, 3 });
+            }
+        });
+        _verifyWrongWireType(schema, "string", new ValueWriter() {
+            @Override
+            public void write(JsonGenerator g) throws Exception {
+                g.writeString("foo");
+            }
+        });
+    }
+
+    private interface ValueWriter {
+        void write(JsonGenerator g) throws Exception;
+    }
+
+    private void _verifyWrongWireType(ProtobufSchema schema, String expType,
+            ValueWriter w) throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        JsonGenerator g = MAPPER.getFactory().createGenerator(bytes);
+        g.setSchema(schema);
+        g.writeStartObject();
+        g.writeFieldName("x");
+        try {
+            w.write(g);
+            fail("Should not pass: `x` is an int32 field");
+        } catch (JsonProcessingException e) {
+            verifyException(e, "Can not write `"+expType+"` value for 'x'");
+        } finally {
+            g.close();
+        }
     }
 }
