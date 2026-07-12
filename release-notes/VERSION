@@ -18,6 +18,11 @@ implementations)
 
 No changes since 3.2
 
+3.2.2 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+
 3.2.1 (10-Jul-2026)
 
 No changes since 3.2.0
@@ -27,6 +32,11 @@ No changes since 3.2.0
 #662: (avro) Remove `IOException` from `AvroMapper.schemaFrom()`
   method signatures
 #674: Smile parser does not update `StreamReadContext` index or entry count
+
+3.1.6 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
 
 3.1.5 (07-Jul-2026)
 
