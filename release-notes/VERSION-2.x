@@ -18,19 +18,23 @@ Active maintainers:
 
 No changes since 2.22
 
-2.22.1 (not yet released)
+2.22.1 (07-Jul-2026)
 
 #73: (protobuf) Cannot resolve inner types in protoc definitions
  (reported by Kenji N)
 #598: (protobuf) Protobuf parser state handling wrong for implicit close
   (END_OBJECT)
 
-
 2.22.0 (31-May-2026)
 
 No changes since 2.21
 
-2.21.5 (not yet released)
+2.21.6 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+
+2.21.5 (06-Jul-2026)
 
 #73: (protobuf) Cannot resolve inner types in protoc definitions
  (reported by Kenji N)
