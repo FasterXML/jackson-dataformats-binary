@@ -76,6 +76,7 @@ public final class ProtobufReadContext
         _currentName = null;
         _currentValue = null;
         _endOffset = endOffset;
+        _field = null;
     }
 
     @Override
@@ -113,11 +114,10 @@ public final class ProtobufReadContext
         ProtobufReadContext ctxt = _child;
         if (ctxt == null) {
             _child = ctxt = new ProtobufReadContext(this, _messageType,
-                    TYPE_ARRAY, 0);
+                    TYPE_ARRAY, endOffset);
         } else {
             ctxt.reset(_messageType, TYPE_ARRAY, endOffset);
         }
-        ctxt._field = f;
         return ctxt;
     }
 
