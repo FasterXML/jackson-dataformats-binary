@@ -203,6 +203,15 @@ public class TypeResolver
                         }
                     }
                 }
+            } else if (fieldType instanceof DataType.MapType) {
+                // 10-Jul-2026, tatu: [dataformats-binary#708] `map` fields parse (a
+                //   synthetic label is injected upstream) but full map support is
+                //   not yet implemented; reject here with a clear error.
+                throw new IllegalArgumentException(String.format(
+                        "Unsupported `map` field '%s' in MessageType '%s': `map` type is not yet"
+                        + " supported by jackson-dataformats-binary"
+                        + " (see https://github.com/FasterXML/jackson-dataformats-binary/issues/708)",
+                        f.name(), rawType.name()));
             } else {
                 throw new IllegalArgumentException(String.format(
                         "Unrecognized DataType '%s' for field '%s'", fieldType.getClass().getName(), f.name()));
