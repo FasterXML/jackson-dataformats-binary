@@ -933,7 +933,7 @@ public class ProtobufParser extends ParserMinimalBase
 
         // First: is this even allowed?
         if (!isEnabled(StreamReadFeature.IGNORE_UNDEFINED)) {
-            _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `JsonParser.Feature.IGNORE_UNDEFINED` disabled",
+            _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `StreamReadFeature.IGNORE_UNDEFINED` disabled",
                     tag, wireType, _currentMessage.getName());
         }
         while (true) {
