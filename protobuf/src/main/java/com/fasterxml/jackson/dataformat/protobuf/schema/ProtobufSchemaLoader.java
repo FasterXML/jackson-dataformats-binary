@@ -146,7 +146,13 @@ public class ProtobufSchemaLoader
      */
 
     public ProtoFile _loadNative(File f) throws IOException {
-        return ProtoParser.parseUtf8(f);
+        // 10-Jul-2026, tatu: [dataformats-binary#708] Apply proto3 preprocessing
+        //   here too, but keep the file path as the schema name (used in parse
+        //   error messages) rather than routing through the default-named path.
+        try (InputStreamReader r = new InputStreamReader(new FileInputStream(f), UTF8)) {
+            return ProtoParser.parse(f.getPath(),
+                    ProtobufSchemaPreprocessor.preprocess(_readAll(r)));
+        }
     }
 
     public ProtoFile _loadNative(URL url) throws IOException {
@@ -154,7 +160,8 @@ public class ProtobufSchemaLoader
     }
 
     public ProtoFile _loadNative(String schemaAsString) throws IOException {
-        return ProtoParser.parse(DEFAULT_SCHEMA_NAME, schemaAsString);
+        return ProtoParser.parse(DEFAULT_SCHEMA_NAME,
+                ProtobufSchemaPreprocessor.preprocess(schemaAsString));
     }
 
     public ProtoFile _loadNative(InputStream in, boolean close) throws IOException {
@@ -164,7 +171,7 @@ public class ProtobufSchemaLoader
     protected ProtoFile _loadNative(Reader r, boolean close) throws IOException
     {
         try {
-            return ProtoParser.parse(DEFAULT_SCHEMA_NAME, _readAll(r));
+            return _loadNative(_readAll(r));
         } finally {
             if (close) {
                 try { r.close(); } catch (IOException e) { }
