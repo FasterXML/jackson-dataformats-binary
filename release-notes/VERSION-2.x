@@ -22,6 +22,10 @@ No changes since 2.22
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
  (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
 
 2.22.1 (07-Jul-2026)
 
@@ -38,6 +42,10 @@ No changes since 2.21
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
  (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
 
 2.21.5 (06-Jul-2026)
 
