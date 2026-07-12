@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Helper that rewrites a {@code .proto} schema so that the (older) bundled
@@ -23,11 +22,11 @@ import java.util.regex.Pattern;
  *</pre>
  * whereas {@code protoparser 4.0.3} only recognizes a statement as a field when
  * it begins with one of those labels. This preprocessor detects such label-less
- * field declarations (only within {@code proto3} message / extend bodies) and
- * injects a synthetic {@code optional} label so the underlying parser accepts
- * them; downstream resolution maps {@code optional} to
- * {@code required == repeated == false}, which matches {@code proto3} singular
- * semantics.
+ * field declarations in message / extend bodies and injects a synthetic
+ * {@code optional} label so the underlying parser accepts them (for ordinary
+ * fields, only when the schema is {@code proto3}); downstream resolution maps
+ * {@code optional} to {@code required == repeated == false}, which matches
+ * {@code proto3} singular semantics.
  *<p>
  * Constructs that are <i>not</i> label-less fields -- nested type declarations,
  * {@code oneof} bodies (whose fields are already label-less and handled by the
@@ -45,10 +44,6 @@ import java.util.regex.Pattern;
  */
 class ProtobufSchemaPreprocessor
 {
-    /** Matches a {@code syntax = "proto3";} declaration (single or double quotes). */
-    private static final Pattern PROTO3_SYNTAX = Pattern.compile(
-            "syntax\\s*=\\s*[\"']proto3[\"']");
-
     /**
      * Statement-leading keywords that may appear in a message / extend body but
      * do NOT begin a label-less field, and so must never receive an injected label.
@@ -63,35 +58,30 @@ class ProtobufSchemaPreprocessor
     private final int _end;
     private final StringBuilder _out;
 
-    /** Whether the schema uses {@code proto3} syntax (governs label injection). */
-    private final boolean _isProto3;
-
     private int _ptr;
 
-    private ProtobufSchemaPreprocessor(String schema, boolean isProto3) {
+    private ProtobufSchemaPreprocessor(String schema) {
         _data = schema.toCharArray();
         _end = _data.length;
         _out = new StringBuilder(_data.length + 32);
-        _isProto3 = isProto3;
     }
 
     /**
-     * Rewrites given schema so that {@code proto3} label-less fields parse with
-     * the bundled parser, and so that (label-less) {@code map<K,V>} fields fail
-     * with a clear error in either syntax. Schemas needing neither are returned
-     * unchanged.
+     * Rewrites given schema so that {@code proto3} label-less fields -- and
+     * label-less {@code map<K,V>} fields in either syntax -- parse with the
+     * bundled parser. (Map fields are then rejected during type resolution; see
+     * the class comment.) Schemas that need no rewriting are returned unchanged.
      */
     public static String preprocess(String schema) {
-        if (schema == null) {
+        // Fast path: label injection only matters for proto3, and map handling
+        // only when a `map` field is present; if the text mentions neither
+        // "proto3" nor "map" there is nothing to rewrite. (A false positive here
+        // just means we scan and copy the text through unchanged.)
+        if (schema == null
+                || (schema.indexOf("proto3") < 0 && schema.indexOf("map") < 0)) {
             return schema;
         }
-        boolean isProto3 = PROTO3_SYNTAX.matcher(schema).find();
-        // Only proto3 needs label injection; but a `map` field may need the clear
-        // error in either syntax, so scan if the schema mentions "map" at all.
-        if (!isProto3 && schema.indexOf("map") < 0) {
-            return schema;
-        }
-        return new ProtobufSchemaPreprocessor(schema, isProto3)._process();
+        return new ProtobufSchemaPreprocessor(schema)._process();
     }
 
     private String _process() {
@@ -103,6 +93,12 @@ class ProtobufSchemaPreprocessor
         // Whether the block opened by the NEXT '{' will be a message/extend body
         boolean pendingFieldBody = false;
         boolean atStmtStart = true;
+        // Detected from the `syntax = "..."` declaration during the scan -- which,
+        // unlike a raw regex over the text, correctly ignores comments and strings.
+        // The syntax statement precedes any message body, so this is known before
+        // the first field-injection decision.
+        boolean isProto3 = false;
+        boolean expectSyntaxValue = false;
 
         while (_ptr < _end) {
             final char c = _data[_ptr];
@@ -117,7 +113,11 @@ class ProtobufSchemaPreprocessor
                 continue;
             }
             if (c == '"' || c == '\'') {
-                _copyQuotedString(c);
+                String content = _copyQuotedString(c);
+                if (expectSyntaxValue) {
+                    isProto3 = "proto3".equals(content);
+                    expectSyntaxValue = false;
+                }
                 atStmtStart = false;
                 continue;
             }
@@ -157,6 +157,9 @@ class ProtobufSchemaPreprocessor
             if (atStmtStart && (_isWordStart(c) || c == '.')) {
                 final String word = _readWord();
                 pendingFieldBody = "message".equals(word) || "extend".equals(word);
+                if ("syntax".equals(word)) {
+                    expectSyntaxValue = true;
+                }
 
                 if (depth > 0 && inFieldBody.get(depth - 1)) {
                     // A `map` field is always label-less (in both proto2 and proto3);
@@ -165,7 +168,7 @@ class ProtobufSchemaPreprocessor
                     // Injecting a label lets the field parse; `map` fields are then
                     // rejected downstream during type resolution (see #708).
                     boolean labelless = "map".equals(word)
-                            || (_isProto3 && !NON_FIELD_KEYWORDS.contains(word));
+                            || (isProto3 && !NON_FIELD_KEYWORDS.contains(word));
                     if (labelless) {
                         _out.append("optional ");
                     }
@@ -203,7 +206,12 @@ class ProtobufSchemaPreprocessor
         }
     }
 
-    private void _copyQuotedString(char quote) {
+    /**
+     * Copies a quoted string through verbatim and returns its (unescaped-agnostic)
+     * inner content -- used only to read the {@code syntax} declaration's value.
+     */
+    private String _copyQuotedString(char quote) {
+        StringBuilder content = new StringBuilder();
         _out.append(_data[_ptr++]); // opening quote
         while (_ptr < _end) {
             char c = _data[_ptr++];
@@ -212,8 +220,11 @@ class ProtobufSchemaPreprocessor
                 _out.append(_data[_ptr++]); // keep escaped char as-is
             } else if (c == quote) {
                 break;
+            } else {
+                content.append(c);
             }
         }
+        return content.toString();
     }
 
     private String _readWord() {

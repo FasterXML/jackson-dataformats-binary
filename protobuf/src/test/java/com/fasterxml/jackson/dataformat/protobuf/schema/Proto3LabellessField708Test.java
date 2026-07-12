@@ -1,5 +1,11 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -157,6 +163,25 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
         }
     }
 
+    // A `syntax = "proto3"` occurrence inside a COMMENT must not flip detection:
+    // this is a proto2 schema, so its label-less field must still be rejected
+    // (proto3 detection ignores comments, unlike a naive regex over the text)
+    @Test
+    public void testProto3MentionInCommentNotDetected() throws Exception
+    {
+        final String proto = "syntax = \"proto2\";\n"
+                + "// migration note: change to syntax = \"proto3\";\n"
+                + "message Msg {\n"
+                + "  string name = 1;\n"
+                + "}\n";
+        try {
+            ProtobufSchemaLoader.std.parse(proto);
+            fail("Should not pass: proto2 requires explicit field labels");
+        } catch (Exception e) {
+            verifyException(e, "unexpected label");
+        }
+    }
+
     // Map fields are not yet supported; must fail with a clear, dedicated message
     @Test
     public void testMapFieldClearError() throws Exception
@@ -190,6 +215,39 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
             verifyException(e, "map");
             verifyException(e, "not yet supported");
         }
+    }
+
+    // Preprocessing must be applied for stream-based loading too, not just String
+    @Test
+    public void testLabellessViaInputStream() throws Exception
+    {
+        final String proto = "syntax = \"proto3\";\n"
+                + "message Point {\n"
+                + "  int32 x = 1;\n"
+                + "}\n";
+        ProtobufSchema schema = ProtobufSchemaLoader.std.load(
+                new ByteArrayInputStream(proto.getBytes(Charset.forName("UTF-8"))));
+        assertNotNull(schema.getRootType().field("x"));
+    }
+
+    // ...and for File-based loading (which keeps the file path as schema name)
+    @Test
+    public void testLabellessViaFile() throws Exception
+    {
+        final String proto = "syntax = \"proto3\";\n"
+                + "message Point {\n"
+                + "  int32 x = 1;\n"
+                + "}\n";
+        File f = File.createTempFile("proto708-", ".proto");
+        f.deleteOnExit();
+        Writer w = new OutputStreamWriter(new FileOutputStream(f), Charset.forName("UTF-8"));
+        try {
+            w.write(proto);
+        } finally {
+            w.close();
+        }
+        ProtobufSchema schema = ProtobufSchemaLoader.std.load(f);
+        assertNotNull(schema.getRootType().field("x"));
     }
 
     // End-to-end: label-less proto3 schema must encode and decode correctly
