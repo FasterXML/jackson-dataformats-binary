@@ -18,13 +18,35 @@ implementations)
 
 No changes since 3.2
 
+3.2.2 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
+
+3.2.1 (10-Jul-2026)
+
+No changes since 3.2.0
+
 3.2.0 (08-Jun-2026)
 
 #662: (avro) Remove `IOException` from `AvroMapper.schemaFrom()`
   method signatures
 #674: Smile parser does not update `StreamReadContext` index or entry count
 
-3.1.5 (not yet released)
+3.1.6 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
+
+3.1.5 (07-Jul-2026)
 
 #134: (protobuf) `oneof` fields and some repeated fields incorrectly decoded for proto3 schemas
   (reported by @vogt31337)
