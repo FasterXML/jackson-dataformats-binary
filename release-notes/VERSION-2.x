@@ -22,6 +22,9 @@ Active maintainers:
   buffer reload
 #715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
   ignoring actual type
+#720: (smile) `SmileGenerator` int overflow in `maxLen` for very long Strings
+  (>= 715,827,882 chars) causes `ArrayIndexOutOfBoundsException`
+ (reported by Benjamin M)
 
 2.21.5 (06-Jul-2026)
 
