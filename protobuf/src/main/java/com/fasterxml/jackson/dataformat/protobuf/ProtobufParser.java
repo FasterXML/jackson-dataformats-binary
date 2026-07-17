@@ -55,6 +55,21 @@ public class ProtobufParser extends ParserMinimalBase
     // (added for [dataformats-binary#598] to separate END_OBJECT return from close())
     private final static int STATE_ROOT_END = 13;
 
+    // [dataformats-binary#712] `map<K,V>` states: a map surfaces as a JSON Object whose
+    // members are the map entries (each entry a length-delimited key/value sub-message).
+
+    // About to start a map (its field tag already consumed): emit START_OBJECT
+    private final static int STATE_MAP_START = 14;
+
+    // About to open the first entry (map field tag already consumed)
+    private final static int STATE_MAP_ENTRY_FIRST = 15;
+
+    // Between entries: read the next tag (another entry, or end of map)
+    private final static int STATE_MAP_ENTRY_OTHER = 16;
+
+    // Entry key has been surfaced (FIELD_NAME); read the entry value next
+    private final static int STATE_MAP_VALUE = 17;
+
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
 
     // @since 2.14
@@ -252,6 +267,16 @@ public class ProtobufParser extends ParserMinimalBase
     protected int _state = STATE_INITIAL;
 
     protected int _nextTag;
+
+    /**
+     * For {@code map<K,V>} decoding: when a map entry's {@code value} (tag 2) tag has
+     * been read while scanning for the (possibly absent) {@code key} (tag 1), it is
+     * stashed here to be consumed by the value read that follows. {@code 0} means none
+     * (tag 0 is not a valid field tag).
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected int _mapValueTag;
 
     /**
      * Length of the value that parser points to, for scalar values that use length
@@ -697,6 +722,52 @@ public class ProtobufParser extends ParserMinimalBase
         case STATE_NESTED_VALUE:
             return _updateToken(_readNextValue(_currentField.type, STATE_NESTED_KEY));
 
+        case STATE_MAP_START:
+            // [dataformats-binary#712] Map field tag already consumed; push map context
+            // (inherits enclosing end offset like an unpacked array) and open as Object
+            _parsingContext = _parsingContext.createChildMapContext(_currentField, _currentEndOffset);
+            _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
+            _state = STATE_MAP_ENTRY_FIRST;
+            return _updateToken(JsonToken.START_OBJECT);
+
+        case STATE_MAP_ENTRY_FIRST: // map field tag already consumed
+            return _updateToken(_openMapEntry());
+
+        case STATE_MAP_ENTRY_OTHER:
+            if (_checkEnd()) { // reached end of enclosing message: map ends
+                return _updateToken(JsonToken.END_OBJECT);
+            }
+            if (_inputPtr >= _inputEnd) {
+                if (!loadMore()) {
+                    ProtobufReadContext parent = _parsingContext.getParent();
+                    // Ok to end only if this map is a root-level value
+                    if (!parent.inRoot()) {
+                        _reportInvalidEOF();
+                    }
+                    _parsingContext = parent;
+                    _currentField = parent.getField();
+                    _state = STATE_MESSAGE_END;
+                    return _updateToken(JsonToken.END_OBJECT);
+                }
+            }
+            {
+                int tag = _decodeVInt();
+                // expected case: another entry for the same map field
+                if (_currentField.id == (tag >> 3)) {
+                    return _updateToken(_openMapEntry());
+                }
+                // otherwise a different field: end this map, replay tag in parent
+                _nextTag = tag;
+                ProtobufReadContext parent = _parsingContext.getParent();
+                _parsingContext = parent;
+                _currentField = parent.getField();
+                _state = STATE_ARRAY_END; // reused: replays _nextTag as a key
+                return _updateToken(JsonToken.END_OBJECT);
+            }
+
+        case STATE_MAP_VALUE:
+            return _updateToken(_readMapValue());
+
         case STATE_MESSAGE_END: // occurs if we end with array
             _state = STATE_ROOT_END;
             _parsingContext.setCurrentName(null);
@@ -729,10 +800,25 @@ public class ProtobufParser extends ParserMinimalBase
         _currentMessage = parentCtxt.getMessageType();
         _currentEndOffset = parentCtxt.getEndOffset();
         _currentField = parentCtxt.getField();
+        // [dataformats-binary#712] If we popped into a map entry that is now fully
+        // consumed (its message-typed value was the last field), pop the entry too so
+        // we resume iterating entries rather than treating it as a nested message.
+        if (parentCtxt.isMapEntry() && (_inputPtr >= _currentEndOffset)) {
+            ProtobufReadContext mapCtxt = parentCtxt.getParent();
+            _parsingContext = mapCtxt;
+            _currentMessage = mapCtxt.getMessageType();
+            _currentEndOffset = mapCtxt.getEndOffset();
+            _currentField = mapCtxt.getField();
+            _state = STATE_MAP_ENTRY_OTHER;
+            return true;
+        }
         if (_parsingContext.inRoot()) {
             _state =  STATE_ROOT_KEY;
         } else if (_parsingContext.inArray()) {
             _state = _currentField.packed ? STATE_ARRAY_VALUE_PACKED : STATE_ARRAY_VALUE_OTHER;
+        } else if (_parsingContext.inMap()) {
+            // popped back into a map (e.g. from a message-typed value): iterate entries
+            _state = STATE_MAP_ENTRY_OTHER;
         } else {
             _state = STATE_NESTED_KEY;
         }
@@ -761,19 +847,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (!f.isValidFor(wireType)) {
             _reportIncompatibleType(f, wireType);
         }
-        // array?
-        if (f.repeated) {
-            // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
-            //   the actual wire type, not just the schema's declared `packed` flag:
-            //   proto3 permits either encoding for repeated scalar/enum fields.
-            if (f.isPackedInWire(wireType)) {
-                _state = STATE_ARRAY_START_PACKED;
-            } else {
-                _state = STATE_ARRAY_START;
-            }
-        } else {
-            _state = STATE_ROOT_VALUE;
-        }
+        // map / array / single value?
+        _state = _stateAfterFieldName(f, wireType, STATE_ROOT_VALUE);
         _currentField = f;
         return _updateToken(JsonToken.FIELD_NAME);
     }
@@ -808,19 +883,8 @@ public class ProtobufParser extends ParserMinimalBase
             _reportIncompatibleType(f, wireType);
         }
 
-        // array?
-        if (f.repeated) {
-            // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
-            //   the actual wire type, not just the schema's declared `packed` flag:
-            //   proto3 permits either encoding for repeated scalar/enum fields.
-            if (f.isPackedInWire(wireType)) {
-                _state = STATE_ARRAY_START_PACKED;
-            } else {
-                _state = STATE_ARRAY_START;
-            }
-        } else {
-            _state = STATE_NESTED_VALUE;
-        }
+        // map / array / single value?
+        _state = _stateAfterFieldName(f, wireType, STATE_NESTED_VALUE);
         _currentField = f;
         return _updateToken(JsonToken.FIELD_NAME);
     }
@@ -1044,6 +1108,249 @@ public class ProtobufParser extends ParserMinimalBase
 
     /*
     /**********************************************************
+    /* Internal methods, `map<K,V>` decoding [dataformats-binary#712]
+    /**********************************************************
+     */
+
+    /**
+     * Opens the next {@code map} entry sub-message (whose length prefix is at the current
+     * position), reads its key (tag 1, possibly absent), and surfaces the key as the
+     * current field name. Leaves {@link #_currentField} pointing at the value field and
+     * transitions to {@link #STATE_MAP_VALUE}.
+     */
+    private JsonToken _openMapEntry() throws IOException
+    {
+        final ProtobufField mapField = _currentField;
+        final int len = _decodeLength();
+        final int newEnd = _inputPtr + len;
+        // Guard against integer overflow (see MESSAGE handling in _readNextValue)
+        if (newEnd < _inputPtr) {
+            _reportErrorF("Map entry length overflows for field '%s': ptr=%d, len=%d",
+                    mapField.name, _inputPtr, len);
+        }
+        if (newEnd > _currentEndOffset) {
+            _reportErrorF("Map entry for field '%s' extends past end of enclosing message: %d > %d (length: %d)",
+                    mapField.name, newEnd, _currentEndOffset, len);
+        }
+        _parsingContext = _parsingContext.createChildMapEntryContext(newEnd);
+        _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
+        _currentEndOffset = newEnd;
+        _currentMessage = mapField.getMessageType();
+
+        final ProtobufField keyField = mapField.getKeyField();
+        // Read the key (tag 1). It may be absent (proto3 default), and unknown fields may
+        // (rarely) precede it; if the value (tag 2) is seen first, stash it.
+        _mapValueTag = 0;
+        String keyName = null;
+        while (keyName == null) {
+            if (_inputPtr >= newEnd) { // empty (or key-less) entry
+                keyName = _defaultMapKeyName(keyField);
+                break;
+            }
+            final int tag = _decodeVInt();
+            final int id = (tag >> 3);
+            final int wireType = (tag & 0x7);
+            if (id == 1) {
+                keyName = _readMapKeyValue(keyField, wireType);
+            } else if (id == 2) {
+                keyName = _defaultMapKeyName(keyField); // key omitted; this is the value
+                _mapValueTag = tag;
+            } else {
+                _skipUnknownValue(wireType); // unknown field inside entry: keep scanning
+            }
+        }
+        _parsingContext.setCurrentName(keyName);
+        _currentField = mapField.getValueField();
+        _state = STATE_MAP_VALUE;
+        return JsonToken.FIELD_NAME;
+    }
+
+    /**
+     * Reads the value of the current {@code map} entry (tag 2), synthesizing a proto3
+     * default when the value is absent. For scalar values the entry is then popped; for
+     * message values the nested Object is streamed (and the entry popped afterwards, in
+     * {@link #_checkEnd}).
+     */
+    private JsonToken _readMapValue() throws IOException
+    {
+        final ProtobufField valueField = _currentField;
+        int tag;
+        if (_mapValueTag != 0) {
+            tag = _mapValueTag;
+            _mapValueTag = 0;
+        } else {
+            while (true) {
+                if (_inputPtr >= _currentEndOffset) { // value absent -> proto3 default
+                    JsonToken t = _mapDefaultValueToken(valueField);
+                    _popMapEntry();
+                    return t;
+                }
+                tag = _decodeVInt();
+                final int id = (tag >> 3);
+                if (id == 2) {
+                    break;
+                }
+                if (id == 1) {
+                    _reportErrorF("Map entry for field has 'key' (id 1) after 'value': not supported");
+                }
+                _skipUnknownValue(tag & 0x7); // unknown field inside entry
+            }
+        }
+        final int wireType = (tag & 0x7);
+        if (!valueField.isValidFor(wireType)) {
+            _reportIncompatibleType(valueField, wireType);
+        }
+        if (valueField.type == FieldType.MESSAGE) {
+            // pushes value context (under the entry); entry is popped later, in _checkEnd
+            return _readNextValue(valueField.type, STATE_NESTED_KEY);
+        }
+        JsonToken t = _readNextValue(valueField.type, STATE_MAP_VALUE);
+        _popMapEntry();
+        return t;
+    }
+
+    /**
+     * Pops the current {@code map} entry context back to the enclosing map context, ready
+     * to read the next entry (or end the map).
+     */
+    private void _popMapEntry()
+    {
+        ProtobufReadContext mapCtxt = _parsingContext.getParent();
+        _parsingContext = mapCtxt;
+        _currentMessage = mapCtxt.getMessageType();
+        _currentEndOffset = mapCtxt.getEndOffset();
+        _currentField = mapCtxt.getField();
+        _state = STATE_MAP_ENTRY_OTHER;
+    }
+
+    /**
+     * Reads a {@code map} key value (tag 1 already consumed) and renders it as the String
+     * used for the JSON field name. Key types are restricted to integral / {@code bool} /
+     * {@code string} (validated during schema resolution).
+     */
+    private String _readMapKeyValue(ProtobufField keyField, int wireType) throws IOException
+    {
+        switch (keyField.type) {
+        case STRING:
+            return _readStringKey();
+        case BOOLEAN:
+            if (_inputPtr >= _inputEnd) {
+                loadMoreGuaranteed();
+            }
+            return (_inputBuffer[_inputPtr++] != 0) ? "true" : "false";
+        case VINT32_Z:
+            return Integer.toString(ProtobufUtil.zigzagDecode(_decodeVInt()));
+        case VINT32_STD:
+            return Integer.toString(_decodeVInt());
+        case FIXINT32:
+            return Integer.toString(_decode32Bits());
+        case VINT64_Z:
+            return Long.toString(ProtobufUtil.zigzagDecode(_decodeVLong()));
+        case VINT64_STD:
+            return Long.toString(_decodeVLong());
+        case FIXINT64:
+            return Long.toString(_decode64Bits());
+        default:
+            _reportError("Unsupported `map` key type "+keyField.type+" for field '"+keyField.name+"'");
+            return null; // never reached
+        }
+    }
+
+    /**
+     * Proto3 default key name for an entry whose {@code key} is absent on the wire.
+     */
+    private String _defaultMapKeyName(ProtobufField keyField)
+    {
+        switch (keyField.type) {
+        case STRING:
+            return "";
+        case BOOLEAN:
+            return "false";
+        default: // all integral key types
+            return "0";
+        }
+    }
+
+    /**
+     * Reads a length-prefixed UTF-8 string (used for {@code string} map keys) into a Java
+     * String, handling values that span input-buffer boundaries.
+     */
+    private String _readStringKey() throws IOException
+    {
+        final int len = _decodeLength();
+        if (len == 0) {
+            return "";
+        }
+        if ((_inputPtr + len) <= _inputEnd) {
+            return _finishShortText(len);
+        }
+        if (len >= _inputBuffer.length) {
+            _finishLongText(len);
+            return _textBuffer.contentsAsString();
+        }
+        _loadToHaveAtLeast(len);
+        return _finishShortText(len);
+    }
+
+    /**
+     * Produces the proto3 default value token for a {@code map} entry whose {@code value}
+     * is absent on the wire, setting up numeric/text/binary state as needed.
+     */
+    private JsonToken _mapDefaultValueToken(ProtobufField valueField) throws IOException
+    {
+        switch (valueField.type) {
+        case DOUBLE:
+            _numberDouble = 0.0d;
+            _numTypesValid = NR_DOUBLE;
+            return JsonToken.VALUE_NUMBER_FLOAT;
+        case FLOAT:
+            _numberFloat = 0.0f;
+            _numTypesValid = NR_FLOAT;
+            return JsonToken.VALUE_NUMBER_FLOAT;
+        case VINT32_Z:
+        case VINT32_STD:
+        case FIXINT32:
+            _numberInt = 0;
+            _numTypesValid = NR_INT;
+            return JsonToken.VALUE_NUMBER_INT;
+        case VINT64_Z:
+        case VINT64_STD:
+        case FIXINT64:
+            _numberLong = 0L;
+            _numTypesValid = NR_LONG;
+            return JsonToken.VALUE_NUMBER_INT;
+        case BOOLEAN:
+            return JsonToken.VALUE_FALSE;
+        case STRING:
+            _textBuffer.resetWithEmpty();
+            return JsonToken.VALUE_STRING;
+        case BYTES:
+            _binaryValue = ByteArrayBuilder.NO_BYTES;
+            return JsonToken.VALUE_EMBEDDED_OBJECT;
+        case ENUM:
+            if (valueField.isStdEnum) {
+                _numberInt = 0;
+                _numTypesValid = NR_INT;
+                return JsonToken.VALUE_NUMBER_INT;
+            }
+            {
+                String enumStr = valueField.findEnumByIndex(0);
+                if (enumStr == null) {
+                    _numberInt = 0;
+                    _numTypesValid = NR_INT;
+                    return JsonToken.VALUE_NUMBER_INT;
+                }
+                _textBuffer.resetWithString(enumStr);
+                return JsonToken.VALUE_STRING;
+            }
+        case MESSAGE:
+        default:
+            return JsonToken.VALUE_NULL;
+        }
+    }
+
+    /*
+    /**********************************************************
     /* Public API, traversal, nextXxxValue/nextFieldName
     /**********************************************************
      */
@@ -1078,19 +1385,8 @@ public class ProtobufParser extends ParserMinimalBase
                 _reportIncompatibleType(_currentField, wireType);
             }
 
-            // array?
-            if (_currentField.repeated) {
-                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
-                //   the actual wire type, not just the schema's declared `packed` flag:
-                //   proto3 permits either encoding for repeated scalar/enum fields.
-                if (_currentField.isPackedInWire(wireType)) {
-                    _state = STATE_ARRAY_START_PACKED;
-                } else {
-                    _state = STATE_ARRAY_START;
-                }
-            } else {
-                _state = STATE_ROOT_VALUE;
-            }
+            // map / array / single value?
+            _state = _stateAfterFieldName(_currentField, wireType, STATE_ROOT_VALUE);
             _updateToken(JsonToken.FIELD_NAME);
             return name.equals(sstr.getValue());
         }
@@ -1117,19 +1413,8 @@ public class ProtobufParser extends ParserMinimalBase
                 _reportIncompatibleType(_currentField, wireType);
             }
 
-            // array?
-            if (_currentField.repeated) {
-                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
-                //   the actual wire type, not just the schema's declared `packed` flag:
-                //   proto3 permits either encoding for repeated scalar/enum fields.
-                if (_currentField.isPackedInWire(wireType)) {
-                    _state = STATE_ARRAY_START_PACKED;
-                } else {
-                    _state = STATE_ARRAY_START;
-                }
-            } else {
-                _state = STATE_NESTED_VALUE;
-            }
+            // map / array / single value?
+            _state = _stateAfterFieldName(_currentField, wireType, STATE_NESTED_VALUE);
             _updateToken(JsonToken.FIELD_NAME);
             return name.equals(sstr.getValue());
         }
@@ -1169,19 +1454,8 @@ public class ProtobufParser extends ParserMinimalBase
                 _reportIncompatibleType(_currentField, wireType);
             }
 
-            // array?
-            if (_currentField.repeated) {
-                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
-                //   the actual wire type, not just the schema's declared `packed` flag:
-                //   proto3 permits either encoding for repeated scalar/enum fields.
-                if (_currentField.isPackedInWire(wireType)) {
-                    _state = STATE_ARRAY_START_PACKED;
-                } else {
-                    _state = STATE_ARRAY_START;
-                }
-            } else {
-                _state = STATE_ROOT_VALUE;
-            }
+            // map / array / single value?
+            _state = _stateAfterFieldName(_currentField, wireType, STATE_ROOT_VALUE);
             _updateToken(JsonToken.FIELD_NAME);
             return name;
         }
@@ -1211,19 +1485,8 @@ public class ProtobufParser extends ParserMinimalBase
                 _reportIncompatibleType(_currentField, wireType);
             }
 
-            // array?
-            if (_currentField.repeated) {
-                // 03-Jul-2026, tatu: [dataformats-binary#134] Decide packed-vs-unpacked from
-                //   the actual wire type, not just the schema's declared `packed` flag:
-                //   proto3 permits either encoding for repeated scalar/enum fields.
-                if (_currentField.isPackedInWire(wireType)) {
-                    _state = STATE_ARRAY_START_PACKED;
-                } else {
-                    _state = STATE_ARRAY_START;
-                }
-            } else {
-                _state = STATE_NESTED_VALUE;
-            }
+            // map / array / single value?
+            _state = _stateAfterFieldName(_currentField, wireType, STATE_NESTED_VALUE);
             _updateToken(JsonToken.FIELD_NAME);
             return name;
         }
@@ -1326,6 +1589,25 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _finishToken();
         return _textBuffer.contentsAsString();
+    }
+
+    /**
+     * Determines the parser state to enter right after surfacing a {@code FIELD_NAME}
+     * for the given field: a {@code map} opens as an Object, a {@code repeated} field as
+     * an Array (packed or unpacked per wire type), everything else reads a single value.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private int _stateAfterFieldName(ProtobufField f, int wireType, int scalarValueState)
+    {
+        if (f.isMap) {
+            return STATE_MAP_START;
+        }
+        if (f.repeated) {
+            // [dataformats-binary#134] packed-vs-unpacked from the actual wire type
+            return f.isPackedInWire(wireType) ? STATE_ARRAY_START_PACKED : STATE_ARRAY_START;
+        }
+        return scalarValueState;
     }
 
     private final ProtobufField _findField(int id)

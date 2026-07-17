@@ -42,6 +42,22 @@ public final class ProtobufReadContext
      */
     protected int _endOffset;
 
+    /**
+     * Whether this (Object-typed) context represents a {@code map<K,V>} field:
+     * its entries are surfaced as key/value pairs of a JSON Object.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected boolean _inMap;
+
+    /**
+     * Whether this (Object-typed) context represents a single {@code map} entry
+     * sub-message (whose {@code key}/{@code value} are surfaced as one Object member).
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected boolean _mapEntry;
+
     /*
     /**********************************************************
     /* Simple instance reuse slots
@@ -77,6 +93,8 @@ public final class ProtobufReadContext
         _currentValue = null;
         _endOffset = endOffset;
         _field = null;
+        _inMap = false;
+        _mapEntry = false;
     }
 
     @Override
@@ -118,6 +136,50 @@ public final class ProtobufReadContext
         } else {
             ctxt.reset(_messageType, TYPE_ARRAY, endOffset);
         }
+        return ctxt;
+    }
+
+    /**
+     * Factory for the context of a {@code map<K,V>} field: an Object-typed context
+     * (carrying the synthetic entry message and the map field itself) whose entries
+     * are iterated much like an unpacked array, so it inherits the enclosing message's
+     * end offset.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public ProtobufReadContext createChildMapContext(ProtobufField mapField, int endOffset)
+    {
+        // Enclosing context remembers the map field, so it can be replayed once the
+        // map ends (mirrors createChildArrayContext)
+        _field = mapField;
+        final ProtobufMessage entryType = mapField.getMessageType();
+        ProtobufReadContext ctxt = _child;
+        if (ctxt == null) {
+            _child = ctxt = new ProtobufReadContext(this, entryType, TYPE_OBJECT, endOffset);
+        } else {
+            ctxt.reset(entryType, TYPE_OBJECT, endOffset);
+        }
+        ctxt._field = mapField;
+        ctxt._inMap = true;
+        return ctxt;
+    }
+
+    /**
+     * Factory for the context of a single {@code map} entry sub-message. Must be called
+     * on a map context (see {@link #createChildMapContext}); the entry inherits that
+     * context's (synthetic entry) message type.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public ProtobufReadContext createChildMapEntryContext(int endOffset)
+    {
+        ProtobufReadContext ctxt = _child;
+        if (ctxt == null) {
+            _child = ctxt = new ProtobufReadContext(this, _messageType, TYPE_OBJECT, endOffset);
+        } else {
+            ctxt.reset(_messageType, TYPE_OBJECT, endOffset);
+        }
+        ctxt._mapEntry = true;
         return ctxt;
     }
 
@@ -181,6 +243,16 @@ public final class ProtobufReadContext
     }
 
     public int getEndOffset() { return _endOffset; }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public boolean inMap() { return _inMap; }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public boolean isMapEntry() { return _mapEntry; }
 
     public ProtobufMessage getMessageType() { return _messageType; }
 

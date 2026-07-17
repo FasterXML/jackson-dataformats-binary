@@ -281,6 +281,12 @@ public class ProtobufGenerator extends GeneratorBase
         if (!_inObject) {
             _reportError("Can not write field name: current context not Object but "+_pbContext.typeDesc());
         }
+        // [dataformats-binary#712] Within a `map`, each "field name" is a map key
+        // that opens a new entry sub-message
+        if (_pbContext.inMap()) {
+            _startMapEntry(name);
+            return;
+        }
         ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
         // field means an array until START_OBJECT
@@ -312,8 +318,14 @@ public class ProtobufGenerator extends GeneratorBase
         if (!_inObject) {
             _reportError("Can not write field name: current context not Object but "+_pbContext.typeDesc());
         }
-        ProtobufField f = _currField;
         final String name = sstr.getValue();
+        // [dataformats-binary#712] Within a `map`, each "field name" is a map key
+        // that opens a new entry sub-message
+        if (_pbContext.inMap()) {
+            _startMapEntry(name);
+            return;
+        }
+        ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
         // field means an array until START_OBJECT
         // NOTE: not ideal -- depends on if it really is sibling field of an array,
@@ -417,6 +429,11 @@ public class ProtobufGenerator extends GeneratorBase
             _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
             return; // never gets here but code analyzers can't see that
         }
+        // [dataformats-binary#712] A `map` field is also "repeated" underneath, but
+        // must be written as an Object, not an Array
+        if (_currField.isMap) {
+            _reportError("Can not write START_ARRAY: field '"+_currField.name+"' is a `map`; write START_OBJECT instead");
+        }
         if (!_currField.isArray()) {
             _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");
         }
@@ -470,6 +487,17 @@ public class ProtobufGenerator extends GeneratorBase
             }
             _currMessage = _schema.getRootType();
             // note: no buffering on root
+        } else if (_currField.isMap) {
+            // [dataformats-binary#712] a `map<K,V>` field: the Object being opened is
+            // a sequence of entry sub-messages, not a single one. Push a dedicated map
+            // context; per-entry buffering happens in writeFieldName. No buffering of
+            // the map as a whole.
+            _pbContext = _pbContext.createChildMapContext(_currField);
+            streamWriteConstraints().validateNestingDepth(_pbContext.getNestingDepth());
+            _currMessage = _currField.getMessageType(); // the synthetic entry message
+            _inObject = true;
+            _writeTag = true;
+            return;
         } else {
             // but also, field value must be Message if so
             if (!_currField.isObject) {
@@ -503,6 +531,28 @@ public class ProtobufGenerator extends GeneratorBase
     {
         if (!_inObject) {
             _reportError("Current context not Object but "+_pbContext.typeDesc());
+        }
+        // [dataformats-binary#712] Closing a `map`: finalize the last open entry (if
+        // any), then pop -- but do NOT finish-buffer the map as a whole (each entry
+        // was already length-prefixed on its own).
+        if (_pbContext.inMap()) {
+            if (_pbContext.isEntryOpen()) {
+                _pbContext.setEntryOpen(false);
+                _finishBuffering();
+            }
+            _pbContext = _pbContext.getParent();
+            if (_pbContext.inRoot()) {
+                if (!_complete) {
+                    _complete();
+                }
+            } else {
+                _currMessage = _pbContext.getMessageType();
+            }
+            _currField = _pbContext.getField();
+            boolean inObj = _pbContext.inObject();
+            _inObject = inObj;
+            _writeTag = inObj || !_pbContext.inArray() || !_currField.packed;
+            return;
         }
         _pbContext = _pbContext.getParent();
         if (_pbContext.inRoot()) {
@@ -1741,6 +1791,100 @@ public class ProtobufGenerator extends GeneratorBase
      * Method called when buffering an entry that should be prefixed
      * with a type tag.
      */
+    /*
+    /**********************************************************
+    /* Internal map (`map<K,V>`) writes [dataformats-binary#712]
+    /**********************************************************
+     */
+
+    /**
+     * Opens a new {@code map} entry sub-message for the given key, finalizing the
+     * previous entry first if one is still open. Writes the entry's key (tag 1) and
+     * leaves {@link #_currField} pointing at the value field (tag 2) so the value
+     * write that follows targets it.
+     */
+    private void _startMapEntry(String name) throws IOException
+    {
+        final ProtobufField mapField = _pbContext.getField();
+        // Close the previous entry, if any (its length prefix is finalized here)
+        if (_pbContext.isEntryOpen()) {
+            _pbContext.setEntryOpen(false);
+            _finishBuffering();
+        }
+        // Each entry is a length-delimited sub-message, tagged with the map field's tag
+        _startBuffering(mapField.typedTag);
+        _pbContext.setEntryOpen(true);
+        _currMessage = mapField.getMessageType();
+        // Write key (tag 1) ...
+        _writeTag = true;
+        _writeMapKey(mapField.getKeyField(), name);
+        // ... then prime the value field (tag 2) for the value write that follows
+        _currField = mapField.getValueField();
+        _writeTag = true;
+    }
+
+    /**
+     * Writes a map key (always arriving as a {@code String}) using the key field's
+     * declared protobuf type. Key types are restricted (and validated during schema
+     * resolution) to integral / {@code bool} / {@code string}.
+     */
+    private void _writeMapKey(ProtobufField keyField, String name) throws IOException
+    {
+        _currField = keyField;
+        switch (keyField.type) {
+        case STRING:
+            writeString(name);
+            break;
+        case BOOLEAN:
+            writeBoolean(_parseBooleanMapKey(name, keyField));
+            break;
+        case VINT32_STD:
+        case VINT32_Z:
+        case FIXINT32:
+            writeNumber(_parseIntMapKey(name, keyField));
+            break;
+        case VINT64_STD:
+        case VINT64_Z:
+        case FIXINT64:
+            writeNumber(_parseLongMapKey(name, keyField));
+            break;
+        default:
+            // Should not happen: key types are validated during schema resolution
+            _reportError("Unsupported `map` key type "+keyField.type+" for field '"+keyField.name+"'");
+        }
+    }
+
+    private int _parseIntMapKey(String name, ProtobufField keyField) throws IOException {
+        try {
+            return Integer.parseInt(name);
+        } catch (NumberFormatException e) {
+            _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
+                    +"' (type "+keyField.type+")");
+            return 0; // never reached
+        }
+    }
+
+    private long _parseLongMapKey(String name, ProtobufField keyField) throws IOException {
+        try {
+            return Long.parseLong(name);
+        } catch (NumberFormatException e) {
+            _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
+                    +"' (type "+keyField.type+")");
+            return 0L; // never reached
+        }
+    }
+
+    private boolean _parseBooleanMapKey(String name, ProtobufField keyField) throws IOException {
+        if ("true".equals(name)) {
+            return true;
+        }
+        if ("false".equals(name)) {
+            return false;
+        }
+        _reportError("Invalid `map` key \""+name+"\" for boolean key field '"+keyField.name+"'");
+        return false; // never reached
+    }
+
     private final void _startBuffering(int typedTag) throws IOException
     {
         // need to ensure room for tag id, length (10 bytes); might as well ask for bit more

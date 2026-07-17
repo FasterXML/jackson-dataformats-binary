@@ -27,6 +27,24 @@ public class ProtobufWriteContext
      */
     protected Object _currentValue;
 
+    /**
+     * Whether this (Object-typed) context represents a {@code map<K,V>} field
+     * being written: entries are emitted as repeated length-delimited sub-messages
+     * rather than as a single sub-message.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected boolean _inMap;
+
+    /**
+     * For a map context ({@link #_inMap}): whether a map entry sub-message is
+     * currently being buffered and still needs its length prefix finalized (which
+     * happens when the next key, or the end of the map, is written).
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected boolean _entryOpen;
+
     /*
     /**********************************************************
     /* Simple instance reuse slots; speed up things
@@ -58,6 +76,8 @@ public class ProtobufWriteContext
         _message = msg;
         _field = f;
         _currentValue = null;
+        _inMap = false;
+        _entryOpen = false;
     }
 
     // // // Factory methods
@@ -82,6 +102,29 @@ public class ProtobufWriteContext
             return ctxt;
         }
         ctxt.reset(TYPE_ARRAY, _message, _field);
+        return ctxt;
+    }
+
+    /**
+     * Factory method for the context of a {@code map<K,V>} field: an Object-typed
+     * context that carries the map field itself (so its entry key/value fields stay
+     * reachable) and is flagged as a map.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public ProtobufWriteContext createChildMapContext(ProtobufField mapField) {
+        // Carry the synthetic entry message so getMessageType() is correct while
+        // entries are written (e.g. after a message-valued entry closes).
+        final ProtobufMessage entryType = mapField.getMessageType();
+        ProtobufWriteContext ctxt = _child;
+        if (ctxt == null) {
+            _child = ctxt = new ProtobufWriteContext(TYPE_OBJECT, this, entryType);
+        } else {
+            ctxt.reset(TYPE_OBJECT, entryType, null);
+        }
+        ctxt._field = mapField;
+        ctxt._inMap = true;
+        ctxt._entryOpen = false;
         return ctxt;
     }
 
@@ -132,6 +175,23 @@ public class ProtobufWriteContext
     }
 
     public boolean notArray() { return _type != TYPE_ARRAY; }
+
+    /**
+     * @return Whether this context represents a {@code map<K,V>} field being written.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public boolean inMap() { return _inMap; }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public boolean isEntryOpen() { return _entryOpen; }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public void setEntryOpen(boolean state) { _entryOpen = state; }
 
     public StringBuilder appendDesc(StringBuilder sb) {
         if (_parent != null) {
