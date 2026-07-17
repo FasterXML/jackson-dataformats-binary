@@ -451,3 +451,9 @@ Shanchao Li (@tonghuaroot)
 * Reported #693: (avro) Incomplete number length validation in Avro
   decoder (for `BigDecimal`)
  (2.21.4)
+
+Benjamin Muschko (@bmuschko)
+
+* Reported #720: (smile) `SmileGenerator` int overflow in `maxLen` for very long
+  Strings causes `ArrayIndexOutOfBoundsException`
+ (2.21.6)
