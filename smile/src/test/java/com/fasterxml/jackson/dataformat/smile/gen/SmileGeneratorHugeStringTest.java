@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.smile.gen;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
@@ -32,7 +31,7 @@ public class SmileGeneratorHugeStringTest extends BaseTestForSmile
     }
 
     @Test
-    public void testHugeAsciiStringDoesNotOverflowBuffer() throws IOException
+    public void testHugeAsciiStringDoesNotOverflowBuffer() throws Exception
     {
         assumeTrue(Runtime.getRuntime().maxMemory() >= REQUIRED_HEAP,
                 "Requires large heap (>= 3 GB) to allocate a ~700M char String");
