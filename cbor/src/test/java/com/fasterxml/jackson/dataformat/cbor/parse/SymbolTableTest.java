@@ -6,6 +6,7 @@ import java.util.Random;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 
@@ -22,6 +23,13 @@ public class SymbolTableTest extends CBORTestBase
 
     private final CBORMapper NO_CAN_MAPPER = CBORMapper.builder(CBORFactory.builder()
             .disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES)
+            // 24-Jul-2026, tatu: [dataformats-binary#725] Longest name used by
+            //    `testSimpleNoCanonicalize()` exceeds the default 50k byte
+            //    `maxNameLength` (which is now actually enforced), so need to
+            //    allow longer ones
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxNameLength(100_000)
+                    .build())
             .build())
             .build();
 
