@@ -1416,6 +1416,12 @@ public class CBORParser extends ParserMinimalBase
             }
             byte[] nameBytes = str.asQuotedUTF8();
             final int byteLen = nameBytes.length;
+            // NOTE: [dataformats-binary#725] `maxNameLength` deliberately NOT
+            //   enforced by the fast path below: length matched is that of the
+            //   name caller asked for, so it is not attacker-controlled (and is
+            //   at most 255 bytes, at that). Names that do not match, or that
+            //   are not fully buffered, are decoded by `_decodePropertyName()`,
+            //   which does enforce the limit
             // fine; require room for up to 2-byte marker, data itself
             int ptr = _inputPtr;
             if ((ptr + byteLen + 1) < _inputEnd) {
@@ -1530,6 +1536,9 @@ public class CBORParser extends ParserMinimalBase
             String name;
             boolean chunked = false;
             if (lenMarker <= 23) {
+                // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
+                //   these shortest (at most 23 bytes) names; see
+                //   `_decodePropertyName()` for details on approximate enforcement
                 if (lenMarker == 0) {
                     name = "";
                 } else {
@@ -1554,6 +1563,9 @@ public class CBORParser extends ParserMinimalBase
                     chunked = true;
                     name = _decodeChunkedName();
                 } else {
+                    // 24-Jul-2026, tatu: [dataformats-binary#725] Validate before
+                    //    decoding (or even reading) content
+                    _streamReadConstraints.validateNameLength(actualLen);
                     name = _decodeLongerName(actualLen);
                 }
             }
@@ -2292,7 +2304,7 @@ public class CBORParser extends ParserMinimalBase
 
         if (len <= 0) {
             if (len < 0) {
-                _finishChunkedText();
+                _finishChunkedText(false);
             } else {
                 _textBuffer.resetWithEmpty();
             }
@@ -2335,7 +2347,7 @@ public class CBORParser extends ParserMinimalBase
                 _textBuffer.resetWithEmpty();
                 return "";
             }
-            _finishChunkedText();
+            _finishChunkedText(false);
             return _textBuffer.contentsAsString();
         }
 
@@ -2569,13 +2581,22 @@ public class CBORParser extends ParserMinimalBase
         return len;
     }
 
-    private final void _finishChunkedText() throws IOException
+    /**
+     * @param isName Whether content being decoded is that of an Object property
+     *   name (and not a String value): if so, {@code maxNameLength} constraint
+     *   is enforced, incrementally, as chunks are encountered
+     */
+    private final void _finishChunkedText(boolean isName) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
         final int[] codes = UTF8_UNIT_CODES;
         int outEnd = outBuf.length;
         final byte[] input = _inputBuffer;
+        // 24-Jul-2026, tatu: [dataformats-binary#725] Length of a chunked name
+        //    is only known chunk by chunk; use `long` to avoid overflow with
+        //    bogus chunk lengths
+        long nameBytes = 0L;
 
         _chunkEnd = _inputPtr;
         _chunkLeft = 0;
@@ -2592,6 +2613,10 @@ public class CBORParser extends ParserMinimalBase
                             continue;
                         }
                         break;
+                    }
+                    if (isName) {
+                        nameBytes += len;
+                        _streamReadConstraints.validateNameLength(_clampToInt(nameBytes));
                     }
                     int end = _inputPtr + len;
                     if (end <= _inputEnd) { // all within buffer
@@ -2865,10 +2890,21 @@ public class CBORParser extends ParserMinimalBase
     }
 
     // @since 2.12
-    protected byte[] _finishChunkedBytes() throws IOException
+    protected byte[] _finishChunkedBytes() throws IOException {
+        return _finishChunkedBytes(false);
+    }
+
+    /**
+     * @param isName Whether content being decoded is that of an Object property
+     *   name (and not a binary value): if so, {@code maxNameLength} constraint
+     *   is enforced, incrementally, as chunks are encountered
+     */
+    private byte[] _finishChunkedBytes(boolean isName) throws IOException
     {
         // or, if not, chunked...
         ByteArrayBuilder bb = _getByteArrayBuilder();
+        // 24-Jul-2026, tatu: [dataformats-binary#725] See `_finishChunkedText()`
+        long nameBytes = 0L;
         while (true) {
             if (_inputPtr >= _inputEnd) {
                 loadMoreGuaranteed();
@@ -2888,6 +2924,10 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             if (len < 0) {
                 throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type %d)",
                             CBORConstants.MAJOR_TYPE_BYTES);
+            }
+            if (isName) {
+                nameBytes += len;
+                _streamReadConstraints.validateNameLength(_clampToInt(nameBytes));
             }
             final int chunkLen = len;
             while (len > 0) {
@@ -2978,6 +3018,10 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         boolean chunked = false;
         String name;
         if (lenMarker <= 23) {
+            // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
+            //   these shortest (at most 23 bytes) names: enforcement is
+            //   approximate, effective minimum limit being 23 bytes here (and
+            //   255 bytes for the fast path of `nextFieldName(SerializableString)`)
             if (lenMarker == 0) {
                 name = "";
             } else {
@@ -3002,6 +3046,9 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 chunked = true;
                 name = _decodeChunkedName();
             } else {
+                // 24-Jul-2026, tatu: [dataformats-binary#725] Validate before
+                //    decoding (or even reading) content
+                _streamReadConstraints.validateNameLength(actualLen);
                 name = _decodeLongerName(actualLen);
             }
         }
@@ -3127,7 +3174,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
 
     private final String _decodeChunkedName() throws IOException
     {
-        _finishChunkedText();
+        _finishChunkedText(true);
         return _textBuffer.contentsAsString();
     }
 
@@ -3147,7 +3194,15 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             // 08-Sep-2014, tatu: As per [Issue#5], there are codecs
             //   (f.ex. Perl module "CBOR::XS") that use Binary data...
             final int blen = _decodeExplicitLength(ch & 0x1F);
-            byte[] b = _finishBytes(blen);
+            // 24-Jul-2026, tatu: [dataformats-binary#725] Binary names bound by
+            //    `maxNameLength` too: for chunked case incrementally
+            final byte[] b;
+            if (blen < 0) {
+                b = _finishChunkedBytes(true);
+            } else {
+                _streamReadConstraints.validateNameLength(blen);
+                b = _finishBytes(blen);
+            }
             // TODO: Optimize, if this becomes commonly used & bottleneck; we have
             //  more optimized UTF-8 codecs available.
             name = new String(b, UTF8);
@@ -3158,6 +3213,11 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             throw _constructReadException("Unsupported major type (%d) for CBOR Objects, not (yet?) supported, only Strings",
                     type);
         }
+        // 24-Jul-2026, tatu: [dataformats-binary#725] Catch-all check needed for
+        //    Integer-valued names: while most are short, "stringref" (tag 25) ones
+        //    resolve to a previously decoded String of any length. Length in
+        //    characters, not bytes, but close enough for these rare cases
+        _streamReadConstraints.validateNameLength(name.length());
         _streamReadContext.setCurrentName(name);
     }
 
@@ -3243,6 +3303,9 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
      */
     private final String _findDecodedLong(int len, int q1, int q2) throws IOException
     {
+        // NOTE: unlike `ParserBase._growNameDecodeBuffer()` no `maxNameLength`
+        // validation here: callers have already validated `len` (and it cannot
+        // exceed length of the input buffer, either)
         // first, need enough buffer to store bytes as ints:
         {
             int bufLen = (len + 3) >> 2;
@@ -3296,6 +3359,13 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
 
     private static int[] _growArrayTo(int[] arr, int minSize) {
         return Arrays.copyOf(arr, minSize+4);
+    }
+
+    // Helper for reporting accumulated (chunked) name lengths that may, for
+    // bogus content, exceed `Integer.MAX_VALUE`
+    // @since 2.18.10
+    private final static int _clampToInt(long len) {
+        return (len > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) len;
     }
 
     // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
