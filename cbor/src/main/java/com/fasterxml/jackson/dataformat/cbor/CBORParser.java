@@ -2470,6 +2470,14 @@ public class CBORParser extends ParserMinimalBase
 
     private final String _finishLongText(int len) throws IOException
     {
+        // 24-Jul-2026, tatu: [dataformats-binary#733] Need to check this before
+        //    decoding: `len` is decremented by the loop below (down to -1)
+        StringRefList stringRefs = null;
+        if (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
+            stringRefs = _stringRefs.peek();
+        }
+
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
         final int[] codes = UTF8_UNIT_CODES;
@@ -2527,9 +2535,8 @@ public class CBORParser extends ParserMinimalBase
             outBuf[outPtr++] = (char) c;
         }
         String str = _textBuffer.setCurrentAndReturn(outPtr);
-        if (!_stringRefs.empty() &&
-                shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
-            _stringRefs.peek().stringRefs.add(str);
+        if (stringRefs != null) {
+            stringRefs.stringRefs.add(str);
             _sharedString = str;
         }
         return str;
