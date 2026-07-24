@@ -30,13 +30,23 @@ public class LongNameSmileReadTest extends AsyncTestBase
     // length-bounded by the format itself; anything longer uses the "long
     // name" encoding, which was unbounded before the fix.
 
+    // Two separate checks guard the long-name path, and the sizes below are
+    // chosen to exercise both:
+    //
+    // * "just over" fits within the already-allocated decode buffer, so it is
+    //   only caught by the exact check made once the whole name is known;
+    // * the larger ones fill the buffer and are caught incrementally, while
+    //   it is being grown, before the whole name has been buffered.
+    private final static int LEN_JUST_OVER = MAX_NAME_LEN + 20;
+    private final static int LEN_OVER = MAX_NAME_LEN + 100;
+    private final static int LEN_WAY_OVER = 400_000;
+
     public void testLongNameBlocking() throws Exception
     {
         for (boolean stream : new boolean[] { true, false }) {
-            _verifyFails(_nameDoc(MAX_NAME_LEN + 100), stream);
-            // and one much longer than the limit, to check we fail before
-            // buffering it all
-            _verifyFails(_nameDoc(400_000), stream);
+            for (int len : new int[] { LEN_JUST_OVER, LEN_OVER, LEN_WAY_OVER }) {
+                _verifyFails(_nameDoc(len), stream);
+            }
         }
     }
 
@@ -45,8 +55,9 @@ public class LongNameSmileReadTest extends AsyncTestBase
         // vary feed sizes to exercise both the single-chunk and the
         // split-across-feeds paths
         for (int bytesPerFeed : new int[] { 1, 7, 1000, 100_000 }) {
-            _verifyFailsAsync(_nameDoc(MAX_NAME_LEN + 100), bytesPerFeed);
-            _verifyFailsAsync(_nameDoc(400_000), bytesPerFeed);
+            for (int len : new int[] { LEN_JUST_OVER, LEN_OVER, LEN_WAY_OVER }) {
+                _verifyFailsAsync(_nameDoc(len), bytesPerFeed);
+            }
         }
     }
 
@@ -69,58 +80,86 @@ public class LongNameSmileReadTest extends AsyncTestBase
         }
     }
 
-    // Symbol table caches decoded names; a hit must not bypass the check.
-    // First parse (which populates the table) has a lax limit, second one
-    // does not -- and both use the same underlying symbol table root.
-    public void testLongNameNotBypassedViaSymbolTable() throws Exception
+    // The checks made while the decode buffer is grown are what keep an
+    // over-long name from being buffered -- and decoded -- in full before it
+    // gets rejected. Whether parsing fails does not show this, since the final
+    // check would catch the name either way; what shows it is the length the
+    // failure reports, which is how much had been read when it gave up. For a
+    // name this far over the limit that has to be a small fraction of the whole.
+    public void testLongNameRejectedBeforeBufferedInFull() throws Exception
     {
-        final byte[] doc = _nameDoc(400_000);
+        final byte[] doc = _nameDoc(LEN_WAY_OVER);
 
-        SmileFactory lax = SmileFactory.builder()
-                .streamReadConstraints(StreamReadConstraints.builder()
-                        .maxNameLength(1_000_000)
-                        .maxStringLength(1_000_000)
-                        .build())
-                .build();
-        try (JsonParser p = lax.createParser(doc)) {
-            while (p.nextToken() != null) { }
+        for (boolean stream : new boolean[] { true, false }) {
+            int reported = _verifyFails(doc, stream);
+            assertTrue("Should have given up well before reading all "+LEN_WAY_OVER
+                    +" bytes of name, but reported length was "+reported,
+                    reported < (LEN_WAY_OVER / 4));
         }
-        // now the same name is in `lax`'s symbol table; a constrained factory
-        // must still reject it (and so must `lax` itself, were it constrained)
-        _verifyFails(doc, true);
-        _verifyFails(doc, false);
-        _verifyFailsAsync(doc, 100_000);
+        for (int bytesPerFeed : new int[] { 1, 100_000 }) {
+            int reported = _verifyFailsAsync(doc, bytesPerFeed);
+            assertTrue("Should have given up well before reading all "+LEN_WAY_OVER
+                    +" bytes of name, but reported length was "+reported,
+                    reported < (LEN_WAY_OVER / 4));
+        }
     }
 
-    private void _verifyFails(byte[] doc, boolean stream) throws Exception
+    // The symbol table is per-factory and shared by all parsers it creates, so
+    // a name decoded by one parser can be served to the next straight from the
+    // table, without being decoded again. The length check therefore has to
+    // happen before the lookup rather than during decoding -- otherwise only
+    // the very first occurrence of a name would ever be checked.
+    // Both directions matter: repeated legal names must keep working, and
+    // repeated over-long ones must be rejected every time.
+    public void testRepeatedNamesViaSymbolTable() throws Exception
+    {
+        // both sizes fit the already-allocated buffer, so the lookup, and not
+        // the incremental check, is what these have to get past
+        final byte[] okDoc = _nameDoc(MAX_NAME_LEN);
+        final byte[] badDoc = _nameDoc(LEN_JUST_OVER);
+
+        // repeated across parsers of the same factory: 2nd one is a cache hit
+        for (int i = 0; i < 2; ++i) {
+            _verifyPasses(okDoc, _name(MAX_NAME_LEN), true);
+            _verifyFails(badDoc, true);
+        }
+    }
+
+    // @return Name length the failure reported
+    private int _verifyFails(byte[] doc, boolean stream) throws Exception
     {
         try (JsonParser p = stream
                 ? F_CONSTRAINED.createParser(new ByteArrayInputStream(doc))
                 : F_CONSTRAINED.createParser(doc, 0, doc.length)) {
             while (p.nextToken() != null) { }
             fail("expected StreamConstraintsException");
+            return -1;
         } catch (StreamConstraintsException e) {
-            _verifyNameLengthException(e);
+            return _verifyNameLengthException(e);
         }
     }
 
-    private void _verifyFailsAsync(byte[] doc, int bytesPerFeed) throws Exception
+    // @return Name length the failure reported
+    private int _verifyFailsAsync(byte[] doc, int bytesPerFeed) throws Exception
     {
         AsyncReaderWrapper p = asyncForBytes(F_CONSTRAINED, bytesPerFeed, doc, 0);
         try {
             while (p.nextToken() != null) { }
             fail("expected StreamConstraintsException (bytesPerFeed: "+bytesPerFeed+")");
+            return -1;
         } catch (StreamConstraintsException e) {
-            _verifyNameLengthException(e);
+            return _verifyNameLengthException(e);
         }
     }
 
-    private void _verifyNameLengthException(StreamConstraintsException e)
+    private int _verifyNameLengthException(StreamConstraintsException e)
     {
         final String msg = e.getMessage();
         assertTrue("Unexpected message: "+msg, msg.contains("Name length ("));
         assertTrue("Unexpected message: "+msg,
                 msg.contains("exceeds the maximum allowed ("+MAX_NAME_LEN));
+        int start = msg.indexOf('(') + 1;
+        return Integer.parseInt(msg.substring(start, msg.indexOf(')', start)));
     }
 
     private void _verifyPasses(byte[] doc, String expName, boolean stream) throws Exception
