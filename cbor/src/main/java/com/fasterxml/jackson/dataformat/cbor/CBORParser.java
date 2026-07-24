@@ -1416,6 +1416,12 @@ public class CBORParser extends ParserMinimalBase
             }
             byte[] nameBytes = str.asQuotedUTF8();
             final int byteLen = nameBytes.length;
+            // NOTE: [dataformats-binary#725] `maxNameLength` deliberately NOT
+            //   enforced by the fast path below: length matched is that of the
+            //   name caller asked for, so it is not attacker-controlled (and is
+            //   at most 255 bytes, at that). Names that do not match, or that
+            //   are not fully buffered, are decoded by `_decodePropertyName()`,
+            //   which does enforce the limit
             // fine; require room for up to 2-byte marker, data itself
             int ptr = _inputPtr;
             if ((ptr + byteLen + 1) < _inputEnd) {
@@ -1532,7 +1538,7 @@ public class CBORParser extends ParserMinimalBase
             if (lenMarker <= 23) {
                 // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
                 //   these shortest (at most 23 bytes) names; see
-                //   `_decodePropertyName()` for details
+                //   `_decodePropertyName()` for details on approximate enforcement
                 if (lenMarker == 0) {
                     name = "";
                 } else {
@@ -2900,7 +2906,8 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         if (lenMarker <= 23) {
             // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
             //   these shortest (at most 23 bytes) names: enforcement is
-            //   approximate, effective minimum limit being 23 bytes
+            //   approximate, effective minimum limit being 23 bytes here (and
+            //   255 bytes for the fast path of `nextFieldName(SerializableString)`)
             if (lenMarker == 0) {
                 name = "";
             } else {
