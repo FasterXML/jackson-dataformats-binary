@@ -19,8 +19,14 @@ public class SymbolTableTest extends BaseTestForSmile
         public int x, y;
     }
 
+    // Note: names used below deliberately exceed the default `maxNameLength`
+    // of 50,000 bytes (see [dataformats-binary#726]), since the point is to
+    // exercise buffer growth for very long names; so raise the limit here.
     private final SmileMapper NO_CAN_MAPPER = SmileMapper.builder(SmileFactory.builder()
             .disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES)
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxNameLength(100_000)
+                    .build())
             .build())
             .build();
 

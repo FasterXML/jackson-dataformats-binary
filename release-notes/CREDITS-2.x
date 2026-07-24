@@ -359,3 +359,7 @@ Knut Wannheden (@knutwannheden)
 Shanchao Li (@tonghuaroot)
  * Reported #696: (ion) Incomplete number length validation in Ion decoder
   (2.18.8)
+
+@tinyb0y
+ * Reported #726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+  (2.18.10)

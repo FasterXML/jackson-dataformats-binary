@@ -1798,7 +1798,7 @@ versionBits));
             }
             q = (q << 8) | (b & 0xFF);
             if (quads >= _quadBuffer.length) {
-                _quadBuffer = _growArrayTo(_quadBuffer, _quadBuffer.length + 256); // grow by 1k
+                _quadBuffer = _growNameDecodeBuffer(_quadBuffer, 256); // grow by 1k
             }
             _quadBuffer[quads++] = q;
         }
@@ -1806,12 +1806,16 @@ versionBits));
         int byteLen = (quads << 2);
         if (bytes > 0) {
             if (quads >= _quadBuffer.length) {
-                _quadBuffer = _growArrayTo(_quadBuffer, _quadBuffer.length + 256);
+                _quadBuffer = _growNameDecodeBuffer(_quadBuffer, 256);
             }
             q = _padLastQuad(q, bytes);
             _quadBuffer[quads++] = q;
             byteLen += bytes;
         }
+        // [dataformats-binary#726]: verify name length before looking it up or
+        //   decoding it: must be checked before symbol table lookup since a hit
+        //   would otherwise bypass validation for all but the first occurrence
+        _streamReadConstraints.validateNameLength(byteLen);
         // Know this name already?
         String name = _symbolsCanonical ?
             _symbols.findName(_quadBuffer, quads) : null;
@@ -1954,6 +1958,20 @@ versionBits));
             return new int[size];
         }
         return Arrays.copyOf(arr, size);
+    }
+
+    /**
+     * Helper method for expanding "quad" buffer used for decoding long Object
+     * property names: also verifies that name length does not exceed maximum
+     * allowed, so that an unbounded name cannot be buffered in full before
+     * being checked ([dataformats-binary#726]).
+     *
+     * @since 2.18.10
+     */
+    private int[] _growNameDecodeBuffer(int[] arr, int more) throws IOException {
+        // the following check will fail if the array is already bigger than is allowed for names
+        _streamReadConstraints.validateNameLength(arr.length << 2);
+        return _growArrayTo(arr, arr.length + more);
     }
 
     // Helper methods needed to fix [dataformats-binary#312], masking of 0x00 character
