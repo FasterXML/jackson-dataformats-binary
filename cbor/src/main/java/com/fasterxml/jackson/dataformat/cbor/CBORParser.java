@@ -1459,7 +1459,9 @@ public class CBORParser extends ParserMinimalBase
             //    expected-length Object (`expectMoreValues()` above) and
             //    `nextToken()` would consume another one. So decode name here.
             final JsonToken t = _decodePropertyName();
-            if (t == null) { // end-of-input; only for root context, else fails
+            // Note: should not get `null` (for end-of-input) since we are within
+            // Object and `_handleEOF()` fails for that case; but just in case:
+            if (t == null) {
                 return false;
             }
             return (_updateToken(t) == JsonToken.FIELD_NAME)
