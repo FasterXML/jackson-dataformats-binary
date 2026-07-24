@@ -16,6 +16,7 @@ Active maintainers:
 
 2.18.10 (not yet released)
 
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
 #726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
  (reported by @tinyb0y)
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
