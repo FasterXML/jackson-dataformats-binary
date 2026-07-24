@@ -655,7 +655,12 @@ public class NonBlockingByteArrayParser
                 _inputCopyLen = outPtr;
                 return _updateTokenToNA();
             }
-            // otherwise increase copy buffer length
+            // otherwise increase copy buffer length; but before that, verify
+            // name length does not exceed maximum allowed, so that an unbounded
+            // name cannot be buffered in full first ([dataformats-binary#726]).
+            // Note that buffer is exactly full at this point, so `outPtr` is
+            // the length of the name decoded so far.
+            _streamReadConstraints.validateNameLength(outPtr);
             int oldLen = copyBuffer.length;
             int incr = Math.min(64000, oldLen >> 1);
             _inputCopy = copyBuffer = Arrays.copyOf(_inputCopy, oldLen + incr);
@@ -664,6 +669,9 @@ public class NonBlockingByteArrayParser
 
         // But if we get here, we got it all, only need to create quads etc
         _inputPtr = srcPtr;
+        // [dataformats-binary#726]: check before symbol table lookup below, since
+        // a hit would otherwise bypass validation for all but the first occurrence
+        _streamReadConstraints.validateNameLength(outPtr);
         int[] quads = _quadBuffer;
         int qlen = (outPtr + 3) >> 2; // last quad may be partial
 
