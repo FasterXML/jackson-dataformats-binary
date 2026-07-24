@@ -2571,6 +2571,8 @@ public class CBORParser extends ParserMinimalBase
 
     private final String _finishLongText(int len) throws IOException
     {
+        // 24-Jul-2026, tatu: [dataformats-binary#733] Need to check this before
+        //    decoding: `len` is decremented by the loop below (down to -1)
         StringRefList stringRefs = null;
         if (!_stringRefs.empty() &&
                 shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
