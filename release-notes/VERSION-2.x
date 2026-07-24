@@ -28,6 +28,8 @@ No changes since 2.22
   ignoring actual type
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
 
 2.22.1 (07-Jul-2026)
 
@@ -53,6 +55,8 @@ No changes since 2.21
  (reported by Benjamin M)
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
 
 2.21.5 (06-Jul-2026)
 
@@ -134,15 +138,6 @@ No changes since 2.21.1.
 - Fixes wrt [core#1438] (ParserBase.close() not resetting current token)
 - Generate SBOMs [JSTEP-14]
 
-2.19.5 (not yet released)
-
-#645: (avro) Remove use of Avro `Schema.Parser().setValidate()` to allow
-  use of Avro core 1.12.1 (2.x)
-#649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
-  when creating parser with fixed buffer
-#651: (smile) Ensure Smile backend supports `StreamReadConstraints.maxTokenCount`
-#652: (cbor) Ensure CBOR backend supports `StreamReadConstraints.maxTokenCount`
-
 2.19.4 (29-Oct-2025)
 2.19.3 (29-Oct-2025)
 
@@ -196,6 +191,8 @@ No changes since 2.19.1
 
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
 
 2.18.9 (07-Jul-2026)
 
