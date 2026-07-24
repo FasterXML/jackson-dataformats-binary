@@ -1454,6 +1454,16 @@ public class CBORParser extends ParserMinimalBase
                     }
                 }
             }
+            // 24-Jul-2026, tatu: [dataformats-binary#728] Cannot fall back to
+            //    `nextToken()` here: we have already consumed one entry of
+            //    expected-length Object (`expectMoreValues()` above) and
+            //    `nextToken()` would consume another one. So decode name here.
+            final JsonToken t = _decodePropertyName();
+            if (t == null) { // end-of-input; only for root context, else fails
+                return false;
+            }
+            return (_updateToken(t) == JsonToken.FIELD_NAME)
+                    && str.getValue().equals(getCurrentName());
         }
         // otherwise just fall back to default handling; should occur rarely
         return (nextToken() == JsonToken.FIELD_NAME) && str.getValue().equals(getCurrentName());
