@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
@@ -26,8 +27,14 @@ public class SymbolTableTest extends BaseTestForSmile
         public int foobar;
     }
 
+    // Note: names used below deliberately exceed the default `maxNameLength`
+    // of 50,000 bytes (see [dataformats-binary#726]), since the point is to
+    // exercise buffer growth for very long names; so raise the limit here.
     private final SmileMapper NO_CAN_MAPPER = SmileMapper.builder(SmileFactory.builder()
             .disable(JsonFactory.Feature.CANONICALIZE_PROPERTY_NAMES)
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxNameLength(100_000)
+                    .build())
             .build())
             .build();
 
