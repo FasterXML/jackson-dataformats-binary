@@ -51,10 +51,22 @@ public abstract class CBORTestBase
      * @since 2.18.10
      */
     protected CBORParser cborParser(byte[] input, boolean throttled) throws IOException {
+        return cborParser(cborFactory(), input, throttled);
+    }
+
+    /**
+     * Variant that takes factory to use: needed when multiple parsers are to
+     * share symbol table (as they do when created by same factory).
+     *
+     * @since 2.18.10
+     */
+    protected CBORParser cborParser(CBORFactory f, byte[] input, boolean throttled)
+        throws IOException
+    {
         if (throttled) {
-            return cborParser(new ThrottledInputStream(input, 1));
+            return cborParser(f, new ThrottledInputStream(input, 1));
         }
-        return cborParser(input);
+        return cborParser(f, input);
     }
 
     protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {

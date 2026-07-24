@@ -167,7 +167,9 @@ public class NextFieldName728Test extends CBORTestBase
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bytes.write(0xA2); // Object, 2 entries
-        bytes.write(0xC0); // tag 0 (date/time String)
+        // Tag 55799 ("Self-Described CBOR"): semantics do not constrain the
+        // tagged value, unlike f.ex tag 0 (date/time String)
+        bytes.write(0xD9); bytes.write(0xD9); bytes.write(0xF7);
         bytes.write(0x62); bytes.write('a'); bytes.write('b');
         bytes.write(0x01);
         bytes.write(0x61); bytes.write('b');
