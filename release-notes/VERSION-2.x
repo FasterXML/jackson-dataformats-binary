@@ -26,6 +26,7 @@ No changes since 2.22
   buffer reload
 #715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
   ignoring actual type
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
 #728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
