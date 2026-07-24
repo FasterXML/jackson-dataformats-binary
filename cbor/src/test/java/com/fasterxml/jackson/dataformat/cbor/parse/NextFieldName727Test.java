@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -11,14 +10,11 @@ import com.fasterxml.jackson.core.io.SerializedString;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
-import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 // [dataformats-binary#727]: `nextFieldName(SerializableString)` used to confuse
 // 5-bit length marker 23 (length as-is) with 24 ("1-byte length suffix follows")
 public class NextFieldName727Test extends CBORTestBase
 {
-    private final CBORFactory F = new CBORFactory();
-
     // Name of exactly 23 bytes, starting with control character U+0017 (0x17):
     // the mis-decoded length marker used to consume that first name byte as
     // the length, which made a 23-character name of a different value match
@@ -39,8 +35,8 @@ public class NextFieldName727Test extends CBORTestBase
         final String actualName = "\u0017" + repeat('a', 22);
         final SerializableString differentName = new SerializedString(repeat('a', 23));
 
-        for (boolean stream : new boolean[] { false, true }) {
-            try (JsonParser p = _parser(DOC, stream)) {
+        for (boolean throttled : new boolean[] { false, true }) {
+            try (JsonParser p = cborParser(DOC, throttled)) {
                 assertToken(JsonToken.START_OBJECT, p.nextToken());
                 assertFalse(p.nextFieldName(differentName));
                 assertToken(JsonToken.FIELD_NAME, p.currentToken());
@@ -52,7 +48,7 @@ public class NextFieldName727Test extends CBORTestBase
             }
 
             // ... and the actual name of course still matches
-            try (JsonParser p = _parser(DOC, stream)) {
+            try (JsonParser p = cborParser(DOC, throttled)) {
                 assertToken(JsonToken.START_OBJECT, p.nextToken());
                 assertTrue(p.nextFieldName(new SerializedString(actualName)));
                 assertToken(JsonToken.FIELD_NAME, p.currentToken());
@@ -68,31 +64,35 @@ public class NextFieldName727Test extends CBORTestBase
     // fast path may see (inline length, 1-byte suffix, 2-byte suffix)
     public void testNameLengths() throws Exception
     {
+        // NOTE: same factory for all parsers on purpose, so that later parsers
+        // will find names decoded by earlier ones from (shared) symbol table
+        final CBORFactory f = cborFactory();
+
         for (int len : new int[] { 1, 2, 3, 22, 23, 24, 25, 100, 255, 256, 1000 }) {
             final String name = repeat('a', len - 1) + 'b';
             final String differentName = repeat('a', len - 1) + 'c';
 
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            try (JsonGenerator g = F.createGenerator(bytes)) {
+            try (JsonGenerator g = cborGenerator(f, bytes)) {
                 g.writeStartObject();
                 g.writeStringField(name, "v");
                 g.writeEndObject();
             }
             final byte[] doc = bytes.toByteArray();
 
-            for (boolean stream : new boolean[] { false, true }) {
-                try (JsonParser p = _parser(doc, stream)) {
+            for (boolean throttled : new boolean[] { false, true }) {
+                try (JsonParser p = cborParser(f, doc, throttled)) {
                     assertToken(JsonToken.START_OBJECT, p.nextToken());
-                    assertTrue("Should match name of length "+len+" (stream? "+stream+")",
+                    assertTrue("Should match name of length "+len+" (throttled? "+throttled+")",
                             p.nextFieldName(new SerializedString(name)));
                     assertEquals(name, p.currentName());
                     assertEquals("v", p.nextTextValue());
                     assertToken(JsonToken.END_OBJECT, p.nextToken());
                     assertNull(p.nextToken());
                 }
-                try (JsonParser p = _parser(doc, stream)) {
+                try (JsonParser p = cborParser(f, doc, throttled)) {
                     assertToken(JsonToken.START_OBJECT, p.nextToken());
-                    assertFalse("Should not match different name of length "+len+" (stream? "+stream+")",
+                    assertFalse("Should not match different name of length "+len+" (throttled? "+throttled+")",
                             p.nextFieldName(new SerializedString(differentName)));
                     assertToken(JsonToken.FIELD_NAME, p.currentToken());
                     assertEquals(name, p.currentName());
@@ -120,7 +120,7 @@ public class NextFieldName727Test extends CBORTestBase
         bytes.write(0xFF); // end indefinite-length Object
         final byte[] DOC = bytes.toByteArray();
 
-        try (JsonParser p = _parser(DOC, false)) {
+        try (JsonParser p = cborParser(DOC)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertTrue(p.nextFieldName(new SerializedString(name)));
             assertEquals(name, p.currentName());
@@ -129,20 +129,12 @@ public class NextFieldName727Test extends CBORTestBase
             assertNull(p.nextToken());
         }
 
-        try (JsonParser p = _parser(DOC, false)) {
+        try (JsonParser p = cborParser(DOC)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertFalse(p.nextFieldName(new SerializedString("abcdX")));
             assertToken(JsonToken.FIELD_NAME, p.currentToken());
             assertEquals(name, p.currentName());
         }
-    }
-
-    private JsonParser _parser(byte[] doc, boolean stream) throws Exception {
-        if (!stream) {
-            return F.createParser(doc);
-        }
-        // read one byte at a time, to force the "not enough buffered" fallback
-        return F.createParser(new ThrottledInputStream(new ByteArrayInputStream(doc), 1));
     }
 
     private String repeat(char c, int count) {
