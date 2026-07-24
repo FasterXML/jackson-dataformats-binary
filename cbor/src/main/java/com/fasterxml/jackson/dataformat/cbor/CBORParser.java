@@ -1458,13 +1458,9 @@ public class CBORParser extends ParserMinimalBase
             //    `nextToken()` here: we have already consumed one entry of
             //    expected-length Object (`expectMoreValues()` above) and
             //    `nextToken()` would consume another one. So decode name here.
-            final JsonToken t = _decodePropertyName();
-            // Note: should not get `null` (for end-of-input) since we are within
-            // Object and `_handleEOF()` fails for that case; but just in case:
-            if (t == null) {
-                return false;
-            }
-            return (_updateToken(t) == JsonToken.FIELD_NAME)
+            //    Note: cannot get `null` for end-of-input here since we are
+            //    within Object, and `_handleEOF()` fails for that case.
+            return (_updateToken(_decodePropertyName()) == JsonToken.FIELD_NAME)
                     && str.getValue().equals(getCurrentName());
         }
         // otherwise just fall back to default handling; should occur rarely
