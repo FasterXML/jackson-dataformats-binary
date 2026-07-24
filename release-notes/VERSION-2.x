@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.10 (not yet released)
+
+#727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+
 2.18.9 (07-Jul-2026)
 
 No changes since 2.18.8
