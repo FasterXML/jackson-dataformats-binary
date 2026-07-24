@@ -7,6 +7,7 @@ import java.util.Random;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
+import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,6 +37,32 @@ public abstract class CBORTestBase
 
     protected CBORParser cborParser(CBORFactory f, byte[] input) throws IOException {
         return f.createParser(input);
+    }
+
+    /**
+     * Helper for cases that need to verify handling both with fully buffered
+     * input (fixed {@code byte[]}) and with input that trickles in, one byte
+     * at a time, so that parser cannot rely on look-ahead within buffer.
+     *
+     * @since 2.18.10
+     */
+    protected CBORParser cborParser(byte[] input, boolean throttled) throws IOException {
+        return cborParser(cborFactory(), input, throttled);
+    }
+
+    /**
+     * Variant that takes factory to use: needed when multiple parsers are to
+     * share symbol table (as they do when created by same factory).
+     *
+     * @since 2.18.10
+     */
+    protected CBORParser cborParser(CBORFactory f, byte[] input, boolean throttled)
+        throws IOException
+    {
+        if (throttled) {
+            return cborParser(f, new ThrottledInputStream(input, 1));
+        }
+        return cborParser(f, input);
     }
 
     protected CBORParser cborParser(CBORFactory f, InputStream in) throws IOException {
