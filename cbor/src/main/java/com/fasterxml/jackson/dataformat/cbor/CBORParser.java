@@ -1503,7 +1503,10 @@ public class CBORParser extends ParserMinimalBase
                 if (((ch >> 5) & 0x7) == MAJOR_TYPE_TEXT) {
                     int lenMarker = ch & 0x1F;
                     if (lenMarker <= 24) {
-                        if (lenMarker == 23) {
+                        // 24-Jul-2026, tatu: [dataformats-binary#727] Marker 24 (not 23!)
+                        //    is the one that indicates 1-byte length suffix; values
+                        //    0x00 - 0x17 (0 - 23) are lengths as-is
+                        if (lenMarker == 24) {
                             lenMarker = _inputBuffer[ptr++] & 0xFF;
                         }
                         if (lenMarker == byteLen) {
