@@ -668,6 +668,12 @@ versionBits));
 
             byte[] nameBytes = str.asQuotedUTF8();
             final int byteLen = nameBytes.length;
+            // NOTE: [dataformats-binary#726] `maxNameLength` deliberately NOT
+            //   enforced by the fast path below: length matched is that of the
+            //   name caller asked for, so it is not attacker-controlled. Note
+            //   too that the "long name" encoding (0x34) is not handled here at
+            //   all, but falls through to `nextToken()` -> `_handleFieldName()`,
+            //   which does enforce the limit
             // need room for type byte, name bytes, possibly end marker, so:
             if ((_inputPtr + byteLen + 1) < _inputEnd) { // maybe...
                 int ptr = _inputPtr;
@@ -1483,6 +1489,14 @@ versionBits));
                 Integer.toHexString(_typeAsInt));
     }
 
+    // NOTE: [dataformats-binary#726] `maxNameLength` NOT enforced for these
+    //   shortest names: enforcement is approximate, effective minimum limit
+    //   being 64 bytes here (57 for short Unicode names, and the length of the
+    //   name caller asked for, for the fast path of
+    //   `nextFieldName(SerializableString)`). Length is capped by the 6-bit
+    //   length field of the type byte, so it is not attacker-controlled beyond
+    //   that; longer names use the "long name" encoding, decoded by
+    //   `_handleLongFieldName()`, which does enforce the limit
     private String _findOrDecodeShortAsciiName(final int len) throws IOException
     {
         // First things first: must ensure all in buffer
@@ -1503,6 +1517,8 @@ versionBits));
         return _decodeShortAsciiName(len);
     }
 
+    // NOTE: [dataformats-binary#726] see `_findOrDecodeShortAsciiName()` for
+    //   why `maxNameLength` is not enforced for short names
     private String _findOrDecodeShortUnicodeName(final int len) throws IOException
     {
         // First things first: must ensure all in buffer
@@ -1965,6 +1981,11 @@ versionBits));
      * property names: also verifies that name length does not exceed maximum
      * allowed, so that an unbounded name cannot be buffered in full before
      * being checked ([dataformats-binary#726]).
+     *<p>
+     * Enforcement here is incremental and hence approximate: check is made
+     * against the capacity of the buffer being grown, so a name may exceed
+     * {@code maxNameLength} by up to the growth increment before it is caught.
+     * The exact length is verified once the whole name has been read.
      *
      * @since 2.18.10
      */
