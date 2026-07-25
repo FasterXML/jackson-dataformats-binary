@@ -19,6 +19,8 @@ Kenji Noguchi (knoguchi@github)
 
 * Reported #70 (protobuf), contributed fix: Can't deserialize packed repeated field
  (2.8.9)
+* Reported #73: (protobuf) Cannot resolve inner types in protoc definitions
+ (2.21.5)
 
 marsqing@github
 
@@ -359,12 +361,20 @@ Joachim Lous (@jlous)
   (2.18.0)
 
 Robert Noack (@mr-robert)
- * Reported #509: IonValueMapper.builder() not implemented, does not register modules
+ * Reported #509: (ion) IonValueMapper.builder() not implemented, does not register modules
   (2.18.0)
 
 Knut Wannheden (@knutwannheden)
- * Contributed #518: Should not read past end for CBOR string values
+ * Contributed #518: (cbor) Should not read past end for CBOR string values
   (2.18.1)
+
+Shanchao Li (@tonghuaroot)
+ * Reported #696: (ion) Incomplete number length validation in Ion decoder
+  (2.18.8)
+
+@tinyb0y
+ * Reported #726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+  (2.18.10)
 
 Steven Fackler (@sfackler)
  * Reported #300: (smile) Floats are encoded with sign extension while
@@ -386,9 +396,12 @@ Manuel Sugawara (@sugmanue)
   (2.19.0)
  * Contributed fix for #616: CBOR text gets truncated on decoding
   (2.19.3)
- * Conribued fix for #640: (cbor) CBOR throws ArrayIndexOutOfBoundsException
+ * Contributed fix for #640: (cbor) CBOR throws ArrayIndexOutOfBoundsException
    with long ASCII text
   (2.20.2)
+ * Contributed #691: (cbor) Add parameterized tests covering all ASCII-optimization
+   exit paths in CBORParser
+  (2.21.4)
 
 Josh Curry (@seadbrane)
  * Reported, contributed fix for #571: Unable to deserialize a pojo with IonStruct
@@ -429,5 +442,22 @@ Vincent Eigenberger (@beseder1)
   (2.20.1)
 
 Yohei Kishimoto (@morokosi)
- * Reported #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored properties
+ * Reported #599: (cbor) Unable to deserialize stringref-enabled CBOR with ignored propertie
   (2.21.0)
+
+Halil İbrahim Şener (@hisener)
+ * Fixed #686: `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
+  segment > I/O buffer, leaving non-ASCII byte unconsumed
+  (2.21.3)
+
+Shanchao Li (@tonghuaroot)
+
+* Reported #693: (avro) Incomplete number length validation in Avro
+  decoder (for `BigDecimal`)
+ (2.21.4)
+
+Benjamin Muschko (@bmuschko)
+
+* Reported #720: (smile) `SmileGenerator` int overflow in `maxLen` for very long
+  Strings causes `ArrayIndexOutOfBoundsException`
+ (2.21.6)

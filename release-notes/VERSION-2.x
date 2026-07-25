@@ -14,9 +14,85 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.22.0 (not yet released)
+2.23.0 (not yet released)
+
+No changes since 2.22
+
+2.22.2 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+ (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
+
+2.22.1 (07-Jul-2026)
+
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
+#598: (protobuf) Protobuf parser state handling wrong for implicit close
+  (END_OBJECT)
+
+2.22.0 (31-May-2026)
 
 No changes since 2.21
+
+2.21.6 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
+#720: (smile) `SmileGenerator` int overflow in `maxLen` for very long Strings
+  (>= 715,827,882 chars) causes `ArrayIndexOutOfBoundsException`
+ (reported by Benjamin M)
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+ (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
+
+2.21.5 (06-Jul-2026)
+
+#73: (protobuf) Cannot resolve inner types in protoc definitions
+ (reported by Kenji N)
+#134: (protobuf) `oneof` fields and some repeated fields incorrectly decoded for proto3 schemas
+  (reported by @vogt31337)
+#598: (protobuf) Protobuf parser state handling wrong for implicit close
+  (END_OBJECT)
+
+2.21.4 (28-May-2026)
+
+#691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths in CBORParser
+ (contributed by Manuel S)
+#693: (avro) Incomplete number length validation in Avro decoder (for `BigDecimal`)
+ (reported by @tonghuaroot)
+
+2.21.3 (28-Apr-2026)
+
+#686: (cbor) `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
+  segment > I/O buffer, leaving non-ASCII byte unconsumed
+ (fixed by Halil İbrahim Ş)
+
+2.21.2 (20-Mar-2026)
+
+No changes since 2.21.1.
 
 2.21.1 (22-Feb-2026)
 
@@ -120,6 +196,35 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.10 (not yet released)
+
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+ (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#733: (cbor) Long `String`s not added to "stringref" reference table, breaking
+  following references
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
+
+2.18.9 (07-Jul-2026)
+
+No changes since 2.18.8
+
+2.18.8 (28-Mar-2026)
+
+#696: (ion) Incomplete number length validation in Ion decoder
+  (for `BigDecimal` and/or `BigInteger`)
+ (reported by @tonghuaroot)
+ (fix by @cowtowncoder, w/ Claude code)
+
+2.18.7 (24-Apr-2026)
+
+No changes since 2.18.6
 
 2.18.6 (22-Feb-2026)
 

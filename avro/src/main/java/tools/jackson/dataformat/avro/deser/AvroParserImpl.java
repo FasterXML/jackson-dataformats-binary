@@ -627,7 +627,7 @@ public abstract class AvroParserImpl
     // @since 2.19
     public JsonToken decodeBytesDecimal(int scale) throws IOException {
         decodeBytes();
-        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numberBigDecimal = _decimalFromUnscaledBytes(_binaryValue, scale);
         _numTypesValid = NR_BIGDECIMAL;
         return JsonToken.VALUE_NUMBER_FLOAT;
     }
@@ -640,9 +640,21 @@ public abstract class AvroParserImpl
     // @since 2.19
     public JsonToken decodeFixedDecimal(int scale, int size) throws IOException {
         decodeFixed(size);
-        _numberBigDecimal = new BigDecimal(new BigInteger(_binaryValue), scale);
+        _numberBigDecimal = _decimalFromUnscaledBytes(_binaryValue, scale);
         _numTypesValid = NR_BIGDECIMAL;
         return JsonToken.VALUE_NUMBER_FLOAT;
+    }
+
+    private BigDecimal _decimalFromUnscaledBytes(byte[] raw, int scale) {
+        // Empty payload: BigInteger(byte[]) would throw NumberFormatException,
+        // so short-circuit to zero (matches SmileParser._finishBigDecimal).
+        if (raw.length == 0) {
+            return BigDecimal.ZERO;
+        }
+        // Enforce maxNumberLength against raw 2's-complement payload length,
+        // matching CBOR/Smile codecs handling which also uses raw byte length.
+        streamReadConstraints().validateFPLength(raw.length);
+        return new BigDecimal(new BigInteger(raw), scale);
     }
 
     // @since 2.19

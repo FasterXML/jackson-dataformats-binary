@@ -369,7 +369,7 @@ public abstract class AvroTestBase
     }
 
     protected static String asJSON(org.apache.avro.Schema avroSchema) {
-        return avroSchema.toString(true);
+        return avroSchema.toString();
     }
 
     /*

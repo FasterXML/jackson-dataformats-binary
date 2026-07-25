@@ -14,11 +14,88 @@ implementations)
 === Releases ===
 ------------------------------------------------------------------------
 
-3.2.0 (not yet released)
+3.3.0 (not yet released)
+
+No changes since 3.2
+
+3.2.2 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
+#720: (smile) `SmileGenerator` int overflow in `maxLen` for very long Strings
+  (>= 715,827,882 chars) causes `ArrayIndexOutOfBoundsException`
+ (reported by Benjamin M)
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+  (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
+
+3.2.1 (10-Jul-2026)
+
+No changes since 3.2.0
+
+3.2.0 (08-Jun-2026)
 
 #662: (avro) Remove `IOException` from `AvroMapper.schemaFrom()`
   method signatures
 #674: Smile parser does not update `StreamReadContext` index or entry count
+
+3.1.6 (not yet released)
+
+#708: (protobuf) proto3 label-less field declarations fail to parse
+ (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#714: (protobuf) Packed repeated field fails to decode when array spans an input
+  buffer reload
+#715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
+  ignoring actual type
+#720: (smile) `SmileGenerator` int overflow in `maxLen` for very long Strings
+  (>= 715,827,882 chars) causes `ArrayIndexOutOfBoundsException`
+ (reported by Benjamin M)
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+ (NOTE: 3.x also needed the check on the `nextNameMatch()` decoding path)
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+  (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
+
+3.1.5 (07-Jul-2026)
+
+#134: (protobuf) `oneof` fields and some repeated fields incorrectly decoded for proto3 schemas
+  (reported by @vogt31337)
+#700: (cbor, smile) `META-INF/services/tools.jackson.databind.ObjectMapper`
+  references wrong class name (`...databind.CBORMapper` / `...databind.SmileMapper`)
+ (reported by Juan F)
+
+3.1.4 (29-May-2026)
+
+#691: (cbor) Add parameterized tests covering all ASCII-optimization exit paths
+  in CBORParser
+ (contributed by Manuel S)
+#693: (avro) Incomplete number length validation in Avro decoder (for `BigDecimal`)
+ (reported by @tonghuaroot)
+
+3.1.3 (01-May-2026)
+
+No changes since 3.1.2
+
+3.1.2 (11-Apr-2026)
+
+#686: `CBORParser._finishLongTextAscii` returns negative length when `TextBuffer`
+  segment > I/O buffer, leaving non-ASCII byte unconsumed
+ (fixed by Halil İbrahim Ş)
 
 3.1.1 (27-Mar-2026)
 

@@ -83,7 +83,9 @@ public class AnySetterTest extends CBORTestBase
 
         @JsonAnySetter
         public void addAdditionalProperty(String key, Object value) {
-            if (additionalProperties == null) additionalProperties = new HashMap<String, Object>();
+            if (additionalProperties == null) {
+                additionalProperties = new HashMap<String, Object>();
+            }
             additionalProperties.put(key,value);
         }
 
@@ -92,7 +94,9 @@ public class AnySetterTest extends CBORTestBase
         }
 
         @JsonAnyGetter
-        public Map<String,Object> getAdditionalProperties() { return additionalProperties; }
+        public Map<String,Object> getAdditionalProperties() {
+            return additionalProperties;
+        }
 
         @JsonIgnore
         public String getName() {
@@ -271,11 +275,15 @@ public class AnySetterTest extends CBORTestBase
     @Test
     public void testProblem744() throws Exception
     {
-        Bean744 bean = MAPPER.readValue(cborDoc("{\"name\":\"Bob\"}"),
+        // [databind#5952]: @JsonIgnore on getter "getName" makes "name" an ignored
+        // property; with the per-property ignore now applied even when an any-setter
+        // is present, "name" no longer flows into the any-setter map.
+        Bean744 bean = MAPPER.readValue(cborDoc("{\"name\":\"Bob\",\"other\":\"val\"}"),
                 Bean744.class);
         assertNotNull(bean.additionalProperties);
         assertEquals(1, bean.additionalProperties.size());
-        assertEquals("Bob", bean.additionalProperties.get("name"));
+        assertEquals("val", bean.additionalProperties.get("other"));
+        assertNull(bean.additionalProperties.get("name"));
     }
 
     @Test
@@ -367,10 +375,11 @@ public class AnySetterTest extends CBORTestBase
         Ignored bean = mapper.readValue(
                 cborDoc("{\"name\":\"Bob\", \"bogus\": [ 1, 2, 3], \"dummy\" : 13 }"),
                 Ignored.class);
-        // as of 2.0, @JsonIgnoreProperties does block; @JsonIgnore not
+        // [databind#5952]: both @JsonIgnoreProperties (class-level) and @JsonIgnore
+        // (per-property) must block routing to the any-setter
         assertNull(bean.map.get("dummy"));
-        assertEquals("[1, 2, 3]", ""+bean.map.get("bogus"));
+        assertNull(bean.map.get("bogus"));
         assertEquals("Bob", bean.map.get("name"));
-        assertEquals(2, bean.map.size());
+        assertEquals(1, bean.map.size());
     }
 }

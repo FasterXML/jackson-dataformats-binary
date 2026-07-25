@@ -1,1 +1,1 @@
-tools.jackson.dataformat.cbor.databind.CBORMapper
+tools.jackson.dataformat.cbor.CBORMapper

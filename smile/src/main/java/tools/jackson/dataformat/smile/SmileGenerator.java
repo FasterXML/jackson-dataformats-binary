@@ -662,7 +662,7 @@ public class SmileGenerator
         _writeByte(TOKEN_KEY_LONG_STRING);
         // can we still make a temp copy?
         // but will encoded version fit in buffer?
-        int maxLen = len + len + len;
+        long maxLen = (long) len + len + len;
         if (maxLen <= _outputBuffer.length) { // yes indeed
             if ((_outputTail + maxLen) >= _outputEnd) {
                 _flushBuffer();
@@ -905,7 +905,7 @@ public class SmileGenerator
     private final void _writeNonSharedString(final String text, final int len) throws JacksonException
     {
         // Expansion can be 3x for Unicode; and then there's type byte and end marker, so:
-        int maxLen = len + len + len + 2;
+        long maxLen = (long) len + len + len + 2;
         // Next: does it always fit within output buffer?
         if (maxLen > _outputBuffer.length) { // nope
             // can't rewrite type buffer, so can't speculate it might be all-ASCII
@@ -965,7 +965,7 @@ public class SmileGenerator
             _outputBuffer[origOffset] = typeToken;
         } else { // "long" String, never shared
             // but might still fit within buffer?
-            int maxLen = len + len + len + 2;
+            long maxLen = (long) len + len + len + 2;
             if (maxLen <= _outputBuffer.length) { // yes indeed
                 if ((_outputTail + maxLen) >= _outputEnd) {
                     _flushBuffer();
@@ -1075,7 +1075,7 @@ public class SmileGenerator
             }
         } else { // "long" String
             // but might still fit within buffer?
-            int maxLen = len + len + len + 2;
+            long maxLen = (long) len + len + len + 2;
             if (maxLen <= _outputBuffer.length) { // yes indeed
                 if ((_outputTail + maxLen) >= _outputEnd) {
                     _flushBuffer();

@@ -69,7 +69,7 @@ public class SingleObjectEncoding343Test
         // because Jackson tries to decode 0xC3 0x01 as a zigzag VarInt string length
         JsonNode result = MAPPER.reader(jacksonSchema).readTree(bytes);
         assertNotNull(result);
-        assertEquals("apm", result.get("name").asText());
+        assertEquals("apm", result.get("name").asString());
     }
 
     /**
@@ -96,7 +96,7 @@ public class SingleObjectEncoding343Test
 
         JsonNode result = MAPPER.reader(jacksonSchema).readTree(bytes);
         assertNotNull(result);
-        assertEquals("apm", result.get("name").asText());
+        assertEquals("apm", result.get("name").asString());
     }
 
     private static byte[] toByteArray(ByteBuffer buf) {

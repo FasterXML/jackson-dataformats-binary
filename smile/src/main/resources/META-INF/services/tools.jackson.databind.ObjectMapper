@@ -1,1 +1,1 @@
-tools.jackson.dataformat.smile.databind.SmileMapper
+tools.jackson.dataformat.smile.SmileMapper

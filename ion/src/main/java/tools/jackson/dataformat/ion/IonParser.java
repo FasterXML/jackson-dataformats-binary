@@ -256,7 +256,14 @@ public class IonParser
     // @since 2.17
     private BigInteger _getBigIntegerValue() throws JacksonException {
         try {
-            return _reader.bigIntegerValue();
+            final BigInteger v = _reader.bigIntegerValue();
+            // [dataformats-binary#696]: Enforce maxNumberLength against
+            // unsigned-magnitude byte length, matching CBOR/Smile/Avro codecs
+            // which validate raw 2's-complement payload byte length.
+            if (v != null) {
+                _streamReadConstraints.validateIntegerLength((v.bitLength() + 7) >> 3);
+            }
+            return v;
         } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
@@ -271,7 +278,15 @@ public class IonParser
     // @since 2.17
     private BigDecimal _getBigDecimalValue() throws JacksonException {
         try {
-            return _reader.bigDecimalValue();
+            final BigDecimal v = _reader.bigDecimalValue();
+            // [dataformats-binary#696]: Enforce maxNumberLength against the
+            // unscaled value's unsigned-magnitude byte length, matching
+            // CBOR/Smile/Avro codecs which validate raw 2's-complement payload
+            // byte length.
+            if (v != null) {
+                _streamReadConstraints.validateFPLength((v.unscaledValue().bitLength() + 7) >> 3);
+            }
+            return v;
         } catch (IonException e) {
             return _reportCorruptNumber(e);
         }
