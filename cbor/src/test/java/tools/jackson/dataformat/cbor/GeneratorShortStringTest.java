@@ -97,14 +97,6 @@ public class GeneratorShortStringTest extends CBORTestBase
         }
     }
 
-    private String generateAsciiString(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        while (--len >= 0) {
-            sb.append((char) ('0' + (len % 10)));
-        }
-        return sb.toString();
-    }
-
     private void _verifyString(byte[] encoded, String value) throws Exception
     {
         try (JsonParser p = cborParser(encoded)) {
