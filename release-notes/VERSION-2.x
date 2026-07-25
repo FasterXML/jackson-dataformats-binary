@@ -25,6 +25,8 @@ Active maintainers:
   slot twice on fast-path miss, truncating definite-length Objects
 #733: (cbor) Long `String`s not added to "stringref" reference table, breaking
   following references
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
 
 2.18.9 (07-Jul-2026)
 
