@@ -1,6 +1,8 @@
 package tools.jackson.dataformat.cbor.constraints;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +11,8 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.core.io.SerializedString;
+import tools.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.sym.SimpleNameMatcher;
 
 import tools.jackson.dataformat.cbor.CBORFactory;
 import tools.jackson.dataformat.cbor.CBORTestBase;
@@ -257,6 +261,12 @@ public class LongNameCBORReadTest extends CBORTestBase
     private final static int MODE_NEXT_TOKEN = 0;
     private final static int MODE_NEXT_NAME = 1;
     private final static int MODE_NEXT_NAME_MATCH = 2;
+    // [dataformats-binary#725] `nextNameMatch()` decodes names via its own
+    //   `_nextNameLong()` path, which needs the same enforcement
+    private final static int MODE_NEXT_NAME_MATCHER = 3;
+
+    private final static PropertyNameMatcher NAME_MATCHER
+        = SimpleNameMatcher.construct(Locale.ROOT, Arrays.asList("zzz"));
 
     private void _verifyNameLengthFail(CBORFactory f, byte[] doc, int maxNameLen)
         throws Exception
@@ -268,7 +278,7 @@ public class LongNameCBORReadTest extends CBORTestBase
             int skipEntries)
         throws Exception
     {
-        for (int mode = MODE_NEXT_TOKEN; mode <= MODE_NEXT_NAME_MATCH; ++mode) {
+        for (int mode = MODE_NEXT_TOKEN; mode <= MODE_NEXT_NAME_MATCHER; ++mode) {
             for (boolean throttled : new boolean[] { false, true }) {
                 final String desc = "(mode: "+mode+", throttled: "+throttled+")";
                 try (JsonParser p = cborParser(f, doc, throttled)) {
@@ -297,7 +307,7 @@ public class LongNameCBORReadTest extends CBORTestBase
             int skipEntries)
         throws Exception
     {
-        for (int mode = MODE_NEXT_TOKEN; mode <= MODE_NEXT_NAME_MATCH; ++mode) {
+        for (int mode = MODE_NEXT_TOKEN; mode <= MODE_NEXT_NAME_MATCHER; ++mode) {
             for (boolean throttled : new boolean[] { false, true }) {
                 final String desc = "(mode: "+mode+", throttled: "+throttled+")";
                 try (JsonParser p = cborParser(f, doc, throttled)) {
@@ -359,10 +369,14 @@ public class LongNameCBORReadTest extends CBORTestBase
         case MODE_NEXT_NAME:
             p.nextName();
             break;
-        default:
+        case MODE_NEXT_NAME_MATCH:
             // Name will not match, but that is fine: what matters is that the
             // name-matching fast path is not taken (it never is for long names)
             p.nextName(new SerializedString("zzz"));
+            break;
+        default:
+            // Likewise no match expected; exercises `_nextNameLong()`
+            p.nextNameMatch(NAME_MATCHER);
         }
     }
 
