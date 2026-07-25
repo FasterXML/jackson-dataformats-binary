@@ -461,3 +461,8 @@ Benjamin Muschko (@bmuschko)
 * Reported #720: (smile) `SmileGenerator` int overflow in `maxLen` for very long
   Strings causes `ArrayIndexOutOfBoundsException`
  (2.21.6)
+
+arimu1 (@arimu1)
+* Contributed fix for #735: (cbor) "stringref" property-name paths pass 5-bit
+  length marker instead of actual length to `shouldReferenceString()`
+ (2.21.6)

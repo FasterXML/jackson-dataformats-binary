@@ -1614,6 +1614,7 @@ public class CBORParser extends ParserMinimalBase
             _sharedString = null;
             String name;
             boolean chunked = false;
+            int nameLen = lenMarker;
             if (lenMarker <= 23) {
                 // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
                 //   these shortest (at most 23 bytes) names; see
@@ -1646,10 +1647,11 @@ public class CBORParser extends ParserMinimalBase
                     //    decoding (or even reading) content
                     _streamReadConstraints.validateNameLength(actualLen);
                     name = _decodeLongerName(actualLen);
+                    nameLen = actualLen;
                 }
             }
             if (!chunked && !_stringRefs.empty() &&
-                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), nameLen)) {
                 _stringRefs.peek().stringRefs.add(name);
                 _sharedString = name;
             }
@@ -3123,6 +3125,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         final int lenMarker = ch & 0x1F;
         boolean chunked = false;
         String name;
+        int nameLen = lenMarker;
         if (lenMarker <= 23) {
             // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
             //   these shortest (at most 23 bytes) names: enforcement is
@@ -3156,10 +3159,11 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 //    decoding (or even reading) content
                 _streamReadConstraints.validateNameLength(actualLen);
                 name = _decodeLongerName(actualLen);
+                nameLen = actualLen;
             }
         }
         if (!chunked && !_stringRefs.empty() &&
-                shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), nameLen)) {
             _stringRefs.peek().stringRefs.add(name);
             _sharedString = name;
         }

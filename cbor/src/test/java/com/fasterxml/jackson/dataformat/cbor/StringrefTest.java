@@ -605,6 +605,36 @@ public class StringrefTest extends CBORTestBase
         assertToken(JsonToken.END_ARRAY, parser.nextToken());
     }
 
+    // [dataformats-binary#735]: property name marker (24-27), not actual length,
+    // was passed to shouldReferenceString(), so a non-canonically-encoded short
+    // name (marker 24, length 2) got registered when it should have been skipped.
+    @Test
+    public void testNonCanonicalLengthPropertyName() throws Exception {
+        byte[] bytes = new byte[]{
+                (byte) 0xD9, 0x01, 0x00, (byte) 0xA3,
+                0x78, 0x02, 0x61, 0x62, 0x01,
+                0x68, 0x6C, 0x6F, 0x6E, 0x67, 0x6E, 0x61, 0x6D, 0x65, 0x02,
+                (byte) 0xD8, 0x19, 0x00, 0x03
+        };
+        CBORParser parser = cborParser(bytes);
+        assertToken(JsonToken.START_OBJECT, parser.nextToken());
+        assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("ab", parser.currentName());
+        assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
+        assertEquals(1, parser.getValueAsInt());
+        assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("longname", parser.currentName());
+        assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
+        assertEquals(2, parser.getValueAsInt());
+        // "ab" is only 2 bytes so it must not have been registered as index 0;
+        // the backreference below must resolve to "longname" instead
+        assertToken(JsonToken.FIELD_NAME, parser.nextToken());
+        assertEquals("longname", parser.currentName());
+        assertToken(JsonToken.VALUE_NUMBER_INT, parser.nextToken());
+        assertEquals(3, parser.getValueAsInt());
+        assertToken(JsonToken.END_OBJECT, parser.nextToken());
+    }
+
     @Test
     public void testNestedTags() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
