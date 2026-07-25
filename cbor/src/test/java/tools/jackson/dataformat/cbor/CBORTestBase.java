@@ -319,6 +319,20 @@ public abstract class CBORTestBase
     /**********************************************************
      */
 
+    /**
+     * Generates a String of exactly {@code length} ASCII characters (and, since
+     * they are ASCII, exactly {@code length} bytes when UTF-8 encoded). Unlike
+     * {@link #generateLongAsciiString} which pads in word-sized chunks and may
+     * overshoot, this is for tests that need a precise encoded length.
+     */
+    protected static String generateAsciiString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        while (sb.length() < length) {
+            sb.append((char) ('a' + (sb.length() % 26)));
+        }
+        return sb.toString();
+    }
+
     protected static String generateUnicodeString(int length) {
         return generateUnicodeString(length, new Random(length));
     }
