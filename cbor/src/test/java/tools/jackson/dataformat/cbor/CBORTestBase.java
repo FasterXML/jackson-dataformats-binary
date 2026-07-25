@@ -11,6 +11,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.json.JsonMapper;
 
+import tools.jackson.dataformat.cbor.testutil.ThrottledInputStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class CBORTestBase
@@ -66,8 +68,32 @@ public abstract class CBORTestBase
         return (CBORParser) f.createParser(ObjectReadContext.empty(), input);
     }
 
+    /**
+     * Helper for cases that need to verify handling both with fully buffered
+     * input (fixed {@code byte[]}) and with input that trickles in, one byte
+     * at a time, so that parser cannot rely on look-ahead within buffer.
+     */
+    protected CBORParser cborParser(byte[] input, boolean throttled) {
+        return cborParser(cborFactory(), input, throttled);
+    }
+
+    /**
+     * Variant that takes factory to use: needed when multiple parsers are to
+     * share symbol table (as they do when created by same factory).
+     */
+    protected CBORParser cborParser(CBORFactory f, byte[] input, boolean throttled) {
+        if (throttled) {
+            return cborParser(f, new ThrottledInputStream(input, 1));
+        }
+        return cborParser(f, input);
+    }
+
     protected CBORParser cborParser(InputStream in) {
         return (CBORParser) sharedMapper().createParser(in);
+    }
+
+    protected CBORParser cborParser(CBORFactory f, InputStream in) {
+        return (CBORParser) f.createParser(ObjectReadContext.empty(), in);
     }
 
     protected CBORMapper cborMapper() {
@@ -101,6 +127,11 @@ public abstract class CBORTestBase
     protected CBORGenerator cborGenerator(OutputStream result)
     {
         return (CBORGenerator) CBORMapper.shared().createGenerator(result);
+    }
+
+    protected CBORGenerator cborGenerator(CBORFactory f, OutputStream result)
+    {
+        return (CBORGenerator) f.createGenerator(ObjectWriteContext.empty(), result);
     }
 
     /*
@@ -287,6 +318,20 @@ public abstract class CBORTestBase
     /* Text generation
     /**********************************************************
      */
+
+    /**
+     * Generates a String of exactly {@code length} ASCII characters (and, since
+     * they are ASCII, exactly {@code length} bytes when UTF-8 encoded). Unlike
+     * {@link #generateLongAsciiString} which pads in word-sized chunks and may
+     * overshoot, this is for tests that need a precise encoded length.
+     */
+    protected static String generateAsciiString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        while (sb.length() < length) {
+            sb.append((char) ('a' + (sb.length() % 26)));
+        }
+        return sb.toString();
+    }
 
     protected static String generateUnicodeString(int length) {
         return generateUnicodeString(length, new Random(length));
