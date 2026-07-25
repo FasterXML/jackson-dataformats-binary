@@ -1534,7 +1534,13 @@ public class CBORParser extends ParserMinimalBase
             final int lenMarker = ch & 0x1F;
             _sharedString = null;
             String name;
-            boolean chunked = false;
+            // 24-Jul-2026, tatu: [dataformats-binary#735] Actual byte length of the name,
+            //    needed for "stringref" decision: the 5-bit marker is the length itself
+            //    only for values 0 - 23. Stays negative for chunked (indefinite length)
+            //    names: no separate check needed for those since every case of
+            //    `shouldReferenceString()` requires a minimum length, so a negative
+            //    length can never be referenced
+            int nameLen = lenMarker;
             if (lenMarker <= 23) {
                 // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
                 //   these shortest (at most 23 bytes) names; see
@@ -1558,19 +1564,18 @@ public class CBORParser extends ParserMinimalBase
                     }
                 }
             } else {
-                final int actualLen = _decodeExplicitLength(lenMarker);
-                if (actualLen < 0) {
-                    chunked = true;
+                nameLen = _decodeExplicitLength(lenMarker);
+                if (nameLen < 0) {
                     name = _decodeChunkedName();
                 } else {
                     // 24-Jul-2026, tatu: [dataformats-binary#725] Validate before
                     //    decoding (or even reading) content
-                    _streamReadConstraints.validateNameLength(actualLen);
-                    name = _decodeLongerName(actualLen);
+                    _streamReadConstraints.validateNameLength(nameLen);
+                    name = _decodeLongerName(nameLen);
                 }
             }
-            if (!chunked && !_stringRefs.empty() &&
-                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+            if (!_stringRefs.empty() &&
+                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), nameLen)) {
                 _stringRefs.peek().stringRefs.add(name);
                 _sharedString = name;
             }
@@ -3017,8 +3022,14 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             return JsonToken.FIELD_NAME;
         }
         final int lenMarker = ch & 0x1F;
-        boolean chunked = false;
         String name;
+        // 24-Jul-2026, tatu: [dataformats-binary#735] Actual byte length of the name,
+        //    needed for "stringref" decision: the 5-bit marker is the length itself
+        //    only for values 0 - 23. Stays negative for chunked (indefinite length)
+        //    names: no separate check needed for those since every case of
+        //    `shouldReferenceString()` requires a minimum length, so a negative
+        //    length can never be referenced
+        int nameLen = lenMarker;
         if (lenMarker <= 23) {
             // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
             //   these shortest (at most 23 bytes) names: enforcement is
@@ -3043,19 +3054,18 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 }
             }
         } else {
-            final int actualLen = _decodeExplicitLength(lenMarker);
-            if (actualLen < 0) {
-                chunked = true;
+            nameLen = _decodeExplicitLength(lenMarker);
+            if (nameLen < 0) {
                 name = _decodeChunkedName();
             } else {
                 // 24-Jul-2026, tatu: [dataformats-binary#725] Validate before
                 //    decoding (or even reading) content
-                _streamReadConstraints.validateNameLength(actualLen);
-                name = _decodeLongerName(actualLen);
+                _streamReadConstraints.validateNameLength(nameLen);
+                name = _decodeLongerName(nameLen);
             }
         }
-        if (!chunked && !_stringRefs.empty() &&
-                shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+        if (!_stringRefs.empty() &&
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), nameLen)) {
             _stringRefs.peek().stringRefs.add(name);
             _sharedString = name;
         }
