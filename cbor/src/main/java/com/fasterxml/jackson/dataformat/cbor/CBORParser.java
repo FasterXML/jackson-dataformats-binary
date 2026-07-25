@@ -1535,6 +1535,10 @@ public class CBORParser extends ParserMinimalBase
             _sharedString = null;
             String name;
             boolean chunked = false;
+            // 24-Jul-2026, tatu: [dataformats-binary#735] Need actual byte length of
+            //    the name for "stringref" decision: for markers 0 - 23 the marker is
+            //    the length as-is but for 24 - 27 it is the following length suffix
+            int nameLen = lenMarker;
             if (lenMarker <= 23) {
                 // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
                 //   these shortest (at most 23 bytes) names; see
@@ -1566,11 +1570,12 @@ public class CBORParser extends ParserMinimalBase
                     // 24-Jul-2026, tatu: [dataformats-binary#725] Validate before
                     //    decoding (or even reading) content
                     _streamReadConstraints.validateNameLength(actualLen);
+                    nameLen = actualLen;
                     name = _decodeLongerName(actualLen);
                 }
             }
             if (!chunked && !_stringRefs.empty() &&
-                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+                    shouldReferenceString(_stringRefs.peek().stringRefs.size(), nameLen)) {
                 _stringRefs.peek().stringRefs.add(name);
                 _sharedString = name;
             }
@@ -2910,6 +2915,10 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         final int lenMarker = ch & 0x1F;
         boolean chunked = false;
         String name;
+        // 24-Jul-2026, tatu: [dataformats-binary#735] Need actual byte length of
+        //    the name for "stringref" decision: for markers 0 - 23 the marker is
+        //    the length as-is but for 24 - 27 it is the following length suffix
+        int nameLen = lenMarker;
         if (lenMarker <= 23) {
             // NOTE: [dataformats-binary#725] `maxNameLength` NOT enforced for
             //   these shortest (at most 23 bytes) names: enforcement is
@@ -2942,11 +2951,12 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 // 24-Jul-2026, tatu: [dataformats-binary#725] Validate before
                 //    decoding (or even reading) content
                 _streamReadConstraints.validateNameLength(actualLen);
+                nameLen = actualLen;
                 name = _decodeLongerName(actualLen);
             }
         }
         if (!chunked && !_stringRefs.empty() &&
-                shouldReferenceString(_stringRefs.peek().stringRefs.size(), lenMarker)) {
+                shouldReferenceString(_stringRefs.peek().stringRefs.size(), nameLen)) {
             _stringRefs.peek().stringRefs.add(name);
             _sharedString = name;
         }
