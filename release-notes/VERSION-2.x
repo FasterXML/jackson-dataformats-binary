@@ -111,6 +111,7 @@ No changes since 2.19.1
   following references
 #735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
   actual length to `shouldReferenceString()`
+#736: (cbor) Long Object property names added to "stringref" reference table twice
 
 2.18.9 (07-Jul-2026)
 
