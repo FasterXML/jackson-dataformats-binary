@@ -46,7 +46,7 @@ public class StringRef735Test extends CBORTestBase
     public void testShortNameWithLongMarkerNotReferenced() throws Exception
     {
         final String name = "ab";
-        final byte[] doc = _doc(name, _nonCanonical1ByteLen(name), 0);
+        final byte[] doc = _doc(name, _nonCanonical1ByteLen(name));
 
         _verifyAllModes(doc, name, "AAA");
     }
@@ -56,7 +56,7 @@ public class StringRef735Test extends CBORTestBase
     public void testShortNameWith2ByteMarkerNotReferenced() throws Exception
     {
         final String name = "ab";
-        final byte[] doc = _doc(name, _nonCanonical2ByteLen(name), 0);
+        final byte[] doc = _doc(name, _nonCanonical2ByteLen(name));
 
         _verifyAllModes(doc, name, "AAA");
     }
@@ -67,8 +67,8 @@ public class StringRef735Test extends CBORTestBase
     @Test
     public void testLongEnoughNameStillReferenced() throws Exception
     {
-        final String name = _generateAscii(30); // canonical marker 24
-        final byte[] doc = _doc(name, _nonCanonical1ByteLen(name), 0);
+        final String name = generateAsciiString(30); // canonical marker 24
+        final byte[] doc = _doc(name, _nonCanonical1ByteLen(name));
 
         _verifyAllModes(doc, name, name);
     }
@@ -79,9 +79,21 @@ public class StringRef735Test extends CBORTestBase
     public void testNameAtThresholdReferenced() throws Exception
     {
         final String name = "abc";
-        final byte[] doc = _doc(name, _nonCanonical1ByteLen(name), 0);
+        final byte[] doc = _doc(name, _nonCanonical1ByteLen(name));
 
         _verifyAllModes(doc, name, name);
+    }
+
+    // Chunked (indefinite length) names are never referenced, no matter how long
+    // they are: the decoded length is not known when the marker is read, and a
+    // conformant encoder only indexes definite-length strings. So "AAA" is entry
+    // #0 here even though the name is 4 bytes
+    @Test
+    public void testChunkedNameNotReferenced() throws Exception
+    {
+        final byte[] doc = _chunkedNameDoc("ab", "cd");
+
+        _verifyAllModes(doc, "abcd", "AAA");
     }
 
     /*
@@ -93,12 +105,14 @@ public class StringRef735Test extends CBORTestBase
     /**
      * Builds document
      *<pre>
-     *   tag(256) [ { &lt;name&gt; : "AAA" }, tag(25) refIndex ]
+     *   tag(256) [ { &lt;name&gt; : "AAA" }, tag(25) 0 ]
      *</pre>
      * with the property name encoded using the given (possibly non-canonical)
-     * length prefix.
+     * length prefix. Reference is always to entry #0, which is what makes the
+     * tests sensitive to whether the name took up an index: if it did, #0 is the
+     * name, and if it did not, #0 is the {@code "AAA"} value.
      */
-    private byte[] _doc(String name, byte[] namePrefix, int refIndex) throws Exception
+    private byte[] _doc(String name, byte[] namePrefix) throws Exception
     {
         final byte[] rawName = utf8Bytes(name);
         ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -108,7 +122,29 @@ public class StringRef735Test extends CBORTestBase
         b.write(namePrefix, 0, namePrefix.length);
         b.write(rawName, 0, rawName.length);
         b.write(0x63); b.write('A'); b.write('A'); b.write('A');
-        b.write(0xD8); b.write(0x19); b.write(refIndex); // tag 25, "stringref"
+        b.write(0xD8); b.write(0x19); b.write(0x00); // tag 25, "stringref" to entry #0
+        return b.toByteArray();
+    }
+
+    /**
+     * Same shape as {@link #_doc}, but with the property name written as chunked
+     * (indefinite length) text made up of the given chunks.
+     */
+    private byte[] _chunkedNameDoc(String... chunks) throws Exception
+    {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        b.write(0xD9); b.write(0x01); b.write(0x00); // tag 256, "stringref-namespace"
+        b.write(0x82);                               // Array, 2 elements
+        b.write(0xA1);                               // Object, 1 entry
+        b.write(0x7F);                               // text, indefinite length
+        for (String chunk : chunks) {
+            final byte[] raw = utf8Bytes(chunk);
+            b.write(0x60 + raw.length);              // text, length in type byte
+            b.write(raw, 0, raw.length);
+        }
+        b.write(0xFF);                               // break
+        b.write(0x63); b.write('A'); b.write('A'); b.write('A');
+        b.write(0xD8); b.write(0x19); b.write(0x00); // tag 25, "stringref" to entry #0
         return b.toByteArray();
     }
 
@@ -178,13 +214,5 @@ public class StringRef735Test extends CBORTestBase
         default:
             fail("Unknown mode: "+mode);
         }
-    }
-
-    private String _generateAscii(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        while (sb.length() < len) {
-            sb.append((char) ('a' + (sb.length() % 26)));
-        }
-        return sb.toString();
     }
 }
