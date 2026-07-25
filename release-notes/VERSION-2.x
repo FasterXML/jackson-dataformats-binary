@@ -33,6 +33,8 @@ No changes since 2.22
   marker 23 with 24 ("1-byte length suffix follows")
 #728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
   slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
 
 2.22.1 (07-Jul-2026)
 
@@ -63,6 +65,8 @@ No changes since 2.21
   marker 23 with 24 ("1-byte length suffix follows")
 #728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
   slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
 
 2.21.5 (06-Jul-2026)
 
@@ -202,6 +206,10 @@ No changes since 2.19.1
   marker 23 with 24 ("1-byte length suffix follows")
 #728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
   slot twice on fast-path miss, truncating definite-length Objects
+#733: (cbor) Long `String`s not added to "stringref" reference table, breaking
+  following references
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
 
 2.18.9 (07-Jul-2026)
 
