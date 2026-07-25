@@ -1,14 +1,21 @@
 package com.fasterxml.jackson.dataformat.cbor.filter;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.dataformat.cbor.*;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.testutil.PrefixInputDecorator;
 import com.fasterxml.jackson.dataformat.cbor.testutil.PrefixOutputDecorator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class StreamingDecoratorsTest extends CBORTestBase
 {
+    @Test
     public void testInputDecorators() throws Exception
     {
         final byte[] DOC = cborDoc("42   37");
@@ -24,6 +31,7 @@ public class StreamingDecoratorsTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testOutputDecorators() throws Exception
     {
         final byte[] DOC = cborDoc(" 137");

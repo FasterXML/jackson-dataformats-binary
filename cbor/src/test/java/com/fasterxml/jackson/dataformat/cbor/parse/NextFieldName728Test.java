@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.cbor.parse;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -11,9 +13,12 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 // [dataformats-binary#728]: `nextFieldName(SerializableString)` used to consume
 // an entry of expected-length (definite-length) Object twice, when its
 // name-matching fast path did not succeed, truncating the Object
+import static org.junit.jupiter.api.Assertions.*;
+
 public class NextFieldName728Test extends CBORTestBase
 {
     // {"a":1, "b":2} as definite-length Object; name not matched
+    @Test
     public void testNonMatchingNameDefiniteLength() throws Exception
     {
         final byte[] DOC = twoEntryObject(false);
@@ -38,6 +43,7 @@ public class NextFieldName728Test extends CBORTestBase
     }
 
     // Same, but name of second entry is the one not matched
+    @Test
     public void testNonMatchingSecondNameDefiniteLength() throws Exception
     {
         final byte[] DOC = twoEntryObject(false);
@@ -61,6 +67,7 @@ public class NextFieldName728Test extends CBORTestBase
 
     // Matching name, but read from a stream that only has partial content
     // buffered, so that the fast path cannot be used either
+    @Test
     public void testMatchingNameDefiniteLengthThrottled() throws Exception
     {
         final byte[] DOC = twoEntryObject(false);
@@ -78,6 +85,7 @@ public class NextFieldName728Test extends CBORTestBase
 
     // Single-entry definite-length Object: used to report END_OBJECT (and
     // `null` name) instead of the entry it does contain
+    @Test
     public void testNonMatchingNameSingleEntry() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -100,6 +108,7 @@ public class NextFieldName728Test extends CBORTestBase
     }
 
     // Nested definite-length Objects, to verify context handling
+    @Test
     public void testNonMatchingNameNested() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -134,6 +143,7 @@ public class NextFieldName728Test extends CBORTestBase
     // Fast path is also skipped for names that are not (definite-length) Strings;
     // all of these cases must decode the name without losing the second entry.
     // First: name as indefinite-length (chunked) String
+    @Test
     public void testChunkedNameDefiniteLength() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -150,6 +160,7 @@ public class NextFieldName728Test extends CBORTestBase
     }
 
     // Second: name as Integer (CBOR allows non-String Object keys)
+    @Test
     public void testIntegerNameDefiniteLength() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -163,6 +174,7 @@ public class NextFieldName728Test extends CBORTestBase
     }
 
     // Third: tag-prefixed name (fast path only handles untagged text)
+    @Test
     public void testTaggedNameDefiniteLength() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -199,6 +211,7 @@ public class NextFieldName728Test extends CBORTestBase
 
     // Indefinite-length Object (what `CBORGenerator` writes): was, and
     // stays, unaffected
+    @Test
     public void testNonMatchingNameIndefiniteLength() throws Exception
     {
         final byte[] DOC = twoEntryObject(true);
@@ -221,6 +234,7 @@ public class NextFieldName728Test extends CBORTestBase
 
     // Also: for indefinite-length Object, name decoding may find the break
     // marker instead of a name, and must then close the Object properly
+    @Test
     public void testBreakInPlaceOfNameIndefiniteLength() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

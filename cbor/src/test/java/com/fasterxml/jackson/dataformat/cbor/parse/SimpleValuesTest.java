@@ -1,18 +1,20 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.cbor.CBORConstants;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // @since 2.12
 public class SimpleValuesTest extends CBORTestBase
 {
     private final CBORFactory CBOR_F = new CBORFactory();
 
+    @Test
     public void testTinySimpleValues() throws Exception
     {
         // Values 0..19 are unassigned, valid to encounter
@@ -28,6 +30,7 @@ public class SimpleValuesTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testValidByteLengthMinimalValues() throws Exception {
         // Values 32..255 are unassigned, valid to encounter
         for (int v = 32; v <= 255; ++v) {
@@ -41,6 +44,7 @@ public class SimpleValuesTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testInvalidByteLengthMinimalValues() throws Exception {
         // Values 0..31 are invalid for variant that takes 2 bytes...
         for (int v = 0; v <= 31; ++v) {

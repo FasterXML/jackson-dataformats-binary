@@ -51,6 +51,19 @@ encoded data using Jackson abstractions (streaming API, data binding, tree model
       <artifactId>jackson-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- 24-Jul-2026, tatu: [JSTEP-10] JUnit 5, for `cbor` module only.
+         NOTE: must NOT be moved to root POM before all other modules are
+         migrated as well: adding JUnit 5 to shared dependencies switches
+         Surefire to the JUnit Platform provider for every module, and modules
+         whose tests still extend `junit.framework.TestCase` are then silently
+         not run at all (build passes, zero tests executed).
+      -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
