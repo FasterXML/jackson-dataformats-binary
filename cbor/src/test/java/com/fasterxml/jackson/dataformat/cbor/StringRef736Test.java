@@ -135,14 +135,31 @@ public class StringRef736Test extends CBORTestBase
         return b.toByteArray();
     }
 
-    // Writes text with a 4-byte length prefix (fine for any length used here)
+    /**
+     * Writes text using the <i>minimal</i> (canonical) length prefix, the way a
+     * real encoder would: what is under test here is which entries take up a
+     * reference index, not how lengths are encoded. Non-minimal prefixes are
+     * {@code StringRef735Test}'s subject.
+     */
     private void _writeText(ByteArrayOutputStream b, byte[] raw) {
-        b.write(0x7A);
-        b.write(raw.length >> 24);
-        b.write((raw.length >> 16) & 0xFF);
-        b.write((raw.length >> 8) & 0xFF);
-        b.write(raw.length & 0xFF);
-        b.write(raw, 0, raw.length);
+        final int len = raw.length;
+        if (len <= 23) {                    // length in the type byte itself
+            b.write(0x60 + len);
+        } else if (len <= 0xFF) {           // 1-byte length suffix
+            b.write(0x78);
+            b.write(len);
+        } else if (len <= 0xFFFF) {         // 2-byte length suffix
+            b.write(0x79);
+            b.write(len >> 8);
+            b.write(len & 0xFF);
+        } else {                            // 4-byte length suffix
+            b.write(0x7A);
+            b.write(len >> 24);
+            b.write((len >> 16) & 0xFF);
+            b.write((len >> 8) & 0xFF);
+            b.write(len & 0xFF);
+        }
+        b.write(raw, 0, len);
     }
 
     /*
