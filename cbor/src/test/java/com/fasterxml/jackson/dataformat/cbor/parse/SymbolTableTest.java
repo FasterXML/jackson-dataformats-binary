@@ -21,6 +21,13 @@ public class SymbolTableTest extends CBORTestBase
 
     private final CBORMapper NO_CAN_MAPPER = CBORMapper.builder(CBORFactory.builder()
             .disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES)
+            // 24-Jul-2026, tatu: [dataformats-binary#725] Longest name used by
+            //    `testSimpleNoCanonicalize()` exceeds the default 50k byte
+            //    `maxNameLength` (which is now actually enforced), so need to
+            //    allow longer ones
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxNameLength(100_000)
+                    .build())
             .build())
             .build();
 

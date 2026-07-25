@@ -23,6 +23,18 @@ Active maintainers:
   buffer reload
 #715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
   ignoring actual type
+#720: (smile) `SmileGenerator` int overflow in `maxLen` for very long Strings
+  (>= 715,827,882 chars) causes `ArrayIndexOutOfBoundsException`
+ (reported by Benjamin M)
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+ (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
 
 2.21.5 (06-Jul-2026)
 
@@ -104,15 +116,6 @@ No changes since 2.21.1.
 - Fixes wrt [core#1438] (ParserBase.close() not resetting current token)
 - Generate SBOMs [JSTEP-14]
 
-2.19.5 (not yet released)
-
-#645: (avro) Remove use of Avro `Schema.Parser().setValidate()` to allow
-  use of Avro core 1.12.1 (2.x)
-#649: (cbor, smile) `StreamReadConstraints.maxDocumentLength` not checked
-  when creating parser with fixed buffer
-#651: (smile) Ensure Smile backend supports `StreamReadConstraints.maxTokenCount`
-#652: (cbor) Ensure CBOR backend supports `StreamReadConstraints.maxTokenCount`
-
 2.19.4 (29-Oct-2025)
 2.19.3 (29-Oct-2025)
 
@@ -161,6 +164,24 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.10 (not yet released)
+
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+ (reported by @tinyb0y)
+#727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
+  marker 23 with 24 ("1-byte length suffix follows")
+#728: (cbor) `CBORParser.nextFieldName(SerializableString)` consumes Object entry
+  slot twice on fast-path miss, truncating definite-length Objects
+#733: (cbor) Long `String`s not added to "stringref" reference table, breaking
+  following references
+#735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
+  actual length to `shouldReferenceString()`
+
+2.18.9 (07-Jul-2026)
+
+No changes since 2.18.8
 
 2.18.8 (28-Mar-2026)
 

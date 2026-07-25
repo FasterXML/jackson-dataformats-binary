@@ -372,6 +372,10 @@ Shanchao Li (@tonghuaroot)
  * Reported #696: (ion) Incomplete number length validation in Ion decoder
   (2.18.8)
 
+@tinyb0y
+ * Reported #726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+  (2.18.10)
+
 Steven Fackler (@sfackler)
  * Reported #300: (smile) Floats are encoded with sign extension while
    doubles without
@@ -451,3 +455,9 @@ Shanchao Li (@tonghuaroot)
 * Reported #693: (avro) Incomplete number length validation in Avro
   decoder (for `BigDecimal`)
  (2.21.4)
+
+Benjamin Muschko (@bmuschko)
+
+* Reported #720: (smile) `SmileGenerator` int overflow in `maxLen` for very long
+  Strings causes `ArrayIndexOutOfBoundsException`
+ (2.21.6)
