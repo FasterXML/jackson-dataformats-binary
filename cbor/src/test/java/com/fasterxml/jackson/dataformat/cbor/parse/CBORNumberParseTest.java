@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonParser.NumberTypeFP;
@@ -12,11 +14,14 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.cbor.*;
 import com.fasterxml.jackson.dataformat.cbor.testutil.ThrottledInputStream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @SuppressWarnings("resource")
 public class CBORNumberParseTest extends CBORTestBase
 {
     private final CBORFactory CBOR_F = cborFactory();
 
+    @Test
     public void testIntValues() throws Exception
     {
         // first, single-byte
@@ -71,6 +76,7 @@ public class CBORNumberParseTest extends CBORTestBase
 
     // Special tests for "gray area" for uint32 values that do not fit
     // in Java int; from [dataformats-binary#30]
+    @Test
     public void testInt32Overflow() throws Exception
     {
         // feed in max uint32, which is 2x+1 as big as Integer.MAX_VALUE
@@ -111,6 +117,7 @@ public class CBORNumberParseTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testLongValues() throws Exception
     {
         _verifyLong(CBOR_F, 1L + Integer.MAX_VALUE);
@@ -150,6 +157,7 @@ public class CBORNumberParseTest extends CBORTestBase
 
     // Special tests for "gray area" for uint64 values that do not fit
     // in Java long; from [dataformats-binary#30]
+    @Test
     public void testInt64Overflow() throws Exception
     {
         // feed in max uint64, which is 2x+1 as big as Long.MAX_VALUE
@@ -197,6 +205,7 @@ public class CBORNumberParseTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testDoubleValues() throws Exception
     {
         _verifyDouble(CBOR_F, 0.25, false);
@@ -233,6 +242,7 @@ public class CBORNumberParseTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testFloatValues() throws Exception
     {
         // first, single-byte
@@ -308,6 +318,7 @@ public class CBORNumberParseTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testFloatNumberType() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CBORGenerator generator = cborGenerator(out);
@@ -331,6 +342,7 @@ public class CBORNumberParseTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testBigDecimalType() throws IOException {
         final BigDecimal NR = new BigDecimal("172.125");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -350,6 +362,7 @@ public class CBORNumberParseTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testBigDecimalType2() throws IOException {
         // Almost good. But [dataformats#139] to consider too, see
         // [https://tools.ietf.org/html/rfc7049#section-2.4.2]
@@ -368,6 +381,7 @@ public class CBORNumberParseTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testVeryBigDecimalType() throws IOException {
         final int len = 10000;
         final StringBuilder sb = new StringBuilder();
@@ -386,12 +400,13 @@ public class CBORNumberParseTest extends CBORTestBase
                 parser.nextToken();
                 fail("expected StreamConstraintsException");
             } catch (StreamConstraintsException e) {
-                assertTrue("unexpected exception message: " + e.getMessage(),
-                        e.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"));
+                assertTrue(e.getMessage().startsWith("Number value length (4153) exceeds the maximum allowed"),
+                        "unexpected exception message: " + e.getMessage());
             }
         }
     }
 
+    @Test
     public void testVeryBigDecimalWithUnlimitedNumLength() throws IOException {
         final int len = 10000;
         final StringBuilder sb = new StringBuilder();

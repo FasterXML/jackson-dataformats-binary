@@ -3,9 +3,13 @@ package com.fasterxml.jackson.dataformat.cbor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for [dataformats-binary#733]: Strings decoded by
@@ -29,6 +33,7 @@ public class StringRef733Test extends CBORTestBase
      */
 
     // Long String is entry #0, so reference #1 must resolve to "AAA"
+    @Test
     public void testLongStringDoesNotShiftFollowingRefs() throws Exception
     {
         final String longString = _generateAscii(LONG_LENGTH);
@@ -40,6 +45,7 @@ public class StringRef733Test extends CBORTestBase
 
     // Reference #0 is the long String itself: before fix, failed with
     // "String reference (0) out of range" since table was left empty
+    @Test
     public void testReferenceToLongStringItself() throws Exception
     {
         final String longString = _generateAscii(LONG_LENGTH);
@@ -51,6 +57,7 @@ public class StringRef733Test extends CBORTestBase
 
     // Same, but with a String that needs actual UTF-8 decoding (not just the
     // ASCII path), to verify multi-byte characters do not throw the count off
+    @Test
     public void testReferenceToLongUnicodeString() throws Exception
     {
         StringBuilder sb = new StringBuilder();
@@ -73,6 +80,7 @@ public class StringRef733Test extends CBORTestBase
     // Round-trip through `CBORGenerator` with STRINGREF enabled. Needs to use
     // `SerializableString` (or `writeRawUTF8String()`): plain `writeString()`
     // chunks Strings this long, see `testLongChunkedStringNotReferenced()`
+    @Test
     public void testLongStringRoundTrip() throws Exception
     {
         final String longString = _generateAscii(LONG_LENGTH);
@@ -99,11 +107,11 @@ public class StringRef733Test extends CBORTestBase
                 assertToken(JsonToken.VALUE_STRING, p.nextToken());
                 assertEquals("AAA", p.getText());
                 assertToken(JsonToken.VALUE_STRING, p.nextToken());
-                assertEquals("Reference to long String, stream = "+stream,
-                        longString, p.getText());
+                assertEquals(longString, p.getText(),
+                        "Reference to long String, stream = "+stream);
                 assertToken(JsonToken.VALUE_STRING, p.nextToken());
-                assertEquals("Reference to short String, stream = "+stream,
-                        "AAA", p.getText());
+                assertEquals("AAA", p.getText(),
+                        "Reference to short String, stream = "+stream);
                 assertToken(JsonToken.END_ARRAY, p.nextToken());
                 assertNull(p.nextToken());
             }
@@ -114,6 +122,7 @@ public class StringRef733Test extends CBORTestBase
     // reference table, by either side. Generator chunks Strings longer than
     // ~4000 characters when written via `writeString(String)`, so the long
     // String below does not take up an index -- and "AAA" is entry #0
+    @Test
     public void testLongChunkedStringNotReferenced() throws Exception
     {
         final String longString = _generateAscii(LONG_LENGTH);
@@ -137,8 +146,8 @@ public class StringRef733Test extends CBORTestBase
                 assertToken(JsonToken.VALUE_STRING, p.nextToken());
                 assertEquals("AAA", p.getText());
                 assertToken(JsonToken.VALUE_STRING, p.nextToken());
-                assertEquals("Reference to short String, stream = "+stream,
-                        "AAA", p.getText());
+                assertEquals("AAA", p.getText(),
+                        "Reference to short String, stream = "+stream);
                 assertToken(JsonToken.END_ARRAY, p.nextToken());
                 assertNull(p.nextToken());
             }

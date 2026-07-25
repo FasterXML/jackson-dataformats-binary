@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.cbor.constraints;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -13,11 +15,14 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 
 // [dataformats-binary#651] Validate maxTokenCount support for CBOR
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TokenCountCBORReadTest extends CBORTestBase
 {
     private final CBORMapper MAPPER = cborMapper();
 
     // Verify token count is tracked accurately
+    @Test
     public void testTokenCountIsTracked() throws Exception
     {
         // [1, 2, 3]: START_ARRAY, VALUE_NUMBER_INT x3, END_ARRAY = 5 tokens
@@ -30,6 +35,7 @@ public class TokenCountCBORReadTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testTokenCountLimitWithStream() throws Exception
     {
         // createDoc(100) produces START_ARRAY + 100xVALUE_NUMBER_INT + END_ARRAY = 102 tokens
@@ -44,6 +50,7 @@ public class TokenCountCBORReadTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testTokenCountLimitWithByteArray() throws Exception
     {
         // createDoc(100) produces START_ARRAY + 100xVALUE_NUMBER_INT + END_ARRAY = 102 tokens

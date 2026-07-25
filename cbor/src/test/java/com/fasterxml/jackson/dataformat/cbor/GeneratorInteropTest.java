@@ -2,6 +2,10 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 /**
  * Unit tests geared at testing issues that were raised due to
  * inter-operability with other CBOR codec implementations
@@ -16,6 +20,7 @@ public class GeneratorInteropTest extends CBORTestBase
     };
 
     // Test for [Issue#6], for optional writing of CBOR Type Description Tag
+    @Test
     public void testTypeDescriptionTag() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -28,6 +33,7 @@ public class GeneratorInteropTest extends CBORTestBase
         _verifyBytes(out.toByteArray(), TYPE_DESC_AND_TRUE);
     }
 
+    @Test
     public void testAutoTypeDescription() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

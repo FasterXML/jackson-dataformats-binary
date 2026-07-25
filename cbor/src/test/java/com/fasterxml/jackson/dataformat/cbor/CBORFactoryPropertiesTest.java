@@ -2,9 +2,11 @@ package com.fasterxml.jackson.dataformat.cbor;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Miscellaneous tests for {@link CBORFactory}, and for some aspects
@@ -16,6 +18,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
 
     private final static CBORFactory CBOR_F = new CBORFactory();
 
+    @Test
     public void testCBORFactorySerializable() throws Exception
     {
         CBORFactory f = new CBORFactory();
@@ -30,6 +33,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         assertArrayEquals(doc, docOut);
     }
 
+    @Test
     public void testCBORFactoryCopy() throws Exception
     {
         CBORFactory f2 = CBOR_F.copy();
@@ -39,6 +43,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         assertNotNull(doc);
     }
 
+    @Test
     public void testVersions() throws Exception
     {
         CBORFactory f = CBOR_F;
@@ -55,6 +60,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         p.close();
     }
 
+    @Test
     public void testCapabilities() throws Exception
     {
         assertTrue(CBOR_F.canHandleBinaryNatively());
@@ -63,6 +69,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         assertEquals(CBORGenerator.Feature.class, CBOR_F.getFormatWriteFeatureType());
     }
 
+    @Test
     public void testInabilityToReadChars() throws Exception
     {
         final String EXP = "non-byte-based source";
@@ -86,6 +93,7 @@ public class CBORFactoryPropertiesTest extends CBORTestBase
         }
     }
 
+    @Test
     public void testInabilityToWriteChars() throws Exception
     {
         try {

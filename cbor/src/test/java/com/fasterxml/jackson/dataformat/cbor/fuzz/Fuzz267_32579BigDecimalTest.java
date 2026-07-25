@@ -2,15 +2,21 @@ package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
 import java.math.BigDecimal;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Fuzz267_32579BigDecimalTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
     // [dataformats-binary#267]
+    @Test
     public void testBigDecimalOverflow() throws Exception
     {
 //        final byte[] input = readResource("/data/clusterfuzz-cbor-32579.cbor");

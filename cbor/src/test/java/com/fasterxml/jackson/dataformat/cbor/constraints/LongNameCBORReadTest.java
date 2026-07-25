@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.cbor.constraints;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -13,6 +15,8 @@ import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 // [dataformats-binary#725]: `maxNameLength` was not enforced for any of the
 // Object property name variants CBOR supports
+import static org.junit.jupiter.api.Assertions.*;
+
 public class LongNameCBORReadTest extends CBORTestBase
 {
     private final static int MAX_NAME_LEN = 1000;
@@ -52,12 +56,14 @@ public class LongNameCBORReadTest extends CBORTestBase
      */
 
     // Name with 1-byte length suffix (marker 24)
+    @Test
     public void testLongNameWith1ByteLength() throws Exception
     {
         _verifyNameLengthFail(F_TINY, textNameDoc(200, LEN_1_BYTE_SUFFIX), TINY_NAME_LEN);
     }
 
     // Name with 2-byte length suffix (marker 25)
+    @Test
     public void testLongNameWith2ByteLength() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, textNameDoc(5000, LEN_2_BYTE_SUFFIX),
@@ -65,6 +71,7 @@ public class LongNameCBORReadTest extends CBORTestBase
     }
 
     // Name with 4-byte length suffix (marker 26)
+    @Test
     public void testLongNameWith4ByteLength() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, textNameDoc(5000, LEN_4_BYTE_SUFFIX),
@@ -72,6 +79,7 @@ public class LongNameCBORReadTest extends CBORTestBase
     }
 
     // Name too long to fit in the input buffer: decoded in segments
+    @Test
     public void testLongNameLongerThanInputBuffer() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, textNameDoc(40_000, LEN_4_BYTE_SUFFIX),
@@ -81,6 +89,7 @@ public class LongNameCBORReadTest extends CBORTestBase
     // Limit must be checked before content is read, so that a document that
     // merely claims a huge name fails with constraints (and not EOF) exception,
     // without any attempt to buffer the content
+    @Test
     public void testHugeNameLengthWithoutContent() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, textNameDoc(100_000_000, LEN_4_BYTE_SUFFIX, 0),
@@ -89,6 +98,7 @@ public class LongNameCBORReadTest extends CBORTestBase
 
     // Same check needed for indefinite-length Objects, which is what
     // `CBORGenerator` actually writes
+    @Test
     public void testLongNameInIndefiniteLengthObject() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED,
@@ -103,6 +113,7 @@ public class LongNameCBORReadTest extends CBORTestBase
 
     // Chunked name exceeds limit only when chunks are added up: must be
     // caught while decoding, not after the whole name is accumulated
+    @Test
     public void testLongChunkedName() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, chunkedTextNameDoc(100, 20), MAX_NAME_LEN);
@@ -115,11 +126,13 @@ public class LongNameCBORReadTest extends CBORTestBase
      */
 
     // CBOR allows Binary ("byte string") names, too
+    @Test
     public void testLongBinaryName() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, binaryNameDoc(2000), MAX_NAME_LEN);
     }
 
+    @Test
     public void testLongChunkedBinaryName() throws Exception
     {
         _verifyNameLengthFail(F_CONSTRAINED, chunkedBinaryNameDoc(100, 20), MAX_NAME_LEN);
@@ -128,6 +141,7 @@ public class LongNameCBORReadTest extends CBORTestBase
     // And an Integer name may be a "stringref" (tag 25) that resolves to a
     // previously decoded String of any length -- including a String value,
     // which is only bound by the (much higher) `maxStringLength`
+    @Test
     public void testLongStringRefName() throws Exception
     {
         // NOTE: reference is the name of the second entry, so first one to skip
@@ -140,18 +154,21 @@ public class LongNameCBORReadTest extends CBORTestBase
     /**********************************************************
      */
 
+    @Test
     public void testNameAtMaxLength() throws Exception
     {
         _verifyNameLengthPass(F_CONSTRAINED, textNameDoc(MAX_NAME_LEN, LEN_2_BYTE_SUFFIX),
                 MAX_NAME_LEN);
     }
 
+    @Test
     public void testChunkedNameAtMaxLength() throws Exception
     {
         _verifyNameLengthPass(F_CONSTRAINED, chunkedTextNameDoc(100, 10), MAX_NAME_LEN);
     }
 
     // Stringref name that stays within the limit must work as before
+    @Test
     public void testShortStringRefName() throws Exception
     {
         _verifyNameLengthPass(F_CONSTRAINED, stringRefNameDoc(500), 500, 1);
@@ -160,6 +177,7 @@ public class LongNameCBORReadTest extends CBORTestBase
     // Enforcement is approximate: shortest names, ones with length encoded in
     // the type byte itself (up to 23 bytes), are not checked at all, making 23
     // bytes the effective minimum limit
+    @Test
     public void testShortNameNotValidated() throws Exception
     {
         _verifyNameLengthPass(F_MINI, textNameDoc(23, LEN_IN_TYPE_BYTE), 23);
@@ -172,6 +190,7 @@ public class LongNameCBORReadTest extends CBORTestBase
     // `nextFieldName(SerializableString)` does not check length of a MATCHING
     // name (up to 255 bytes) since it is the one caller asked for, and not
     // attacker-controlled
+    @Test
     public void testFastPathMatchNotValidated() throws Exception
     {
         final int nameLen = 200;
@@ -209,17 +228,20 @@ public class LongNameCBORReadTest extends CBORTestBase
 
     // Name length checks must not leak into decoding of String values, which
     // are bound by `maxStringLength` instead
+    @Test
     public void testLongStringValueNotAffected() throws Exception
     {
         _verifyValueLengthPass(textValueDoc(5000), 5000, false);
     }
 
+    @Test
     public void testLongChunkedStringValueNotAffected() throws Exception
     {
         _verifyValueLengthPass(chunkedValueDoc(0x60, 100, 20), 2000, false);
     }
 
     // ... nor into decoding of Binary values, which are not length-bound at all
+    @Test
     public void testLongChunkedBinaryValueNotAffected() throws Exception
     {
         _verifyValueLengthPass(chunkedValueDoc(0x40, 100, 20), 2000, true);
@@ -256,10 +278,10 @@ public class LongNameCBORReadTest extends CBORTestBase
                     fail("Should not pass "+desc+", instead got name: "+p.currentName());
                 } catch (StreamConstraintsException e) {
                     final String msg = e.getMessage();
-                    assertTrue("Unexpected message "+desc+": "+msg,
-                            msg.contains("Name length ("));
-                    assertTrue("Unexpected message "+desc+": "+msg,
-                            msg.contains("exceeds the maximum allowed ("+maxNameLen));
+                    assertTrue(msg.contains("Name length ("),
+                            "Unexpected message "+desc+": "+msg);
+                    assertTrue(msg.contains("exceeds the maximum allowed ("+maxNameLen),
+                            "Unexpected message "+desc+": "+msg);
                 }
             }
         }
@@ -283,9 +305,9 @@ public class LongNameCBORReadTest extends CBORTestBase
                     _skipEntries(p, skipEntries);
                     _advanceToName(p, mode);
                     assertToken(JsonToken.FIELD_NAME, p.currentToken());
-                    assertEquals(desc, expNameLen, p.currentName().length());
+                    assertEquals(expNameLen, p.currentName().length(), desc);
                     assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-                    assertEquals(desc, 1, p.getIntValue());
+                    assertEquals(1, p.getIntValue(), desc);
                     assertToken(JsonToken.END_OBJECT, p.nextToken());
                     assertNull(p.nextToken());
                 }
@@ -306,10 +328,10 @@ public class LongNameCBORReadTest extends CBORTestBase
                 assertEquals("k", p.currentName());
                 if (binary) {
                     assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
-                    assertEquals(desc, expValueLen, p.getBinaryValue().length);
+                    assertEquals(expValueLen, p.getBinaryValue().length, desc);
                 } else {
                     assertToken(JsonToken.VALUE_STRING, p.nextToken());
-                    assertEquals(desc, expValueLen, p.getText().length());
+                    assertEquals(expValueLen, p.getText().length(), desc);
                 }
                 assertToken(JsonToken.END_OBJECT, p.nextToken());
                 assertNull(p.nextToken());

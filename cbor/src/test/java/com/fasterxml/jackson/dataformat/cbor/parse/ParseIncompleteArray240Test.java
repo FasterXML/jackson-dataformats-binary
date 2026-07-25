@@ -1,16 +1,19 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORParser;
-import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+import com.fasterxml.jackson.dataformat.cbor.*;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ParseIncompleteArray240Test extends CBORTestBase
 {
     private final CBORFactory F = cborFactory();
 
     // [dataformats-binary#240]
+    @Test
     public void testIncompleteFixedSizeArray() throws Exception
     {
         final byte[] input = {  (byte) 0x84 };
@@ -25,6 +28,7 @@ public class ParseIncompleteArray240Test extends CBORTestBase
         }
     }
 
+    @Test
     public void testIncompleteMarkerBasedArray() throws Exception
     {
         final byte[] input = {  (byte) 0x9F };
@@ -40,6 +44,7 @@ public class ParseIncompleteArray240Test extends CBORTestBase
     }
 
     // And might as well do the same for Objects too
+    @Test
     public void testIncompleteFixedSizeObject() throws Exception
     {
         final byte[] input = {  (byte) 0xA3 };
@@ -54,6 +59,7 @@ public class ParseIncompleteArray240Test extends CBORTestBase
         }
     }
 
+    @Test
     public void testIncompleteMarkerBasedObject() throws Exception
     {
         final byte[] input = {  (byte) 0xBF };

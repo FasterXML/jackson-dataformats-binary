@@ -1,17 +1,21 @@
 package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Fuzz272_32722_ChunkedTextTest extends CBORTestBase
 {
     private final ObjectMapper MAPPER = cborMapper();
 
     // [dataformats-binary#272]
+    @Test
     public void testChunkedWithUTF8_4Bytes() throws Exception
     {
         final byte[] input = new byte[] {

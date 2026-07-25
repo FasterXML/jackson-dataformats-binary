@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.cbor.fuzz;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +13,7 @@ public class Fuzz288_35750_NonCanonicalNameTest extends CBORTestBase
 
     // [dataformats-binary#288]: non-canonical representation for length of 0
     // causing ArrayOutOfBoundsException
+    @Test
     public void testInvalidLongName() throws Exception
     {
         final byte[] input = new byte[] {

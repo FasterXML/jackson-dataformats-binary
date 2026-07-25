@@ -1,8 +1,13 @@
 package com.fasterxml.jackson.dataformat.cbor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumberCoercing32Test extends CBORTestBase
 {
@@ -12,6 +17,7 @@ public class NumberCoercing32Test extends CBORTestBase
     /**********************************************************
      */
 
+    @Test
     public void testPrimitiveTypeInvariance() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper(

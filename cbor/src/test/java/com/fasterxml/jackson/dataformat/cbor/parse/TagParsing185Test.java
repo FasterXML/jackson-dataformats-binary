@@ -1,13 +1,17 @@
 package com.fasterxml.jackson.dataformat.cbor.parse;
 
-import com.fasterxml.jackson.core.*;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.cbor.*;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TagParsing185Test extends CBORTestBase
 {
     private final CBORFactory CBOR_F = new CBORFactory();
 
+    @Test
     public void testRecursiveTags() throws Exception
     {
         _testRecursiveTags(20000);
