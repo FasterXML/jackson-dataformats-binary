@@ -37,7 +37,7 @@ public class StringRef733Test extends CBORTestBase
     @Test
     public void testLongStringDoesNotShiftFollowingRefs() throws Exception
     {
-        final String longString = _generateAscii(LONG_LENGTH);
+        final String longString = generateAsciiString(LONG_LENGTH);
         final byte[] doc = _stringRefDoc(longString, 1);
 
         _verifyRefResolvesTo(_parser(doc, false), longString, "AAA");
@@ -49,7 +49,7 @@ public class StringRef733Test extends CBORTestBase
     @Test
     public void testReferenceToLongStringItself() throws Exception
     {
-        final String longString = _generateAscii(LONG_LENGTH);
+        final String longString = generateAsciiString(LONG_LENGTH);
         final byte[] doc = _stringRefDoc(longString, 0);
 
         _verifyRefResolvesTo(_parser(doc, false), longString, longString);
@@ -84,7 +84,7 @@ public class StringRef733Test extends CBORTestBase
     @Test
     public void testLongStringRoundTrip() throws Exception
     {
-        final String longString = _generateAscii(LONG_LENGTH);
+        final String longString = generateAsciiString(LONG_LENGTH);
         final SerializedString longSerialized = new SerializedString(longString);
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -126,7 +126,7 @@ public class StringRef733Test extends CBORTestBase
     @Test
     public void testLongChunkedStringNotReferenced() throws Exception
     {
-        final String longString = _generateAscii(LONG_LENGTH);
+        final String longString = generateAsciiString(LONG_LENGTH);
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (CBORGenerator gen = stringrefCborGenerator(bytes)) {
@@ -214,13 +214,5 @@ public class StringRef733Test extends CBORTestBase
     // was never affected; `InputStream`-backed one uses `_finishLongText()`
     private JsonParser _parser(byte[] doc, boolean stream) throws Exception {
         return stream ? cborParser(new ByteArrayInputStream(doc)) : cborParser(doc);
-    }
-
-    private String _generateAscii(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        while (sb.length() < len) {
-            sb.append((char) ('a' + (sb.length() % 26)));
-        }
-        return sb.toString();
     }
 }
