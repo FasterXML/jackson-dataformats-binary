@@ -2403,7 +2403,7 @@ public class CBORParser extends ParserBase
             return;
         }
         // If not enough space, need handling similar to chunked
-        _finishLongText(len);
+        _finishLongText(len, false);
     }
 
     protected String _finishTextToken(int ch) throws JacksonException
@@ -2442,7 +2442,7 @@ public class CBORParser extends ParserBase
             return _finishShortText(len);
         }
         // If not enough space, need handling similar to chunked
-        return _finishLongText(len);
+        return _finishLongText(len, false);
     }
 
     private final String _finishShortText(int len) throws JacksonException
@@ -2547,12 +2547,21 @@ public class CBORParser extends ParserBase
         return str;
     }
 
-    private final String _finishLongText(int len) throws JacksonException
+    /**
+     * @param isName Whether content being decoded is that of an Object property
+     *   name (and not a String value): if so, "stringref" bookkeeping is left to
+     *   the caller ({@code _decodePropertyName()} / {@code nextName()} /
+     *   {@code _nextNameLong()}), which already adds names to the reference table
+     *   -- doing it here as well would give a single name two indexes
+     *
+     * @since 2.18.10
+     */
+    private final String _finishLongText(int len, boolean isName) throws JacksonException
     {
         // 24-Jul-2026, tatu: [dataformats-binary#733] Need to check this before
         //    decoding: `len` is decremented by the loop below (down to -1)
         StringRefList stringRefs = null;
-        if (!_stringRefs.empty() &&
+        if (!isName && !_stringRefs.empty() &&
                 shouldReferenceString(_stringRefs.peek().stringRefs.size(), len)) {
             stringRefs = _stringRefs.peek();
         }
@@ -3246,8 +3255,10 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         if ((_inputEnd - _inputPtr) < len) {
             // or if not, could we read?
             if (len >= _inputBuffer.length) {
-                // If not enough space, need handling similar to chunked
-                return _finishLongText(len);
+                // If not enough space, need handling similar to chunked.
+                // 24-Jul-2026, tatu: [dataformats-binary#736] `true` for "isName"
+                //    since caller adds the name to "stringref" table itself
+                return _finishLongText(len, true);
             }
             _loadToHaveAtLeast(len);
         }
