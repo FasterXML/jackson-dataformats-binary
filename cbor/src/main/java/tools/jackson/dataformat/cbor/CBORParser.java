@@ -7,9 +7,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Stack;
 
 import tools.jackson.core.*;
 import tools.jackson.core.base.ParserBase;
@@ -206,7 +206,7 @@ public class CBORParser extends ParserBase
 
         public void pop() {
             --_nestedDepth;
-            if (!_stringRefs.empty() && _stringRefs.peek().depth == _nestedDepth) {
+            if (!_stringRefs.isEmpty() && _stringRefs.peek().depth == _nestedDepth) {
                 _stringRefs.pop();
             }
         }
@@ -216,10 +216,12 @@ public class CBORParser extends ParserBase
         }
 
         public boolean empty() {
-            return _stringRefs.empty();
+            return _stringRefs.isEmpty();
         }
 
-        private Stack<StringRefList> _stringRefs = new Stack<>();
+        // 28-Jul-2026, tatu: [dataformats-binary#742] Use non-synchronized
+        //   `ArrayDeque` instead of (synchronized) `Stack`
+        private final ArrayDeque<StringRefList> _stringRefs = new ArrayDeque<>();
         private int _nestedDepth = 0;
     }
 
