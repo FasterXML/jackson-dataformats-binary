@@ -73,6 +73,9 @@ No changes since 3.2.0
   actual length to `shouldReferenceString()`
 #736: (cbor) Long Object property names added to "stringref" reference table twice
  (NOTE: in 3.x this affected the `nextNameMatch()` decoding path as well)
+#742: Use `ArrayDeque` instead of `Stack` in `CBORParser`
+ (reported by Benoît M)
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.1.5 (07-Jul-2026)
 
