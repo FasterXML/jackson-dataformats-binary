@@ -349,6 +349,97 @@ public class MapField712Test extends ProtobufTestBase
         }
     }
 
+    // Content trailing the value inside an entry must be consumed as part of the entry,
+    // not leak out into the enclosing message.
+    @Test
+    public void testUnknownFieldAfterScalarValueInEntry() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> counts = 1; string name = 2; }\n", "Msg");
+        // entry body: key(0a 01 6b) value(10 01) unknown(id 3, varint: 18 09) = 7 bytes,
+        // then a genuine `name` field of the enclosing message
+        byte[] doc = { 0x0a, 0x07, 0x0a, 0x01, 0x6b, 0x10, 0x01, 0x18, 0x09,
+                       0x12, 0x01, 0x7a };
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(1, tree.get("counts").get("k").asInt());
+        assertEquals("z", tree.get("name").asText());
+    }
+
+    // Same, but for a message-valued entry: the stray field used to be decoded as a
+    // field of the entry message, yielding an extra END_OBJECT.
+    @Test
+    public void testUnknownFieldAfterMessageValueInEntry() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Val { int32 x = 1; }\n"
+                + "message Msg { map<string, Val> m = 1; string name = 2; }\n", "Msg");
+        // entry body: key(0a 01 6b) value(12 02 08 07) unknown(18 09) = 9 bytes
+        byte[] doc = { 0x0a, 0x09, 0x0a, 0x01, 0x6b, 0x12, 0x02, 0x08, 0x07, 0x18, 0x09,
+                       0x12, 0x01, 0x7a };
+
+        // Token stream must match the well-formed encoding exactly (no stray END_OBJECT)
+        byte[] clean = { 0x0a, 0x07, 0x0a, 0x01, 0x6b, 0x12, 0x02, 0x08, 0x07,
+                         0x12, 0x01, 0x7a };
+        assertEquals(_tokens(schema, clean), _tokens(schema, doc));
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(7, tree.get("m").get("k").get("x").asInt());
+        assertEquals("z", tree.get("name").asText());
+    }
+
+    private String _tokens(ProtobufSchema schema, byte[] doc) throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        try (JsonParser p = MAPPER.getFactory().createParser(doc)) {
+            p.setSchema(schema);
+            JsonToken t;
+            while ((t = p.nextToken()) != null) {
+                sb.append(t).append(' ');
+            }
+        }
+        return sb.toString();
+    }
+
+    // Protobuf does not constrain field order, so an entry may encode `value` (tag 2)
+    // before `key` (tag 1). A forward-only parser can not surface that key, so it must
+    // be reported -- silently yielding the default key would be wrong data.
+    @Test
+    public void testKeyAfterValueInEntryReported() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> counts = 1; }\n", "Msg");
+        // entry body: value(10 05) key(0a 01 6b) = 5 bytes
+        byte[] doc = { 0x0a, 0x05, 0x10, 0x05, 0x0a, 0x01, 0x6b };
+        try {
+            MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+            fail("Should not pass: 'key' follows 'value' within entry");
+        } catch (Exception e) {
+            verifyException(e, "'key' (id 1) follows 'value'");
+            verifyException(e, "counts");
+        }
+    }
+
+    // Two `key` fields within one entry: distinct from the above, and must say so
+    @Test
+    public void testDuplicateKeyInEntryReported() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> counts = 1; }\n", "Msg");
+        // entry body: key(0a 01 6b) key(0a 01 63) = 6 bytes
+        byte[] doc = { 0x0a, 0x06, 0x0a, 0x01, 0x6b, 0x0a, 0x01, 0x63 };
+        try {
+            MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+            fail("Should not pass: duplicate 'key' within entry");
+        } catch (Exception e) {
+            verifyException(e, "duplicate 'key' (id 1)");
+            verifyException(e, "counts");
+        }
+    }
+
     // The entry-end bound must survive a buffer reload that happens while scanning an
     // entry's fields, not just while reading the value: end offsets are rebased on
     // reload (see `ProtobufReadContext.adjustEnd()`), so a bound captured beforehand

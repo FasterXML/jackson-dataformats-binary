@@ -70,6 +70,12 @@ public class ProtobufParser extends ParserMinimalBase
     // Entry key has been surfaced (FIELD_NAME); read the entry value next
     private final static int STATE_MAP_VALUE = 17;
 
+    // Entry value has been surfaced: drain whatever remains of the entry, then pop it
+    // and resume iterating entries. Draining is deferred to this state (rather than done
+    // as the value is read) because length-prefixed values are skipped lazily, so the
+    // input pointer only reaches the value's end on the following `nextToken()`.
+    private final static int STATE_MAP_ENTRY_END = 18;
+
     private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
 
     // @since 2.14
@@ -733,6 +739,12 @@ public class ProtobufParser extends ParserMinimalBase
         case STATE_MAP_ENTRY_FIRST: // map field tag already consumed
             return _updateToken(_openMapEntry());
 
+        case STATE_MAP_ENTRY_END:
+            // Entry may still hold content the value read did not consume (unknown
+            // fields, or a `key` that followed the value); resolve it, then pop.
+            _finishMapEntry();
+            // fall through to iterating the next entry
+
         case STATE_MAP_ENTRY_OTHER:
             if (_checkEnd()) { // reached end of enclosing message: map ends
                 return _updateToken(JsonToken.END_OBJECT);
@@ -800,16 +812,12 @@ public class ProtobufParser extends ParserMinimalBase
         _currentMessage = parentCtxt.getMessageType();
         _currentEndOffset = parentCtxt.getEndOffset();
         _currentField = parentCtxt.getField();
-        // [dataformats-binary#712] If we popped into a map entry that is now fully
-        // consumed (its message-typed value was the last field), pop the entry too so
-        // we resume iterating entries rather than treating it as a nested message.
-        if (parentCtxt.isMapEntry() && (_inputPtr >= _currentEndOffset)) {
-            ProtobufReadContext mapCtxt = parentCtxt.getParent();
-            _parsingContext = mapCtxt;
-            _currentMessage = mapCtxt.getMessageType();
-            _currentEndOffset = mapCtxt.getEndOffset();
-            _currentField = mapCtxt.getField();
-            _state = STATE_MAP_ENTRY_OTHER;
+        // [dataformats-binary#712] If we popped into a map entry, its message-typed value
+        // has just ended: the entry itself is finished as far as tokens go, so drain and
+        // pop it (in STATE_MAP_ENTRY_END) rather than treating leftover entry content as
+        // fields of a nested message -- doing the latter would emit a second END_OBJECT.
+        if (parentCtxt.isMapEntry()) {
+            _state = STATE_MAP_ENTRY_END;
             return true;
         }
         if (_parsingContext.inRoot()) {
@@ -1170,9 +1178,10 @@ public class ProtobufParser extends ParserMinimalBase
 
     /**
      * Reads the value of the current {@code map} entry (tag 2), synthesizing a proto3
-     * default when the value is absent. For scalar values the entry is then popped; for
-     * message values the nested Object is streamed (and the entry popped afterwards, in
-     * {@link #_checkEnd}).
+     * default when the value is absent. In every case the entry context is left in place
+     * and torn down later, from {@link #STATE_MAP_ENTRY_END}: for message values the
+     * nested Object is streamed first, and even for scalars the value's bytes may not
+     * have been consumed yet (length-prefixed values are skipped lazily).
      */
     private JsonToken _readMapValue() throws IOException
     {
@@ -1184,9 +1193,8 @@ public class ProtobufParser extends ParserMinimalBase
         } else {
             while (true) {
                 if (_inputPtr >= _currentEndOffset) { // value absent -> proto3 default
-                    JsonToken t = _mapDefaultValueToken(valueField);
-                    _popMapEntry();
-                    return t;
+                    _state = STATE_MAP_ENTRY_END;
+                    return _mapDefaultValueToken(valueField);
                 }
                 tag = _decodeVInt();
                 final int id = (tag >> 3);
@@ -1194,7 +1202,10 @@ public class ProtobufParser extends ParserMinimalBase
                     break;
                 }
                 if (id == 1) {
-                    _reportErrorF("Map entry for field has 'key' (id 1) after 'value': not supported");
+                    // 'key' was already read (or defaulted) before we got here, so this
+                    // is a second one; a forward-only parser can not surface both.
+                    _reportErrorF("Unsupported `map` entry encoding for field '%s': duplicate 'key' (id 1) before 'value' (id 2)",
+                            _mapFieldName());
                 }
                 _skipUnknownValue(tag & 0x7); // unknown field inside entry
             }
@@ -1204,12 +1215,41 @@ public class ProtobufParser extends ParserMinimalBase
             _reportIncompatibleType(valueField, wireType);
         }
         if (valueField.type == FieldType.MESSAGE) {
-            // pushes value context (under the entry); entry is popped later, in _checkEnd
+            // pushes value context (under the entry); entry torn down once that ends
             return _readNextValue(valueField.type, STATE_NESTED_KEY);
         }
-        JsonToken t = _readNextValue(valueField.type, STATE_MAP_VALUE);
+        return _readNextValue(valueField.type, STATE_MAP_ENTRY_END);
+    }
+
+    /**
+     * Consumes whatever remains of the current {@code map} entry once its value has been
+     * surfaced, then pops the entry. Trailing unknown fields are skipped; a {@code key}
+     * (tag 1) arriving after the value can not be surfaced (the field name was already
+     * emitted, and the input is forward-only), so it is reported rather than dropped --
+     * silently substituting the proto3 default key would yield wrong data.
+     */
+    private void _finishMapEntry() throws IOException
+    {
+        // NOTE: `_currentEndOffset` is the entry's end, and stays correct across buffer
+        // reloads (which rebase it); the entry context is still current at this point.
+        while (_inputPtr < _currentEndOffset) {
+            final int tag = _decodeVInt();
+            if ((tag >> 3) == 1) {
+                _reportErrorF("Unsupported `map` entry encoding for field '%s': 'key' (id 1) follows 'value' (id 2) within the entry",
+                        _mapFieldName());
+            }
+            _skipUnknownValue(tag & 0x7);
+        }
         _popMapEntry();
-        return t;
+    }
+
+    /**
+     * @return Name of the {@code map} field whose entry is currently being decoded (the
+     *    entry context is current; the enclosing map context holds the field).
+     */
+    private String _mapFieldName() {
+        final ProtobufField f = _parsingContext.getParent().getField();
+        return (f == null) ? "UNKNOWN" : f.name;
     }
 
     /**
