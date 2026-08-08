@@ -349,6 +349,45 @@ public class MapField712Test extends ProtobufTestBase
         }
     }
 
+    // The entry-end bound must survive a buffer reload that happens while scanning an
+    // entry's fields, not just while reading the value: end offsets are rebased on
+    // reload (see `ProtobufReadContext.adjustEnd()`), so a bound captured beforehand
+    // goes stale and lets the scan run past the entry into the next one.
+    @Test
+    public void testUnknownFieldInEntryAcrossBufferReload() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> counts = 1; string name = 2; }\n", "Msg");
+        // Entry carrying only an unknown field (id 3, varint): key and value are both
+        // absent, so both decode to proto3 defaults.
+        final byte[] entryUnknownOnly = { 0x0a, 0x02, 0x18, 0x09 };
+        final byte[] entryA = { 0x0a, 0x05, 0x0a, 0x01, 0x61, 0x10, 0x01 }; // {"a":1}
+
+        // Sweep a padding prefix so the entry straddles the read-buffer boundary
+        // (8000 bytes, jackson-core's default) at every alignment.
+        for (int padLen = 7980; padLen <= 8020; ++padLen) {
+            java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream();
+            b.write(0x12); // tag 2 (`name`), length-prefixed
+            b.write(0x80 | (padLen & 0x7F)); // 2-byte varint length
+            b.write(padLen >> 7);
+            for (int i = 0; i < padLen; ++i) {
+                b.write('x');
+            }
+            b.write(entryUnknownOnly);
+            b.write(entryA);
+            final byte[] doc = b.toByteArray();
+
+            JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema)
+                    .readValue(new ByteArrayInputStream(doc));
+            JsonNode counts = tree.get("counts");
+            final String desc = "padLen "+padLen;
+            assertEquals(2, counts.size(), desc);
+            assertEquals(0, counts.get("").asInt(), desc);
+            assertEquals(1, counts.get("a").asInt(), desc);
+        }
+    }
+
     @Test
     public void testWriteStartArrayOnMapRejected() throws Exception
     {

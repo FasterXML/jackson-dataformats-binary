@@ -1143,7 +1143,10 @@ public class ProtobufParser extends ParserMinimalBase
         _mapValueTag = 0;
         String keyName = null;
         while (keyName == null) {
-            if (_inputPtr >= newEnd) { // empty (or key-less) entry
+            // NOTE: must test against `_currentEndOffset`, not the local `newEnd`: reads
+            // below may trigger a buffer reload, which rebases all end offsets (see
+            // `ProtobufReadContext.adjustEnd()`) and so leaves the local stale.
+            if (_inputPtr >= _currentEndOffset) { // empty (or key-less) entry
                 keyName = _defaultMapKeyName(keyField);
                 break;
             }
