@@ -303,7 +303,7 @@ public class TypeResolver
      * any integral type, {@code bool} or {@code string} (not floating-point, {@code bytes},
      * enum or message).
      */
-    private void _verifyMapKeyType(DataType keyType, FieldElement f, MessageElement rawType)
+    private static void _verifyMapKeyType(DataType keyType, FieldElement f, MessageElement rawType)
     {
         if (keyType instanceof DataType.ScalarType) {
             switch ((DataType.ScalarType) keyType) {

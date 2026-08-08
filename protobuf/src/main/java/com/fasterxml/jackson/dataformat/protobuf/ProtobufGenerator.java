@@ -1787,10 +1787,6 @@ public class ProtobufGenerator extends GeneratorBase
         return ptr;
     }
 
-    /**
-     * Method called when buffering an entry that should be prefixed
-     * with a type tag.
-     */
     /*
     /**********************************************************
     /* Internal map (`map<K,V>`) writes [dataformats-binary#712]
@@ -1838,15 +1834,19 @@ public class ProtobufGenerator extends GeneratorBase
         case BOOLEAN:
             writeBoolean(_parseBooleanMapKey(name, keyField));
             break;
-        case VINT32_STD:
-        case VINT32_Z:
-        case FIXINT32:
-            writeNumber(_parseIntMapKey(name, keyField));
+        case VINT32_Z: // `sint32`: signed only
+            writeNumber(_parseIntMapKey(name, keyField, false));
             break;
-        case VINT64_STD:
-        case VINT64_Z:
-        case FIXINT64:
-            writeNumber(_parseLongMapKey(name, keyField));
+        case VINT32_STD: // `int32` or `uint32`
+        case FIXINT32: // `sfixed32` or `fixed32`
+            writeNumber(_parseIntMapKey(name, keyField, true));
+            break;
+        case VINT64_Z: // `sint64`: signed only
+            writeNumber(_parseLongMapKey(name, keyField, false));
+            break;
+        case VINT64_STD: // `int64` or `uint64`
+        case FIXINT64: // `sfixed64` or `fixed64`
+            writeNumber(_parseLongMapKey(name, keyField, true));
             break;
         default:
             // Should not happen: key types are validated during schema resolution
@@ -1854,20 +1854,57 @@ public class ProtobufGenerator extends GeneratorBase
         }
     }
 
-    private int _parseIntMapKey(String name, ProtobufField keyField) throws IOException {
+    /**
+     * Parses a 32-bit {@code map} key.
+     *<p>
+     * {@link FieldType} does not distinguish signed from unsigned declarations
+     * ({@code int32} and {@code uint32} are both {@code VINT32_STD}), so for those the
+     * accepted range is the union of the two: {@code [Integer.MIN_VALUE, 0xFFFFFFFF]}.
+     * Narrowing a value above {@code Integer.MAX_VALUE} keeps the same 32 bits, which is
+     * exactly the {@code uint32} / {@code fixed32} encoding.
+     *
+     * @param allowUnsigned Whether the key type has an unsigned variant; {@code false}
+     *    for {@code sint32}, which is always signed.
+     */
+    private int _parseIntMapKey(String name, ProtobufField keyField, boolean allowUnsigned)
+        throws IOException
+    {
+        final long l;
         try {
-            return Integer.parseInt(name);
+            l = Long.parseLong(name);
         } catch (NumberFormatException e) {
             _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
                     +"' (type "+keyField.type+")");
             return 0; // never reached
         }
+        final long max = allowUnsigned ? 0xFFFFFFFFL : Integer.MAX_VALUE;
+        if ((l < Integer.MIN_VALUE) || (l > max)) {
+            _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
+                    +"' (type "+keyField.type+"): out of range ("+Integer.MIN_VALUE+" to "+max+")");
+        }
+        return (int) l;
     }
 
-    private long _parseLongMapKey(String name, ProtobufField keyField) throws IOException {
+    /**
+     * Parses a 64-bit {@code map} key. As with 32-bit keys the signed and unsigned
+     * declarations share a {@link FieldType}, so {@code uint64} keys above
+     * {@link Long#MAX_VALUE} are accepted as unsigned: the resulting bit pattern is the
+     * same 64-bit varint either way.
+     *
+     * @param allowUnsigned Whether the key type has an unsigned variant; {@code false}
+     *    for {@code sint64}, which is always signed.
+     */
+    private long _parseLongMapKey(String name, ProtobufField keyField, boolean allowUnsigned)
+        throws IOException
+    {
         try {
             return Long.parseLong(name);
         } catch (NumberFormatException e) {
+            if (allowUnsigned) {
+                try {
+                    return Long.parseUnsignedLong(name);
+                } catch (NumberFormatException e2) { }
+            }
             _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
                     +"' (type "+keyField.type+")");
             return 0L; // never reached
@@ -1885,6 +1922,10 @@ public class ProtobufGenerator extends GeneratorBase
         return false; // never reached
     }
 
+    /**
+     * Method called when buffering an entry that should be prefixed
+     * with a type tag.
+     */
     private final void _startBuffering(int typedTag) throws IOException
     {
         // need to ensure room for tag id, length (10 bytes); might as well ask for bit more

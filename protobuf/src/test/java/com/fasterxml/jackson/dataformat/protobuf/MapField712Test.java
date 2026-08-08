@@ -349,6 +349,75 @@ public class MapField712Test extends ProtobufTestBase
         }
     }
 
+    /*
+    /**********************************************************
+    /* Map key ranges
+    /**********************************************************
+     */
+
+    // Unsigned key types span the full 32/64-bit unsigned range, above what a signed
+    // Java int/long holds. Asserted on the wire bytes: `FieldType` does not carry
+    // signedness, so the parser renders these keys back as signed -- a pre-existing
+    // schema-layer limitation, separate from what the generator can encode.
+    @Test
+    public void testUnsignedMapKeysAtMax() throws Exception
+    {
+        // uint32 max: varint 0xFFFFFFFF is 5 bytes (ff ff ff ff 0f)
+        assertArrayEquals(
+                new byte[] { 0x0a, 0x08, 0x08, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 0x0f,
+                             0x10, 0x01 },
+                _writeSingleEntry("uint32", "4294967295"));
+        // fixed32 max: 4 raw bytes
+        assertArrayEquals(
+                new byte[] { 0x0a, 0x07, 0x0d, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,
+                             0x10, 0x01 },
+                _writeSingleEntry("fixed32", "4294967295"));
+        // uint64 max: varint is 10 bytes (ff x9, then 01)
+        assertArrayEquals(
+                new byte[] { 0x0a, 0x0d, 0x08,
+                             (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,
+                             (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 0x01,
+                             0x10, 0x01 },
+                _writeSingleEntry("uint64", "18446744073709551615"));
+    }
+
+    @Test
+    public void testOutOfRangeMapKeysRejected() throws Exception
+    {
+        // just past uint32 max
+        _verifyBadKey("uint32", "4294967296", "out of range");
+        // below int32 min
+        _verifyBadKey("int32", "-2147483649", "out of range");
+        // `sint32` is signed only: the unsigned range must NOT be accepted for it
+        _verifyBadKey("sint32", "4294967295", "out of range");
+        // past uint64 max
+        _verifyBadKey("uint64", "18446744073709551616", "Invalid `map` key");
+        // not a number at all
+        _verifyBadKey("int32", "abc", "Invalid `map` key");
+    }
+
+    private byte[] _writeSingleEntry(String keyType, String key) throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<" + keyType + ", int32> m = 1; }\n", "Msg");
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put(key, 1);
+        root.put("m", m);
+        return MAPPER.writer(schema).writeValueAsBytes(root);
+    }
+
+    private void _verifyBadKey(String keyType, String key, String expectedMsg) throws Exception
+    {
+        try {
+            _writeSingleEntry(keyType, key);
+            fail("Should not accept key \"" + key + "\" for `map<" + keyType + ",int32>`");
+        } catch (Exception e) {
+            verifyException(e, expectedMsg);
+        }
+    }
+
     // Content trailing the value inside an entry must be consumed as part of the entry,
     // not leak out into the enclosing message.
     @Test
