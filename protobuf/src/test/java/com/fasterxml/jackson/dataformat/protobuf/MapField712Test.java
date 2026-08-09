@@ -12,12 +12,14 @@ import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
+import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -348,6 +350,52 @@ public class MapField712Test extends ProtobufTestBase
             assertEquals("value-string-number-" + i,
                     tree.get("m").get(String.valueOf(i)).asText());
         }
+    }
+
+    // Resolving a map publishes its synthetic entry message into the enclosing scope, so
+    // that name must not be one the schema could also declare -- otherwise a field naming
+    // that type silently resolves to the entry instead, depending on declaration order.
+    @Test
+    public void testSyntheticEntryNameDoesNotShadowDeclaredType() throws Exception
+    {
+        // `CountsEntry` is what protoc would name the entry for `map ... counts`
+        final String decl = "message CountsEntry { string zzz = 1; }\n";
+
+        // map declared BEFORE the reference (the order that used to break)
+        _verifyOtherIsDeclaredType(
+                "syntax = \"proto3\";\n" + decl
+                + "message Msg {\n"
+                + "  map<string, int32> counts = 1;\n"
+                + "  CountsEntry other = 2;\n"
+                + "}\n");
+        // ... and after, which always worked: both must agree
+        _verifyOtherIsDeclaredType(
+                "syntax = \"proto3\";\n" + decl
+                + "message Msg {\n"
+                + "  CountsEntry other = 1;\n"
+                + "  map<string, int32> counts = 2;\n"
+                + "}\n");
+        // control: a map whose name does not collide at all
+        _verifyOtherIsDeclaredType(
+                "syntax = \"proto3\";\n" + decl
+                + "message Msg {\n"
+                + "  map<string, int32> tallies = 1;\n"
+                + "  CountsEntry other = 2;\n"
+                + "}\n");
+    }
+
+    private void _verifyOtherIsDeclaredType(String proto) throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(proto, "Msg");
+        ProtobufField other = schema.getRootType().field("other");
+        assertNotNull(other);
+        ProtobufMessage type = other.getMessageType();
+        assertNotNull(type);
+        assertNotNull(type.field("zzz"),
+                "'other' should resolve to declared `CountsEntry`, got fields: "+type.fieldsAsString());
+        // and specifically NOT to the synthetic map entry
+        assertNull(type.field("key"),
+                "'other' resolved to the synthetic map entry: "+type.fieldsAsString());
     }
 
     /*

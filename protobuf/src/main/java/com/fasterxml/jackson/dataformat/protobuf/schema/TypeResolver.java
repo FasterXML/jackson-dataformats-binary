@@ -323,16 +323,25 @@ public class TypeResolver
     }
 
     /**
-     * Derives the name of the synthetic entry message for a {@code map} field, mirroring
-     * the {@code <FieldName>Entry} convention used by {@code protoc}. Only used for
-     * diagnostics and internal type lookup, so exact CamelCase-ing is not essential.
+     * Derives the name of the synthetic entry message for a {@code map} field.
+     *<p>
+     * The name deliberately contains characters that can not occur in a protobuf
+     * identifier ({@code [A-Za-z_][A-Za-z0-9_]*}), so that it can never collide with a
+     * type the schema itself declares. Resolving the entry publishes it into the
+     * enclosing scope (see {@link #_resolve}), so a {@code protoc}-style
+     * {@code <FieldName>Entry} name would shadow a same-named declared type for any
+     * field resolved after the map field -- silently, and depending on declaration
+     * order. The name is only ever used for diagnostics and internal lookup, never for
+     * resolving references written in the schema.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
      */
     private static String _mapEntryName(String fieldName)
     {
         if (fieldName == null || fieldName.isEmpty()) {
-            return "Entry";
+            return "map<?>";
         }
-        return Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1) + "Entry";
+        return "map<" + fieldName + ">";
     }
 
     protected void addResolvedMessageType(String name, ProtobufMessage toResolve) {
