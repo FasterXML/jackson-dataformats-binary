@@ -812,11 +812,12 @@ public class ProtobufParser extends ParserMinimalBase
         _currentMessage = parentCtxt.getMessageType();
         _currentEndOffset = parentCtxt.getEndOffset();
         _currentField = parentCtxt.getField();
-        // [dataformats-binary#712] If we popped into a map entry, its message-typed value
-        // has just ended: the entry itself is finished as far as tokens go, so drain and
-        // pop it (in STATE_MAP_ENTRY_END) rather than treating leftover entry content as
-        // fields of a nested message -- doing the latter would emit a second END_OBJECT.
-        if (parentCtxt.isMapEntry()) {
+        // [dataformats-binary#712] If we popped back into a map whose entry is still open,
+        // that entry's message-typed value has just ended: the entry is finished as far as
+        // tokens go, so drain and close it (in STATE_MAP_ENTRY_END) rather than treating
+        // leftover entry content as fields of a nested message -- doing the latter would
+        // emit a second END_OBJECT.
+        if (parentCtxt.isEntryOpen()) {
             _state = STATE_MAP_ENTRY_END;
             return true;
         }
@@ -1125,6 +1126,11 @@ public class ProtobufParser extends ParserMinimalBase
      * position), reads its key (tag 1, possibly absent), and surfaces the key as the
      * current field name. Leaves {@link #_currentField} pointing at the value field and
      * transitions to {@link #STATE_MAP_VALUE}.
+     *<p>
+     * No context is pushed for the entry: its key/value pair is a single member of the
+     * map Object, so making it a context would report -- and charge against
+     * {@code maxNestingDepth} -- a nesting level that the equivalent JSON does not have.
+     * The entry's bound lives on the map context instead.
      */
     private JsonToken _openMapEntry() throws IOException
     {
@@ -1140,8 +1146,7 @@ public class ProtobufParser extends ParserMinimalBase
             _reportErrorF("Map entry for field '%s' extends past end of enclosing message: %d > %d (length: %d)",
                     mapField.name, newEnd, _currentEndOffset, len);
         }
-        _parsingContext = _parsingContext.createChildMapEntryContext(newEnd);
-        _streamReadConstraints.validateNestingDepth(_parsingContext.getNestingDepth());
+        _parsingContext.startMapEntry(newEnd);
         _currentEndOffset = newEnd;
         _currentMessage = mapField.getMessageType();
 
@@ -1231,7 +1236,7 @@ public class ProtobufParser extends ParserMinimalBase
     private void _finishMapEntry() throws IOException
     {
         // NOTE: `_currentEndOffset` is the entry's end, and stays correct across buffer
-        // reloads (which rebase it); the entry context is still current at this point.
+        // reloads (which rebase it); the entry is still open at this point.
         while (_inputPtr < _currentEndOffset) {
             final int tag = _decodeVInt();
             if ((tag >> 3) == 1) {
@@ -1240,29 +1245,28 @@ public class ProtobufParser extends ParserMinimalBase
             }
             _skipUnknownValue(tag & 0x7);
         }
-        _popMapEntry();
+        _closeMapEntry();
     }
 
     /**
-     * @return Name of the {@code map} field whose entry is currently being decoded (the
-     *    entry context is current; the enclosing map context holds the field).
+     * @return Name of the {@code map} field whose entry is currently being decoded.
      */
     private String _mapFieldName() {
-        final ProtobufField f = _parsingContext.getParent().getField();
+        final ProtobufField f = _parsingContext.getMapField();
         return (f == null) ? "UNKNOWN" : f.name;
     }
 
     /**
-     * Pops the current {@code map} entry context back to the enclosing map context, ready
-     * to read the next entry (or end the map).
+     * Ends the current {@code map} entry, restoring the map context's own bounds so the
+     * next entry (or the end of the map) can be read.
      */
-    private void _popMapEntry()
+    private void _closeMapEntry()
     {
-        ProtobufReadContext mapCtxt = _parsingContext.getParent();
-        _parsingContext = mapCtxt;
-        _currentMessage = mapCtxt.getMessageType();
-        _currentEndOffset = mapCtxt.getEndOffset();
-        _currentField = mapCtxt.getField();
+        _parsingContext.closeMapEntry();
+        _currentMessage = _parsingContext.getMessageType();
+        _currentEndOffset = _parsingContext.getEndOffset();
+        // `_field` may have been overwritten while a message-valued entry was streamed
+        _currentField = _parsingContext.getMapField();
         _state = STATE_MAP_ENTRY_OTHER;
     }
 

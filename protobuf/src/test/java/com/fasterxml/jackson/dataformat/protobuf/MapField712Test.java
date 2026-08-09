@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
@@ -347,6 +348,71 @@ public class MapField712Test extends ProtobufTestBase
             assertEquals("value-string-number-" + i,
                     tree.get("m").get(String.valueOf(i)).asText());
         }
+    }
+
+    /*
+    /**********************************************************
+    /* Nesting / context shape
+    /**********************************************************
+     */
+
+    // A map entry is one member of the map Object, not a nesting level of its own, so a
+    // map must cost exactly what an equivalent nested message costs -- otherwise it eats
+    // into `maxNestingDepth` for a level the equivalent JSON does not have.
+    @Test
+    public void testMapAddsSingleNestingLevel() throws Exception
+    {
+        // both encode {"m":{"k":1}}
+        ProtobufSchema mapSchema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> m = 1; }\n", "Msg");
+        byte[] mapDoc = { 0x0a, 0x05, 0x0a, 0x01, 0x6b, 0x10, 0x01 };
+
+        ProtobufSchema msgSchema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Inner { int32 k = 1; }\n"
+                + "message Msg { Inner m = 1; }\n", "Msg");
+        byte[] msgDoc = { 0x0a, 0x02, 0x08, 0x01 };
+
+        assertEquals(_maxNestingDepth(msgSchema, msgDoc), _maxNestingDepth(mapSchema, mapDoc),
+                "`map` should nest no deeper than an equivalent nested message");
+    }
+
+    // ... and the context chain must show the map Object directly, with the entry key as
+    // its current name: no intermediate "entry" context.
+    @Test
+    public void testMapContextShape() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> m = 1; }\n", "Msg");
+        byte[] doc = { 0x0a, 0x05, 0x0a, 0x01, 0x6b, 0x10, 0x01 };
+        try (JsonParser p = MAPPER.getFactory().createParser(doc)) {
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken()); // "m"
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken()); // "k"
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+
+            JsonStreamContext ctxt = p.getParsingContext();
+            assertTrue(ctxt.inObject(), "map level should be an Object context");
+            assertEquals("k", ctxt.getCurrentName());
+            // parent is the enclosing message, NOT an entry wrapper
+            assertEquals("m", ctxt.getParent().getCurrentName());
+        }
+    }
+
+    private int _maxNestingDepth(ProtobufSchema schema, byte[] doc) throws Exception
+    {
+        int max = 0;
+        try (JsonParser p = MAPPER.getFactory().createParser(doc)) {
+            p.setSchema(schema);
+            while (p.nextToken() != null) {
+                max = Math.max(max, p.getParsingContext().getNestingDepth());
+            }
+        }
+        return max;
     }
 
     /*

@@ -51,12 +51,31 @@ public final class ProtobufReadContext
     protected boolean _inMap;
 
     /**
-     * Whether this (Object-typed) context represents a single {@code map} entry
-     * sub-message (whose {@code key}/{@code value} are surfaced as one Object member).
+     * For a map context ({@link #_inMap}): the {@code map} field itself. Kept apart from
+     * {@link #_field}, which is overwritten while a message-valued entry is streamed.
      *
      * @since 2.21.6 [dataformats-binary#712]
      */
-    protected boolean _mapEntry;
+    protected ProtobufField _mapField;
+
+    /**
+     * For a map context ({@link #_inMap}): whether an entry sub-message is currently
+     * being decoded. A map entry is <b>not</b> a JSON nesting level of its own -- its
+     * key/value pair is one member of the map Object -- so it gets no context, and its
+     * bound is tracked here instead.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected boolean _entryOpen;
+
+    /**
+     * Offset within input buffer where the {@code map} entry currently being decoded
+     * ends; only meaningful while {@link #_entryOpen}. Rebased on buffer reload along
+     * with {@link #_endOffset}.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected int _entryEndOffset;
 
     /*
     /**********************************************************
@@ -94,7 +113,8 @@ public final class ProtobufReadContext
         _endOffset = endOffset;
         _field = null;
         _inMap = false;
-        _mapEntry = false;
+        _mapField = null;
+        _entryOpen = false;
     }
 
     @Override
@@ -160,26 +180,8 @@ public final class ProtobufReadContext
             ctxt.reset(entryType, TYPE_OBJECT, endOffset);
         }
         ctxt._field = mapField;
+        ctxt._mapField = mapField;
         ctxt._inMap = true;
-        return ctxt;
-    }
-
-    /**
-     * Factory for the context of a single {@code map} entry sub-message. Must be called
-     * on a map context (see {@link #createChildMapContext}); the entry inherits that
-     * context's (synthetic entry) message type.
-     *
-     * @since 2.21.6 [dataformats-binary#712]
-     */
-    public ProtobufReadContext createChildMapEntryContext(int endOffset)
-    {
-        ProtobufReadContext ctxt = _child;
-        if (ctxt == null) {
-            _child = ctxt = new ProtobufReadContext(this, _messageType, TYPE_OBJECT, endOffset);
-        } else {
-            ctxt.reset(_messageType, TYPE_OBJECT, endOffset);
-        }
-        ctxt._mapEntry = true;
         return ctxt;
     }
 
@@ -224,25 +226,33 @@ public final class ProtobufReadContext
         if (_type == TYPE_ROOT) {
             return _endOffset;
         }
-        int newOffset = _endOffset - bytesConsumed;
-
-        _endOffset = newOffset;
+        _endOffset -= bytesConsumed;
+        if (_entryOpen) {
+            _entryEndOffset -= bytesConsumed;
+        }
 
         for (ProtobufReadContext ctxt = _parent; ctxt != null; ctxt = ctxt.getParent()) {
             ctxt._adjustEnd(bytesConsumed);
         }
 
         // could do sanity check here; but caller should catch it
-        return newOffset;
+        return getEndOffset();
     }
 
     private void _adjustEnd(int bytesConsumed) {
         if (_type != TYPE_ROOT) {
             _endOffset -= bytesConsumed;
+            if (_entryOpen) {
+                _entryEndOffset -= bytesConsumed;
+            }
         }
     }
 
-    public int getEndOffset() { return _endOffset; }
+    /**
+     * @return Offset at which the content currently being decoded ends: for a map context
+     *    with an entry open that is the entry's end, otherwise this context's own end.
+     */
+    public int getEndOffset() { return _entryOpen ? _entryEndOffset : _endOffset; }
 
     /**
      * @since 2.21.6 [dataformats-binary#712]
@@ -250,9 +260,33 @@ public final class ProtobufReadContext
     public boolean inMap() { return _inMap; }
 
     /**
+     * Marks a {@code map} entry as being decoded, bounded by given offset. No child
+     * context is created: an entry is one member of the map Object, not a nesting level.
+     *
      * @since 2.21.6 [dataformats-binary#712]
      */
-    public boolean isMapEntry() { return _mapEntry; }
+    public void startMapEntry(int endOffset) {
+        _entryOpen = true;
+        _entryEndOffset = endOffset;
+    }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public void closeMapEntry() { _entryOpen = false; }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public boolean isEntryOpen() { return _entryOpen; }
+
+    /**
+     * @return The {@code map} field this (map) context was created for; unlike
+     *    {@link #getField()} this survives a message-valued entry being streamed.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public ProtobufField getMapField() { return _mapField; }
 
     public ProtobufMessage getMessageType() { return _messageType; }
 
