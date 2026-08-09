@@ -224,7 +224,7 @@ public class TypeResolver
             if (pbf.repeated && !pbf.isMap && (pbf.type == FieldType.MESSAGE)) {
                 final ProtobufMessage entryMsg = pbf.getMessageType();
                 if ((entryMsg != null) && entryMsg.isMapEntry()) {
-                    pbf = new ProtobufField(f, entryMsg, entryMsg.field(1), entryMsg.field(2));
+                    pbf = _constructMapField(f, entryMsg, rawType);
                 }
             }
             resolvedFields[ix++] = pbf;
@@ -275,7 +275,69 @@ public class TypeResolver
                         .build())
                 .build();
         final ProtobufMessage entryMsg = resolve(this, entryElem);
-        return new ProtobufField(f, entryMsg, entryMsg.field(1), entryMsg.field(2));
+        return _constructMapField(f, entryMsg, rawType);
+    }
+
+    /**
+     * Builds the map-flagged {@link ProtobufField} for given entry message, verifying
+     * first that the entry actually carries the {@code key} (tag 1) / {@code value}
+     * (tag 2) pair that map decoding requires, and that the key is of a type protobuf
+     * permits.
+     *<p>
+     * Both are guaranteed by construction on the {@code .proto} path, but not on the
+     * descriptor-set path, where the entry message comes from the input: a
+     * {@code map_entry}-flagged message with a missing or ill-typed key/value is not
+     * something {@code protoc} emits, but a hand-built or corrupt descriptor can carry
+     * one, and it must fail as a schema error rather than as a {@code NullPointerException}
+     * from the codec later on.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private static ProtobufField _constructMapField(FieldElement f, ProtobufMessage entryMsg,
+            MessageElement rawType)
+    {
+        final ProtobufField keyField = entryMsg.field(1);
+        final ProtobufField valueField = entryMsg.field(2);
+        if ((keyField == null) || (valueField == null)) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid `map` entry type '%s' for field '%s' in MessageType '%s': entry"
+                    + " message must declare both 'key' (tag 1) and 'value' (tag 2), but %s missing",
+                    entryMsg.getName(), f.name(), rawType.name(),
+                    (keyField == null)
+                        ? ((valueField == null) ? "both are" : "'key' is") : "'value' is"));
+        }
+        if (!_isValidMapKeyType(keyField.type)) {
+            throw new IllegalArgumentException(String.format(
+                    "Illegal key type (%s) for `map` field '%s' in MessageType '%s': protobuf"
+                    + " map keys must be an integral type, `bool` or `string`",
+                    keyField.type, f.name(), rawType.name()));
+        }
+        return new ProtobufField(f, entryMsg, keyField, valueField);
+    }
+
+    /**
+     * @return Whether given (resolved) type is one protobuf permits as a {@code map} key.
+     *    Mirrors {@link #_verifyMapKeyType}, which checks the same restriction against the
+     *    as-declared type on the {@code .proto} path; this one works on the resolved type,
+     *    so it covers the descriptor-set path too.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private static boolean _isValidMapKeyType(FieldType t)
+    {
+        switch (t) {
+        case STRING:
+        case BOOLEAN:
+        case VINT32_STD:
+        case VINT32_Z:
+        case FIXINT32:
+        case VINT64_STD:
+        case VINT64_Z:
+        case FIXINT64:
+            return true;
+        default: // DOUBLE, FLOAT, BYTES, ENUM, MESSAGE
+            return false;
+        }
     }
 
     /**

@@ -1284,7 +1284,20 @@ public class ProtobufParser extends ParserMinimalBase
             if (_inputPtr >= _inputEnd) {
                 loadMoreGuaranteed();
             }
-            return (_inputBuffer[_inputPtr++] != 0) ? "true" : "false";
+            {
+                // Same strictness as for `bool` values (see `_readNextValue()`): anything
+                // other than 0x0/0x1 is corrupt content, not a truthy byte
+                final int i = _inputBuffer[_inputPtr++];
+                if (i == 1) {
+                    return "true";
+                }
+                if (i == 0) {
+                    return "false";
+                }
+                _reportError(String.format("Invalid byte value for bool `map` key field %s: 0x%2x; should be either 0x0 or 0x1",
+                        keyField.name, i));
+            }
+            return null; // never reached
         case VINT32_Z:
             return Integer.toString(ProtobufUtil.zigzagDecode(_decodeVInt()));
         case VINT32_STD:

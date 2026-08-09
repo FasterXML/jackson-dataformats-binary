@@ -585,6 +585,31 @@ public class MapField712Test extends ProtobufTestBase
         return sb.toString();
     }
 
+    // A `bool` key must be as strictly validated as a `bool` value: only 0x0/0x1, rather
+    // than "any non-zero byte is true".
+    @Test
+    public void testInvalidBoolMapKeyByteReported() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<bool, int32> m = 1; }\n", "Msg");
+        // entry body: key(08 02 -- 0x02 is not a valid bool) value(10 01)
+        byte[] doc = { 0x0a, 0x04, 0x08, 0x02, 0x10, 0x01 };
+        try {
+            MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+            fail("Should not accept 0x02 as a `bool` map key");
+        } catch (Exception e) {
+            verifyException(e, "Invalid byte value for bool");
+        }
+        // ... while the two legal encodings still work
+        JsonNode t = MAPPER.readerFor(JsonNode.class).with(schema)
+                .readValue(new byte[] { 0x0a, 0x04, 0x08, 0x01, 0x10, 0x01 });
+        assertEquals(1, t.get("m").get("true").asInt());
+        JsonNode f = MAPPER.readerFor(JsonNode.class).with(schema)
+                .readValue(new byte[] { 0x0a, 0x04, 0x08, 0x00, 0x10, 0x01 });
+        assertEquals(1, f.get("m").get("false").asInt());
+    }
+
     // Protobuf does not constrain field order, so an entry may encode `value` (tag 2)
     // before `key` (tag 1). A forward-only parser can not surface that key, so it must
     // be reported -- silently yielding the default key would be wrong data.

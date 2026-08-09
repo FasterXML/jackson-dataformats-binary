@@ -18,6 +18,7 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.FileDescriptorSet.Messag
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Verifies that a {@code map<K,V>} loaded from a {@code protoc} descriptor set --
@@ -84,6 +85,61 @@ public class DescriptorMapField712Test extends ProtobufTestBase
         assertTrue(f.isMap, "'counts' from a map_entry descriptor should resolve as a map");
         assertEquals(FieldType.STRING, f.getKeyField().type);
         assertEquals(FieldType.VINT32_STD, f.getValueField().type);
+    }
+
+    // A `map_entry`-flagged message with a missing or ill-typed key/value is not something
+    // protoc emits, but a hand-built or corrupt descriptor can carry one. It must fail as
+    // a schema error, not as a NullPointerException from the codec later on.
+    @Test
+    public void testMalformedMapEntryDescriptorRejected() throws Exception
+    {
+        // no fields at all
+        _verifyBadEntry(new FieldDescriptorProto[] { },
+                "must declare both 'key'");
+        // `value` only
+        _verifyBadEntry(new FieldDescriptorProto[] {
+                        field("value", 2, Label.LABEL_OPTIONAL, Type.TYPE_INT32, null) },
+                "'key' is missing");
+        // `key` only
+        _verifyBadEntry(new FieldDescriptorProto[] {
+                        field("key", 1, Label.LABEL_OPTIONAL, Type.TYPE_STRING, null) },
+                "'value' is missing");
+        // key of a type protobuf does not permit for maps
+        _verifyBadEntry(new FieldDescriptorProto[] {
+                        field("key", 1, Label.LABEL_OPTIONAL, Type.TYPE_DOUBLE, null),
+                        field("value", 2, Label.LABEL_OPTIONAL, Type.TYPE_INT32, null) },
+                "map keys must be");
+    }
+
+    private void _verifyBadEntry(FieldDescriptorProto[] entryFields, String expectedMsg)
+        throws Exception
+    {
+        DescriptorProto entry = new DescriptorProto();
+        entry.name = "CountsEntry";
+        entry.field = entryFields;
+        MessageOptions opts = new MessageOptions();
+        opts.map_entry = true;
+        entry.options = opts;
+
+        DescriptorProto msg = new DescriptorProto();
+        msg.name = "Msg";
+        msg.field = new FieldDescriptorProto[] {
+                field("counts", 1, Label.LABEL_REPEATED, Type.TYPE_MESSAGE, ".Msg.CountsEntry")
+        };
+        msg.nested_type = new DescriptorProto[] { entry };
+
+        FileDescriptorProto fdp = new FileDescriptorProto();
+        fdp.name = "test.proto";
+        fdp.setPackage("");
+        fdp.syntax = "proto3";
+        fdp.message_type = new DescriptorProto[] { msg };
+
+        try {
+            new FileDescriptorSet(new FileDescriptorProto[] { fdp }).schemaFor("Msg");
+            fail("Should not accept malformed `map_entry` message");
+        } catch (IllegalArgumentException e) {
+            verifyException(e, expectedMsg);
+        }
     }
 
     @Test
