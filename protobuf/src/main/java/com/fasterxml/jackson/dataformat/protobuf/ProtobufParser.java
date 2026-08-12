@@ -758,6 +758,7 @@ public class ProtobufParser extends ParserMinimalBase
                     }
                     _parsingContext = parent;
                     _currentField = parent.getField();
+                    _currentMessage = parent.getMessageType(); // as below: leave no entry type behind
                     _state = STATE_MESSAGE_END;
                     return _updateToken(JsonToken.END_OBJECT);
                 }
@@ -773,6 +774,11 @@ public class ProtobufParser extends ParserMinimalBase
                 ProtobufReadContext parent = _parsingContext.getParent();
                 _parsingContext = parent;
                 _currentField = parent.getField();
+                // ... and restore the enclosing message: while iterating entries
+                // `_currentMessage` is the synthetic entry type, and the replayed tag is
+                // looked up against it whenever the `next`-field chain misses (which it
+                // does for any tag gap after the map)
+                _currentMessage = parent.getMessageType();
                 _state = STATE_ARRAY_END; // reused: replays _nextTag as a key
                 return _updateToken(JsonToken.END_OBJECT);
             }

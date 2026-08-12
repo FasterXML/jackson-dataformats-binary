@@ -585,6 +585,37 @@ public class MapField712Test extends ProtobufTestBase
         return sb.toString();
     }
 
+    // Once a map ends, decoding must resume against the enclosing message -- not the
+    // synthetic entry type. It only shows when the field following the map is not the
+    // map's immediately-next field by tag, since otherwise the `next`-field chain hits
+    // and the message type is never consulted. proto3 omits unset fields, so such a tag
+    // gap is entirely ordinary.
+    @Test
+    public void testFieldAfterMapWithTagGap() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> m = 1; string a = 2; string b = 3; }\n", "Msg");
+        // m={"x":1}, `a` unset (absent from the wire), b="B"
+        byte[] doc = { 0x0a, 0x05, 0x0a, 0x01, 0x78, 0x10, 0x01,
+                       0x1a, 0x01, 0x42 };
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(1, tree.get("m").get("x").asInt());
+        assertEquals("B", tree.get("b").asText());
+
+        // ... and the same document written by this module must read back (it did not)
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("x", 1);
+        root.put("m", m);
+        root.put("b", "B"); // "a" omitted
+        byte[] written = MAPPER.writer(schema).writeValueAsBytes(root);
+        assertArrayEquals(doc, written);
+        JsonNode roundTripped = MAPPER.readerFor(JsonNode.class).with(schema).readValue(written);
+        assertEquals(1, roundTripped.get("m").get("x").asInt());
+        assertEquals("B", roundTripped.get("b").asText());
+    }
+
     // A `bool` key must be as strictly validated as a `bool` value: only 0x0/0x1, rather
     // than "any non-zero byte is true".
     @Test
