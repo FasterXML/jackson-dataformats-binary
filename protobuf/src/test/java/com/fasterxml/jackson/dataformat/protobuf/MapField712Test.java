@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -200,6 +201,140 @@ public class MapField712Test extends ProtobufTestBase
         assertEquals(3, result.m.size());
         assertEquals(20, result.m.get(2L).x);
         assertEquals("three", result.m.get(3L).y);
+    }
+
+    // Value messages above are flat (scalar fields only); a value with structure of its
+    // own pushes further context levels through the same save/restore path that the map
+    // exit has to unwind. Same for the three that follow.
+    @Test
+    public void testMessageValueWithNestedMessage() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Deep { string s = 1; }\n"
+                + "message Val { int32 x = 1; Deep d = 2; }\n"
+                + "message Msg { map<string, Val> m = 1; string name = 2; }\n", "Msg");
+        Map<String, Object> deep = new LinkedHashMap<>();
+        deep.put("s", "deep");
+        Map<String, Object> val = new LinkedHashMap<>();
+        val.put("x", 3);
+        val.put("d", deep);
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", val);
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        root.put("name", "n");
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(3, tree.get("m").get("k").get("x").asInt());
+        assertEquals("deep", tree.get("m").get("k").get("d").get("s").asText());
+        assertEquals("n", tree.get("name").asText());
+    }
+
+    @Test
+    public void testMessageValueWithRepeatedField() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Val { repeated int32 nums = 1; string y = 2; }\n"
+                + "message Msg { map<string, Val> m = 1; string name = 2; }\n", "Msg");
+        Map<String, Object> val = new LinkedHashMap<>();
+        val.put("nums", Arrays.asList(1, 2, 3));
+        val.put("y", "yy");
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", val);
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        root.put("name", "n");
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        JsonNode nums = tree.get("m").get("k").get("nums");
+        assertEquals(3, nums.size());
+        assertEquals(2, nums.get(1).asInt());
+        assertEquals("yy", tree.get("m").get("k").get("y").asText());
+        assertEquals("n", tree.get("name").asText());
+    }
+
+    // Deepest use of the entry-type stack: the value message declares a `map` of its own,
+    // so one synthetic entry type is current while another is being entered.
+    @Test
+    public void testMapInsideMapValue() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Val { map<string, int32> inner = 1; string y = 2; }\n"
+                + "message Msg { map<string, Val> m = 1; string name = 2; }\n", "Msg");
+        Map<String, Object> inner = new LinkedHashMap<>();
+        inner.put("i", 9);
+        Map<String, Object> val = new LinkedHashMap<>();
+        val.put("inner", inner);
+        val.put("y", "yy");
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", val);
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        root.put("name", "n");
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(9, tree.get("m").get("k").get("inner").get("i").asInt());
+        assertEquals("yy", tree.get("m").get("k").get("y").asText());
+        assertEquals("n", tree.get("name").asText());
+    }
+
+    // Entry loop must survive structured values repeatedly, not just once, and still
+    // hand back to the enclosing message afterwards.
+    @Test
+    public void testMultipleStructuredMessageValues() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Deep { string s = 1; }\n"
+                + "message Val { Deep d = 1; repeated string tags = 2; }\n"
+                + "message Msg { map<string, Val> m = 1; int32 tail = 5; }\n", "Msg");
+        Map<String, Object> m = new LinkedHashMap<>();
+        for (int i = 0; i < 3; ++i) {
+            Map<String, Object> deep = new LinkedHashMap<>();
+            deep.put("s", "s" + i);
+            Map<String, Object> val = new LinkedHashMap<>();
+            val.put("d", deep);
+            val.put("tags", Arrays.asList("t" + i, "u" + i));
+            m.put("k" + i, val);
+        }
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        root.put("tail", 42);
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(3, tree.get("m").size());
+        assertEquals("s2", tree.get("m").get("k2").get("d").get("s").asText());
+        assertEquals("u1", tree.get("m").get("k1").get("tags").get(1).asText());
+        assertEquals(42, tree.get("tail").asInt());
+    }
+
+    // Counterpart to `testAbsentKeyAndValueDefaults` for message values: an empty value
+    // message is still an entry, unlike an empty map (see `testEmptyMapWritesNothing`).
+    @Test
+    public void testEmptyMessageValue() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Val { int32 x = 1; }\n"
+                + "message Msg { map<string, Val> m = 1; }\n", "Msg");
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", new LinkedHashMap<>());
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        // entry(tag 1, len 5): key(0a 01 6b) value(tag 2, len 0)
+        assertArrayEquals(new byte[] { 0x0a, 0x05, 0x0a, 0x01, 0x6b, 0x12, 0x00 }, doc);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(0, tree.get("m").get("k").size());
     }
 
     @Test
@@ -613,6 +748,36 @@ public class MapField712Test extends ProtobufTestBase
         assertArrayEquals(doc, written);
         JsonNode roundTripped = MAPPER.readerFor(JsonNode.class).with(schema).readValue(written);
         assertEquals(1, roundTripped.get("m").get("x").asInt());
+        assertEquals("B", roundTripped.get("b").asText());
+    }
+
+    // Same tag gap, but with a message-valued map: the exit unwinds one context level
+    // more than the scalar case above.
+    @Test
+    public void testFieldAfterMessageValuedMapWithTagGap() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Val { int32 x = 1; }\n"
+                + "message Msg { map<string, Val> m = 1; string a = 2; string b = 3; }\n", "Msg");
+        // m={"k":{"x":7}}, `a` unset (absent from the wire), b="B"
+        byte[] doc = { 0x0a, 0x07, 0x0a, 0x01, 0x6b, 0x12, 0x02, 0x08, 0x07,
+                       0x1a, 0x01, 0x42 };
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(7, tree.get("m").get("k").get("x").asInt());
+        assertEquals("B", tree.get("b").asText());
+
+        Map<String, Object> val = new LinkedHashMap<>();
+        val.put("x", 7);
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", val);
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        root.put("b", "B"); // "a" omitted
+        byte[] written = MAPPER.writer(schema).writeValueAsBytes(root);
+        assertArrayEquals(doc, written);
+        JsonNode roundTripped = MAPPER.readerFor(JsonNode.class).with(schema).readValue(written);
+        assertEquals(7, roundTripped.get("m").get("k").get("x").asInt());
         assertEquals("B", roundTripped.get("b").asText());
     }
 
