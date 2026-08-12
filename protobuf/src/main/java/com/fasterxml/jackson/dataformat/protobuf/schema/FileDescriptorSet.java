@@ -181,6 +181,13 @@ public class FileDescriptorSet
         {
             MessageElement.Builder messageElementBuilder = MessageElement.builder();
             messageElementBuilder.name(name);
+            // [dataformats-binary#712] protoc desugars `map<K,V>` into a nested entry
+            // message flagged `map_entry`; carry that through so the resolver can
+            // re-expose the enclosing `repeated` field idiomatically as a map.
+            if (options != null && options.map_entry) {
+                messageElementBuilder.addOption(
+                        OptionElement.create("map_entry", OptionElement.Kind.BOOLEAN, Boolean.TRUE));
+            }
             // fields
             if (field != null) {
                 for (FieldDescriptorProto f : field) {
