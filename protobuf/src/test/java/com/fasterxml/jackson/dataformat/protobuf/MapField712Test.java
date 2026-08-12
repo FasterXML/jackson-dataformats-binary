@@ -337,6 +337,56 @@ public class MapField712Test extends ProtobufTestBase
         assertEquals(0, tree.get("m").get("k").size());
     }
 
+    // A `null` message value has no protobuf encoding, so it writes as a key-only entry;
+    // read back, such an entry yields `null` rather than the empty message protobuf would
+    // consider it. An entry must produce some value token -- unlike a plain message field,
+    // which simply stays absent -- and the choice round-trips, so pin both directions.
+    @Test
+    public void testNullMessageValueRoundTrip() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Val { int32 x = 1; }\n"
+                + "message Msg { map<string, Val> m = 1; }\n", "Msg");
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", null);
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        // entry(tag 1, len 3): key(0a 01 6b), no value at all
+        assertArrayEquals(new byte[] { 0x0a, 0x03, 0x0a, 0x01, 0x6b }, doc);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertTrue(tree.get("m").get("k").isNull());
+
+        // ... and that is distinct from an empty value message, which does write `12 00`
+        JsonNode empty = MAPPER.readerFor(JsonNode.class).with(schema)
+                .readValue(new byte[] { 0x0a, 0x05, 0x0a, 0x01, 0x6b, 0x12, 0x00 });
+        assertTrue(empty.get("m").get("k").isObject());
+        assertEquals(0, empty.get("m").get("k").size());
+    }
+
+    // Scalar counterpart: a `null` value writes the same key-only entry, which
+    // `testAbsentKeyAndValueDefaults` shows reading back as the proto3 default.
+    @Test
+    public void testNullScalarValueWritesKeyOnly() throws Exception
+    {
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message Msg { map<string, int32> m = 1; }\n", "Msg");
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("k", null);
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("m", m);
+        byte[] doc = MAPPER.writer(schema).writeValueAsBytes(root);
+
+        assertArrayEquals(new byte[] { 0x0a, 0x03, 0x0a, 0x01, 0x6b }, doc);
+
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
+        assertEquals(0, tree.get("m").get("k").asInt());
+    }
+
     @Test
     public void testEmptyMapWritesNothing() throws Exception
     {
