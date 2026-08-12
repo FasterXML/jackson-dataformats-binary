@@ -160,6 +160,12 @@ public class TypeResolver
         ProtobufField[] resolvedFields = new ProtobufField[rawFields.size()];
 
         ProtobufMessage message = new ProtobufMessage(rawType.name(), resolvedFields);
+        // 15-Jul-2026, tatu: [dataformats-binary#712] protoc descriptor sets desugar
+        //   `map<K,V>` into a nested entry message flagged `map_entry`; note that here
+        //   so a `repeated` field of this type can be re-exposed as a map (below).
+        if (_hasMapEntryOption(rawType)) {
+            message.markAsMapEntry();
+        }
         // Important: add type itself as (being) resolved, to allow for self- and cyclic refs
         if (_parent != null) { // 09-Jul-2021, tatu: LGTM suggestion -- can it ever be null?!
             _parent.addResolvedMessageType(rawType.name(), message);
@@ -204,17 +210,22 @@ public class TypeResolver
                     }
                 }
             } else if (fieldType instanceof DataType.MapType) {
-                // 10-Jul-2026, tatu: [dataformats-binary#708] `map` fields parse (a
-                //   synthetic label is injected upstream) but full map support is
-                //   not yet implemented; reject here with a clear error.
-                throw new IllegalArgumentException(String.format(
-                        "Unsupported `map` field '%s' in MessageType '%s': `map` type is not yet"
-                        + " supported by jackson-dataformats-binary"
-                        + " (see https://github.com/FasterXML/jackson-dataformats-binary/issues/708)",
-                        f.name(), rawType.name()));
+                // 15-Jul-2026, tatu: [dataformats-binary#712] `map<K,V>` is encoded
+                //   exactly like a `repeated` entry sub-message; synthesize that entry
+                //   type and expose the field as a map.
+                pbf = _resolveMapField(f, (DataType.MapType) fieldType, rawType);
             } else {
                 throw new IllegalArgumentException(String.format(
                         "Unrecognized DataType '%s' for field '%s'", fieldType.getClass().getName(), f.name()));
+            }
+            // [dataformats-binary#712] A `repeated <Name>Entry` field whose entry message
+            //   is `map_entry`-flagged (from a protoc descriptor set) is really a map;
+            //   re-expose it idiomatically, matching the `.proto` `map<K,V>` path.
+            if (pbf.repeated && !pbf.isMap && (pbf.type == FieldType.MESSAGE)) {
+                final ProtobufMessage entryMsg = pbf.getMessageType();
+                if ((entryMsg != null) && entryMsg.isMapEntry()) {
+                    pbf = _constructMapField(f, entryMsg, rawType);
+                }
             }
             resolvedFields[ix++] = pbf;
         }
@@ -229,6 +240,170 @@ public class TypeResolver
         }
         message.init(first);
         return message;
+    }
+
+    /**
+     * Resolves a {@code map<K,V>} field by synthesizing the "entry" sub-message
+     * ({@code key} = tag 1, {@code value} = tag 2) that protobuf uses to encode maps
+     * on the wire, then wrapping it in a repeated, map-flagged {@link ProtobufField}.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private ProtobufField _resolveMapField(FieldElement f, DataType.MapType mapType,
+            MessageElement rawType)
+    {
+        final DataType keyType = mapType.keyType();
+        final DataType valueType = mapType.valueType();
+        _verifyMapKeyType(keyType, f, rawType);
+
+        // Build the synthetic entry message: `message XxxEntry { key = 1; value = 2; }`.
+        // Both are proto3 "singular" (OPTIONAL label) fields; resolving through the
+        // normal machinery reuses all scalar / enum / message / nested type handling,
+        // and resolves the value type against this (the enclosing) scope.
+        final String entryName = _mapEntryName(f.name());
+        final MessageElement entryElem = MessageElement.builder()
+                .name(entryName)
+                .addField(FieldElement.builder()
+                        .name("key").tag(1)
+                        .label(FieldElement.Label.OPTIONAL)
+                        .type(keyType)
+                        .build())
+                .addField(FieldElement.builder()
+                        .name("value").tag(2)
+                        .label(FieldElement.Label.OPTIONAL)
+                        .type(valueType)
+                        .build())
+                .build();
+        final ProtobufMessage entryMsg = resolve(this, entryElem);
+        return _constructMapField(f, entryMsg, rawType);
+    }
+
+    /**
+     * Builds the map-flagged {@link ProtobufField} for given entry message, verifying
+     * first that the entry actually carries the {@code key} (tag 1) / {@code value}
+     * (tag 2) pair that map decoding requires, and that the key is of a type protobuf
+     * permits.
+     *<p>
+     * Both are guaranteed by construction on the {@code .proto} path, but not on the
+     * descriptor-set path, where the entry message comes from the input: a
+     * {@code map_entry}-flagged message with a missing or ill-typed key/value is not
+     * something {@code protoc} emits, but a hand-built or corrupt descriptor can carry
+     * one, and it must fail as a schema error rather than as a {@code NullPointerException}
+     * from the codec later on.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private static ProtobufField _constructMapField(FieldElement f, ProtobufMessage entryMsg,
+            MessageElement rawType)
+    {
+        final ProtobufField keyField = entryMsg.field(1);
+        final ProtobufField valueField = entryMsg.field(2);
+        if ((keyField == null) || (valueField == null)) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid `map` entry type '%s' for field '%s' in MessageType '%s': entry"
+                    + " message must declare both 'key' (tag 1) and 'value' (tag 2), but %s missing",
+                    entryMsg.getName(), f.name(), rawType.name(),
+                    (keyField == null)
+                        ? ((valueField == null) ? "both are" : "'key' is") : "'value' is"));
+        }
+        if (!_isValidMapKeyType(keyField.type)) {
+            throw new IllegalArgumentException(String.format(
+                    "Illegal key type (%s) for `map` field '%s' in MessageType '%s': protobuf"
+                    + " map keys must be an integral type, `bool` or `string`",
+                    keyField.type, f.name(), rawType.name()));
+        }
+        return new ProtobufField(f, entryMsg, keyField, valueField);
+    }
+
+    /**
+     * @return Whether given (resolved) type is one protobuf permits as a {@code map} key.
+     *    Mirrors {@link #_verifyMapKeyType}, which checks the same restriction against the
+     *    as-declared type on the {@code .proto} path; this one works on the resolved type,
+     *    so it covers the descriptor-set path too.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private static boolean _isValidMapKeyType(FieldType t)
+    {
+        switch (t) {
+        case STRING:
+        case BOOLEAN:
+        case VINT32_STD:
+        case VINT32_Z:
+        case FIXINT32:
+        case VINT64_STD:
+        case VINT64_Z:
+        case FIXINT64:
+            return true;
+        default: // DOUBLE, FLOAT, BYTES, ENUM, MESSAGE
+            return false;
+        }
+    }
+
+    /**
+     * @return Whether given message declaration carries the {@code map_entry} option
+     *    (set by {@code protoc} on the synthetic entry type of a {@code map} field).
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private static boolean _hasMapEntryOption(MessageElement rawType)
+    {
+        for (OptionElement opt : rawType.options()) {
+            if ("map_entry".equals(opt.name())) {
+                Object v = opt.value();
+                if (v instanceof Boolean) {
+                    return ((Boolean) v).booleanValue();
+                }
+                return "true".equals(String.valueOf(v).trim());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifies that the key type of a {@code map<K,V>} field is one protobuf permits:
+     * any integral type, {@code bool} or {@code string} (not floating-point, {@code bytes},
+     * enum or message).
+     */
+    private static void _verifyMapKeyType(DataType keyType, FieldElement f, MessageElement rawType)
+    {
+        if (keyType instanceof DataType.ScalarType) {
+            switch ((DataType.ScalarType) keyType) {
+            case DOUBLE:
+            case FLOAT:
+            case BYTES:
+            case ANY:
+                break; // not allowed as key -- fall through to throw
+            default:
+                return; // integral types, bool and string are all valid keys
+            }
+        }
+        throw new IllegalArgumentException(String.format(
+                "Illegal key type (%s) for `map` field '%s' in MessageType '%s': protobuf"
+                + " map keys must be an integral type, `bool` or `string`",
+                keyType, f.name(), rawType.name()));
+    }
+
+    /**
+     * Derives the name of the synthetic entry message for a {@code map} field.
+     *<p>
+     * The name deliberately contains characters that can not occur in a protobuf
+     * identifier ({@code [A-Za-z_][A-Za-z0-9_]*}), so that it can never collide with a
+     * type the schema itself declares. Resolving the entry publishes it into the
+     * enclosing scope (see {@link #_resolve}), so a {@code protoc}-style
+     * {@code <FieldName>Entry} name would shadow a same-named declared type for any
+     * field resolved after the map field -- silently, and depending on declaration
+     * order. The name is only ever used for diagnostics and internal lookup, never for
+     * resolving references written in the schema.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    private static String _mapEntryName(String fieldName)
+    {
+        if (fieldName == null || fieldName.isEmpty()) {
+            return "map<?>";
+        }
+        return "map<" + fieldName + ">";
     }
 
     protected void addResolvedMessageType(String name, ProtobufMessage toResolve) {

@@ -35,6 +35,15 @@ public class ProtobufMessage
 
     protected int _idOffset = -1;
 
+    /**
+     * Whether this message is a synthetic {@code map} entry type (as emitted by
+     * {@code protoc} into descriptor sets, carrying the {@code map_entry} option):
+     * a {@code repeated} field of such a type is re-exposed idiomatically as a map.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected boolean _isMapEntry;
+
     public ProtobufMessage(String name, ProtobufField[] fields)
     {
         _name = name;
@@ -84,6 +93,16 @@ public class ProtobufMessage
         bogus.init(null);
         return bogus;
     }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public boolean isMapEntry() { return _isMapEntry; }
+
+    /**
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public void markAsMapEntry() { _isMapEntry = true; }
 
     public ProtobufField firstField() { return _firstField; }
 

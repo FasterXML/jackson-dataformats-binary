@@ -182,39 +182,32 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
         }
     }
 
-    // Map fields are not yet supported; must fail with a clear, dedicated message
+    // Map fields now parse and resolve as `map` fields (see [dataformats-binary#712])
     @Test
-    public void testMapFieldClearError() throws Exception
+    public void testMapFieldParses() throws Exception
     {
         final String proto = "syntax = \"proto3\";\n"
                 + "message Msg {\n"
                 + "  map<string, int32> counts = 1;\n"
                 + "}\n";
-        try {
-            ProtobufSchemaLoader.std.parse(proto);
-            fail("Should not pass: map fields are not yet supported");
-        } catch (IllegalArgumentException e) {
-            verifyException(e, "map");
-            verifyException(e, "not yet supported");
-        }
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(proto);
+        ProtobufField f = schema.getRootType().field("counts");
+        assertNotNull(f);
+        assertTrue(f.isMap, "'counts' should be resolved as a map field");
     }
 
-    // `map` is valid (and label-less) in proto2 too, so the same clear error
-    // must be raised there -- not protoparser's cryptic "unexpected label: map"
+    // `map` is valid (and label-less) in proto2 too, and must resolve the same way
     @Test
-    public void testProto2MapFieldClearError() throws Exception
+    public void testProto2MapFieldParses() throws Exception
     {
         final String proto = "syntax = \"proto2\";\n"
                 + "message Msg {\n"
                 + "  map<string, int32> counts = 1;\n"
                 + "}\n";
-        try {
-            ProtobufSchemaLoader.std.parse(proto);
-            fail("Should not pass: map fields are not yet supported");
-        } catch (IllegalArgumentException e) {
-            verifyException(e, "map");
-            verifyException(e, "not yet supported");
-        }
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(proto);
+        ProtobufField f = schema.getRootType().field("counts");
+        assertNotNull(f);
+        assertTrue(f.isMap, "'counts' should be resolved as a map field");
     }
 
     // Preprocessing must be applied for stream-based loading too, not just String
