@@ -17,24 +17,6 @@ import tools.jackson.core.util.ByteArrayBuilder;
 
 public class SmileParser extends SmileParserBase
 {
-    /**
-     * Flag to indicate if the JDK version is 11 or later. This can be used in some methods
-     * to choose more optimal behavior. In particular, jdk9+ have different internals for
-     * the String class.
-     */
-    private static final boolean JDK11_OR_LATER;
-    static {
-        boolean recentJdk;
-        try {
-            // The strip method was added in jdk11, so use it to detect a newer version
-            String.class.getMethod("strip");
-            recentJdk = true;
-        } catch (Exception e) {
-            recentJdk = false;
-        }
-        JDK11_OR_LATER = recentJdk;
-    }
-
     /*
     /**********************************************************************
     /* Input source config, state (from ex StreamBasedParserBase)
@@ -1878,26 +1860,12 @@ _typeAsInt);
     {
         // note: caller ensures we have enough bytes available
         // also note that since it's a short name (64 bytes), segment WILL have enough space
-        if (JDK11_OR_LATER) {
-            // On newer JDKs the String internals changed and for ASCII strings the constructor
-            // that takes a byte array can be used and internally is just Arrays.copyOfRange.
-            final int inPtr = _inputPtr;
-            _inputPtr = inPtr + len;
-            String str = new String(_inputBuffer, inPtr, len, StandardCharsets.US_ASCII);
-            _textBuffer.resetWithString(str);
-            return str;
-        } else {
-            char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-            int outPtr = 0;
-            final byte[] inBuf = _inputBuffer;
-            int inPtr = _inputPtr;
-
-            for (int inEnd = inPtr + len; inPtr < inEnd; ++inPtr) {
-                outBuf[outPtr++] = (char) inBuf[inPtr];
-            }
-            _inputPtr = inPtr;
-            return _textBuffer.setCurrentAndReturn(len);
-        }
+        // Java 17+ has optimized String constructor for ASCII byte arrays
+        final int inPtr = _inputPtr;
+        _inputPtr = inPtr + len;
+        String str = new String(_inputBuffer, inPtr, len, StandardCharsets.US_ASCII);
+        _textBuffer.resetWithString(str);
+        return str;
     }
 
     /**
@@ -2768,27 +2736,12 @@ currentToken(), firstCh);
             _loadToHaveAtLeast(len);
         }
 
-        if (JDK11_OR_LATER) {
-            // On newer JDKs the String internals changed and for ASCII strings the constructor
-            // that takes a byte array can be used and internally is just Arrays.copyOfRange.
-            final int inPtr = _inputPtr;
-            _inputPtr = inPtr + len;
-            String str = new String(_inputBuffer, inPtr, len, StandardCharsets.US_ASCII);
-            _textBuffer.resetWithString(str);
-            return str;
-        } else {
-            // Note: we count on fact that buffer must have at least 'len' (<= 64) empty char slots
-            final char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-            int outPtr = 0;
-            final byte[] inBuf = _inputBuffer;
-            int inPtr = _inputPtr;
-
-            for (final int end = inPtr + len; inPtr < end; ++inPtr) {
-                outBuf[outPtr++] = (char) inBuf[inPtr];
-            }
-            _inputPtr = inPtr;
-            return _textBuffer.setCurrentAndReturn(len);
-        }
+        // Java 17+ has optimized String constructor for ASCII byte arrays
+        final int inPtr = _inputPtr;
+        _inputPtr = inPtr + len;
+        String str = new String(_inputBuffer, inPtr, len, StandardCharsets.US_ASCII);
+        _textBuffer.resetWithString(str);
+        return str;
     }
 
     protected final String _decodeShortUnicodeValue(int byteLen) throws JacksonException

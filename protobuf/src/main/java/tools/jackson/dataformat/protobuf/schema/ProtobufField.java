@@ -218,8 +218,8 @@ public class ProtobufField
         for (OptionElement opt : f.options()) {
             if (key.equals(opt.name())) {
                 Object val = opt.value();
-                if (val instanceof Boolean) {
-                    return (Boolean) val;
+                if (val instanceof Boolean boolVal) {
+                    return boolVal;
                 }
                 return Boolean.valueOf("true".equals(String.valueOf(val).trim()));
             }

@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -219,7 +219,7 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
                 + "  int32 x = 1;\n"
                 + "}\n";
         ProtobufSchema schema = ProtobufSchemaLoader.std.load(
-                new ByteArrayInputStream(proto.getBytes(Charset.forName("UTF-8"))));
+                new ByteArrayInputStream(proto.getBytes(StandardCharsets.UTF_8)));
         assertNotNull(schema.getRootType().field("x"));
     }
 
@@ -233,7 +233,7 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
                 + "}\n";
         File f = File.createTempFile("proto708-", ".proto");
         f.deleteOnExit();
-        Writer w = new OutputStreamWriter(new FileOutputStream(f), Charset.forName("UTF-8"));
+        Writer w = new OutputStreamWriter(new FileOutputStream(f), StandardCharsets.UTF_8);
         try {
             w.write(proto);
         } finally {
