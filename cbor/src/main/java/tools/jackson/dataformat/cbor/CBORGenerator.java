@@ -658,6 +658,12 @@ public class CBORGenerator extends GeneratorBase
 
     private final void _writeFloatNoCheck(float f) throws JacksonException {
         _ensureRoomForOutput(5);
+	    /*
+         * 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more
+         * accurate to use exact representation; and possibly faster. However,
+         * if there are cases where collapsing of NaN was needed (for non-Java
+         * clients), this can be changed
+         */
         _outputBuffer[_outputTail++] = BYTE_FLOAT32;
         if (CBORVarHandleUtil.FLOAT_BE != null) {
             CBORVarHandleUtil.FLOAT_BE.set(_outputBuffer, _outputTail, f);
