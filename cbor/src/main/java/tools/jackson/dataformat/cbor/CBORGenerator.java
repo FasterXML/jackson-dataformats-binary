@@ -658,7 +658,7 @@ public class CBORGenerator extends GeneratorBase
 
     private final void _writeFloatNoCheck(float f) throws JacksonException {
         _ensureRoomForOutput(5);
-	    /*
+        /*
          * 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more
          * accurate to use exact representation; and possibly faster. However,
          * if there are cases where collapsing of NaN was needed (for non-Java
