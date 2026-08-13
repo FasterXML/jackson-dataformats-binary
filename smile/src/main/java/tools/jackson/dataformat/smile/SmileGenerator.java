@@ -932,9 +932,14 @@ public class SmileGenerator
     @Override
     public JsonGenerator writeString(char[] text, int offset, int len) throws JacksonException
     {
-        // Shared strings are tricky; easiest to just construct String, call the other method
+        // Shared strings: try char-array lookup first to avoid String allocation
         if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0 && len > 0) {
-            return writeString(new String(text, offset, len));
+            int ix = _findSeenStringValue(text, offset, len);
+            if (ix >= 0) {
+                _verifyValueWrite("write String value");
+                _writeSharedStringValueReference(ix);
+                return this;
+            }
         }
         _verifyValueWrite("write String value");
         if (len == 0) {
@@ -983,6 +988,10 @@ public class SmileGenerator
                 _mediumUTF8Encode(text, offset, offset+len);
                 _writeByte(BYTE_MARKER_END_OF_STRING);
             }
+        }
+        // Only allocate String here if we need to store for shared-value tracking
+        if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0) {
+            _addSeenStringValue(new String(text, offset, len));
         }
         return this;
     }
@@ -2583,6 +2592,40 @@ surr1, surr2));
                 String value = node.value;
                 if (value.hashCode() == hash && value.equals(text)) {
                     return node.index;
+                }
+                node = node.next;
+            } while (node != null);
+        }
+        return -1;
+    }
+
+    /**
+     * Lookup variant that works directly on a char array, avoiding the need
+     * to allocate a {@link String} just for the shared-value check.
+     */
+    private final int _findSeenStringValue(char[] text, int offset, int len)
+    {
+        // Compute hash the same way String.hashCode does
+        int hash = 0;
+        for (int i = offset, end = offset + len; i < end; ++i) {
+            hash = 31 * hash + text[i];
+        }
+        SharedStringNode head = _seenStringValues[hash & (_seenStringValues.length-1)];
+        if (head != null) {
+            SharedStringNode node = head;
+            do {
+                String value = node.value;
+                if (value.length() == len && value.hashCode() == hash) {
+                    boolean match = true;
+                    for (int i = 0; i < len; ++i) {
+                        if (value.charAt(i) != text[offset + i]) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        return node.index;
+                    }
                 }
                 node = node.next;
             } while (node != null);
