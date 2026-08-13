@@ -1,5 +1,8 @@
 package tools.jackson.dataformat.avro.ser;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
@@ -12,6 +15,12 @@ public final class ObjectWriteContext
     protected final GenericRecord _record;
 
     /**
+     * Cached field lookup map, built once at construction to avoid O(n)
+     * linear scans on every {@link #writeName} call.
+     */
+    private final Map<String, Schema.Field> _fieldMap;
+
+    /**
      * Definition of property that is to be written next, if any;
      * null if property is to be skipped.
      */
@@ -22,6 +31,16 @@ public final class ObjectWriteContext
     {
         super(parent, generator, record.getSchema(), currValue);
         _record = record;
+        _fieldMap = _buildFieldMap(_schema);
+    }
+
+    private static Map<String, Schema.Field> _buildFieldMap(Schema schema) {
+        // LinkedHashMap preserves field order for deterministic error messages
+        Map<String, Schema.Field> map = new LinkedHashMap<>();
+        for (Schema.Field f : schema.getFields()) {
+            map.put(f.name(), f);
+        }
+        return map;
     }
 
     @Override
@@ -59,7 +78,7 @@ public final class ObjectWriteContext
     {
         _currentName = name;
         _expectValue = true;
-        Schema.Field field = _schema.getField(name);
+        Schema.Field field = _fieldMap.get(name);
         if (field == null) {
             _reportUnknownField(name);
             _nextField = null;
@@ -124,7 +143,7 @@ public final class ObjectWriteContext
         if (_currentName == null) {
             throw new IllegalStateException("No current field name");
         }
-        Schema.Field f = _schema.getField(_currentName);
+        Schema.Field f = _fieldMap.get(_currentName);
         if (f == null) {
             _reportUnknownField(_currentName);
         }
