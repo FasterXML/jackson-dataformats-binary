@@ -2438,12 +2438,12 @@ surr1, surr2));
             int maxRead) throws JacksonException
     {
         // anything to shift to front?
-        int i = 0;
-        while (inputPtr < inputEnd) {
-            readBuffer[i++]  = readBuffer[inputPtr++];
+        int remaining = inputEnd - inputPtr;
+        if (remaining > 0) {
+            System.arraycopy(readBuffer, inputPtr, readBuffer, 0, remaining);
         }
         inputPtr = 0;
-        inputEnd = i;
+        inputEnd = remaining;
 
         maxRead = Math.min(maxRead, readBuffer.length);
 
