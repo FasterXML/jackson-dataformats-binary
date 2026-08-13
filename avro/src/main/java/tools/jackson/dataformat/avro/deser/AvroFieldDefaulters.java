@@ -31,11 +31,11 @@ public class AvroFieldDefaulters
         case VALUE_NUMBER_INT:
             switch (defaultAsNode.numberType()) {
             case INT:
-                return new ScalarDefaults.FloatDefaults(name, defaultAsNode.asInt());
+                return new ScalarDefaults.IntDefaults(name, defaultAsNode.asInt());
             case BIG_INTEGER: // TODO: maybe support separately?
             case LONG:
             default:
-                return new ScalarDefaults.FloatDefaults(name, defaultAsNode.asLong());
+                return new ScalarDefaults.LongDefaults(name, defaultAsNode.asLong());
             }
         case VALUE_STRING:
             return new ScalarDefaults.StringDefaults(name, defaultAsNode.asString());
