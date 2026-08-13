@@ -1075,7 +1075,8 @@ public class SmileGenerator
             }
         } else { // "long" String
             // but might still fit within buffer?
-            long maxLen = (long) len + len + len + 2;
+            // Input is already UTF-8 encoded, so no expansion needed — just type byte + end marker
+            long maxLen = (long) len + 2;
             if (maxLen <= _outputBuffer.length) { // yes indeed
                 if ((_outputTail + maxLen) >= _outputEnd) {
                     _flushBuffer();
