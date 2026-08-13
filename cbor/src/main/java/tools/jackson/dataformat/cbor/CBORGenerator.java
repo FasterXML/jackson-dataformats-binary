@@ -603,10 +603,15 @@ public class CBORGenerator extends GeneratorBase
         _ensureRoomForOutput(5);
 
         _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT32_ELEMENTS);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (CBORVarHandleUtil.INT_BE != null) {
+            CBORVarHandleUtil.INT_BE.set(_outputBuffer, _outputTail, i);
+            _outputTail += 4;
+        } else {
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+        }
     }
 
     // Helper method that works like `writeNumber(long)` but DOES NOT
@@ -634,53 +639,57 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (CBORVarHandleUtil.LONG_BE != null) {
+            CBORVarHandleUtil.LONG_BE.set(_outputBuffer, _outputTail, l);
+            _outputTail += 8;
+        } else {
+            int i = (int) (l >> 32);
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+            i = (int) l;
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+        }
     }
 
     private final void _writeFloatNoCheck(float f) throws JacksonException {
         _ensureRoomForOutput(5);
-        /*
-         * 17-Apr-2010, tatu: could also use 'floatToIntBits', but it seems more
-         * accurate to use exact representation; and possibly faster. However,
-         * if there are cases where collapsing of NaN was needed (for non-Java
-         * clients), this can be changed
-         */
-        int i = Float.floatToRawIntBits(f);
         _outputBuffer[_outputTail++] = BYTE_FLOAT32;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (CBORVarHandleUtil.FLOAT_BE != null) {
+            CBORVarHandleUtil.FLOAT_BE.set(_outputBuffer, _outputTail, f);
+            _outputTail += 4;
+        } else {
+            int i = Float.floatToRawIntBits(f);
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+        }
     }
 
     private final void _writeDoubleNoCheck(double d) throws JacksonException {
         _ensureRoomForOutput(9);
-        // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
-        // more accurate to use exact representation; and possibly faster.
-        // However, if there are cases where collapsing of NaN was needed (for
-        // non-Java clients), this can be changed
-        long l = Double.doubleToRawLongBits(d);
         _outputBuffer[_outputTail++] = BYTE_FLOAT64;
-
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (CBORVarHandleUtil.DOUBLE_BE != null) {
+            CBORVarHandleUtil.DOUBLE_BE.set(_outputBuffer, _outputTail, d);
+            _outputTail += 8;
+        } else {
+            long l = Double.doubleToRawLongBits(d);
+            int i = (int) (l >> 32);
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+            i = (int) l;
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+        }
     }
 
     private final void _writeDoubleMinimal(double d) throws JacksonException {
@@ -1024,14 +1033,19 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write number unsigned");
         _ensureRoomForOutput(9);
         _outputBuffer[_outputTail++] = (byte) (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
-        _outputBuffer[_outputTail++] = (byte) (l >> 56);
-        _outputBuffer[_outputTail++] = (byte) (l >> 48);
-        _outputBuffer[_outputTail++] = (byte) (l >> 40);
-        _outputBuffer[_outputTail++] = (byte) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (l >> 24);
-        _outputBuffer[_outputTail++] = (byte) (l >> 16);
-        _outputBuffer[_outputTail++] = (byte) (l >> 8);
-        _outputBuffer[_outputTail++] = (byte) l;
+        if (CBORVarHandleUtil.LONG_BE != null) {
+            CBORVarHandleUtil.LONG_BE.set(_outputBuffer, _outputTail, l);
+            _outputTail += 8;
+        } else {
+            _outputBuffer[_outputTail++] = (byte) (l >> 56);
+            _outputBuffer[_outputTail++] = (byte) (l >> 48);
+            _outputBuffer[_outputTail++] = (byte) (l >> 40);
+            _outputBuffer[_outputTail++] = (byte) (l >> 32);
+            _outputBuffer[_outputTail++] = (byte) (l >> 24);
+            _outputBuffer[_outputTail++] = (byte) (l >> 16);
+            _outputBuffer[_outputTail++] = (byte) (l >> 8);
+            _outputBuffer[_outputTail++] = (byte) l;
+        }
     }
 
     @Override
@@ -1058,16 +1072,21 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (CBORVarHandleUtil.LONG_BE != null) {
+            CBORVarHandleUtil.LONG_BE.set(_outputBuffer, _outputTail, l);
+            _outputTail += 8;
+        } else {
+            int i = (int) (l >> 32);
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+            i = (int) l;
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+        }
         return this;
     }
 
