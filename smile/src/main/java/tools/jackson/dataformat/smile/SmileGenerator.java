@@ -2606,10 +2606,13 @@ surr1, surr2));
      */
     private final int _findSeenStringValue(char[] text, int offset, int len)
     {
-        // Compute hash the same way String.hashCode does
+        // Compute hash the same way String.hashCode does.
+        // Strength-reduce 31*hash to (hash<<5)-hash: the JIT can often do this
+        // itself, but spelling it out helps HotSpot's loop-opts pass match the
+        // recurrence and eliminate the multiply entirely.
         int hash = 0;
         for (int i = offset, end = offset + len; i < end; ++i) {
-            hash = 31 * hash + text[i];
+            hash = (hash << 5) - hash + text[i];
         }
         SharedStringNode head = _seenStringValues[hash & (_seenStringValues.length-1)];
         if (head != null) {
