@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
  * Utility class that provides {@link VarHandle} instances for efficient
  * multi-byte primitive writes to byte arrays. Falls back gracefully
  * if VarHandles are not available (e.g., on some Android runtimes).
+ * @since 3.3
  */
 final class CBORVarHandleUtil
 {
