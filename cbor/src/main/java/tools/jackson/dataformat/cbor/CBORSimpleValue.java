@@ -53,8 +53,7 @@ public class CBORSimpleValue {
     public boolean equals(Object o)
     {
         if (o == this) return true;
-        if (o instanceof CBORSimpleValue) {
-            CBORSimpleValue other = (CBORSimpleValue) o;
+        if (o instanceof CBORSimpleValue other) {
             return _value == other._value;
         }
         return false;

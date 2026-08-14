@@ -55,8 +55,8 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
     }
 
     private IonParser ionParser(JsonParser p) throws StreamReadException {
-        if (p instanceof IonParser) {
-            return (IonParser) p;
+        if (p instanceof IonParser ionParser) {
+            return ionParser;
         }
         throw new StreamReadException(p,
                 "Can only use IonAnnotationTypeDeserializer with IonParser");
@@ -68,8 +68,8 @@ public class IonAnnotationTypeDeserializer extends TypeDeserializerBase
         String[] typeIds = ionParser(p).getTypeAnnotations(); //cannot return null
         String typeIdToUse = null;
         TypeIdResolver typeIdResolver = super.getTypeIdResolver();
-        if (typeIdResolver instanceof MultipleTypeIdResolver) {
-            typeIdToUse = ((MultipleTypeIdResolver) typeIdResolver).selectId(typeIds);
+        if (typeIdResolver instanceof MultipleTypeIdResolver multiResolver) {
+            typeIdToUse = multiResolver.selectId(typeIds);
         } else if (null != typeIdResolver) {
             // Possibly multiple ids, but we don't have a polymorphic resolver; pick the first one which resolves
             for (String typeId : typeIds) {

@@ -57,10 +57,10 @@ public class TypeResolver
         _enumTypes = enums;
         _isProto3 = isProto3;
         if (declaredMsgs == null) {
-            declaredMsgs = Collections.emptyMap();
+            declaredMsgs = Map.of();
         }
         _declaredMessageTypes = declaredMsgs;
-        _resolvedMessageTypes = Collections.emptyMap();
+        _resolvedMessageTypes = Map.of();
     }
 
     /**
@@ -89,13 +89,13 @@ public class TypeResolver
         Map<String,ProtobufEnum> declaredEnums = new LinkedHashMap<>();
 
         for (TypeElement nt : nativeTypes) {
-            if (nt instanceof MessageElement) {
+            if (nt instanceof MessageElement msgElement) {
                 if (declaredMsgs == null) {
                     declaredMsgs = new LinkedHashMap<String,MessageElement>();
                 }
-                declaredMsgs.put(nt.name(), (MessageElement) nt);
-            } else if (nt instanceof EnumElement) {
-                final ProtobufEnum enumType = constructEnum((EnumElement) nt);
+                declaredMsgs.put(nt.name(), msgElement);
+            } else if (nt instanceof EnumElement enumEl) {
+                final ProtobufEnum enumType = constructEnum(enumEl);
                 declaredEnums.put(nt.name(), enumType);
                 // ... and don't forget parent scopes!
                 if (parent != null) {
@@ -171,8 +171,8 @@ public class TypeResolver
 
             if (type != null) { // simple type
                 pbf = new ProtobufField(f, type, _isProto3);
-            } else if (fieldType instanceof DataType.NamedType) {
-                final String typeStr = ((DataType.NamedType) fieldType).name();
+            } else if (fieldType instanceof DataType.NamedType namedType) {
+                final String typeStr = namedType.name();
 
                 // If not, a resolved local definition?
                 ProtobufField resolvedF = _findLocalResolved(f, typeStr);
@@ -199,11 +199,11 @@ public class TypeResolver
                         }
                     }
                 }
-            } else if (fieldType instanceof DataType.MapType) {
+            } else if (fieldType instanceof DataType.MapType mapType) {
                 // 15-Jul-2026, tatu: [dataformats-binary#712] `map<K,V>` is encoded
                 //   exactly like a `repeated` entry sub-message; synthesize that entry
                 //   type and expose the field as a map.
-                pbf = _resolveMapField(f, (DataType.MapType) fieldType, rawType);
+                pbf = _resolveMapField(f, mapType, rawType);
             } else {
                 throw new IllegalArgumentException(String.format(
                         "Unrecognized DataType '%s' for field '%s'", fieldType.getClass().getName(), f.name()));
@@ -341,8 +341,8 @@ public class TypeResolver
         for (OptionElement opt : rawType.options()) {
             if ("map_entry".equals(opt.name())) {
                 Object v = opt.value();
-                if (v instanceof Boolean) {
-                    return ((Boolean) v).booleanValue();
+                if (v instanceof Boolean boolVal) {
+                    return boolVal.booleanValue();
                 }
                 return "true".equals(String.valueOf(v).trim());
             }
@@ -357,8 +357,8 @@ public class TypeResolver
      */
     private static void _verifyMapKeyType(DataType keyType, FieldElement f, MessageElement rawType)
     {
-        if (keyType instanceof DataType.ScalarType) {
-            switch ((DataType.ScalarType) keyType) {
+        if (keyType instanceof DataType.ScalarType scalarType) {
+            switch (scalarType) {
             case DOUBLE:
             case FLOAT:
             case BYTES:

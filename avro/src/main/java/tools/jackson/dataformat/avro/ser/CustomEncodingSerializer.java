@@ -37,8 +37,8 @@ public class CustomEncodingSerializer<T> extends ValueSerializer<T> {
     @Override
     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type)
     {
-        if (visitor instanceof VisitorFormatWrapperImpl) {
-            ((VisitorFormatWrapperImpl) visitor).expectAvroFormat(new AvroSchema(encoding.getSchema()));
+        if (visitor instanceof VisitorFormatWrapperImpl wrapper) {
+            wrapper.expectAvroFormat(new AvroSchema(encoding.getSchema()));
         } else {
             super.acceptJsonFormatVisitor(visitor, type);
         }
