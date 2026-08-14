@@ -166,9 +166,9 @@ public class IonParser
         // should only close if manage the resource
         if (_ioContext.isResourceManaged()) {
             Object src = _ioContext.contentReference().getRawContent();
-            if (src instanceof Closeable) {
+            if (src instanceof Closeable closeable) {
                 try {
-                    ((Closeable) src).close();
+                    closeable.close();
                 } catch (IOException e) {
                     throw _wrapIOFailure(e);
                 }

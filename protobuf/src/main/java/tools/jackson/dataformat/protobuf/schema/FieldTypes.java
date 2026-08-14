@@ -26,8 +26,8 @@ public class FieldTypes
     }
 
     private FieldType _findType(DataType rawType) {
-        if (rawType instanceof DataType.ScalarType) {
-            return instance._types.get(rawType);
+        if (rawType instanceof DataType.ScalarType scalarType) {
+            return instance._types.get(scalarType);
         }
         return null;
     }

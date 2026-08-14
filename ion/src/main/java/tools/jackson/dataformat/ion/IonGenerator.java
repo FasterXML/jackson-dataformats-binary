@@ -148,8 +148,8 @@ public class IonGenerator
             _destination.close();
         } else {
             if (isEnabled(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)) {
-                if (_destination instanceof Flushable) {
-                    ((Flushable) _destination).flush();
+                if (_destination instanceof Flushable flushable) {
+                    flushable.flush();
                 }
             }
         }
@@ -692,8 +692,7 @@ public class IonGenerator
 
     @Override
     public JsonGenerator writeTypeId(Object rawId) throws JacksonException {
-        if (rawId instanceof String[]) {
-            String[] ids = (String[]) rawId;
+        if (rawId instanceof String[] ids) {
             for (String id : ids) {
                 annotateNextValue(id);
             }
