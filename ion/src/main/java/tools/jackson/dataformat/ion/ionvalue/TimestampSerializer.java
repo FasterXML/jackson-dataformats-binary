@@ -32,8 +32,8 @@ class TimestampSerializer extends StdScalarSerializer<Timestamp>
 
     @Override
     public void serialize(Timestamp value, JsonGenerator g, SerializationContext ctxt) {
-        if (g instanceof IonGenerator) {
-            ((IonGenerator) g).writeValue(value);
+        if (g instanceof IonGenerator ionGenerator) {
+            ionGenerator.writeValue(value);
         } else {
             // Otherwise probably `TokenBuffer`, so
             g.writeEmbeddedObject(value);

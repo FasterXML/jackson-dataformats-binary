@@ -80,8 +80,8 @@ public class IonAnnotationTypeSerializer extends TypeSerializerBase
         if (id == null) {
             final Object value = idMetadata.forValue;
             TypeIdResolver resolver = getTypeIdResolver();
-            if (resolver instanceof MultipleTypeIdResolver) {
-                id = ((MultipleTypeIdResolver)resolver).idsFromValue(ctxt, value);
+            if (resolver instanceof MultipleTypeIdResolver multiResolver) {
+                id = multiResolver.idsFromValue(ctxt, value);
             } else {
                 Class<?> typeForId = idMetadata.forValueType;
                 if (typeForId == null) {

@@ -3,6 +3,7 @@ package tools.jackson.dataformat.protobuf.schema;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.squareup.protoparser.ProtoFile;
@@ -22,7 +23,7 @@ public class ProtobufSchemaLoader
 {
     private static final long serialVersionUID = 1L;
 
-    private final static Charset UTF8 = Charset.forName("UTF-8");
+    private final static Charset UTF8 = StandardCharsets.UTF_8;
 
     public final static String DEFAULT_SCHEMA_NAME = "Unnamed-protobuf-schema";
 

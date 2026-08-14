@@ -59,11 +59,11 @@ public abstract class AvroSchemaHelper
     /**
      * Default stringable classes
      */
-    protected static final Set<Class<?>> STRINGABLE_CLASSES = new HashSet<>(Arrays.asList(
+    protected static final Set<Class<?>> STRINGABLE_CLASSES = Set.of(
             URI.class, URL.class, File.class,
             BigInteger.class, BigDecimal.class,
             String.class
-    ));
+    );
 
     /**
      * Checks if a given type is "Stringable", that is one of the default
@@ -206,7 +206,7 @@ public abstract class AvroSchemaHelper
 
     public static Schema anyNumberSchema()
     {
-        return Schema.createUnion(Arrays.asList(
+        return Schema.createUnion(List.of(
                 Schema.create(Schema.Type.INT),
                 Schema.create(Schema.Type.LONG),
                 Schema.create(Schema.Type.DOUBLE)
