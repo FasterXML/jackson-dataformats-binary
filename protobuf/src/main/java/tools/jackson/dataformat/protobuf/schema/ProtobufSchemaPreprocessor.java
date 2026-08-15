@@ -1,8 +1,6 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -48,11 +46,11 @@ class ProtobufSchemaPreprocessor
      * Statement-leading keywords that may appear in a message / extend body but
      * do NOT begin a label-less field, and so must never receive an injected label.
      */
-    private static final Set<String> NON_FIELD_KEYWORDS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> NON_FIELD_KEYWORDS = Set.of(
             "message", "enum", "oneof", "extend", "group",
             "option", "reserved", "extensions",
             "required", "optional", "repeated"
-    ));
+    );
 
     private final char[] _data;
     private final int _end;

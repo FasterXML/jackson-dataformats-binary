@@ -806,8 +806,8 @@ public class CBORParser extends ParserBase
             }
 
             Object str = stringRefs.stringRefs.get(i);
-            if (str instanceof String) {
-                return (String) str;
+            if (str instanceof String s) {
+                return s;
             }
             return new String((byte[]) str, UTF8);
         }
@@ -833,8 +833,8 @@ public class CBORParser extends ParserBase
         }
 
         Object str = stringRefs.stringRefs.get(_numberInt);
-        if (str instanceof String) {
-            _sharedString = (String) str;
+        if (str instanceof String s) {
+            _sharedString = s;
             return _updateToken(JsonToken.VALUE_STRING);
         }
         _binaryValue = (byte[]) str;

@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import tools.jackson.core.*;
@@ -1344,7 +1345,7 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    private final static Charset UTF8 = Charset.forName("UTF-8");
+    private final static Charset UTF8 = StandardCharsets.UTF_8;
 
     protected void _encodeLongerString(char[] text, int offset, int clen) throws JacksonException
     {

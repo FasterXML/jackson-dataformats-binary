@@ -117,8 +117,8 @@ public class NativeProtobufSchema
 
     protected MessageElement _firstMessageType() {
         for (TypeElement type : _nativeTypes) {
-            if (type instanceof MessageElement) {
-                return (MessageElement) type;
+            if (type instanceof MessageElement msg) {
+                return msg;
             }
         }
         return null;
@@ -126,9 +126,9 @@ public class NativeProtobufSchema
 
     protected MessageElement _messageType(String name) {
         for (TypeElement type : _nativeTypes) {
-            if ((type instanceof MessageElement)
+            if ((type instanceof MessageElement msg)
                     && name.equals(type.name())) {
-                return (MessageElement) type;
+                return msg;
             }
         }
         return null;

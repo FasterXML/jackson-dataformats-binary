@@ -68,7 +68,7 @@ public abstract class EnumLookup
 
         @Override
         public Collection<String> getEnumValues() {
-            return Collections.emptySet();
+            return Set.of();
         }
 
         @Override
@@ -113,7 +113,7 @@ public abstract class EnumLookup
 
         @Override
         public Collection<String> getEnumValues() {
-            return Collections.singletonList(key1);
+            return List.of(key1);
         }
     }
 
@@ -179,7 +179,7 @@ public abstract class EnumLookup
 
         @Override
         public Collection<String> getEnumValues() {
-            return Arrays.asList(key1, key2);
+            return List.of(key1, key2);
         }
     }
 
@@ -243,7 +243,7 @@ public abstract class EnumLookup
 
         @Override
         public Collection<String> getEnumValues() {
-            return Arrays.asList(key1, key2, key3);
+            return List.of(key1, key2, key3);
         }
 
         private int _findIndex2(String key) {
