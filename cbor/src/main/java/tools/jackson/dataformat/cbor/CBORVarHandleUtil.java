@@ -46,7 +46,7 @@ final class CBORVarHandleUtil
             doubleBe = MethodHandles.byteArrayViewVarHandle(double[].class, ByteOrder.BIG_ENDIAN);
             intBe = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.BIG_ENDIAN);
             longBe = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.BIG_ENDIAN);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // VarHandles not available (e.g., Android) — fall back to manual byte shifting
         }
         FLOAT_BE = floatBe;
@@ -56,4 +56,24 @@ final class CBORVarHandleUtil
     }
 
     private CBORVarHandleUtil() { }
+
+    // Helper methods that write primitives via the class's own VarHandle fields.
+    // Only called when the corresponding field is non-null, which implies
+    // VarHandle is available on this runtime.
+
+    static void setInt(byte[] array, int offset, int value) {
+        INT_BE.set(array, offset, value);
+    }
+
+    static void setLong(byte[] array, int offset, long value) {
+        LONG_BE.set(array, offset, value);
+    }
+
+    static void setFloat(byte[] array, int offset, float value) {
+        FLOAT_BE.set(array, offset, value);
+    }
+
+    static void setDouble(byte[] array, int offset, double value) {
+        DOUBLE_BE.set(array, offset, value);
+    }
 }

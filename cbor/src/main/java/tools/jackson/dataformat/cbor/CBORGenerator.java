@@ -68,6 +68,21 @@ public class CBORGenerator extends GeneratorBase
      */
     private final static int INDEFINITE_LENGTH = -2; // just to allow -1 as marker for "one too many"
 
+    // True when VarHandles are available on this runtime. Checked once at class
+    // load so that if CBORVarHandleUtil itself fails to load (e.g. Android
+    // without java.lang.invoke), we fall back to manual byte shifting instead
+    // of propagating NoClassDefFoundError.
+    private static final boolean _VARHANDLE_AVAILABLE;
+    static {
+        boolean available = false;
+        try {
+            available = CBORVarHandleUtil.INT_BE != null;
+        } catch (Throwable t) {
+            // CBORVarHandleUtil class not loadable — fall back to manual byte shifting
+        }
+        _VARHANDLE_AVAILABLE = available;
+    }
+
     /*
     /**********************************************************************
     /* Configuration
@@ -603,8 +618,8 @@ public class CBORGenerator extends GeneratorBase
         _ensureRoomForOutput(5);
 
         _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT32_ELEMENTS);
-        if (CBORVarHandleUtil.INT_BE != null) {
-            CBORVarHandleUtil.INT_BE.set(_outputBuffer, _outputTail, i);
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setInt(_outputBuffer, _outputTail, i);
             _outputTail += 4;
         } else {
             _outputBuffer[_outputTail++] = (byte) (i >> 24);
@@ -639,8 +654,8 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        if (CBORVarHandleUtil.LONG_BE != null) {
-            CBORVarHandleUtil.LONG_BE.set(_outputBuffer, _outputTail, l);
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
             int i = (int) (l >> 32);
@@ -665,8 +680,8 @@ public class CBORGenerator extends GeneratorBase
          * clients), this can be changed
          */
         _outputBuffer[_outputTail++] = BYTE_FLOAT32;
-        if (CBORVarHandleUtil.FLOAT_BE != null) {
-            CBORVarHandleUtil.FLOAT_BE.set(_outputBuffer, _outputTail, f);
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setFloat(_outputBuffer, _outputTail, f);
             _outputTail += 4;
         } else {
             int i = Float.floatToRawIntBits(f);
@@ -680,8 +695,8 @@ public class CBORGenerator extends GeneratorBase
     private final void _writeDoubleNoCheck(double d) throws JacksonException {
         _ensureRoomForOutput(9);
         _outputBuffer[_outputTail++] = BYTE_FLOAT64;
-        if (CBORVarHandleUtil.DOUBLE_BE != null) {
-            CBORVarHandleUtil.DOUBLE_BE.set(_outputBuffer, _outputTail, d);
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setDouble(_outputBuffer, _outputTail, d);
             _outputTail += 8;
         } else {
             long l = Double.doubleToRawLongBits(d);
@@ -1039,8 +1054,8 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write number unsigned");
         _ensureRoomForOutput(9);
         _outputBuffer[_outputTail++] = (byte) (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
-        if (CBORVarHandleUtil.LONG_BE != null) {
-            CBORVarHandleUtil.LONG_BE.set(_outputBuffer, _outputTail, l);
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
             _outputBuffer[_outputTail++] = (byte) (l >> 56);
@@ -1078,8 +1093,8 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        if (CBORVarHandleUtil.LONG_BE != null) {
-            CBORVarHandleUtil.LONG_BE.set(_outputBuffer, _outputTail, l);
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
             int i = (int) (l >> 32);
