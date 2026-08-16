@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigDecimal_serialization_and_deserializationTest extends AvroTestBase {
+public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase {
     private static final AvroMapper MAPPER = new AvroMapper();
 
     static class BigDecimalAndName {
