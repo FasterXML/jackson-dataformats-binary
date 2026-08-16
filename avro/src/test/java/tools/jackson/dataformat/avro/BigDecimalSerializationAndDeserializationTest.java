@@ -233,4 +233,30 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
         assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
     }
 
+    // Verify that plain BYTES (without "decimal" logical type) is NOT chosen for
+    // BigDecimal: conversion would fail, so DOUBLE must be used instead
+    @Test
+    public void testBigDecimalUnionSkipsPlainBytes() throws Exception
+    {
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'value', 'type':['null','bytes','double']}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        Map<String, Object> data = Map.of("value", input);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(data);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        // Written as DOUBLE (index 2) since plain `bytes` cannot hold a BigDecimal
+        assertThat(result.get("value")).isInstanceOf(Double.class);
+        assertThat((Double) result.get("value")).isEqualTo(input.doubleValue());
+    }
+
 }

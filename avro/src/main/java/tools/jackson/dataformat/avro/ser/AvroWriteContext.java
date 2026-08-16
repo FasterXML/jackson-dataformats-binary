@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.UnresolvedUnionException;
@@ -440,9 +441,12 @@ public abstract class AvroWriteContext
             Schema schema = types.get(i);
             Schema.Type t = schema.getType();
 
-            // Prefer String or Bytes with logical type info for BigDecimal;
-            // fall back to DOUBLE if nothing better is found
-            if (t == Type.STRING || t == Type.BYTES) {
+            // Prefer String, or Bytes with "decimal" logical type, for BigDecimal;
+            // fall back to DOUBLE if nothing better is found.
+            // NOTE: plain `bytes` (without logical type) must NOT be chosen, since
+            // conversion to bytes requires the "decimal" logical type to exist
+            if (t == Type.STRING
+                    || (t == Type.BYTES && schema.getLogicalType() instanceof LogicalTypes.Decimal)) {
                 return i;
             }
             if (t == Type.DOUBLE) {
