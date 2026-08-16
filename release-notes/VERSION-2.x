@@ -18,7 +18,7 @@ Active maintainers:
 
 No changes since 2.22
 
-2.22.2 (not yet released)
+2.22.2 (16-Aug-2026)
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
 #712: (protobuf) `map` type not supported with protobuf: should be supported
