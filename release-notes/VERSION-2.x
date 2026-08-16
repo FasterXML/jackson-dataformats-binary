@@ -16,7 +16,7 @@ Active maintainers:
 
 2.23.0 (not yet released)
 
-#745: (avro) Avro bug fixes
+#745: (avro) Fix Avro bugs
 
 2.22.2 (16-Aug-2026)
 
