@@ -16,10 +16,7 @@ Active maintainers:
 
 2.23.0 (not yet released)
 
-#745: (avro) `BigDecimal` in a union always written as `double`, even when a
-  `decimal` `bytes`/`fixed` or `string` branch is available
-#745: (avro) Root-level union resolving to `map` fails to serialize
-#745: (avro) `int`/`long` schema default values lose precision (stored as `float`)
+#745: (avro) Avro bug fixes
 
 2.22.2 (16-Aug-2026)
 
