@@ -259,4 +259,84 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
         assertThat((Double) result.get("value")).isEqualTo(input.doubleValue());
     }
 
+    // Verify that "decimal" BYTES wins over STRING even when declared later:
+    // preference is by type fidelity, not by declaration order
+    @Test
+    public void testBigDecimalUnionPrefersBytesOverString() throws Exception
+    {
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'value', 'type':['null','string'," +
+                "    {'type':'bytes','logicalType':'decimal','precision':20,'scale':6}," +
+                "    'double']}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        Map<String, Object> data = Map.of("value", input);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(data);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(BigDecimal.class);
+        assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
+    }
+
+    // Verify that FIXED with "decimal" logical type is also usable for BigDecimal
+    @Test
+    public void testBigDecimalUnionPrefersFixedOverString() throws Exception
+    {
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'value', 'type':['null','string'," +
+                "    {'type':'fixed','name':'Dec','size':16," +
+                "     'logicalType':'decimal','precision':20,'scale':6}," +
+                "    'double']}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        Map<String, Object> data = Map.of("value", input);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(data);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(BigDecimal.class);
+        assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
+    }
+
+    // Verify that plain FIXED (without "decimal" logical type) is not chosen either
+    @Test
+    public void testBigDecimalUnionSkipsPlainFixed() throws Exception
+    {
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'value', 'type':['null'," +
+                "    {'type':'fixed','name':'Raw','size':16}," +
+                "    'double']}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        Map<String, Object> data = Map.of("value", input);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(data);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(Double.class);
+        assertThat((Double) result.get("value")).isEqualTo(input.doubleValue());
+    }
+
 }
