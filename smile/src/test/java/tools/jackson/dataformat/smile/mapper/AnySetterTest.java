@@ -213,9 +213,7 @@ public class AnySetterTest extends BaseTestForSmile
         assertEquals(3, result.size());
         assertEquals(Integer.valueOf(3), result.get("a"));
         assertEquals(Boolean.TRUE, result.get("b"));
-        Object ob = result.get("c");
-        assertTrue(ob instanceof List<?>);
-        List<?> l = (List<?>)ob;
+        List<?> l = assertInstanceOf(List.class, result.get("c"));
         assertEquals(3, l.size());
         assertEquals(Integer.valueOf(3), l.get(2));
     }
@@ -296,8 +294,7 @@ public class AnySetterTest extends BaseTestForSmile
         assertEquals(1, result.props.size());
         Base ob = result.props.get("a");
         assertNotNull(ob);
-        assertTrue(ob instanceof Impl);
-        assertEquals("xyz", ((Impl) ob).value);
+        assertEquals("xyz", assertInstanceOf(Impl.class, ob).value);
     }
 
     @Test
@@ -340,9 +337,9 @@ public class AnySetterTest extends BaseTestForSmile
         assertNotNull(stringGeneric);
         assertEquals(stringGeneric.getStaticallyMappedProperty(), "Test");
         for(Map.Entry<String, Integer> entry : stringGeneric.getDynamicallyMappedProperties().entrySet()) {
-            assertTrue(entry.getKey() instanceof String,
+            assertInstanceOf(String.class, entry.getKey(),
                     "A key in MyGeneric<String> is not an String.");
-            assertTrue(entry.getValue() instanceof Integer,
+            assertInstanceOf(Integer.class, entry.getValue(),
                     "A value in MyGeneric<Integer> is not an Integer.");
         }
         assertEquals(stringGeneric.getDynamicallyMappedProperties(), stringGenericMap);
