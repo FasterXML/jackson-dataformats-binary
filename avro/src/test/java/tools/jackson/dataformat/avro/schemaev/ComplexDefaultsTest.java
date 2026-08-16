@@ -1,5 +1,6 @@
 package tools.jackson.dataformat.avro.schemaev;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -193,5 +194,76 @@ public class ComplexDefaultsTest extends AvroTestBase
         assertEquals(2, result.data.size());
         assertEquals("Fo", result.data.get(0));
         assertEquals("obar", result.data.get(1));
+    }
+
+    /*
+    /**********************************************************************
+    /* Tests for integer default precision (not stored as float)
+    /**********************************************************************
+     */
+
+    // Verify that int default values preserve precision (not stored as float)
+    @Test
+    public void testIntDefaultValuePrecision() throws Exception
+    {
+        final AvroSchema srcSchema = MAPPER.schemaFrom(aposToQuotes("{"
+                +"'type':'record','name':'RootType',"
+                +"'fields':["
+                +"  {'name':'x','type':'int'},"
+                +"  {'name':'y','type':'int'}"
+                +"]"
+                +"}"));
+        // Default value 20000001 exceeds float's 24-bit mantissa (max exact int: 16777216)
+        final AvroSchema dstSchema = MAPPER.schemaFrom(aposToQuotes("{"
+                +"'type':'record','name':'RootType',"
+                +"'fields':["
+                +"  {'name':'x','type':'int'},"
+                +"  {'name':'largeInt','type':'int','default':20000001},"
+                +"  {'name':'y','type':'int'}"
+                +"]"
+                +"}"));
+
+        Map<String,Object> input = new LinkedHashMap<>();
+        input.put("x", 1);
+        input.put("y", 2);
+        byte[] avro = MAPPER.writer(srcSchema).writeValueAsBytes(input);
+
+        Map<String,Object> result = MAPPER.readerFor(Map.class)
+                .with(srcSchema.withReaderSchema(dstSchema))
+                .readValue(avro);
+        assertEquals(1, result.get("x"));
+        assertEquals(2, result.get("y"));
+        // The critical assertion: default 20000001 must survive float truncation
+        assertEquals(20000001, ((Number) result.get("largeInt")).intValue(),
+                "Integer default lost precision -- likely stored as float");
+    }
+
+    // Verify that long default values preserve precision
+    @Test
+    public void testLongDefaultValuePrecision() throws Exception
+    {
+        final AvroSchema srcSchema = MAPPER.schemaFrom(aposToQuotes("{"
+                +"'type':'record','name':'RootType',"
+                +"'fields':[{'name':'x','type':'int'}]"
+                +"}"));
+        // Default value 9007199254740993 exceeds float AND double integer precision
+        final AvroSchema dstSchema = MAPPER.schemaFrom(aposToQuotes("{"
+                +"'type':'record','name':'RootType',"
+                +"'fields':["
+                +"  {'name':'x','type':'int'},"
+                +"  {'name':'bigLong','type':'long','default':9007199254740993}"
+                +"]"
+                +"}"));
+
+        Map<String,Object> input = new LinkedHashMap<>();
+        input.put("x", 1);
+        byte[] avro = MAPPER.writer(srcSchema).writeValueAsBytes(input);
+
+        Map<String,Object> result = MAPPER.readerFor(Map.class)
+                .with(srcSchema.withReaderSchema(dstSchema))
+                .readValue(avro);
+        assertEquals(1, result.get("x"));
+        assertEquals(9007199254740993L, ((Number) result.get("bigLong")).longValue(),
+                "Long default lost precision -- likely stored as float");
     }
 }
