@@ -131,6 +131,41 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals("bing", m.get("zap"));
     }
 
+    // Verify that a union resolving to MAP is handled correctly in _createRecord
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUnionResolvingToMapType() throws Exception
+    {
+        // Schema where the union resolves to a map
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'data', 'type':['null'," +
+                "    {'type':'record','name':'Nested','fields':[" +
+                "      {'name':'x','type':'int'}" +
+                "    ]}," +
+                "    {'type':'map','values':'string'}" +
+                "  ]}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        // Write a record where 'data' is a map (union index 2)
+        Map<String, Object> input = Map.of("data", Map.of("key1", "val1", "key2", "val2"));
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertNotNull(result.get("data"));
+        assertTrue(result.get("data") instanceof Map,
+                "Expected Map but got " + result.get("data").getClass().getSimpleName());
+        Map<String, String> dataMap = (Map<String, String>) result.get("data");
+        assertEquals("val1", dataMap.get("key1"));
+        assertEquals("val2", dataMap.get("key2"));
+    }
+
     private Map<String,Object> _map(Object... args) {
         Map<String,Object> m = new LinkedHashMap<>();
         for (int i = 0; i < args.length; i += 2) {

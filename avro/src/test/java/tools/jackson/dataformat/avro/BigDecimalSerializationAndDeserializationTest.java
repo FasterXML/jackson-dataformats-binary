@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.avro;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigDecimal_serialization_and_deserializationTest extends AvroTestBase {
+public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase {
     private static final AvroMapper MAPPER = new AvroMapper();
 
     static class BigDecimalAndName {
@@ -175,6 +176,61 @@ public class BigDecimal_serialization_and_deserializationTest extends AvroTestBa
         // Because scale of decimal logical type is 2, result is with 2 decimal places
         assertThat(result.bigDecimalValue).isEqualTo(new BigDecimal("42.20"));
         assertThat(result.name).isEqualTo("peter");
+    }
+
+    // Verify BigDecimal in a union with STRING and DOUBLE selects STRING (not DOUBLE)
+    @Test
+    public void testBigDecimalUnionPrefersStringOverDouble() throws Exception
+    {
+        // Union with string first, double second
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'value', 'type':['null','string','double']}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        Map<String, Object> input = Map.of("value", BigDecimal.valueOf(123456789, 6));
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        // The BigDecimal should have been serialized as a string (index 1),
+        // not as a double (index 2), preserving full precision
+        assertThat(result.get("value")).isNotNull();
+        // If it went through STRING, the value round-trips as a String
+        assertThat(result.get("value")).isInstanceOf(String.class);
+    }
+
+    // Verify BigDecimal in a union with BYTES (decimal logical type) and DOUBLE selects BYTES
+    @Test
+    public void testBigDecimalUnionPrefersBytesOverDouble() throws Exception
+    {
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'value', 'type':['null'," +
+                "    {'type':'bytes','logicalType':'decimal','precision':20,'scale':6}," +
+                "    'double']}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        Map<String, Object> data = Map.of("value", input);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(data);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isNotNull();
+        // Should round-trip as BigDecimal via bytes, not lose precision via double
+        assertThat(result.get("value")).isInstanceOf(BigDecimal.class);
+        assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
     }
 
 }

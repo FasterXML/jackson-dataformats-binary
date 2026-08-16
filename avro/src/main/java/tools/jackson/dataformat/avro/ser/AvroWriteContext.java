@@ -164,6 +164,7 @@ public abstract class AvroWriteContext
                 // couldn't find an exact match
                 schema = _recordOrMapFromUnion(schema);
             }
+            type = schema.getType();
         }
         if (type == Schema.Type.MAP) {
             throw new IllegalStateException("_createRecord should never be called for elements of type MAP");
@@ -182,6 +183,7 @@ public abstract class AvroWriteContext
         Type type = schema.getType();
         if (type == Schema.Type.UNION) {
             schema = _recordOrMapFromUnion(schema);
+            type = schema.getType();
         }
         if (type == Schema.Type.MAP) {
             throw new IllegalStateException("_createRecord should never be called for elements of type MAP");
@@ -438,10 +440,11 @@ public abstract class AvroWriteContext
             Schema schema = types.get(i);
             Schema.Type t = schema.getType();
 
-            if (t == Type.DOUBLE) {
+            // Prefer String or Bytes with logical type info for BigDecimal;
+            // fall back to DOUBLE if nothing better is found
+            if (t == Type.STRING || t == Type.BYTES) {
                 return i;
             }
-            // BigDecimals can be shoved into a double, but optimally would be a String or byte[] with logical type information
             if (t == Type.DOUBLE) {
                 match = i;
                 continue;
