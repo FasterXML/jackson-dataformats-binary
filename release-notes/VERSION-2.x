@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.10 (not yet released)
+2.18.10 (15-Aug-2026)
 
 #725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
  (reported by @tinyb0y)
