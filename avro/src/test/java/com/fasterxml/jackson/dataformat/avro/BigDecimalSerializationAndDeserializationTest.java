@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigDecimal_serialization_and_deserializationTest extends AvroTestBase {
+public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase {
     private static final AvroMapper MAPPER = new AvroMapper();
 
     static class BigDecimalAndName {
@@ -177,4 +179,126 @@ public class BigDecimal_serialization_and_deserializationTest extends AvroTestBa
         assertThat(result.name).isEqualTo("peter");
     }
 
+    /*
+    /**********************************************************************
+    /* Tests for union branch selection
+    /**********************************************************************
+     */
+
+    // Verify BigDecimal in a union with STRING and DOUBLE selects STRING (not DOUBLE)
+    @Test
+    public void testBigDecimalUnionPrefersStringOverDouble() throws Exception
+    {
+        AvroSchema schema = _unionSchema("'string','double'");
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(_value(input));
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        // Serialized as String, not double: retains full precision
+        assertThat(result.get("value")).isInstanceOf(String.class);
+    }
+
+    // Verify BigDecimal in a union with BYTES ("decimal" logical type) selects BYTES
+    @Test
+    public void testBigDecimalUnionPrefersBytesOverDouble() throws Exception
+    {
+        AvroSchema schema = _unionSchema(
+                "{'type':'bytes','logicalType':'decimal','precision':20,'scale':6},'double'");
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(_value(input));
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(BigDecimal.class);
+        assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
+    }
+
+    // Verify that plain BYTES (without "decimal" logical type) is NOT chosen for
+    // BigDecimal: conversion would fail, so DOUBLE must be used instead
+    @Test
+    public void testBigDecimalUnionSkipsPlainBytes() throws Exception
+    {
+        AvroSchema schema = _unionSchema("'bytes','double'");
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(_value(input));
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(Double.class);
+        assertThat((Double) result.get("value")).isEqualTo(input.doubleValue());
+    }
+
+    // Verify that "decimal" BYTES wins over STRING even when declared later:
+    // preference is by type fidelity, not by declaration order
+    @Test
+    public void testBigDecimalUnionPrefersBytesOverString() throws Exception
+    {
+        AvroSchema schema = _unionSchema(
+                "'string',{'type':'bytes','logicalType':'decimal','precision':20,'scale':6},'double'");
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(_value(input));
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(BigDecimal.class);
+        assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
+    }
+
+    // Verify that FIXED with "decimal" logical type is also usable for BigDecimal
+    @Test
+    public void testBigDecimalUnionPrefersFixedOverString() throws Exception
+    {
+        AvroSchema schema = _unionSchema(
+                "'string',{'type':'fixed','name':'Dec','size':16,"
+                +"'logicalType':'decimal','precision':20,'scale':6},'double'");
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(_value(input));
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(BigDecimal.class);
+        assertThat((BigDecimal) result.get("value")).isEqualByComparingTo(input);
+    }
+
+    // Verify that plain FIXED (without "decimal" logical type) is not chosen either
+    @Test
+    public void testBigDecimalUnionSkipsPlainFixed() throws Exception
+    {
+        AvroSchema schema = _unionSchema("{'type':'fixed','name':'Raw','size':16},'double'");
+
+        BigDecimal input = BigDecimal.valueOf(123456789, 6);
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(_value(input));
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertThat(result.get("value")).isInstanceOf(Double.class);
+        assertThat((Double) result.get("value")).isEqualTo(input.doubleValue());
+    }
+
+    // Record with a single 'value' property, typed as a union of 'null' plus given branches
+    private AvroSchema _unionSchema(String branches) throws Exception {
+        return MAPPER.schemaFrom(aposToQuotes("{"
+                +"'type':'record',"
+                +"'name':'Test',"
+                +"'fields':[{'name':'value', 'type':['null',"+branches+"]}]"
+                +"}"));
+    }
+
+    private Map<String,Object> _value(Object value) {
+        Map<String,Object> map = new LinkedHashMap<>();
+        map.put("value", value);
+        return map;
+    }
 }

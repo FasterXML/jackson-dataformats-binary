@@ -60,11 +60,16 @@ class RootContext
         // verify that root type is record (or compatible)
         switch (_schema.getType()) {
         case RECORD:
-        case UNION: // maybe
             {
                 GenericRecord rec = _createRecord(_schema, currValue);
                 _rootValue = rec;
                 return new ObjectWriteContext(this, _generator, rec, currValue);
+            }
+        case UNION: // maybe: may resolve to either Record or Map
+            {
+                AvroWriteContext child = _createObjectContext(_schema, currValue);
+                _rootValue = child.rawValue();
+                return child;
             }
         case MAP: // used to not be supported
             {
