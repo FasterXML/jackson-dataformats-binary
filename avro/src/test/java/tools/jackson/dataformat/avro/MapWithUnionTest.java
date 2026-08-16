@@ -131,7 +131,26 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals("bing", m.get("zap"));
     }
 
-    // Verify that a union resolving to MAP is handled correctly in _createRecord
+    // Verify that a root-level union resolving to MAP is written as a Map,
+    // and not passed to Record handling
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testRootUnionResolvingToMapType() throws Exception
+    {
+        String schemaJson = a2q("['null',{'type':'map','values':'string'}]");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        Map<String, Object> input = Map.of("key1", "val1", "key2", "val2");
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String, String> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertEquals("val1", result.get("key1"));
+        assertEquals("val2", result.get("key2"));
+    }
+
+    // Verify that a union resolving to MAP is handled correctly for Record properties
     @SuppressWarnings("unchecked")
     @Test
     public void testUnionResolvingToMapType() throws Exception

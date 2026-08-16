@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.UnresolvedUnionException;
@@ -434,26 +435,41 @@ public abstract class AvroWriteContext
 
     private static int _resolveBigDecimalIndex(Schema unionSchema, List<Schema> types,
             BigDecimal value) {
-        int match = -1;
+        // Branches are considered in order of how well they retain the value,
+        // regardless of declaration order: "decimal" first, then String, then Double
+        int stringMatch = -1;
+        int doubleMatch = -1;
 
         for (int i = 0, size = types.size(); i < size; ++i) {
             Schema schema = types.get(i);
             Schema.Type t = schema.getType();
 
-            // Prefer String or Bytes with logical type info for BigDecimal;
-            // fall back to DOUBLE if nothing better is found
-            if (t == Type.STRING || t == Type.BYTES) {
-                return i;
-            }
-            if (t == Type.DOUBLE) {
-                match = i;
-                continue;
+            if (t == Type.BYTES || t == Type.FIXED) {
+                // Best match: retains both scale and type.
+                // NOTE: plain `bytes`/`fixed` must NOT be chosen, since conversion
+                // requires the "decimal" logical type to exist
+                if (schema.getLogicalType() instanceof LogicalTypes.Decimal) {
+                    return i;
+                }
+            } else if (t == Type.STRING) {
+                // Second best: retains all digits, but reads back as String
+                if (stringMatch < 0) {
+                    stringMatch = i;
+                }
+            } else if (t == Type.DOUBLE) {
+                // Last resort: lossy
+                if (doubleMatch < 0) {
+                    doubleMatch = i;
+                }
             }
         }
-        if (match < 0) {
-            match = ReflectData.get().resolveUnion(unionSchema, value);
+        if (stringMatch >= 0) {
+            return stringMatch;
         }
-        return match;
+        if (doubleMatch >= 0) {
+            return doubleMatch;
+        }
+        return ReflectData.get().resolveUnion(unionSchema, value);
     }
 
     private static int _resolveMapIndex(Schema unionSchema, List<Schema> types,
