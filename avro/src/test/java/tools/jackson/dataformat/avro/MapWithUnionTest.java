@@ -132,6 +132,56 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals("bing", m.get("zap"));
     }
 
+    // Verify that a root-level union resolving to MAP is written as a Map,
+    // and not passed to Record handling
+    @Test
+    public void testRootUnionResolvingToMapType() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(aposToQuotes(
+                "['null',{'type':'map','values':'string'}]"));
+
+        Map<String,Object> input = _map("key1", "val1", "key2", "val2");
+        byte[] avro = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String,Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(avro);
+        assertEquals("val1", result.get("key1"));
+        assertEquals("val2", result.get("key2"));
+    }
+
+    // Verify that a union resolving to MAP is handled correctly for Record properties
+    @Test
+    public void testUnionResolvingToMapType() throws Exception
+    {
+        AvroSchema schema = MAPPER.schemaFrom(aposToQuotes("{"
+                +"'type':'record',"
+                +"'name':'Test',"
+                +"'fields':["
+                +"  {'name':'data', 'type':['null',"
+                +"    {'type':'record','name':'Nested','fields':["
+                +"      {'name':'x','type':'int'}"
+                +"    ]},"
+                +"    {'type':'map','values':'string'}"
+                +"  ]}"
+                +"]"
+                +"}"));
+
+        // Write a record where 'data' is a map (union index 2)
+        Map<String,Object> input = _map("data", _map("key1", "val1", "key2", "val2"));
+        byte[] avro = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String,Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(avro);
+        Object ob = result.get("data");
+        assertTrue(ob instanceof Map<?,?>,
+                "Expected Map but got "+((ob == null) ? "NULL" : ob.getClass().getSimpleName()));
+        Map<?,?> dataMap = (Map<?,?>) ob;
+        assertEquals("val1", dataMap.get("key1"));
+        assertEquals("val2", dataMap.get("key2"));
+    }
+
     private Map<String,Object> _map(Object... args) {
         Map<String,Object> m = new LinkedHashMap<>();
         for (int i = 0; i < args.length; i += 2) {
