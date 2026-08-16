@@ -16,8 +16,7 @@ implementations)
 
 3.3.0 (not yet released)
 
-#745: (avro) Fix BigDecimal union resolution, stale type variable in `_createRecord`
-  and integer default precision loss
+None yet
 
 3.2.3 (not yet released)
 
