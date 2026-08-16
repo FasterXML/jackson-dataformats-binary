@@ -18,7 +18,7 @@ Active maintainers:
 
 No changes since 2.22
 
-2.22.2 (not yet released)
+2.22.2 (16-Aug-2026)
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
 #712: (protobuf) `map` type not supported with protobuf: should be supported
@@ -50,7 +50,7 @@ No changes since 2.22
 
 No changes since 2.21
 
-2.21.6 (not yet released)
+2.21.6 (14-Aug-2026)
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
 #712: (protobuf) `map` type not supported with protobuf: should be supported
@@ -203,7 +203,7 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
-2.18.10 (not yet released)
+2.18.10 (15-Aug-2026)
 
 #725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
  (reported by @tinyb0y)
