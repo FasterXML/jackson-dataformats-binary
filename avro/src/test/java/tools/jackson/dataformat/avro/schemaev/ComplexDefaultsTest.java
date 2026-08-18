@@ -194,4 +194,85 @@ public class ComplexDefaultsTest extends AvroTestBase
         assertEquals("Fo", result.data.get(0));
         assertEquals("obar", result.data.get(1));
     }
+
+    /*
+    /**********************************************************************
+    /* Tests for integer default precision (not stored as float)
+    /**********************************************************************
+     */
+
+    // Verify that int default values preserve precision (not stored as float)
+    @Test
+    public void testIntDefaultValuePrecision() throws Exception
+    {
+        // V1 has x and y; V2 adds 'largeInt' with a default that exceeds float precision
+        String v1Json = a2q("{" +
+                "'type':'record','name':'RootType'," +
+                "'fields':[" +
+                "  {'name':'x','type':'int'}," +
+                "  {'name':'y','type':'int'}" +
+                "]" +
+                "}");
+        // Default value 20000001 exceeds float's 24-bit mantissa (max exact int: 16777216)
+        String v2Json = a2q("{" +
+                "'type':'record','name':'RootType'," +
+                "'fields':[" +
+                "  {'name':'x','type':'int'}," +
+                "  {'name':'largeInt','type':'int','default':20000001}," +
+                "  {'name':'y','type':'int'}" +
+                "]" +
+                "}");
+
+        AvroSchema v1Schema = MAPPER.schemaFrom(v1Json);
+        AvroSchema v2Schema = MAPPER.schemaFrom(v2Json);
+
+        // Write with V1 (no largeInt field)
+        Map<String, Object> input = Map.of("x", 1, "y", 2);
+        byte[] bytes = MAPPER.writer(v1Schema).writeValueAsBytes(input);
+
+        // Read with V2 — should get the default value for largeInt
+        AvroSchema xlate = v1Schema.withReaderSchema(v2Schema);
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(xlate)
+                .readValue(bytes);
+        assertEquals(1, result.get("x"));
+        assertEquals(2, result.get("y"));
+        // The critical assertion: default 20000001 must survive float truncation
+        assertEquals(20000001, ((Number) result.get("largeInt")).intValue(),
+                "Integer default lost precision — likely stored as float");
+    }
+
+    // Verify that long default values preserve precision
+    @Test
+    public void testLongDefaultValuePrecision() throws Exception
+    {
+        String v1Json = a2q("{" +
+                "'type':'record','name':'RootType'," +
+                "'fields':[" +
+                "  {'name':'x','type':'int'}" +
+                "]" +
+                "}");
+        // Default value 9007199254740993 exceeds float AND double integer precision
+        String v2Json = a2q("{" +
+                "'type':'record','name':'RootType'," +
+                "'fields':[" +
+                "  {'name':'x','type':'int'}," +
+                "  {'name':'bigLong','type':'long','default':9007199254740993}" +
+                "]" +
+                "}");
+
+        AvroSchema v1Schema = MAPPER.schemaFrom(v1Json);
+        AvroSchema v2Schema = MAPPER.schemaFrom(v2Json);
+
+        Map<String, Object> input = Map.of("x", 1);
+        byte[] bytes = MAPPER.writer(v1Schema).writeValueAsBytes(input);
+
+        AvroSchema xlate = v1Schema.withReaderSchema(v2Schema);
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(xlate)
+                .readValue(bytes);
+        assertEquals(1, result.get("x"));
+        assertEquals(9007199254740993L, ((Number) result.get("bigLong")).longValue(),
+                "Long default lost precision — likely stored as float");
+    }
 }

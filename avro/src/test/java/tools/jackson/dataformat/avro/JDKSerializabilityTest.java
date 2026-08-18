@@ -49,10 +49,8 @@ public class JDKSerializabilityTest extends AvroTestBase
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(serializedBytes);
         ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream);
-        Object deserializedObject = inputStream.readObject();
-        assertTrue(deserializedObject instanceof AvroMapper,
+        return assertInstanceOf(AvroMapper.class, inputStream.readObject(),
                 "Deserialized object should be an instance of ObjectMapper");
-        return (AvroMapper) deserializedObject;
     }
 
     private Employee _simpleEmployee() {
