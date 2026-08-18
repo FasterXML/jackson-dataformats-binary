@@ -45,10 +45,8 @@ public class JDKSerializabilityTest extends BaseTestForSmile
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(serializedBytes);
         ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream);
-        Object deserializedObject = inputStream.readObject();
-        assertTrue(deserializedObject instanceof SmileMapper,
+        return assertInstanceOf(SmileMapper.class, inputStream.readObject(),
                 "Deserialized object should be an instance of ObjectMapper");
-        return (SmileMapper) deserializedObject;
     }
 
     private Object _simpleData() {
