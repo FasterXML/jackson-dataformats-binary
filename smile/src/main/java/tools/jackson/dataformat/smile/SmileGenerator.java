@@ -933,13 +933,8 @@ public class SmileGenerator
     public JsonGenerator writeString(char[] text, int offset, int len) throws JacksonException
     {
         // Shared strings: try char-array lookup first to avoid String allocation
-        if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0 && len > 0) {
-            int ix = _findSeenStringValue(text, offset, len);
-            if (ix >= 0) {
-                _verifyValueWrite("write String value");
-                _writeSharedStringValueReference(ix);
-                return this;
-            }
+        if (_writeSharedStringValueRefIfSeen(text, offset, len)) {
+            return this;
         }
         _verifyValueWrite("write String value");
         if (len == 0) {
@@ -960,7 +955,7 @@ public class SmileGenerator
                 // to allocate a String); must match what decoder tracks, that is,
                 // only values written as "short" (max 64 bytes) Strings
                 if (_seenStringValueCount >= 0) {
-                    _addSeenStringValue(new String(text, offset, len));
+                    _addSeenStringValue(text, offset, len);
                 }
                 if (byteLen == len) { // and all ASCII
                     typeToken = (byte) ((TOKEN_PREFIX_TINY_ASCII - 1) + byteLen);
@@ -2635,6 +2630,31 @@ surr1, surr2));
             } while (node != null);
         }
         return -1;
+    }
+
+    /**
+     * Helper method kept separate from {@code writeString(char[],int,int)}, along with
+     * {@link #_addSeenStringValue(char[],int,int)}, to keep that method under HotSpot's
+     * default {@code FreqInlineSize} of 325 bytecode bytes: inlining it into callers is
+     * worth clearly more than saving the call here (measured).
+     */
+    private final boolean _writeSharedStringValueRefIfSeen(char[] text, int offset, int len)
+        throws JacksonException
+    {
+        if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0 && len > 0) {
+            int ix = _findSeenStringValue(text, offset, len);
+            if (ix >= 0) {
+                _verifyValueWrite("write String value");
+                _writeSharedStringValueReference(ix);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private final void _addSeenStringValue(char[] text, int offset, int len)
+    {
+        _addSeenStringValue(new String(text, offset, len));
     }
 
     private final void _addSeenStringValue(String text)
