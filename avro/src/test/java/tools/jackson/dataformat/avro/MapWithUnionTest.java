@@ -124,9 +124,7 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals(3, deserialized.props.size());
         assertEquals("world", deserialized.props.get("hello"));
         assertEquals("charlie", deserialized.props.get("goodbye"));
-        Object ob = deserialized.props.get("otherMap");
-        assertTrue(ob instanceof Map<?,?>);
-        Map<?,?> m = (Map<?,?>) ob;
+        Map<?,?> m = assertInstanceOf(Map.class, deserialized.props.get("otherMap"));
         assertEquals("bar", m.get("foo"));
         assertEquals("bing", m.get("zap"));
     }
@@ -178,7 +176,7 @@ public class MapWithUnionTest extends AvroTestBase
                 .with(schema)
                 .readValue(bytes);
         assertNotNull(result.get("data"));
-        assertTrue(result.get("data") instanceof Map,
+        assertInstanceOf(Map.class, result.get("data"),
                 "Expected Map but got " + result.get("data").getClass().getSimpleName());
         Map<String, String> dataMap = (Map<String, String>) result.get("data");
         assertEquals("val1", dataMap.get("key1"));

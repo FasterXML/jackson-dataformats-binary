@@ -45,10 +45,8 @@ public class JDKSerializabilityTest extends CBORTestBase
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(serializedBytes);
         ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream);
-        Object deserializedObject = inputStream.readObject();
-        assertTrue(deserializedObject instanceof CBORMapper,
+        return assertInstanceOf(CBORMapper.class, inputStream.readObject(),
                 "Deserialized object should be an instance of ObjectMapper");
-        return (CBORMapper) deserializedObject;
     }
 
     private Object _simpleData() {
