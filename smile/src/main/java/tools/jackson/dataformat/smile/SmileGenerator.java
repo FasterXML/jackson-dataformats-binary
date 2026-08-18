@@ -956,6 +956,12 @@ public class SmileGenerator
             int byteLen = _shortUTF8Encode(text, offset, offset+len);
             byte typeToken;
             if (byteLen <= MAX_SHORT_VALUE_STRING_BYTES) { // yes, is short indeed
+                // plus keep reference, if it could be shared (only now do we need
+                // to allocate a String); must match what decoder tracks, that is,
+                // only values written as "short" (max 64 bytes) Strings
+                if (_seenStringValueCount >= 0) {
+                    _addSeenStringValue(new String(text, offset, len));
+                }
                 if (byteLen == len) { // and all ASCII
                     typeToken = (byte) ((TOKEN_PREFIX_TINY_ASCII - 1) + byteLen);
                 } else { // not just ASCII
@@ -988,10 +994,6 @@ public class SmileGenerator
                 _mediumUTF8Encode(text, offset, offset+len);
                 _writeByte(BYTE_MARKER_END_OF_STRING);
             }
-        }
-        // Only allocate String here if we need to store for shared-value tracking
-        if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0) {
-            _addSeenStringValue(new String(text, offset, len));
         }
         return this;
     }
@@ -2606,13 +2608,11 @@ surr1, surr2));
      */
     private final int _findSeenStringValue(char[] text, int offset, int len)
     {
-        // Compute hash the same way String.hashCode does.
-        // Strength-reduce 31*hash to (hash<<5)-hash: the JIT can often do this
-        // itself, but spelling it out helps HotSpot's loop-opts pass match the
-        // recurrence and eliminate the multiply entirely.
+        // Must compute hash exactly the way String.hashCode() does, since
+        // entries are looked up (and stored) using that
         int hash = 0;
         for (int i = offset, end = offset + len; i < end; ++i) {
-            hash = (hash << 5) - hash + text[i];
+            hash = 31 * hash + text[i];
         }
         SharedStringNode head = _seenStringValues[hash & (_seenStringValues.length-1)];
         if (head != null) {

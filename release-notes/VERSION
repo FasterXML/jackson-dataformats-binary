@@ -16,7 +16,8 @@ implementations)
 
 3.3.0 (not yet released)
 
-None yet
+#750: (smile) Avoid `String` allocation in `SmileGenerator.writeString(char[],int,int)`
+ (contributed by PJ F)
 
 3.2.3 (not yet released)
 
