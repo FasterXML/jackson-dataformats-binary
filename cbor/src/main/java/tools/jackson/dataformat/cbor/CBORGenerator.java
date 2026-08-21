@@ -1729,16 +1729,21 @@ surr1, surr2));
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
+            _outputTail += 8;
+        } else {
+            int i = (int) (l >> 32);
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+            i = (int) l;
+            _outputBuffer[_outputTail++] = (byte) (i >> 24);
+            _outputBuffer[_outputTail++] = (byte) (i >> 16);
+            _outputBuffer[_outputTail++] = (byte) (i >> 8);
+            _outputBuffer[_outputTail++] = (byte) i;
+        }
     }
 
     private final void _writeLengthMarker(int majorType, int i)
