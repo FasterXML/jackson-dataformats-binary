@@ -71,7 +71,20 @@ public class CBORGenerator extends GeneratorBase
     // Whether VarHandles are available on this runtime; checked once at class load.
     //
     // @since 3.3
-    private static final boolean _VARHANDLE_AVAILABLE = CBORVarHandleUtil.isAvailable();
+    private static final boolean _VARHANDLE_AVAILABLE = _checkVarHandleAvailable();
+
+    private static boolean _checkVarHandleAvailable() {
+        // NOTE: this call is what first loads `CBORVarHandleUtil`, and that class
+        // names `VarHandle` in its field/method signatures. On a runtime without
+        // `java.lang.invoke.VarHandle` (some Android builds) loading it raises
+        // `NoClassDefFoundError` -- an Error, not an Exception -- so `Throwable`
+        // is what has to be caught here.
+        try {
+            return CBORVarHandleUtil.isAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
     /*
     /**********************************************************************
