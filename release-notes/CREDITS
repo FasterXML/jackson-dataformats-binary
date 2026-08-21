@@ -55,3 +55,9 @@ Benoît Mériaux (@benoitmeriaux)
 
 * Reported #742: Use `ArrayDeque` instead of `Stack` in `CBORParser`
  (3.1.6)
+
+PJ Fanning (@pjfanning)
+
+* Contributed #750: (smile) Avoid `String` allocation in
+  `SmileGenerator.writeString(char[],int,int)`
+ (3.3.0)
