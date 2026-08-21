@@ -949,11 +949,10 @@ public class CBORGenerator extends GeneratorBase
      * (Array value, Object field value, root-level value).
      *
      * @param i Number value to write
-     * @throws IOException if there is either an underlying I/O problem or encoding
-     *                     issue at format layer
+     *
      * @since 2.20
      */
-    public void writeNumberUnsigned(int i) throws IOException {
+    public void writeNumberUnsigned(int i) throws JacksonException {
         _verifyValueWrite("write number unsigned");
         _writeIntMinimal(PREFIX_TYPE_INT_POS, i);
     }
@@ -1012,11 +1011,10 @@ public class CBORGenerator extends GeneratorBase
      * (Array value, Object field value, root-level value).
      *
      * @param l Number value to write
-     * @throws IOException if there is either an underlying I/O problem or encoding
-     *                     issue at format layer
+     *
      * @since 2.20
      */
-    public void writeNumberUnsigned(long l) throws IOException {
+    public void writeNumberUnsigned(long l) throws JacksonException {
         if (_cfgMinimalInts && l >= 0 && l < 0x100000000L) {
             writeNumberUnsigned((int) l);
             return;
