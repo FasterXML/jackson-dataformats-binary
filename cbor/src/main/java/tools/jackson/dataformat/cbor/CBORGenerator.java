@@ -612,10 +612,7 @@ public class CBORGenerator extends GeneratorBase
             CBORVarHandleUtil.setInt(_outputBuffer, _outputTail, i);
             _outputTail += 4;
         } else {
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
+            _writeInt32Bytes(i);
         }
     }
 
@@ -648,16 +645,7 @@ public class CBORGenerator extends GeneratorBase
             CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
-            int i = (int) (l >> 32);
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
-            i = (int) l;
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
+            _writeInt64Bytes(l);
         }
     }
 
@@ -674,11 +662,7 @@ public class CBORGenerator extends GeneratorBase
             CBORVarHandleUtil.setFloat(_outputBuffer, _outputTail, f);
             _outputTail += 4;
         } else {
-            int i = Float.floatToRawIntBits(f);
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
+            _writeInt32Bytes(Float.floatToRawIntBits(f));
         }
     }
 
@@ -689,17 +673,7 @@ public class CBORGenerator extends GeneratorBase
             CBORVarHandleUtil.setDouble(_outputBuffer, _outputTail, d);
             _outputTail += 8;
         } else {
-            long l = Double.doubleToRawLongBits(d);
-            int i = (int) (l >> 32);
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
-            i = (int) l;
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
+            _writeInt64Bytes(Double.doubleToRawLongBits(d));
         }
     }
 
@@ -1046,14 +1020,7 @@ public class CBORGenerator extends GeneratorBase
             CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
-            _outputBuffer[_outputTail++] = (byte) (l >> 56);
-            _outputBuffer[_outputTail++] = (byte) (l >> 48);
-            _outputBuffer[_outputTail++] = (byte) (l >> 40);
-            _outputBuffer[_outputTail++] = (byte) (l >> 32);
-            _outputBuffer[_outputTail++] = (byte) (l >> 24);
-            _outputBuffer[_outputTail++] = (byte) (l >> 16);
-            _outputBuffer[_outputTail++] = (byte) (l >> 8);
-            _outputBuffer[_outputTail++] = (byte) l;
+            _writeInt64Bytes(l);
         }
     }
 
@@ -1085,16 +1052,7 @@ public class CBORGenerator extends GeneratorBase
             CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
-            int i = (int) (l >> 32);
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
-            i = (int) l;
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
+            _writeInt64Bytes(l);
         }
         return this;
     }
@@ -1721,17 +1679,24 @@ surr1, surr2));
             CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
-            int i = (int) (l >> 32);
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
-            i = (int) l;
-            _outputBuffer[_outputTail++] = (byte) (i >> 24);
-            _outputBuffer[_outputTail++] = (byte) (i >> 16);
-            _outputBuffer[_outputTail++] = (byte) (i >> 8);
-            _outputBuffer[_outputTail++] = (byte) i;
+            _writeInt64Bytes(l);
         }
+    }
+
+    // Fallback helpers used when VarHandles are not available on this runtime:
+    // write value as big-endian bytes, one at a time. Callers must have ensured
+    // room for the full 4/8 bytes. Kept small so JIT can inline them.
+
+    private final void _writeInt32Bytes(int i) {
+        _outputBuffer[_outputTail++] = (byte) (i >> 24);
+        _outputBuffer[_outputTail++] = (byte) (i >> 16);
+        _outputBuffer[_outputTail++] = (byte) (i >> 8);
+        _outputBuffer[_outputTail++] = (byte) i;
+    }
+
+    private final void _writeInt64Bytes(long l) {
+        _writeInt32Bytes((int) (l >> 32));
+        _writeInt32Bytes((int) l);
     }
 
     private final void _writeLengthMarker(int majorType, int i)
