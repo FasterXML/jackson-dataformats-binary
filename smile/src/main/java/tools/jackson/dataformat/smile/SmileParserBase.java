@@ -30,6 +30,27 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected final static JacksonFeatureSet<StreamReadCapability> SMILE_READ_CAPABILITIES
         = DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
+    /**
+     * Whether {@code VarHandle}-based array access is usable on this runtime;
+     * probed once at class load. See {@link #_decodeQuad}.
+     *
+     * @since 3.3
+     */
+    private final static boolean _VARHANDLE_AVAILABLE = _checkVarHandleAvailable();
+
+    private static boolean _checkVarHandleAvailable() {
+        // NOTE: this call is what first loads `SmileVarHandleUtil`, and that class
+        // names `VarHandle` in its field/method signatures. On a runtime without
+        // `java.lang.invoke.VarHandle` (some Android builds) loading it raises
+        // `NoClassDefFoundError` -- an Error, not an Exception -- so `Throwable`
+        // is what has to be caught here.
+        try {
+            return SmileVarHandleUtil.isAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     /*
     /**********************************************************************
     /* Config
@@ -718,6 +739,32 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _reportError(String.format(
                 "Unexpected close marker '%s': expected '%c' (for %s starting at %s)",
                 (char) actCh, expCh, ctxt.typeDesc(), ctxt.startLocation(_sourceReference())));
+    }
+
+    /**
+     * Helper method for decoding 4 bytes of an Object property name into the
+     * "quad" (big-endian {@code int}) form used by {@link ByteQuadsCanonicalizer}.
+     *<p>
+     * Uses a single unaligned load via {@code VarHandle} where supported,
+     * falling back to byte shifting otherwise. Since {@link #_VARHANDLE_AVAILABLE}
+     * is a {@code static final} the branch folds away at JIT time; and on the
+     * fallback path {@code SmileVarHandleUtil} is never resolved, which is what
+     * keeps this working on runtimes that lack {@code VarHandle} entirely.
+     *<p>
+     * Exists on the base class so that subclasses in the {@code async} package
+     * can share the same implementation; caller MUST have verified that 4 bytes
+     * are readable at given offset.
+     *
+     * @since 3.3
+     */
+    protected final static int _decodeQuad(byte[] buffer, int offset) {
+        if (_VARHANDLE_AVAILABLE) {
+            return SmileVarHandleUtil.getIntBE(buffer, offset);
+        }
+        return ((buffer[offset] & 0xFF) << 24)
+                | ((buffer[offset+1] & 0xFF) << 16)
+                | ((buffer[offset+2] & 0xFF) << 8)
+                | (buffer[offset+3] & 0xFF);
     }
 
     /**

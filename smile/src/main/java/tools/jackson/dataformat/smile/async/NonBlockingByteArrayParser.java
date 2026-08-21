@@ -702,11 +702,7 @@ public class NonBlockingByteArrayParser
         int quadCount = 0;
 
         for (final int inEnd = (outPtr & ~3); in < inEnd; in += 4) {
-            int q = (copyBuffer[in] << 24)
-                    | ((copyBuffer[in+1] & 0xFF) << 16)
-                    | ((copyBuffer[in+2] & 0xFF) << 8)
-                    | (copyBuffer[in+3] & 0xFF);
-            quads[quadCount++] = q;
+            quads[quadCount++] = _decodeQuad(copyBuffer, in);
         }
         // and possibly more... ?
         if (in < outPtr) { // at least 1

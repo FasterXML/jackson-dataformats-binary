@@ -999,10 +999,8 @@ _typeAsInt);
         int inPtr = _inputPtr;
 
         // First quadbyte is easy
-        int q1 = (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q1 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 9) {
             int q2 = (inBuf[inPtr++] & 0xFF);
@@ -1021,10 +1019,8 @@ _typeAsInt);
             return matcher.matchByQuad(q1, q2);
         }
 
-        int q2 = (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q2 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 13) {
             int q3 = (inBuf[inPtr++] & 0xFF);
@@ -1070,11 +1066,8 @@ _typeAsInt);
 
         final byte[] inBuf = _inputBuffer;
         do {
-            int q = (inBuf[inPtr++] & 0xFF);
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
@@ -2146,10 +2139,8 @@ _typeAsInt);
         int inPtr = _inputPtr;
 
         // First quadbyte is easy
-        int q1 = (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q1 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 9) {
             int q2 = _padQuadForNulls(inBuf[inPtr++]);
@@ -2168,10 +2159,8 @@ _typeAsInt);
             return _symbols.findName(q1, q2);
         }
 
-        int q2 = (inBuf[inPtr++] & 0xFF);
-        q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q2 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 13) {
             int q3 = _padQuadForNulls(inBuf[inPtr++]);
@@ -2215,11 +2204,8 @@ _typeAsInt);
 
         final byte[] inBuf = _inputBuffer;
         do {
-            int q = (inBuf[inPtr++] & 0xFF);
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
