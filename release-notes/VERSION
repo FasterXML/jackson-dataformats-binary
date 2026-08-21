@@ -16,6 +16,8 @@ implementations)
 
 3.3.0 (not yet released)
 
+#624: (cbor) Use more efficient (in JDK 17) `String` construction wrt
+  "Compact Strings"
 #750: (smile) Avoid `String` allocation in `SmileGenerator.writeString(char[],int,int)`
  (contributed by @pjfanning)
 #752: (cbor) Use `VarHandle` for multi-byte primitive writes in `CBORGenerator`
