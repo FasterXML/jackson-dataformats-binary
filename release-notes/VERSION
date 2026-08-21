@@ -18,6 +18,8 @@ implementations)
 
 #750: (smile) Avoid `String` allocation in `SmileGenerator.writeString(char[],int,int)`
  (contributed by @pjfanning)
+#752: (cbor) Use `VarHandle` for multi-byte primitive writes in `CBORGenerator`
+ (contributed by @pjfanning)
 
 3.2.3 (not yet released)
 
