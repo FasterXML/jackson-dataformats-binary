@@ -68,20 +68,10 @@ public class CBORGenerator extends GeneratorBase
      */
     private final static int INDEFINITE_LENGTH = -2; // just to allow -1 as marker for "one too many"
 
-    // True when VarHandles are available on this runtime. Checked once at class
-    // load so that if CBORVarHandleUtil itself fails to load (e.g. Android
-    // without java.lang.invoke), we fall back to manual byte shifting instead
-    // of propagating NoClassDefFoundError.
-    private static final boolean _VARHANDLE_AVAILABLE;
-    static {
-        boolean available = false;
-        try {
-            available = CBORVarHandleUtil.INT_BE != null;
-        } catch (Throwable t) {
-            // CBORVarHandleUtil class not loadable — fall back to manual byte shifting
-        }
-        _VARHANDLE_AVAILABLE = available;
-    }
+    // Whether VarHandles are available on this runtime; checked once at class load.
+    //
+    // @since 3.3
+    private static final boolean _VARHANDLE_AVAILABLE = CBORVarHandleUtil.isAvailable();
 
     /*
     /**********************************************************************
