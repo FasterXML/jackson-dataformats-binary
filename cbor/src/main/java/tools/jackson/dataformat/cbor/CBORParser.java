@@ -125,6 +125,29 @@ public class CBORParser extends ParserBase
     protected final static JacksonFeatureSet<StreamReadCapability> CBOR_READ_CAPABILITIES =
             DEFAULT_READ_CAPABILITIES.with(StreamReadCapability.EXACT_FLOATS);
 
+    /**
+     * Whether VarHandles are usable on this runtime; probed once at class load.
+     * Being {@code static final} lets the branches in {@link #_decode32Bits()},
+     * {@link #_decode64Bits()} and {@link #_decodeQuad} fold away at JIT time.
+     *
+     * @since 3.3
+     */
+    private final static boolean _VARHANDLE_AVAILABLE = _checkVarHandleAvailable();
+
+    private static boolean _checkVarHandleAvailable() {
+        // NOTE: this call is what first loads `CBORVarHandleUtil`, and that class
+        // names `VarHandle` in its field/method signatures. On a runtime lacking
+        // `java.lang.invoke.VarHandle` (some Android builds) loading it raises
+        // `NoClassDefFoundError` -- an Error, not an Exception -- so `Throwable`
+        // is what has to be caught here. Without this guard the failure would
+        // propagate out of this class's initializer and make the parser unusable.
+        try {
+            return CBORVarHandleUtil.isAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     /*
     /**********************************************************************
     /* Configuration
@@ -1566,10 +1589,8 @@ public class CBORParser extends ParserBase
         int inPtr = _inputPtr;
 
         // First quadbyte is easy
-        int q1 = (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q1 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 9) {
             int q2 = (inBuf[inPtr++] & 0xFF);
@@ -1588,10 +1609,8 @@ public class CBORParser extends ParserBase
             return matcher.matchByQuad(q1, q2);
         }
 
-        int q2 = (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q2 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 13) {
             int q3 = (inBuf[inPtr++] & 0xFF);
@@ -1636,11 +1655,8 @@ public class CBORParser extends ParserBase
 
         final byte[] inBuf = _inputBuffer;
         do {
-            int q = (inBuf[inPtr++] & 0xFF);
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
@@ -3356,10 +3372,8 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         int inPtr = _inputPtr;
 
         // First quadbyte is easy
-        int q1 = (inBuf[inPtr++] & 0xFF);
-        q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
-        q1 = (q1 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q1 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 9) {
             int q2 = _padQuadForNulls(inBuf[inPtr++]);
@@ -3378,10 +3392,8 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             return _symbols.findName(q1, q2);
         }
 
-        int q2 = (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
-        q2 =  (q2 << 8) | (inBuf[inPtr++] & 0xFF);
+        int q2 = _decodeQuad(inBuf, inPtr);
+        inPtr += 4;
 
         if (len < 13) {
             int q3 = _padQuadForNulls(inBuf[inPtr++]);
@@ -3428,11 +3440,8 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
 
         final byte[] inBuf = _inputBuffer;
         do {
-            int q = (inBuf[inPtr++] & 0xFF);
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            q = (q << 8) | inBuf[inPtr++] & 0xFF;
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
@@ -3476,6 +3485,23 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
     private final static int _padQuadForNulls(int firstByte) {
         return (firstByte & 0xFF) | 0xFFFFFF00;
+    }
+
+    /**
+     * Helper method for decoding 4 bytes of an Object property name into the
+     * "quad" (big-endian {@code int}) form used by {@code ByteQuadsCanonicalizer}.
+     * Caller MUST have verified that 4 bytes are readable at given offset.
+     *
+     * @since 3.3
+     */
+    private final static int _decodeQuad(byte[] buffer, int offset) {
+        if (_VARHANDLE_AVAILABLE) {
+            return CBORVarHandleUtil.getInt(buffer, offset);
+        }
+        return ((buffer[offset] & 0xFF) << 24)
+                | ((buffer[offset+1] & 0xFF) << 16)
+                | ((buffer[offset+2] & 0xFF) << 8)
+                | (buffer[offset+3] & 0xFF);
     }
 
     /*
@@ -3770,8 +3796,14 @@ expType, type, ch));
             return _slow32();
         }
         final byte[] b = _inputBuffer;
-        int v = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
-                + ((b[ptr++] & 0xFF) << 8) + (b[ptr++] & 0xFF);
+        final int v;
+        if (_VARHANDLE_AVAILABLE) {
+            v = CBORVarHandleUtil.getInt(b, ptr);
+            ptr += 4;
+        } else {
+            v = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
+                    + ((b[ptr++] & 0xFF) << 8) + (b[ptr++] & 0xFF);
+        }
         _inputPtr = ptr;
         return v;
     }
@@ -3801,6 +3833,13 @@ expType, type, ch));
             return _slow64();
         }
         final byte[] b = _inputBuffer;
+        if (_VARHANDLE_AVAILABLE) {
+            // NOTE: identical to `_long()` of the two 32-bit halves below, since
+            // that is just a big-endian 8-byte read spelled out
+            final long l = CBORVarHandleUtil.getLong(b, ptr);
+            _inputPtr = ptr + 8;
+            return l;
+        }
         int i1 = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
                 + ((b[ptr++] & 0xFF) << 8) + (b[ptr++] & 0xFF);
         int i2 = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)

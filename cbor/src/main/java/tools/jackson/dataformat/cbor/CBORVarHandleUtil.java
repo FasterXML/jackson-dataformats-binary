@@ -51,8 +51,8 @@ final class CBORVarHandleUtil
         return LONG_BE != null;
     }
 
-    // Helper methods that write primitives via the class's own VarHandle fields.
-    // Only called when the corresponding field is non-null, which implies
+    // Helper methods that read/write primitives via the class's own VarHandle
+    // fields. Only called when the corresponding field is non-null, which implies
     // VarHandle is available on this runtime.
 
     static void setInt(byte[] array, int offset, int value) {
@@ -61,5 +61,25 @@ final class CBORVarHandleUtil
 
     static void setLong(byte[] array, int offset, long value) {
         LONG_BE.set(array, offset, value);
+    }
+
+    /**
+     * Reads 4 bytes at given offset as a big-endian {@code int}; caller MUST
+     * have verified that {@code offset+4} is within bounds of given array.
+     *
+     * @since 3.3
+     */
+    static int getInt(byte[] array, int offset) {
+        return (int) INT_BE.get(array, offset);
+    }
+
+    /**
+     * Reads 8 bytes at given offset as a big-endian {@code long}; caller MUST
+     * have verified that {@code offset+8} is within bounds of given array.
+     *
+     * @since 3.3
+     */
+    static long getLong(byte[] array, int offset) {
+        return (long) LONG_BE.get(array, offset);
     }
 }
