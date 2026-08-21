@@ -21,6 +21,7 @@ No changes since 3.2
 3.2.3 (not yet released)
 
 #745: (avro) Fix Avro bugs
+- Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.2.2 (14-Aug-2026)
 
