@@ -608,12 +608,7 @@ public class CBORGenerator extends GeneratorBase
         _ensureRoomForOutput(5);
 
         _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT32_ELEMENTS);
-        if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setInt(_outputBuffer, _outputTail, i);
-            _outputTail += 4;
-        } else {
-            _writeInt32Bytes(i);
-        }
+        _writeInt32(i);
     }
 
     // Helper method that works like `writeNumber(long)` but DOES NOT
@@ -641,12 +636,7 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
-            _outputTail += 8;
-        } else {
-            _writeInt64Bytes(l);
-        }
+        _writeInt64(l);
     }
 
     private final void _writeFloatNoCheck(float f) throws JacksonException {
@@ -658,23 +648,13 @@ public class CBORGenerator extends GeneratorBase
          * clients), this can be changed
          */
         _outputBuffer[_outputTail++] = BYTE_FLOAT32;
-        if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setFloat(_outputBuffer, _outputTail, f);
-            _outputTail += 4;
-        } else {
-            _writeInt32Bytes(Float.floatToRawIntBits(f));
-        }
+        _writeInt32(Float.floatToRawIntBits(f));
     }
 
     private final void _writeDoubleNoCheck(double d) throws JacksonException {
         _ensureRoomForOutput(9);
         _outputBuffer[_outputTail++] = BYTE_FLOAT64;
-        if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setDouble(_outputBuffer, _outputTail, d);
-            _outputTail += 8;
-        } else {
-            _writeInt64Bytes(Double.doubleToRawLongBits(d));
-        }
+        _writeInt64(Double.doubleToRawLongBits(d));
     }
 
     private final void _writeDoubleMinimal(double d) throws JacksonException {
@@ -1016,12 +996,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write number unsigned");
         _ensureRoomForOutput(9);
         _outputBuffer[_outputTail++] = (byte) (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
-        if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
-            _outputTail += 8;
-        } else {
-            _writeInt64Bytes(l);
-        }
+        _writeInt64(l);
     }
 
     @Override
@@ -1048,12 +1023,7 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
-            _outputTail += 8;
-        } else {
-            _writeInt64Bytes(l);
-        }
+        _writeInt64(l);
         return this;
     }
 
@@ -1675,28 +1645,39 @@ surr1, surr2));
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
+        _writeInt64(l);
+    }
+
+    // Write 4/8 byte big-endian primitive at current position, advancing tail.
+    // Uses a single VarHandle store where supported, falling back to manual
+    // byte shifting otherwise. Callers must have ensured room for the full
+    // 4/8 bytes. `_VARHANDLE_AVAILABLE` is a static final so the branch folds
+    // away at JIT time; helpers are small enough to inline.
+
+    private final void _writeInt32(int i) {
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setInt(_outputBuffer, _outputTail, i);
+            _outputTail += 4;
+        } else {
+            _writeInt32Bytes(i);
+        }
+    }
+
+    private final void _writeInt64(long l) {
         if (_VARHANDLE_AVAILABLE) {
             CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
-            _writeInt64Bytes(l);
+            _writeInt32Bytes((int) (l >> 32));
+            _writeInt32Bytes((int) l);
         }
     }
-
-    // Fallback helpers used when VarHandles are not available on this runtime:
-    // write value as big-endian bytes, one at a time. Callers must have ensured
-    // room for the full 4/8 bytes. Kept small so JIT can inline them.
 
     private final void _writeInt32Bytes(int i) {
         _outputBuffer[_outputTail++] = (byte) (i >> 24);
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);
         _outputBuffer[_outputTail++] = (byte) i;
-    }
-
-    private final void _writeInt64Bytes(long l) {
-        _writeInt32Bytes((int) (l >> 32));
-        _writeInt32Bytes((int) l);
     }
 
     private final void _writeLengthMarker(int majorType, int i)
