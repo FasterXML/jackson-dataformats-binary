@@ -932,9 +932,13 @@ public class SmileGenerator
     @Override
     public JsonGenerator writeString(char[] text, int offset, int len) throws JacksonException
     {
-        // Shared strings are tricky; easiest to just construct String, call the other method
-        if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0 && len > 0) {
-            return writeString(new String(text, offset, len));
+        // Shared strings: try char-array lookup first to avoid String allocation.
+        // Hash is computed here (once) since it is needed both for the lookup and,
+        // on a miss, for adding the value: the String allocated for that has no
+        // cached hash yet, so recomputing would mean a second scan of the chars.
+        final int hash = _sharedStringValueHash(text, offset, len);
+        if (_writeSharedStringValueRefIfSeen(text, offset, len, hash)) {
+            return this;
         }
         _verifyValueWrite("write String value");
         if (len == 0) {
@@ -951,6 +955,12 @@ public class SmileGenerator
             int byteLen = _shortUTF8Encode(text, offset, offset+len);
             byte typeToken;
             if (byteLen <= MAX_SHORT_VALUE_STRING_BYTES) { // yes, is short indeed
+                // plus keep reference, if it could be shared (only now do we need
+                // to allocate a String); must match what decoder tracks, that is,
+                // only values written as "short" (max 64 bytes) Strings
+                if (_seenStringValueCount >= 0) {
+                    _addSeenStringValue(text, offset, len, hash);
+                }
                 if (byteLen == len) { // and all ASCII
                     typeToken = (byte) ((TOKEN_PREFIX_TINY_ASCII - 1) + byteLen);
                 } else { // not just ASCII
@@ -1075,7 +1085,8 @@ public class SmileGenerator
             }
         } else { // "long" String
             // but might still fit within buffer?
-            long maxLen = (long) len + len + len + 2;
+            // Input is already UTF-8 encoded, so no expansion needed — just type byte + end marker
+            long maxLen = (long) len + 2;
             if (maxLen <= _outputBuffer.length) { // yes indeed
                 if ((_outputTail + maxLen) >= _outputEnd) {
                     _flushBuffer();
@@ -2438,12 +2449,12 @@ surr1, surr2));
             int maxRead) throws JacksonException
     {
         // anything to shift to front?
-        int i = 0;
-        while (inputPtr < inputEnd) {
-            readBuffer[i++]  = readBuffer[inputPtr++];
+        int remaining = inputEnd - inputPtr;
+        if (remaining > 0) {
+            System.arraycopy(readBuffer, inputPtr, readBuffer, 0, remaining);
         }
         inputPtr = 0;
-        inputEnd = i;
+        inputEnd = remaining;
 
         maxRead = Math.min(maxRead, readBuffer.length);
 
@@ -2590,7 +2601,94 @@ surr1, surr2));
         return -1;
     }
 
+    /**
+     * Calculates hash of a possible shared String value, for
+     * {@code writeString(char[],int,int)}; 0 (unused) if value can not be shared,
+     * in which case characters are not scanned at all.
+     */
+    private final int _sharedStringValueHash(char[] text, int offset, int len)
+    {
+        if (len > 0 && len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0) {
+            // Must compute hash exactly the way String.hashCode() does, since
+            // entries are looked up (and stored) using that
+            int hash = 0;
+            for (int i = offset, end = offset + len; i < end; ++i) {
+                hash = 31 * hash + text[i];
+            }
+            return hash;
+        }
+        return 0;
+    }
+
+    /**
+     * Lookup variant that works directly on a char array, avoiding the need
+     * to allocate a {@link String} just for the shared-value check; takes hash
+     * as calculated by {@link #_sharedStringValueHash(char[],int,int)}.
+     */
+    private final int _findSeenStringValue(char[] text, int offset, int len, int hash)
+    {
+        SharedStringNode head = _seenStringValues[hash & (_seenStringValues.length-1)];
+        if (head != null) {
+            SharedStringNode node = head;
+            do {
+                String value = node.value;
+                if (value.length() == len && value.hashCode() == hash) {
+                    boolean match = true;
+                    for (int i = 0; i < len; ++i) {
+                        if (value.charAt(i) != text[offset + i]) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        return node.index;
+                    }
+                }
+                node = node.next;
+            } while (node != null);
+        }
+        return -1;
+    }
+
+    /**
+     * Helper method kept separate from {@code writeString(char[],int,int)}, along with
+     * {@link #_addSeenStringValue(char[],int,int)}, to keep that method under HotSpot's
+     * default {@code FreqInlineSize} of 325 bytecode bytes: inlining it into callers is
+     * worth clearly more than saving the call here (measured).
+     */
+    private final boolean _writeSharedStringValueRefIfSeen(char[] text, int offset, int len,
+            int hash)
+        throws JacksonException
+    {
+        if (len <= MAX_SHARED_STRING_LENGTH_BYTES && _seenStringValueCount >= 0 && len > 0) {
+            int ix = _findSeenStringValue(text, offset, len, hash);
+            if (ix >= 0) {
+                _verifyValueWrite("write String value");
+                _writeSharedStringValueReference(ix);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Note: caller must pass hash as calculated by
+     * {@link #_sharedStringValueHash(char[],int,int)} for the same value -- which
+     * {@code writeString(char[],int,int)} only adds when non-empty, at most
+     * {@code MAX_SHORT_VALUE_STRING_BYTES} characters long and sharing enabled,
+     * that is, exactly when the hash was actually calculated.
+     */
+    private final void _addSeenStringValue(char[] text, int offset, int len, int hash)
+    {
+        _addSeenStringValue(new String(text, offset, len), hash);
+    }
+
     private final void _addSeenStringValue(String text)
+    {
+        _addSeenStringValue(text, text.hashCode());
+    }
+
+    private final void _addSeenStringValue(String text, int hash)
     {
         // first: do we need to expand?
         if (_seenStringValueCount == _seenStringValues.length) {
@@ -2621,7 +2719,7 @@ surr1, surr2));
          */
         int ref = _seenStringValueCount;
         if (_validBackRef(ref)) {
-            int ix = text.hashCode() & (_seenStringValues.length-1);
+            int ix = hash & (_seenStringValues.length-1);
             _seenStringValues[ix] = new SharedStringNode(text, ref, _seenStringValues[ix]);
         }
         _seenStringValueCount = ref+1;

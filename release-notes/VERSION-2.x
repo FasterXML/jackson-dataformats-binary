@@ -16,18 +16,20 @@ Active maintainers:
 
 2.23.0 (not yet released)
 
-No changes since 2.22
+#745: (avro) Fix Avro bugs
 
-2.22.2 (not yet released)
+2.22.2 (16-Aug-2026)
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
- (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#712: (protobuf) `map` type not supported with protobuf: should be supported
+  idiomatically
 #714: (protobuf) Packed repeated field fails to decode when array spans an input
   buffer reload
 #715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
   ignoring actual type
-#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
-#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
+ (reported by @tinyb0y)
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser [CVE-2026-68496]
  (reported by @tinyb0y)
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
@@ -35,6 +37,7 @@ No changes since 2.22
   slot twice on fast-path miss, truncating definite-length Objects
 #735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
   actual length to `shouldReferenceString()`
+#736: (cbor) Long Object property names added to "stringref" reference table twice
 
 2.22.1 (07-Jul-2026)
 
@@ -47,10 +50,11 @@ No changes since 2.22
 
 No changes since 2.21
 
-2.21.6 (not yet released)
+2.21.6 (14-Aug-2026)
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
- (NOTE: `map<K,V>` fields still not supported, but now fail with a clear error)
+#712: (protobuf) `map` type not supported with protobuf: should be supported
+  idiomatically
 #714: (protobuf) Packed repeated field fails to decode when array spans an input
   buffer reload
 #715: (protobuf) `ProtobufGenerator._reportWrongWireType()` always reports `string`,
@@ -58,8 +62,9 @@ No changes since 2.21
 #720: (smile) `SmileGenerator` int overflow in `maxLen` for very long Strings
   (>= 715,827,882 chars) causes `ArrayIndexOutOfBoundsException`
  (reported by Benjamin M)
-#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
-#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
+ (reported by @tinyb0y)
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser [CVE-2026-68496]
  (reported by @tinyb0y)
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
@@ -67,6 +72,7 @@ No changes since 2.21
   slot twice on fast-path miss, truncating definite-length Objects
 #735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
   actual length to `shouldReferenceString()`
+#736: (cbor) Long Object property names added to "stringref" reference table twice
 
 2.21.5 (06-Jul-2026)
 
@@ -197,10 +203,11 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
-2.18.10 (not yet released)
+2.18.10 (15-Aug-2026)
 
-#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser
-#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser
+#725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
+ (reported by @tinyb0y)
+#726: (smile) Ensure `maxNameLength` limit enforced for Smile parser [CVE-2026-68496]
  (reported by @tinyb0y)
 #727: (cbor) `CBORParser.nextFieldName(SerializableString)` confuses 5-bit length
   marker 23 with 24 ("1-byte length suffix follows")
@@ -210,6 +217,7 @@ No changes since 2.19.1
   following references
 #735: (cbor) "stringref" property-name paths pass 5-bit length marker instead of
   actual length to `shouldReferenceString()`
+#736: (cbor) Long Object property names added to "stringref" reference table twice
 
 2.18.9 (07-Jul-2026)
 

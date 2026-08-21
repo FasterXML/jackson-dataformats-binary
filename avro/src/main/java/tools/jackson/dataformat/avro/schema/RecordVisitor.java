@@ -254,8 +254,7 @@ public class RecordVisitor
                 ValueSerializer<?> ser = null;
 
                 // 23-Nov-2012, tatu: Ideally shouldn't need to do this but...
-                if (prop instanceof BeanPropertyWriter) {
-                    BeanPropertyWriter bpw = (BeanPropertyWriter) prop;
+                if (prop instanceof BeanPropertyWriter bpw) {
                     ser = bpw.getSerializer();
                     // 2-Mar-2017, bryan: AvroEncode annotation expects to have the schema used directly
                     optional = optional && !(ser instanceof CustomEncodingSerializer); // Don't modify schema

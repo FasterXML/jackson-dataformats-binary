@@ -1,0 +1,65 @@
+package tools.jackson.dataformat.cbor;
+
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
+
+/**
+ * Utility class that provides {@link VarHandle} instances for efficient
+ * multi-byte primitive writes to byte arrays.
+ *<p>
+ * Handles are resolved once at class initialization. On runtimes where
+ * {@code MethodHandles.byteArrayViewVarHandle()} is unsupported (for example
+ * some Android runtimes) they are left {@code null} and {@link #isAvailable()}
+ * returns {@code false}. Callers MUST check {@link #isAvailable()} first: the
+ * {@code setXxx()} methods dereference the handles unconditionally, and the
+ * byte-shifting fallback lives in the caller, not here.
+ *
+ * @since 3.3
+ */
+final class CBORVarHandleUtil
+{
+    /**
+     * VarHandle for writing an {@code int} as 4 big-endian bytes.
+     * {@code null} if VarHandles are unavailable.
+     */
+    static final VarHandle INT_BE;
+
+    /**
+     * VarHandle for writing a {@code long} as 8 big-endian bytes.
+     * {@code null} if VarHandles are unavailable.
+     */
+    static final VarHandle LONG_BE;
+
+    static {
+        VarHandle intBe = null;
+        VarHandle longBe = null;
+        try {
+            intBe = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.BIG_ENDIAN);
+            longBe = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.BIG_ENDIAN);
+        } catch (Throwable t) {
+            // VarHandles not available (e.g., Android): fall back to manual byte shifting
+        }
+        INT_BE = intBe;
+        // assigned last: non-null implies every handle above resolved too
+        LONG_BE = longBe;
+    }
+
+    private CBORVarHandleUtil() { }
+
+    static boolean isAvailable() {
+        return LONG_BE != null;
+    }
+
+    // Helper methods that write primitives via the class's own VarHandle fields.
+    // Only called when the corresponding field is non-null, which implies
+    // VarHandle is available on this runtime.
+
+    static void setInt(byte[] array, int offset, int value) {
+        INT_BE.set(array, offset, value);
+    }
+
+    static void setLong(byte[] array, int offset, long value) {
+        LONG_BE.set(array, offset, value);
+    }
+}

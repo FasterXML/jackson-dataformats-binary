@@ -48,8 +48,8 @@ class IonValueDeserializer extends ValueDeserializer<IonValue>
     public IonValue deserialize(JsonParser jp, DeserializationContext ctxt) throws JacksonException
     {
         Object embeddedObject = jp.getEmbeddedObject();
-        if (embeddedObject instanceof IonValue) {
-            return (IonValue) embeddedObject;
+        if (embeddedObject instanceof IonValue ionValue) {
+            return ionValue;
         }
         // We rely on the IonParser's IonSystem to wrap supported types into an IonValue
         if (!(jp instanceof IonParser)) {
@@ -58,8 +58,8 @@ class IonValueDeserializer extends ValueDeserializer<IonValue>
         }
 
         IonSystem ionSystem = ((IonParser) jp).getIonSystem();
-        if (embeddedObject instanceof Timestamp) {
-            return ionSystem.newTimestamp((Timestamp) embeddedObject);
+        if (embeddedObject instanceof Timestamp timestamp) {
+            return ionSystem.newTimestamp(timestamp);
         }
         if (embeddedObject instanceof byte[]) {
             // The parser provides no distinction between BLOB and CLOB, deserializing to a BLOB is the safest choice.
@@ -74,8 +74,7 @@ class IonValueDeserializer extends ValueDeserializer<IonValue>
         final JsonParser parser = ctxt.getParser();
         if (parser != null && parser.currentToken() != JsonToken.END_OBJECT) {
             final Object embeddedObj = parser.getEmbeddedObject();
-            if (embeddedObj instanceof IonValue) {
-                IonValue iv = (IonValue) embeddedObj;
+            if (embeddedObj instanceof IonValue iv) {
                 if (iv.isNullValue()) {
                     if (IonType.isContainer(iv.getType())) {
                         return iv;

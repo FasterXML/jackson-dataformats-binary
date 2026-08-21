@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import tools.jackson.core.*;
@@ -217,6 +218,12 @@ public class ProtobufGenerator extends GeneratorBase
         if (!_inObject) {
             _reportError("Cannot write a property name: current context not Object but "+_streamWriteContext.typeDesc());
         }
+        // [dataformats-binary#712] Within a `map`, each "field name" is a map key
+        // that opens a new entry sub-message
+        if (_streamWriteContext.inMap()) {
+            _startMapEntry(name);
+            return this;
+        }
         ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
         // field means an array until START_OBJECT
@@ -249,8 +256,14 @@ public class ProtobufGenerator extends GeneratorBase
         if (!_inObject) {
             _reportError("Cannot write a property name: current context not Object but "+_streamWriteContext.typeDesc());
         }
-        ProtobufField f = _currField;
         final String name = sstr.getValue();
+        // [dataformats-binary#712] Within a `map`, each "field name" is a map key
+        // that opens a new entry sub-message
+        if (_streamWriteContext.inMap()) {
+            _startMapEntry(name);
+            return this;
+        }
+        ProtobufField f = _currField;
         // important: use current field only if NOT repeated field; repeated
         // field means an array until START_OBJECT
         // NOTE: not ideal -- depends on if it really is sibling field of an array,
@@ -360,6 +373,11 @@ public class ProtobufGenerator extends GeneratorBase
         if (_currField == null) { // just a sanity check
             return _reportError("Can not write START_ARRAY without field (message type "+_currMessage.getName()+")");
         }
+        // [dataformats-binary#712] A `map` field is also "repeated" underneath, but
+        // must be written as an Object, not an Array
+        if (_currField.isMap) {
+            _reportError("Can not write START_ARRAY: field '"+_currField.name+"' is a `map`; write START_OBJECT instead");
+        }
         if (!_currField.isArray()) {
             _reportError("Can not write START_ARRAY: field '"+_currField.name+"' not declared as 'repeated'");
         }
@@ -429,6 +447,17 @@ public class ProtobufGenerator extends GeneratorBase
             }
             _currMessage = _schema.getRootType();
             // note: no buffering on root
+        } else if (_currField.isMap) {
+            // [dataformats-binary#712] a `map<K,V>` field: the Object being opened is
+            // a sequence of entry sub-messages, not a single one. Push a dedicated map
+            // context; per-entry buffering happens in writeFieldName. No buffering of
+            // the map as a whole.
+            _streamWriteContext = _streamWriteContext.createChildMapContext(_currField);
+            streamWriteConstraints().validateNestingDepth(_streamWriteContext.getNestingDepth());
+            _currMessage = _currField.getMessageType(); // the synthetic entry message
+            _inObject = true;
+            _writeTag = true;
+            return this;
         } else {
             // but also, field value must be Message if so
             if (!_currField.isObject) {
@@ -463,6 +492,28 @@ public class ProtobufGenerator extends GeneratorBase
     {
         if (!_inObject) {
             _reportError("Current context not Object but "+_streamWriteContext.typeDesc());
+        }
+        // [dataformats-binary#712] Closing a `map`: finalize the last open entry (if
+        // any), then pop -- but do NOT finish-buffer the map as a whole (each entry
+        // was already length-prefixed on its own).
+        if (_streamWriteContext.inMap()) {
+            if (_streamWriteContext.isEntryOpen()) {
+                _streamWriteContext.setEntryOpen(false);
+                _finishBuffering();
+            }
+            _streamWriteContext = _streamWriteContext.getParent();
+            if (_streamWriteContext.inRoot()) {
+                if (!_complete) {
+                    _complete();
+                }
+            } else {
+                _currMessage = _streamWriteContext.getMessageType();
+            }
+            _currField = _streamWriteContext.getField();
+            boolean inObj = _streamWriteContext.inObject();
+            _inObject = inObj;
+            _writeTag = inObj || !_streamWriteContext.inArray() || !_currField.packed;
+            return this;
         }
         _streamWriteContext = _streamWriteContext.getParent();
         if (_streamWriteContext.inRoot()) {
@@ -1294,7 +1345,7 @@ public class ProtobufGenerator extends GeneratorBase
     /**********************************************************************
      */
 
-    private final static Charset UTF8 = Charset.forName("UTF-8");
+    private final static Charset UTF8 = StandardCharsets.UTF_8;
 
     protected void _encodeLongerString(char[] text, int offset, int clen) throws JacksonException
     {
@@ -1717,6 +1768,141 @@ public class ProtobufGenerator extends GeneratorBase
             }
         }
         return ptr;
+    }
+
+    /*
+    /**********************************************************
+    /* Internal map (`map<K,V>`) writes [dataformats-binary#712]
+    /**********************************************************
+     */
+
+    /**
+     * Opens a new {@code map} entry sub-message for the given key, finalizing the
+     * previous entry first if one is still open. Writes the entry's key (tag 1) and
+     * leaves {@link #_currField} pointing at the value field (tag 2) so the value
+     * write that follows targets it.
+     */
+    private void _startMapEntry(String name) throws JacksonException
+    {
+        final ProtobufField mapField = _streamWriteContext.getField();
+        // Close the previous entry, if any (its length prefix is finalized here)
+        if (_streamWriteContext.isEntryOpen()) {
+            _streamWriteContext.setEntryOpen(false);
+            _finishBuffering();
+        }
+        // Each entry is a length-delimited sub-message, tagged with the map field's tag
+        _startBuffering(mapField.typedTag);
+        _streamWriteContext.setEntryOpen(true);
+        _currMessage = mapField.getMessageType();
+        // Write key (tag 1) ...
+        _writeTag = true;
+        _writeMapKey(mapField.getKeyField(), name);
+        // ... then prime the value field (tag 2) for the value write that follows
+        _currField = mapField.getValueField();
+        _writeTag = true;
+    }
+
+    /**
+     * Writes a map key (always arriving as a {@code String}) using the key field's
+     * declared protobuf type. Key types are restricted (and validated during schema
+     * resolution) to integral / {@code bool} / {@code string}.
+     */
+    private void _writeMapKey(ProtobufField keyField, String name) throws JacksonException
+    {
+        _currField = keyField;
+        switch (keyField.type) {
+        case STRING:
+            writeString(name);
+            break;
+        case BOOLEAN:
+            writeBoolean(_parseBooleanMapKey(name, keyField));
+            break;
+        case VINT32_Z: // `sint32`: signed only
+            writeNumber(_parseIntMapKey(name, keyField, false));
+            break;
+        case VINT32_STD: // `int32` or `uint32`
+        case FIXINT32: // `sfixed32` or `fixed32`
+            writeNumber(_parseIntMapKey(name, keyField, true));
+            break;
+        case VINT64_Z: // `sint64`: signed only
+            writeNumber(_parseLongMapKey(name, keyField, false));
+            break;
+        case VINT64_STD: // `int64` or `uint64`
+        case FIXINT64: // `sfixed64` or `fixed64`
+            writeNumber(_parseLongMapKey(name, keyField, true));
+            break;
+        default:
+            // Should not happen: key types are validated during schema resolution
+            _reportError("Unsupported `map` key type "+keyField.type+" for field '"+keyField.name+"'");
+        }
+    }
+
+    /**
+     * Parses a 32-bit {@code map} key.
+     *<p>
+     * {@link FieldType} does not distinguish signed from unsigned declarations
+     * ({@code int32} and {@code uint32} are both {@code VINT32_STD}), so for those the
+     * accepted range is the union of the two: {@code [Integer.MIN_VALUE, 0xFFFFFFFF]}.
+     * Narrowing a value above {@code Integer.MAX_VALUE} keeps the same 32 bits, which is
+     * exactly the {@code uint32} / {@code fixed32} encoding.
+     *
+     * @param allowUnsigned Whether the key type has an unsigned variant; {@code false}
+     *    for {@code sint32}, which is always signed.
+     */
+    private int _parseIntMapKey(String name, ProtobufField keyField, boolean allowUnsigned)
+        throws JacksonException
+    {
+        final long l;
+        try {
+            l = Long.parseLong(name);
+        } catch (NumberFormatException e) {
+            _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
+                    +"' (type "+keyField.type+")");
+            return 0; // never reached
+        }
+        final long max = allowUnsigned ? 0xFFFFFFFFL : Integer.MAX_VALUE;
+        if ((l < Integer.MIN_VALUE) || (l > max)) {
+            _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
+                    +"' (type "+keyField.type+"): out of range ("+Integer.MIN_VALUE+" to "+max+")");
+        }
+        return (int) l;
+    }
+
+    /**
+     * Parses a 64-bit {@code map} key. As with 32-bit keys the signed and unsigned
+     * declarations share a {@link FieldType}, so {@code uint64} keys above
+     * {@link Long#MAX_VALUE} are accepted as unsigned: the resulting bit pattern is the
+     * same 64-bit varint either way.
+     *
+     * @param allowUnsigned Whether the key type has an unsigned variant; {@code false}
+     *    for {@code sint64}, which is always signed.
+     */
+    private long _parseLongMapKey(String name, ProtobufField keyField, boolean allowUnsigned)
+        throws JacksonException
+    {
+        try {
+            return Long.parseLong(name);
+        } catch (NumberFormatException e) {
+            if (allowUnsigned) {
+                try {
+                    return Long.parseUnsignedLong(name);
+                } catch (NumberFormatException e2) { }
+            }
+            _reportError("Invalid `map` key \""+name+"\" for integral key field '"+keyField.name
+                    +"' (type "+keyField.type+")");
+            return 0L; // never reached
+        }
+    }
+
+    private boolean _parseBooleanMapKey(String name, ProtobufField keyField) throws JacksonException {
+        if ("true".equals(name)) {
+            return true;
+        }
+        if ("false".equals(name)) {
+            return false;
+        }
+        _reportError("Invalid `map` key \""+name+"\" for boolean key field '"+keyField.name+"'");
+        return false; // never reached
     }
 
     /**

@@ -61,6 +61,31 @@ public class ProtobufField
 
     public final boolean isStdEnum;
 
+    /**
+     * Whether this field is a {@code map<K,V>} field: encoded on the wire exactly
+     * like a {@code repeated} length-delimited "entry" sub-message (key = tag 1,
+     * value = tag 2), but exposed to databind as a JSON Object.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public final boolean isMap;
+
+    /**
+     * For {@code map<K,V>} fields: the synthetic "key" field (tag 1) of the entry
+     * sub-message; {@code null} for non-map fields.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected final ProtobufField _keyField;
+
+    /**
+     * For {@code map<K,V>} fields: the synthetic "value" field (tag 2) of the entry
+     * sub-message; {@code null} for non-map fields.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    protected final ProtobufField _valueField;
+
     public ProtobufField(FieldElement nativeField, FieldType type) {
         this(nativeField, type, false);
     }
@@ -90,12 +115,48 @@ public class ProtobufField
         return new ProtobufField(null, FieldType.MESSAGE, null, null, false);
     }
 
+    /**
+     * Constructor for {@code map<K,V>} fields. Such a field is always encoded as a
+     * {@code repeated}, length-delimited "entry" sub-message (regardless of the
+     * label its declaration carries after preprocessing), so it is set up as a
+     * repeated {@link FieldType#MESSAGE} pointing at the synthetic entry type,
+     * additionally flagged with {@link #isMap}.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public ProtobufField(FieldElement nativeField, ProtobufMessage entryType,
+            ProtobufField keyField, ProtobufField valueField)
+    {
+        type = FieldType.MESSAGE;
+        wireType = FieldType.MESSAGE.getWireType(); // LENGTH_PREFIXED
+        usesZigZag = false;
+        enumValues = EnumLookup.empty();
+        isStdEnum = false;
+        messageType = entryType;
+        isMap = true;
+        _keyField = keyField;
+        _valueField = valueField;
+
+        id = nativeField.tag();
+        name = nativeField.name();
+        required = false;
+        repeated = true;
+        packed = false;
+        deprecated = Boolean.TRUE.equals(_findBooleanOptionValue(nativeField, "deprecated"));
+        // repeated, non-packed length-delimited: one tag per entry
+        typedTag = (id << 3) + wireType;
+        isObject = true;
+    }
+
     protected ProtobufField(FieldElement nativeField, FieldType type,
             ProtobufMessage msg, ProtobufEnum et, boolean isProto3)
     {
         this.type = type;
         wireType = type.getWireType();
         usesZigZag = type.usesZigZag();
+        isMap = false;
+        _keyField = null;
+        _valueField = null;
         if (et == null) {
             enumValues = EnumLookup.empty();
             isStdEnum = false;
@@ -157,8 +218,8 @@ public class ProtobufField
         for (OptionElement opt : f.options()) {
             if (key.equals(opt.name())) {
                 Object val = opt.value();
-                if (val instanceof Boolean) {
-                    return (Boolean) val;
+                if (val instanceof Boolean boolVal) {
+                    return boolVal;
                 }
                 return Boolean.valueOf("true".equals(String.valueOf(val).trim()));
             }
@@ -182,6 +243,26 @@ public class ProtobufField
 
     public final ProtobufMessage getMessageType() {
         return messageType;
+    }
+
+    /**
+     * @return For {@code map<K,V>} fields, the synthetic "key" field (tag 1) of the
+     *    entry sub-message; {@code null} otherwise.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public final ProtobufField getKeyField() {
+        return _keyField;
+    }
+
+    /**
+     * @return For {@code map<K,V>} fields, the synthetic "value" field (tag 2) of the
+     *    entry sub-message; {@code null} otherwise.
+     *
+     * @since 2.21.6 [dataformats-binary#712]
+     */
+    public final ProtobufField getValueField() {
+        return _valueField;
     }
 
     public final ProtobufField nextOrThisIf(int idToMatch) {

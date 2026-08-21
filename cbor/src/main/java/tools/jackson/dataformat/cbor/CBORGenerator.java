@@ -68,6 +68,11 @@ public class CBORGenerator extends GeneratorBase
      */
     private final static int INDEFINITE_LENGTH = -2; // just to allow -1 as marker for "one too many"
 
+    // Whether VarHandles are available on this runtime; checked once at class load.
+    //
+    // @since 3.3
+    private static final boolean _VARHANDLE_AVAILABLE = CBORVarHandleUtil.isAvailable();
+
     /*
     /**********************************************************************
     /* Configuration
@@ -603,10 +608,7 @@ public class CBORGenerator extends GeneratorBase
         _ensureRoomForOutput(5);
 
         _outputBuffer[_outputTail++] = (byte) (markerBase + SUFFIX_UINT32_ELEMENTS);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeInt32(i);
     }
 
     // Helper method that works like `writeNumber(long)` but DOES NOT
@@ -634,16 +636,7 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeInt64(l);
     }
 
     private final void _writeFloatNoCheck(float f) throws JacksonException {
@@ -654,33 +647,14 @@ public class CBORGenerator extends GeneratorBase
          * if there are cases where collapsing of NaN was needed (for non-Java
          * clients), this can be changed
          */
-        int i = Float.floatToRawIntBits(f);
         _outputBuffer[_outputTail++] = BYTE_FLOAT32;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeInt32(Float.floatToRawIntBits(f));
     }
 
     private final void _writeDoubleNoCheck(double d) throws JacksonException {
         _ensureRoomForOutput(9);
-        // 17-Apr-2010, tatu: could also use 'doubleToIntBits', but it seems
-        // more accurate to use exact representation; and possibly faster.
-        // However, if there are cases where collapsing of NaN was needed (for
-        // non-Java clients), this can be changed
-        long l = Double.doubleToRawLongBits(d);
         _outputBuffer[_outputTail++] = BYTE_FLOAT64;
-
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeInt64(Double.doubleToRawLongBits(d));
     }
 
     private final void _writeDoubleMinimal(double d) throws JacksonException {
@@ -949,11 +923,10 @@ public class CBORGenerator extends GeneratorBase
      * (Array value, Object field value, root-level value).
      *
      * @param i Number value to write
-     * @throws IOException if there is either an underlying I/O problem or encoding
-     *                     issue at format layer
+     *
      * @since 2.20
      */
-    public void writeNumberUnsigned(int i) throws IOException {
+    public void writeNumberUnsigned(int i) throws JacksonException {
         _verifyValueWrite("write number unsigned");
         _writeIntMinimal(PREFIX_TYPE_INT_POS, i);
     }
@@ -1012,11 +985,10 @@ public class CBORGenerator extends GeneratorBase
      * (Array value, Object field value, root-level value).
      *
      * @param l Number value to write
-     * @throws IOException if there is either an underlying I/O problem or encoding
-     *                     issue at format layer
+     *
      * @since 2.20
      */
-    public void writeNumberUnsigned(long l) throws IOException {
+    public void writeNumberUnsigned(long l) throws JacksonException {
         if (_cfgMinimalInts && l >= 0 && l < 0x100000000L) {
             writeNumberUnsigned((int) l);
             return;
@@ -1024,14 +996,7 @@ public class CBORGenerator extends GeneratorBase
         _verifyValueWrite("write number unsigned");
         _ensureRoomForOutput(9);
         _outputBuffer[_outputTail++] = (byte) (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
-        _outputBuffer[_outputTail++] = (byte) (l >> 56);
-        _outputBuffer[_outputTail++] = (byte) (l >> 48);
-        _outputBuffer[_outputTail++] = (byte) (l >> 40);
-        _outputBuffer[_outputTail++] = (byte) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (l >> 24);
-        _outputBuffer[_outputTail++] = (byte) (l >> 16);
-        _outputBuffer[_outputTail++] = (byte) (l >> 8);
-        _outputBuffer[_outputTail++] = (byte) l;
+        _writeInt64(l);
     }
 
     @Override
@@ -1058,16 +1023,7 @@ public class CBORGenerator extends GeneratorBase
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _writeInt64(l);
         return this;
     }
 
@@ -1689,12 +1645,35 @@ surr1, surr2));
         } else {
             _outputBuffer[_outputTail++] = (PREFIX_TYPE_INT_POS + SUFFIX_UINT64_ELEMENTS);
         }
-        int i = (int) (l >> 32);
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
-        i = (int) l;
+        _writeInt64(l);
+    }
+
+    // Write 4/8 byte big-endian primitive at current position, advancing tail.
+    // Uses a single VarHandle store where supported, falling back to manual
+    // byte shifting otherwise. Callers must have ensured room for the full
+    // 4/8 bytes. `_VARHANDLE_AVAILABLE` is a static final so the branch folds
+    // away at JIT time; helpers are small enough to inline.
+
+    private final void _writeInt32(int i) {
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setInt(_outputBuffer, _outputTail, i);
+            _outputTail += 4;
+        } else {
+            _writeInt32Bytes(i);
+        }
+    }
+
+    private final void _writeInt64(long l) {
+        if (_VARHANDLE_AVAILABLE) {
+            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
+            _outputTail += 8;
+        } else {
+            _writeInt32Bytes((int) (l >> 32));
+            _writeInt32Bytes((int) l);
+        }
+    }
+
+    private final void _writeInt32Bytes(int i) {
         _outputBuffer[_outputTail++] = (byte) (i >> 24);
         _outputBuffer[_outputTail++] = (byte) (i >> 16);
         _outputBuffer[_outputTail++] = (byte) (i >> 8);

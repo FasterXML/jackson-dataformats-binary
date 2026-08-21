@@ -50,3 +50,17 @@ Juan Farré (@jafarre-bi)
 * Reported #700: (cbor, smile) `META-INF/services/tools.jackson.databind.ObjectMapper`
   references wrong class name (`...databind.CBORMapper` / `...databind.SmileMapper`)
  (3.1.5)
+
+Benoît Mériaux (@benoitmeriaux)
+
+* Reported #742: Use `ArrayDeque` instead of `Stack` in `CBORParser`
+ (3.1.6)
+
+PJ Fanning (@pjfanning)
+
+* Contributed #750: (smile) Avoid `String` allocation in
+  `SmileGenerator.writeString(char[],int,int)`
+ (3.3.0)
+* Contributed #752: (cbor) Use `VarHandle` for multi-byte primitive writes in
+  `CBORGenerator`
+ (3.3.0)

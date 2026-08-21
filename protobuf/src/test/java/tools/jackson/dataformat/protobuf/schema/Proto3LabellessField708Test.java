@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -182,39 +182,32 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
         }
     }
 
-    // Map fields are not yet supported; must fail with a clear, dedicated message
+    // Map fields now parse and resolve as `map` fields (see [dataformats-binary#712])
     @Test
-    public void testMapFieldClearError() throws Exception
+    public void testMapFieldParses() throws Exception
     {
         final String proto = "syntax = \"proto3\";\n"
                 + "message Msg {\n"
                 + "  map<string, int32> counts = 1;\n"
                 + "}\n";
-        try {
-            ProtobufSchemaLoader.std.parse(proto);
-            fail("Should not pass: map fields are not yet supported");
-        } catch (IllegalArgumentException e) {
-            verifyException(e, "map");
-            verifyException(e, "not yet supported");
-        }
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(proto);
+        ProtobufField f = schema.getRootType().field("counts");
+        assertNotNull(f);
+        assertTrue(f.isMap, "'counts' should be resolved as a map field");
     }
 
-    // `map` is valid (and label-less) in proto2 too, so the same clear error
-    // must be raised there -- not protoparser's cryptic "unexpected label: map"
+    // `map` is valid (and label-less) in proto2 too, and must resolve the same way
     @Test
-    public void testProto2MapFieldClearError() throws Exception
+    public void testProto2MapFieldParses() throws Exception
     {
         final String proto = "syntax = \"proto2\";\n"
                 + "message Msg {\n"
                 + "  map<string, int32> counts = 1;\n"
                 + "}\n";
-        try {
-            ProtobufSchemaLoader.std.parse(proto);
-            fail("Should not pass: map fields are not yet supported");
-        } catch (IllegalArgumentException e) {
-            verifyException(e, "map");
-            verifyException(e, "not yet supported");
-        }
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(proto);
+        ProtobufField f = schema.getRootType().field("counts");
+        assertNotNull(f);
+        assertTrue(f.isMap, "'counts' should be resolved as a map field");
     }
 
     // Preprocessing must be applied for stream-based loading too, not just String
@@ -226,7 +219,7 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
                 + "  int32 x = 1;\n"
                 + "}\n";
         ProtobufSchema schema = ProtobufSchemaLoader.std.load(
-                new ByteArrayInputStream(proto.getBytes(Charset.forName("UTF-8"))));
+                new ByteArrayInputStream(proto.getBytes(StandardCharsets.UTF_8)));
         assertNotNull(schema.getRootType().field("x"));
     }
 
@@ -240,7 +233,7 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
                 + "}\n";
         File f = File.createTempFile("proto708-", ".proto");
         f.deleteOnExit();
-        Writer w = new OutputStreamWriter(new FileOutputStream(f), Charset.forName("UTF-8"));
+        Writer w = new OutputStreamWriter(new FileOutputStream(f), StandardCharsets.UTF_8);
         try {
             w.write(proto);
         } finally {

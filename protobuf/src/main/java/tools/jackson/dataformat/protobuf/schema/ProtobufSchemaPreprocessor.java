@@ -1,8 +1,6 @@
 package tools.jackson.dataformat.protobuf.schema;
 
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -35,10 +33,10 @@ import java.util.Set;
  *<p>
  * NOTE: {@code map<K,V>} fields are also label-less (in both {@code proto2} and
  * {@code proto3}), so a synthetic label is injected for them as well, purely so
- * they parse. Actually rejecting them -- full map support is not yet implemented
- * (see <a href="https://github.com/FasterXML/jackson-dataformats-binary/issues/708">#708</a>)
- * -- is a semantic concern handled downstream during type resolution
- * ({@link TypeResolver}), not here.
+ * they parse. Turning a {@code map} field into its actual (repeated entry) form is a
+ * semantic concern handled downstream during type resolution ({@link TypeResolver},
+ * see <a href="https://github.com/FasterXML/jackson-dataformats-binary/issues/712">#712</a>),
+ * not here.
  *
  * @since 2.21.6
  */
@@ -48,11 +46,11 @@ class ProtobufSchemaPreprocessor
      * Statement-leading keywords that may appear in a message / extend body but
      * do NOT begin a label-less field, and so must never receive an injected label.
      */
-    private static final Set<String> NON_FIELD_KEYWORDS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> NON_FIELD_KEYWORDS = Set.of(
             "message", "enum", "oneof", "extend", "group",
             "option", "reserved", "extensions",
             "required", "optional", "repeated"
-    ));
+    );
 
     private final char[] _data;
     private final int _end;
@@ -69,8 +67,9 @@ class ProtobufSchemaPreprocessor
     /**
      * Rewrites given schema so that {@code proto3} label-less fields -- and
      * label-less {@code map<K,V>} fields in either syntax -- parse with the
-     * bundled parser. (Map fields are then rejected during type resolution; see
-     * the class comment.) Schemas that need no rewriting are returned unchanged.
+     * bundled parser. (Map fields are then resolved to their entry form during type
+     * resolution; see the class comment.) Schemas that need no rewriting are returned
+     * unchanged.
      */
     public static String preprocess(String schema) {
         // Fast path: label injection only matters for proto3, and map handling
@@ -166,7 +165,7 @@ class ProtobufSchemaPreprocessor
                     // other label-less fields occur only in proto3 (proto2 requires
                     // explicit labels, so a label-less field there is a genuine error).
                     // Injecting a label lets the field parse; `map` fields are then
-                    // rejected downstream during type resolution (see #708).
+                    // resolved to their entry form during type resolution (see #712).
                     boolean labelless = "map".equals(word)
                             || (isProto3 && !NON_FIELD_KEYWORDS.contains(word));
                     if (labelless) {

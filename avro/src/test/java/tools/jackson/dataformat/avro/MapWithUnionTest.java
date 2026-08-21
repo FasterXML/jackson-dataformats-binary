@@ -124,11 +124,63 @@ public class MapWithUnionTest extends AvroTestBase
         assertEquals(3, deserialized.props.size());
         assertEquals("world", deserialized.props.get("hello"));
         assertEquals("charlie", deserialized.props.get("goodbye"));
-        Object ob = deserialized.props.get("otherMap");
-        assertTrue(ob instanceof Map<?,?>);
-        Map<?,?> m = (Map<?,?>) ob;
+        Map<?,?> m = assertInstanceOf(Map.class, deserialized.props.get("otherMap"));
         assertEquals("bar", m.get("foo"));
         assertEquals("bing", m.get("zap"));
+    }
+
+    // Verify that a root-level union resolving to MAP is written as a Map,
+    // and not passed to Record handling
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testRootUnionResolvingToMapType() throws Exception
+    {
+        String schemaJson = a2q("['null',{'type':'map','values':'string'}]");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        Map<String, Object> input = Map.of("key1", "val1", "key2", "val2");
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String, String> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertEquals("val1", result.get("key1"));
+        assertEquals("val2", result.get("key2"));
+    }
+
+    // Verify that a union resolving to MAP is handled correctly for Record properties
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUnionResolvingToMapType() throws Exception
+    {
+        // Schema where the union resolves to a map
+        String schemaJson = a2q("{" +
+                "'type':'record'," +
+                "'name':'Test'," +
+                "'fields':[" +
+                "  {'name':'data', 'type':['null'," +
+                "    {'type':'record','name':'Nested','fields':[" +
+                "      {'name':'x','type':'int'}" +
+                "    ]}," +
+                "    {'type':'map','values':'string'}" +
+                "  ]}" +
+                "]" +
+                "}");
+        AvroSchema schema = MAPPER.schemaFrom(schemaJson);
+
+        // Write a record where 'data' is a map (union index 2)
+        Map<String, Object> input = Map.of("data", Map.of("key1", "val1", "key2", "val2"));
+        byte[] bytes = MAPPER.writer(schema).writeValueAsBytes(input);
+
+        Map<String, Object> result = MAPPER.readerFor(Map.class)
+                .with(schema)
+                .readValue(bytes);
+        assertNotNull(result.get("data"));
+        assertInstanceOf(Map.class, result.get("data"),
+                "Expected Map but got " + result.get("data").getClass().getSimpleName());
+        Map<String, String> dataMap = (Map<String, String>) result.get("data");
+        assertEquals("val1", dataMap.get("key1"));
+        assertEquals("val2", dataMap.get("key2"));
     }
 
     private Map<String,Object> _map(Object... args) {

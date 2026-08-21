@@ -81,7 +81,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
         if (ann == null) {
             return null;
         }
-        return Collections.singletonList(PropertyName.construct(ann.alias()));
+        return List.of(PropertyName.construct(ann.alias()));
     }
 
     protected PropertyName _findName(Annotated a)
@@ -100,8 +100,7 @@ public class AvroAnnotationIntrospector extends AnnotationIntrospector
 
     @Override
     public JsonCreator.Mode findCreatorAnnotation(MapperConfig<?> config, Annotated a) {
-        if (a instanceof AnnotatedConstructor) {
-            AnnotatedConstructor constructor = (AnnotatedConstructor) a;
+        if (a instanceof AnnotatedConstructor constructor) {
             // 09-Mar-2017, tatu: Ideally would allow mix-ins etc, but for now let's take
             //   a short-cut here:
             Class<?> declClass = constructor.getDeclaringClass();
