@@ -17,6 +17,28 @@ import tools.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufGenerator extends GeneratorBase
 {
+    /**
+     * Whether VarHandles are usable on this runtime; probed once at class load.
+     * Being {@code static final} lets the branches in the {@code _writeIntXX()}
+     * helpers fold away at JIT time.
+     *
+     * @since 3.3
+     */
+    private static final boolean _VARHANDLE_AVAILABLE = _checkVarHandleAvailable();
+
+    private static boolean _checkVarHandleAvailable() {
+        // NOTE: this call is what first loads `ProtobufVarHandleUtil`, and that
+        // class names `VarHandle` in its field/method signatures. On a runtime
+        // without `java.lang.invoke.VarHandle` (some Android builds) loading it
+        // raises `NoClassDefFoundError` -- an Error, not an Exception -- so
+        // `Throwable` is what has to be caught here.
+        try {
+            return ProtobufVarHandleUtil.isAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     /*
     /**********************************************************************
     /* Constants
@@ -1662,6 +1684,12 @@ public class ProtobufGenerator extends GeneratorBase
         _ensureRoom(9); // max tag 5 bytes
         int ptr = _writeTag(_currPtr);
         final byte[] buf = _currBuffer;
+        // protobuf fixed32 is little-endian
+        if (_VARHANDLE_AVAILABLE) {
+            ProtobufVarHandleUtil.setInt(buf, ptr, v);
+            _currPtr = ptr + 4;
+            return;
+        }
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
@@ -1677,6 +1705,12 @@ public class ProtobufGenerator extends GeneratorBase
         _ensureRoom(4);
         int ptr = _currPtr;
         final byte[] buf = _currBuffer;
+        // protobuf fixed32 is little-endian
+        if (_VARHANDLE_AVAILABLE) {
+            ProtobufVarHandleUtil.setInt(buf, ptr, v);
+            _currPtr = ptr + 4;
+            return;
+        }
         buf[ptr++] = (byte) v;
         v >>= 8;
         buf[ptr++] = (byte) v;
@@ -1693,6 +1727,12 @@ public class ProtobufGenerator extends GeneratorBase
         int ptr = _writeTag(_currPtr);
         final byte[] buf = _currBuffer;
 
+        // protobuf fixed64 is little-endian: low 32 bits first, then high
+        if (_VARHANDLE_AVAILABLE) {
+            ProtobufVarHandleUtil.setLong(buf, ptr, v64);
+            _currPtr = ptr + 8;
+            return;
+        }
         int v = (int) v64;
 
         buf[ptr++] = (byte) v;
@@ -1722,6 +1762,12 @@ public class ProtobufGenerator extends GeneratorBase
         int ptr = _currPtr;
         final byte[] buf = _currBuffer;
 
+        // protobuf fixed64 is little-endian: low 32 bits first, then high
+        if (_VARHANDLE_AVAILABLE) {
+            ProtobufVarHandleUtil.setLong(buf, ptr, v64);
+            _currPtr = ptr + 8;
+            return;
+        }
         int v = (int) v64;
 
         buf[ptr++] = (byte) v;
