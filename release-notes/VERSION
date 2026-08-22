@@ -18,6 +18,7 @@ implementations)
 
 #624: (cbor) Use more efficient (in JDK 17) `String` construction wrt
   "Compact Strings"
+ (fix by @cowtowncoder, w/ Claude code)
 #750: (smile) Avoid `String` allocation in `SmileGenerator.writeString(char[],int,int)`
  (contributed by @pjfanning)
 #752: (cbor) Use `VarHandle` for multi-byte primitive writes in `CBORGenerator`
@@ -26,6 +27,7 @@ implementations)
 3.2.3 (not yet released)
 
 #745: (avro) Fix Avro bugs
+ (contributed by @pjfanning)
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.2.2 (14-Aug-2026)
