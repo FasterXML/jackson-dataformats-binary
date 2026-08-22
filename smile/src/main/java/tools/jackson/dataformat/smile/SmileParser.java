@@ -2798,16 +2798,20 @@ currentToken(), firstCh);
     }
 
     /**
-     * Fast path shared by "long" (64+ byte) text value decoding: if the
-     * end-of-string marker is found within the current input buffer, preceded
-     * only by ASCII bytes, the whole value is contiguous and the String can be
-     * constructed straight from input bytes -- skipping the char[] round-trip
-     * (which JDK 17+ "Compact Strings" makes measurably cheaper).
+     * Fast path shared by "long" (64+ byte) text value decoding: scans current
+     * input buffer for the end-of-string marker. If found with only ASCII bytes
+     * before it, the whole value is contiguous and the String can be constructed
+     * straight from input bytes -- skipping the char[] round-trip (which JDK 17+
+     * "Compact Strings" makes measurably cheaper).
+     *<p>
+     * If the marker is NOT reached (either non-ASCII content, or end of buffer),
+     * the offset at which scanning stopped is returned so that the caller can
+     * retain the already-verified ASCII prefix instead of scanning it again.
      *
-     * @return {@code true} if value was fully decoded into {@code _textBuffer};
-     *    {@code false} if caller needs to use general (slower) handling
+     * @return {@code -1} if value was fully decoded into {@code _textBuffer};
+     *    otherwise offset in {@code _inputBuffer} at which ASCII scan stopped
      */
-    private final boolean _tryDecodeLongContiguousAscii() throws JacksonException
+    private final int _scanLongContiguousAscii() throws JacksonException
     {
         final byte[] inBuf = _inputBuffer;
         final int start = _inputPtr;
@@ -2819,22 +2823,47 @@ currentToken(), firstCh);
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
                     _inputPtr = ptr + 1;
                     _textBuffer.resetWithASCII(inBuf, start, ptr - start);
-                    return true;
+                    return -1;
                 }
-                return false; // actual non-ASCII content
+                break; // actual non-ASCII content
             }
             ++ptr;
         }
-        return false; // marker not within current buffer
+        return ptr; // marker not reached: caller decodes rest, keeping prefix
+    }
+
+    /**
+     * Copies range of already-verified ASCII bytes into given output segment,
+     * starting new segments as necessary; used to retain the prefix scanned by
+     * {@link #_scanLongContiguousAscii()} when the fast path does not apply.
+     * Advances {@code _inputPtr} past the copied range.
+     *
+     * @return Number of chars in the (possibly new) current segment
+     */
+    private final int _copyScannedAsciiPrefix(int endOffset)
+    {
+        final byte[] inBuf = _inputBuffer;
+        int outPtr = 0;
+        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        for (int i = _inputPtr; i < endOffset; ++i) {
+            if (outPtr >= outBuf.length) {
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+            }
+            outBuf[outPtr++] = (char) inBuf[i];
+        }
+        _inputPtr = endOffset;
+        return outPtr;
     }
 
     private final void _decodeLongAsciiValue() throws JacksonException
     {
-        if (_tryDecodeLongContiguousAscii()) {
+        final int scanned = _scanLongContiguousAscii();
+        if (scanned < 0) { // fully decoded from input bytes
             return;
         }
-        int outPtr = 0;
-        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        int outPtr = _copyScannedAsciiPrefix(scanned);
+        char[] outBuf = _textBuffer.getBufferWithoutReset();
         main_loop:
         while (true) {
             if (_inputPtr >= _inputEnd) {
@@ -2862,13 +2891,15 @@ currentToken(), firstCh);
 
     private final void _decodeLongUnicodeValue() throws JacksonException
     {
-        // 22-Aug-2026: note that generator is forced to use "Unicode" token type for
-        //   any text too long to speculate on, so content here may well be all-ASCII
-        if (_tryDecodeLongContiguousAscii()) {
+        // 21-Aug-2026, tatu: [dataformats-binary#759] Note that generator is forced to
+        //   use "Unicode" token type for any text too long to speculate on, so content
+        //   here may well be all-ASCII
+        final int scanned = _scanLongContiguousAscii();
+        if (scanned < 0) { // fully decoded from input bytes
             return;
         }
-        int outPtr = 0;
-        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
+        int outPtr = _copyScannedAsciiPrefix(scanned);
+        char[] outBuf = _textBuffer.getBufferWithoutReset();
         final int[] codes = SmileConstants.sUtf8UnitLengths;
         int c;
         final byte[] inputBuffer = _inputBuffer;
