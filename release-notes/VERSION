@@ -23,6 +23,8 @@ implementations)
  (contributed by @pjfanning)
 #752: (cbor) Use `VarHandle` for multi-byte primitive writes in `CBORGenerator`
  (contributed by @pjfanning)
+#757: (smile) Use `VarHandle` for multi-byte primitive reads in `SmileParser`
+ (contributed by @pjfanning)
 #759: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "long" text values
  (fix by @cowtowncoder, w/ Claude code)
