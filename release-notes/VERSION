@@ -20,6 +20,8 @@ implementations)
  (contributed by @pjfanning)
 #752: (cbor) Use `VarHandle` for multi-byte primitive writes in `CBORGenerator`
  (contributed by @pjfanning)
+#757: (smile) Use `VarHandle` for multi-byte primitive reads in `SmileParser`
+ (contributed by @pjfanning)
 
 3.2.3 (not yet released)
 
