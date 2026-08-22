@@ -2464,27 +2464,33 @@ public class CBORParser extends ParserBase
 
         int outPtr = 0;
         int inPtr = _inputPtr;
+        final int start = inPtr;
         _inputPtr += len;
         final byte[] inputBuf = _inputBuffer;
 
-        // Let's actually do a tight loop for ASCII first:
+        // Let's actually do a tight loop for ASCII first -- but only SCAN, without
+        // writing chars: all-ASCII is the common case and can then be constructed
+        // straight from input bytes, skipping the char[] round-trip entirely.
         final int end = _inputPtr;
-        int i = 0;
-        while (inPtr < end && i >= 0) {
-            i = inputBuf[inPtr++];
-            outBuf[outPtr++] = (char) i;
+        while (inPtr < end && inputBuf[inPtr] >= 0) {
+            ++inPtr;
         }
-        if (inPtr == end && i >= 0) {
-            String str = _textBuffer.setCurrentAndReturn(outPtr);
+        if (inPtr == end) { // all ASCII
+            // 25-Oct-2025: [dataformats-binary#624] Minor optimization: can directly
+            //    construct String; faster in JDK 17+
+            String str = _textBuffer.resetWithASCII(inputBuf, start, len);
             if (stringRefs != null) {
                 stringRefs.stringRefs.add(str);
                 _sharedString = str;
             }
             return str;
         }
-        // Correct extra increments
-        outPtr -= 1;
-        inPtr -= 1;
+        // Not all ASCII: materialize the ASCII prefix just scanned, then decode rest
+        while (outPtr < (inPtr - start)) {
+            outBuf[outPtr] = (char) inputBuf[start + outPtr];
+            ++outPtr;
+        }
+        int i;
         final int[] codes = UTF8_UNIT_CODES;
         do {
             i = inputBuf[inPtr++] & 0xFF;
