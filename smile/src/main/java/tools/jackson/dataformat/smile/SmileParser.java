@@ -2821,8 +2821,12 @@ currentToken(), firstCh);
             final byte b = inBuf[ptr];
             if (b < 0) { // end marker, or start of multi-byte UTF-8 sequence
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
-                    _inputPtr = ptr + 1;
+                    // NOTE: only advance input pointer AFTER decoding succeeds;
+                    //   `resetWithASCII()` validates against `maxStringLength` and
+                    //   may throw, and leaving the pointer past the offending value
+                    //   would be needlessly confusing for anyone inspecting state
                     _textBuffer.resetWithASCII(inBuf, start, ptr - start);
+                    _inputPtr = ptr + 1;
                     return -1;
                 }
                 break; // actual non-ASCII content
