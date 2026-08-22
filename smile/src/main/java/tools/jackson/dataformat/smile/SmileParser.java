@@ -2797,8 +2797,42 @@ currentToken(), firstCh);
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
+    /**
+     * Fast path shared by "long" (64+ byte) text value decoding: if the
+     * end-of-string marker is found within the current input buffer, preceded
+     * only by ASCII bytes, the whole value is contiguous and the String can be
+     * constructed straight from input bytes -- skipping the char[] round-trip
+     * (which JDK 17+ "Compact Strings" makes measurably cheaper).
+     *
+     * @return {@code true} if value was fully decoded into {@code _textBuffer};
+     *    {@code false} if caller needs to use general (slower) handling
+     */
+    private final boolean _tryDecodeLongContiguousAscii() throws JacksonException
+    {
+        final byte[] inBuf = _inputBuffer;
+        final int start = _inputPtr;
+        final int end = _inputEnd;
+        int ptr = start;
+        while (ptr < end) {
+            final byte b = inBuf[ptr];
+            if (b < 0) { // end marker, or start of multi-byte UTF-8 sequence
+                if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
+                    _inputPtr = ptr + 1;
+                    _textBuffer.resetWithASCII(inBuf, start, ptr - start);
+                    return true;
+                }
+                return false; // actual non-ASCII content
+            }
+            ++ptr;
+        }
+        return false; // marker not within current buffer
+    }
+
     private final void _decodeLongAsciiValue() throws JacksonException
     {
+        if (_tryDecodeLongContiguousAscii()) {
+            return;
+        }
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         main_loop:
@@ -2828,6 +2862,11 @@ currentToken(), firstCh);
 
     private final void _decodeLongUnicodeValue() throws JacksonException
     {
+        // 22-Aug-2026: note that generator is forced to use "Unicode" token type for
+        //   any text too long to speculate on, so content here may well be all-ASCII
+        if (_tryDecodeLongContiguousAscii()) {
+            return;
+        }
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final int[] codes = SmileConstants.sUtf8UnitLengths;
