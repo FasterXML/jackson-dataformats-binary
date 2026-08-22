@@ -705,15 +705,8 @@ public class NonBlockingByteArrayParser
             quads[quadCount++] = _decodeQuad(copyBuffer, in);
         }
         // and possibly more... ?
-        if (in < outPtr) { // at least 1
-            int q = copyBuffer[in++] & 0xFF;
-            if (in < outPtr) { // at least 2
-                q = (q << 8) | (copyBuffer[in++] & 0xFF);
-                if (in < outPtr) { // 3 (can't be more)
-                    q = (q << 8) | (copyBuffer[in++] & 0xFF);
-                }
-            }
-            quads[quadCount++] = q;
+        if (in < outPtr) { // 1 - 3 bytes left over
+            quads[quadCount++] = _decodePartialQuad(copyBuffer, in, outPtr - in);
         }
 
         String name = _symbols.findName(quads, quadCount);

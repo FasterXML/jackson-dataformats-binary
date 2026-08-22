@@ -447,38 +447,14 @@ public abstract class NonBlockingParserBase
     {
         // First: maybe we already have this name decoded?
         if (len < 5) {
-            int q = inBuf[inPtr] & 0xFF;
-            if (--len > 0) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (--len > 0) {
-                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    }
-                }
-            }
+            int q = _decodePartialQuad(inBuf, inPtr, len);
             _quad1 = q;
             return _symbols.findName(q);
         }
         if (len < 9) {
             // First quadbyte is easy
-            int q1 = (inBuf[inPtr] & 0xFF) << 8;
-            q1 += (inBuf[++inPtr] & 0xFF);
-            q1 <<= 8;
-            q1 += (inBuf[++inPtr] & 0xFF);
-            q1 <<= 8;
-            q1 += (inBuf[++inPtr] & 0xFF);
-            int q2 = (inBuf[++inPtr] & 0xFF);
-            len -= 5;
-            if (len > 0) {
-                q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
-                    q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (--len > 0) {
-                        q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                    }
-                }
-            }
+            int q1 = _decodeQuad(inBuf, inPtr);
+            int q2 = _decodePartialQuad(inBuf, inPtr+4, len - 4);
             _quad1 = q1;
             _quad2 = q2;
             return _symbols.findName(q1, q2);
@@ -499,24 +475,12 @@ public abstract class NonBlockingParserBase
         // then decode, full quads first
         int offset = 0;
         do {
-            int q = (inBuf[inPtr++] & 0xFF) << 8;
-            q |= inBuf[inPtr++] & 0xFF;
-            q <<= 8;
-            q |= inBuf[inPtr++] & 0xFF;
-            q <<= 8;
-            q |= inBuf[inPtr++] & 0xFF;
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            int q = inBuf[inPtr] & 0xFF;
-            if (--len > 0) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                }
-            }
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodePartialQuad(inBuf, inPtr, len);
         }
         return _symbols.findName(_quadBuffer, offset);
     }

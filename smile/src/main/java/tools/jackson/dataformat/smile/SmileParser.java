@@ -979,18 +979,7 @@ _typeAsInt);
         }
         // First: maybe we already have this name decoded?
         if (len < 5) {
-            int inPtr = _inputPtr;
-            final byte[] inBuf = _inputBuffer;
-            int q = inBuf[inPtr] & 0xFF;
-            if (len > 1) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (len > 2) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (len > 3) {
-                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    }
-                }
-            }
+            int q = _decodePartialQuad(_inputBuffer, _inputPtr, len);
             _quad1 = q;
             return matcher.matchByQuad(q);
         }
@@ -1003,17 +992,7 @@ _typeAsInt);
         inPtr += 4;
 
         if (len < 9) {
-            int q2 = (inBuf[inPtr++] & 0xFF);
-            int left = len - 5;
-            if (left > 0) {
-                q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
-                if (left > 1) {
-                    q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
-                    if (left > 2) {
-                        q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
-                    }
-                }
-            }
+            int q2 = _decodePartialQuad(inBuf, inPtr, len - 4);
             _quad1 = q1;
             _quad2 = q2;
             return matcher.matchByQuad(q1, q2);
@@ -1023,17 +1002,7 @@ _typeAsInt);
         inPtr += 4;
 
         if (len < 13) {
-            int q3 = (inBuf[inPtr++] & 0xFF);
-            int left = len - 9;
-            if (left > 0) {
-                q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
-                if (left > 1) {
-                    q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
-                    if (left > 2) {
-                        q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
-                    }
-                }
-            }
+            int q3 = _decodePartialQuad(inBuf, inPtr, len - 8);
             _quad1 = q1;
             _quad2 = q2;
             _quad3 = q3;
@@ -1071,14 +1040,7 @@ _typeAsInt);
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            int q = inBuf[inPtr] & 0xFF;
-            if (len > 1) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (len > 2) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                }
-            }
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodePartialQuad(inBuf, inPtr, len);
         }
         return matcher.matchByQuad(_quadBuffer, offset);
     }
@@ -2119,18 +2081,7 @@ _typeAsInt);
     {
         // First: maybe we already have this name decoded?
         if (len < 5) {
-            int inPtr = _inputPtr;
-            final byte[] inBuf = _inputBuffer;
-            int q = _padQuadForNulls(inBuf[inPtr]);
-            if (len > 1) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (len > 2) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (len > 3) {
-                        q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    }
-                }
-            }
+            int q = _decodePartialQuadForNulls(_inputBuffer, _inputPtr, len);
             _quad1 = q;
             return _symbols.findName(q);
         }
@@ -2143,17 +2094,7 @@ _typeAsInt);
         inPtr += 4;
 
         if (len < 9) {
-            int q2 = _padQuadForNulls(inBuf[inPtr++]);
-            int left = len - 5;
-            if (left > 0) {
-                q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
-                if (left > 1) {
-                    q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
-                    if (left > 2) {
-                        q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
-                    }
-                }
-            }
+            int q2 = _decodePartialQuadForNulls(inBuf, inPtr, len - 4);
             _quad1 = q1;
             _quad2 = q2;
             return _symbols.findName(q1, q2);
@@ -2163,17 +2104,7 @@ _typeAsInt);
         inPtr += 4;
 
         if (len < 13) {
-            int q3 = _padQuadForNulls(inBuf[inPtr++]);
-            int left = len - 9;
-            if (left > 0) {
-                q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
-                if (left > 1) {
-                    q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
-                    if (left > 2) {
-                        q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
-                    }
-                }
-            }
+            int q3 = _decodePartialQuadForNulls(inBuf, inPtr, len - 8);
             _quad1 = q1;
             _quad2 = q2;
             _quad3 = q3;
@@ -2209,14 +2140,7 @@ _typeAsInt);
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            int q = _padQuadForNulls(inBuf[inPtr]);
-            if (len > 1) {
-                q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (len > 2) {
-                    q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                }
-            }
-            _quadBuffer[offset++] = q;
+            _quadBuffer[offset++] = _decodePartialQuadForNulls(inBuf, inPtr, len);
         }
         return _symbols.findName(_quadBuffer, offset);
     }
@@ -2254,8 +2178,18 @@ _typeAsInt);
         return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
     }
 
-    private final static int _padQuadForNulls(int firstByte) {
-        return (firstByte & 0xFF) | 0xFFFFFF00;
+    /**
+     * Variant of {@link #_decodePartialQuad} that pads the unused high bytes with
+     * 1s rather than 0s, which is what {@link ByteQuadsCanonicalizer} expects of a
+     * partial quad: without it a name ending in NULL bytes would collide with the
+     * shorter name that precedes those NULLs.
+     *
+     * @param len Number of bytes to decode; must be between 1 and 4
+     *
+     * @since 3.3
+     */
+    private final static int _decodePartialQuadForNulls(byte[] buffer, int offset, int len) {
+        return _padLastQuad(_decodePartialQuad(buffer, offset, len), len);
     }
 
     /*

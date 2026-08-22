@@ -768,6 +768,39 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     /**
+     * Helper method for decoding the trailing 1 - 4 bytes of an Object property
+     * name into a right-aligned, zero-padded "quad": that is, produces the same
+     * value as accumulating {@code len} bytes with 8-bit shifts would.
+     *<p>
+     * Reads all 4 bytes with a single load where it can, which may read up to 3
+     * bytes past {@code offset+len}. Those bytes are shifted out and cannot
+     * affect the result, but the read still has to stay within the array: hence
+     * the length check, which also selects the byte-shifting path for a name
+     * that ends within 3 bytes of the end of the buffer.
+     *<p>
+     * Caller MUST have verified that {@code len} bytes are readable at given
+     * offset, and that {@code len} is between 1 and 4.
+     *
+     * @since 3.3
+     */
+    protected final static int _decodePartialQuad(byte[] buffer, int offset, int len) {
+        if ((offset + 4) <= buffer.length) {
+            return _decodeQuad(buffer, offset) >>> ((4 - len) << 3);
+        }
+        int q = buffer[offset] & 0xFF;
+        if (len > 1) {
+            q = (q << 8) | (buffer[offset+1] & 0xFF);
+            if (len > 2) {
+                q = (q << 8) | (buffer[offset+2] & 0xFF);
+                if (len > 3) {
+                    q = (q << 8) | (buffer[offset+3] & 0xFF);
+                }
+            }
+        }
+        return q;
+    }
+
+    /**
      * Helper method used to encapsulate logic of including (or not) of
      * "source reference" when constructing {@link TokenStreamLocation} instances.
      */
