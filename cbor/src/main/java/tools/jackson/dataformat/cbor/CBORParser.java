@@ -2476,8 +2476,8 @@ public class CBORParser extends ParserBase
             ++inPtr;
         }
         if (inPtr == end) { // all ASCII
-            // 25-Oct-2025: [dataformats-binary#624] Minor optimization: can directly
-            //    construct String; faster in JDK 17+
+            // [dataformats-binary#624] Minor optimization: can directly
+            // construct String; faster in JDK 17+
             String str = _textBuffer.resetWithASCII(inputBuf, start, len);
             if (stringRefs != null) {
                 stringRefs.stringRefs.add(str);
