@@ -462,12 +462,14 @@ public abstract class NonBlockingParserBase
     {
         // First: maybe we already have this name decoded?
         if (len < 5) {
-            int q = inBuf[inPtr] & 0xFF;
-            if (--len > 0) {
+            // [dataformats-binary#761] / #312: pad unused high bytes so a short name
+            // cannot collide with a longer NUL-prefixed one in ByteQuadsCanonicalizer
+            int q = _padQuadForNulls(inBuf[inPtr]);
+            if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
+                if (len > 2) {
                     q = (q << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (--len > 0) {
+                    if (len > 3) {
                         q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                     }
                 }
@@ -483,13 +485,13 @@ public abstract class NonBlockingParserBase
             q1 += (inBuf[++inPtr] & 0xFF);
             q1 <<= 8;
             q1 += (inBuf[++inPtr] & 0xFF);
-            int q2 = (inBuf[++inPtr] & 0xFF);
-            len -= 5;
-            if (len > 0) {
+            int q2 = _padQuadForNulls(inBuf[++inPtr]);
+            int left = len - 5;
+            if (left > 0) {
                 q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                if (--len > 0) {
+                if (left > 1) {
                     q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
-                    if (--len > 0) {
+                    if (left > 2) {
                         q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
                     }
                 }
@@ -524,7 +526,7 @@ public abstract class NonBlockingParserBase
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            int q = inBuf[inPtr] & 0xFF;
+            int q = _padQuadForNulls(inBuf[inPtr]);
             if (--len > 0) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (--len > 0) {
@@ -534,6 +536,11 @@ public abstract class NonBlockingParserBase
             _quadBuffer[offset++] = q;
         }
         return _symbols.findName(_quadBuffer, offset);
+    }
+
+    // Helper method needed to fix [dataformats-binary#312]/#761, masking of 0x00 character
+    protected final static int _padQuadForNulls(int firstByte) {
+        return (firstByte & 0xFF) | 0xFFFFFF00;
     }
 
     protected final String _addDecodedToSymbols(int len, String name) throws IOException

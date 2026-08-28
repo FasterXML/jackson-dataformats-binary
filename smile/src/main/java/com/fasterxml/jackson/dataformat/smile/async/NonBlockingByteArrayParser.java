@@ -690,7 +690,7 @@ public class NonBlockingByteArrayParser
         }
         // and possibly more... ?
         if (in < outPtr) { // at least 1
-            int q = copyBuffer[in++] & 0xFF;
+            int q = _padQuadForNulls(copyBuffer[in++]);
             if (in < outPtr) { // at least 2
                 q = (q << 8) | (copyBuffer[in++] & 0xFF);
                 if (in < outPtr) { // 3 (can't be more)
