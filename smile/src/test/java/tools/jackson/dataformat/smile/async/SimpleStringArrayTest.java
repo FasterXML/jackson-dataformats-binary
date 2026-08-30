@@ -58,6 +58,35 @@ public class SimpleStringArrayTest extends AsyncTestBase
     }
 
     @Test
+    public void testShortAsciiStringAccessorsWithContiguousInput() throws IOException
+    {
+        final int[] lengths = { 1, 2, 3, 4, 31, 32, 33, 63, 64 };
+        final String[] input = new String[lengths.length];
+        for (int i = 0; i < lengths.length; ++i) {
+            input[i] = _ascii(lengths[i]);
+        }
+        byte[] data = _stringDoc(_smileWriter(true), input);
+
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), data.length + 1, data, 0);
+        assertNull(r.currentToken());
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        for (String value : input) {
+            assertToken(JsonToken.VALUE_STRING, r.nextToken());
+
+            assertEquals(value, r.currentText());
+            assertEquals(value.length(), r.parser().getStringLength());
+
+            final char[] ch = r.parser().getStringCharacters();
+            final int offset = r.parser().getStringOffset();
+            final int len = r.parser().getStringLength();
+            assertEquals(value, new String(ch, offset, len));
+        }
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        assertNull(r.nextToken());
+        assertTrue(r.isClosed());
+    }
+
+    @Test
     public void testShortUnicodeStrings() throws IOException
     {
         final String repeat = "Test: "+UNICODE_2BYTES;
@@ -202,5 +231,14 @@ public class SimpleStringArrayTest extends AsyncTestBase
         g.writeEndArray();
         g.close();
         return bytes.toByteArray();
+    }
+
+    private String _ascii(int len)
+    {
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; ++i) {
+            sb.append((char) ('a' + (i % 26)));
+        }
+        return sb.toString();
     }
 }

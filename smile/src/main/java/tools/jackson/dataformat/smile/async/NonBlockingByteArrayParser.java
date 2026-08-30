@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import tools.jackson.core.JacksonException;
@@ -1583,28 +1584,9 @@ public class NonBlockingByteArrayParser
     private final String _decodeASCIIText(byte[] inBuf, int inPtr, int len) throws JacksonException
     {
         // note: caller ensures we have enough bytes available
-        char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
-        int outPtr = 0;
-
-        // loop unrolling seems to help here:
-        for (int inEnd = inPtr + len - 3; inPtr < inEnd; ) {
-            outBuf[outPtr++] = (char) inBuf[inPtr++];
-            outBuf[outPtr++] = (char) inBuf[inPtr++];
-            outBuf[outPtr++] = (char) inBuf[inPtr++];
-            outBuf[outPtr++] = (char) inBuf[inPtr++];
-        }
-        int left = (len & 3);
-        if (left > 0) {
-            outBuf[outPtr++] = (char) inBuf[inPtr++];
-            if (left > 1) {
-                outBuf[outPtr++] = (char) inBuf[inPtr++];
-                if (left > 2) {
-                    outBuf[outPtr++] = (char) inBuf[inPtr++];
-                }
-            }
-        }
-        _textBuffer.setCurrentLength(len);
-        return _textBuffer.contentsAsString();
+        String str = new String(inBuf, inPtr, len, StandardCharsets.US_ASCII);
+        _textBuffer.resetWithString(str);
+        return str;
     }
 
     /**
