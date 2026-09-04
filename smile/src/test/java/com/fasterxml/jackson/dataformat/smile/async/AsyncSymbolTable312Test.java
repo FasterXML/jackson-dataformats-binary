@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -8,12 +9,15 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Async counterpart of {@code SymbolTable312Test}: the blocking Smile parser
@@ -63,6 +67,26 @@ public class AsyncSymbolTable312Test extends AsyncTestBase
         // ... and then verify async parser does not match it for the shorter name
         assertEquals(listOf(n2), _readNamesAsync(doc2, Integer.MAX_VALUE));
         assertEquals(listOf(n2), _readNamesAsync(doc2, 7));
+    }
+
+    // [dataformats-binary#761]: async parser must also add "long" (marker-terminated)
+    // names to symbol table, the way blocking parser does; otherwise every occurrence
+    // gets decoded anew
+    @Test
+    public void testLongNameAddedToSymbolTable() throws Exception
+    {
+        final String name = _repeat('z', 70);
+        byte[] doc = _writeRepeatedNameWithoutSharing(name, 2);
+
+        List<String> names = _readNamesAsync(doc, Integer.MAX_VALUE);
+        assertEquals(listOf(name, name), names);
+        assertSame(names.get(0), names.get(1),
+                "second occurrence of long name should be found from symbol table");
+
+        // and symbol table entry must also be visible to later parsers of same factory
+        List<String> namesLater = _readNamesAsync(doc, 5);
+        assertSame(names.get(0), namesLater.get(0),
+                "long name should have been added to factory-shared symbol table");
     }
 
     @Test
@@ -147,6 +171,26 @@ public class AsyncSymbolTable312Test extends AsyncTestBase
             p.close();
         }
         return names;
+    }
+
+    // Writes {@code count} objects, each with the same property name, with shared-name
+    // back-references disabled so that every occurrence is encoded in full
+    private byte[] _writeRepeatedNameWithoutSharing(String name, int count) throws Exception
+    {
+        SmileFactory f = SmileFactory.builder()
+                .disable(SmileGenerator.Feature.CHECK_SHARED_NAMES)
+                .build();
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (JsonGenerator g = f.createGenerator(bytes)) {
+            g.writeStartArray();
+            for (int i = 0; i < count; ++i) {
+                g.writeStartObject();
+                g.writeNumberField(name, i);
+                g.writeEndObject();
+            }
+            g.writeEndArray();
+        }
+        return bytes.toByteArray();
     }
 
     private static String _repeat(char c, int count) {
