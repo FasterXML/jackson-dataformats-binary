@@ -3504,10 +3504,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         if (_VARHANDLE_AVAILABLE) {
             return CBORVarHandleUtil.getIntBE(buffer, offset);
         }
-        return ((buffer[offset] & 0xFF) << 24)
-                | ((buffer[offset+1] & 0xFF) << 16)
-                | ((buffer[offset+2] & 0xFF) << 8)
-                | (buffer[offset+3] & 0xFF);
+        return CBORByteShiftUtil.getIntBE(buffer, offset);
     }
 
     /*
@@ -3805,12 +3802,10 @@ expType, type, ch));
         final int v;
         if (_VARHANDLE_AVAILABLE) {
             v = CBORVarHandleUtil.getIntBE(b, ptr);
-            ptr += 4;
         } else {
-            v = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
-                    + ((b[ptr++] & 0xFF) << 8) + (b[ptr++] & 0xFF);
+            v = CBORByteShiftUtil.getIntBE(b, ptr);
         }
-        _inputPtr = ptr;
+        _inputPtr = ptr + 4;
         return v;
     }
 
@@ -3839,19 +3834,14 @@ expType, type, ch));
             return _slow64();
         }
         final byte[] b = _inputBuffer;
+        final long l;
         if (_VARHANDLE_AVAILABLE) {
-            // NOTE: identical to `_long()` of the two 32-bit halves below, since
-            // that is just a big-endian 8-byte read spelled out
-            final long l = CBORVarHandleUtil.getLongBE(b, ptr);
-            _inputPtr = ptr + 8;
-            return l;
+            l = CBORVarHandleUtil.getLongBE(b, ptr);
+        } else {
+            l = CBORByteShiftUtil.getLongBE(b, ptr);
         }
-        int i1 = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
-                + ((b[ptr++] & 0xFF) << 8) + (b[ptr++] & 0xFF);
-        int i2 = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
-                + ((b[ptr++] & 0xFF) << 8) + (b[ptr++] & 0xFF);
-        _inputPtr = ptr;
-        return _long(i1, i2);
+        _inputPtr = ptr + 8;
+        return l;
     }
 
     private final long _slow64() throws JacksonException {

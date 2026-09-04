@@ -1670,27 +1670,19 @@ surr1, surr2));
     private final void _writeInt32(int i) {
         if (_VARHANDLE_AVAILABLE) {
             CBORVarHandleUtil.setIntBE(_outputBuffer, _outputTail, i);
-            _outputTail += 4;
         } else {
-            _writeInt32Bytes(i);
+            CBORByteShiftUtil.setIntBE(_outputBuffer, _outputTail, i);
         }
+        _outputTail += 4;
     }
 
     private final void _writeInt64(long l) {
         if (_VARHANDLE_AVAILABLE) {
             CBORVarHandleUtil.setLongBE(_outputBuffer, _outputTail, l);
-            _outputTail += 8;
         } else {
-            _writeInt32Bytes((int) (l >> 32));
-            _writeInt32Bytes((int) l);
+            CBORByteShiftUtil.setLongBE(_outputBuffer, _outputTail, l);
         }
-    }
-
-    private final void _writeInt32Bytes(int i) {
-        _outputBuffer[_outputTail++] = (byte) (i >> 24);
-        _outputBuffer[_outputTail++] = (byte) (i >> 16);
-        _outputBuffer[_outputTail++] = (byte) (i >> 8);
-        _outputBuffer[_outputTail++] = (byte) i;
+        _outputTail += 8;
     }
 
     private final void _writeLengthMarker(int majorType, int i)

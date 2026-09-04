@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro.deser;
+package tools.jackson.dataformat.avro;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -7,6 +7,10 @@ import java.nio.ByteOrder;
 /**
  * Utility class that provides {@link VarHandle}-based access for reading
  * multi-byte primitives out of byte arrays.
+ *<p>
+ * NOTE: {@code public} only so that the {@code ...avro.deser} package can
+ * use it; this class is an internal implementation detail and NOT part of
+ * the public API: it may change or be removed without notice.
  *<p>
  * NOTE: handles here are LITTLE-endian, unlike the big-endian ones other
  * Jackson binary backends need: Avro encodes {@code float} and {@code double}
@@ -26,7 +30,7 @@ import java.nio.ByteOrder;
  *
  * @since 3.3
  */
-final class AvroVarHandleUtil
+public final class AvroVarHandleUtil
 {
     /**
      * VarHandle for reading 4 little-endian bytes as an {@code int}.
@@ -60,7 +64,7 @@ final class AvroVarHandleUtil
      * @return {@code true} if {@link #getIntLE} and {@link #getLongLE} may be
      *    called; if {@code false}, caller MUST use its own byte-shifting fallback
      */
-    static boolean isAvailable() {
+    public static boolean isAvailable() {
         return LONG_LE != null;
     }
 
@@ -73,7 +77,7 @@ final class AvroVarHandleUtil
      * Caller MUST also have verified that {@code offset+4} is within bounds of
      * given array.
      */
-    static int getIntLE(byte[] buffer, int offset) {
+    public static int getIntLE(byte[] buffer, int offset) {
         return (int) INT_LE.get(buffer, offset);
     }
 
@@ -86,7 +90,7 @@ final class AvroVarHandleUtil
      * Caller MUST also have verified that {@code offset+8} is within bounds of
      * given array.
      */
-    static long getLongLE(byte[] buffer, int offset) {
+    public static long getLongLE(byte[] buffer, int offset) {
         return (long) LONG_LE.get(buffer, offset);
     }
 }

@@ -4,7 +4,9 @@ import java.io.*;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;
+import tools.jackson.dataformat.avro.AvroByteShiftUtil;
 import tools.jackson.dataformat.avro.AvroSchema;
+import tools.jackson.dataformat.avro.AvroVarHandleUtil;
 
 /**
  * Parser implementation that uses native Jackson avro decoder.
@@ -552,8 +554,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         if (_VARHANDLE_AVAILABLE) {
             i = AvroVarHandleUtil.getIntLE(buf, ptr);
         } else {
-            i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
-                    | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
+            i = AvroByteShiftUtil.getIntLE(buf, ptr);
         }
         _numberFloat = Float.intBitsToFloat(i);
         _numTypesValid = NR_FLOAT;
@@ -579,12 +580,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         if (_VARHANDLE_AVAILABLE) {
             l = AvroVarHandleUtil.getLongLE(buf, ptr);
         } else {
-            // the two 32-bit halves combine to exactly a little-endian 8-byte read
-            int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
-                    | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
-            int i2 = (buf[ptr+4] & 0xff) | ((buf[ptr+5] & 0xff) << 8)
-                    | ((buf[ptr+6] & 0xff) << 16) | (buf[ptr+7] << 24);
-            l = (((long) i) & 0xffffffffL) | (((long) i2) << 32);
+            l = AvroByteShiftUtil.getLongLE(buf, ptr);
         }
         _numberDouble = Double.longBitsToDouble(l);
         _numTypesValid = NR_DOUBLE;
