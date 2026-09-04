@@ -2272,14 +2272,11 @@ _typeAsInt);
         return _growArrayTo(arr, arr.length + more);
     }
 
-    // Helper methods needed to fix [dataformats-binary#312], masking of 0x00 character
+    // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
+    // (see also `_padQuadForNulls()` in `SmileParserBase`)
 
     private final static int _padLastQuad(int q, int bytes) {
         return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
-    }
-
-    private final static int _padQuadForNulls(int firstByte) {
-        return (firstByte & 0xFF) | 0xFFFFFF00;
     }
 
     /*

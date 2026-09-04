@@ -724,4 +724,16 @@ public abstract class SmileParserBase extends ParserMinimalBase
         }
         return ContentReference.unknown();
     }
+
+    /**
+     * Helper method needed to fix [dataformats-binary#312]: masking of 0x00
+     * character. Pads unused high bytes of a partial name quad with 1s, so
+     * that a shorter name cannot collide with a longer NUL-prefixed one in
+     * {@code ByteQuadsCanonicalizer}.
+     *
+     * @since 2.21.7
+     */
+    protected final static int _padQuadForNulls(int firstByte) {
+        return (firstByte & 0xFF) | 0xFFFFFF00;
+    }
 }
