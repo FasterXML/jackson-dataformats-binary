@@ -18,6 +18,11 @@ Active maintainers:
 
 #745: (avro) Fix Avro bugs
 
+2.22.3 (not yet released)
+
+#761: (smile) Async parser misses #312 NUL-padding: short property name
+  collides with NUL-prefixed longer one
+
 2.22.2 (16-Aug-2026)
 
 #708: (protobuf) proto3 label-less field declarations fail to parse
@@ -49,6 +54,11 @@ Active maintainers:
 2.22.0 (31-May-2026)
 
 No changes since 2.21
+
+2.21.7 (not yet released)
+
+#761: (smile) Async parser misses #312 NUL-padding: short property name
+  collides with NUL-prefixed longer one
 
 2.21.6 (14-Aug-2026)
 
