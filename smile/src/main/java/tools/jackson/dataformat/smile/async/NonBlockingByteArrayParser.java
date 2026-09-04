@@ -707,12 +707,18 @@ public class NonBlockingByteArrayParser
         }
         // and possibly more... ?
         if (in < outPtr) { // 1 - 3 bytes left over
-            quads[quadCount++] = _decodePartialQuad(copyBuffer, in, outPtr - in);
+            quads[quadCount++] = _decodePartialQuadForNulls(copyBuffer, in, outPtr - in);
         }
 
         String name = _symbols.findName(quads, quadCount);
         if (name == null) {
             name = _decodeLongUnicodeName(copyBuffer, 0, outPtr);
+            // [dataformats-binary#761]: also add to symbol table, the way blocking
+            // parser does, so that repeat occurrences need not be decoded again
+            // (5-May-2023, ckozak: [core#1015] respect CANONICALIZE_FIELD_NAMES)
+            if (_symbolsCanonical) {
+                name = _symbols.addName(name, quads, quadCount);
+            }
         }
         if (_seenNames != null) {
            if (_seenNameCount >= _seenNames.length) {
