@@ -30,13 +30,13 @@ final class AvroVarHandleUtil
 {
     /**
      * VarHandle for reading 4 little-endian bytes as an {@code int}.
-     * {@code null} if byte-array views are unsupported.
+     * {@code null} if {@code byteArrayViewVarHandle()} is unsupported.
      */
     private static final VarHandle INT_LE;
 
     /**
      * VarHandle for reading 8 little-endian bytes as a {@code long}.
-     * {@code null} if byte-array views are unsupported.
+     * {@code null} if {@code byteArrayViewVarHandle()} is unsupported.
      */
     private static final VarHandle LONG_LE;
 
@@ -50,37 +50,43 @@ final class AvroVarHandleUtil
             // Byte-array views not supported: caller falls back to byte shifting
         }
         INT_LE = intLe;
-        // assigned last: non-null implies the handle above resolved too
+        // assigned last: non-null implies every handle above resolved too
         LONG_LE = longLe;
     }
 
     private AvroVarHandleUtil() { }
 
     /**
-     * @return {@code true} if the {@code getXxx()} methods may be called; if
-     *    {@code false}, caller MUST use its own byte-shifting fallback
+     * @return {@code true} if {@link #getIntLE} and {@link #getLongLE} may be
+     *    called; if {@code false}, caller MUST use its own byte-shifting fallback
      */
     static boolean isAvailable() {
         return LONG_LE != null;
     }
 
-    // Helper methods that read primitives via the class's own VarHandle fields.
-    // Only called when {@link #isAvailable()} returned true; the handles are
-    // dereferenced unconditionally and the fallback lives in the caller.
-
     /**
-     * Reads 4 bytes at given offset as a little-endian {@code int}; caller MUST
-     * have verified that {@code offset+4} is within bounds of given array.
+     * Reads 4 bytes starting at given offset as a little-endian {@code int}.
+     *<p>
+     * Only to be called if {@link #isAvailable()} returned {@code true}: the
+     * handle is dereferenced unconditionally, and the fallback lives in the
+     * caller, not here.
+     * Caller MUST also have verified that {@code offset+4} is within bounds of
+     * given array.
      */
-    static int getIntLE(byte[] array, int offset) {
-        return (int) INT_LE.get(array, offset);
+    static int getIntLE(byte[] buffer, int offset) {
+        return (int) INT_LE.get(buffer, offset);
     }
 
     /**
-     * Reads 8 bytes at given offset as a little-endian {@code long}; caller MUST
-     * have verified that {@code offset+8} is within bounds of given array.
+     * Reads 8 bytes starting at given offset as a little-endian {@code long}.
+     *<p>
+     * Only to be called if {@link #isAvailable()} returned {@code true}: the
+     * handle is dereferenced unconditionally, and the fallback lives in the
+     * caller, not here.
+     * Caller MUST also have verified that {@code offset+8} is within bounds of
+     * given array.
      */
-    static long getLongLE(byte[] array, int offset) {
-        return (long) LONG_LE.get(array, offset);
+    static long getLongLE(byte[] buffer, int offset) {
+        return (long) LONG_LE.get(buffer, offset);
     }
 }
