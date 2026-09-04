@@ -461,3 +461,8 @@ Benjamin Muschko (@bmuschko)
 * Reported #720: (smile) `SmileGenerator` int overflow in `maxLen` for very long
   Strings causes `ArrayIndexOutOfBoundsException`
  (2.21.6)
+
+Burak KALAYCI (@kalayciburak)
+
+* Contributed fix for #761: (smile) Async parser misses #312 NUL-padding
+ (2.21.7)

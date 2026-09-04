@@ -2172,25 +2172,9 @@ _typeAsInt);
         return _growArrayTo(arr, arr.length + more);
     }
 
-    // Helper methods needed to fix [dataformats-binary#312], masking of 0x00 character
-
-    private final static int _padLastQuad(int q, int bytes) {
-        return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
-    }
-
-    /**
-     * Variant of {@link #_decodePartialQuad} that pads the unused high bytes with
-     * 1s rather than 0s, which is what {@link ByteQuadsCanonicalizer} expects of a
-     * partial quad: without it a name ending in NULL bytes would collide with the
-     * shorter name that precedes those NULLs.
-     *
-     * @param len Number of bytes to decode; must be between 1 and 4
-     *
-     * @since 3.3
-     */
-    private final static int _decodePartialQuadForNulls(byte[] buffer, int offset, int len) {
-        return _padLastQuad(_decodePartialQuad(buffer, offset, len), len);
-    }
+    // Helper methods for [dataformats-binary#312] (masking of 0x00 character) live in
+    // `SmileParserBase`: `_padLastQuad()` and `_decodePartialQuadForNulls()`, shared
+    // with non-blocking parser ([dataformats-binary#761])
 
     /*
     /**********************************************************************
