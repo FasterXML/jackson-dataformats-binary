@@ -70,3 +70,6 @@ PJ Fanning (@pjfanning)
 * Contributed #758: (cbor) Use `VarHandle` for multi-byte primitive reads in
   `CBORParser`
  (3.3.0)
+* Contributed #762: (avro) Use `VarHandle` for `float`/`double` reads in Avro
+  parser
+ (3.3.0)
