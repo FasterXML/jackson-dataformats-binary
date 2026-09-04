@@ -573,21 +573,19 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             ptr = _inputPtr;
         }
         final byte[] buf = _inputBuffer;
-        // Avro encodes double as little-endian IEEE-754; the two 32-bit halves
-        // below combine to exactly a little-endian 8-byte read
+        _inputPtr = ptr+8;
+        // Avro encodes double as little-endian IEEE-754
         final long l;
         if (_VARHANDLE_AVAILABLE) {
             l = AvroVarHandleUtil.getLongLE(buf, ptr);
-            ptr += 4;
         } else {
+            // the two 32-bit halves combine to exactly a little-endian 8-byte read
             int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
                     | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
-            ptr += 4;
-            int i2 = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
-                    | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
+            int i2 = (buf[ptr+4] & 0xff) | ((buf[ptr+5] & 0xff) << 8)
+                    | ((buf[ptr+6] & 0xff) << 16) | (buf[ptr+7] << 24);
             l = (((long) i) & 0xffffffffL) | (((long) i2) << 32);
         }
-        _inputPtr = ptr+4;
         _numberDouble = Double.longBitsToDouble(l);
         _numTypesValid = NR_DOUBLE;
         return JsonToken.VALUE_NUMBER_FLOAT;

@@ -30,6 +30,8 @@ implementations)
 #759: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "long" text values
  (fix by @cowtowncoder, w/ Claude code)
+#762: (avro) Use `VarHandle` for `float`/`double` reads in Avro parser
+ (contributed by @pjfanning)
 
 3.2.3 (not yet released)
 
