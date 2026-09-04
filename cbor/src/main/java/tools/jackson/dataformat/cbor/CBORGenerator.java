@@ -1669,7 +1669,7 @@ surr1, surr2));
 
     private final void _writeInt32(int i) {
         if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setInt(_outputBuffer, _outputTail, i);
+            CBORVarHandleUtil.setIntBE(_outputBuffer, _outputTail, i);
             _outputTail += 4;
         } else {
             _writeInt32Bytes(i);
@@ -1678,7 +1678,7 @@ surr1, surr2));
 
     private final void _writeInt64(long l) {
         if (_VARHANDLE_AVAILABLE) {
-            CBORVarHandleUtil.setLong(_outputBuffer, _outputTail, l);
+            CBORVarHandleUtil.setLongBE(_outputBuffer, _outputTail, l);
             _outputTail += 8;
         } else {
             _writeInt32Bytes((int) (l >> 32));

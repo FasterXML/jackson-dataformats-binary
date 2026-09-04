@@ -3502,7 +3502,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
      */
     private final static int _decodeQuad(byte[] buffer, int offset) {
         if (_VARHANDLE_AVAILABLE) {
-            return CBORVarHandleUtil.getInt(buffer, offset);
+            return CBORVarHandleUtil.getIntBE(buffer, offset);
         }
         return ((buffer[offset] & 0xFF) << 24)
                 | ((buffer[offset+1] & 0xFF) << 16)
@@ -3804,7 +3804,7 @@ expType, type, ch));
         final byte[] b = _inputBuffer;
         final int v;
         if (_VARHANDLE_AVAILABLE) {
-            v = CBORVarHandleUtil.getInt(b, ptr);
+            v = CBORVarHandleUtil.getIntBE(b, ptr);
             ptr += 4;
         } else {
             v = (b[ptr++] << 24) + ((b[ptr++] & 0xFF) << 16)
@@ -3842,7 +3842,7 @@ expType, type, ch));
         if (_VARHANDLE_AVAILABLE) {
             // NOTE: identical to `_long()` of the two 32-bit halves below, since
             // that is just a big-endian 8-byte read spelled out
-            final long l = CBORVarHandleUtil.getLong(b, ptr);
+            final long l = CBORVarHandleUtil.getLongBE(b, ptr);
             _inputPtr = ptr + 8;
             return l;
         }
