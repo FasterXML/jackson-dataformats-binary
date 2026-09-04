@@ -447,14 +447,16 @@ public abstract class NonBlockingParserBase
     {
         // First: maybe we already have this name decoded?
         if (len < 5) {
-            int q = _decodePartialQuad(inBuf, inPtr, len);
+            // [dataformats-binary#761] / #312: pad unused high bytes so a short name
+            // cannot collide with a longer NUL-prefixed one in ByteQuadsCanonicalizer
+            int q = _decodePartialQuadForNulls(inBuf, inPtr, len);
             _quad1 = q;
             return _symbols.findName(q);
         }
         if (len < 9) {
             // First quadbyte is easy
             int q1 = _decodeQuad(inBuf, inPtr);
-            int q2 = _decodePartialQuad(inBuf, inPtr+4, len - 4);
+            int q2 = _decodePartialQuadForNulls(inBuf, inPtr+4, len - 4);
             _quad1 = q1;
             _quad2 = q2;
             return _symbols.findName(q1, q2);
@@ -480,7 +482,7 @@ public abstract class NonBlockingParserBase
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            _quadBuffer[offset++] = _decodePartialQuad(inBuf, inPtr, len);
+            _quadBuffer[offset++] = _decodePartialQuadForNulls(inBuf, inPtr, len);
         }
         return _symbols.findName(_quadBuffer, offset);
     }

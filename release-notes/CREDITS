@@ -67,3 +67,6 @@ PJ Fanning (@pjfanning)
 * Contributed #757: (smile) Use `VarHandle` for multi-byte primitive reads in
   `SmileParser`
  (3.3.0)
+* Contributed #758: (cbor) Use `VarHandle` for multi-byte primitive reads in
+  `CBORParser`
+ (3.3.0)

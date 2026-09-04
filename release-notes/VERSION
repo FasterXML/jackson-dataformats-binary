@@ -25,6 +25,8 @@ implementations)
  (contributed by @pjfanning)
 #757: (smile) Use `VarHandle` for multi-byte primitive reads in `SmileParser`
  (contributed by @pjfanning)
+#758: (cbor) Use `VarHandle` for multi-byte primitive reads in `CBORParser`
+ (contributed by @pjfanning)
 #759: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "long" text values
  (fix by @cowtowncoder, w/ Claude code)
@@ -33,6 +35,8 @@ implementations)
 
 #745: (avro) Fix Avro bugs
  (contributed by @pjfanning)
+#761: (smile) Async parser misses #312 NUL-padding: short property name
+  collides with NUL-prefixed longer one
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.2.2 (14-Aug-2026)
@@ -75,6 +79,8 @@ No changes since 3.2.0
 3.1.7 (not yet released)
 
 #745: (avro) Fix Avro bugs
+#761: (smile) Async parser misses #312 NUL-padding: short property name
+  collides with NUL-prefixed longer one
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.1.6 (14-Aug-2026)
