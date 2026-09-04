@@ -801,6 +801,32 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     /**
+     * Helper method that pads the unused high bytes of a partial quad with 1s
+     * rather than 0s ([dataformats-binary#312]).
+     *
+     * @param bytes Number of bytes actually decoded; must be between 1 and 4
+     */
+    protected final static int _padLastQuad(int q, int bytes) {
+        return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
+    }
+
+    /**
+     * Variant of {@link #_decodePartialQuad} that pads the unused high bytes with
+     * 1s rather than 0s, which is what {@link ByteQuadsCanonicalizer} expects of a
+     * partial quad: without it a name ending in NULL bytes would collide with the
+     * shorter name that precedes those NULLs.
+     *<p>
+     * Shared by blocking and non-blocking parsers ([dataformats-binary#761]).
+     *
+     * @param len Number of bytes to decode; must be between 1 and 4
+     *
+     * @since 3.3
+     */
+    protected final static int _decodePartialQuadForNulls(byte[] buffer, int offset, int len) {
+        return _padLastQuad(_decodePartialQuad(buffer, offset, len), len);
+    }
+
+    /**
      * Helper method used to encapsulate logic of including (or not) of
      * "source reference" when constructing {@link TokenStreamLocation} instances.
      */
