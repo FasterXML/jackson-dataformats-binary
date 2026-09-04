@@ -44,6 +44,28 @@ public class AsyncSymbolTable312Test extends AsyncTestBase
     }
 
     @Test
+    public void testLongNameDoesNotCollideWithNulPrefixedLonger() throws Exception
+    {
+        // Names over 64 bytes use the "long" (marker-terminated) encoding, decoded by
+        // NonBlockingByteArrayParser._finishLongFieldName(): 68-byte name ends with
+        // NUL,NUL,NUL,'a' (17 full quads), 65-byte one with a partial quad holding 'a',
+        // so without padding both end in quad 0x00000061 and collide.
+        final String prefix = _repeat('x', 64);
+        final String n1 = prefix + new String(new char[] { 0, 0, 0, 'a' });
+        final String n2 = prefix + "a";
+
+        byte[] doc1 = MAPPER.writeValueAsBytes(_mapOf(n1, 1));
+        byte[] doc2 = MAPPER.writeValueAsBytes(_mapOf(n2, 2));
+
+        // Long names are only added to the symbol table by the blocking parser, so seed
+        // the factory-shared table with the longer name first...
+        assertEquals(listOf(n1), _readNamesBlocking(doc1));
+        // ... and then verify async parser does not match it for the shorter name
+        assertEquals(listOf(n2), _readNamesAsync(doc2, Integer.MAX_VALUE));
+        assertEquals(listOf(n2), _readNamesAsync(doc2, 7));
+    }
+
+    @Test
     public void testNullHandling1Quad() throws Exception
     {
         _testNullHandling(1);
@@ -125,6 +147,20 @@ public class AsyncSymbolTable312Test extends AsyncTestBase
             p.close();
         }
         return names;
+    }
+
+    private static String _repeat(char c, int count) {
+        StringBuilder sb = new StringBuilder(count);
+        for (int i = 0; i < count; ++i) {
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    private static Map<String, Object> _mapOf(String key, Object value) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put(key, value);
+        return m;
     }
 
     private String _nulls(int len) {

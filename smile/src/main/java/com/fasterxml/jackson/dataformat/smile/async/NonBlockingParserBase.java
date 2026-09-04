@@ -538,11 +538,6 @@ public abstract class NonBlockingParserBase
         return _symbols.findName(_quadBuffer, offset);
     }
 
-    // Helper method needed to fix [dataformats-binary#312]/#761, masking of 0x00 character
-    protected final static int _padQuadForNulls(int firstByte) {
-        return (firstByte & 0xFF) | 0xFFFFFF00;
-    }
-
     protected final String _addDecodedToSymbols(int len, String name) throws IOException
     {
         // 5-May-2023, ckozak: [core#1015] respect CANONICALIZE_FIELD_NAMES factory config.
