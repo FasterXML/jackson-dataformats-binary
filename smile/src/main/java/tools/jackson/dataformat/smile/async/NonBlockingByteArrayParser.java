@@ -292,7 +292,7 @@ public class NonBlockingByteArrayParser
                 if (avail >= needed) { // got it all
                     System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
                     _inputPtr += needed;
-                    String text = (_minorState == MINOR_PROPERTY_NAME_SHORT_ASCII)
+                    String text = (_minorState == MINOR_VALUE_STRING_SHORT_ASCII)
                             ? _decodeASCIIText(_inputCopy, 0, fullLen)
                             : _decodeShortUnicodeText(_inputCopy, 0, fullLen);
                     if (_seenStringValueCount >= 0) { // shared String values enabled

@@ -57,6 +57,43 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(input, data, 1, 1);
     }
 
+    // [dataformats-binary#770]: short ASCII value split across input feeds must
+    // decode the same as one fed contiguously (used to take the Unicode path instead)
+    @Test
+    public void testShortAsciiValueChunkIndependence() throws IOException
+    {
+        byte[] data = _stringDoc(_smileWriter(true), new String[] { "abcd" });
+        // Corrupt one content byte so that ASCII and Unicode decoding disagree
+        int ix = _lastIndexOf(data, (byte) 'b');
+        assertTrue(ix > 0, "Should find content byte to corrupt");
+        data[ix] = (byte) 0xC5;
+
+        String contiguous = _readSingleString(data, data.length + 1);
+        assertEquals(contiguous, _readSingleString(data, 3));
+        assertEquals(contiguous, _readSingleString(data, 1));
+    }
+
+    private String _readSingleString(byte[] data, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, 0);
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        String text = r.currentText();
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        r.close();
+        return text;
+    }
+
+    private int _lastIndexOf(byte[] data, byte b)
+    {
+        for (int i = data.length; --i >= 0; ) {
+            if (data[i] == b) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @Test
     public void testShortUnicodeStrings() throws IOException
     {
