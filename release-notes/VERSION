@@ -32,6 +32,10 @@ implementations)
  (fix by @cowtowncoder, w/ Claude code)
 #762: (avro) Use `VarHandle` for `float`/`double` reads in Avro parser
  (contributed by @pjfanning)
+#767: (smile) Use more efficient `String` construction wrt "Compact Strings"
+  for "short" ASCII text values of async parser; also fixes decoding of such
+  values that are split across input feeds
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (not yet released)
 
