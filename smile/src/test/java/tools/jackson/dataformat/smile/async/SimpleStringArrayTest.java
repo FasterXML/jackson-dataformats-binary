@@ -58,6 +58,81 @@ public class SimpleStringArrayTest extends AsyncTestBase
     }
 
     @Test
+    public void testShortAsciiStringAccessors() throws IOException
+    {
+        final int[] lengths = { 1, 2, 3, 4, 31, 32, 33, 63, 64 };
+        final String[] input = new String[lengths.length];
+        for (int i = 0; i < lengths.length; ++i) {
+            input[i] = _ascii(lengths[i]);
+        }
+        byte[] data = _stringDoc(_smileWriter(true), input);
+
+        // Contiguous input, but also chunked, to cover split-across-feeds decoding
+        _testShortAsciiStringAccessors(input, data, data.length + 1);
+        _testShortAsciiStringAccessors(input, data, 3);
+        _testShortAsciiStringAccessors(input, data, 1);
+    }
+
+    private void _testShortAsciiStringAccessors(String[] input, byte[] data, int readSize)
+        throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, 0);
+        assertNull(r.currentToken());
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        for (String value : input) {
+            assertToken(JsonToken.VALUE_STRING, r.nextToken());
+
+            assertEquals(value, r.currentText());
+            assertEquals(value.length(), r.parser().getStringLength());
+
+            final char[] ch = r.parser().getStringCharacters();
+            final int offset = r.parser().getStringOffset();
+            final int len = r.parser().getStringLength();
+            assertEquals(value, new String(ch, offset, len));
+        }
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        assertNull(r.nextToken());
+        assertTrue(r.isClosed());
+    }
+
+    // [dataformats-binary#767]: short ASCII value split across feeds must decode
+    // the same as one fed contiguously (it used to take the Unicode path instead)
+    @Test
+    public void testShortAsciiValueChunkIndependence() throws IOException
+    {
+        byte[] data = _stringDoc(_smileWriter(true), new String[] { "abcd" });
+        // Corrupt one content byte so ASCII and Unicode decoding disagree
+        int ix = _lastIndexOf(data, (byte) 'b');
+        assertTrue(ix > 0, "Should find content byte to corrupt");
+        data[ix] = (byte) 0xC5;
+
+        String contiguous = _readSingleString(data, data.length + 1);
+        assertEquals(contiguous, _readSingleString(data, 3));
+        assertEquals(contiguous, _readSingleString(data, 1));
+    }
+
+    private String _readSingleString(byte[] data, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(_smileReader(true), readSize, data, 0);
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        String text = r.currentText();
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        r.close();
+        return text;
+    }
+
+    private int _lastIndexOf(byte[] data, byte b)
+    {
+        for (int i = data.length; --i >= 0; ) {
+            if (data[i] == b) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Test
     public void testShortUnicodeStrings() throws IOException
     {
         final String repeat = "Test: "+UNICODE_2BYTES;
@@ -202,5 +277,14 @@ public class SimpleStringArrayTest extends AsyncTestBase
         g.writeEndArray();
         g.close();
         return bytes.toByteArray();
+    }
+
+    private String _ascii(int len)
+    {
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; ++i) {
+            sb.append((char) ('a' + (i % 26)));
+        }
+        return sb.toString();
     }
 }
