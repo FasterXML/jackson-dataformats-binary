@@ -4,7 +4,9 @@ import java.io.*;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;
+import tools.jackson.dataformat.avro.AvroByteShiftUtil;
 import tools.jackson.dataformat.avro.AvroSchema;
+import tools.jackson.dataformat.avro.AvroVarHandleUtil;
 
 /**
  * Parser implementation that uses native Jackson avro decoder.
@@ -40,7 +42,31 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         sUtf8UnitLengths = table;
     }
-    
+
+    /**
+     * Whether VarHandles are usable on this runtime; probed once at class load.
+     * Being {@code static final} lets the branches in {@link #decodeFloat()} and
+     * {@link #decodeDouble()} fold away at JIT time.
+     *
+     * @since 3.3
+     */
+    private final static boolean _VARHANDLE_AVAILABLE = _checkVarHandleAvailable();
+
+    private static boolean _checkVarHandleAvailable() {
+        // NOTE: this call is what first loads `AvroVarHandleUtil`, and that class
+        // names `VarHandle` in its field/method signatures. On a runtime lacking
+        // `java.lang.invoke.VarHandle` (some Android builds) loading it raises
+        // `NoClassDefFoundError` -- an Error, not an Exception -- so `Throwable`
+        // is what has to be caught here. Without this guard the failure would
+        // propagate out of this class's initializer and make the parser unusable.
+        try {
+            return AvroVarHandleUtil.isAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+
     /*
     /**********************************************************************
     /* Input source config
@@ -523,8 +549,13 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         final byte[] buf = _inputBuffer;
         _inputPtr = ptr+4;
-        int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
-                | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
+        // Avro encodes float as little-endian IEEE-754
+        final int i;
+        if (_VARHANDLE_AVAILABLE) {
+            i = AvroVarHandleUtil.getIntLE(buf, ptr);
+        } else {
+            i = AvroByteShiftUtil.getIntLE(buf, ptr);
+        }
         _numberFloat = Float.intBitsToFloat(i);
         _numTypesValid = NR_FLOAT;
         return JsonToken.VALUE_NUMBER_FLOAT;
@@ -543,15 +574,15 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             ptr = _inputPtr;
         }
         final byte[] buf = _inputBuffer;
-        int i = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
-                | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
-        ptr += 4;
-        int i2 = (buf[ptr] & 0xff) | ((buf[ptr+1] & 0xff) << 8)
-                | ((buf[ptr+2] & 0xff) << 16) | (buf[ptr+3] << 24);
-
-        _inputPtr = ptr+4;
-        _numberDouble = Double.longBitsToDouble((((long) i) & 0xffffffffL)
-                | (((long) i2) << 32));
+        _inputPtr = ptr+8;
+        // Avro encodes double as little-endian IEEE-754
+        final long l;
+        if (_VARHANDLE_AVAILABLE) {
+            l = AvroVarHandleUtil.getLongLE(buf, ptr);
+        } else {
+            l = AvroByteShiftUtil.getLongLE(buf, ptr);
+        }
+        _numberDouble = Double.longBitsToDouble(l);
         _numTypesValid = NR_DOUBLE;
         return JsonToken.VALUE_NUMBER_FLOAT;
     }

@@ -761,10 +761,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         if (_VARHANDLE_AVAILABLE) {
             return SmileVarHandleUtil.getIntBE(buffer, offset);
         }
-        return ((buffer[offset] & 0xFF) << 24)
-                | ((buffer[offset+1] & 0xFF) << 16)
-                | ((buffer[offset+2] & 0xFF) << 8)
-                | (buffer[offset+3] & 0xFF);
+        return SmileByteShiftUtil.getIntBE(buffer, offset);
     }
 
     /**
