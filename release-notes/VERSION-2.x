@@ -18,6 +18,8 @@ Active maintainers:
 
 #761: (smile) Async parser misses #312 NUL-padding: short property name
   collides with NUL-prefixed longer one
+#770: (smile) Async parser decodes short ASCII values split across input feeds
+  as short Unicode
 
 2.21.6 (14-Aug-2026)
 
