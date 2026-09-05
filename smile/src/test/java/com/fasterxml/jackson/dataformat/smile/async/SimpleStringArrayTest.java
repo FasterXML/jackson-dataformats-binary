@@ -61,7 +61,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(f, input, data, 1, 1);
     }
 
-    // Short ASCII value split across input feeds must
+    // [dataformats-binary#770]: short ASCII value split across input feeds must
     // decode the same as one fed contiguously (used to take the Unicode path instead)
     @Test
     public void testShortAsciiValueChunkIndependence() throws IOException
