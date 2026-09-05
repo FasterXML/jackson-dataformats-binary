@@ -55,11 +55,11 @@ final class CBORVarHandleUtil
     // fields. Only called when the corresponding field is non-null, which implies
     // VarHandle is available on this runtime.
 
-    static void setInt(byte[] array, int offset, int value) {
+    static void setIntBE(byte[] array, int offset, int value) {
         INT_BE.set(array, offset, value);
     }
 
-    static void setLong(byte[] array, int offset, long value) {
+    static void setLongBE(byte[] array, int offset, long value) {
         LONG_BE.set(array, offset, value);
     }
 
@@ -69,7 +69,7 @@ final class CBORVarHandleUtil
      *
      * @since 3.3
      */
-    static int getInt(byte[] array, int offset) {
+    static int getIntBE(byte[] array, int offset) {
         return (int) INT_BE.get(array, offset);
     }
 
@@ -79,7 +79,7 @@ final class CBORVarHandleUtil
      *
      * @since 3.3
      */
-    static long getLong(byte[] array, int offset) {
+    static long getLongBE(byte[] array, int offset) {
         return (long) LONG_BE.get(array, offset);
     }
 }
