@@ -73,3 +73,6 @@ PJ Fanning (@pjfanning)
 * Contributed #762: (avro) Use `VarHandle` for `float`/`double` reads in Avro
   parser
  (3.3.0)
+* Contributed #763: (protobuf) Use `VarHandle` for multi-byte primitive reads
+  and writes in `ProtobufParser` / `ProtobufGenerator`
+ (3.3.0)

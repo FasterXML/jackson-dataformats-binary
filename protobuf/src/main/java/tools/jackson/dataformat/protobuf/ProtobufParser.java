@@ -16,6 +16,28 @@ import tools.jackson.dataformat.protobuf.schema.*;
 
 public class ProtobufParser extends ParserMinimalBase
 {
+    /**
+     * Whether VarHandles are usable on this runtime; probed once at class load.
+     * Being {@code static final} lets the branches in {@link #_decode32Bits()}
+     * and {@link #_decode64Bits()} fold away at JIT time.
+     *
+     * @since 3.3
+     */
+    private static final boolean _VARHANDLE_AVAILABLE = _checkVarHandleAvailable();
+
+    private static boolean _checkVarHandleAvailable() {
+        // NOTE: this call is what first loads `ProtobufVarHandleUtil`, and that
+        // class names `VarHandle` in its field/method signatures. On a runtime
+        // without `java.lang.invoke.VarHandle` (some Android builds) loading it
+        // raises `NoClassDefFoundError` -- an Error, not an Exception -- so
+        // `Throwable` is what has to be caught here.
+        try {
+            return ProtobufVarHandleUtil.isAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     // State constants
 
     // State right after parser created; may start root Object
@@ -2948,8 +2970,10 @@ public class ProtobufParser extends ParserMinimalBase
             return _slow32();
         }
         final byte[] b = _inputBuffer;
-        int v = (b[ptr] & 0xFF) + ((b[ptr+1] & 0xFF) << 8)
-                + ((b[ptr+2] & 0xFF) << 16) + ((b[ptr+3] & 0xFF) << 24);
+        // protobuf fixed32 is little-endian
+        final int v = _VARHANDLE_AVAILABLE
+                ? ProtobufVarHandleUtil.getIntLE(b, ptr)
+                : ProtobufByteShiftUtil.getIntLE(b, ptr);
         _inputPtr = ptr+4;
         return v;
     }
@@ -2979,12 +3003,12 @@ public class ProtobufParser extends ParserMinimalBase
             return _slow64();
         }
         final byte[] b = _inputBuffer;
-        int i1 = (b[ptr++] & 0xFF) | ((b[ptr++] & 0xFF) << 8)
-                | ((b[ptr++] & 0xFF) << 16) | (b[ptr++] << 24);
-        int i2 = (b[ptr++] & 0xFF) | ((b[ptr++] & 0xFF) << 8)
-                | ((b[ptr++] & 0xFF) << 16) | (b[ptr++] << 24);
-        _inputPtr = ptr;
-        return _long(i1, i2);
+        // protobuf fixed64 is little-endian
+        final long v = _VARHANDLE_AVAILABLE
+                ? ProtobufVarHandleUtil.getLongLE(b, ptr)
+                : ProtobufByteShiftUtil.getLongLE(b, ptr);
+        _inputPtr = ptr+8;
+        return v;
     }
 
     protected final long _slow64() throws JacksonException {
