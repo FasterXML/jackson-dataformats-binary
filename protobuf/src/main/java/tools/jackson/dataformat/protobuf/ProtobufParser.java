@@ -2971,13 +2971,9 @@ public class ProtobufParser extends ParserMinimalBase
         }
         final byte[] b = _inputBuffer;
         // protobuf fixed32 is little-endian
-        final int v;
-        if (_VARHANDLE_AVAILABLE) {
-            v = ProtobufVarHandleUtil.getIntLE(b, ptr);
-        } else {
-            v = (b[ptr] & 0xFF) + ((b[ptr+1] & 0xFF) << 8)
-                    + ((b[ptr+2] & 0xFF) << 16) + ((b[ptr+3] & 0xFF) << 24);
-        }
+        final int v = _VARHANDLE_AVAILABLE
+                ? ProtobufVarHandleUtil.getIntLE(b, ptr)
+                : ProtobufByteShiftUtil.getIntLE(b, ptr);
         _inputPtr = ptr+4;
         return v;
     }
@@ -3007,18 +3003,12 @@ public class ProtobufParser extends ParserMinimalBase
             return _slow64();
         }
         final byte[] b = _inputBuffer;
-        // protobuf fixed64 is little-endian; `_long()` of the two 32-bit halves
-        // below is just that same little-endian 8-byte read spelled out
-        if (_VARHANDLE_AVAILABLE) {
-            _inputPtr = ptr+8;
-            return ProtobufVarHandleUtil.getLongLE(b, ptr);
-        }
-        int i1 = (b[ptr++] & 0xFF) | ((b[ptr++] & 0xFF) << 8)
-                | ((b[ptr++] & 0xFF) << 16) | (b[ptr++] << 24);
-        int i2 = (b[ptr++] & 0xFF) | ((b[ptr++] & 0xFF) << 8)
-                | ((b[ptr++] & 0xFF) << 16) | (b[ptr++] << 24);
-        _inputPtr = ptr;
-        return _long(i1, i2);
+        // protobuf fixed64 is little-endian
+        final long v = _VARHANDLE_AVAILABLE
+                ? ProtobufVarHandleUtil.getLongLE(b, ptr)
+                : ProtobufByteShiftUtil.getLongLE(b, ptr);
+        _inputPtr = ptr+8;
+        return v;
     }
 
     protected final long _slow64() throws JacksonException {

@@ -1687,17 +1687,10 @@ public class ProtobufGenerator extends GeneratorBase
         // protobuf fixed32 is little-endian
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setIntLE(buf, ptr, v);
-            _currPtr = ptr + 4;
-            return;
+        } else {
+            ProtobufByteShiftUtil.setIntLE(buf, ptr, v);
         }
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        _currPtr =  ptr;
+        _currPtr = ptr + 4;
     }
 
     private final void _writeInt32NoTag(int v) throws JacksonException
@@ -1708,17 +1701,10 @@ public class ProtobufGenerator extends GeneratorBase
         // protobuf fixed32 is little-endian
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setIntLE(buf, ptr, v);
-            _currPtr = ptr + 4;
-            return;
+        } else {
+            ProtobufByteShiftUtil.setIntLE(buf, ptr, v);
         }
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        _currPtr =  ptr;
+        _currPtr = ptr + 4;
     }
 
     private final void _writeInt64(long v64) throws JacksonException
@@ -1730,30 +1716,10 @@ public class ProtobufGenerator extends GeneratorBase
         // protobuf fixed64 is little-endian: low 32 bits first, then high
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setLongLE(buf, ptr, v64);
-            _currPtr = ptr + 8;
-            return;
+        } else {
+            ProtobufByteShiftUtil.setLongLE(buf, ptr, v64);
         }
-        int v = (int) v64;
-
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-
-        v = (int) (v64 >> 32);
-
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-
-        _currPtr =  ptr;
+        _currPtr = ptr + 8;
     }
 
     private final void _writeInt64NoTag(long v64) throws JacksonException
@@ -1765,30 +1731,10 @@ public class ProtobufGenerator extends GeneratorBase
         // protobuf fixed64 is little-endian: low 32 bits first, then high
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setLongLE(buf, ptr, v64);
-            _currPtr = ptr + 8;
-            return;
+        } else {
+            ProtobufByteShiftUtil.setLongLE(buf, ptr, v64);
         }
-        int v = (int) v64;
-
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-
-        v = (int) (v64 >> 32);
-
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-        v >>= 8;
-        buf[ptr++] = (byte) v;
-
-        _currPtr =  ptr;
+        _currPtr = ptr + 8;
     }
 
     /*
