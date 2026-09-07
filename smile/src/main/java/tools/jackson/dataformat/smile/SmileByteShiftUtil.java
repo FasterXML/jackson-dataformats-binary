@@ -27,4 +27,30 @@ final class SmileByteShiftUtil
                 | ((buffer[offset+2] & 0xFF) << 8)
                 | (buffer[offset+3] & 0xFF);
     }
+
+    /**
+     * Reads 8 bytes starting at given offset as a big-endian {@code long}.
+     * Caller MUST have verified that {@code offset+8} is within bounds of
+     * given array.
+     */
+    static long getLongBE(byte[] buffer, int offset) {
+        return (((long) getIntBE(buffer, offset)) << 32)
+                | (getIntBE(buffer, offset+4) & 0xFFFFFFFFL);
+    }
+
+    /**
+     * Writes given {@code long} as 8 big-endian bytes starting at given offset.
+     * Caller MUST have verified that {@code offset+8} is within bounds of
+     * given array.
+     */
+    static void setLongBE(byte[] buffer, int offset, long value) {
+        buffer[offset] = (byte) (value >>> 56);
+        buffer[offset+1] = (byte) (value >>> 48);
+        buffer[offset+2] = (byte) (value >>> 40);
+        buffer[offset+3] = (byte) (value >>> 32);
+        buffer[offset+4] = (byte) (value >>> 24);
+        buffer[offset+5] = (byte) (value >>> 16);
+        buffer[offset+6] = (byte) (value >>> 8);
+        buffer[offset+7] = (byte) value;
+    }
 }
