@@ -32,6 +32,9 @@ implementations)
  (fix by @cowtowncoder, w/ Claude code)
 #762: (avro) Use `VarHandle` for `float`/`double` reads in Avro parser
  (contributed by @pjfanning)
+#763: (protobuf) Use `VarHandle` for multi-byte primitive reads and writes in
+  `ProtobufParser` / `ProtobufGenerator`
+ (contributed by @pjfanning)
 #767: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "short" ASCII text values of async parser
  (fix by @cowtowncoder, w/ Claude code)
