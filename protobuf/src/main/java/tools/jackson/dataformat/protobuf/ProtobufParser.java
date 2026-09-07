@@ -2973,7 +2973,7 @@ public class ProtobufParser extends ParserMinimalBase
         // protobuf fixed32 is little-endian
         final int v;
         if (_VARHANDLE_AVAILABLE) {
-            v = ProtobufVarHandleUtil.getInt(b, ptr);
+            v = ProtobufVarHandleUtil.getIntLE(b, ptr);
         } else {
             v = (b[ptr] & 0xFF) + ((b[ptr+1] & 0xFF) << 8)
                     + ((b[ptr+2] & 0xFF) << 16) + ((b[ptr+3] & 0xFF) << 24);
@@ -3011,7 +3011,7 @@ public class ProtobufParser extends ParserMinimalBase
         // below is just that same little-endian 8-byte read spelled out
         if (_VARHANDLE_AVAILABLE) {
             _inputPtr = ptr+8;
-            return ProtobufVarHandleUtil.getLong(b, ptr);
+            return ProtobufVarHandleUtil.getLongLE(b, ptr);
         }
         int i1 = (b[ptr++] & 0xFF) | ((b[ptr++] & 0xFF) << 8)
                 | ((b[ptr++] & 0xFF) << 16) | (b[ptr++] << 24);

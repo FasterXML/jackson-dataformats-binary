@@ -1686,7 +1686,7 @@ public class ProtobufGenerator extends GeneratorBase
         final byte[] buf = _currBuffer;
         // protobuf fixed32 is little-endian
         if (_VARHANDLE_AVAILABLE) {
-            ProtobufVarHandleUtil.setInt(buf, ptr, v);
+            ProtobufVarHandleUtil.setIntLE(buf, ptr, v);
             _currPtr = ptr + 4;
             return;
         }
@@ -1707,7 +1707,7 @@ public class ProtobufGenerator extends GeneratorBase
         final byte[] buf = _currBuffer;
         // protobuf fixed32 is little-endian
         if (_VARHANDLE_AVAILABLE) {
-            ProtobufVarHandleUtil.setInt(buf, ptr, v);
+            ProtobufVarHandleUtil.setIntLE(buf, ptr, v);
             _currPtr = ptr + 4;
             return;
         }
@@ -1729,7 +1729,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         // protobuf fixed64 is little-endian: low 32 bits first, then high
         if (_VARHANDLE_AVAILABLE) {
-            ProtobufVarHandleUtil.setLong(buf, ptr, v64);
+            ProtobufVarHandleUtil.setLongLE(buf, ptr, v64);
             _currPtr = ptr + 8;
             return;
         }
@@ -1764,7 +1764,7 @@ public class ProtobufGenerator extends GeneratorBase
 
         // protobuf fixed64 is little-endian: low 32 bits first, then high
         if (_VARHANDLE_AVAILABLE) {
-            ProtobufVarHandleUtil.setLong(buf, ptr, v64);
+            ProtobufVarHandleUtil.setLongLE(buf, ptr, v64);
             _currPtr = ptr + 8;
             return;
         }

@@ -66,19 +66,19 @@ final class ProtobufVarHandleUtil
     // VarHandle is available on this runtime. Caller MUST also have verified that
     // the full 4/8 bytes are within bounds of the given array.
 
-    static int getInt(byte[] array, int offset) {
+    static int getIntLE(byte[] array, int offset) {
         return (int) INT_LE.get(array, offset);
     }
 
-    static long getLong(byte[] array, int offset) {
+    static long getLongLE(byte[] array, int offset) {
         return (long) LONG_LE.get(array, offset);
     }
 
-    static void setInt(byte[] array, int offset, int value) {
+    static void setIntLE(byte[] array, int offset, int value) {
         INT_LE.set(array, offset, value);
     }
 
-    static void setLong(byte[] array, int offset, long value) {
+    static void setLongLE(byte[] array, int offset, long value) {
         LONG_LE.set(array, offset, value);
     }
 }
