@@ -40,6 +40,8 @@ implementations)
  (fix by @cowtowncoder, w/ Claude code)
 #777: (avro) Properties following an `@AvroEncode`d value are silently dropped
  (fix by @cowtowncoder, w/ Claude code)
+- (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
+  breaking round-trip via Apache `ReflectDatumReader`
 
 3.2.3 (not yet released)
 
