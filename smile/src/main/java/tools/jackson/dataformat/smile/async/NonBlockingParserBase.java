@@ -554,7 +554,7 @@ public abstract class NonBlockingParserBase
       	   newShared = oldShared;
       	   _seenNameCount = 0; // could also clear, but let's not yet bother
         } else {
-            int newSize = (len == DEFAULT_STRING_VALUE_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_NAMES;
+            int newSize = (len == DEFAULT_NAME_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_NAMES;
             newShared = new String[newSize];
             System.arraycopy(oldShared, 0, newShared, 0, oldShared.length);
         }
@@ -625,7 +625,7 @@ public abstract class NonBlockingParserBase
            newShared = oldShared;
            _seenStringValueCount = 0; // could also clear, but let's not yet bother
         } else {
-            int newSize = (len == DEFAULT_NAME_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_STRING_VALUES;
+            int newSize = (len == DEFAULT_STRING_VALUE_BUFFER_LENGTH) ? 256 : SmileConstants.MAX_SHARED_STRING_VALUES;
             newShared = new String[newSize];
             System.arraycopy(oldShared, 0, newShared, 0, oldShared.length);
         }
