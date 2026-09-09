@@ -12,6 +12,7 @@ import tools.jackson.core.*;
 import tools.jackson.core.base.GeneratorBase;
 import tools.jackson.core.io.IOContext;
 
+import tools.jackson.core.util.ByteArrayUtil;
 import tools.jackson.core.util.JacksonFeatureSet;
 import tools.jackson.dataformat.protobuf.schema.*;
 
@@ -896,6 +897,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _writeEnum(new String(text, offset, clen));
+            return this;
         }
 
         // Could guarantee with 42 chars or less; but let's do bit more speculative
@@ -1688,7 +1690,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setIntLE(buf, ptr, v);
         } else {
-            ProtobufByteShiftUtil.setIntLE(buf, ptr, v);
+            ByteArrayUtil.setIntLE(buf, ptr, v);
         }
         _currPtr = ptr + 4;
     }
@@ -1702,7 +1704,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setIntLE(buf, ptr, v);
         } else {
-            ProtobufByteShiftUtil.setIntLE(buf, ptr, v);
+            ByteArrayUtil.setIntLE(buf, ptr, v);
         }
         _currPtr = ptr + 4;
     }
@@ -1717,7 +1719,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setLongLE(buf, ptr, v64);
         } else {
-            ProtobufByteShiftUtil.setLongLE(buf, ptr, v64);
+            ByteArrayUtil.setLongLE(buf, ptr, v64);
         }
         _currPtr = ptr + 8;
     }
@@ -1732,7 +1734,7 @@ public class ProtobufGenerator extends GeneratorBase
         if (_VARHANDLE_AVAILABLE) {
             ProtobufVarHandleUtil.setLongLE(buf, ptr, v64);
         } else {
-            ProtobufByteShiftUtil.setLongLE(buf, ptr, v64);
+            ByteArrayUtil.setLongLE(buf, ptr, v64);
         }
         _currPtr = ptr + 8;
     }

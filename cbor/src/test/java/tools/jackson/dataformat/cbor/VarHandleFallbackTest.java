@@ -6,10 +6,12 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.core.util.ByteArrayUtil;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for {@link CBORByteShiftUtil}, the byte-shifting fallback used on
+ * Tests for {@link ByteArrayUtil}, the byte-shifting fallback used on
  * runtimes where {@link CBORVarHandleUtil} is unusable.
  *<p>
  * Needed because {@code CBORParser._VARHANDLE_AVAILABLE} is {@code static final}
@@ -28,7 +30,7 @@ public class VarHandleFallbackTest extends CBORTestBase
         for (byte[] input : _inputs(4)) {
             final int exp = ByteBuffer.wrap(input, OFFSET, 4)
                     .order(ByteOrder.BIG_ENDIAN).getInt();
-            assertEquals(exp, CBORByteShiftUtil.getIntBE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getIntBE(input, OFFSET));
             if (CBORVarHandleUtil.isAvailable()) {
                 assertEquals(exp, CBORVarHandleUtil.getIntBE(input, OFFSET));
             }
@@ -41,7 +43,7 @@ public class VarHandleFallbackTest extends CBORTestBase
         for (byte[] input : _inputs(8)) {
             final long exp = ByteBuffer.wrap(input, OFFSET, 8)
                     .order(ByteOrder.BIG_ENDIAN).getLong();
-            assertEquals(exp, CBORByteShiftUtil.getLongBE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getLongBE(input, OFFSET));
             if (CBORVarHandleUtil.isAvailable()) {
                 assertEquals(exp, CBORVarHandleUtil.getLongBE(input, OFFSET));
             }
@@ -56,7 +58,7 @@ public class VarHandleFallbackTest extends CBORTestBase
             ByteBuffer.wrap(exp, OFFSET, 4).order(ByteOrder.BIG_ENDIAN).putInt(value);
 
             byte[] act = new byte[OFFSET+4];
-            CBORByteShiftUtil.setIntBE(act, OFFSET, value);
+            ByteArrayUtil.setIntBE(act, OFFSET, value);
             assertArrayEquals(exp, act, "for value "+value);
 
             if (CBORVarHandleUtil.isAvailable()) {
@@ -75,7 +77,7 @@ public class VarHandleFallbackTest extends CBORTestBase
             ByteBuffer.wrap(exp, OFFSET, 8).order(ByteOrder.BIG_ENDIAN).putLong(value);
 
             byte[] act = new byte[OFFSET+8];
-            CBORByteShiftUtil.setLongBE(act, OFFSET, value);
+            ByteArrayUtil.setLongBE(act, OFFSET, value);
             assertArrayEquals(exp, act, "for value "+value);
 
             if (CBORVarHandleUtil.isAvailable()) {

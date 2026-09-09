@@ -158,6 +158,6 @@ public class DescriptorMapField712Test extends ProtobufTestBase
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(7, tree.get("counts").get("x").asInt());
         assertEquals(9, tree.get("counts").get("y").asInt());
-        assertEquals("hi", tree.get("name").asText());
+        assertEquals("hi", tree.get("name").asString());
     }
 }

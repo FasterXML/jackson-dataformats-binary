@@ -2,8 +2,6 @@ package tools.jackson.dataformat.avro.schema;
 
 import static tools.jackson.dataformat.avro.schema.AvroSchemaHelper.AVRO_SCHEMA_PROP_CLASS;
 
-import java.util.List;
-
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 
@@ -37,9 +35,14 @@ public class ArrayVisitor
             throw new IllegalStateException("No element schema created for: "+_type);
         }
         Schema schema = Schema.createArray(_elementSchema);
-        if (!_type.hasRawClass(List.class)) {
-            schema.addProp(AVRO_SCHEMA_PROP_CLASS, AvroSchemaHelper.getTypeId(_type));
-        }
+        // 08-Sep-2026, tatu: [dataformats-binary#xxx] `java.util.List` used to be excluded
+        //    here, to keep generated schemas free of Java-specific noise. But Apache's
+        //    `ReflectDatumReader.newArray()` only honors "java-class" on the array itself
+        //    (or "java-element-class"): without it, it falls through to the primitive-
+        //    specialized array `GenericData.newArray()` builds for `int` elements, which
+        //    then cannot hold the `Byte`/`Character`/`Short` values the element-level
+        //    "java-class" asks for. So always emit it, matching `ReflectData`.
+        schema.addProp(AVRO_SCHEMA_PROP_CLASS, AvroSchemaHelper.getTypeId(_type));
         return schema;
     }
 

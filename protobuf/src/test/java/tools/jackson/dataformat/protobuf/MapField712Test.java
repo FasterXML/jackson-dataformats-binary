@@ -126,7 +126,7 @@ public class MapField712Test extends ProtobufTestBase
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("name", p.currentName());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("x", p.getText());
+            assertEquals("x", p.getString());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertEquals(null, p.nextToken());
         }
@@ -227,8 +227,8 @@ public class MapField712Test extends ProtobufTestBase
 
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(3, tree.get("m").get("k").get("x").asInt());
-        assertEquals("deep", tree.get("m").get("k").get("d").get("s").asText());
-        assertEquals("n", tree.get("name").asText());
+        assertEquals("deep", tree.get("m").get("k").get("d").get("s").asString());
+        assertEquals("n", tree.get("name").asString());
     }
 
     @Test
@@ -252,8 +252,8 @@ public class MapField712Test extends ProtobufTestBase
         JsonNode nums = tree.get("m").get("k").get("nums");
         assertEquals(3, nums.size());
         assertEquals(2, nums.get(1).asInt());
-        assertEquals("yy", tree.get("m").get("k").get("y").asText());
-        assertEquals("n", tree.get("name").asText());
+        assertEquals("yy", tree.get("m").get("k").get("y").asString());
+        assertEquals("n", tree.get("name").asString());
     }
 
     // Deepest use of the entry-type stack: the value message declares a `map` of its own,
@@ -279,8 +279,8 @@ public class MapField712Test extends ProtobufTestBase
 
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(9, tree.get("m").get("k").get("inner").get("i").asInt());
-        assertEquals("yy", tree.get("m").get("k").get("y").asText());
-        assertEquals("n", tree.get("name").asText());
+        assertEquals("yy", tree.get("m").get("k").get("y").asString());
+        assertEquals("n", tree.get("name").asString());
     }
 
     // Entry loop must survive structured values repeatedly, not just once, and still
@@ -309,8 +309,8 @@ public class MapField712Test extends ProtobufTestBase
 
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(3, tree.get("m").size());
-        assertEquals("s2", tree.get("m").get("k2").get("d").get("s").asText());
-        assertEquals("u1", tree.get("m").get("k1").get("tags").get(1).asText());
+        assertEquals("s2", tree.get("m").get("k2").get("d").get("s").asString());
+        assertEquals("u1", tree.get("m").get("k1").get("tags").get(1).asString());
         assertEquals(42, tree.get("tail").asInt());
     }
 
@@ -405,7 +405,7 @@ public class MapField712Test extends ProtobufTestBase
 
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertTrue(tree.path("counts").isMissingNode() || tree.path("counts").size() == 0);
-        assertEquals("y", tree.get("name").asText());
+        assertEquals("y", tree.get("name").asString());
     }
 
     @Test
@@ -532,7 +532,7 @@ public class MapField712Test extends ProtobufTestBase
         assertEquals(COUNT, tree.get("m").size());
         for (int i = 0; i < COUNT; ++i) {
             assertEquals("value-string-number-" + i,
-                    tree.get("m").get(String.valueOf(i)).asText());
+                    tree.get("m").get(String.valueOf(i)).asString());
         }
     }
 
@@ -728,7 +728,7 @@ public class MapField712Test extends ProtobufTestBase
                        0x12, 0x01, 0x7a };
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(1, tree.get("counts").get("k").asInt());
-        assertEquals("z", tree.get("name").asText());
+        assertEquals("z", tree.get("name").asString());
     }
 
     // Same, but for a message-valued entry: the stray field used to be decoded as a
@@ -751,7 +751,7 @@ public class MapField712Test extends ProtobufTestBase
 
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(7, tree.get("m").get("k").get("x").asInt());
-        assertEquals("z", tree.get("name").asText());
+        assertEquals("z", tree.get("name").asString());
     }
 
     private String _tokens(ProtobufSchema schema, byte[] doc) throws Exception
@@ -782,7 +782,7 @@ public class MapField712Test extends ProtobufTestBase
                        0x1a, 0x01, 0x42 };
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(1, tree.get("m").get("x").asInt());
-        assertEquals("B", tree.get("b").asText());
+        assertEquals("B", tree.get("b").asString());
 
         // ... and the same document written by this module must read back (it did not)
         Map<String, Object> root = new LinkedHashMap<>();
@@ -794,7 +794,7 @@ public class MapField712Test extends ProtobufTestBase
         assertArrayEquals(doc, written);
         JsonNode roundTripped = MAPPER.readerFor(JsonNode.class).with(schema).readValue(written);
         assertEquals(1, roundTripped.get("m").get("x").asInt());
-        assertEquals("B", roundTripped.get("b").asText());
+        assertEquals("B", roundTripped.get("b").asString());
     }
 
     // Same tag gap, but with a message-valued map: the exit unwinds one context level
@@ -811,7 +811,7 @@ public class MapField712Test extends ProtobufTestBase
                        0x1a, 0x01, 0x42 };
         JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema).readValue(doc);
         assertEquals(7, tree.get("m").get("k").get("x").asInt());
-        assertEquals("B", tree.get("b").asText());
+        assertEquals("B", tree.get("b").asString());
 
         Map<String, Object> val = new LinkedHashMap<>();
         val.put("x", 7);
@@ -824,7 +824,7 @@ public class MapField712Test extends ProtobufTestBase
         assertArrayEquals(doc, written);
         JsonNode roundTripped = MAPPER.readerFor(JsonNode.class).with(schema).readValue(written);
         assertEquals(7, roundTripped.get("m").get("k").get("x").asInt());
-        assertEquals("B", roundTripped.get("b").asText());
+        assertEquals("B", roundTripped.get("b").asString());
     }
 
     // A `bool` key must be as strictly validated as a `bool` value: only 0x0/0x1, rather
