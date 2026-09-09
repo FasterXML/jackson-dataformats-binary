@@ -38,6 +38,9 @@ implementations)
 #767: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "short" ASCII text values of async parser
  (fix by @cowtowncoder, w/ Claude code)
+#772: (protobuf) `ProtobufGenerator.writeString(char[],int,int)` writes enum
+  values twice
+ (contributed by @pjfanning)
 
 3.2.3 (not yet released)
 
