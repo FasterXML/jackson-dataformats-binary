@@ -38,6 +38,7 @@ implementations)
 #767: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "short" ASCII text values of async parser
  (fix by @cowtowncoder, w/ Claude code)
+#775: (avro) Update to Avro 1.12.2
 #777: (avro) Properties following an `@AvroEncode`d value are silently dropped
  (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
