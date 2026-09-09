@@ -5,8 +5,8 @@ import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 
 /**
- * Utility class that provides {@link VarHandle}-based access for reading
- * multi-byte primitives out of byte arrays.
+ * Utility class that provides {@link VarHandle}-based access for reading and
+ * writing multi-byte primitives on byte arrays.
  *<p>
  * IMPORTANT: this class references {@link VarHandle} in field and method
  * signatures, so on a runtime that does not provide {@code java.lang.invoke.VarHandle}
@@ -16,7 +16,8 @@ import java.nio.ByteOrder;
  * <li>load this class from within a {@code try}/{@code catch (Throwable)} block,
  *   so that {@link LinkageError} is caught, and</li>
  * <li>keep the byte-shifting fallback in a class that does not reference
- *   {@link VarHandle}, so the fallback path never resolves this class.</li>
+ *   {@link VarHandle}, so the fallback path never resolves this class:
+ *   {@link tools.jackson.core.util.ByteArrayUtil} is that class.</li>
  *</ol>
  * {@code SmileParserBase._decodeQuad()} does both; see it for the pattern.
  *

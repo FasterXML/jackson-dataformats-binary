@@ -8,9 +8,12 @@ package tools.jackson.dataformat.smile;
  * Both directions are done with SWAR bit manipulation over a single 8-byte load
  * and a single 8-byte store, replacing the byte-at-a-time shifting the callers
  * would otherwise do. The load and store go through {@link SmileVarHandleUtil};
- * where that is unusable there is nothing to gain (the byte-shifting fallback
- * would be doing exactly the per-byte work we are trying to avoid), so both
- * methods simply report failure and the caller runs its own loop.
+ * where that is unusable this deliberately does NOT fall back to
+ * {@link tools.jackson.core.util.ByteArrayUtil}: composing the 8-byte load and
+ * store out of shifts costs more per chunk than the per-byte loop it would be
+ * replacing (measured on JDK 17, 0.79x on encode and 0.72x on decode, i.e. a
+ * slowdown), so both methods simply report failure and the caller runs its own
+ * loop, which stays the faster path there.
  *<p>
  * Note that the SWAR forms mask each input byte to 7 bits. For well-formed Smile
  * content, where the high bit is always clear, that is a no-op. For corrupt
