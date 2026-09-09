@@ -39,6 +39,8 @@ implementations)
   for "short" ASCII text values of async parser
  (fix by @cowtowncoder, w/ Claude code)
 #775: (avro) Update to Avro 1.12.2
+#777: (avro) Properties following an `@AvroEncode`d value are silently dropped
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (not yet released)
 
