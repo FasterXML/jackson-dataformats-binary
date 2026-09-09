@@ -10,6 +10,7 @@ import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.io.*;
 import org.apache.avro.reflect.ReflectData;
+import org.apache.avro.util.ClassSecurityValidator;
 
 import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.core.JacksonException;
@@ -26,6 +27,26 @@ import tools.jackson.dataformat.avro.testsupport.Function;
  * Utilities and helper functions to aid compatibility testing between Jackson and Apache Avro implementations
  */
 public class ApacheAvroInteropUtil {
+    static {
+        // 08-Sep-2026, tatu: Avro 1.12.2 added `ClassSecurityValidator`, which rejects any
+        //   class named by a "java-class" / "java-element-class" / "java-key-class" schema
+        //   property unless it is explicitly trusted. Its default allow-list holds only a
+        //   handful of `java.lang` wrappers, so JDK collection types (`java.util.List` and
+        //   friends) and every test POJO here are refused with `SecurityException`.
+        //   This suite exists precisely to round-trip reflection-generated schemas through
+        //   the Apache reference implementation, so widen the allow-list to cover the JDK
+        //   and our own test types. Jackson's own streaming/schema code never calls
+        //   `ClassUtils.forName()`; note though that a user `CustomEncoding` built on
+        //   `ReflectData` does, and so needs its own allow-list entries.
+        ClassSecurityValidator.setGlobal(ClassSecurityValidator.composite(
+                ClassSecurityValidator.DEFAULT,
+                (clazz) -> {
+                    final String name = clazz.getName();
+                    return name.startsWith("java.")
+                            || name.startsWith("tools.jackson.dataformat.avro.");
+                }));
+    }
+
     /**
      * Functor of {@link #jacksonSerialize(Schema, Object)}
      */
