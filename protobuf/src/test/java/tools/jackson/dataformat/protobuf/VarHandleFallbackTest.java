@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for {@link ProtobufByteShiftUtil}, the byte-shifting fallback used on
- * runtimes where {@link ProtobufVarHandleUtil} is unusable.
+ * Tests for {@code ProtobufByteShiftUtil}, the byte-shifting fallback used on
+ * runtimes where {@code ProtobufVarHandleUtil} is unusable.
  *<p>
  * Needed because {@code ProtobufParser._VARHANDLE_AVAILABLE} (and the generator's
  * equivalent) is {@code static final} and true on every JDK we test on: the
