@@ -20,6 +20,7 @@ import tools.jackson.core.json.DupDetector;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.core.util.ByteArrayBuilder;
+import tools.jackson.core.util.ByteArrayUtil;
 import tools.jackson.core.util.JacksonFeatureSet;
 
 public class CBORParser extends ParserBase
@@ -3504,7 +3505,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         if (_VARHANDLE_AVAILABLE) {
             return CBORVarHandleUtil.getIntBE(buffer, offset);
         }
-        return CBORByteShiftUtil.getIntBE(buffer, offset);
+        return ByteArrayUtil.getIntBE(buffer, offset);
     }
 
     /*
@@ -3803,7 +3804,7 @@ expType, type, ch));
         if (_VARHANDLE_AVAILABLE) {
             v = CBORVarHandleUtil.getIntBE(b, ptr);
         } else {
-            v = CBORByteShiftUtil.getIntBE(b, ptr);
+            v = ByteArrayUtil.getIntBE(b, ptr);
         }
         _inputPtr = ptr + 4;
         return v;
@@ -3838,7 +3839,7 @@ expType, type, ch));
         if (_VARHANDLE_AVAILABLE) {
             l = CBORVarHandleUtil.getLongBE(b, ptr);
         } else {
-            l = CBORByteShiftUtil.getLongBE(b, ptr);
+            l = ByteArrayUtil.getLongBE(b, ptr);
         }
         _inputPtr = ptr + 8;
         return l;

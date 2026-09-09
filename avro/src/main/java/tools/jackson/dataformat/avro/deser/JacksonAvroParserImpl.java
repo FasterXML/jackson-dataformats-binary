@@ -4,7 +4,7 @@ import java.io.*;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;
-import tools.jackson.dataformat.avro.AvroByteShiftUtil;
+import tools.jackson.core.util.ByteArrayUtil;
 import tools.jackson.dataformat.avro.AvroSchema;
 import tools.jackson.dataformat.avro.AvroVarHandleUtil;
 
@@ -554,7 +554,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         if (_VARHANDLE_AVAILABLE) {
             i = AvroVarHandleUtil.getIntLE(buf, ptr);
         } else {
-            i = AvroByteShiftUtil.getIntLE(buf, ptr);
+            i = ByteArrayUtil.getIntLE(buf, ptr);
         }
         _numberFloat = Float.intBitsToFloat(i);
         _numTypesValid = NR_FLOAT;
@@ -580,7 +580,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         if (_VARHANDLE_AVAILABLE) {
             l = AvroVarHandleUtil.getLongLE(buf, ptr);
         } else {
-            l = AvroByteShiftUtil.getLongLE(buf, ptr);
+            l = ByteArrayUtil.getLongLE(buf, ptr);
         }
         _numberDouble = Double.longBitsToDouble(l);
         _numTypesValid = NR_DOUBLE;
