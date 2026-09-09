@@ -680,6 +680,16 @@ public abstract class AvroParserImpl
         return _avroContext instanceof RecordReader;
     }
 
+    /**
+     * Accessor for the nesting depth of the currently active Avro read context;
+     * needed by callers that hand the parser off to Avro's own {@code Decoder}
+     * API (see {@code CustomEncodingDeserializer}) and afterwards have to tell
+     * how far back up the structure the stream must be unwound.
+     */
+    public final int getAvroContextDepth() {
+        return _avroContext.getNestingDepth();
+    }
+
     public final void setAvroContext(AvroReadContext ctxt) {
         _avroContext = ctxt;
     }

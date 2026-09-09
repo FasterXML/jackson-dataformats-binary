@@ -38,6 +38,8 @@ implementations)
 #767: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "short" ASCII text values of async parser
  (fix by @cowtowncoder, w/ Claude code)
+#777: (avro) Properties following an `@AvroEncode`d value are silently dropped
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (not yet released)
 
