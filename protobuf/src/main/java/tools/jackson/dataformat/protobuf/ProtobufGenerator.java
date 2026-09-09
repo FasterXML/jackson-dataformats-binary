@@ -873,6 +873,7 @@ public class ProtobufGenerator extends GeneratorBase
         }
         if (_currField.wireType != WireType.LENGTH_PREFIXED) {
             _writeEnum(new String(text, offset, clen));
+            return this;
         }
 
         // Could guarantee with 42 chars or less; but let's do bit more speculative
