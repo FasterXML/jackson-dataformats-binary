@@ -469,6 +469,6 @@ Burak KALAYCI (@kalayciburak)
 
 PJ Fanning (@pjfanning)
 
-* Contributed #772: (protobuf) `ProtobufGenerator.writeString(char[],int,int)`
+* Contributed #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)`
   writes enum values twice
  (2.21.7)
