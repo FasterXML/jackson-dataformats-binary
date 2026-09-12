@@ -38,6 +38,9 @@ implementations)
 #767: (smile) Use more efficient `String` construction wrt "Compact Strings"
   for "short" ASCII text values of async parser
  (fix by @cowtowncoder, w/ Claude code)
+#781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
+  against configured `StreamReadConstraints`, not global defaults
+ (contributed by @pjfanning)
 
 3.2.3 (not yet released)
 

@@ -1,14 +1,21 @@
 package tools.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
+
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.exc.StreamConstraintsException;
 
 import tools.jackson.dataformat.smile.*;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SmileGeneratorNumbersTest
     extends BaseTestForSmile
@@ -201,6 +208,42 @@ public class SmileGeneratorNumbersTest
         gen.writeNumber("-50.00000000125");
         gen.close();
         assertEquals(10, out.toByteArray().length);
+    }
+
+    // [dataformats-binary#781]: `writeNumber(String)` should use the factory's
+    // `StreamReadConstraints` for its number-length guard, not global defaults
+    @Test
+    public void testNumbersAsStringLengthLimit() throws Exception
+    {
+        final int maxLen = 20;
+        SmileFactory f = smileFactoryBuilder(false, false, false)
+                .streamReadConstraints(StreamReadConstraints.builder()
+                        .maxNumberLength(maxLen).build())
+                .build();
+        final String tooLongInt = "1".repeat(maxLen + 1);
+        final String tooLongDec = "1." + "1".repeat(maxLen - 1);
+
+        for (String num : new String[] { tooLongInt, tooLongDec }) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+                gen.writeNumber(num);
+                fail("Should not pass for: "+num);
+            } catch (StreamConstraintsException e) {
+                verifyException(e, "Number value length (" + (maxLen + 1)
+                        + ") exceeds the maximum allowed (" + maxLen + ",");
+            }
+        }
+
+        // And conversely, one at the limit is fine
+        final String atLimit = "1".repeat(maxLen);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+            gen.writeNumber(atLimit);
+        }
+        try (JsonParser p = f.createParser(out.toByteArray())) {
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(new BigInteger(atLimit), p.getBigIntegerValue());
+        }
     }
 
     // [dataformats-binary#608]

@@ -76,3 +76,6 @@ PJ Fanning (@pjfanning)
 * Contributed #763: (protobuf) Use `VarHandle` for multi-byte primitive reads
   and writes in `ProtobufParser` / `ProtobufGenerator`
  (3.3.0)
+* Contributed #781: (smile) `SmileGenerator.writeNumber(String)` should validate
+  number length against configured `StreamReadConstraints`, not global defaults
+ (3.3.0)

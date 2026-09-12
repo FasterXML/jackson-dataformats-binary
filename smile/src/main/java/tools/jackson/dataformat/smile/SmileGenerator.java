@@ -2761,12 +2761,10 @@ surr1, surr2));
 
     /**
      * We need access to some reader-side constraints for safety-check within
-     * number decoding for {@linl #writeNumber(String)}: for now we need to
-     * rely on global defaults; should be ok for basic safeguarding.
-     *
-     * @since 2.17
+     * number decoding for {@link #writeNumber(String)}: these are the ones
+     * configured for the underlying factory, accessed via {@link IOContext}.
      */
     protected StreamReadConstraints _streamReadConstraints() {
-        return StreamReadConstraints.defaults();
+        return _ioContext.streamReadConstraints();
     }
 }
