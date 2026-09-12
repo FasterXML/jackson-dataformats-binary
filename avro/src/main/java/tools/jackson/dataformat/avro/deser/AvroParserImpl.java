@@ -75,8 +75,7 @@ public abstract class AvroParserImpl
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
-        _currToken = t;
-        return t;
+        return _nullSafeUpdateToken(t);
     }
 
     /**
@@ -162,7 +161,7 @@ public abstract class AvroParserImpl
             throw _wrapIOFailure(e);
         }
         // 20-Dec-2017, tatu: not sure check would be any faster
-        _currToken = _avroContext.currentToken();
+        _nullSafeUpdateToken(_avroContext.currentToken());
 /*
         if (match < 0) { // END_OBJECT, mismatching PROPERTY_NAME or something else:
             _currToken = _avroContext.currentToken();

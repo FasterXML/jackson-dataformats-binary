@@ -96,6 +96,11 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
         final boolean buffering = AvroReadFeature.AVRO_BUFFERING.enabledIn(avroFeatures);
         BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
+        // Apache decoder does its own buffering, so document length constraint
+        // has to be applied by counting bytes it pulls from the stream
+        if (_streamReadConstraints.hasMaxDocumentLength()) {
+            in = new LengthCheckingInputStream(in, _streamReadConstraints);
+        }
         _decoder = buffering
                 ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)
                 : DECODER_FACTORY.directBinaryDecoder(in, decoderToReuse);
@@ -417,5 +422,57 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     protected JsonToken setString(String str) {
         _textValue = str;
         return JsonToken.VALUE_STRING;
+    }
+
+    /*
+    /**********************************************************************
+    /* Helper classes
+    /**********************************************************************
+     */
+
+    /**
+     * {@link InputStream} wrapper that applies {@link StreamReadConstraints#validateDocumentLength}
+     * to the number of bytes read so far, for use with Apache {@link BinaryDecoder} which
+     * reads from the stream directly.
+     */
+    private final static class LengthCheckingInputStream extends FilterInputStream
+    {
+        private final StreamReadConstraints _constraints;
+
+        private long _bytesRead;
+
+        LengthCheckingInputStream(InputStream in, StreamReadConstraints constraints) {
+            super(in);
+            _constraints = constraints;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = in.read();
+            if (b >= 0) {
+                _constraints.validateDocumentLength(++_bytesRead);
+            }
+            return b;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int count = in.read(b, off, len);
+            if (count > 0) {
+                _bytesRead += count;
+                _constraints.validateDocumentLength(_bytesRead);
+            }
+            return count;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long count = in.skip(n);
+            if (count > 0) {
+                _bytesRead += count;
+                _constraints.validateDocumentLength(_bytesRead);
+            }
+            return count;
+        }
     }
 }

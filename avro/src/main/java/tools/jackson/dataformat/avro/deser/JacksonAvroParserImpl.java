@@ -1116,6 +1116,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 throw _wrapIOFailure(e); 
             }
             _currInputProcessed += _inputEnd;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             _inputPtr = 0;
             if (count > 0) {
                 _inputEnd = count;
@@ -1142,6 +1143,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         // Need to move remaining data in front?
         int amount = _inputEnd - _inputPtr;
         _currInputProcessed += _inputPtr;
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         if (_inputPtr > 0) {
             if (amount > 0) {
                 //_currInputRowStart -= _inputPtr;
