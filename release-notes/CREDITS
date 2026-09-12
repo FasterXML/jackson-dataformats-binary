@@ -76,3 +76,6 @@ PJ Fanning (@pjfanning)
 * Contributed #763: (protobuf) Use `VarHandle` for multi-byte primitive reads
   and writes in `ProtobufParser` / `ProtobufGenerator`
  (3.3.0)
+* Contributed #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength`
+  in `ProtobufParser`
+ (3.3.0)

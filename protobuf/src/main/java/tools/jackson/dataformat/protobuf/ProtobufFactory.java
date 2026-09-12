@@ -163,6 +163,8 @@ public class ProtobufFactory
     protected ProtobufParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             byte[] data, int offset, int len)
     {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return new ProtobufParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
                 (ProtobufSchema) readCtxt.getSchema(),
