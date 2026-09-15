@@ -250,20 +250,42 @@ public class IonFactory
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, File f) {
-        final InputStream in = _fileInputStream(f);
         IOContext ioCtxt = _createContext(_createContentReference(f), true);
-        return _createParser(readCtxt, ioCtxt,
-                _decorate(ioCtxt, in));
+        InputStream in = null;
+        boolean inputCleanupDelegated = false;
+        try {
+            in = _fileInputStream(f);
+            in = _decorate(ioCtxt, in);
+            inputCleanupDelegated = true;
+            return _createParser(readCtxt, ioCtxt, in, true);
+        } catch (RuntimeException e) {
+            if (!inputCleanupDelegated) {
+                _closeOnFailedConstruction(in, e);
+            }
+            _releaseContextOnFailedConstruction(ioCtxt, e);
+            throw e;
+        }
     }
 
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt,
             Path p) throws JacksonException
     {
-        final InputStream in = _pathInputStream(p);
         IOContext ioCtxt = _createContext(_createContentReference(p), true);
-        return _createParser(readCtxt, ioCtxt,
-                _decorate(ioCtxt, in));
+        InputStream in = null;
+        boolean inputCleanupDelegated = false;
+        try {
+            in = _pathInputStream(p);
+            in = _decorate(ioCtxt, in);
+            inputCleanupDelegated = true;
+            return _createParser(readCtxt, ioCtxt, in, true);
+        } catch (RuntimeException e) {
+            if (!inputCleanupDelegated) {
+                _closeOnFailedConstruction(in, e);
+            }
+            _releaseContextOnFailedConstruction(ioCtxt, e);
+            throw e;
+        }
     }
 
     @Override
@@ -358,8 +380,14 @@ public class IonFactory
     public JsonGenerator createGenerator(ObjectWriteContext writeCtxt,
             File f, JsonEncoding enc)
     {
-        final OutputStream out = _fileOutputStream(f);
-        return _createGenerator(writeCtxt, out, enc, true);
+        OutputStream out = null;
+        try {
+            out = _fileOutputStream(f);
+            return _createGenerator(writeCtxt, out, enc, true);
+        } catch (RuntimeException e) {
+            _closeOnFailedConstruction(out, e);
+            throw e;
+        }
     }
 
     @Override
@@ -367,8 +395,14 @@ public class IonFactory
             Path p, JsonEncoding enc)
         throws JacksonException
     {
-        final OutputStream out = _pathOutputStream(p);
-        return _createGenerator(writeCtxt, out, enc, true);
+        OutputStream out = null;
+        try {
+            out = _pathOutputStream(p);
+            return _createGenerator(writeCtxt, out, enc, true);
+        } catch (RuntimeException e) {
+            _closeOnFailedConstruction(out, e);
+            throw e;
+        }
     }
 
     /*
@@ -432,13 +466,31 @@ public class IonFactory
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             InputStream in)
     {
-        IonReader ion = _system.newReader(in);
-        // [dataformats-binary#325]: Re-create context for auto-close
-        ioCtxt = _createContext(_createContentReference(ion), true);
-        return new IonParser(readCtxt, ioCtxt,
-                readCtxt.getStreamReadFeatures(_streamReadFeatures),
-                readCtxt.getFormatReadFeatures(_formatReadFeatures),
-                ion, _system);
+        return _createParser(readCtxt, ioCtxt, in, false);
+    }
+
+    private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            InputStream in, boolean closeInputOnFailedConstruction)
+    {
+        IonReader ion = null;
+        IOContext ionCtxt = null;
+        try {
+            ion = _system.newReader(in);
+            // [dataformats-binary#325]: Re-create context for auto-close
+            ionCtxt = _createContext(_createContentReference(ion), true);
+            return new IonParser(readCtxt, ionCtxt,
+                    readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                    readCtxt.getFormatReadFeatures(_formatReadFeatures),
+                    ion, _system);
+        } catch (RuntimeException e) {
+            if (ion != null) {
+                _closeOnFailedConstruction(ion, e);
+            } else if (closeInputOnFailedConstruction) {
+                _closeOnFailedConstruction(in, e);
+            }
+            _releaseContextOnFailedConstruction(ionCtxt, e);
+            throw e;
+        }
     }
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -483,28 +535,33 @@ public class IonFactory
             OutputStream out, JsonEncoding enc, boolean isManaged)
      {
         IOContext ioCtxt = _createContext(_createContentReference(out), isManaged);
-        final IonWriter ion;
-        final Closeable dst; // not necessarily same as 'out'...
+        try {
+            final IonWriter ion;
+            final Closeable dst; // not necessarily same as 'out'...
 
-        // Binary writers are simpler: no alternate encodings
-        if (_cfgBinaryWriters) {
-            ioCtxt.setEncoding(enc);
-            ion = _system.newBinaryWriter(out);
-            dst = out;
-        } else {
-            if (enc != JsonEncoding.UTF8) { // not sure if non-UTF-8 encodings would be legal...
-                throw _wrapIOFailure(
-                        new IOException("Ion only supports UTF-8 encoding, can not use "+enc));
+            // Binary writers are simpler: no alternate encodings
+            if (_cfgBinaryWriters) {
+                ioCtxt.setEncoding(enc);
+                ion = _system.newBinaryWriter(out);
+                dst = out;
+            } else {
+                if (enc != JsonEncoding.UTF8) { // not sure if non-UTF-8 encodings would be legal...
+                    throw _wrapIOFailure(
+                            new IOException("Ion only supports UTF-8 encoding, can not use "+enc));
+                }
+                // In theory Ion package could take some advantage of getting OutputStream.
+                // In practice we seem to be better off using Jackson's efficient buffering encoder
+                ioCtxt.setEncoding(enc);
+                final Writer w = new UTF8Writer(ioCtxt, out);
+                ion = _createTextualIonWriter(writeCtxt, w);
+                dst = w;
             }
-            // In theory Ion package could take some advantage of getting OutputStream.
-            // In practice we seem to be better off using Jackson's efficient buffering encoder
-            ioCtxt.setEncoding(enc);
-            final Writer w = new UTF8Writer(ioCtxt, out);
-            ion = _createTextualIonWriter(writeCtxt, w);
-            dst = w;
+            // `true` for "ionWriterIsManaged" since we created it:
+            return _createGenerator(writeCtxt, ioCtxt, ion, true, dst);
+        } catch (RuntimeException e) {
+            _releaseContextOnFailedConstruction(ioCtxt, e);
+            throw e;
         }
-        // `true` for "ionWriterIsManaged" since we created it:
-        return _createGenerator(writeCtxt, ioCtxt, ion, true, dst);
     }
 
     protected IonWriter _createTextualIonWriter(ObjectWriteContext writeCtxt,
@@ -527,5 +584,17 @@ public class IonFactory
                 writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
                 writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
                 ion, ionWriterIsManaged, dst);
+    }
+
+    private static void _releaseContextOnFailedConstruction(IOContext ioCtxt,
+            RuntimeException failure)
+    {
+        if (ioCtxt != null) {
+            try {
+                ioCtxt.close();
+            } catch (Exception e) {
+                failure.addSuppressed(e);
+            }
+        }
     }
 }
