@@ -262,8 +262,9 @@ public class IonFactory
             if (!inputCleanupDelegated) {
                 _closeOnFailedConstruction(in, e);
             }
-            _releaseContextOnFailedConstruction(ioCtxt, e);
             throw e;
+        } finally {
+            ioCtxt.close();
         }
     }
 
@@ -283,8 +284,9 @@ public class IonFactory
             if (!inputCleanupDelegated) {
                 _closeOnFailedConstruction(in, e);
             }
-            _releaseContextOnFailedConstruction(ioCtxt, e);
             throw e;
+        } finally {
+            ioCtxt.close();
         }
     }
 
