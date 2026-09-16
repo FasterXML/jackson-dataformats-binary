@@ -43,6 +43,8 @@ implementations)
  (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
+#780: (ion) Fix `IonFactory` resource cleanup on failed construction
+ (contributed by DongNyoung L)
 
 3.2.3 (not yet released)
 
