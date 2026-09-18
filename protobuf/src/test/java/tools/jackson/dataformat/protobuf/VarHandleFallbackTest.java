@@ -7,11 +7,13 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.core.util.ByteArrayUtil;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for {@link ProtobufByteShiftUtil}, the byte-shifting fallback used on
- * runtimes where {@link ProtobufVarHandleUtil} is unusable.
+ * Tests for {@link ByteArrayUtil}, the byte-shifting fallback used on
+ * runtimes where {@code ProtobufVarHandleUtil} is unusable.
  *<p>
  * Needed because {@code ProtobufParser._VARHANDLE_AVAILABLE} (and the generator's
  * equivalent) is {@code static final} and true on every JDK we test on: the
@@ -30,7 +32,7 @@ public class VarHandleFallbackTest extends ProtobufTestBase
         for (byte[] input : _inputs(4)) {
             final int exp = ByteBuffer.wrap(input, OFFSET, 4)
                     .order(ByteOrder.LITTLE_ENDIAN).getInt();
-            assertEquals(exp, ProtobufByteShiftUtil.getIntLE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getIntLE(input, OFFSET));
             if (ProtobufVarHandleUtil.isAvailable()) {
                 assertEquals(exp, ProtobufVarHandleUtil.getIntLE(input, OFFSET));
             }
@@ -43,7 +45,7 @@ public class VarHandleFallbackTest extends ProtobufTestBase
         for (byte[] input : _inputs(8)) {
             final long exp = ByteBuffer.wrap(input, OFFSET, 8)
                     .order(ByteOrder.LITTLE_ENDIAN).getLong();
-            assertEquals(exp, ProtobufByteShiftUtil.getLongLE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getLongLE(input, OFFSET));
             if (ProtobufVarHandleUtil.isAvailable()) {
                 assertEquals(exp, ProtobufVarHandleUtil.getLongLE(input, OFFSET));
             }
@@ -58,7 +60,7 @@ public class VarHandleFallbackTest extends ProtobufTestBase
             ByteBuffer.wrap(exp, OFFSET, 4).order(ByteOrder.LITTLE_ENDIAN).putInt(value);
 
             byte[] act = new byte[OFFSET+4];
-            ProtobufByteShiftUtil.setIntLE(act, OFFSET, value);
+            ByteArrayUtil.setIntLE(act, OFFSET, value);
             assertArrayEquals(exp, act, "for value "+value);
 
             if (ProtobufVarHandleUtil.isAvailable()) {
@@ -77,7 +79,7 @@ public class VarHandleFallbackTest extends ProtobufTestBase
             ByteBuffer.wrap(exp, OFFSET, 8).order(ByteOrder.LITTLE_ENDIAN).putLong(value);
 
             byte[] act = new byte[OFFSET+8];
-            ProtobufByteShiftUtil.setLongLE(act, OFFSET, value);
+            ByteArrayUtil.setLongLE(act, OFFSET, value);
             assertArrayEquals(exp, act, "for value "+value);
 
             if (ProtobufVarHandleUtil.isAvailable()) {

@@ -12,6 +12,7 @@ import tools.jackson.core.*;
 import tools.jackson.core.base.GeneratorBase;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.json.DupDetector;
+import tools.jackson.core.util.ByteArrayUtil;
 import tools.jackson.core.util.JacksonFeatureSet;
 
 import static tools.jackson.dataformat.cbor.CBORConstants.*;
@@ -1671,7 +1672,7 @@ surr1, surr2));
         if (_VARHANDLE_AVAILABLE) {
             CBORVarHandleUtil.setIntBE(_outputBuffer, _outputTail, i);
         } else {
-            CBORByteShiftUtil.setIntBE(_outputBuffer, _outputTail, i);
+            ByteArrayUtil.setIntBE(_outputBuffer, _outputTail, i);
         }
         _outputTail += 4;
     }
@@ -1680,7 +1681,7 @@ surr1, surr2));
         if (_VARHANDLE_AVAILABLE) {
             CBORVarHandleUtil.setLongBE(_outputBuffer, _outputTail, l);
         } else {
-            CBORByteShiftUtil.setLongBE(_outputBuffer, _outputTail, l);
+            ByteArrayUtil.setLongBE(_outputBuffer, _outputTail, l);
         }
         _outputTail += 8;
     }

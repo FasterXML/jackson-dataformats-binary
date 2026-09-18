@@ -2975,7 +2975,7 @@ public class ProtobufParser extends ParserMinimalBase
         // protobuf fixed32 is little-endian
         final int v = _VARHANDLE_AVAILABLE
                 ? ProtobufVarHandleUtil.getIntLE(b, ptr)
-                : ProtobufByteShiftUtil.getIntLE(b, ptr);
+                : ByteArrayUtil.getIntLE(b, ptr);
         _inputPtr = ptr+4;
         return v;
     }
@@ -3008,7 +3008,7 @@ public class ProtobufParser extends ParserMinimalBase
         // protobuf fixed64 is little-endian
         final long v = _VARHANDLE_AVAILABLE
                 ? ProtobufVarHandleUtil.getLongLE(b, ptr)
-                : ProtobufByteShiftUtil.getLongLE(b, ptr);
+                : ByteArrayUtil.getLongLE(b, ptr);
         _inputPtr = ptr+8;
         return v;
     }
