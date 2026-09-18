@@ -485,10 +485,11 @@ public class IonFactory
                     readCtxt.getFormatReadFeatures(_formatReadFeatures),
                     ion, _system);
         } catch (RuntimeException e) {
-            if (ion != null) {
-                _closeOnFailedConstruction(ion, e);
-            } else if (closeInputOnFailedConstruction) {
-                _closeOnFailedConstruction(in, e);
+            // Only close input we created ourselves (from `File` / `Path`): caller-provided
+            // `InputStream` must be left alone. And note that closing `IonReader` -- once
+            // created -- also closes the underlying `InputStream`.
+            if (closeInputOnFailedConstruction) {
+                _closeOnFailedConstruction((ion == null) ? in : ion, e);
             }
             _releaseContextOnFailedConstruction(ionCtxt, e);
             throw e;

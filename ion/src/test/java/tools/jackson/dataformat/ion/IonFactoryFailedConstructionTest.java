@@ -93,6 +93,26 @@ class IonFactoryFailedConstructionTest
         assertEquals(2, pool.pooledCount());
     }
 
+    // [dataformats-binary#780]: caller-provided `InputStream` must NOT be closed
+    // even if construction fails after `IonReader` has been created
+    @Test
+    void leavesCallerProvidedInputStreamOpenOnParserConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .ionSystem(failingIonSystem())
+                .build();
+
+        CloseTrackingInputStream in = new CloseTrackingInputStream(
+                new ByteArrayInputStream(BINARY_INT_0));
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, in));
+        assertEquals(CREATE_FAIL, e.getMessage());
+
+        assertEquals(0, in.closeCount);
+    }
+
     @Test
     void closesFileOutputStreamOnGeneratorConstructionFailure() throws Exception
     {
