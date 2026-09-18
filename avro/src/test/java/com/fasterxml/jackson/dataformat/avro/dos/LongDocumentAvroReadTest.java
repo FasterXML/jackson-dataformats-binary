@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.dos;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,27 @@ public class LongDocumentAvroReadTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
+    final static String TINY_SCHEMA_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'Tiny',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'x', 'type':'int' }\n"+
+            " ]\n"+
+            "}\n");
+
     private final static int MAX_DOC_LEN = 50_000;
+
+    // Decoder variants to verify: native, Apache (buffering) and Apache (direct)
+    private final static int MODE_NATIVE = 0;
+    private final static int MODE_APACHE = 1;
+    private final static int MODE_APACHE_DIRECT = 2;
+
+    // NOTE: `MODE_APACHE_DIRECT` not included: Apache `DirectBinaryDecoder.isEnd()`
+    // throws `UnsupportedOperationException`, so non-buffering Apache decoding does
+    // not currently work at all (pre-existing issue, unrelated to #785)
+    private final static int[] ALL_MODES = new int[] {
+            MODE_NATIVE, MODE_APACHE
+    };
 
     private final AvroMapper MAPPER_VANILLA = newMapper();
 
@@ -63,8 +84,8 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     {
         // Need a bit longer than minimum since checking is approximate, not exact
         byte[] doc = createBigDoc(60_000);
-        for (boolean apache : new boolean[] { false, true }) {
-            AvroMapper mapper = constrainedMapper(apache);
+        for (int mode : ALL_MODES) {
+            AvroMapper mapper = constrainedMapper(mode);
             _testLongDocumentConstraint(mapper, doc, true);
             _testLongDocumentConstraint(mapper, doc, false);
         }
@@ -90,13 +111,13 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     public void testLongBinaryValueConstraint() throws Exception
     {
         byte[] doc = createBinaryDoc(200_000);
-        for (boolean apache : new boolean[] { false, true }) {
-            AvroMapper mapper = constrainedMapper(apache);
+        for (int mode : ALL_MODES) {
+            AvroMapper mapper = constrainedMapper(mode);
             AvroSchema schema = mapper.schemaFrom(BLOB_SCHEMA_JSON);
             try (JsonParser p = mapper.reader().with(schema)
                     .createParser(new ByteArrayInputStream(doc))) {
                 while (p.nextToken() != null) { }
-                fail("expected StreamConstraintsException (apacheDecoder="+apache+")");
+                fail("expected StreamConstraintsException (mode="+mode+")");
             } catch (StreamConstraintsException e) {
                 _verifyConstraintException(e);
             }
@@ -108,7 +129,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     public void testSkippedLongBinaryValueConstraint() throws Exception
     {
         byte[] doc = createBinaryDoc(200_000);
-        AvroMapper mapper = constrainedMapper(false);
+        AvroMapper mapper = constrainedMapper(MODE_NATIVE);
         AvroSchema schema = mapper.schemaFrom(BLOB_SCHEMA_JSON)
                 .withReaderSchema(mapper.schemaFrom(BLOB_NO_DATA_SCHEMA_JSON));
         try (JsonParser p = mapper.reader().with(schema)
@@ -117,6 +138,31 @@ public class LongDocumentAvroReadTest extends AvroTestBase
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
             _verifyConstraintException(e);
+        }
+    }
+
+    // [dataformats-binary#785]: Apache decoder reads ahead of the decoding position,
+    // by up to its buffer size: must not fail a single short value read from a
+    // stream that holds more content past it
+    public void testShortValueFromLongStream() throws Exception
+    {
+        final int SHORT_MAX_DOC_LEN = 1000;
+        final AvroSchema schema = MAPPER_VANILLA.schemaFrom(TINY_SCHEMA_JSON);
+
+        // Stream with lots of content, but we only read the first (1-byte) value
+        byte[] one = MAPPER_VANILLA.writer(schema)
+                .writeValueAsBytes(Collections.singletonMap("x", 42));
+        byte[] many = new byte[one.length * 50_000];
+        for (int i = 0; i < many.length; i += one.length) {
+            System.arraycopy(one, 0, many, i, one.length);
+        }
+        assertTrue("many.length="+many.length, many.length > 8 * SHORT_MAX_DOC_LEN);
+
+        for (int mode : ALL_MODES) {
+            AvroMapper mapper = constrainedMapper(mode, SHORT_MAX_DOC_LEN);
+            Map<?,?> value = mapper.readerFor(Map.class).with(schema)
+                    .readValue(new ByteArrayInputStream(many));
+            assertEquals("mode="+mode, 42, value.get("x"));
         }
     }
 
@@ -141,12 +187,19 @@ public class LongDocumentAvroReadTest extends AvroTestBase
                 msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN));
     }
 
-    private AvroMapper constrainedMapper(boolean apacheDecoder) {
+    private AvroMapper constrainedMapper(int mode) {
+        return constrainedMapper(mode, MAX_DOC_LEN);
+    }
+
+    private AvroMapper constrainedMapper(int mode, int maxDocLen) {
         // 2.18 `AvroFactoryBuilder` does not (yet) honor Apache decoder setting, so
         // have to construct `ApacheAvroFactory` directly
-        AvroFactory f = apacheDecoder ? new ApacheAvroFactory() : new AvroFactory();
+        AvroFactory f = (mode == MODE_NATIVE) ? new AvroFactory() : new ApacheAvroFactory();
+        if (mode == MODE_APACHE_DIRECT) {
+            f.disable(AvroParser.Feature.AVRO_BUFFERING);
+        }
         f.setStreamReadConstraints(StreamReadConstraints.builder()
-                .maxDocumentLength(MAX_DOC_LEN).build());
+                .maxDocumentLength(maxDocLen).build());
         return AvroMapper.builder(f).build();
     }
 
