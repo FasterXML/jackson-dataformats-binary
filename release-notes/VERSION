@@ -28,6 +28,8 @@ No changes since 3.2
 #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)` writes enum
   values twice
  (contributed by @pjfanning)
+#783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
+ (contributed by @pjfanning)
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.2.2 (14-Aug-2026)
@@ -76,6 +78,8 @@ No changes since 3.2.0
   as short Unicode
 #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)` writes enum
   values twice
+ (contributed by @pjfanning)
+#783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
  (contributed by @pjfanning)
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
