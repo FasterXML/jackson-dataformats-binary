@@ -245,6 +245,8 @@ public class ProtobufFactory extends JsonFactory
     @Override
     protected ProtobufParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException
     {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return new ProtobufParser(ctxt, _parserFeatures,
                 _objectCodec, null, data, offset, len, false);
     }

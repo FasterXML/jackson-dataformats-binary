@@ -342,6 +342,9 @@ PJ Fanning (@pjfanning)
   (2.18.0)
  * Contributed #508: (avro) Ignore `specificData` field on serialization
   (2.18.0)
+ * Contributed #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength`
+   in `ProtobufParser`
+  (2.18.11)
  * Contributed #785: (avro) Support `StreamReadConstraints.maxDocumentLength` and
    `maxTokenCount` in Avro parser
   (2.18.11)
