@@ -434,6 +434,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      * {@link InputStream} wrapper that applies {@link StreamReadConstraints#validateDocumentLength}
      * to the number of bytes read so far, for use with Apache {@link BinaryDecoder} which
      * reads from the stream directly.
+     * @since 3.3
      */
     private final static class LengthCheckingInputStream extends FilterInputStream
     {
