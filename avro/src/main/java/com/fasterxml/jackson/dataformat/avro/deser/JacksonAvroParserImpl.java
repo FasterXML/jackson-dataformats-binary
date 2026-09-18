@@ -578,6 +578,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
 
         if (len > (_inputEnd - _inputPtr)) {
+            _validateValueLength(len);
             // or if not, could we read?
             if (len >= _inputBuffer.length) {
                 // If not enough space, need handling similar to chunked
@@ -599,6 +600,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             }
             return;
         }
+        _validateValueLength(len);
         _skip(len);
     }
 
@@ -789,6 +791,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             }
             _binaryValue = NO_BYTES;
         } else {
+            _validateValueLength(len);
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _read(b, 0, len);
@@ -806,12 +809,14 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             }
             _binaryValue = NO_BYTES;
         } else {
+            _validateValueLength(len);
             _skip(len);
         }
     }
 
     @Override
     public JsonToken decodeFixed(int size) throws IOException {
+        _validateValueLength(size);
         byte[] data = new byte[size];
         _read(data, 0, size);
         _binaryValue = data;
@@ -820,7 +825,19 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public void skipFixed(int size) throws IOException {
+        _validateValueLength(size);
         _skip(size);
+    }
+
+    /**
+     * Helper method for checking that length of a value about to be read (or skipped)
+     * will not push total document length past maximum allowed: needed to avoid
+     * allocating (or reading) content that would fail the check in any case.
+     *
+     * @since 2.18.11
+     */
+    private final void _validateValueLength(long len) throws IOException {
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _inputPtr + len);
     }
 
     private final void _read(byte[] target, int offset, int len) throws IOException
@@ -837,6 +854,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr = ptr + available;
         offset += available;
         int left = len - available;
+        // 18-Sep-2026, tatu: [dataformats-binary#785] Bytes read directly from
+        //    input source bypass `_loadMore()` so need explicit accounting
+        _markBufferConsumed();
         // and rest we can read straight from input
         do {
             int count = _inputStream.read(target, offset, left);
@@ -845,6 +865,8 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             }
             offset += count;
             left -= count;
+            _currInputProcessed += count;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
         } while (left > 0);
     }
 
@@ -859,12 +881,17 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         _inputPtr = _inputEnd; // mark all used, whatever it was
         if (_inputStream != null) {
+            // 18-Sep-2026, tatu: [dataformats-binary#785] Bytes skipped directly from
+            //    input source bypass `_loadMore()` so need explicit accounting
+            _markBufferConsumed();
             do {
                 int skipped = (int) _inputStream.skip(left);
                 if (skipped < 0) {
                     break;
                 }
                 left -= skipped;
+                _currInputProcessed += skipped;
+                _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             } while (left > 0);
         }
         if (left > 0) {
@@ -883,12 +910,17 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         _inputPtr = _inputEnd; // mark all used, whatever it was
         if (_inputStream != null) {
+            // 18-Sep-2026, tatu: [dataformats-binary#785] Bytes skipped directly from
+            //    input source bypass `_loadMore()` so need explicit accounting
+            _markBufferConsumed();
             do {
                 int skipped = (int) _inputStream.skip(left);
                 if (skipped < 0) {
                     break;
                 }
                 left -= skipped;
+                _currInputProcessed += skipped;
+                _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             } while (left > 0L);
         }
         if (left > 0L) {
@@ -1052,6 +1084,20 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         _loadMoreGuaranteed();
         _inputPtr += 1;
+    }
+
+    /**
+     * Helper method called when the input buffer has been fully consumed and
+     * content will next be read (or skipped) straight from the underlying
+     * {@link java.io.InputStream}, bypassing the buffer: needs to flush the
+     * buffered byte count into {@code _currInputProcessed} so that both location
+     * information and document length checks remain accurate.
+     *
+     * @since 2.18.11
+     */
+    protected final void _markBufferConsumed() {
+        _currInputProcessed += _inputEnd;
+        _inputPtr = _inputEnd = 0;
     }
 
     protected final boolean _loadMore() throws IOException

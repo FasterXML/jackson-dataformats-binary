@@ -2,7 +2,9 @@ package com.fasterxml.jackson.dataformat.avro.dos;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -24,6 +26,25 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     public static class Items {
         public List<Item> items = new ArrayList<>();
     }
+
+    // NOTE: Avro requires named types to match, hence same record name for both
+    final static String BLOB_SCHEMA_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'Blob',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'name', 'type':'string' },\n"+
+            "    { 'name':'data', 'type':'bytes' }\n"+
+            " ]\n"+
+            "}\n");
+
+    // Reader-side schema without `data`: forces writer-side `bytes` value to be skipped
+    final static String BLOB_NO_DATA_SCHEMA_JSON = aposToQuotes("{\n"+
+            " 'type':'record',\n"+
+            " 'name':'Blob',\n"+
+            " 'fields':[\n"+
+            "    { 'name':'name', 'type':'string' }\n"+
+            " ]\n"+
+            "}\n");
 
     private final static int MAX_DOC_LEN = 50_000;
 
@@ -64,6 +85,41 @@ public class LongDocumentAvroReadTest extends AvroTestBase
         }
     }
 
+    // [dataformats-binary#785]: big `bytes` value is read straight from `InputStream`,
+    // bypassing input buffer, and must still count towards document length
+    public void testLongBinaryValueConstraint() throws Exception
+    {
+        byte[] doc = createBinaryDoc(200_000);
+        for (boolean apache : new boolean[] { false, true }) {
+            AvroMapper mapper = constrainedMapper(apache);
+            AvroSchema schema = mapper.schemaFrom(BLOB_SCHEMA_JSON);
+            try (JsonParser p = mapper.reader().with(schema)
+                    .createParser(new ByteArrayInputStream(doc))) {
+                while (p.nextToken() != null) { }
+                fail("expected StreamConstraintsException (apacheDecoder="+apache+")");
+            } catch (StreamConstraintsException e) {
+                _verifyConstraintException(e);
+            }
+        }
+    }
+
+    // Same as above but for the case where the big `bytes` value is skipped
+    // (writer schema has field reader schema does not)
+    public void testSkippedLongBinaryValueConstraint() throws Exception
+    {
+        byte[] doc = createBinaryDoc(200_000);
+        AvroMapper mapper = constrainedMapper(false);
+        AvroSchema schema = mapper.schemaFrom(BLOB_SCHEMA_JSON)
+                .withReaderSchema(mapper.schemaFrom(BLOB_NO_DATA_SCHEMA_JSON));
+        try (JsonParser p = mapper.reader().with(schema)
+                .createParser(new ByteArrayInputStream(doc))) {
+            while (p.nextToken() != null) { }
+            fail("expected StreamConstraintsException");
+        } catch (StreamConstraintsException e) {
+            _verifyConstraintException(e);
+        }
+    }
+
     private void _testLongDocumentConstraint(AvroMapper mapper, byte[] doc, boolean stream)
         throws Exception
     {
@@ -74,11 +130,15 @@ public class LongDocumentAvroReadTest extends AvroTestBase
             while (p.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            final String msg = e.getMessage();
-            assertTrue("unexpected message: "+msg, msg.contains("Document length ("));
-            assertTrue("unexpected message: "+msg,
-                    msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN));
+            _verifyConstraintException(e);
         }
+    }
+
+    private void _verifyConstraintException(StreamConstraintsException e) {
+        final String msg = e.getMessage();
+        assertTrue("unexpected message: "+msg, msg.contains("Document length ("));
+        assertTrue("unexpected message: "+msg,
+                msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN));
     }
 
     private AvroMapper constrainedMapper(boolean apacheDecoder) {
@@ -88,6 +148,17 @@ public class LongDocumentAvroReadTest extends AvroTestBase
         f.setStreamReadConstraints(StreamReadConstraints.builder()
                 .maxDocumentLength(MAX_DOC_LEN).build());
         return AvroMapper.builder(f).build();
+    }
+
+    private byte[] createBinaryDoc(final int payloadSize) throws Exception
+    {
+        Map<String, Object> blob = new LinkedHashMap<>();
+        blob.put("name", "blob");
+        blob.put("data", new byte[payloadSize]);
+        byte[] doc = MAPPER_VANILLA.writer(MAPPER_VANILLA.schemaFrom(BLOB_SCHEMA_JSON))
+                .writeValueAsBytes(blob);
+        assertTrue("doc.length="+doc.length, doc.length > payloadSize);
+        return doc;
     }
 
     private byte[] createBigDoc(final int size) throws Exception
