@@ -354,6 +354,9 @@ PJ Fanning (@pjfanning)
   (2.18.0)
  * Contributed #508: (avro) Ignore `specificData` field on serialization
   (2.18.0)
+ * Contributed #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength`
+   in `ProtobufParser`
+  (2.18.11)
 
 Joachim Lous (@jlous)
  * Requested #494: Avro Schema generation: allow mapping Java Enum properties to

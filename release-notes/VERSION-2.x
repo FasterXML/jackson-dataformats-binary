@@ -27,6 +27,8 @@ No changes since 2.22
 #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)` writes enum
   values twice
  (contributed by @pjfanning)
+#783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
+ (contributed by @pjfanning)
 
 2.22.2 (16-Aug-2026)
 
@@ -68,6 +70,8 @@ No changes since 2.21
   as short Unicode
 #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)` writes enum
   values twice
+ (contributed by @pjfanning)
+#783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
  (contributed by @pjfanning)
 
 2.21.6 (14-Aug-2026)
@@ -222,6 +226,11 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.11 (not yet released)
+
+#783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
+ (contributed by @pjfanning)
 
 2.18.10 (15-Aug-2026)
 
