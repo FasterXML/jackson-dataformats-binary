@@ -1,14 +1,19 @@
 package tools.jackson.dataformat.ion;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonWriter;
+import com.amazon.ion.system.IonSystemBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -30,6 +35,7 @@ class IonFactoryFailedConstructionTest
 
     private final static String DECORATOR_FAIL = "Test-induced decorator failure";
     private final static String CREATE_FAIL = "Test-induced parser construction failure";
+    private final static String GEN_CREATE_FAIL = "Test-induced generator construction failure";
 
     // 4-byte Ion 1.0 IVM followed by int 0.
     private static final byte[] BINARY_INT_0 = new byte[] {
@@ -149,6 +155,92 @@ class IonFactoryFailedConstructionTest
         assertEquals(1, pool.pooledCount());
     }
 
+    // [dataformats-binary#780]: `IonWriter` created before failure must be closed
+    // (which closes the factory-created `OutputStream` as well)
+    @Test
+    void closesIonWriterOnGeneratorConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        AtomicInteger writerCloseCount = new AtomicInteger();
+        GeneratorFailingIonFactory f = new GeneratorFailingIonFactory(
+                IonFactory.builderForBinaryWriters()
+                    .recyclerPool(pool)
+                    .ionSystem(writerTrackingIonSystem(writerCloseCount)));
+
+        assertEquals(0, pool.pooledCount());
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createGenerator(EMPTY_WRITE_CTXT,
+                        _tempDir.resolve("output-writer-fail.ion").toFile(),
+                        JsonEncoding.UTF8));
+        assertEquals(GEN_CREATE_FAIL, e.getMessage());
+
+        assertEquals(1, writerCloseCount.get());
+        assertEquals(1, f.outputs.size());
+        assertEquals(1, f.outputs.get(0).closeCount);
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // [dataformats-binary#780]: caller-provided `OutputStream`, on the other hand,
+    // must NOT be closed on failed construction
+    @Test
+    void leavesCallerProvidedOutputStreamOpenOnGeneratorConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        AtomicInteger writerCloseCount = new AtomicInteger();
+        GeneratorFailingIonFactory f = new GeneratorFailingIonFactory(
+                IonFactory.builderForBinaryWriters()
+                    .recyclerPool(pool)
+                    .ionSystem(writerTrackingIonSystem(writerCloseCount)));
+
+        CloseTrackingOutputStream out = new CloseTrackingOutputStream(
+                new ByteArrayOutputStream());
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createGenerator(EMPTY_WRITE_CTXT, out, JsonEncoding.UTF8));
+        assertEquals(GEN_CREATE_FAIL, e.getMessage());
+
+        assertEquals(0, writerCloseCount.get());
+        assertEquals(0, out.closeCount);
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // [dataformats-binary#780]: `IOContext` of non-`File`/`Path` sources was never
+    // released, neither on success...
+    @Test
+    void releasesContextsForInputStreamSource() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .build();
+
+        JsonParser p = f.createParser(EMPTY_READ_CTXT,
+                new ByteArrayInputStream(BINARY_INT_0));
+        // outer context released right away, parser's own one on close:
+        assertEquals(1, pool.pooledCount());
+        p.close();
+        assertEquals(2, pool.pooledCount());
+    }
+
+    // ... nor on failure
+    @Test
+    void releasesContextOnDecoratorFailureForInputStreamSource() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .inputDecorator(new FailingInputDecorator())
+                .build();
+
+        CloseTrackingInputStream in = new CloseTrackingInputStream(
+                new ByteArrayInputStream(BINARY_INT_0));
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, in));
+        assertEquals(DECORATOR_FAIL, e.getMessage());
+
+        assertEquals(0, in.closeCount);
+        assertEquals(1, pool.pooledCount());
+    }
+
     private File _tempIonFile(String name) throws IOException {
         Path p = _tempDir.resolve(name);
         Files.write(p, BINARY_INT_0);
@@ -165,6 +257,38 @@ class IonFactoryFailedConstructionTest
                     }
                     return defaultValue(method.getReturnType());
                 });
+    }
+
+    private IonSystem writerTrackingIonSystem(AtomicInteger closeCount) {
+        final IonSystem delegate = IonSystemBuilder.standard().build();
+        return (IonSystem) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonSystem.class }, (proxy, method, args) -> {
+                    Object result = _invoke(delegate, method, args);
+                    if (result instanceof IonWriter) {
+                        result = countingIonWriter((IonWriter) result, closeCount);
+                    }
+                    return result;
+                });
+    }
+
+    private IonWriter countingIonWriter(IonWriter delegate, AtomicInteger closeCount) {
+        return (IonWriter) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonWriter.class }, (proxy, method, args) -> {
+                    if ("close".equals(method.getName())) {
+                        closeCount.incrementAndGet();
+                    }
+                    return _invoke(delegate, method, args);
+                });
+    }
+
+    private static Object _invoke(Object delegate, Method method, Object[] args)
+        throws Throwable
+    {
+        try {
+            return method.invoke(delegate, args);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
     }
 
     private IonReader failingIonReader(InputStream in) {
@@ -270,6 +394,22 @@ class IonFactoryFailedConstructionTest
             CloseTrackingOutputStream wrapped = new CloseTrackingOutputStream(out);
             outputs.add(wrapped);
             return wrapped;
+        }
+    }
+
+    static class GeneratorFailingIonFactory extends TrackingIonFactory
+    {
+        private static final long serialVersionUID = 1L;
+
+        GeneratorFailingIonFactory(IonFactoryBuilder b) {
+            super(b);
+        }
+
+        // Fails after both `IonWriter` and the actual output target exist
+        @Override
+        protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
+                IOContext ioCtxt, IonWriter ion, boolean ionWriterIsManaged, Closeable dst) {
+            throw new IllegalStateException(GEN_CREATE_FAIL);
         }
     }
 
