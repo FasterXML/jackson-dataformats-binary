@@ -1561,24 +1561,29 @@ _typeAsInt);
             if ((_inputEnd - _inputPtr) < 8) {
                 _loadToHaveAtLeast(8);
             }
-            int i1 = (_inputBuffer[_inputPtr++] << 25)
-                + (_inputBuffer[_inputPtr++] << 18)
-                + (_inputBuffer[_inputPtr++] << 11)
-                + (_inputBuffer[_inputPtr++] << 4);
-            int x = _inputBuffer[_inputPtr++];
-            i1 += x >> 3;
-            int i2 = ((x & 0x7) << 21)
-                + (_inputBuffer[_inputPtr++] << 14)
-                + (_inputBuffer[_inputPtr++] << 7)
-                + _inputBuffer[_inputPtr++];
-            // Ok: got our 7 bytes, just need to split, copy
-            buffer[outPtr++] = (byte)(i1 >> 24);
-            buffer[outPtr++] = (byte)(i1 >> 16);
-            buffer[outPtr++] = (byte)(i1 >> 8);
-            buffer[outPtr++] = (byte)i1;
-            buffer[outPtr++] = (byte)(i2 >> 16);
-            buffer[outPtr++] = (byte)(i2 >> 8);
-            buffer[outPtr++] = (byte)i2;
+            if (Smile7BitBinaryCodec.decodeChunk(_inputBuffer, _inputPtr, buffer, outPtr)) {
+                _inputPtr += 8;
+                outPtr += 7;
+            } else {
+                int i1 = (_inputBuffer[_inputPtr++] << 25)
+                    + (_inputBuffer[_inputPtr++] << 18)
+                    + (_inputBuffer[_inputPtr++] << 11)
+                    + (_inputBuffer[_inputPtr++] << 4);
+                int x = _inputBuffer[_inputPtr++];
+                i1 += x >> 3;
+                int i2 = ((x & 0x7) << 21)
+                    + (_inputBuffer[_inputPtr++] << 14)
+                    + (_inputBuffer[_inputPtr++] << 7)
+                    + _inputBuffer[_inputPtr++];
+                // Ok: got our 7 bytes, just need to split, copy
+                buffer[outPtr++] = (byte)(i1 >> 24);
+                buffer[outPtr++] = (byte)(i1 >> 16);
+                buffer[outPtr++] = (byte)(i1 >> 8);
+                buffer[outPtr++] = (byte)i1;
+                buffer[outPtr++] = (byte)(i2 >> 16);
+                buffer[outPtr++] = (byte)(i2 >> 8);
+                buffer[outPtr++] = (byte)i2;
+            }
             length -= 7;
             // ensure there's always room for at least 7 bytes more after looping:
             if (outPtr > lastSafeOut) {
@@ -2973,24 +2978,29 @@ currentToken(), firstCh);
                     _reportIncompleteBinaryRead7Bit(byteLen, ptr);
                 }
             }
-            int i1 = (_inputBuffer[_inputPtr++] << 25)
-                + (_inputBuffer[_inputPtr++] << 18)
-                + (_inputBuffer[_inputPtr++] << 11)
-                + (_inputBuffer[_inputPtr++] << 4);
-            int x = _inputBuffer[_inputPtr++];
-            i1 += x >> 3;
-            int i2 = ((x & 0x7) << 21)
-                + (_inputBuffer[_inputPtr++] << 14)
-                + (_inputBuffer[_inputPtr++] << 7)
-                + _inputBuffer[_inputPtr++];
-            // Ok: got our 7 bytes, just need to split, copy
-            result[ptr++] = (byte)(i1 >> 24);
-            result[ptr++] = (byte)(i1 >> 16);
-            result[ptr++] = (byte)(i1 >> 8);
-            result[ptr++] = (byte)i1;
-            result[ptr++] = (byte)(i2 >> 16);
-            result[ptr++] = (byte)(i2 >> 8);
-            result[ptr++] = (byte)i2;
+            if (Smile7BitBinaryCodec.decodeChunk(_inputBuffer, _inputPtr, result, ptr)) {
+                _inputPtr += 8;
+                ptr += 7;
+            } else {
+                int i1 = (_inputBuffer[_inputPtr++] << 25)
+                    + (_inputBuffer[_inputPtr++] << 18)
+                    + (_inputBuffer[_inputPtr++] << 11)
+                    + (_inputBuffer[_inputPtr++] << 4);
+                int x = _inputBuffer[_inputPtr++];
+                i1 += x >> 3;
+                int i2 = ((x & 0x7) << 21)
+                    + (_inputBuffer[_inputPtr++] << 14)
+                    + (_inputBuffer[_inputPtr++] << 7)
+                    + _inputBuffer[_inputPtr++];
+                // Ok: got our 7 bytes, just need to split, copy
+                result[ptr++] = (byte)(i1 >> 24);
+                result[ptr++] = (byte)(i1 >> 16);
+                result[ptr++] = (byte)(i1 >> 8);
+                result[ptr++] = (byte)i1;
+                result[ptr++] = (byte)(i2 >> 16);
+                result[ptr++] = (byte)(i2 >> 8);
+                result[ptr++] = (byte)i2;
+            }
         }
         // and then leftovers: n+1 bytes to decode n bytes
         int toDecode = (result.length - ptr);
@@ -3032,25 +3042,30 @@ currentToken(), firstCh);
                         _reportIncompleteBinaryRead7Bit(expLen, bb.size() + bufPtr);
                     }
                 }
-                int i1 = (_inputBuffer[_inputPtr++] << 25)
-                        + (_inputBuffer[_inputPtr++] << 18)
-                        + (_inputBuffer[_inputPtr++] << 11)
-                        + (_inputBuffer[_inputPtr++] << 4);
-                int x = _inputBuffer[_inputPtr++];
-                i1 += x >> 3;
-                int i2 = ((x & 0x7) << 21)
-                    + (_inputBuffer[_inputPtr++] << 14)
-                    + (_inputBuffer[_inputPtr++] << 7)
-                    + _inputBuffer[_inputPtr++];
-                // Ok: got our 7 bytes, just need to split, copy
-                // NOTE: lgtm cannot deduce the checks but a single bounds check IS enough here
-                buffer[bufPtr++] = (byte)(i1 >> 24);
-                buffer[bufPtr++] = (byte)(i1 >> 16); // lgtm [java/index-out-of-bounds]
-                buffer[bufPtr++] = (byte)(i1 >> 8); // lgtm [java/index-out-of-bounds]
-                buffer[bufPtr++] = (byte)i1; // lgtm [java/index-out-of-bounds]
-                buffer[bufPtr++] = (byte)(i2 >> 16); // lgtm [java/index-out-of-bounds]
-                buffer[bufPtr++] = (byte)(i2 >> 8); // lgtm [java/index-out-of-bounds]
-                buffer[bufPtr++] = (byte)i2; // lgtm [java/index-out-of-bounds]
+                if (Smile7BitBinaryCodec.decodeChunk(_inputBuffer, _inputPtr, buffer, bufPtr)) {
+                    _inputPtr += 8;
+                    bufPtr += 7;
+                } else {
+                    int i1 = (_inputBuffer[_inputPtr++] << 25)
+                            + (_inputBuffer[_inputPtr++] << 18)
+                            + (_inputBuffer[_inputPtr++] << 11)
+                            + (_inputBuffer[_inputPtr++] << 4);
+                    int x = _inputBuffer[_inputPtr++];
+                    i1 += x >> 3;
+                    int i2 = ((x & 0x7) << 21)
+                        + (_inputBuffer[_inputPtr++] << 14)
+                        + (_inputBuffer[_inputPtr++] << 7)
+                        + _inputBuffer[_inputPtr++];
+                    // Ok: got our 7 bytes, just need to split, copy
+                    // NOTE: lgtm cannot deduce the checks but a single bounds check IS enough here
+                    buffer[bufPtr++] = (byte)(i1 >> 24);
+                    buffer[bufPtr++] = (byte)(i1 >> 16); // lgtm [java/index-out-of-bounds]
+                    buffer[bufPtr++] = (byte)(i1 >> 8); // lgtm [java/index-out-of-bounds]
+                    buffer[bufPtr++] = (byte)i1; // lgtm [java/index-out-of-bounds]
+                    buffer[bufPtr++] = (byte)(i2 >> 16); // lgtm [java/index-out-of-bounds]
+                    buffer[bufPtr++] = (byte)(i2 >> 8); // lgtm [java/index-out-of-bounds]
+                    buffer[bufPtr++] = (byte)i2; // lgtm [java/index-out-of-bounds]
+                }
                 if (bufPtr >= buffer.length) {
                     bb.write(buffer, 0, bufPtr);
                     bufPtr = 0;

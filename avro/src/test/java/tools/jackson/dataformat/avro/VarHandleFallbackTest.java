@@ -7,10 +7,12 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.core.util.ByteArrayUtil;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for {@link AvroByteShiftUtil}, the byte-shifting fallback used on
+ * Tests for {@link ByteArrayUtil}, the byte-shifting fallback used on
  * runtimes where {@link AvroVarHandleUtil} is unusable.
  *<p>
  * Needed because {@code JacksonAvroParserImpl._VARHANDLE_AVAILABLE} is
@@ -30,7 +32,7 @@ public class VarHandleFallbackTest
         for (byte[] input : _inputs(4)) {
             final int exp = ByteBuffer.wrap(input, OFFSET, 4)
                     .order(ByteOrder.LITTLE_ENDIAN).getInt();
-            assertEquals(exp, AvroByteShiftUtil.getIntLE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getIntLE(input, OFFSET));
             if (AvroVarHandleUtil.isAvailable()) {
                 assertEquals(exp, AvroVarHandleUtil.getIntLE(input, OFFSET));
             }
@@ -43,7 +45,7 @@ public class VarHandleFallbackTest
         for (byte[] input : _inputs(8)) {
             final long exp = ByteBuffer.wrap(input, OFFSET, 8)
                     .order(ByteOrder.LITTLE_ENDIAN).getLong();
-            assertEquals(exp, AvroByteShiftUtil.getLongLE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getLongLE(input, OFFSET));
             if (AvroVarHandleUtil.isAvailable()) {
                 assertEquals(exp, AvroVarHandleUtil.getLongLE(input, OFFSET));
             }
@@ -57,13 +59,13 @@ public class VarHandleFallbackTest
         for (byte[] input : _inputs(4)) {
             assertEquals(ByteBuffer.wrap(input, OFFSET, 4)
                         .order(ByteOrder.LITTLE_ENDIAN).getFloat(),
-                    Float.intBitsToFloat(AvroByteShiftUtil.getIntLE(input, OFFSET)),
+                    Float.intBitsToFloat(ByteArrayUtil.getIntLE(input, OFFSET)),
                     0f);
         }
         for (byte[] input : _inputs(8)) {
             assertEquals(ByteBuffer.wrap(input, OFFSET, 8)
                         .order(ByteOrder.LITTLE_ENDIAN).getDouble(),
-                    Double.longBitsToDouble(AvroByteShiftUtil.getLongLE(input, OFFSET)),
+                    Double.longBitsToDouble(ByteArrayUtil.getLongLE(input, OFFSET)),
                     0d);
         }
     }
