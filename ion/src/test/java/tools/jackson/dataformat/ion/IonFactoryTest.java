@@ -2,6 +2,9 @@ package tools.jackson.dataformat.ion;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
@@ -15,6 +18,7 @@ import tools.jackson.core.ObjectReadContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IonFactoryTest {
@@ -102,6 +106,39 @@ public class IonFactoryTest {
             assertEquals(JsonToken.VALUE_TRUE, p.nextToken());
             assertEquals(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
+        }
+    }
+
+    // [dataformats-binary#780]: `createParser(byte[])` created two `IonReader`s, the
+    // first one only used for `ContentReference` and then leaked (never closed)
+    @Test
+    public void byteArrayCreatesSingleIonReader() throws Exception {
+        final IonSystem ionSystem = IonSystemBuilder.standard().build();
+        final AtomicInteger readerCount = new AtomicInteger();
+        IonSystem counting = (IonSystem) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonSystem.class },
+                (proxy, method, args) -> {
+                    if (method.getName().startsWith("newReader")) {
+                        readerCount.incrementAndGet();
+                    }
+                    try {
+                        return method.invoke(ionSystem, args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                });
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .ionSystem(counting)
+                .build();
+
+        try (IonParser p = (IonParser) f.createParser(EMPTY_READ_CTXT, BINARY_INT_0)) {
+            assertEquals(1, readerCount.get(),
+                    "Should only create a single `IonReader` for `byte[]` input");
+            // ... and the one the parser closes must be the one `ContentReference` names
+            assertSame(p.ioContext().contentReference().getRawContent(),
+                    p.streamReadInputSource());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(0, p.getIntValue());
         }
     }
 

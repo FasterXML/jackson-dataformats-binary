@@ -79,3 +79,8 @@ PJ Fanning (@pjfanning)
 * Contributed #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)`
   writes enum values twice
  (3.1.7)
+
+DongNyoung Lee (@Dongnyoung)
+
+* Contributed #780: (ion) Fix `IonFactory` resource cleanup on failed construction
+ (3.3.0)
