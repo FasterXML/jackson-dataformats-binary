@@ -293,7 +293,8 @@ public abstract class EnumLookup
             LinkedHashMap<Integer,String> byId = new LinkedHashMap<Integer,String>();
 
             // First: calculate size of primary hash area
-            final int size = findSize(byId.size());
+            // NOTE: must size from `entries`; `byId` is still empty at this point
+            final int size = findSize(entries.size());
             final int mask = size-1;
             // and allocate enough to contain primary/secondary, expand for spillovers as need be
             int alloc = size + (size>>1);
@@ -328,6 +329,10 @@ public abstract class EnumLookup
             }
             return new Big(byId, mask, spills, keys, indices);
         }
+
+        // Accessors for testing of hash area sizing
+        int hashArea() { return _hashMask+1; }
+        int spillCount() { return _spillCount; }
 
         @Override
         public String findEnumByIndex(int index) {

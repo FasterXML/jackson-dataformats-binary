@@ -21,7 +21,9 @@ import tools.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
 {
     protected AvroTypeResolverBuilder(JsonTypeInfo.Value config) {
-        super(config);
+        // 08-Sep-2026, tatu: `null` for "detected base type": only consumed by
+        //    `StdTypeResolverBuilder.idResolver()`, which we override outright.
+        super(config, null);
     }
 
     public static AvroTypeResolverBuilder construct(JsonTypeInfo.Value config) {
@@ -31,7 +33,8 @@ public class AvroTypeResolverBuilder extends StdTypeResolverBuilder
                     "@class", // similarly, N/A
                     null, // defaultImpl
                     false, // id visible
-                    null); // require type info for subtypes
+                    null, // require type info for subtypes
+                    null); // write type id for default impl
         }
         // no use for annotation info, at this point?
         return new AvroTypeResolverBuilder(config);

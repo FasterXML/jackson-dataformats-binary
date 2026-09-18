@@ -259,7 +259,6 @@ public class Proto3LabellessField708Test extends ProtobufTestBase
         input.put("x", 42);
 
         byte[] encoded = MAPPER.writer(schema).writeValueAsBytes(input);
-        @SuppressWarnings("unchecked")
         Map<String,Object> decoded = MAPPER.readerFor(Map.class).with(schema).readValue(encoded);
 
         assertEquals("Bob", decoded.get("name"));

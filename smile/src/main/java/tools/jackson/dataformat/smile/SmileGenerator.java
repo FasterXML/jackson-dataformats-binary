@@ -2297,21 +2297,26 @@ surr1, surr2));
             if ((_outputTail + 8) >= _outputEnd) {
                 _flushBuffer();
             }
-            int i = data[offset++]; // 1st byte
-            _outputBuffer[_outputTail++] = (byte) ((i >> 1) & 0x7F);
-            i = (i << 8) | (data[offset++] & 0xFF); // 2nd
-            _outputBuffer[_outputTail++] = (byte) ((i >> 2) & 0x7F);
-            i = (i << 8) | (data[offset++] & 0xFF); // 3rd
-            _outputBuffer[_outputTail++] = (byte) ((i >> 3) & 0x7F);
-            i = (i << 8) | (data[offset++] & 0xFF); // 4th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 4) & 0x7F);
-            i = (i << 8) | (data[offset++] & 0xFF); // 5th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 5) & 0x7F);
-            i = (i << 8) | (data[offset++] & 0xFF); // 6th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 6) & 0x7F);
-            i = (i << 8) | (data[offset++] & 0xFF); // 7th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 7) & 0x7F);
-            _outputBuffer[_outputTail++] = (byte) (i & 0x7F);
+            if (Smile7BitBinaryCodec.encodeChunk(data, offset, _outputBuffer, _outputTail)) {
+                offset += 7;
+                _outputTail += 8;
+            } else {
+                int i = data[offset++]; // 1st byte
+                _outputBuffer[_outputTail++] = (byte) ((i >> 1) & 0x7F);
+                i = (i << 8) | (data[offset++] & 0xFF); // 2nd
+                _outputBuffer[_outputTail++] = (byte) ((i >> 2) & 0x7F);
+                i = (i << 8) | (data[offset++] & 0xFF); // 3rd
+                _outputBuffer[_outputTail++] = (byte) ((i >> 3) & 0x7F);
+                i = (i << 8) | (data[offset++] & 0xFF); // 4th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 4) & 0x7F);
+                i = (i << 8) | (data[offset++] & 0xFF); // 5th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 5) & 0x7F);
+                i = (i << 8) | (data[offset++] & 0xFF); // 6th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 6) & 0x7F);
+                i = (i << 8) | (data[offset++] & 0xFF); // 7th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 7) & 0x7F);
+                _outputBuffer[_outputTail++] = (byte) (i & 0x7F);
+            }
             len -= 7;
         }
         // and then partial piece, if any
@@ -2378,21 +2383,26 @@ surr1, surr2));
             if ((_outputTail + 8) >= _outputEnd) {
                 _flushBuffer();
             }
-            int i = buffer[inputPtr++]; // 1st byte
-            _outputBuffer[_outputTail++] = (byte) ((i >> 1) & 0x7F);
-            i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 2nd
-            _outputBuffer[_outputTail++] = (byte) ((i >> 2) & 0x7F);
-            i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 3rd
-            _outputBuffer[_outputTail++] = (byte) ((i >> 3) & 0x7F);
-            i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 4th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 4) & 0x7F);
-            i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 5th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 5) & 0x7F);
-            i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 6th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 6) & 0x7F);
-            i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 7th
-            _outputBuffer[_outputTail++] = (byte) ((i >> 7) & 0x7F);
-            _outputBuffer[_outputTail++] = (byte) (i & 0x7F);
+            if (Smile7BitBinaryCodec.encodeChunk(buffer, inputPtr, _outputBuffer, _outputTail)) {
+                inputPtr += 7;
+                _outputTail += 8;
+            } else {
+                int i = buffer[inputPtr++]; // 1st byte
+                _outputBuffer[_outputTail++] = (byte) ((i >> 1) & 0x7F);
+                i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 2nd
+                _outputBuffer[_outputTail++] = (byte) ((i >> 2) & 0x7F);
+                i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 3rd
+                _outputBuffer[_outputTail++] = (byte) ((i >> 3) & 0x7F);
+                i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 4th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 4) & 0x7F);
+                i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 5th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 5) & 0x7F);
+                i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 6th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 6) & 0x7F);
+                i = (i << 8) | (buffer[inputPtr++] & 0xFF); // 7th
+                _outputBuffer[_outputTail++] = (byte) ((i >> 7) & 0x7F);
+                _outputBuffer[_outputTail++] = (byte) (i & 0x7F);
+            }
             bytesLeft -= 7;
         }
 

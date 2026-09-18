@@ -466,3 +466,9 @@ Burak KALAYCI (@kalayciburak)
 
 * Contributed fix for #761: (smile) Async parser misses #312 NUL-padding
  (2.21.7)
+
+PJ Fanning (@pjfanning)
+
+* Contributed #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)`
+  writes enum values twice
+ (2.21.7)

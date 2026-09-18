@@ -7,10 +7,12 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.core.util.ByteArrayUtil;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for {@link SmileByteShiftUtil}, the byte-shifting fallback used on
+ * Tests for {@link ByteArrayUtil}, the byte-shifting fallback used on
  * runtimes where {@link SmileVarHandleUtil} is unusable.
  *<p>
  * Needed because {@code SmileParserBase._VARHANDLE_AVAILABLE} is
@@ -29,7 +31,7 @@ public class VarHandleFallbackTest extends BaseTestForSmile
         for (byte[] input : _inputs()) {
             final int exp = ByteBuffer.wrap(input, OFFSET, 4)
                     .order(ByteOrder.BIG_ENDIAN).getInt();
-            assertEquals(exp, SmileByteShiftUtil.getIntBE(input, OFFSET));
+            assertEquals(exp, ByteArrayUtil.getIntBE(input, OFFSET));
             if (SmileVarHandleUtil.isAvailable()) {
                 assertEquals(exp, SmileVarHandleUtil.getIntBE(input, OFFSET));
             }

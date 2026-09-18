@@ -10,6 +10,7 @@ import tools.jackson.core.io.IOContext;
 import tools.jackson.core.io.ContentReference;
 import tools.jackson.core.json.DupDetector;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
+import tools.jackson.core.util.ByteArrayUtil;
 import tools.jackson.core.util.JacksonFeatureSet;
 import tools.jackson.core.util.SimpleStreamReadContext;
 import tools.jackson.core.util.TextBuffer;
@@ -761,7 +762,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
         if (_VARHANDLE_AVAILABLE) {
             return SmileVarHandleUtil.getIntBE(buffer, offset);
         }
-        return SmileByteShiftUtil.getIntBE(buffer, offset);
+        return ByteArrayUtil.getIntBE(buffer, offset);
     }
 
     /**
