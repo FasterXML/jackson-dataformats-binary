@@ -41,11 +41,14 @@ implementations)
 #775: (avro) Update to Avro 1.12.2
 #777: (avro) Properties following an `@AvroEncode`d value are silently dropped
  (fix by @cowtowncoder, w/ Claude code)
-- (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
-  breaking round-trip via Apache `ReflectDatumReader`
 #780: (ion) `IonFactory` leaks stream when parser/generator construction fails
   for `File`/`Path`
  (contributed by @Dongnyoung)
+#781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
+  against configured `StreamReadConstraints`, not global defaults
+ (contributed by @pjfanning)
+- (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
+  breaking round-trip via Apache `ReflectDatumReader`
 
 3.2.3 (not yet released)
 
