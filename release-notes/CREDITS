@@ -82,3 +82,8 @@ PJ Fanning (@pjfanning)
 * Contributed #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength`
   in `ProtobufParser`
  (3.3.0)
+
+DongNyoung Lee (@Dongnyoung)
+
+* Contributed #780: (ion) Fix `IonFactory` resource cleanup on failed construction
+ (3.3.0)
