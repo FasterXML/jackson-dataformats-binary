@@ -65,6 +65,11 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
+2.18.11 (not yet released)
+
+#783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
+ (contributed by @pjfanning)
+
 2.18.10 (15-Aug-2026)
 
 #725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
