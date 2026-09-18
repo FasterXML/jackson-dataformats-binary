@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import tools.jackson.core.*;
+import tools.jackson.core.io.ContentReference;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.io.InputDecorator;
 import tools.jackson.core.util.BufferRecycler;
@@ -36,6 +37,7 @@ class IonFactoryFailedConstructionTest
     private final static String DECORATOR_FAIL = "Test-induced decorator failure";
     private final static String CREATE_FAIL = "Test-induced parser construction failure";
     private final static String GEN_CREATE_FAIL = "Test-induced generator construction failure";
+    private final static String CTXT_FAIL = "Test-induced context creation failure";
 
     // 4-byte Ion 1.0 IVM followed by int 0.
     private static final byte[] BINARY_INT_0 = new byte[] {
@@ -241,6 +243,67 @@ class IonFactoryFailedConstructionTest
         assertEquals(1, pool.pooledCount());
     }
 
+    // [dataformats-binary#780]: `InputStream` created by `InputDecorator` for `byte[]`
+    // input is ours, not caller's, so it must be closed on failed construction
+    @Test
+    void closesDecoratorCreatedStreamOnByteArrayParserConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        CloseTrackingInputStream decorated = new CloseTrackingInputStream(
+                new ByteArrayInputStream(BINARY_INT_0));
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .ionSystem(failingIonSystem())
+                .inputDecorator(new StreamProvidingInputDecorator(decorated))
+                .build();
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, BINARY_INT_0));
+        assertEquals(CREATE_FAIL, e.getMessage());
+
+        assertEquals(1, decorated.closeCount);
+        assertEquals(2, pool.pooledCount());
+    }
+
+    // [dataformats-binary#780]: `createGenerator(Writer)` had no failure handling at all
+    @Test
+    void releasesContextOnWriterGeneratorConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        GeneratorFailingIonFactory f = new GeneratorFailingIonFactory(
+                IonFactory.builderForTextualWriters()
+                    .recyclerPool(pool));
+
+        CloseTrackingWriter w = new CloseTrackingWriter(new StringWriter());
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createGenerator(EMPTY_WRITE_CTXT, w));
+        assertEquals(GEN_CREATE_FAIL, e.getMessage());
+
+        // caller-provided `Writer`: left open, but context must be released
+        assertEquals(0, w.closeCount);
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // [dataformats-binary#780]: `File`/`Path` generator paths delegate cleanup of the
+    // stream to `_createGenerator()`, so failures in context creation must be covered too
+    @Test
+    void closesFileOutputStreamOnContextCreationFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        TrackingIonFactory f = new ContentReferenceFailingIonFactory(
+                IonFactory.builderForTextualWriters()
+                    .recyclerPool(pool));
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createGenerator(EMPTY_WRITE_CTXT,
+                        _tempDir.resolve("output-ctxt-fail.ion").toFile(),
+                        JsonEncoding.UTF8));
+        assertEquals(CTXT_FAIL, e.getMessage());
+
+        assertEquals(1, f.outputs.size());
+        assertEquals(1, f.outputs.get(0).closeCount);
+    }
+
     private File _tempIonFile(String name) throws IOException {
         Path p = _tempDir.resolve(name);
         Files.write(p, BINARY_INT_0);
@@ -397,6 +460,23 @@ class IonFactoryFailedConstructionTest
         }
     }
 
+    static class ContentReferenceFailingIonFactory extends TrackingIonFactory
+    {
+        private static final long serialVersionUID = 1L;
+
+        ContentReferenceFailingIonFactory(IonFactoryBuilder b) {
+            super(b);
+        }
+
+        @Override
+        protected ContentReference _createContentReference(Object contentRef) {
+            if (contentRef instanceof OutputStream) {
+                throw new IllegalStateException(CTXT_FAIL);
+            }
+            return super._createContentReference(contentRef);
+        }
+    }
+
     static class GeneratorFailingIonFactory extends TrackingIonFactory
     {
         private static final long serialVersionUID = 1L;
@@ -410,6 +490,32 @@ class IonFactoryFailedConstructionTest
         protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
                 IOContext ioCtxt, IonWriter ion, boolean ionWriterIsManaged, Closeable dst) {
             throw new IllegalStateException(GEN_CREATE_FAIL);
+        }
+    }
+
+    static class StreamProvidingInputDecorator extends InputDecorator
+    {
+        private static final long serialVersionUID = 1L;
+
+        private final InputStream _toProvide;
+
+        StreamProvidingInputDecorator(InputStream toProvide) {
+            _toProvide = toProvide;
+        }
+
+        @Override
+        public InputStream decorate(IOContext ctxt, InputStream in) {
+            return in;
+        }
+
+        @Override
+        public InputStream decorate(IOContext ctxt, byte[] src, int offset, int length) {
+            return _toProvide;
+        }
+
+        @Override
+        public Reader decorate(IOContext ctxt, Reader r) {
+            return r;
         }
     }
 
@@ -434,6 +540,21 @@ class IonFactoryFailedConstructionTest
 
         CloseTrackingOutputStream(OutputStream out) {
             super(out);
+        }
+
+        @Override
+        public void close() throws IOException {
+            ++closeCount;
+            super.close();
+        }
+    }
+
+    static class CloseTrackingWriter extends FilterWriter
+    {
+        public int closeCount;
+
+        CloseTrackingWriter(Writer w) {
+            super(w);
         }
 
         @Override

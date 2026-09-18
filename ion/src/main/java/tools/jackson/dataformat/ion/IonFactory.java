@@ -321,7 +321,8 @@ public class IonFactory
             if (_inputDecorator != null) {
                 InputStream in = _inputDecorator.decorate(ioCtxt, data, 0, data.length);
                 if (in != null) {
-                    return _createParser(readCtxt, ioCtxt, in);
+                    // `InputStream` created by decorator, not caller, so we do own it
+                    return _createParser(readCtxt, ioCtxt, in, true);
                 }
             }
             return _createParser(readCtxt, ioCtxt, data, 0, data.length);
@@ -340,7 +341,8 @@ public class IonFactory
             if (_inputDecorator != null) {
                 InputStream in = _inputDecorator.decorate(ioCtxt, data, offset, len);
                 if (in != null) {
-                    return _createParser(readCtxt, ioCtxt, in);
+                    // `InputStream` created by decorator, not caller, so we do own it
+                    return _createParser(readCtxt, ioCtxt, in, true);
                 }
             }
             return _createParser(readCtxt, ioCtxt, data, offset, len);
@@ -393,9 +395,17 @@ public class IonFactory
         if (_cfgBinaryWriters) {
             throw new UnsupportedOperationException("Can only create binary Ion writers that output to OutputStream, not Writer");
         }
-        return _createGenerator(writeCtxt, _createContext(_createContentReference(w), false),
-                _createTextualIonWriter(writeCtxt, w),
-                true, w);
+        IOContext ioCtxt = _createContext(_createContentReference(w), false);
+        try {
+            return _createGenerator(writeCtxt, ioCtxt,
+                    _createTextualIonWriter(writeCtxt, w),
+                    true, w);
+        } catch (RuntimeException e) {
+            // NOTE: `Writer` is caller-provided so not closed here (and closing the
+            // `IonWriter` would close it as well); `IOContext` we do need to release
+            _releaseContextOnFailedConstruction(ioCtxt, e);
+            throw e;
+        }
     }
 
     @Override
@@ -597,10 +607,13 @@ public class IonFactory
     protected IonGenerator _createGenerator(ObjectWriteContext writeCtxt,
             OutputStream out, JsonEncoding enc, boolean isManaged)
      {
-        IOContext ioCtxt = _createContext(_createContentReference(out), isManaged);
+        IOContext ioCtxt = null;
         IonWriter ion = null;
         Closeable dst = null; // not necessarily same as 'out'...
         try {
+            // NOTE: context creation within `try` since callers have delegated cleanup
+            //   of `out` to this method
+            ioCtxt = _createContext(_createContentReference(out), isManaged);
             // Binary writers are simpler: no alternate encodings
             if (_cfgBinaryWriters) {
                 ioCtxt.setEncoding(enc);
