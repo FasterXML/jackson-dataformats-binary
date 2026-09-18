@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -221,9 +222,11 @@ public class SmileGeneratorNumbersTest
                         .maxNumberLength(maxLen).build())
                 .build();
         final String tooLongInt = "1".repeat(maxLen + 1);
-        final String tooLongDec = "1." + "1".repeat(maxLen - 1);
+        // NOTE: limit applies to digits only, so sign/decimal point do not count
+        final String tooLongNegInt = "-" + "1".repeat(maxLen + 1);
+        final String tooLongDec = "1." + "1".repeat(maxLen);
 
-        for (String num : new String[] { tooLongInt, tooLongDec }) {
+        for (String num : new String[] { tooLongInt, tooLongNegInt, tooLongDec }) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
                 gen.writeNumber(num);
@@ -243,6 +246,62 @@ public class SmileGeneratorNumbersTest
         try (JsonParser p = f.createParser(out.toByteArray())) {
             assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(new BigInteger(atLimit), p.getBigIntegerValue());
+        }
+
+        // Same for values where non-digits bring the total length past the limit:
+        // must match what parsers accept on read-back
+        final String negAtLimit = "-" + atLimit;
+        final String decAtLimit = "1." + "1".repeat(maxLen - 1);
+
+        out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+            gen.writeNumber(negAtLimit);
+        }
+        try (JsonParser p = f.createParser(out.toByteArray())) {
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(new BigInteger(negAtLimit), p.getBigIntegerValue());
+        }
+
+        out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+            gen.writeNumber(decAtLimit);
+        }
+        try (JsonParser p = f.createParser(out.toByteArray())) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(new BigDecimal(decAtLimit), p.getDecimalValue());
+        }
+    }
+
+    // [dataformats-binary#781]: and the other direction -- limit configured above
+    // the 1000-character default must allow longer numbers than defaults would
+    @Test
+    public void testNumbersAsStringLengthLimitIncreased() throws Exception
+    {
+        final int maxLen = 2000;
+        SmileFactory f = smileFactoryBuilder(false, false, false)
+                .streamReadConstraints(StreamReadConstraints.builder()
+                        .maxNumberLength(maxLen).build())
+                .build();
+        // Longer than the 1000-character default, but within configured limit
+        final String longInt = "1".repeat(1500);
+        final String longDec = "1." + "1".repeat(1499);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+            gen.writeNumber(longInt);
+        }
+        try (JsonParser p = f.createParser(out.toByteArray())) {
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(new BigInteger(longInt), p.getBigIntegerValue());
+        }
+
+        out = new ByteArrayOutputStream();
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+            gen.writeNumber(longDec);
+        }
+        try (JsonParser p = f.createParser(out.toByteArray())) {
+            assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(new BigDecimal(longDec), p.getDecimalValue());
         }
     }
 
