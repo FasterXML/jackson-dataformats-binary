@@ -2575,6 +2575,7 @@ public class ProtobufParser extends ParserMinimalBase
     {
         if (_inputStream != null) {
             _currInputProcessed += _inputEnd;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
 
             int count;
             try {
@@ -2618,6 +2619,7 @@ public class ProtobufParser extends ParserMinimalBase
 
         if (ptr > 0) {
             _currInputProcessed += ptr;
+            _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             if (amount > 0) {
                 System.arraycopy(_inputBuffer, ptr, _inputBuffer, 0, amount);
             }
