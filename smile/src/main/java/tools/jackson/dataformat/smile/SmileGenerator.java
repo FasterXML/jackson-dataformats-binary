@@ -1672,11 +1672,13 @@ public class SmileGenerator
     protected void _writeIntegralNumber(String enc, boolean neg) throws JacksonException
     {
         int len = enc.length();
-        // 16-Dec-2023, tatu: Guard against too-big numbers
-        _streamReadConstraints().validateIntegerLength(len);
         if (neg) {
             --len;
         }
+        // 16-Dec-2023, tatu: Guard against too-big numbers
+        // 18-Sep-2026: length to validate is that of digits only, without sign,
+        //   same as what parsers pass in
+        _streamReadConstraints().validateIntegerLength(len);
         // let's do approximate optimization
         try {
             if (len <= 9) {
@@ -1698,7 +1700,9 @@ public class SmileGenerator
     protected void _writeDecimalNumber(String enc) throws JacksonException
     {
         // 16-Dec-2023, tatu: Guard against too-big numbers
-        _streamReadConstraints().validateFPLength(enc.length());
+        // 18-Sep-2026: length to validate is that of digits only, without sign,
+        //   decimal point or exponent marker, same as what parsers pass in
+        _streamReadConstraints().validateFPLength(_digitCount(enc));
         // ... and check basic validity too
         if (NumberInput.looksLikeValidNumber(enc)) {
             try {
@@ -2771,12 +2775,21 @@ surr1, surr2));
 
     /**
      * We need access to some reader-side constraints for safety-check within
-     * number decoding for {@linl #writeNumber(String)}: for now we need to
-     * rely on global defaults; should be ok for basic safeguarding.
-     *
-     * @since 2.17
+     * number decoding for {@link #writeNumber(String)}: these are the ones
+     * configured for the underlying factory, accessed via {@link IOContext}.
      */
     protected StreamReadConstraints _streamReadConstraints() {
-        return StreamReadConstraints.defaults();
+        return _ioContext.streamReadConstraints();
+    }
+
+    private static int _digitCount(String enc) {
+        int count = 0;
+        for (int i = 0, len = enc.length(); i < len; ++i) {
+            char c = enc.charAt(i);
+            if (c <= '9' && c >= '0') {
+                ++count;
+            }
+        }
+        return count;
     }
 }
