@@ -14,6 +14,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.11 (not yet released)
+
+#785: (avro) Support `StreamReadConstraints.maxDocumentLength` and `maxTokenCount`
+  in Avro parser
+ (contributed by @pjfanning)
+
 2.18.10 (15-Aug-2026)
 
 #725: (cbor) Ensure `maxNameLength` limit enforced for CBOR parser [CVE-2026-68495]
