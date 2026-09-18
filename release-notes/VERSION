@@ -41,6 +41,11 @@ implementations)
 #775: (avro) Update to Avro 1.12.2
 #777: (avro) Properties following an `@AvroEncode`d value are silently dropped
  (fix by @cowtowncoder, w/ Claude code)
+#780: (ion) `IonFactory` leaks stream when parser/generator construction fails
+  for `File`/`Path`
+ (contributed by @Dongnyoung)
+#781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
+  against configured `StreamReadConstraints`, not global defaults
 #785: (avro) Support `StreamReadConstraints.maxDocumentLength` and `maxTokenCount`
   in Avro parser
  (contributed by @pjfanning)
