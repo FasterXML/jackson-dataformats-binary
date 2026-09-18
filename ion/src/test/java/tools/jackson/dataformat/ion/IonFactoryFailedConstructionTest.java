@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
+import com.amazon.ion.IonValue;
 import com.amazon.ion.IonWriter;
 import com.amazon.ion.system.IonSystemBuilder;
 
@@ -304,6 +305,90 @@ class IonFactoryFailedConstructionTest
         assertEquals(1, f.outputs.get(0).closeCount);
     }
 
+    // [dataformats-binary#780]: extended API -- caller-provided `IonReader` must be
+    // left alone, but `IOContext` still released
+    @Test
+    void leavesCallerProvidedIonReaderOpenOnParserConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .build();
+        AtomicInteger readerCloseCount = new AtomicInteger();
+        IonReader r = failingIonReader(null, readerCloseCount);
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, r));
+        assertEquals(CREATE_FAIL, e.getMessage());
+
+        assertEquals(0, readerCloseCount.get());
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // ... whereas `IonReader` we create over `IonValue` is ours to close
+    @Test
+    void closesIonReaderCreatedForIonValueOnParserConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        IonFactory f = IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .build();
+        AtomicInteger readerCloseCount = new AtomicInteger();
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, failingIonValue(readerCloseCount)));
+        assertEquals(CREATE_FAIL, e.getMessage());
+
+        assertEquals(1, readerCloseCount.get());
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // [dataformats-binary#780]: extended API -- caller-provided `IonWriter` likewise
+    @Test
+    void leavesCallerProvidedIonWriterOpenOnGeneratorConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        GeneratorFailingIonFactory f = new GeneratorFailingIonFactory(
+                IonFactory.builderForTextualWriters()
+                    .recyclerPool(pool));
+        AtomicInteger writerCloseCount = new AtomicInteger();
+        IonWriter w = countingIonWriter(
+                IonSystemBuilder.standard().build().newTextWriter(new StringWriter()),
+                writerCloseCount);
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createGenerator(EMPTY_WRITE_CTXT, w));
+        assertEquals(GEN_CREATE_FAIL, e.getMessage());
+
+        assertEquals(0, writerCloseCount.get());
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // [dataformats-binary#780]: `Reader` we create over `char[]` / `String` is ours,
+    // so the `IonReader` over it gets closed on failed construction
+    @Test
+    void closesIonReaderOnCharArrayParserConstructionFailure() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        AtomicInteger readerCloseCount = new AtomicInteger();
+        IonFactory f = IonFactory.builderForTextualWriters()
+                .recyclerPool(pool)
+                .ionSystem(failingIonSystem(readerCloseCount))
+                .build();
+
+        char[] doc = "0".toCharArray();
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, doc, 0, doc.length));
+        assertEquals(CREATE_FAIL, e.getMessage());
+        assertEquals(1, readerCloseCount.get());
+
+        readerCloseCount.set(0);
+        e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, "0"));
+        assertEquals(CREATE_FAIL, e.getMessage());
+        assertEquals(1, readerCloseCount.get());
+    }
+
     private File _tempIonFile(String name) throws IOException {
         Path p = _tempDir.resolve(name);
         Files.write(p, BINARY_INT_0);
@@ -311,12 +396,28 @@ class IonFactoryFailedConstructionTest
     }
 
     private IonSystem failingIonSystem() {
+        return failingIonSystem(null);
+    }
+
+    private IonSystem failingIonSystem(AtomicInteger closeCount) {
         return (IonSystem) Proxy.newProxyInstance(getClass().getClassLoader(),
                 new Class<?>[] { IonSystem.class }, (proxy, method, args) -> {
                     if ("newReader".equals(method.getName())
-                            && (args != null) && (args.length == 1)
-                            && (args[0] instanceof InputStream)) {
-                        return failingIonReader((InputStream) args[0]);
+                            && (args != null) && (args.length == 1)) {
+                        Object src = args[0];
+                        return failingIonReader((src instanceof Closeable)
+                                ? (Closeable) src : null, closeCount);
+                    }
+                    return defaultValue(method.getReturnType());
+                });
+    }
+
+    private IonValue failingIonValue(AtomicInteger readerCloseCount) {
+        final IonSystem ionSystem = failingIonSystem(readerCloseCount);
+        return (IonValue) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonValue.class }, (proxy, method, args) -> {
+                    if ("getSystem".equals(method.getName())) {
+                        return ionSystem;
                     }
                     return defaultValue(method.getReturnType());
                 });
@@ -354,14 +455,23 @@ class IonFactoryFailedConstructionTest
         }
     }
 
-    private IonReader failingIonReader(InputStream in) {
+    // NOTE: mock deliberately mirrors the real ion-java contract, in which
+    // `IonReader.close()` cascades to the underlying `InputStream` / `Reader`
+    // (see `IonCursorBinary.close()`, `UnifiedInputStreamX.close()`); production
+    // cleanup relies on that cascade
+    private IonReader failingIonReader(Closeable toClose, AtomicInteger closeCount) {
         return (IonReader) Proxy.newProxyInstance(getClass().getClassLoader(),
                 new Class<?>[] { IonReader.class }, (proxy, method, args) -> {
                     if ("getType".equals(method.getName())) {
                         throw new IllegalStateException(CREATE_FAIL);
                     }
                     if ("close".equals(method.getName())) {
-                        in.close();
+                        if (closeCount != null) {
+                            closeCount.incrementAndGet();
+                        }
+                        if (toClose != null) {
+                            toClose.close();
+                        }
                         return null;
                     }
                     return defaultValue(method.getReturnType());
