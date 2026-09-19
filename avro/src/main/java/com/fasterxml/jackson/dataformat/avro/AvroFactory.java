@@ -440,6 +440,8 @@ public class AvroFactory extends JsonFactory
 
     @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
 // !!! 21-Apr-2017, tatu: make configurable
         return new JacksonAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
 //        return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
