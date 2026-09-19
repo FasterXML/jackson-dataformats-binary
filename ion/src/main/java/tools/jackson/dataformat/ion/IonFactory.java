@@ -252,22 +252,21 @@ public class IonFactory
     public JsonParser createParser(ObjectReadContext readCtxt, File f) {
         IOContext ioCtxt = _createContext(_createContentReference(f), true);
         InputStream rawIn = null;
-        // [dataformats-binary#798]: track outermost source separately from the one
-        //   Jackson opened, so that a failing `close()` of a decorated stream does
-        //   not leave the underlying one open
-        Closeable inputToClose = null;
         boolean inputCleanupDelegated = false;
         try {
             rawIn = _fileInputStream(f);
-            inputToClose = rawIn;
+            // [dataformats-binary#798]: keep reference to stream we opened, so that
+            //   `_createParser()` can fall back to closing it if closing of the
+            //   decorated one fails
             InputStream in = _decorate(ioCtxt, rawIn);
-            inputToClose = in;
             // From this point on `_createParser()` handles cleanup of both input and `ioCtxt`
             inputCleanupDelegated = true;
             return _createParser(readCtxt, ioCtxt, in, rawIn);
         } catch (RuntimeException e) {
+            // Only reachable before decoration completed, so `rawIn` is the only
+            // thing that can need closing here
             if (!inputCleanupDelegated) {
-                _closeOnFailedConstruction(inputToClose, rawIn, e);
+                _closeOnFailedConstruction(rawIn, e);
                 _releaseOnFailedConstruction(ioCtxt, e);
             }
             throw e;
@@ -280,22 +279,21 @@ public class IonFactory
     {
         IOContext ioCtxt = _createContext(_createContentReference(p), true);
         InputStream rawIn = null;
-        // [dataformats-binary#798]: track outermost source separately from the one
-        //   Jackson opened, so that a failing `close()` of a decorated stream does
-        //   not leave the underlying one open
-        Closeable inputToClose = null;
         boolean inputCleanupDelegated = false;
         try {
             rawIn = _pathInputStream(p);
-            inputToClose = rawIn;
+            // [dataformats-binary#798]: keep reference to stream we opened, so that
+            //   `_createParser()` can fall back to closing it if closing of the
+            //   decorated one fails
             InputStream in = _decorate(ioCtxt, rawIn);
-            inputToClose = in;
             // From this point on `_createParser()` handles cleanup of both input and `ioCtxt`
             inputCleanupDelegated = true;
             return _createParser(readCtxt, ioCtxt, in, rawIn);
         } catch (RuntimeException e) {
+            // Only reachable before decoration completed, so `rawIn` is the only
+            // thing that can need closing here
             if (!inputCleanupDelegated) {
-                _closeOnFailedConstruction(inputToClose, rawIn, e);
+                _closeOnFailedConstruction(rawIn, e);
                 _releaseOnFailedConstruction(ioCtxt, e);
             }
             throw e;
