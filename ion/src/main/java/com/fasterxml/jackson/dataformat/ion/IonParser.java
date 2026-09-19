@@ -21,6 +21,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
@@ -832,6 +833,14 @@ public class IonParser
 
     private <T> T _reportCorruptContent(Throwable e) throws IOException
     {
+        // [dataformats-binary#358]: constraint violations are detected while `IonReader`
+        //   pulls from the source, and it wraps the `IOException` we throw; unwrap so
+        //   callers see `StreamConstraintsException`, not a corrupt-content error
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof StreamConstraintsException) {
+                throw (StreamConstraintsException) t;
+            }
+        }
         String origMsg = e.getMessage();
         if (origMsg == null) {
             origMsg = "[no exception message]";

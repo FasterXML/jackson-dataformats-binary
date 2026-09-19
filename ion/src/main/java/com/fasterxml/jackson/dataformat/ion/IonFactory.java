@@ -18,6 +18,8 @@ import java.io.CharArrayReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +31,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.UTF8Writer;
@@ -359,7 +362,9 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(InputStream in, IOContext ctxt)
         throws IOException
     {
-        IonReader ion = _system.newReader(in);
+        // [dataformats-binary#358]: `IonReader` pulls from the source itself, so
+        //   document length is tracked by counting what it reads
+        IonReader ion = _system.newReader(_lengthChecking(in));
         return new IonParser(ion, _system,
                 _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
     }
@@ -368,7 +373,9 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(Reader r, IOContext ctxt)
         throws IOException
     {
-        IonReader ion = _system.newReader(r);
+        // [dataformats-binary#358]: as above; for textual sources length is
+        //   counted in `char`s, same as `ReaderBasedJsonParser` does
+        IonReader ion = _system.newReader(_lengthChecking(r));
         return new IonParser(ion, _system,
                 _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
     }
@@ -377,6 +384,8 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
             boolean recyclable) throws IOException
     {
+        // [dataformats-binary#358]: length known up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return _createParser(new CharArrayReader(data, offset, len), ctxt);
     }
 
@@ -384,9 +393,25 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
         throws IOException
     {
+        // [dataformats-binary#358]: length known up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         IonReader ion = _system.newReader(data, offset, len);
         return new IonParser(ion, _system,
                 _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
+    }
+
+    private InputStream _lengthChecking(InputStream in) {
+        if (_streamReadConstraints.getMaxDocumentLength() <= 0L) { // no limit configured
+            return in;
+        }
+        return new LengthCheckingInputStream(in, _streamReadConstraints);
+    }
+
+    private Reader _lengthChecking(Reader r) {
+        if (_streamReadConstraints.getMaxDocumentLength() <= 0L) { // no limit configured
+            return r;
+        }
+        return new LengthCheckingReader(r, _streamReadConstraints);
     }
 
     @Override
@@ -485,4 +510,137 @@ public class IonFactory extends JsonFactory
         return new IonGenerator(_generatorFeatures, _ionGeneratorFeatures, _objectCodec,
                 ion, ionWriterIsManaged, ctxt, dst);
     }
+
+    /*
+    ***************************************************************
+    * Helper classes
+    ***************************************************************
+     */
+
+    /**
+     * Number of bytes/chars {@code IonReader} may have pulled from the source but
+     * not yet decoded. Measured against ion-java 1.11/1.12, which fills its buffer
+     * in 32kB chunks for both textual and binary input.
+     */
+    private final static int READ_AHEAD_SLACK = 32 * 1024;
+
+    /**
+     * {@link InputStream} wrapper that applies
+     * {@link StreamReadConstraints#validateDocumentLength} to the number of bytes read
+     * so far: {@code IonReader} reads from the source directly, so Jackson never sees
+     * the content itself.
+     *<p>
+     * Note that {@code IonReader} pulls content ahead of the actual decoding position,
+     * by up to its buffer size: bytes read but not (yet) decoded must not count towards
+     * document length, or a caller that stops early could be failed for content it never
+     * decoded. Since the reader does not expose how much it has actually consumed, the
+     * buffer size is allowed as slack; the check is hence approximate, but only ever in
+     * the direction of allowing slightly too much.
+     *
+     * @since 2.18.11
+     */
+    private final static class LengthCheckingInputStream extends FilterInputStream
+    {
+        private final StreamReadConstraints _constraints;
+
+        private long _bytesRead;
+
+        LengthCheckingInputStream(InputStream in, StreamReadConstraints constraints) {
+            super(in);
+            _constraints = constraints;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = in.read();
+            if (b >= 0) {
+                ++_bytesRead;
+                _validateLength();
+            }
+            return b;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int count = in.read(b, off, len);
+            if (count > 0) {
+                _bytesRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long count = in.skip(n);
+            if (count > 0) {
+                _bytesRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        private void _validateLength() throws IOException {
+            long decoded = _bytesRead - READ_AHEAD_SLACK;
+            if (decoded > 0L) {
+                _constraints.validateDocumentLength(decoded);
+            }
+        }
+    }
+
+    /**
+     * {@link Reader} equivalent of {@link LengthCheckingInputStream}, for textual Ion
+     * sources; counts {@code char}s, the way {@code ReaderBasedJsonParser} does.
+     *
+     * @since 2.18.11
+     */
+    private final static class LengthCheckingReader extends FilterReader
+    {
+        private final StreamReadConstraints _constraints;
+
+        private long _charsRead;
+
+        LengthCheckingReader(Reader r, StreamReadConstraints constraints) {
+            super(r);
+            _constraints = constraints;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = in.read();
+            if (c >= 0) {
+                ++_charsRead;
+                _validateLength();
+            }
+            return c;
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            int count = in.read(cbuf, off, len);
+            if (count > 0) {
+                _charsRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long count = in.skip(n);
+            if (count > 0) {
+                _charsRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        private void _validateLength() throws IOException {
+            long decoded = _charsRead - READ_AHEAD_SLACK;
+            if (decoded > 0L) {
+                _constraints.validateDocumentLength(decoded);
+            }
+        }
+    }
+
 }
