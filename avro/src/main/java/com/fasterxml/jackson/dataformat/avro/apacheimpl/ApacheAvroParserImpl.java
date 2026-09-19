@@ -72,6 +72,21 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     protected BinaryDecoder _decoder;
 
     /**
+     * Wrapper counting bytes pulled from the source, if a document length limit is
+     * configured; {@code null} if not, or for fixed-buffer input.
+     *
+     * @since 2.18.11
+     */
+    protected final LengthCheckingInputStream _lengthCheckingInput;
+
+    /**
+     * Whether decoder buffers (and hence reads ahead of the decoding position).
+     *
+     * @since 2.18.11
+     */
+    protected final boolean _bufferingDecoder;
+
+    /**
      * We need to keep track of text values.
      */
     protected String _textValue;
@@ -97,12 +112,20 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         final boolean buffering = Feature.AVRO_BUFFERING.enabledIn(avroFeatures);
         // [dataformats-binary#785] Apache decoder does its own buffering, so document
         // length constraint has to be applied by counting bytes it pulls from the stream.
-        // But since a buffering decoder may read ahead of the actual decoding position
-        // by up to its buffer size, that much slack is needed to avoid false positives
+        // Mid-value that count runs ahead of the decoding position by up to the buffer
+        // size, so the in-stream check allows that much slack, to avoid failing a caller
+        // for content it has not decoded; [dataformats-binary#806] then checks the exact
+        // decoding position at every token boundary, where it can be determined
         if (_streamReadConstraints.hasMaxDocumentLength()) {
-            in = new LengthCheckingInputStream(in, _streamReadConstraints,
+            LengthCheckingInputStream lengthChecking = new LengthCheckingInputStream(in,
+                    _streamReadConstraints,
                     buffering ? DECODER_FACTORY.getConfiguredBufferSize() : 0);
+            _lengthCheckingInput = lengthChecking;
+            in = lengthChecking;
+        } else {
+            _lengthCheckingInput = null;
         }
+        _bufferingDecoder = buffering;
         BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = buffering
                 ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)
@@ -117,8 +140,38 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         super(ctxt, parserFeatures, avroFeatures, codec);
         _inputStream = null;
         _apacheCodecRecycler = apacheCodecRecycler;
+        // fixed buffer: length validated up front by factory, nothing to count
+        _lengthCheckingInput = null;
+        _bufferingDecoder = true;
         BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = DECODER_FACTORY.binaryDecoder(buffer, offset, len, decoderToReuse);
+    }
+
+    /**
+     * [dataformats-binary#806]: at a token boundary the decoder is in a stable state, so
+     * the exact decoding position can be determined -- bytes pulled from the source, less
+     * what the decoder still holds buffered -- and the document length limit applied to
+     * that rather than to the read-ahead-inflated raw count.
+     *
+     * @since 2.18.11
+     */
+    @Override
+    public JsonToken nextToken() throws IOException
+    {
+        JsonToken t = super.nextToken();
+        final LengthCheckingInputStream input = _lengthCheckingInput;
+        if (input != null) {
+            long consumed = input.bytesRead();
+            if (_bufferingDecoder) {
+                // NOTE: for a buffering decoder this is what remains in its buffer,
+                //   undecoded; a direct decoder does not buffer, so raw count is exact
+                consumed -= _decoder.inputStream().available();
+            }
+            if (consumed > 0L) {
+                _streamReadConstraints.validateDocumentLength(consumed);
+            }
+        }
+        return t;
     }
 
     @Override
@@ -435,11 +488,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      *<p>
      * Note that a buffering {@link BinaryDecoder} pulls content from the stream ahead of
      * the actual decoding position, by up to its buffer size: bytes that have been read
-     * but not (yet) decoded must not count towards document length, or a document well
-     * within the limit could be rejected. Since the decoder does not expose the number of
-     * bytes it has actually consumed, the buffer size is allowed as slack; the check is
-     * hence approximate (as with the non-Apache decoder), but only ever in the direction
-     * of allowing slightly too much.
+     * but not (yet) decoded must not count towards document length, or a caller could be
+     * failed for content it never decoded. So this check allows the buffer size as slack,
+     * which makes it a backstop -- it bounds how much can be pulled while decoding a single
+     * value -- rather than the primary check. The exact decoding position is applied at
+     * every token boundary instead, by {@link ApacheAvroParserImpl#nextToken()}
+     * [dataformats-binary#806].
      *
      * @since 2.18.11
      */
@@ -460,6 +514,8 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _constraints = constraints;
             _readAheadSlack = readAheadSlack;
         }
+
+        public long bytesRead() { return _bytesRead; }
 
         @Override
         public int read() throws IOException {
@@ -492,9 +548,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         }
 
         private void _validateLength() throws IOException {
-            long decoded = _bytesRead - _readAheadSlack;
-            if (decoded > 0L) {
-                _constraints.validateDocumentLength(decoded);
+            // [dataformats-binary#806]: trip point is unchanged -- read-ahead is still
+            //   allowed as slack -- but what gets reported is the real count of bytes
+            //   pulled, not that count less the slack, which is not a document length
+            final long maxLen = _constraints.getMaxDocumentLength();
+            if ((maxLen > 0L) && ((_bytesRead - _readAheadSlack) > maxLen)) {
+                _constraints.validateDocumentLength(_bytesRead);
             }
         }
     }
