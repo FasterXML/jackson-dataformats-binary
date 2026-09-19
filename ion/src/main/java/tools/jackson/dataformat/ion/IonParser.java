@@ -607,9 +607,13 @@ public class IonParser
         // also, when starting array/object, need to create new context
         if (_currToken == JsonToken.START_OBJECT) {
             _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
+            // [dataformats-binary#803]: verify nesting depth
+            _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
             _reader.stepIn();
         } else if (_currToken == JsonToken.START_ARRAY) {
             _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
+            // [dataformats-binary#803]: verify nesting depth
+            _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
             _reader.stepIn();
         }
 
