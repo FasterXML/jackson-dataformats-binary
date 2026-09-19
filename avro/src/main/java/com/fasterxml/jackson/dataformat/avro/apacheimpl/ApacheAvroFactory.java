@@ -51,6 +51,8 @@ public class ApacheAvroFactory extends AvroFactory
 
     @Override
     protected AvroParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         return new ApacheAvroParserImpl(ctxt, _parserFeatures, _avroParserFeatures,
                 _avroRecyclerPool.acquireAndLinkPooled(),
                 _objectCodec, data, offset, len);
