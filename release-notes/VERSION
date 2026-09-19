@@ -47,9 +47,6 @@ implementations)
 #781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
   against configured `StreamReadConstraints`, not global defaults
  (contributed by @pjfanning)
-#798: (ion) `IonFactory` leaks `File`/`Path` stream on failed construction if
-  closing of wrapping resource fails
- (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
