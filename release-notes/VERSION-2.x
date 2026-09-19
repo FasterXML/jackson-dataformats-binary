@@ -72,6 +72,10 @@ No changes since 2.19.1
 #785: (avro) Support `StreamReadConstraints.maxDocumentLength` and `maxTokenCount`
   in Avro parser
  (contributed by @pjfanning)
+#803: (ion) Support `StreamReadConstraints.maxNestingDepth` in Ion parser
+  (partial fix for #358)
+ (reported by @pjfanning)
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.18.10 (15-Aug-2026)
 
