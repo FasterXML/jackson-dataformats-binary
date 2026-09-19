@@ -260,6 +260,8 @@ public class AvroFactory
             byte[] data, int offset, int len)
         throws JacksonException
     {
+        // [core#1548] Validate doc length up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
         if (_useApacheLibDecoder) {
             return new ApacheAvroParserImpl(readCtxt, ioCtxt,
                     readCtxt.getStreamReadFeatures(_streamReadFeatures),

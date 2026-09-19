@@ -75,8 +75,7 @@ public abstract class AvroParserImpl
         } catch (IOException e) {
             throw _wrapIOFailure(e);
         }
-        _currToken = t;
-        return t;
+        return _nullSafeUpdateToken(t);
     }
 
     /**
