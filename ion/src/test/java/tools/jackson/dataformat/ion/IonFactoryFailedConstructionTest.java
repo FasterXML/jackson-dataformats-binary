@@ -39,6 +39,8 @@ class IonFactoryFailedConstructionTest
     private final static String CREATE_FAIL = "Test-induced parser construction failure";
     private final static String GEN_CREATE_FAIL = "Test-induced generator construction failure";
     private final static String CTXT_FAIL = "Test-induced context creation failure";
+    private final static String READER_FAIL = "Test-induced `IonReader` creation failure";
+    private final static String CLOSE_FAIL = "Test-induced close failure";
 
     // 4-byte Ion 1.0 IVM followed by int 0.
     private static final byte[] BINARY_INT_0 = new byte[] {
@@ -389,6 +391,81 @@ class IonFactoryFailedConstructionTest
         assertEquals(1, readerCloseCount.get());
     }
 
+    // [dataformats-binary#798]: closing `IonReader` cascades to the decorated stream;
+    // if that close fails, stream Jackson opened for `File` must not be left leaked
+    @Test
+    void closesFileInputStreamWhenDecoratedStreamCloseFails() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        CloseFailingInputDecorator dec = new CloseFailingInputDecorator();
+        TrackingIonFactory f = new TrackingIonFactory(IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .inputDecorator(dec)
+                .ionSystem(failingIonSystem()));
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT, _tempIonFile("input-close-fail.ion")));
+        assertEquals(CREATE_FAIL, e.getMessage());
+
+        // Outermost resource closed first, and it fails...
+        assertEquals(1, dec.decorated.closeCount);
+        assertEquals(1, e.getSuppressed().length);
+        assertEquals(CLOSE_FAIL, e.getSuppressed()[0].getMessage());
+        // ... so what Jackson opened gets closed directly
+        assertEquals(1, f.inputs.size());
+        assertEquals(1, f.inputs.get(0).closeCount);
+        assertEquals(2, pool.pooledCount());
+    }
+
+    // [dataformats-binary#798]: same, but for failure before `IonReader` exists, where
+    // decorated stream itself is the outermost resource
+    @Test
+    void closesFileInputStreamWhenDecoratedStreamCloseFailsBeforeIonReader() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        CloseFailingInputDecorator dec = new CloseFailingInputDecorator();
+        TrackingIonFactory f = new TrackingIonFactory(IonFactory.builderForBinaryWriters()
+                .recyclerPool(pool)
+                .inputDecorator(dec)
+                .ionSystem(readerFailingIonSystem()));
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createParser(EMPTY_READ_CTXT,
+                        _tempIonFile("input-close-fail-early.ion").toPath()));
+        assertEquals(READER_FAIL, e.getMessage());
+
+        assertEquals(1, dec.decorated.closeCount);
+        assertEquals(1, e.getSuppressed().length);
+        assertEquals(1, f.inputs.size());
+        assertEquals(1, f.inputs.get(0).closeCount);
+        // no parser-owned context created yet, so just the one
+        assertEquals(1, pool.pooledCount());
+    }
+
+    // [dataformats-binary#798]: and same on generator side, where closing `IonWriter`
+    // is what normally cascades to the target Jackson opened
+    @Test
+    void closesFileOutputStreamWhenIonWriterCloseFails() throws Exception
+    {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(5);
+        GeneratorFailingIonFactory f = new GeneratorFailingIonFactory(
+                IonFactory.builderForBinaryWriters()
+                    .recyclerPool(pool)
+                    .ionSystem(closeFailingWriterIonSystem()));
+
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> f.createGenerator(EMPTY_WRITE_CTXT,
+                        _tempDir.resolve("output-close-fail.ion").toFile(),
+                        JsonEncoding.UTF8));
+        assertEquals(GEN_CREATE_FAIL, e.getMessage());
+
+        assertEquals(1, e.getSuppressed().length);
+        assertEquals(CLOSE_FAIL, e.getSuppressed()[0].getMessage());
+        assertEquals(1, f.outputs.size());
+        assertEquals(1, f.outputs.get(0).closeCount);
+        assertEquals(1, pool.pooledCount());
+    }
+
     private File _tempIonFile(String name) throws IOException {
         Path p = _tempDir.resolve(name);
         Files.write(p, BINARY_INT_0);
@@ -409,6 +486,39 @@ class IonFactoryFailedConstructionTest
                                 ? (Closeable) src : null, closeCount);
                     }
                     return defaultValue(method.getReturnType());
+                });
+    }
+
+    private IonSystem readerFailingIonSystem() {
+        return (IonSystem) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonSystem.class }, (proxy, method, args) -> {
+                    if ("newReader".equals(method.getName())) {
+                        throw new IllegalStateException(READER_FAIL);
+                    }
+                    return defaultValue(method.getReturnType());
+                });
+    }
+
+    private IonSystem closeFailingWriterIonSystem() {
+        final IonSystem delegate = IonSystemBuilder.standard().build();
+        return (IonSystem) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonSystem.class }, (proxy, method, args) -> {
+                    Object result = _invoke(delegate, method, args);
+                    if (result instanceof IonWriter) {
+                        result = closeFailingIonWriter((IonWriter) result);
+                    }
+                    return result;
+                });
+    }
+
+    // `IonWriter` that fails to close, leaving underlying target open
+    private IonWriter closeFailingIonWriter(IonWriter delegate) {
+        return (IonWriter) Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[] { IonWriter.class }, (proxy, method, args) -> {
+                    if ("close".equals(method.getName())) {
+                        throw new IOException(CLOSE_FAIL);
+                    }
+                    return _invoke(delegate, method, args);
                 });
     }
 
@@ -626,6 +736,46 @@ class IonFactoryFailedConstructionTest
         @Override
         public Reader decorate(IOContext ctxt, Reader r) {
             return r;
+        }
+    }
+
+    // Decorator whose wrapper fails to close, leaving what it wraps open
+    static class CloseFailingInputDecorator extends InputDecorator
+    {
+        private static final long serialVersionUID = 1L;
+
+        public CloseFailingInputStream decorated;
+
+        @Override
+        public InputStream decorate(IOContext ctxt, InputStream in) {
+            decorated = new CloseFailingInputStream(in);
+            return decorated;
+        }
+
+        @Override
+        public InputStream decorate(IOContext ctxt, byte[] src, int offset, int length) {
+            return null;
+        }
+
+        @Override
+        public Reader decorate(IOContext ctxt, Reader r) {
+            return r;
+        }
+    }
+
+    static class CloseFailingInputStream extends FilterInputStream
+    {
+        public int closeCount;
+
+        CloseFailingInputStream(InputStream in) {
+            super(in);
+        }
+
+        // NOTE: deliberately does NOT close what it wraps
+        @Override
+        public void close() throws IOException {
+            ++closeCount;
+            throw new IOException(CLOSE_FAIL);
         }
     }
 
