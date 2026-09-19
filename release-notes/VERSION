@@ -40,6 +40,10 @@ No changes since 3.1
   (partial fix for #358)
  (reported by @pjfanning)
  (fix by @cowtowncoder, w/ Claude code)
+#805: (ion) Support `StreamReadConstraints.maxDocumentLength` in Ion parser
+  (partial fix for #358)
+ (reported by @pjfanning)
+ (fix by @cowtowncoder, w/ Claude code)
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.1.6 (14-Aug-2026)
