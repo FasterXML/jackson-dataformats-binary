@@ -69,6 +69,10 @@ implementations)
 #800: (ion) Upgrade `ion-java` dependency to 1.12.1 (from 1.11.11, which has
   binary-write corruption bug)
  (fix by @cowtowncoder, w/ Claude code)
+#803: (ion) Support `StreamReadConstraints.maxNestingDepth` in Ion parser
+  (partial fix for #358)
+ (reported by @pjfanning)
+ (fix by @cowtowncoder, w/ Claude code)
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
 3.2.2 (14-Aug-2026)
@@ -125,6 +129,10 @@ No changes since 3.2.0
  (contributed by @pjfanning)
 #800: (ion) Upgrade `ion-java` dependency to 1.12.1 (from 1.11.11, which has
   binary-write corruption bug)
+ (fix by @cowtowncoder, w/ Claude code)
+#803: (ion) Support `StreamReadConstraints.maxNestingDepth` in Ion parser
+  (partial fix for #358)
+ (reported by @pjfanning)
  (fix by @cowtowncoder, w/ Claude code)
 - Fixed signature of `CBORGenerator.writeNumberUnsigned()` methods
 
