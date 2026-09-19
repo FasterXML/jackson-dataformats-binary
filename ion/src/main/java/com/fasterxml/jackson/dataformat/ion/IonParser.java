@@ -24,6 +24,7 @@ import com.amazon.ion.system.IonSystemBuilder;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.json.JsonReadContext;
 import com.fasterxml.jackson.core.util.JacksonFeatureSet;
@@ -854,8 +855,25 @@ public class IonParser
         }
     }
 
+    /**
+     * Checks whether given failure -- typically {@code IonException} from ion-java --
+     * wraps a {@link StreamConstraintsException} thrown from the source being read, and
+     * if so rethrows it as-is. Constraint violations are detected while {@code IonReader}
+     * pulls from the source, and ion-java wraps the {@code IOException} we throw; without
+     * this they would surface as corrupt-content errors [dataformats-binary#805].
+     */
+    static void _rethrowIfConstraintViolation(Throwable e) throws StreamConstraintsException
+    {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof StreamConstraintsException) {
+                throw (StreamConstraintsException) t;
+            }
+        }
+    }
+
     private <T> T _reportCorruptContent(Throwable e) throws IOException
     {
+        _rethrowIfConstraintViolation(e);
         String origMsg = e.getMessage();
         if (origMsg == null) {
             origMsg = "[no exception message]";
@@ -867,6 +885,7 @@ public class IonParser
 
     private <T> T _reportCorruptNumber(Throwable e) throws IOException
     {
+        _rethrowIfConstraintViolation(e);
         String origMsg = e.getMessage();
         if (origMsg == null) {
             origMsg = "[no exception message]";
