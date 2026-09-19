@@ -18,6 +18,8 @@ import java.io.CharArrayReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,11 +31,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.io.UTF8Writer;
 import com.fasterxml.jackson.core.util.TextBuffer;
 
+import com.amazon.ion.IonException;
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
@@ -359,34 +363,72 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(InputStream in, IOContext ctxt)
         throws IOException
     {
-        IonReader ion = _system.newReader(in);
-        return new IonParser(ion, _system,
-                _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
+        // [dataformats-binary#805]: `IonReader` pulls from the source itself, so
+        //   document length is tracked by counting what it reads
+        if (_streamReadConstraints.hasMaxDocumentLength()) {
+            in = new LengthCheckingInputStream(in, _streamReadConstraints);
+        }
+        return _createParser(_newReader(in), ctxt);
     }
 
     @Override
     protected JsonParser _createParser(Reader r, IOContext ctxt)
         throws IOException
     {
-        IonReader ion = _system.newReader(r);
-        return new IonParser(ion, _system,
-                _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
+        // [dataformats-binary#805]: as above; for textual sources length is
+        //   counted in `char`s, same as `ReaderBasedJsonParser` does
+        if (_streamReadConstraints.hasMaxDocumentLength()) {
+            r = new LengthCheckingReader(r, _streamReadConstraints);
+        }
+        return _createParser(_newReader(r), ctxt);
     }
 
     @Override
     protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
             boolean recyclable) throws IOException
     {
-        return _createParser(new CharArrayReader(data, offset, len), ctxt);
+        // [dataformats-binary#805]: length known up front for fixed buffers, so
+        //   validated exactly -- and no counting wrapper needed
+        _streamReadConstraints.validateDocumentLength(len);
+        return _createParser(_newReader(new CharArrayReader(data, offset, len)), ctxt);
     }
 
     @Override
     protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
         throws IOException
     {
-        IonReader ion = _system.newReader(data, offset, len);
+        // [dataformats-binary#805]: length known up front for fixed buffers
+        _streamReadConstraints.validateDocumentLength(len);
+        return _createParser(_system.newReader(data, offset, len), ctxt);
+    }
+
+    private JsonParser _createParser(IonReader ion, IOContext ctxt) {
         return new IonParser(ion, _system,
                 _createContext(_createContentReference(ion), true), getCodec(), _ionParserFeatures);
+    }
+
+    /**
+     * Constructs {@code IonReader} over given source, unwrapping constraint violations:
+     * {@code IonReader} reads from the source while being constructed, so a document
+     * length limit can be exceeded before any token is read, and ion-java would wrap
+     * our {@code IOException} as {@code IonException} [dataformats-binary#805].
+     */
+    private IonReader _newReader(InputStream in) throws IOException {
+        try {
+            return _system.newReader(in);
+        } catch (IonException e) {
+            IonParser._rethrowIfConstraintViolation(e);
+            throw e;
+        }
+    }
+
+    private IonReader _newReader(Reader r) throws IOException {
+        try {
+            return _system.newReader(r);
+        } catch (IonException e) {
+            IonParser._rethrowIfConstraintViolation(e);
+            throw e;
+        }
     }
 
     @Override
@@ -485,4 +527,123 @@ public class IonFactory extends JsonFactory
         return new IonGenerator(_generatorFeatures, _ionGeneratorFeatures, _objectCodec,
                 ion, ionWriterIsManaged, ctxt, dst);
     }
+
+    /*
+    ***************************************************************
+    * Helper classes
+    ***************************************************************
+     */
+
+    /**
+     * {@link InputStream} wrapper that applies
+     * {@link StreamReadConstraints#validateDocumentLength} to the number of bytes read
+     * so far: {@code IonReader} reads from the source directly, so Jackson never sees
+     * the content itself.
+     *<p>
+     * What is counted is bytes pulled from the source, which may run ahead of the actual
+     * decoding position, by up to the reader's buffer size. A source that fits within the
+     * limit can never trip the check (no more bytes can be read than it holds); but a
+     * caller that stops reading early may still be failed, if the source itself is longer
+     * than the limit allows.
+     *
+     * @since 2.18.11
+     */
+    private final static class LengthCheckingInputStream extends FilterInputStream
+    {
+        private final StreamReadConstraints _constraints;
+
+        private long _bytesRead;
+
+        LengthCheckingInputStream(InputStream in, StreamReadConstraints constraints) {
+            super(in);
+            _constraints = constraints;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = in.read();
+            if (b >= 0) {
+                ++_bytesRead;
+                _validateLength();
+            }
+            return b;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int count = in.read(b, off, len);
+            if (count > 0) {
+                _bytesRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long count = in.skip(n);
+            if (count > 0) {
+                _bytesRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        private void _validateLength() throws IOException {
+            _constraints.validateDocumentLength(_bytesRead);
+        }
+    }
+
+    /**
+     * {@link Reader} equivalent of {@link LengthCheckingInputStream}, for textual Ion
+     * sources; counts {@code char}s, the way {@code ReaderBasedJsonParser} does.
+     *
+     * @since 2.18.11
+     */
+    private final static class LengthCheckingReader extends FilterReader
+    {
+        private final StreamReadConstraints _constraints;
+
+        private long _charsRead;
+
+        LengthCheckingReader(Reader r, StreamReadConstraints constraints) {
+            super(r);
+            _constraints = constraints;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = in.read();
+            if (c >= 0) {
+                ++_charsRead;
+                _validateLength();
+            }
+            return c;
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            int count = in.read(cbuf, off, len);
+            if (count > 0) {
+                _charsRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long count = in.skip(n);
+            if (count > 0) {
+                _charsRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        private void _validateLength() throws IOException {
+            _constraints.validateDocumentLength(_charsRead);
+        }
+    }
+
 }

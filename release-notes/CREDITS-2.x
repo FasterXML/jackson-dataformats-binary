@@ -351,6 +351,9 @@ PJ Fanning (@pjfanning)
  * Reported #358, leading to #803: (ion) Support
    `StreamReadConstraints.maxNestingDepth` in Ion parser
   (2.18.11)
+ * Reported #358, leading to #805: (ion) Support
+   `StreamReadConstraints.maxDocumentLength` in Ion parser
+  (2.18.11)
 
 Joachim Lous (@jlous)
  * Requested #494: Avro Schema generation: allow mapping Java Enum properties to
