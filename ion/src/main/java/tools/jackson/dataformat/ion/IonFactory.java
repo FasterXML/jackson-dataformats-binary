@@ -251,18 +251,24 @@ public class IonFactory
     @Override
     public JsonParser createParser(ObjectReadContext readCtxt, File f) {
         IOContext ioCtxt = _createContext(_createContentReference(f), true);
-        InputStream in = null;
+        InputStream rawIn = null;
+        // [dataformats-binary#798]: track outermost source separately from the one
+        //   Jackson opened, so that a failing `close()` of a decorated stream does
+        //   not leave the underlying one open
+        Closeable inputToClose = null;
         boolean inputCleanupDelegated = false;
         try {
-            in = _fileInputStream(f);
-            in = _decorate(ioCtxt, in);
-            // From this point on `_createParser()` handles cleanup of both `in` and `ioCtxt`
+            rawIn = _fileInputStream(f);
+            inputToClose = rawIn;
+            InputStream in = _decorate(ioCtxt, rawIn);
+            inputToClose = in;
+            // From this point on `_createParser()` handles cleanup of both input and `ioCtxt`
             inputCleanupDelegated = true;
-            return _createParser(readCtxt, ioCtxt, in, true);
+            return _createParser(readCtxt, ioCtxt, in, rawIn);
         } catch (RuntimeException e) {
             if (!inputCleanupDelegated) {
-                _closeOnFailedConstruction(in, e);
-                _releaseContextOnFailedConstruction(ioCtxt, e);
+                _closeOnFailedConstruction(inputToClose, rawIn, e);
+                _releaseOnFailedConstruction(ioCtxt, e);
             }
             throw e;
         }
@@ -273,18 +279,24 @@ public class IonFactory
             Path p) throws JacksonException
     {
         IOContext ioCtxt = _createContext(_createContentReference(p), true);
-        InputStream in = null;
+        InputStream rawIn = null;
+        // [dataformats-binary#798]: track outermost source separately from the one
+        //   Jackson opened, so that a failing `close()` of a decorated stream does
+        //   not leave the underlying one open
+        Closeable inputToClose = null;
         boolean inputCleanupDelegated = false;
         try {
-            in = _pathInputStream(p);
-            in = _decorate(ioCtxt, in);
-            // From this point on `_createParser()` handles cleanup of both `in` and `ioCtxt`
+            rawIn = _pathInputStream(p);
+            inputToClose = rawIn;
+            InputStream in = _decorate(ioCtxt, rawIn);
+            inputToClose = in;
+            // From this point on `_createParser()` handles cleanup of both input and `ioCtxt`
             inputCleanupDelegated = true;
-            return _createParser(readCtxt, ioCtxt, in, true);
+            return _createParser(readCtxt, ioCtxt, in, rawIn);
         } catch (RuntimeException e) {
             if (!inputCleanupDelegated) {
-                _closeOnFailedConstruction(in, e);
-                _releaseContextOnFailedConstruction(ioCtxt, e);
+                _closeOnFailedConstruction(inputToClose, rawIn, e);
+                _releaseOnFailedConstruction(ioCtxt, e);
             }
             throw e;
         }
@@ -297,7 +309,7 @@ public class IonFactory
             return _createParser(readCtxt, ioCtxt,
                     _decorate(ioCtxt, in));
         } catch (RuntimeException e) {
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -309,7 +321,7 @@ public class IonFactory
         try {
             return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, r));
         } catch (RuntimeException e) {
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -322,12 +334,13 @@ public class IonFactory
                 InputStream in = _inputDecorator.decorate(ioCtxt, data, 0, data.length);
                 if (in != null) {
                     // `InputStream` created by decorator, not caller, so we do own it
-                    return _createParser(readCtxt, ioCtxt, in, true);
+                    // (and is itself the outermost resource Jackson opened)
+                    return _createParser(readCtxt, ioCtxt, in, in);
                 }
             }
             return _createParser(readCtxt, ioCtxt, data, 0, data.length);
         } catch (RuntimeException e) {
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -342,12 +355,13 @@ public class IonFactory
                 InputStream in = _inputDecorator.decorate(ioCtxt, data, offset, len);
                 if (in != null) {
                     // `InputStream` created by decorator, not caller, so we do own it
-                    return _createParser(readCtxt, ioCtxt, in, true);
+                    // (and is itself the outermost resource Jackson opened)
+                    return _createParser(readCtxt, ioCtxt, in, in);
                 }
             }
             return _createParser(readCtxt, ioCtxt, data, offset, len);
         } catch (RuntimeException e) {
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -357,10 +371,10 @@ public class IonFactory
         IOContext ioCtxt = _createContext(_createContentReference(content), true);
         try {
             // `Reader` created by us, not caller, so we do own it
-            return _createParser(readCtxt, ioCtxt,
-                    _decorate(ioCtxt, new StringReader(content)), true);
+            Reader rawR = new StringReader(content);
+            return _createParser(readCtxt, ioCtxt, _decorate(ioCtxt, rawR), rawR);
         } catch (RuntimeException e) {
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -411,7 +425,7 @@ public class IonFactory
         } catch (RuntimeException e) {
             // NOTE: `Writer` is caller-provided so not closed here (and closing the
             // `IonWriter` would close it as well); `IOContext` we do need to release
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -496,7 +510,7 @@ public class IonFactory
                     in, _system);
         } catch (RuntimeException e) {
             // NOTE: caller-provided `IonReader`, so not closed by us
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -513,7 +527,7 @@ public class IonFactory
         } catch (RuntimeException e) {
             // `IonReader` created by us (over `IonValue`), so we do own it
             _closeOnFailedConstruction(in, e);
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -524,7 +538,7 @@ public class IonFactory
             return _createGenerator(writeCtxt, ioCtxt, out, false, out);
         } catch (RuntimeException e) {
             // NOTE: caller-provided `IonWriter`, so not closed by us
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -538,11 +552,19 @@ public class IonFactory
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             InputStream in)
     {
-        return _createParser(readCtxt, ioCtxt, in, false);
+        // caller-provided `InputStream`: nothing for us to close
+        return _createParser(readCtxt, ioCtxt, in, null);
     }
 
+    /**
+     * @param in Source to read from: caller-provided, or one Jackson opened (and
+     *    possibly decorated)
+     * @param rawIn Source Jackson opened, if any; {@code null} for caller-provided
+     *    source, which we must not close. Closed only if closing of the outermost
+     *    resource fails, so that what Jackson opened does not leak.
+     */
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            InputStream in, boolean closeInputOnFailedConstruction)
+            InputStream in, InputStream rawIn)
     {
         IonReader ion = null;
         IOContext ionCtxt = null;
@@ -561,11 +583,13 @@ public class IonFactory
             // Only close input we created ourselves (from `File` / `Path`): caller-provided
             // `InputStream` must be left alone. And note that closing `IonReader` -- once
             // created -- also closes the underlying `InputStream`.
-            if (closeInputOnFailedConstruction) {
-                _closeOnFailedConstruction((ion == null) ? in : ion, e);
+            if (rawIn != null) {
+                // [dataformats-binary#798]: ... but if closing of the outermost resource
+                //   fails, close what Jackson opened so it does not leak
+                _closeOnFailedConstruction((ion == null) ? in : ion, rawIn, e);
             }
-            _releaseContextOnFailedConstruction(ionCtxt, e);
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ionCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -573,11 +597,19 @@ public class IonFactory
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             Reader r)
     {
-        return _createParser(readCtxt, ioCtxt, r, false);
+        // caller-provided `Reader`: nothing for us to close
+        return _createParser(readCtxt, ioCtxt, r, null);
     }
 
+    /**
+     * @param r Source to read from: caller-provided, or one Jackson created (and
+     *    possibly decorated)
+     * @param rawR Source Jackson created, if any; {@code null} for caller-provided
+     *    source, which we must not close. Closed only if closing of the outermost
+     *    resource fails, so that what Jackson created does not leak.
+     */
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            Reader r, boolean closeInputOnFailedConstruction)
+            Reader r, Reader rawR)
     {
         IonReader ion = null;
         IOContext ionCtxt = null;
@@ -596,11 +628,13 @@ public class IonFactory
             // Only close `Reader` we created ourselves (over `String` / `char[]`):
             // caller-provided one must be left alone. And note that closing
             // `IonReader` -- once created -- also closes the underlying `Reader`.
-            if (closeInputOnFailedConstruction) {
-                _closeOnFailedConstruction((ion == null) ? r : ion, e);
+            if (rawR != null) {
+                // [dataformats-binary#798]: ... but if closing of the outermost resource
+                //   fails, close what Jackson created so it does not leak
+                _closeOnFailedConstruction((ion == null) ? r : ion, rawR, e);
             }
-            _releaseContextOnFailedConstruction(ionCtxt, e);
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ionCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -610,8 +644,8 @@ public class IonFactory
             boolean recyclable)
     {
         // `Reader` created by us, not caller, so we do own it
-        return _createParser(readCtxt, ioCtxt,
-                new CharArrayReader(data, offset, len), true);
+        Reader r = new CharArrayReader(data, offset, len);
+        return _createParser(readCtxt, ioCtxt, r, r);
     }
 
     private JsonParser _createParser(ObjectReadContext readCtxt, IOContext ioCtxt,
@@ -633,8 +667,8 @@ public class IonFactory
         } catch (RuntimeException e) {
             // `IonReader` created over caller's `byte[]`: no caller resource to leave open
             _closeOnFailedConstruction(ion, e);
-            _releaseContextOnFailedConstruction(ionCtxt, e);
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ionCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -678,15 +712,13 @@ public class IonFactory
             // Only close things we created ourselves: caller-provided `OutputStream`
             // must be left alone (closing `IonWriter` / `Writer` would close it too).
             // And since closing the outermost resource cascades down to `out`, only
-            // one of them gets closed here
+            // one of them gets closed here -- unless that close fails, in which case
+            // `out` is closed as fallback so it does not leak [dataformats-binary#798]
             if (isManaged) {
-                if (ion != null) {
-                    _closeOnFailedConstruction(ion, e);
-                } else {
-                    _closeOnFailedConstruction((dst == null) ? out : dst, e);
-                }
+                _closeOnFailedConstruction((ion != null) ? ion : ((dst == null) ? out : dst),
+                        out, e);
             }
-            _releaseContextOnFailedConstruction(ioCtxt, e);
+            _releaseOnFailedConstruction(ioCtxt, e);
             throw e;
         }
     }
@@ -713,15 +745,4 @@ public class IonFactory
                 ion, ionWriterIsManaged, dst);
     }
 
-    private static void _releaseContextOnFailedConstruction(IOContext ioCtxt,
-            RuntimeException failure)
-    {
-        if (ioCtxt != null) {
-            try {
-                ioCtxt.close();
-            } catch (Exception e) {
-                failure.addSuppressed(e);
-            }
-        }
-    }
 }
