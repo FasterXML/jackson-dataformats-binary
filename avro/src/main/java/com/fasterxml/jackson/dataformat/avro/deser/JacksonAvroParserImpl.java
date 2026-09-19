@@ -870,6 +870,30 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         } while (left > 0);
     }
 
+    /**
+     * Helper method for skipping up to specified number of bytes from the underlying
+     * input source.
+     *<p>
+     * Note that {@link InputStream#skip} is allowed to return 0 without being at
+     * end-of-input -- and some implementations never skip anything -- so a zero
+     * return can not be taken to mean end-of-input: reading is used to both make
+     * progress and to find out whether end-of-input was actually reached.
+     * Skipped content is read in the (already consumed) input buffer and discarded.
+     *
+     * @return Number of bytes skipped; 0 or less to indicate end-of-input
+     *
+     * @since 2.18.11
+     */
+    private final long _skipFromInput(long left) throws IOException
+    {
+        long skipped = _inputStream.skip(left);
+        if (skipped > 0L) {
+            return skipped;
+        }
+        int toRead = (int) Math.min(left, _inputBuffer.length);
+        return _inputStream.read(_inputBuffer, 0, toRead);
+    }
+
     private final void _skip(int len) throws IOException
     {
         int ptr = _inputPtr;
@@ -885,11 +909,11 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             //    input source bypass `_loadMore()` so need explicit accounting
             _markBufferConsumed();
             do {
-                int skipped = (int) _inputStream.skip(left);
-                if (skipped < 0) {
+                long skipped = _skipFromInput(left);
+                if (skipped <= 0L) { // real end-of-input
                     break;
                 }
-                left -= skipped;
+                left -= (int) skipped;
                 _currInputProcessed += skipped;
                 _streamReadConstraints.validateDocumentLength(_currInputProcessed);
             } while (left > 0);
@@ -914,8 +938,8 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             //    input source bypass `_loadMore()` so need explicit accounting
             _markBufferConsumed();
             do {
-                int skipped = (int) _inputStream.skip(left);
-                if (skipped < 0) {
+                long skipped = _skipFromInput(left);
+                if (skipped <= 0L) { // real end-of-input
                     break;
                 }
                 left -= skipped;
