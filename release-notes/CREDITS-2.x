@@ -355,6 +355,9 @@ PJ Fanning (@pjfanning)
  * Contributed #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength`
    in `ProtobufParser`
   (2.18.11)
+ * Contributed #785: (avro) Support `StreamReadConstraints.maxDocumentLength` and
+   `maxTokenCount` in Avro parser
+  (2.18.11)
 
 Joachim Lous (@jlous)
  * Requested #494: Avro Schema generation: allow mapping Java Enum properties to
