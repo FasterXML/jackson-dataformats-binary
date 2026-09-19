@@ -17,6 +17,9 @@ Active maintainers:
 2.23.0 (not yet released)
 
 #745: (avro) Fix Avro bugs
+#800: (ion) Upgrade `ion-java` dependency to 1.12.1 (from 1.11.11, which has
+  binary-write corruption bug)
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.3 (not yet released)
 
