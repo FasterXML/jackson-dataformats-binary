@@ -29,9 +29,6 @@ Active maintainers:
   (partial fix for #358)
  (reported by @pjfanning)
  (fix by @cowtowncoder, w/ Claude code)
-#806: (avro) `maxDocumentLength` not enforced below decoder buffer size with
-  Apache decoder, and reported length understated
- (fix by @cowtowncoder, w/ Claude code)
 
 2.18.10 (15-Aug-2026)
 
