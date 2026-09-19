@@ -23,12 +23,9 @@ import static org.junit.Assert.fail;
  */
 public class DocumentLengthIonReadTest
 {
-    // Small enough to be tripped by fixed-buffer input, which is checked exactly
+    // Deliberately far below ion-java's read buffer size (32kB): all source types
+    // must honor limits smaller than that, not just the fixed-buffer ones
     private final static int SMALL_LIMIT = 100;
-
-    // Streaming checks allow the reader's buffer as slack, so a stream test needs
-    // a document comfortably past limit + slack
-    private final static int STREAM_LIMIT = 50_000;
 
     private final IonObjectMapper VANILLA_MAPPER = IonObjectMapper.builderForTextualWriters().build();
     private final IonObjectMapper BINARY_MAPPER = IonObjectMapper.builderForBinaryWriters().build();
@@ -49,31 +46,92 @@ public class DocumentLengthIonReadTest
 
     @Test
     public void testInputStreamTripsLimit() throws Exception {
-        byte[] doc = BINARY_MAPPER.writeValueAsBytes(_text(200_000));
-        assertTrue(doc.length > STREAM_LIMIT);
-        _verifyTripsLimit(STREAM_LIMIT,
-                () -> _mapper(STREAM_LIMIT).createParser(new ByteArrayInputStream(doc)));
+        byte[] doc = BINARY_MAPPER.writeValueAsBytes(_text(500));
+        assertTrue(doc.length > SMALL_LIMIT);
+        _verifyTripsLimit(SMALL_LIMIT,
+                () -> _mapper(SMALL_LIMIT).createParser(new ByteArrayInputStream(doc)));
     }
 
     @Test
     public void testReaderTripsLimit() throws Exception {
-        String doc = VANILLA_MAPPER.writeValueAsString(_text(200_000));
-        assertTrue(doc.length() > STREAM_LIMIT);
-        _verifyTripsLimit(STREAM_LIMIT,
-                () -> _mapper(STREAM_LIMIT).createParser(new StringReader(doc)));
+        String doc = VANILLA_MAPPER.writeValueAsString(_text(500));
+        assertTrue(doc.length() > SMALL_LIMIT);
+        _verifyTripsLimit(SMALL_LIMIT,
+                () -> _mapper(SMALL_LIMIT).createParser(new StringReader(doc)));
+    }
+
+    // `IonFactory.canUseCharArrays()` is `false`, so `createParser(String)` -- and hence
+    // `readValue(String)` / `readTree(String)`, the common textual entry point -- goes
+    // through `Reader`, not the exactly-checked `char[]` path
+    @Test
+    public void testStringSourceTripsLimit() throws Exception {
+        final String doc = VANILLA_MAPPER.writeValueAsString(_text(500));
+        assertTrue(doc.length() > SMALL_LIMIT);
+        _verifyTripsLimit(SMALL_LIMIT, () -> _mapper(SMALL_LIMIT).createParser(doc));
+
+        try {
+            _mapper(SMALL_LIMIT).readTree(doc);
+            fail("Should not pass: document length should exceed limit");
+        } catch (StreamConstraintsException e) {
+            assertTrue("Unexpected message: "+e.getMessage(),
+                    e.getMessage().contains("Document length"));
+        }
+    }
+
+    // Same content must be accepted or rejected the same way whatever source type
+    // it is fed through
+    @Test
+    public void testAllSourceTypesAgree() throws Exception {
+        byte[] binary = BINARY_MAPPER.writeValueAsBytes(_text(500));
+        String textual = VANILLA_MAPPER.writeValueAsString(_text(500));
+
+        // Over the limit: every source type rejects
+        _verifyTripsLimit(SMALL_LIMIT, () -> _mapper(SMALL_LIMIT).createParser(binary));
+        _verifyTripsLimit(SMALL_LIMIT,
+                () -> _mapper(SMALL_LIMIT).createParser(new ByteArrayInputStream(binary)));
+        _verifyTripsLimit(SMALL_LIMIT,
+                () -> _mapper(SMALL_LIMIT).createParser(textual.toCharArray(), 0, textual.length()));
+        _verifyTripsLimit(SMALL_LIMIT,
+                () -> _mapper(SMALL_LIMIT).createParser(new StringReader(textual)));
+
+        // Under it: every source type accepts
+        final int ample = 10 * Math.max(binary.length, textual.length());
+        _readAll(_mapper(ample).createParser(binary));
+        _readAll(_mapper(ample).createParser(new ByteArrayInputStream(binary)));
+        _readAll(_mapper(ample).createParser(textual.toCharArray(), 0, textual.length()));
+        _readAll(_mapper(ample).createParser(new StringReader(textual)));
+    }
+
+    // Reported length must be a real count, not internal bookkeeping: at least the
+    // limit that was breached, never more than the document actually holds
+    @Test
+    public void testReportedLengthIsPlausible() throws Exception {
+        final byte[] doc = BINARY_MAPPER.writeValueAsBytes(_text(50_000));
+        final int limit = 1_000;
+        try {
+            _readAll(_mapper(limit).createParser(new ByteArrayInputStream(doc)));
+            fail("Should not pass: document length should exceed limit");
+        } catch (StreamConstraintsException e) {
+            long reported = _reportedLength(e.getMessage());
+            assertTrue("Reported length "+reported+" should exceed limit "+limit,
+                    reported > limit);
+            assertTrue("Reported length "+reported+" should not exceed document size "+doc.length,
+                    reported <= doc.length);
+        }
+    }
+
+    private long _reportedLength(String msg) {
+        int start = msg.indexOf('(');
+        int end = msg.indexOf(')', start);
+        assertTrue("Unexpected message: "+msg, start > 0 && end > start);
+        return Long.parseLong(msg.substring(start+1, end));
     }
 
     // Documents within the limit must still read, from every source type
     @Test
     public void testWithinLimitPasses() throws Exception {
-        byte[] binary = BINARY_MAPPER.writeValueAsBytes(_text(1_000));
         String textual = VANILLA_MAPPER.writeValueAsString(_text(1_000));
-        final int limit = 10 * Math.max(binary.length, textual.length());
-
-        _readAll(_mapper(limit).createParser(binary));
-        _readAll(_mapper(limit).createParser(new ByteArrayInputStream(binary)));
-        _readAll(_mapper(limit).createParser(textual.toCharArray(), 0, textual.length()));
-        _readAll(_mapper(limit).createParser(new StringReader(textual)));
+        final int limit = 10 * textual.length();
         assertNotNull(_mapper(limit).readTree(textual));
     }
 
