@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.avro.io.DecoderFactory;
+
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
@@ -179,6 +181,64 @@ public class LongDocumentAvroReadTest extends AvroTestBase
                     .readValue(new ByteArrayInputStream(many));
             assertEquals(42, value.get("x"), "mode="+mode);
         }
+    }
+
+    // [dataformats-binary#806]: limit below the decoder's buffer size must be enforced
+    // too, and the same way whichever decoder and source type are used
+    @Test
+    public void testShortLimitEnforcedForAllModes() throws Exception
+    {
+        final int SHORT_LIMIT = 100;
+        byte[] doc = createBigDoc(5_000);
+        assertTrue(doc.length > SHORT_LIMIT, "doc.length="+doc.length);
+        assertTrue(doc.length < DecoderFactory.get().getConfiguredBufferSize(),
+                "doc.length="+doc.length);
+
+        for (int mode : ALL_MODES) {
+            AvroMapper mapper = constrainedMapper(mode, SHORT_LIMIT);
+            for (boolean stream : new boolean[] { true, false }) {
+                try (JsonParser p = stream
+                        ? mapper.reader().with(ITEMS_SCHEMA).createParser(new ByteArrayInputStream(doc))
+                        : mapper.reader().with(ITEMS_SCHEMA).createParser(doc)) {
+                    while (p.nextToken() != null) { }
+                    fail("expected StreamConstraintsException (mode="+mode+", stream="+stream+")");
+                } catch (StreamConstraintsException e) {
+                    assertTrue(e.getMessage().contains("exceeds the maximum allowed ("+SHORT_LIMIT),
+                            "unexpected message: "+e.getMessage());
+                }
+            }
+        }
+    }
+
+    // [dataformats-binary#806]: reported length must be a real count -- at least the limit
+    // that was breached, never more than the document actually holds
+    @Test
+    public void testReportedLengthIsPlausible() throws Exception
+    {
+        final int LIMIT = 1_000;
+        byte[] doc = createBigDoc(60_000);
+
+        for (int mode : ALL_MODES) {
+            AvroMapper mapper = constrainedMapper(mode, LIMIT);
+            try (JsonParser p = mapper.reader().with(ITEMS_SCHEMA)
+                    .createParser(new ByteArrayInputStream(doc))) {
+                while (p.nextToken() != null) { }
+                fail("expected StreamConstraintsException (mode="+mode+")");
+            } catch (StreamConstraintsException e) {
+                long reported = _reportedLength(e.getMessage());
+                assertTrue(reported > LIMIT,
+                        "mode="+mode+", reported="+reported+" should exceed limit "+LIMIT);
+                assertTrue(reported <= doc.length,
+                        "mode="+mode+", reported="+reported+" should not exceed doc size "+doc.length);
+            }
+        }
+    }
+
+    private long _reportedLength(String msg) {
+        int start = msg.indexOf('(');
+        int end = msg.indexOf(')', start);
+        assertTrue(start > 0 && end > start, "unexpected message: "+msg);
+        return Long.parseLong(msg.substring(start+1, end));
     }
 
     private void _testLongDocumentConstraint(AvroMapper mapper, byte[] doc, boolean stream)
