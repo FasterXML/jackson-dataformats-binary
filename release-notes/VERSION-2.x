@@ -29,6 +29,9 @@ No changes since 2.22
  (contributed by @pjfanning)
 #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
  (contributed by @pjfanning)
+#785: (avro) Support `StreamReadConstraints.maxDocumentLength` and `maxTokenCount`
+  in Avro parser
+ (contributed by @pjfanning)
 
 2.22.2 (16-Aug-2026)
 
