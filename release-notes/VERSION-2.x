@@ -36,6 +36,10 @@ No changes since 2.22
   (partial fix for #358)
  (reported by @pjfanning)
  (fix by @cowtowncoder, w/ Claude code)
+#805: (ion) Support `StreamReadConstraints.maxDocumentLength` in Ion parser
+  (partial fix for #358)
+ (reported by @pjfanning)
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.2 (16-Aug-2026)
 
