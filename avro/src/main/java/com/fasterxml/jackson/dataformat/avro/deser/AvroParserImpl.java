@@ -94,8 +94,7 @@ public abstract class AvroParserImpl
         _enumIndex = -1;
         _binaryValue = null;
         JsonToken t = _avroContext.nextToken();
-        _currToken = t;
-        return t;
+        return _nullSafeUpdateToken(t);
     }
 
     @Override
