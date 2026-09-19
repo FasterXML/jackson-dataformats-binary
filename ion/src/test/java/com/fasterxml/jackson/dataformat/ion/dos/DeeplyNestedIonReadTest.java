@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.ion.dos;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
@@ -16,9 +16,9 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Verifies that {@link StreamReadConstraints#getMaxNestingDepth()} is enforced
@@ -132,11 +132,11 @@ public class DeeplyNestedIonReadTest
 
     private void _verifyException(StreamConstraintsException e) {
         final String msg = e.getMessage();
-        assertTrue("Unexpected message: "+msg,
-                msg.startsWith("Document nesting depth ("+(MAX_DEPTH+1)+")"));
-        assertTrue("Unexpected message: "+msg,
-                msg.contains("exceeds the maximum allowed ("+MAX_DEPTH
-                        +", from `StreamReadConstraints.getMaxNestingDepth()`)"));
+        assertTrue(msg.startsWith("Document nesting depth ("+(MAX_DEPTH+1)+")"),
+                "Unexpected message: "+msg);
+        assertTrue(msg.contains("exceeds the maximum allowed ("+MAX_DEPTH
+                        +", from `StreamReadConstraints.getMaxNestingDepth()`)"),
+                "Unexpected message: "+msg);
     }
 
     private void _readAll(String doc) throws Exception {
