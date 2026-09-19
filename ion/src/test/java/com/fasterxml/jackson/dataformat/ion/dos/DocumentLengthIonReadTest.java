@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 /**
  * Verifies that {@link StreamReadConstraints#getMaxDocumentLength()} is enforced
  * by the Ion parser, for fixed buffers up front and for streaming sources by counting
- * what {@code IonReader} pulls from them. See [dataformats-binary#358].
+ * what {@code IonReader} pulls from them. See [dataformats-binary#805].
  */
 public class DocumentLengthIonReadTest
 {

@@ -363,7 +363,7 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(InputStream in, IOContext ctxt)
         throws IOException
     {
-        // [dataformats-binary#358]: `IonReader` pulls from the source itself, so
+        // [dataformats-binary#805]: `IonReader` pulls from the source itself, so
         //   document length is tracked by counting what it reads
         if (_streamReadConstraints.hasMaxDocumentLength()) {
             in = new LengthCheckingInputStream(in, _streamReadConstraints);
@@ -375,7 +375,7 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(Reader r, IOContext ctxt)
         throws IOException
     {
-        // [dataformats-binary#358]: as above; for textual sources length is
+        // [dataformats-binary#805]: as above; for textual sources length is
         //   counted in `char`s, same as `ReaderBasedJsonParser` does
         if (_streamReadConstraints.hasMaxDocumentLength()) {
             r = new LengthCheckingReader(r, _streamReadConstraints);
@@ -387,7 +387,7 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(char[] data, int offset, int len, IOContext ctxt,
             boolean recyclable) throws IOException
     {
-        // [dataformats-binary#358]: length known up front for fixed buffers, so
+        // [dataformats-binary#805]: length known up front for fixed buffers, so
         //   validated exactly -- and no counting wrapper needed
         _streamReadConstraints.validateDocumentLength(len);
         return _createParser(_newReader(new CharArrayReader(data, offset, len)), ctxt);
@@ -397,7 +397,7 @@ public class IonFactory extends JsonFactory
     protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
         throws IOException
     {
-        // [dataformats-binary#358]: length known up front for fixed buffers
+        // [dataformats-binary#805]: length known up front for fixed buffers
         _streamReadConstraints.validateDocumentLength(len);
         return _createParser(_system.newReader(data, offset, len), ctxt);
     }
@@ -411,7 +411,7 @@ public class IonFactory extends JsonFactory
      * Constructs {@code IonReader} over given source, unwrapping constraint violations:
      * {@code IonReader} reads from the source while being constructed, so a document
      * length limit can be exceeded before any token is read, and ion-java would wrap
-     * our {@code IOException} as {@code IonException} [dataformats-binary#358].
+     * our {@code IOException} as {@code IonException} [dataformats-binary#805].
      */
     private IonReader _newReader(InputStream in) throws IOException {
         try {

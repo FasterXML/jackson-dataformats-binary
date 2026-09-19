@@ -836,7 +836,7 @@ public class IonParser
      * wraps a {@link StreamConstraintsException} thrown from the source being read, and
      * if so rethrows it as-is. Constraint violations are detected while {@code IonReader}
      * pulls from the source, and ion-java wraps the {@code IOException} we throw; without
-     * this they would surface as corrupt-content errors [dataformats-binary#358].
+     * this they would surface as corrupt-content errors [dataformats-binary#805].
      */
     static void _rethrowIfConstraintViolation(Throwable e) throws StreamConstraintsException
     {
