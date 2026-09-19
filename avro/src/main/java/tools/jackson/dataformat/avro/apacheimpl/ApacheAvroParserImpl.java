@@ -95,6 +95,14 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         _apacheCodecRecycler = apacheCodecRecycler;
 
         final boolean buffering = AvroReadFeature.AVRO_BUFFERING.enabledIn(avroFeatures);
+        // [dataformats-binary#785] Apache decoder does its own buffering, so document
+        // length constraint has to be applied by counting bytes it pulls from the stream.
+        // But since a buffering decoder may read ahead of the actual decoding position
+        // by up to its buffer size, that much slack is needed to avoid false positives
+        if (_streamReadConstraints.hasMaxDocumentLength()) {
+            in = new LengthCheckingInputStream(in, _streamReadConstraints,
+                    buffering ? DECODER_FACTORY.getConfiguredBufferSize() : 0);
+        }
         BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = buffering
                 ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)
@@ -417,5 +425,82 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     protected JsonToken setString(String str) {
         _textValue = str;
         return JsonToken.VALUE_STRING;
+    }
+
+    /*
+    /**********************************************************
+    /* Helper classes
+    /**********************************************************
+     */
+
+    /**
+     * {@link InputStream} wrapper that applies {@link StreamReadConstraints#validateDocumentLength}
+     * to the number of bytes read so far, for use with Apache {@link BinaryDecoder} which
+     * reads from the stream directly.
+     *<p>
+     * Note that a buffering {@link BinaryDecoder} pulls content from the stream ahead of
+     * the actual decoding position, by up to its buffer size: bytes that have been read
+     * but not (yet) decoded must not count towards document length, or a document well
+     * within the limit could be rejected. Since the decoder does not expose the number of
+     * bytes it has actually consumed, the buffer size is allowed as slack; the check is
+     * hence approximate (as with the non-Apache decoder), but only ever in the direction
+     * of allowing slightly too much.
+     *
+     * @since 2.18.11
+     */
+    private final static class LengthCheckingInputStream extends FilterInputStream
+    {
+        private final StreamReadConstraints _constraints;
+
+        /**
+         * Maximum number of bytes decoder may have read but not yet decoded.
+         */
+        private final int _readAheadSlack;
+
+        private long _bytesRead;
+
+        LengthCheckingInputStream(InputStream in, StreamReadConstraints constraints,
+                int readAheadSlack) {
+            super(in);
+            _constraints = constraints;
+            _readAheadSlack = readAheadSlack;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = in.read();
+            if (b >= 0) {
+                ++_bytesRead;
+                _validateLength();
+            }
+            return b;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int count = in.read(b, off, len);
+            if (count > 0) {
+                _bytesRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long count = in.skip(n);
+            if (count > 0) {
+                _bytesRead += count;
+                _validateLength();
+            }
+            return count;
+        }
+
+        private void _validateLength() throws IOException {
+            long decoded = _bytesRead - _readAheadSlack;
+            if (decoded > 0L) {
+                _constraints.validateDocumentLength(decoded);
+            }
+        }
     }
 }
