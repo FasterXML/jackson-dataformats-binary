@@ -73,14 +73,14 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      * Wrapper counting bytes pulled from the source, if a document length limit is
      * configured; {@code null} if not, or for fixed-buffer input.
      *
-     * @since 2.18.11
+     * @since 3.1.7
      */
     protected final LengthCheckingInputStream _lengthCheckingInput;
 
     /**
      * Whether decoder buffers (and hence reads ahead of the decoding position).
      *
-     * @since 2.18.11
+     * @since 3.1.7
      */
     protected final boolean _bufferingDecoder;
 
@@ -154,10 +154,10 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      * what the decoder still holds buffered -- and the document length limit applied to
      * that rather than to the read-ahead-inflated raw count.
      *
-     * @since 2.18.11
+     * @since 3.1.7
      */
     @Override
-    public JsonToken nextToken() throws IOException
+    public JsonToken nextToken()
     {
         JsonToken t = super.nextToken();
         final LengthCheckingInputStream input = _lengthCheckingInput;
@@ -166,7 +166,11 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             if (_bufferingDecoder) {
                 // NOTE: for a buffering decoder this is what remains in its buffer,
                 //   undecoded; a direct decoder does not buffer, so raw count is exact
-                consumed -= _decoder.inputStream().available();
+                try {
+                    consumed -= _decoder.inputStream().available();
+                } catch (IOException e) {
+                    throw _wrapIOFailure(e);
+                }
             }
             if (consumed > 0L) {
                 _streamReadConstraints.validateDocumentLength(consumed);
@@ -500,7 +504,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      * every token boundary instead, by {@link ApacheAvroParserImpl#nextToken()}
      * [dataformats-binary#806].
      *
-     * @since 2.18.11
+     * @since 3.1.7
      */
     private final static class LengthCheckingInputStream extends FilterInputStream
     {
