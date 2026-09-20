@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
@@ -59,9 +60,12 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
             sw.write(Integer.valueOf(-999));
         }
 
-        try (MappingIterator<Integer> it = DIRECT_MAPPER.readerFor(Integer.class)
+        byte[] doc = out.toByteArray();
+        AvroMapper mapper = directApacheMapperWithMaxDocumentLength(doc.length);
+
+        try (MappingIterator<Integer> it = mapper.readerFor(Integer.class)
                 .with(schema)
-                .readValues(new ByteArrayInputStream(out.toByteArray()))) {
+                .readValues(new ByteArrayInputStream(doc))) {
             assertTrue(it.hasNextValue());
             assertEquals(Integer.valueOf(1), it.nextValue());
             assertTrue(it.hasNextValue());
@@ -76,6 +80,15 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
     {
         ApacheAvroFactory f = new ApacheAvroFactory();
         f.disable(AvroParser.Feature.AVRO_BUFFERING);
+        return AvroMapper.builder(f).build();
+    }
+
+    private static AvroMapper directApacheMapperWithMaxDocumentLength(long maxDocumentLength)
+    {
+        ApacheAvroFactory f = new ApacheAvroFactory();
+        f.disable(AvroParser.Feature.AVRO_BUFFERING);
+        f.setStreamReadConstraints(StreamReadConstraints.builder()
+                .maxDocumentLength(maxDocumentLength).build());
         return AvroMapper.builder(f).build();
     }
 }
