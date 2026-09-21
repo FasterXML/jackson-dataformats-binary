@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.11 (not yet released)
+2.18.11 (20-Sep-2026)
 
 #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
  (contributed by @pjfanning)
