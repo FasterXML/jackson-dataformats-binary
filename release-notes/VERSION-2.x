@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.7 (not yet released)
+2.21.7 (21-Sep-2026)
 
 #761: (smile) Async parser misses #312 NUL-padding: short property name
   collides with NUL-prefixed longer one
