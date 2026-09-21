@@ -76,7 +76,7 @@ Active maintainers:
 
 No changes since 2.21
 
-2.21.7 (not yet released)
+2.21.7 (21-Sep-2026)
 
 #761: (smile) Async parser misses #312 NUL-padding: short property name
   collides with NUL-prefixed longer one
@@ -252,7 +252,7 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
-2.18.11 (not yet released)
+2.18.11 (20-Sep-2026)
 
 #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
  (contributed by @pjfanning)
