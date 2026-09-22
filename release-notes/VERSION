@@ -50,7 +50,7 @@ implementations)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
-3.2.3 (not yet released)
+3.2.3 (21-Sep-2026)
 
 #745: (avro) Fix Avro bugs
  (contributed by @pjfanning)
