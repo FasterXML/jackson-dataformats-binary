@@ -18,7 +18,7 @@ implementations)
 
 No changes since 3.2
 
-3.2.3 (not yet released)
+3.2.3 (21-Sep-2026)
 
 #745: (avro) Fix Avro bugs
 #761: (smile) Async parser misses #312 NUL-padding: short property name
