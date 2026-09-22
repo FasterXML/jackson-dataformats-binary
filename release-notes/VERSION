@@ -83,7 +83,7 @@ No changes since 3.2.0
   method signatures
 #674: Smile parser does not update `StreamReadContext` index or entry count
 
-3.1.7 (not yet released)
+3.1.7 (21-Sep-2026)
 
 #745: (avro) Fix Avro bugs
 #761: (smile) Async parser misses #312 NUL-padding: short property name
