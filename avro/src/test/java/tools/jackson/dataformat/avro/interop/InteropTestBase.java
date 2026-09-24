@@ -1,6 +1,5 @@
 package tools.jackson.dataformat.avro.interop;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.*;
 
 import java.lang.reflect.ParameterizedType;
@@ -126,25 +125,6 @@ public abstract class InteropTestBase
                 {getJacksonSchema, apacheSerializer, apacheDeserializer, "Apache to Apache with Jackson schema"},
                 {getApacheSchema, apacheSerializer, apacheDeserializer, "Apache to Apache with Apache schema"}
         };
-    }
-
-    /**
-     * Skips the current combination if it uses Apache Avro schema generation:
-     * {@link ApacheAvroInteropUtil}'s patched {@code ReflectData} fails (with
-     * {@code StackOverflowError}) for some types with Avro 1.12 (worked with 1.11).
-     */
-    protected void assumeNotApacheSchema() {
-        assumeTrue(schemaFunctor != getApacheSchema,
-                "Apache schema generation fails for this type with Avro 1.12");
-    }
-
-    /**
-     * Skips the current combination if the Apache deserializer is used with
-     * a Jackson-generated schema: fails for some types with Avro 1.12 (worked with 1.11).
-     */
-    protected void assumeNotApacheReaderWithJacksonSchema() {
-        assumeTrue(schemaFunctor != getJacksonSchema || deserializeFunctor != apacheDeserializer,
-                "Apache deserializer fails with Jackson schema for this type with Avro 1.12");
     }
 
     /**

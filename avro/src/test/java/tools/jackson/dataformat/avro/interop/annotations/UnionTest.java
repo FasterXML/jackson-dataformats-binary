@@ -151,7 +151,6 @@ public class UnionTest extends InteropTestBase {
 
     @Test
     public void testListWithInterfaceUnion() throws IOException {
-        assumeNotApacheReaderWithJacksonSchema();
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         //
         PetShop result = roundTrip(shop);
@@ -161,7 +160,6 @@ public class UnionTest extends InteropTestBase {
 
     @Test
     public void testMapWithInterfaceUnion() throws IOException {
-        assumeNotApacheReaderWithJacksonSchema();
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         shop.specialPets.put("pet1", new Cat("siamese"));
         shop.specialPets.put("pet2", new Dog(6));

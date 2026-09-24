@@ -84,7 +84,6 @@ public class ListWithComplexTest extends InteropTestBase
 
     @Test
     public void testListWithRecordElements() throws IOException {
-        assumeNotApacheReaderWithJacksonSchema();
         List<DummyRecord> original = new ArrayList<>();
         original.add(new DummyRecord("test", 2));
         original.add(new DummyRecord("test 2", 1235));

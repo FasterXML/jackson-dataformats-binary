@@ -32,7 +32,6 @@ public class RecordWithComplexTest extends InteropTestBase
 
     @Test
     public void testRecordWithListFields() throws IOException {
-        assumeNotApacheSchema();
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.requiredList.add(9682584);
         //
@@ -44,7 +43,6 @@ public class RecordWithComplexTest extends InteropTestBase
 
     @Test
     public void testRecordWithMapFields() throws IOException {
-        assumeNotApacheSchema();
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.simpleMap.put("Hello World", 9682584);
         //
@@ -56,7 +54,6 @@ public class RecordWithComplexTest extends InteropTestBase
 
     @Test
     public void testRecordWithMissingRequiredEnumFields() {
-        assumeNotApacheSchema();
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.requiredEnum = null;
         //
@@ -73,7 +70,6 @@ public class RecordWithComplexTest extends InteropTestBase
     @Test
     public void testRecordWithNullRequiredFields()
     {
-        assumeNotApacheSchema();
         RecursiveDummyRecord original = new RecursiveDummyRecord(null, 12353, new DummyRecord("World", 234));
         //
         try {
@@ -90,7 +86,6 @@ public class RecordWithComplexTest extends InteropTestBase
     @Test
     public void testRecordWithOptionalEnumField()
     {
-        assumeNotApacheSchema();
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.optionalEnum = DummyEnum.SOUTH;
         //
@@ -102,7 +97,6 @@ public class RecordWithComplexTest extends InteropTestBase
     @Test
     public void testRecordWithRecordValues()
     {
-        assumeNotApacheSchema();
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         //
         RecursiveDummyRecord result = roundTrip(RecursiveDummyRecord.class, original);

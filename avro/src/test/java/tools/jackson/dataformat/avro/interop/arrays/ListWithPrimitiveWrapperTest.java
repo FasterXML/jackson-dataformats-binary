@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ListWithPrimitiveWrapperTest extends InteropTestBase {
     @Test
     public void testListWithBytes() throws IOException {
-        assumeNotApacheReaderWithJacksonSchema();
         List<Byte> original = new ArrayList<>();
         original.add((byte) 1);
         original.add((byte) 0);
@@ -32,7 +31,6 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
 
     @Test
     public void testListWithCharacters() throws IOException {
-        assumeNotApacheReaderWithJacksonSchema();
         List<Character> original = new ArrayList<>();
         original.add((char) 1);
         original.add((char) 0);
@@ -103,7 +101,6 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
 
     @Test
     public void testListWithShorts() throws IOException {
-        assumeNotApacheReaderWithJacksonSchema();
         List<Short> original = new ArrayList<>();
         original.add((short) 1);
         original.add((short) 0);

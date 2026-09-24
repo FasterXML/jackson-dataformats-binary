@@ -60,7 +60,6 @@ public class AvroAliasTest extends InteropTestBase {
 
     @Test
     public void testAliasedRecordForwardsCompatible() throws IOException {
-        assumeNotApacheSchema();
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Employee.class);
         Schema newSchema = schemaFunctor.apply(NewEmployee.class);
         //
@@ -72,7 +71,6 @@ public class AvroAliasTest extends InteropTestBase {
 
     @Test
     public void testAliasedRecordBackwardsCompatible() throws IOException {
-        assumeNotApacheSchema();
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Employee.class);
         Schema newSchema = schemaFunctor.apply(NewEmployee.class);
         //
@@ -84,7 +82,6 @@ public class AvroAliasTest extends InteropTestBase {
 
     @Test
     public void testAliasedRecordForwardsCompatibleSameNamespace() throws IOException {
-        assumeNotApacheSchema();
         Schema oldSchema = schemaFunctor.apply(NewEmployee.class);
         Schema newSchema = schemaFunctor.apply(AliasedNameEmployee.class);
         //
@@ -96,7 +93,6 @@ public class AvroAliasTest extends InteropTestBase {
 
     @Test
     public void testAliasedRecordBackwardsCompatibleSameNamespace() throws IOException {
-        assumeNotApacheSchema();
         Schema oldSchema = schemaFunctor.apply(NewEmployee.class);
         Schema newSchema = schemaFunctor.apply(AliasedNameEmployee.class);
         //
