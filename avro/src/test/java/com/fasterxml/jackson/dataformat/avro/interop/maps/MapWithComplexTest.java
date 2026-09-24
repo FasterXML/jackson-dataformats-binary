@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.maps;
 import java.io.IOException;
 import java.util.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;

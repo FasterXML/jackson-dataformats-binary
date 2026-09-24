@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;

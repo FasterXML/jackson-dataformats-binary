@@ -2,7 +2,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
