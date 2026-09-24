@@ -18,6 +18,12 @@ implementations)
 
 No changes since 3.2
 
+3.2.4 (not yet released)
+
+#797: (avro) Apache decoder fails with `UnsupportedOperationException` when
+  `AvroReadFeature.AVRO_BUFFERING` disabled
+ (contributed by @Dongnyoung)
+
 3.2.3 (21-Sep-2026)
 
 #745: (avro) Fix Avro bugs
