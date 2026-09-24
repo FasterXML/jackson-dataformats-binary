@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
@@ -16,7 +16,7 @@ import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Union;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for @Union
@@ -151,6 +151,7 @@ public class UnionTest extends InteropTestBase {
 
     @Test
     public void testListWithInterfaceUnion() throws IOException {
+        assumeNotApacheReaderWithJacksonSchema();
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         //
         PetShop result = roundTrip(shop);
@@ -160,6 +161,7 @@ public class UnionTest extends InteropTestBase {
 
     @Test
     public void testMapWithInterfaceUnion() throws IOException {
+        assumeNotApacheReaderWithJacksonSchema();
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         shop.specialPets.put("pet1", new Cat("siamese"));
         shop.specialPets.put("pet2", new Dog(6));
