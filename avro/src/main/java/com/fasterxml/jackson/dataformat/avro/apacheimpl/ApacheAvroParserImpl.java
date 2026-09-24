@@ -178,6 +178,10 @@ public class ApacheAvroParserImpl extends AvroParserImpl
                 //   undecoded; a direct decoder does not buffer, so raw count is exact
                 consumed -= _decoder.inputStream().available();
             }
+            // NOTE: for a direct decoder, raw count may include one byte read ahead by
+            //   `checkInputEnd()` and pushed back ([dataformats-binary#797]). That byte
+            //   is always part of the document, so it cannot cause false failures; it
+            //   only means an over-limit error may be reported one token earlier
             if (consumed > 0L) {
                 _streamReadConstraints.validateDocumentLength(consumed);
             }

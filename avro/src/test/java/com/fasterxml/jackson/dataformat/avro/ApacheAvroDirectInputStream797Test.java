@@ -48,8 +48,10 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
         }
     }
 
+    // Also verifies that the byte read ahead by end-of-input check does not trip
+    // `maxDocumentLength` when the limit equals the exact document length
     @Test
-    public void testDirectInputStreamRootSequenceEOF() throws Exception
+    public void testDirectInputStreamRootSequenceEOFWithMaxDocLength() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(quote("int"));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -73,6 +75,22 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
             assertTrue(it.hasNextValue());
             assertEquals(Integer.valueOf(-999), it.nextValue());
             assertFalse(it.hasNextValue());
+        }
+    }
+
+    // Zero-field records consume no content: end-of-input must not be reported
+    // for them (see [dataformats-binary#177])
+    @Test
+    public void testDirectInputStreamRootEmptyRecord() throws Exception
+    {
+        AvroSchema schema = parseSchema(MAPPER,
+                "{'type':'record', 'name':'Empty','namespace':'something','fields':[]}");
+
+        try (JsonParser p = DIRECT_MAPPER.getFactory()
+                .createParser(new ByteArrayInputStream(new byte[0]))) {
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
         }
     }
 
