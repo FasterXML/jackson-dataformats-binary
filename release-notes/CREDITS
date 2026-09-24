@@ -61,3 +61,9 @@ PJ Fanning (@pjfanning)
 * Contributed #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)`
   writes enum values twice
  (3.1.7)
+
+DongNyoung Lee (@Dongnyoung)
+
+* Contributed fix for #797: (avro) Apache decoder fails with `UnsupportedOperationException`
+  when `AvroReadFeature.AVRO_BUFFERING` disabled
+ (3.1.8)
