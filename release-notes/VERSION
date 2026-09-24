@@ -50,6 +50,12 @@ implementations)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
+3.2.4 (not yet released)
+
+#797: (avro) Apache decoder fails with `UnsupportedOperationException` when
+  `AvroReadFeature.AVRO_BUFFERING` disabled
+ (contributed by @Dongnyoung)
+
 3.2.3 (21-Sep-2026)
 
 #745: (avro) Fix Avro bugs
@@ -115,6 +121,12 @@ No changes since 3.2.0
 #662: (avro) Remove `IOException` from `AvroMapper.schemaFrom()`
   method signatures
 #674: Smile parser does not update `StreamReadContext` index or entry count
+
+3.1.8 (not yet released)
+
+#797: (avro) Apache decoder fails with `UnsupportedOperationException` when
+  `AvroReadFeature.AVRO_BUFFERING` disabled
+ (contributed by @Dongnyoung)
 
 3.1.7 (21-Sep-2026)
 
