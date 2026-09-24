@@ -43,6 +43,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     protected InputStream _inputStream;
 
     /**
+     * Non-null only for non-buffering {@link InputStream} input, where Apache's
+     * direct decoder cannot answer {@code isEnd()}.
+     */
+    protected final PushbackInputStream _pushbackInput;
+
+    /**
      * Current buffer from which data is read; generally data is read into
      * buffer from input source, but in some cases pre-loaded buffer
      * is handed to the parser.
@@ -125,10 +131,15 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _lengthCheckingInput = null;
         }
         _bufferingDecoder = buffering;
+        if (buffering) {
+            _pushbackInput = null;
+        } else {
+            _pushbackInput = new PushbackInputStream(in, 1);
+        }
         BinaryDecoder decoderToReuse = apacheCodecRecycler.acquireDecoder();
         _decoder = buffering
                 ? DECODER_FACTORY.binaryDecoder(in, decoderToReuse)
-                : DECODER_FACTORY.directBinaryDecoder(in, decoderToReuse);
+                : DECODER_FACTORY.directBinaryDecoder(_pushbackInput, decoderToReuse);
     }
 
     public ApacheAvroParserImpl(IOContext ctxt, int parserFeatures, int avroFeatures,
@@ -138,6 +149,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     {
         super(ctxt, parserFeatures, avroFeatures, codec);
         _inputStream = null;
+        _pushbackInput = null;
         _apacheCodecRecycler = apacheCodecRecycler;
         // fixed buffer: length validated up front by factory, nothing to count
         _lengthCheckingInput = null;
@@ -166,6 +178,10 @@ public class ApacheAvroParserImpl extends AvroParserImpl
                 //   undecoded; a direct decoder does not buffer, so raw count is exact
                 consumed -= _decoder.inputStream().available();
             }
+            // NOTE: for a direct decoder, raw count may include one byte read ahead by
+            //   `checkInputEnd()` and pushed back ([dataformats-binary#797]). That byte
+            //   is always part of the document, so it cannot cause false failures; it
+            //   only means an over-limit error may be reported one token earlier
             if (consumed > 0L) {
                 _streamReadConstraints.validateDocumentLength(consumed);
             }
@@ -280,6 +296,14 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public boolean checkInputEnd() throws IOException {
+        if (_pushbackInput != null) {
+            int b = _pushbackInput.read();
+            if (b < 0) {
+                return true;
+            }
+            _pushbackInput.unread(b);
+            return false;
+        }
         return _decoder.isEnd();
     }
 
