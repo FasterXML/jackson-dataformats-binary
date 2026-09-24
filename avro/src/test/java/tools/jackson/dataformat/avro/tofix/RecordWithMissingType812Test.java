@@ -16,13 +16,13 @@ import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jackso
 import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonSerialize;
 import static tools.jackson.dataformat.avro.interop.InteropTestBase.type;
 
-// Passes on 2.x, where an unresolvable type id falls back to the base type (here
+// [dataformats-binary#812]: passes on 2.x, where an unresolvable type id falls back to the base type (here
 // `Object`, so result is a `Map`): on 3.x that fallback was removed from
 // `AvroTypeIdResolver` and `AvroTypeDeserializer._handleUnknownTypeId()`, so
 // `InvalidTypeIdException` is thrown instead.
 // (test never ran before as class name lacked `Test` suffix; namespace also changed
 // from "bad-namespace" as Avro 1.12 rejects "-" in namespaces)
-public class RecordWithMissingTypeTest {
+public class RecordWithMissingType812Test {
 
     public static class WrapperOuter<T> {
 
@@ -54,6 +54,7 @@ public class RecordWithMissingTypeTest {
             + "              \"type\" : \"double\",\n              \"java-class\" : \"java.lang.Double\"\n            }\n"
             + "          } ]\n        }\n      } ]\n    }\n  } ]\n}";
 
+    // [dataformats-binary#812]
     @SuppressWarnings("unchecked")
     @JacksonTestFailureExpected
     @Test
