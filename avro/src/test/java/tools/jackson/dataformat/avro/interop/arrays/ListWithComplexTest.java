@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.interop.DummyRecord;
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
@@ -84,6 +84,7 @@ public class ListWithComplexTest extends InteropTestBase
 
     @Test
     public void testListWithRecordElements() throws IOException {
+        assumeNotApacheReaderWithJacksonSchema();
         List<DummyRecord> original = new ArrayList<>();
         original.add(new DummyRecord("test", 2));
         original.add(new DummyRecord("test 2", 1235));

@@ -7,9 +7,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -22,15 +22,15 @@ import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getApa
  * has a bug that will cause these to fail with ClassCastExceptions since it assumes all maps are {@link HashMap HashMaps}.
  */
 public class MapSubtypeTest extends InteropTestBase {
-    @Before
+    @BeforeEach
     public void ignoreApacheMapSubtypeBug() {
         // The Apache Avro implementation has a bug that causes all of these tests to fail. Conditionally ignore these tests when running
         // with Apache deserializer implementation
 
         // Apache ignores any type information for maps
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assumptions.assumeTrue(deserializeFunctor != apacheDeserializer);
         // Apache doesn't encode type information for maps
-        Assume.assumeTrue(schemaFunctor != getApacheSchema);
+        Assumptions.assumeTrue(schemaFunctor != getApacheSchema);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class MapSubtypeTest extends InteropTestBase {
     @Test
     public void testEnumMap() throws IOException {
         // Apache schema generator can't handle EnumMaps
-        Assume.assumeTrue(schemaFunctor != getApacheSchema);
+        Assumptions.assumeTrue(schemaFunctor != getApacheSchema);
 
         EnumMap<DummyEnum, Integer> original = new EnumMap<>(DummyEnum.class);
         original.put(DummyEnum.NORTH, 1234);

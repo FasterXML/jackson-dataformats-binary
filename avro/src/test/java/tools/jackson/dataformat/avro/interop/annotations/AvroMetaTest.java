@@ -8,8 +8,8 @@ import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroMeta;
 import org.apache.avro.reflect.AvroSchema;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,12 +70,12 @@ public class AvroMetaTest extends InteropTestBase
     public void testCollidingMeta() throws Exception {
         try {
             schemaFunctor.apply(BadMetaTest.class);
-            Assert.fail("Should not pass");
+            Assertions.fail("Should not pass");
         // 27-May-2021, tatu: was at some point "AvroRuntimeException", not so with 2.13:
         } catch (InvalidDefinitionException e) {
             String msg = e.getMessage();
             if (!msg.startsWith("Failed to generate")) {
-                Assert.fail("Excepted exception message to start with 'Failed to generate', got: ["+msg+"]");
+                Assertions.fail("Excepted exception message to start with 'Failed to generate', got: ["+msg+"]");
             }
         }
     }
