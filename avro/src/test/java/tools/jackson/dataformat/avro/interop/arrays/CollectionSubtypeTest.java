@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -67,7 +67,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     @Test
     public void testEnumSet() throws IOException {
         // Bug in apache deserializer, can't handle EnumSet
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assumptions.assumeTrue(deserializeFunctor != apacheDeserializer);
         EnumSet<DummyEnum> original = EnumSet.of(DummyEnum.EAST, DummyEnum.NORTH);
         //
         EnumSet<DummyEnum> result = roundTrip(type(EnumSet.class, DummyEnum.class), original);
@@ -111,7 +111,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
     @Test
     public void testSet() throws IOException {
         // Bug in apache deserializer, can't handle Set
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assumptions.assumeTrue(deserializeFunctor != apacheDeserializer);
         Set<Integer> original = new HashSet<>();
         original.add(1234);
         original.add(98768234);
