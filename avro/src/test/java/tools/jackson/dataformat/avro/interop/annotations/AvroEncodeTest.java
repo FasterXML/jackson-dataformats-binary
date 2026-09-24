@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro.tofix;
+package tools.jackson.dataformat.avro.interop.annotations;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,13 +16,9 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import tools.jackson.dataformat.avro.interop.InteropTestBase;
-import tools.jackson.dataformat.avro.testutil.failure.JacksonTestFailureExpected;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Fails for all combinations: Jackson schema generation fails with "Could not create
-// schema from custom serializer", and Apache schema generation with StackOverflowError
-// (moved here when interop tests were converted to JUnit 5 and started running again)
 public class AvroEncodeTest extends InteropTestBase {
     static class Wrapper {
         public double precedingValue = 0.18273465;
@@ -142,6 +138,7 @@ public class AvroEncodeTest extends InteropTestBase {
     }
 
     protected Wrapper wrapper;
+    protected Wrapper result;
 
     @BeforeEach
     public void setup() throws IOException {
@@ -168,61 +165,47 @@ public class AvroEncodeTest extends InteropTestBase {
         cc.stringValue = "Nested Hello World!";
         cc.uuidValue = UUID.randomUUID();
         wrapper.component.nestedRecordValue = cc;
+        //
+        result = roundTrip(wrapper);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testByteValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.byteValue).isEqualTo(wrapper.component.byteValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testShortValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.shortValue).isEqualTo(wrapper.component.shortValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testStringValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.stringValue).isEqualTo(wrapper.component.stringValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testDoubleValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.doubleValue).isEqualTo(wrapper.component.doubleValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testLongValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.longValue).isEqualTo(wrapper.component.longValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testIntegerValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.intValue).isEqualTo(wrapper.component.intValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testNestedUuidValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.nestedRecordValue.uuidValue).isEqualTo(wrapper.component.nestedRecordValue.uuidValue);
     }
 
-    @JacksonTestFailureExpected
     @Test
     public void testUuidValue() {
-        Wrapper result = roundTrip(wrapper);
         assertThat(result.component.uuidValue).isEqualTo(wrapper.component.uuidValue);
     }
 }
