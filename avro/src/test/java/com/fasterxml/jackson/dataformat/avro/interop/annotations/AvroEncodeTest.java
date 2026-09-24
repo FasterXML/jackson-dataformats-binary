@@ -11,8 +11,8 @@ import org.apache.avro.reflect.AvroEncode;
 import org.apache.avro.reflect.CustomEncoding;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.ReflectData;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -140,7 +140,7 @@ public class AvroEncodeTest extends InteropTestBase {
     protected Wrapper wrapper;
     protected Wrapper result;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         wrapper = new Wrapper();
         //

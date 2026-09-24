@@ -6,9 +6,10 @@ import java.lang.reflect.Type;
 
 import org.apache.avro.Schema;
 
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
 import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
@@ -20,7 +21,8 @@ import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUti
  * {@link #deserializeFunctor} with permutations of Apache and Jackson implementations to test all aspects of
  * interoperability between the implementations.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{3}")
+@MethodSource("getParameters")
 public abstract class InteropTestBase
 {
     public enum DummyEnum {
@@ -29,7 +31,7 @@ public abstract class InteropTestBase
 
     // see https://github.com/FasterXML/jackson-dataformats-binary/pull/539 for
     // explanation (need to allow-list Jackson test packages for Avro 1.11.4+)
-    @Before
+    @BeforeEach
     public void init() {
         System.setProperty("org.apache.avro.SERIALIZABLE_PACKAGES",
                 "java.lang,java.math,java.io,java.net,org.apache.avro.reflect," +
@@ -104,16 +106,15 @@ public abstract class InteropTestBase
         }
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public Function<Type, Schema> schemaFunctor;
-    @Parameterized.Parameter(1)
+    @Parameter(1)
     public BiFunction<Schema, Object, byte[]> serializeFunctor;
-    @Parameterized.Parameter(2)
+    @Parameter(2)
     public BiFunction<Schema, byte[], Object> deserializeFunctor;
-    @Parameterized.Parameter(3)
+    @Parameter(3)
     public String combinationName;
 
-    @Parameterized.Parameters(name = "{3}")
     public static Object[][] getParameters() {
         return new Object[][]{
                 {getApacheSchema, apacheSerializer, jacksonDeserializer, "Apache to Jackson with Apache schema"},

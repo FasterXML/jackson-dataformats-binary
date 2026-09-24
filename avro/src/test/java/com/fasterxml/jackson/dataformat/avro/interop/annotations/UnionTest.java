@@ -9,13 +9,13 @@ import java.util.Map;
 import org.apache.avro.UnresolvedUnionException;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Union;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for @Union

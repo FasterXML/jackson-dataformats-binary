@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Nullable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
