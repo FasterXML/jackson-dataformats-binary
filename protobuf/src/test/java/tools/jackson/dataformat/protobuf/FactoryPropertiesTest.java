@@ -65,7 +65,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     public void testCapabilities() throws Exception
     {
         assertTrue(PROTO_F.canHandleBinaryNatively());
-        assertNull(PROTO_F.getFormatReadFeatureType());
+        assertEquals(ProtobufReadFeature.class, PROTO_F.getFormatReadFeatureType());
+        assertFalse(PROTO_F.isEnabled(ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE));
         assertNull(PROTO_F.getFormatWriteFeatureType());
     }
 
