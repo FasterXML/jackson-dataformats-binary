@@ -56,6 +56,36 @@ public class ProtobufMapper extends ObjectMapper
             return new StateImpl(this);
         }
 
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        public Builder enable(ProtobufReadFeature... features) {
+            for (ProtobufReadFeature f : features) {
+                _formatReadFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        public Builder disable(ProtobufReadFeature... features) {
+            for (ProtobufReadFeature f : features) {
+                _formatReadFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        public Builder configure(ProtobufReadFeature feature, boolean state)
+        {
+            if (state) {
+                _formatReadFeatures |= feature.getMask();
+            } else {
+                _formatReadFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
         protected static class StateImpl extends MapperBuilderState
             implements java.io.Serializable // important!
         {
