@@ -35,7 +35,7 @@ final class UnionReader extends AvroStructureReader
     @Override
     public JsonToken nextToken() throws IOException
     {
-        int index = _parser.decodeIndex();
+        int index = _decodeIndex(_parser.decodeIndex());
         // important: remember to create new instance
         // also: must pass our parent (not this instance)
         AvroStructureReader reader = _memberReaders[index].newReader(_parent, _parser);
