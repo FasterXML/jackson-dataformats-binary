@@ -14,6 +14,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.8 (not yet released)
+
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (contributed by @pjfanning)
+
 2.21.7 (21-Sep-2026)
 
 #761: (smile) Async parser misses #312 NUL-padding: short property name
