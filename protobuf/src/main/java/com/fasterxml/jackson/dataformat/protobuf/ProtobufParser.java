@@ -611,6 +611,12 @@ public class ProtobufParser extends ParserMinimalBase
 
             int len = _decodeLength();
             int newEnd = _inputPtr + len;
+            // Guard against integer overflow: _inputPtr and len are both non-negative,
+            // so a result smaller than _inputPtr means the sum wrapped.
+            if (newEnd < _inputPtr) {
+                _reportErrorF("Packed array length overflows for field '%s': ptr=%d, len=%d",
+                        _currentField.name, _inputPtr, len);
+            }
 
             // First: validate that we do not extend past end offset of enclosing message
             if (!_parsingContext.inRoot()) {
@@ -917,6 +923,12 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentMessage = msg;
                 int len = _decodeLength();
                 int newEnd = _inputPtr + len;
+                // Guard against integer overflow: _inputPtr and len are both non-negative,
+                // so a result smaller than _inputPtr means the sum wrapped.
+                if (newEnd < _inputPtr) {
+                    _reportErrorF("Message length overflows for field '%s': ptr=%d, len=%d",
+                            _currentField.name, _inputPtr, len);
+                }
 
                 // First: validate that we do not extend past end offset of enclosing message
                 if (newEnd > _currentEndOffset) {
@@ -1272,7 +1284,8 @@ public class ProtobufParser extends ParserMinimalBase
             _textBuffer.resetWithEmpty();
             return "";
         }
-        if ((_inputPtr + len) <= _inputEnd) {
+        // Compare against remaining input: `_inputPtr + len` may overflow
+        if (len <= (_inputEnd - _inputPtr)) {
             return _finishShortText(len);
         }
         _finishToken();
@@ -1308,7 +1321,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     return _finishShortText(len);
                 }
@@ -1392,7 +1406,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     return _finishShortText(len);
                 }
@@ -1431,7 +1446,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     _finishShortText(len);
                 } else {
@@ -1903,6 +1919,11 @@ public class ProtobufParser extends ParserMinimalBase
 
     protected byte[] _finishBytes(int len) throws IOException
     {
+        // If declared length exceeds buffered content, do not trust it for
+        // up-front allocation: accumulate incrementally instead
+        if (len > (_inputEnd - _inputPtr)) {
+            return _finishLongBytes(len);
+        }
         byte[] b = new byte[len];
         if (_inputPtr >= _inputEnd) {
             loadMoreGuaranteed();
@@ -1918,6 +1939,24 @@ public class ProtobufParser extends ParserMinimalBase
                 return b;
             }
             loadMoreGuaranteed();
+        }
+    }
+
+    // Used when declared length exceeds buffered input: grows the result
+    // as content is actually read, so a bogus length only fails at end-of-input
+    private final byte[] _finishLongBytes(int len) throws IOException
+    {
+        try (ByteArrayBuilder bb = new ByteArrayBuilder()) {
+            while (len > 0) {
+                if (_inputPtr >= _inputEnd) {
+                    loadMoreGuaranteed();
+                }
+                int toAdd = Math.min(len, _inputEnd - _inputPtr);
+                bb.write(_inputBuffer, _inputPtr, toAdd);
+                _inputPtr += toAdd;
+                len -= toAdd;
+            }
+            return bb.toByteArray();
         }
     }
 
