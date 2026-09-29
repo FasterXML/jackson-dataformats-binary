@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.8 (not yet released)
+
+#818: (ion) Report corrupt content for String/Symbol value without text
+ (fix by @pjfanning, w/ Claude code)
+
 2.21.7 (21-Sep-2026)
 
 #761: (smile) Async parser misses #312 NUL-padding: short property name
