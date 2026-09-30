@@ -1944,12 +1944,17 @@ public class ProtobufParser extends ParserMinimalBase
 
     // Used when declared length exceeds buffered input: grows the result
     // as content is actually read, so a bogus length only fails at end-of-input
-    private final byte[] _finishLongBytes(int len) throws IOException
+    private final byte[] _finishLongBytes(final int expLen) throws IOException
     {
+        int len = expLen;
         try (ByteArrayBuilder bb = new ByteArrayBuilder()) {
             while (len > 0) {
                 if (_inputPtr >= _inputEnd) {
-                    loadMoreGuaranteed();
+                    if (!loadMore()) {
+                        _reportInvalidEOF(String.format(
+                                " for Binary value: expected %d bytes, only found %d",
+                                expLen, expLen - len), JsonToken.VALUE_EMBEDDED_OBJECT);
+                    }
                 }
                 int toAdd = Math.min(len, _inputEnd - _inputPtr);
                 bb.write(_inputBuffer, _inputPtr, toAdd);

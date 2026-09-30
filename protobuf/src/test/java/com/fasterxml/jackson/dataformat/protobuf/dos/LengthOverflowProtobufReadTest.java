@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf.dos;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.Test;
@@ -8,6 +9,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 import com.fasterxml.jackson.dataformat.protobuf.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
@@ -102,6 +104,67 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
     @Test
     public void testPackedArrayHugeLength() throws Exception {
         _verifyFailure(_doc(0x4A));
+    }
+
+    // Bytes field with large (800 MB) but not near-overflow length, and no content:
+    // must fail without allocating declared length
+    @Test
+    public void testBytesBogusLengthNoContent() throws Exception {
+        // tag for field 5 (bytes); VInt 800,000,000
+        final byte[] doc = {
+            (byte) 0x2A, (byte) 0x80, (byte) 0x90, (byte) 0xBC, (byte) 0xFD, (byte) 0x02
+        };
+        _verifyBytesEOF(MAPPER.createParser(doc), 800_000_000, 0);
+        _verifyBytesEOF(MAPPER.createParser(new ByteArrayInputStream(doc)), 800_000_000, 0);
+    }
+
+    // And legit long binary content (longer than input buffer) must still work,
+    // as well as report truncated content accurately
+    @Test
+    public void testBytesLongValid() throws Exception {
+        final byte[] data = new byte[700_000];
+        for (int i = 0; i < data.length; ++i) {
+            data[i] = (byte) (i * 7);
+        }
+        // tag for field 5 (bytes); VInt 700,000 (0x0AAE60)
+        final byte[] header = { (byte) 0x2A, (byte) 0xE0, (byte) 0xDC, (byte) 0x2A };
+        final byte[] doc = new byte[header.length + data.length];
+        System.arraycopy(header, 0, doc, 0, header.length);
+        System.arraycopy(data, 0, doc, header.length, data.length);
+
+        _verifyBytes(MAPPER.createParser(doc), data);
+        _verifyBytes(MAPPER.createParser(new ByteArrayInputStream(doc)), data);
+
+        final byte[] truncated = Arrays.copyOf(doc, doc.length - 1000);
+        _verifyBytesEOF(MAPPER.createParser(truncated), 700_000, 699_000);
+        _verifyBytesEOF(MAPPER.createParser(new ByteArrayInputStream(truncated)), 700_000, 699_000);
+    }
+
+    private void _verifyBytes(JsonParser p, byte[] exp) throws Exception {
+        try (JsonParser p2 = p) {
+            _advanceToBytes(p2);
+            assertArrayEquals(exp, p2.getBinaryValue());
+            assertToken(JsonToken.END_OBJECT, p2.nextToken());
+        }
+    }
+
+    private void _verifyBytesEOF(JsonParser p, int expLen, int found) throws Exception {
+        try (JsonParser p2 = p) {
+            _advanceToBytes(p2);
+            p2.getBinaryValue();
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Unexpected end-of-input");
+            verifyException(e, "expected "+expLen+" bytes, only found "+found);
+        }
+    }
+
+    private void _advanceToBytes(JsonParser p) throws Exception {
+        p.setSchema(SCHEMA);
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("bb", p.currentName());
+        assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
     }
 
     private byte[] _doc(int tag) {
