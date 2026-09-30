@@ -1471,11 +1471,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishRawBinaryLen(0, 0);
         }
-        final int len = _decodeVInt();
-        _binaryValue = new byte[len];
-        _pending32 = len;
-        _inputCopyLen = 0;
-        return _finishRawBinaryBody();
+        return _startRawBinaryBody(_decodeVInt());
     }
 
     private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
@@ -1483,11 +1479,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                final int len = (value << 6) | (b & 0x3F);
-                _binaryValue = new byte[len];
-                _pending32 = len;
-                _inputCopyLen = 0;
-                return _finishRawBinaryBody();
+                return _startRawBinaryBody((value << 6) | (b & 0x3F));
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1501,6 +1493,24 @@ public class NonBlockingByteArrayParser
         return _updateTokenToNA();
     }
 
+    private final JsonToken _startRawBinaryBody(final int len) throws IOException
+    {
+        if (len < 0) {
+            _reportError("Corrupt input; invalid length for raw binary value: "+len);
+        }
+        // Avoid eager allocation for very long content: accumulate as it
+        // arrives (same as blocking parser does)
+        if (len > LONGEST_NON_CHUNKED_BINARY) {
+            _binaryValue = null;
+            _initByteArrayBuilder();
+        } else {
+            _binaryValue = new byte[len];
+        }
+        _pending32 = len;
+        _inputCopyLen = 0;
+        return _finishRawBinaryBody();
+    }
+
     private final JsonToken _finishRawBinaryBody() throws IOException
     {
         int totalLen = _pending32;
@@ -1508,6 +1518,18 @@ public class NonBlockingByteArrayParser
 
         int needed = totalLen - offset;
         int avail = _inputEnd - _inputPtr;
+        if (_binaryValue == null) { // long content, accumulated in builder
+            int count = Math.min(avail, needed);
+            _byteArrayBuilder.write(_inputBuffer, _inputPtr, count);
+            _inputPtr += count;
+            if (count == needed) {
+                _binaryValue = _byteArrayBuilder.toByteArray();
+                return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
+            }
+            _inputCopyLen = offset+count;
+            _minorState = MINOR_VALUE_BINARY_RAW_BODY;
+            return _updateTokenToNA();
+        }
         if (avail >= needed) {
             System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, offset, needed);
             _inputPtr += needed;

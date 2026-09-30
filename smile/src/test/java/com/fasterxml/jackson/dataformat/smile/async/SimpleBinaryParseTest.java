@@ -20,7 +20,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     final static int[] SIZES = new int[] {
         1, 2, 3, 4, 5, 7, 11,
         90, 350, 1900, 6000, 19000, 65000,
-        139000
+        139000, 270000
     };
 
     public void testRawAsRootValue() throws IOException {

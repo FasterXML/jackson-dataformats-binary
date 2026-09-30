@@ -14,6 +14,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.12 (not yet released)
+
+#825: (smile) Non-blocking parser should validate raw binary length and not pre-allocate
+  full buffer
+ (fix by @pjfanning, w/ Claude code)
+
 2.18.11 (20-Sep-2026)
 
 #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
