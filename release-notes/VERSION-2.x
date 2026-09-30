@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.12 (not yet released)
+
+#821: (cbor) `CBORParser.TagList` should grow its backing array geometrically
+ (fix by @pjfanning, w/ Claude code)
+
 2.18.11 (20-Sep-2026)
 
 #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`
