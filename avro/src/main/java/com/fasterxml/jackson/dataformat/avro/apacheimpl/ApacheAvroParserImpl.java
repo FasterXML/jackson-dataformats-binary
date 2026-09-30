@@ -385,8 +385,6 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         if (len <= 0) {
             _binaryValue = NO_BYTES;
         } else {
-            // plus let's retain reference to this buffer, for reuse
-            // (is safe due to way Avro impl handles them)
             _binaryValue = _readBytes(len);
         }
         return JsonToken.VALUE_EMBEDDED_OBJECT;
@@ -394,15 +392,20 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     /**
      * Helper method for reading a {@code bytes} value of given length: allocates
-     * the full result buffer up front only if length is modest; otherwise reads
-     * content in chunks, so that truncated content is reported before a buffer
-     * of the declared length is allocated.
+     * the full result buffer up front only if content is already available, or
+     * length is modest; otherwise reads content in chunks, so that truncated
+     * content is reported before a buffer of the declared length is allocated.
+     *<p>
+     * NOTE: for {@code byte[]} input, decoder's {@code available()} is exact
+     * (whole remaining content); for {@code InputStream} input it only covers
+     * already buffered content (or what the stream reports).
      *
      * @since 2.18.12
      */
     private byte[] _readBytes(final int len) throws IOException
     {
-        if (len <= LONGEST_NON_CHUNKED_BINARY) {
+        if ((len <= LONGEST_NON_CHUNKED_BINARY)
+                || (len <= _decoder.inputStream().available())) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _decoder.readFixed(b, 0, len);
