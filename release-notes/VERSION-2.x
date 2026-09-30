@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.12 (not yet released)
+
+#819: (avro) `bytes` value allocated to declared length before checking available content
+ (fix by @pjfanning, w/ Claude code)
+
 2.18.11 (20-Sep-2026)
 
 #783: (protobuf) Support `StreamReadConstraints.maxDocumentLength` in `ProtobufParser`

@@ -10,6 +10,7 @@ import org.apache.avro.io.DecoderFactory;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroReadContext;
 
@@ -384,14 +385,39 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         if (len <= 0) {
             _binaryValue = NO_BYTES;
         } else {
+            // plus let's retain reference to this buffer, for reuse
+            // (is safe due to way Avro impl handles them)
+            _binaryValue = _readBytes(len);
+        }
+        return JsonToken.VALUE_EMBEDDED_OBJECT;
+    }
+
+    /**
+     * Helper method for reading a {@code bytes} value of given length: allocates
+     * the full result buffer up front only if length is modest; otherwise reads
+     * content in chunks, so that truncated content is reported before a buffer
+     * of the declared length is allocated.
+     *
+     * @since 2.18.12
+     */
+    private byte[] _readBytes(final int len) throws IOException
+    {
+        if (len <= LONGEST_NON_CHUNKED_BINARY) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _decoder.readFixed(b, 0, len);
-            // plus let's retain reference to this buffer, for reuse
-            // (is safe due to way Avro impl handles them)
-            _binaryValue = b;
+            return b;
         }
-        return JsonToken.VALUE_EMBEDDED_OBJECT;
+        final byte[] chunk = new byte[LONGEST_NON_CHUNKED_BINARY];
+        final ByteArrayBuilder bb = new ByteArrayBuilder(LONGEST_NON_CHUNKED_BINARY);
+        int left = len;
+        while (left > 0) {
+            int count = Math.min(chunk.length, left);
+            _decoder.readFixed(chunk, 0, count);
+            bb.write(chunk, 0, count);
+            left -= count;
+        }
+        return bb.toByteArray();
     }
 
     @Override
