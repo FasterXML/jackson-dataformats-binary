@@ -7,9 +7,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -22,18 +22,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * has a bug that will cause these to fail with ClassCastExceptions since it assumes all maps are {@link HashMap HashMaps}.
  */
 public class MapSubtypeTest extends InteropTestBase {
-    @Before
+    @BeforeEach
     public void ignoreApacheMapSubtypeBug() {
         // The Apache Avro implementation has a bug that causes all of these tests to fail. Conditionally ignore these tests when running
         // with Apache deserializer implementation
 
         // Apache ignores any type information for maps
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assumptions.assumeTrue(deserializeFunctor != apacheDeserializer);
         // Apache doesn't encode type information for maps
-        Assume.assumeTrue(schemaFunctor != getApacheSchema);
+        Assumptions.assumeTrue(schemaFunctor != getApacheSchema);
     }
 
-    @Test
+    @TestTemplate
     public void testHashMap() throws IOException {
         HashMap<String, Integer> original = new HashMap<>();
         original.put("test", 1234);
@@ -44,7 +44,7 @@ public class MapSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testConcurrentHashMap() throws IOException {
         ConcurrentHashMap<String, Integer> original = new ConcurrentHashMap<>();
         original.put("test", 1234);
@@ -55,7 +55,7 @@ public class MapSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testConcurrentSkipListMap() throws IOException {
         ConcurrentSkipListMap<String, Integer> original = new ConcurrentSkipListMap<>();
         original.put("test", 1234);
@@ -66,7 +66,7 @@ public class MapSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testTreeMap() throws IOException {
         TreeMap<String, Integer> original = new TreeMap<>();
         original.put("test", 1234);
@@ -77,10 +77,10 @@ public class MapSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testEnumMap() throws IOException {
         // Apache schema generator can't handle EnumMaps
-        Assume.assumeTrue(schemaFunctor != getApacheSchema);
+        Assumptions.assumeTrue(schemaFunctor != getApacheSchema);
 
         EnumMap<DummyEnum, Integer> original = new EnumMap<>(DummyEnum.class);
         original.put(DummyEnum.NORTH, 1234);

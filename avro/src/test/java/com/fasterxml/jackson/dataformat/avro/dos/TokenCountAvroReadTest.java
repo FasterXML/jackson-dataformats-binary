@@ -4,12 +4,17 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#785]: `StreamReadConstraints.maxTokenCount` for Avro
 public class TokenCountAvroReadTest extends AvroTestBase
@@ -30,6 +35,7 @@ public class TokenCountAvroReadTest extends AvroTestBase
     }
 
     // Verify token count is tracked accurately
+    @Test
     public void testTokenCountIsTracked() throws Exception
     {
         // {"values":[1,2,3]}: START_OBJECT, FIELD_NAME, START_ARRAY,
@@ -46,6 +52,7 @@ public class TokenCountAvroReadTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testTokenCountLimit() throws Exception
     {
         // createDoc(100) produces 100 + 5 tokens

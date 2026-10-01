@@ -2,9 +2,16 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.FormatSchema;
 import com.fasterxml.jackson.core.StreamReadCapability;
 import com.fasterxml.jackson.databind.*;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class MapperConfigTest extends AvroTestBase
 {
@@ -18,6 +25,7 @@ public class MapperConfigTest extends AvroTestBase
     /**********************************************************
      */
 
+    @Test
     public void testFactoryDefaults() throws Exception
     {
         assertTrue(AVRO_F.isEnabled(AvroParser.Feature.AVRO_BUFFERING));
@@ -25,6 +33,7 @@ public class MapperConfigTest extends AvroTestBase
         assertFalse(AVRO_F.canUseSchema(BOGUS_SCHEMA));
     }
 
+    @Test
     public void testParserDefaults() throws Exception
     {
         AvroParser p = AVRO_F.createParser(new byte[0]);
@@ -50,6 +59,7 @@ public class MapperConfigTest extends AvroTestBase
         p.close();
     }
 
+    @Test
     public void testGeneratorDefaults() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -79,6 +89,7 @@ public class MapperConfigTest extends AvroTestBase
      */
 
     // Test to verify that data format affects default state of order-props-alphabetically
+    @Test
     public void testDefaultSettingsWithObjectMapper()
     {
         ObjectMapper mapper = AvroMapper.builder(AVRO_F).build();
@@ -95,6 +106,7 @@ public class MapperConfigTest extends AvroTestBase
         assertTrue(r.isEnabled(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY));
     }
 
+    @Test
     public void testDefaultSettingsWithAvroMapper()
     {
         AvroMapper mapper = AvroMapper.builder().build();

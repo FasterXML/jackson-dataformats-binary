@@ -1,8 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro.schemaev;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import com.fasterxml.jackson.dataformat.avro.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ArrayEvolutionTest extends AvroTestBase
 {
@@ -92,6 +97,7 @@ public class ArrayEvolutionTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testAddField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XY_ARRAY_JSON);
@@ -110,6 +116,7 @@ public class ArrayEvolutionTest extends AvroTestBase
         assertEquals(result[2], new PointXYZ(123456, 6, 99));
     }
 
+    @Test
     public void testRemoveField() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_XYZ_ARRAY_JSON);
@@ -134,6 +141,7 @@ public class ArrayEvolutionTest extends AvroTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFailNewFieldNoDefault() throws Exception
     {
         final AvroSchema srcSchema = MAPPER.schemaFrom(SCHEMA_X_ARRAY_JSON);

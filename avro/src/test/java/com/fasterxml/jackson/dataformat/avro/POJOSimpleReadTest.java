@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
@@ -12,10 +14,19 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class POJOSimpleReadTest extends AvroTestBase
 {
     private final AvroMapper MAPPER = new AvroMapper();
 
+    @Test
     public void testSimplePojoViaMapper() throws Exception
     {
         Employee empl = _simpleEmployee();
@@ -34,6 +45,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         assertNull(empl.boss.boss);
     }
 
+    @Test
     public void testSimplePojoViaParser() throws Exception
     {
         Employee empl = _simpleEmployee();
@@ -133,6 +145,7 @@ public class POJOSimpleReadTest extends AvroTestBase
         p.close();
     }
 
+    @Test
     public void testMissingSchema() throws Exception
     {
         Employee empl = _simpleEmployee();

@@ -3,11 +3,15 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.IOException;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NestedMapTest extends AvroTestBase
 {
@@ -24,6 +28,7 @@ public class NestedMapTest extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testSerialization() throws IOException
     {
         Nester fromJson = new ObjectMapper().readValue(
