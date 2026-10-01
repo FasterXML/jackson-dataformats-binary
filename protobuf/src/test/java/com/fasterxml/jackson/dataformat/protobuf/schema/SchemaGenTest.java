@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.protobuf.schema;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +9,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 import com.fasterxml.jackson.dataformat.protobuf.schemagen.ProtobufSchemaGenerator;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SchemaGenTest extends ProtobufTestBase
 {
@@ -71,6 +77,8 @@ public class SchemaGenTest extends ProtobufTestBase
 
 	private final ProtobufMapper MAPPER = newObjectMapper();
 
+	@Test
+
 	public void testWithNestedClass() throws Exception
 	{
 		ProtobufSchema schemaWrapper = MAPPER.generateSchemaFor(WithNestedClass.class);
@@ -79,6 +87,8 @@ public class SchemaGenTest extends ProtobufTestBase
 
 		// System.out.println(schemaWrapper.getSource().toString());
 	}
+
+	@Test
 
 	public void testWithIndexAnnotation() throws Exception
 	{
@@ -94,6 +104,8 @@ public class SchemaGenTest extends ProtobufTestBase
 		assertEquals("bb", pMessage.field(3).name);
 		assertEquals("b", pMessage.field(4).name);
 	}
+
+	@Test
 
 	public void testSelfRefPojoGenProtobufSchema() throws Exception {
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
@@ -123,6 +135,8 @@ public class SchemaGenTest extends ProtobufTestBase
 		assertEquals(empl.boss, newEmpl.boss);
 	}
 
+	@Test
+
 	public void testComplexPojoGenProtobufSchema() throws Exception {
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();
 		MAPPER.acceptJsonFormatVisitor(MediaItem.class, gen);
@@ -142,6 +156,8 @@ public class SchemaGenTest extends ProtobufTestBase
 		// System.out.println(deserMediaItem);
 		assertEquals(mediaItem, deserMediaItem);
 	}
+
+	@Test
 
 	public void testSimplePojoGenProtobufSchema() throws Exception {
 		ProtobufSchemaGenerator gen = new ProtobufSchemaGenerator();

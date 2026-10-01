@@ -3,15 +3,17 @@ package com.fasterxml.jackson.dataformat.ion.fuzz;
 import java.io.*;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.*;
 
+import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#437]
 public class Fuzz437_65452_NPETest

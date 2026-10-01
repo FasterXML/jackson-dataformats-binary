@@ -11,6 +11,11 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class WriteSimpleTest extends ProtobufTestBase
 {
     static class Point3D extends Point {
@@ -64,6 +69,8 @@ public class WriteSimpleTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
+
     public void testWritePointInt() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -87,6 +94,8 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
+
     public void testWritePointLongFixed() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_FL);
@@ -105,6 +114,8 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
+
     public void testWritePointDouble() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_POINT_D);
@@ -120,6 +131,8 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .readValue(bytes);
         assertEquals(input, result);
     }
+
+    @Test
 
     public void testWriteNameManual() throws Exception
     {
@@ -146,6 +159,8 @@ public class WriteSimpleTest extends ProtobufTestBase
         // 11 bytes: 2 tags, 2 length markers, Strings of 3 and 4 bytes
         assertEquals(11, b.length);
     }
+
+    @Test
 
     public void testWritePointWithLongsManual() throws Exception
     {
@@ -195,6 +210,8 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(0x01, b[20] & 0x01);
     }
 
+    @Test
+
     public void testBooleanAndNull() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_OPTIONAL_VALUE);
@@ -217,6 +234,8 @@ public class WriteSimpleTest extends ProtobufTestBase
         assertEquals(input, result);
     }
 
+    @Test
+
     public void testIdPoint() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_ID_POINTS);
@@ -230,6 +249,8 @@ public class WriteSimpleTest extends ProtobufTestBase
                 .readValue(bytes);
         assertEquals(input, result);
     }
+
+    @Test
 
     public void testWriteCoord() throws Exception
     {

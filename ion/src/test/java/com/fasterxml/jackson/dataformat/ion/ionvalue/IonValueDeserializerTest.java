@@ -9,16 +9,18 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.util.AccessPattern;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import static com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE;
-import static org.junit.Assert.assertNull;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class IonValueDeserializerTest {
     private static class Data<T> {
