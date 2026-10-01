@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.avro.AvroTypeException;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class RecordWithComplexTest extends InteropTestBase
 {
-    @Test
+    @TestTemplate
     public void testEmptyRecordWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         //
@@ -28,7 +28,7 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithListFields() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.requiredList.add(9682584);
@@ -39,7 +39,7 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result.requiredList).isEqualTo(original.requiredList);
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithMapFields() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.simpleMap.put("Hello World", 9682584);
@@ -50,7 +50,7 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result.simpleMap.get("Hello World")).isEqualTo(original.simpleMap.get("Hello World"));
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithMissingRequiredEnumFields() {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.requiredEnum = null;
@@ -65,7 +65,7 @@ public class RecordWithComplexTest extends InteropTestBase
         }
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithNullRequiredFields() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord(null, 12353, new DummyRecord("World", 234));
         //
@@ -79,7 +79,7 @@ public class RecordWithComplexTest extends InteropTestBase
         }
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithOptionalEnumField() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         original.optionalEnum = DummyEnum.SOUTH;
@@ -89,7 +89,7 @@ public class RecordWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithRecordValues() throws IOException {
         RecursiveDummyRecord original = new RecursiveDummyRecord("Hello", 12353, new DummyRecord("World", 234));
         //
