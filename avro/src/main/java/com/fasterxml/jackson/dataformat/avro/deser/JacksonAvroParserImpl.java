@@ -808,7 +808,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
      */
     private final byte[] _readBytes(final int len) throws IOException
     {
-        if ((len <= LONGEST_NON_CHUNKED_BINARY) || (len <= (_inputEnd - _inputPtr))) {
+        if ((len <= LONGEST_NON_CHUNKED_BINARY_READ) || (len <= (_inputEnd - _inputPtr))) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _read(b, 0, len);

@@ -25,7 +25,7 @@ public abstract class AvroParserImpl
      *
      * @since 2.18.12
      */
-    protected final static int LONGEST_NON_CHUNKED_BINARY = 250_000;
+    protected final static int LONGEST_NON_CHUNKED_BINARY_READ = 250_000;
 
     /*
     /**********************************************************

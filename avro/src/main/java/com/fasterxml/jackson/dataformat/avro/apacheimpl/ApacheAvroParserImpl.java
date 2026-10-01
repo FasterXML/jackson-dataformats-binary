@@ -402,7 +402,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      */
     private byte[] _readBytes(final int len) throws IOException
     {
-        if (len <= LONGEST_NON_CHUNKED_BINARY) {
+        if (len <= LONGEST_NON_CHUNKED_BINARY_READ) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _decoder.readFixed(b, 0, len);
