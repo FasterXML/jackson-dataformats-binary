@@ -9,6 +9,10 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Unit tests for generation that trigger exceptions (or would
  * without suppression).
@@ -26,6 +30,8 @@ public class WriteErrorsTest extends ProtobufTestBase
     }
 
     private final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+
+    @Test
 
     public void testUnknownProperties() throws Exception
     {

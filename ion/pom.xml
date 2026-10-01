@@ -64,6 +64,12 @@ tree model)
       <scope>test</scope>
     </dependency>
 
+    <!-- JUnit 5 for `ion` module (see `cbor/pom.xml` for why not in root POM) -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

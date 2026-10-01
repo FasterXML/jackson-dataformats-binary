@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.protobuf.testutil;
 import java.io.*;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
 public class LimitingInputStream
     extends FilterInputStream
 {

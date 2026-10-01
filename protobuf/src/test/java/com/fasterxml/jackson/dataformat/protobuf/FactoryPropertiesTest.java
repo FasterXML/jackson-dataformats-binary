@@ -10,6 +10,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class FactoryPropertiesTest extends ProtobufTestBase
 {
     final ProtobufSchema POINT_SCHEMA;
@@ -21,6 +30,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     public FactoryPropertiesTest() throws IOException {
         POINT_SCHEMA = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
     }
+
+    @Test
 
     public void testProtoFactorySerializable() throws Exception
     {
@@ -34,6 +45,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         assertNotNull(f2);
     }
 
+    @Test
+
     public void testProtoFactoryCopy() throws Exception
     {
         ProtobufFactory f2 = PROTO_F.copy();
@@ -42,6 +55,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         byte[] doc = _writeDoc(f2);
         assertNotNull(doc);
     }
+
+    @Test
 
     public void testVersions() throws Exception
     {
@@ -60,6 +75,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
+
     public void testCapabilities() throws Exception
     {
         assertTrue(PROTO_F.canHandleBinaryNatively());
@@ -67,6 +84,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         assertNull(PROTO_F.getFormatReadFeatureType());
         assertNull(PROTO_F.getFormatWriteFeatureType());
     }
+
+    @Test
 
     public void testInabilityToReadChars() throws Exception
     {
@@ -91,6 +110,8 @@ public class FactoryPropertiesTest extends ProtobufTestBase
         }
     }
 
+    @Test
+
     public void testInabilityToWriteChars() throws Exception
     {
         try {
@@ -102,6 +123,7 @@ public class FactoryPropertiesTest extends ProtobufTestBase
     }
 
     // @since 2.14
+    @Test
     public void testStreamReadCapabilities() throws Exception
     {
         byte[] doc = _writeDoc(PROTO_F);

@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class NestedWrite67Test extends ProtobufTestBase
 {
     @JsonPropertyOrder({ "value1", "level2" })
@@ -35,6 +39,8 @@ public class NestedWrite67Test extends ProtobufTestBase
     /* Test methods
     /**********************************************************
      */
+
+    @Test
 
     public void testIssue67() throws Exception
     {

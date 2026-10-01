@@ -16,10 +16,6 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import java.io.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.amazon.ion.IonDatagram;
@@ -28,6 +24,12 @@ import com.amazon.ion.IonStruct;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonType;
 import com.amazon.ion.system.IonSystemBuilder;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SimpleIonWriteTest
 {
@@ -92,7 +94,7 @@ public class SimpleIonWriteTest
     IonSystem ion = IonSystemBuilder.standard().build();
     IonDatagram expected;
 
-    @Before
+    @BeforeEach
     public void initializeExpectedDatagram() {
         IonStruct struct = ion.newEmptyStruct();
         struct.add("a").newString("value");

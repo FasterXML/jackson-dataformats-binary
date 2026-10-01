@@ -16,8 +16,6 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import java.io.*;
 
-import org.junit.Test;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.amazon.ion.IonReader;
@@ -27,7 +25,12 @@ import com.amazon.ion.IonType;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class DataBindReadTest {
     static class MyBean {

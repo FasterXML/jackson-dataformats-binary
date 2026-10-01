@@ -8,6 +8,13 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class NextXxxParsingTest extends ProtobufTestBase
 {
     final private static String PROTOC_STRINGS =
@@ -24,6 +31,8 @@ public class NextXxxParsingTest extends ProtobufTestBase
     }
 
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
+
+    @Test
 
     public void testNextFieldAndText() throws Exception
     {
@@ -62,6 +71,8 @@ public class NextXxxParsingTest extends ProtobufTestBase
         assertToken(JsonToken.END_OBJECT, p.nextToken());
         p.close();
     }
+
+    @Test
 
     public void testNextInt() throws Exception
     {

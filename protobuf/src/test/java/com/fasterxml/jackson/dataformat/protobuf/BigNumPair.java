@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
+import org.junit.jupiter.api.Test;
+
 public class BigNumPair {
     public static final String protobuf_str =
             "message BigNumPair {\n"

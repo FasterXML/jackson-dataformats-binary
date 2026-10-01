@@ -6,6 +6,10 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class ReadUnkownFieldsTest extends ProtobufTestBase
 {
     static class OneField {
@@ -63,6 +67,8 @@ public class ReadUnkownFieldsTest extends ProtobufTestBase
     /* Test methods
     /**********************************************************
      */
+
+    @Test
 
     public void testMultipleUnknown() throws Exception
     {

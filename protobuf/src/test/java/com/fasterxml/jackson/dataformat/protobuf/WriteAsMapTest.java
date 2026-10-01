@@ -5,6 +5,10 @@ import java.util.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class WriteAsMapTest extends ProtobufTestBase
 {
     final static String PROTOC =
@@ -28,6 +32,9 @@ public class WriteAsMapTest extends ProtobufTestBase
 +"  repeated Person person = 1;\n"
 +"}"
             ;
+
+
+    @Test
 
 
     public void testWriteAsMap() throws Exception

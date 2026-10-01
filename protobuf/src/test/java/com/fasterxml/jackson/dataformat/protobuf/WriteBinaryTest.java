@@ -7,6 +7,13 @@ import com.fasterxml.jackson.dataformat.protobuf.schema.*;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class WriteBinaryTest extends ProtobufTestBase
 {
     final protected static String PROTOC_BINARY =
@@ -37,6 +44,8 @@ public class WriteBinaryTest extends ProtobufTestBase
      */
 
     private final ObjectMapper MAPPER = newObjectMapper();
+
+    @Test
 
     public void testSimpleBinary() throws Exception
     {

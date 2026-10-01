@@ -1,17 +1,19 @@
 package com.fasterxml.jackson.dataformat.ion;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.InputCoercionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // for [dataformats-ion#428]
 public class IonNumberOverflowTest
