@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BigDecimalTest extends AvroTestBase
 {
@@ -19,6 +23,7 @@ public class BigDecimalTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testSerializeBigDecimal() throws Exception {
         AvroMapper mapper = newMapper();
         AvroSchema schema = mapper.schemaFor(NamedAmount.class);

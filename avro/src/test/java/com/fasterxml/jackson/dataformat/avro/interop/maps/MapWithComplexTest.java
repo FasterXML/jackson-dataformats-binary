@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.maps;
 import java.io.IOException;
 import java.util.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class MapWithComplexTest extends InteropTestBase
 {
 
-    @Test
+    @TestTemplate
     public void testMapWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         original.put("one", new DummyRecord("test", 2));
@@ -29,7 +29,7 @@ public class MapWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testEmptyMapWithRecordValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         //
@@ -38,7 +38,7 @@ public class MapWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithNullValues() throws IOException {
         Map<String, DummyRecord> original = new HashMap<>();
         original.put("test", null);
@@ -56,7 +56,7 @@ public class MapWithComplexTest extends InteropTestBase
         }
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithEnumValues() throws IOException {
         Map<String, DummyEnum> original = new HashMap<>();
         original.put("one", DummyEnum.EAST);
@@ -67,7 +67,7 @@ public class MapWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithListValues() throws IOException {
         Map<String, List<List<String>>> original = new HashMap<>();
         original.put("one", new ArrayList<List<String>>());
@@ -81,7 +81,7 @@ public class MapWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithMapValues() throws IOException {
         Map<String, Map<String, Integer>> original = new HashMap<>();
         original.put("one", Collections.singletonMap("Hello", 1));

@@ -1,12 +1,18 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ScalarTest extends AvroTestBase
 {
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testRootString() throws Exception
     {
         final String INPUT = "Something or other";
@@ -30,6 +36,7 @@ public class ScalarTest extends AvroTestBase
         in.close();
     }
 
+    @Test
     public void testRootInt() throws Exception
     {
         Integer inputValue = Integer.valueOf(0xE134567);
@@ -52,6 +59,7 @@ public class ScalarTest extends AvroTestBase
         in.close();
     }
 
+    @Test
     public void testRootLong() throws Exception
     {
         for (long l : new long[] {
@@ -86,6 +94,7 @@ public class ScalarTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testRootDouble() throws Exception
     {
         for (double d : new double[] {
@@ -118,6 +127,7 @@ public class ScalarTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testRootFloat() throws Exception
     {
         for (float f : new float[] {
@@ -150,6 +160,7 @@ public class ScalarTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testRootBoolean() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(quote("boolean"));

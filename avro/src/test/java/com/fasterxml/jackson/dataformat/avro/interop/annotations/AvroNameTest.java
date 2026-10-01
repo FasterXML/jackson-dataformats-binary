@@ -1,14 +1,14 @@
 package com.fasterxml.jackson.dataformat.avro.interop.annotations;
 
 import org.apache.avro.reflect.AvroName;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests the {@link AvroName @AvroName} annotation
@@ -33,7 +33,7 @@ public class AvroNameTest extends InteropTestBase
         public String otherField;
     }
 
-    @Test
+    @TestTemplate
     public void testRecordWithRenamedField() throws Exception{
         RecordWithRenamed original = new RecordWithRenamed();
         original.someField = "blah";
@@ -46,7 +46,7 @@ public class AvroNameTest extends InteropTestBase
     //   possible to select precedence... so needed to add another
     //   annotation to force problem.
 
-    @Test
+    @TestTemplate
     public void testRecordWithNameCollision() throws Exception {
         try {
             schemaFunctor.apply(RecordWithNameCollision.class);

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * type
  */
 public class ListWithPrimitiveWrapperTest extends InteropTestBase {
-    @Test
+    @TestTemplate
     public void testListWithBytes() throws IOException {
         List<Byte> original = new ArrayList<>();
         original.add((byte) 1);
@@ -29,7 +29,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithCharacters() throws IOException {
         List<Character> original = new ArrayList<>();
         original.add((char) 1);
@@ -43,7 +43,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithDoubles() throws IOException {
         List<Double> original = new ArrayList<>();
         original.add(1D);
@@ -57,7 +57,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithFloats() throws IOException {
         List<Float> original = new ArrayList<>();
         original.add(1F);
@@ -71,7 +71,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithIntegers() throws IOException {
         List<Integer> original = new ArrayList<>();
         original.add(1);
@@ -85,7 +85,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithLongs() throws IOException {
         List<Long> original = new ArrayList<>();
         original.add(1L);
@@ -99,7 +99,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithShorts() throws IOException {
         List<Short> original = new ArrayList<>();
         original.add((short) 1);
@@ -113,7 +113,7 @@ public class ListWithPrimitiveWrapperTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithStrings() throws IOException {
         List<String> original = new ArrayList<>();
         original.add("1");

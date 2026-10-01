@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Nullable;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,28 +45,28 @@ public class AvroSchemaTest extends InteropTestBase {
         public OverriddenClassSchema precedenceField;
     }
 
-    @Test
+    @TestTemplate
     public void testJacksonClassDescription() throws Exception {
         Schema schema = ApacheAvroInteropUtil.getJacksonSchema(OverriddenFieldSchema.class);
         //
         assertThat(schema.getDoc()).isEqualTo("A cool class!");
     }
 
-    @Test
+    @TestTemplate
     public void testJacksonPropertyDescription() throws Exception {
         Schema schema = ApacheAvroInteropUtil.getJacksonSchema(OverriddenFieldSchema.class);
         //
         assertThat(schema.getField("recursiveOverride").doc()).isEqualTo("the best field in the world");
     }
 
-    @Test
+    @TestTemplate
     public void testTypeOverride() throws IOException {
         Schema schema = schemaFunctor.apply(OverriddenClassSchema.class);
         //
         assertThat(schema.getType()).isEqualTo(Schema.Type.STRING);
     }
 
-    @Test
+    @TestTemplate
     public void testFieldOverride() throws IOException {
         Schema schema = schemaFunctor.apply(OverriddenFieldSchema.class);
         //
@@ -74,7 +74,7 @@ public class AvroSchemaTest extends InteropTestBase {
         assertThat(schema.getField("myField").schema().getType()).isEqualTo(Schema.Type.INT);
     }
 
-    @Test
+    @TestTemplate
     public void testRecursiveFieldOverride() throws IOException {
         Schema schema = schemaFunctor.apply(OverriddenFieldSchema.class);
         //
@@ -84,7 +84,7 @@ public class AvroSchemaTest extends InteropTestBase {
         assertThat(schema.getField("recursiveOverride").schema().getTypes().get(1).getType()).isEqualTo(Schema.Type.STRING);
     }
 
-    @Test
+    @TestTemplate
     public void testOverridePrecedence() throws IOException {
         Schema schema = schemaFunctor.apply(OverriddenFieldSchema.class);
         //

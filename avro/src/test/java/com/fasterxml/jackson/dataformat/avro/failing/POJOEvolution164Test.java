@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.dataformat.avro.failing;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class POJOEvolution164Test extends AvroTestBase
 {
@@ -13,6 +17,7 @@ public class POJOEvolution164Test extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testSimpleFieldRemove() throws Exception
     {
         final String WRITER_SCHEMA_SRC = "{\n" +

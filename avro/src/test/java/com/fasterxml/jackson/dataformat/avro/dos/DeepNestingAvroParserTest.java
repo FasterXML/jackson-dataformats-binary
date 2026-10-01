@@ -2,6 +2,8 @@ package com.fasterxml.jackson.dataformat.avro.dos;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
@@ -12,6 +14,9 @@ import com.fasterxml.jackson.dataformat.avro.AvroFactory;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for deeply nested Documents
@@ -60,6 +65,7 @@ public class DeepNestingAvroParserTest extends AvroTestBase
     }
 
     
+    @Test
     public void testDeeplyNestedObjectsHighLimits() throws Exception
     {
         byte[] doc = genDeepDoc(410);
@@ -68,6 +74,7 @@ public class DeepNestingAvroParserTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testDeeplyNestedObjectsLowLimits() throws Exception
     {
         byte[] doc = genDeepDoc(410);
@@ -75,8 +82,7 @@ public class DeepNestingAvroParserTest extends AvroTestBase
             while (jp.nextToken() != null) { }
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
-            assertTrue("unexpected message: " + e.getMessage(),
-                    e.getMessage().startsWith("Document nesting depth (401) exceeds the maximum allowed"));
+            assertTrue(e.getMessage().startsWith("Document nesting depth (401) exceeds the maximum allowed"), "unexpected message: " + e.getMessage());
         }
     }
 

@@ -3,11 +3,20 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class MapTest extends AvroTestBase
 {
@@ -40,6 +49,7 @@ public class MapTest extends AvroTestBase
 
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testRecordWithMap() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(MAP_SCHEMA_JSON);
@@ -110,6 +120,7 @@ public class MapTest extends AvroTestBase
         assertEquals(1, bytes.length); // measured to be current exp size
     }
 
+    @Test
     public void testMapOrNull() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(MAP_OR_NULL_SCHEMA_JSON);
@@ -147,6 +158,7 @@ public class MapTest extends AvroTestBase
     //   since Records and Arrays work, but looks like there are some issues
     //   regarding them so can't yet test
 
+    @Test
     public void testRootStringMap() throws Exception
     {
         AvroSchema schema = getStringMapSchema();
@@ -160,6 +172,7 @@ public class MapTest extends AvroTestBase
         assertEquals("1", result.get("a"));
         assertEquals("2", result.get("b"));
     }
+    @Test
     public void testRootMapSequence() throws Exception
     {
         ByteArrayOutputStream b = new ByteArrayOutputStream(1000);

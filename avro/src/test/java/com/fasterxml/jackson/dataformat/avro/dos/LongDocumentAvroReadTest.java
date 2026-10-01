@@ -10,12 +10,18 @@ import java.util.UUID;
 
 import org.apache.avro.io.DecoderFactory;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#785]: `StreamReadConstraints.maxDocumentLength` for Avro
 public class LongDocumentAvroReadTest extends AvroTestBase
@@ -82,6 +88,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testLongDocumentConstraint() throws Exception
     {
         // Need a bit longer than minimum since checking is approximate, not exact
@@ -93,6 +100,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
         }
     }
 
+    @Test
     public void testLongDocumentNoConstraint() throws Exception
     {
         byte[] doc = createBigDoc(60_000);
@@ -110,6 +118,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
 
     // [dataformats-binary#785]: big `bytes` value is read straight from `InputStream`,
     // bypassing input buffer, and must still count towards document length
+    @Test
     public void testLongBinaryValueConstraint() throws Exception
     {
         byte[] doc = createBinaryDoc(200_000);
@@ -128,6 +137,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
 
     // Same as above but for the case where the big `bytes` value is skipped
     // (writer schema has field reader schema does not)
+    @Test
     public void testSkippedLongBinaryValueConstraint() throws Exception
     {
         byte[] doc = createBinaryDoc(200_000);
@@ -146,6 +156,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     // [dataformats-binary#785]: Apache decoder reads ahead of the decoding position,
     // by up to its buffer size: must not fail a single short value read from a
     // stream that holds more content past it
+    @Test
     public void testShortValueFromLongStream() throws Exception
     {
         final int SHORT_MAX_DOC_LEN = 1000;
@@ -158,25 +169,25 @@ public class LongDocumentAvroReadTest extends AvroTestBase
         for (int i = 0; i < many.length; i += one.length) {
             System.arraycopy(one, 0, many, i, one.length);
         }
-        assertTrue("many.length="+many.length, many.length > 8 * SHORT_MAX_DOC_LEN);
+        assertTrue(many.length > 8 * SHORT_MAX_DOC_LEN, "many.length="+many.length);
 
         for (int mode : ALL_MODES) {
             AvroMapper mapper = constrainedMapper(mode, SHORT_MAX_DOC_LEN);
             Map<?,?> value = mapper.readerFor(Map.class).with(schema)
                     .readValue(new ByteArrayInputStream(many));
-            assertEquals("mode="+mode, 42, value.get("x"));
+            assertEquals(42, value.get("x"), "mode="+mode);
         }
     }
 
     // [dataformats-binary#806]: limit below the decoder's buffer size must be enforced
     // too, and the same way whichever decoder and source type are used
+    @Test
     public void testShortLimitEnforcedForAllModes() throws Exception
     {
         final int SHORT_LIMIT = 100;
         byte[] doc = createBigDoc(5_000);
-        assertTrue("doc.length="+doc.length, doc.length > SHORT_LIMIT);
-        assertTrue("doc.length="+doc.length,
-                doc.length < DecoderFactory.get().getConfiguredBufferSize());
+        assertTrue(doc.length > SHORT_LIMIT, "doc.length="+doc.length);
+        assertTrue(doc.length < DecoderFactory.get().getConfiguredBufferSize(), "doc.length="+doc.length);
 
         for (int mode : ALL_MODES) {
             AvroMapper mapper = constrainedMapper(mode, SHORT_LIMIT);
@@ -187,8 +198,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
                     while (p.nextToken() != null) { }
                     fail("expected StreamConstraintsException (mode="+mode+", stream="+stream+")");
                 } catch (StreamConstraintsException e) {
-                    assertTrue("unexpected message: "+e.getMessage(),
-                            e.getMessage().contains("exceeds the maximum allowed ("+SHORT_LIMIT));
+                    assertTrue(e.getMessage().contains("exceeds the maximum allowed ("+SHORT_LIMIT), "unexpected message: "+e.getMessage());
                 }
             }
         }
@@ -196,6 +206,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
 
     // [dataformats-binary#806]: reported length must be a real count -- at least the limit
     // that was breached, never more than the document actually holds
+    @Test
     public void testReportedLengthIsPlausible() throws Exception
     {
         final int LIMIT = 1_000;
@@ -209,10 +220,8 @@ public class LongDocumentAvroReadTest extends AvroTestBase
                 fail("expected StreamConstraintsException (mode="+mode+")");
             } catch (StreamConstraintsException e) {
                 long reported = _reportedLength(e.getMessage());
-                assertTrue("mode="+mode+", reported="+reported+" should exceed limit "+LIMIT,
-                        reported > LIMIT);
-                assertTrue("mode="+mode+", reported="+reported+" should not exceed doc size "+doc.length,
-                        reported <= doc.length);
+                assertTrue(reported > LIMIT, "mode="+mode+", reported="+reported+" should exceed limit "+LIMIT);
+                assertTrue(reported <= doc.length, "mode="+mode+", reported="+reported+" should not exceed doc size "+doc.length);
             }
         }
     }
@@ -220,7 +229,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     private long _reportedLength(String msg) {
         int start = msg.indexOf('(');
         int end = msg.indexOf(')', start);
-        assertTrue("unexpected message: "+msg, start > 0 && end > start);
+        assertTrue(start > 0 && end > start, "unexpected message: "+msg);
         return Long.parseLong(msg.substring(start+1, end));
     }
 
@@ -240,9 +249,8 @@ public class LongDocumentAvroReadTest extends AvroTestBase
 
     private void _verifyConstraintException(StreamConstraintsException e) {
         final String msg = e.getMessage();
-        assertTrue("unexpected message: "+msg, msg.contains("Document length ("));
-        assertTrue("unexpected message: "+msg,
-                msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN));
+        assertTrue(msg.contains("Document length ("), "unexpected message: "+msg);
+        assertTrue(msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN), "unexpected message: "+msg);
     }
 
     private AvroMapper constrainedMapper(int mode) {
@@ -268,7 +276,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
         blob.put("data", new byte[payloadSize]);
         byte[] doc = MAPPER_VANILLA.writer(MAPPER_VANILLA.schemaFrom(BLOB_SCHEMA_JSON))
                 .writeValueAsBytes(blob);
-        assertTrue("doc.length="+doc.length, doc.length > payloadSize);
+        assertTrue(doc.length > payloadSize, "doc.length="+doc.length);
         return doc;
     }
 
@@ -284,7 +292,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
             items.items.add(item);
         }
         byte[] doc = MAPPER_VANILLA.writer(ITEMS_SCHEMA).writeValueAsBytes(items);
-        assertTrue("doc.length="+doc.length, doc.length > size);
+        assertTrue(doc.length > size, "doc.length="+doc.length);
         return doc;
     }
 }

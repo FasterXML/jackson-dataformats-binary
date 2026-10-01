@@ -2,11 +2,18 @@ package com.fasterxml.jackson.dataformat.avro.schemaev;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.testsupport.NonSkippingInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // Test for [dataformats-binary#785]: skipping of values must work even if
 // `InputStream.skip()` never skips anything
@@ -38,6 +45,7 @@ public class SkipNonSkippableStreamTest extends AvroTestBase
     // from the input source
     private final static int BIG_VALUE_LEN = 50_000;
 
+    @Test
     public void testSkipBigValuesWithNonSkippingStream() throws Exception
     {
         AvroSchema writerSchema = MAPPER.schemaFrom(SCHEMA_WITH_DATA_JSON);
@@ -58,6 +66,7 @@ public class SkipNonSkippableStreamTest extends AvroTestBase
     }
 
     // And also verify that true end-of-input is still reported as such
+    @Test
     public void testTruncatedValueWithNonSkippingStream() throws Exception
     {
         AvroSchema writerSchema = MAPPER.schemaFrom(SCHEMA_WITH_DATA_JSON);
@@ -87,7 +96,7 @@ public class SkipNonSkippableStreamTest extends AvroTestBase
         }
         blob.put("text", sb.toString());
         byte[] doc = MAPPER.writer(writerSchema).writeValueAsBytes(blob);
-        assertTrue("doc.length="+doc.length, doc.length > (2 * BIG_VALUE_LEN));
+        assertTrue(doc.length > (2 * BIG_VALUE_LEN), "doc.length="+doc.length);
         return doc;
     }
 }

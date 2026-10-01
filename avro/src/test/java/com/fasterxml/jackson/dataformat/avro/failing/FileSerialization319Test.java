@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.failing;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.avro.AvroFactory;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
@@ -17,11 +19,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 // For [dataformats-binary#319]: not 100% certain test is valid,
 // but there is need for work wrt File-backed Avro content
 public class FileSerialization319Test extends AvroTestBase
 {
     // [dataformats-binary#319]
+    @Test
     public void testFileSerialization() throws Exception
     {
         final Employee employee = new Employee();

@@ -6,11 +6,8 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificData;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,20 +20,9 @@ import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
 public class AvroJavaTimeModule_schemaCreationTest {
 
-    @Parameter(0)
-    public Class<?> testClass;
-
-    @Parameter(1)
-    public Schema.Type expectedType;
-
-    @Parameter(2)
-    public String expectedLogicalType;
-
-    @Parameters(name = "With {0}")
-    public static Collection<?> testData() {
+    public static Collection<Object[]> testData() {
         return Arrays.asList(new Object[][]{
                 // Java type    | expected Avro type    | expected logicalType
                 {Instant.class, Schema.Type.LONG, "timestamp-millis"},
@@ -48,8 +34,10 @@ public class AvroJavaTimeModule_schemaCreationTest {
         });
     }
 
-    @Test
-    public void testSchemaCreation() throws JsonMappingException {
+    @ParameterizedTest(name = "With {0}")
+    @MethodSource("testData")
+    public void testSchemaCreation(Class<?> testClass, Schema.Type expectedType,
+            String expectedLogicalType) throws JsonMappingException {
         // GIVEN
         AvroMapper mapper = AvroMapper.builder()
                 .addModule(new AvroJavaTimeModule())
