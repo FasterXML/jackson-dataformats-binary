@@ -607,6 +607,12 @@ public class ProtobufParser extends ParserMinimalBase
 
             int len = _decodeLength();
             int newEnd = _inputPtr + len;
+            // Guard against integer overflow: _inputPtr and len are both non-negative,
+            // so a result smaller than _inputPtr means the sum wrapped.
+            if (newEnd < _inputPtr) {
+                _reportErrorF("Packed array length overflows for field '%s': ptr=%d, len=%d",
+                        _currentField.name, _inputPtr, len);
+            }
 
             // First: validate that we do not extend past end offset of enclosing message
             if (!_parsingContext.inRoot()) {
@@ -913,6 +919,12 @@ public class ProtobufParser extends ParserMinimalBase
                 _currentMessage = msg;
                 int len = _decodeLength();
                 int newEnd = _inputPtr + len;
+                // Guard against integer overflow: _inputPtr and len are both non-negative,
+                // so a result smaller than _inputPtr means the sum wrapped.
+                if (newEnd < _inputPtr) {
+                    _reportErrorF("Message length overflows for field '%s': ptr=%d, len=%d",
+                            _currentField.name, _inputPtr, len);
+                }
 
                 // First: validate that we do not extend past end offset of enclosing message
                 if (newEnd > _currentEndOffset) {
@@ -1268,7 +1280,8 @@ public class ProtobufParser extends ParserMinimalBase
             _textBuffer.resetWithEmpty();
             return "";
         }
-        if ((_inputPtr + len) <= _inputEnd) {
+        // Compare against remaining input: `_inputPtr + len` may overflow
+        if (len <= (_inputEnd - _inputPtr)) {
             return _finishShortText(len);
         }
         _finishToken();
@@ -1304,7 +1317,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     return _finishShortText(len);
                 }
@@ -1388,7 +1402,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     return _finishShortText(len);
                 }
@@ -1427,7 +1442,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     _finishShortText(len);
                 } else {
@@ -1899,21 +1915,45 @@ public class ProtobufParser extends ParserMinimalBase
 
     protected byte[] _finishBytes(int len) throws IOException
     {
-        byte[] b = new byte[len];
-        if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+        // If declared length exceeds buffered content, do not trust it for
+        // up-front allocation: accumulate incrementally instead
+        if (len > (_inputEnd - _inputPtr)) {
+            return _finishLongBytes(len);
         }
-        int ptr = 0;
-        while (true) {
-            int toAdd = Math.min(len, _inputEnd - _inputPtr);
-            System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
-            _inputPtr += toAdd;
-            ptr += toAdd;
-            len -= toAdd;
-            if (len <= 0) {
-                return b;
+        // Otherwise all content is buffered, can copy in one go
+        byte[] b = new byte[len];
+        System.arraycopy(_inputBuffer, _inputPtr, b, 0, len);
+        _inputPtr += len;
+        return b;
+    }
+
+    // Used when declared length exceeds buffered input: grows the result
+    // as content is actually read, so a bogus length only fails at end-of-input
+    private final byte[] _finishLongBytes(final int expLen) throws IOException
+    {
+        int len = expLen;
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
+        while (len > 0) {
+            if (_inputPtr >= _inputEnd) {
+                _loadMoreForLongValue(JsonToken.VALUE_EMBEDDED_OBJECT, expLen, expLen - len);
             }
-            loadMoreGuaranteed();
+            int toAdd = Math.min(len, _inputEnd - _inputPtr);
+            bb.write(_inputBuffer, _inputPtr, toAdd);
+            _inputPtr += toAdd;
+            len -= toAdd;
+        }
+        return bb.toByteArray();
+    }
+
+    // Loads more content for long String/Binary value; if none available,
+    // reports EOF with expected/actual length
+    private final void _loadMoreForLongValue(JsonToken type, int expLen, int found)
+        throws IOException
+    {
+        if (!loadMore()) {
+            final String desc = (type == JsonToken.VALUE_STRING) ? "String" : "Binary";
+            _reportInvalidEOF(String.format(" for %s value: expected %d bytes, only found %d",
+                    desc, expLen, found), type);
         }
     }
 
@@ -1971,15 +2011,21 @@ public class ProtobufParser extends ParserMinimalBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final void _finishLongText(final int expLen) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
         final int[] codes = UTF8_UNIT_CODES;
         int outEnd = outBuf.length;
+        int len = expLen;
 
         while (--len >= 0) {
-            int c = _nextByte() & 0xFF;
+            // Check for end-of-input here to report expected/actual length
+            // (truncation within multi-byte character gets generic error)
+            if (_inputPtr >= _inputEnd) {
+                _loadMoreForLongValue(JsonToken.VALUE_STRING, expLen, expLen - len - 1);
+            }
+            int c = _inputBuffer[_inputPtr++] & 0xFF;
             int code = codes[c];
             if (code == 0 && outPtr < outEnd) {
                 outBuf[outPtr++] = (char) c;
@@ -2148,7 +2194,7 @@ public class ProtobufParser extends ParserMinimalBase
                 if (count == 0) {
                     throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+(minAvailable - _inputEnd)+" before end-of-input");
             }
             _inputEnd += count;
         }
