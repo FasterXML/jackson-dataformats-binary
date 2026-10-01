@@ -408,7 +408,13 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _decoder.readFixed(b, 0, len);
             return b;
         }
-        final byte[] chunk = new byte[LONGEST_NON_CHUNKED_BINARY];
+        // Decoder does its own buffering so the (recyclable) input buffer is otherwise
+        // unused: reuse it as scratch space instead of allocating a chunk-sized array
+        byte[] chunk = _inputBuffer;
+        if (chunk == null) { // `byte[]` input: no buffer allocated by constructor
+            _inputBuffer = chunk = _ioContext.allocReadIOBuffer();
+            _bufferRecyclable = true; // so that it gets released on close
+        }
         final ByteArrayBuilder bb = _getByteArrayBuilder();
         int left = len;
         while (left > 0) {
